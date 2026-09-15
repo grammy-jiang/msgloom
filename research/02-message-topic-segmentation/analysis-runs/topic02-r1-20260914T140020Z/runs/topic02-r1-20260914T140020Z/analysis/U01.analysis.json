@@ -1,0 +1,4086 @@
+{
+  "paper_id": "U01",
+  "title": "The DISRPT 2019 Shared Task on Elementary Discourse Unit Segmentation and Connective Detection",
+  "research_question": "How accurately can shared-task systems identify elementary discourse-unit boundaries and exact explicit-connective spans across multilingual discourse corpora under treebanked and plain-tokenized input conditions?",
+  "methodology": "A shared-task overview compares representative submissions on multilingual RST/SDRT EDU boundary segmentation and PDTB explicit-connective detection. Each task has treebanked and plain-tokenized input settings. The authors report positive-class precision, recall, and F1, micro-averaged within corpora and macro-averaged across corpora. Four teams address EDU segmentation; three address connective detection in at least one setting. For teams with multiple systems, the best macro-F1 system is selected. ToNy and IXA use RNNs with embeddings, DFKI RF uses tree ensembles with linguistic features, and GumDrop combines approaches. This overview does not independently isolate the causal effects of architecture, syntax, sentence boundaries, or data size.",
+  "methodology_evidence": [
+    {
+      "section": "PDF page 3, section 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 211,
+        "line_end": 259,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "section": "PDF page 4, sections 3 and 3.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 278,
+        "line_end": 311,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "section": "PDF page 5, section 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 406,
+        "line_end": 418,
+        "pdf_pages": [
+          5
+        ]
+      }
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "U01-F01",
+      "finding": "The paper defines EDUs as nonoverlapping discourse-tree building blocks, mostly sentences or clauses, with exceptions for complement and restrictive clauses; this is its annotation-unit definition, not a comparison of units for work matters.",
+      "evidence_type": "supported",
+      "section": "PDF page 1, section 1, footnote 1",
+      "quote": "EDUs or Elementary Discourse units are non- overlapping “minimal building blocks of a discourse tree” (Carlson et al., 2003).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 99,
+        "line_end": 102,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "evidence_basis": "Documented definition, corroborated by the single-boundary encoding in section 2; no empirical claim that this is the optimal semantic unit.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 3, section 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 224,
+            "line_end": 236,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "U01-F02",
+      "finding": "The shared task uses 15 corpora in 10 languages: 12 EDU-segmentation corpora under RST/SDRT and 3 explicit-connective corpora under PDTB; corpus inventory counts are not test-set denominators.",
+      "evidence_type": "supported",
+      "section": "PDF page 2, section 2",
+      "quote": "15 datasets in 10 languages, 12 of which tar- get elementary discourse unit segmentation, and 3 dedicated to explicit connective annotation.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 140,
+        "line_end": 144,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_basis": "Documented benchmark inventory in Table 1.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 2, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 104,
+            "line_end": 123,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "U01-F03",
+      "finding": "Treebanked input includes linguistic annotations with corpus-dependent gold quality; plain input retains tokenization and document boundaries but omits sentence splits, POS, and supplied parses.",
+      "evidence_type": "supported",
+      "section": "PDF page 3, section 2",
+      "quote": "data (*.conll), which included an (ideally gold) dependency parse, including gold sentence splits and POS tags, and unannotated, plain tokens (*.tok).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 211,
+        "line_end": 216,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Input specification and explicit corpus qualifications.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 3, section 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 231,
+            "line_end": 236,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "PDF page 5, section 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 419,
+            "line_end": 433,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "U01-F04",
+      "finding": "EDU precision, recall, and F1 score positive boundary locations only; scores pool decisions within each corpus and then macro-average across corpora separately for each system and input scenario.",
+      "evidence_type": "supported",
+      "section": "PDF page 3, section 2",
+      "quote": "scores reward only the positive classes, i.e. precision and recall of segmentation is judged purely based on identification of segmenta- tion points, with no reward for recognizing nega- tive cases.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 239,
+        "line_end": 249,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Stated scorer protocol; this is boundary F1, not EDU exact-span F1, token accuracy, or Topic quality."
+    },
+    {
+      "finding_id": "U01-F05",
+      "finding": "Connective detection evaluates exact spans and gives no partial credit; the example with an extra predicted token incurs one false-positive span and one false-negative span.",
+      "evidence_type": "supported",
+      "section": "PDF page 3, section 2, Example (1)",
+      "quote": "it misses the gold span and invents one not present in gold data.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 250,
+        "line_end": 257,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Explicit scoring example, not an observed error-rate estimate.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 3, Example (1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 258,
+            "line_end": 259,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ],
+      "qualification": "The prose describes both precision and recall as calculated out of gold spans. Preserve this imprecision; standard precision uses predicted spans and recall uses gold spans. The scorer code was not inspected."
+    },
+    {
+      "finding_id": "U01-F06",
+      "finding": "On the 12 EDU test corpora with treebanked input, Table 2 reports macro F1 of 90.11 for ToNy, 88.11 for GumDrop, 87.41 for IXA, and 84.58 for DFKI RF. ToNy leads on 8 corpora, GumDrop on 3, and DFKI RF on 1.",
+      "evidence_type": "supported",
+      "section": "PDF page 4, Table 2",
+      "quote": "mean 92.73 87.80 90.11 91.38 85.34 88.11 93.57 77.61 84.58 90.18 85.28 87.41 87.84",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 275,
+        "line_end": 276,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_basis": "Table 2 and section 3.1; all scores are on the paper’s 0–100 scale.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 4, Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 261,
+            "line_end": 274,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "PDF page 4, section 3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 290,
+            "line_end": 311,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ],
+      "qualification": "ToNy’s reported average is over five nondeterministic runs; uncertainty intervals are absent. Prose conflicts for IXA and DFKI RF are retained as U01-I01."
+    },
+    {
+      "finding_id": "U01-F07",
+      "finding": "On the 12 EDU test corpora with plain-tokenized input, Table 3 reports macro F1 of 86.38 for ToNy, 83.89 for GumDrop, and 68.5 for DFKI RF. ToNy leads on 11 corpora; on zho.rst.sctb GumDrop reaches 73.13 versus ToNy 65.26.",
+      "evidence_type": "supported",
+      "section": "PDF page 5, Table 3",
+      "quote": "mean 88.65 84.31 86.38 88.65 79.82 83.89 83.24 58.31 68.5 80.19",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 366,
+        "line_end": 367,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_basis": "Table 3; no IXA result is reported for this setting.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 5, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 352,
+            "line_end": 365,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "PDF page 4, section 3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 339,
+            "line_end": 350,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "U01-F08",
+      "finding": "For exact connective detection on tur.pdtb.tdb in the shared-task evaluation, treebanked F1 is 69.85 for ToNy and 79.19 for GumDrop; plain-input F1 is 85.37 and 79.17, respectively. Thus the input-setting comparison is system- and corpus-dependent.",
+      "evidence_type": "supported",
+      "section": "PDF page 6, Table 4",
+      "quote": "tur.pdtb.tdb 76.89 64.00 69.85 76.69 81.86 79.19 72.29 62.63 67.11",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 444,
+        "line_end": 444,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_basis": "Table 4, with the Turkish reversal explicitly discussed in section 3.2.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 6, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 449,
+            "line_end": 449,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 5, section 3.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 385,
+            "line_end": 397,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ],
+      "qualification": "Section 3.2 reports robustness across five ToNy runs and deterministic seeding for GumDrop; no per-run values or significance test are supplied. Table 4 split is inferred to be the shared-task test evaluation from the results context, rather than separately restated in its caption."
+    },
+    {
+      "finding_id": "U01-F09",
+      "finding": "Section 3.1 asserts that the treebanked EDU macro F1 is 87.18 for IXA and 84.56 for DFKI RF.",
+      "evidence_type": "contradicted",
+      "section": "PDF page 4, section 3.1",
+      "quote": "IXA (Iruskieta et al. 2019, 87.18 F1) and DFKI RF (Bourgonje and Schäfer 2019, 84.56 F1).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 299,
+        "line_end": 303,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_basis": "These asserted means conflict with Table 2’s 87.41 and 84.58; the PDF visibly contains both sets of values.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 4, Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 263,
+            "line_end": 275,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ],
+      "qualification": "Arithmetic means of the 12 displayed per-corpus F1 values reproduce the table means. The paper supplies no alternate mean definition or explanation; ordinary two-decimal rounding is insufficient. See U01-I01."
+    },
+    {
+      "finding_id": "U01-F10",
+      "finding": "The authors infer that syntax is not central to connective detection and that more data improve inventory coverage; these explanations are not established by a controlled syntax or data-size ablation in this overview.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 5, section 3.2",
+      "quote": "syntax is not central to the task (tree- banked and plain results are close)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 398,
+        "line_end": 404,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_basis": "Author interpretation of cross-corpus and cross-scenario scores; language, guidelines, system, and input quality vary together.",
+      "supporting_evidence": [
+        {
+          "section": "PDF page 6, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 443,
+            "line_end": 451,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "qualification": "The scores support the specific measured comparisons in U01-F08, not a general causal or business-email conclusion."
+    }
+  ],
+  "limitations": [
+    "U01 evaluates discourse units and connective spans. It supplies no direct business-email Topic-assignment, overlap, discontinuity, action/reply scope, or decision-bearing preservation result (U01-F01–F05; topic02.not_evaluated_for_msgloom).",
+    "The corpora differ in language, framework, guideline, size, and linguistic-input quality. Cross-corpus score differences are not controlled transfer or annotation-unit comparisons (U01-F02–F03; section 2, raw lines 199–236; section 4, lines 419–433).",
+    "This overview does not report IAA statistics, annotator counts, adjudication details, split unit/counts, or duplicate/near-duplicate and leakage controls. Their absence is missing documentation, not evidence that the datasets lack such controls (topic02.inter_annotator_agreement and split_and_leakage).",
+    "The numerical and protocol ambiguities U01-I01–I05 remain explicit. The PDF resolves extraction questions but does not explain the conflicting means.",
+    "No variance estimates, confidence intervals, or significance tests accompany the score tables. Five ToNy runs and deterministic GumDrop seeding are mentioned, without per-run results (raw lines 295–303 and 385–397).",
+    "Architecture explanations are observational in this paper. The attributed effects of embeddings, whole-document context, tree-ensemble robustness, or syntax are hypotheses rather than controlled ablation findings (U01-F10; raw lines 434–466).",
+    "Historical comparisons cite prior studies, sometimes on explicitly different corpora. Those studies and their scoring/split comparability were not independently examined (raw lines 328–338 and 368–376)."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported availability in 2019, not a current availability check. code_available refers to the shared-task evaluation and text-reconstruction scripts; it does not assert that all submitted model source code was released.",
+    "paper_reported_repository": "https://github.com/disrpt/sharedtask2019",
+    "data_access": "The paper reports a uniform-format dataset release. Four corpora have only annotations with underscore tokens in the public repository. Reconstruction requires access to the original LDC releases; the overview does not enumerate all four affected corpora.",
+    "model_code_and_execution": "The paper refers to the system papers, but this analysis did not inspect or execute model code. Hyperparameters, dependency versions, hardware cost, latency, and exact runtime reproduction commands are not supplied here.",
+    "randomness": "The treebanked ToNy mean is explicitly described as averaged over five runs due to nondeterministic GPU training; section 3.2 reports the Turkish connective reversal persisting over five ToNy runs and deterministic GumDrop seeding. No run dispersion is reported.",
+    "source_locators": [
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 145,
+        "line_end": 161,
+        "pdf_pages": [
+          2
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 237,
+        "line_end": 249,
+        "pdf_pages": [
+          3
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 295,
+        "line_end": 303,
+        "pdf_pages": [
+          4
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 385,
+        "line_end": 397,
+        "pdf_pages": [
+          5
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+        "line_start": 492,
+        "line_end": 499,
+        "pdf_pages": [
+          6
+        ]
+      }
+    ],
+    "source_sections": [
+      "section 2",
+      "section 2, including Example (1)",
+      "section 3.1",
+      "section 3.2",
+      "section 5"
+    ]
+  },
+  "confidence_scores": {
+    "U01-F01": 0.99,
+    "U01-F02": 0.99,
+    "U01-F03": 0.98,
+    "U01-F04": 0.99,
+    "U01-F05": 0.97,
+    "U01-F06": 0.98,
+    "U01-F07": 0.98,
+    "U01-F08": 0.98,
+    "U01-F09": 0.1,
+    "U01-F10": 0.4
+  },
+  "confidence_score_semantics": "Confidence in the finding as a supported substantive claim, not a significance probability. F09 has high transcription certainty but low confidence as the asserted numerical result because Table 2 contradicts it. F10 has limited causal support.",
+  "raw_claims": [
+    "EDUs are, mostly, (sentences or) clauses, except for complement and restrictive clauses.",
+    "The shared task repository also contained an evaluation script to score systems on each dataset.",
+    "No sentence splits were pro- vided in this scenario.",
+    "This surprising result remained robust across 5 runs of the ToNy system (GumDrop was deterministically seeded and therefore reproducible in a single run)."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+      "line_start": 101,
+      "line_end": 102,
+      "pdf_pages": [
+        1
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+      "line_start": 237,
+      "line_end": 238,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+      "line_start": 234,
+      "line_end": 235,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+      "line_start": 394,
+      "line_end": 397,
+      "pdf_pages": [
+        5
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": "TRANSFER_DISCOURSE_UNIT",
+    "evaluated_tasks": [
+      {
+        "task": "discourse/EDU segmentation",
+        "exact_target": "Locate the beginning token of each EDU; evaluate boundary points, not topic boundaries or exact EDU spans.",
+        "corpora": 12,
+        "findings": [
+          "U01-F01",
+          "U01-F04",
+          "U01-F06",
+          "U01-F07"
+        ]
+      },
+      {
+        "task": "explicit discourse-connective detection",
+        "exact_target": "Retrieve exact spans of explicit connectives under a single BI/outside token-label sequence; this is not exact Topic-span assignment.",
+        "corpora": 3,
+        "findings": [
+          "U01-F05",
+          "U01-F08"
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "EDU": "A nonoverlapping discourse terminal, mostly a sentence or clause, except complement and restrictive clauses; corpus-specific guidelines remain different.",
+      "connective": "An explicit connective expressed as a token span, with Begin/Inside labels; no Topic identifier or discourse-relation argument target is defined for this shared task.",
+      "encoding": "CoNLL-U MISC uses BeginSeg=Yes for EDU starts, Seg=B-Conn and Seg=I-Conn for connectives, and _ for outside/unannotated tokens. SpaceAfter supports whitespace information in the treebanked representation.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 99,
+          "line_end": 102,
+          "pdf_pages": [
+            1
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 205,
+          "line_end": 210,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 236,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/visual-transcription.md",
+          "line_start": 10,
+          "line_end": 11,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ],
+      "section": "PDF pages 1 and 3, section 1 footnote 1 and section 2; Figure 1 visually inspected",
+      "source_sections": [
+        "section 1, including footnote 1",
+        "section 2, including Example (1)",
+        "section 2, including Example (1)",
+        "section 2 and Figure 1, selected visual transcription"
+      ]
+    },
+    "prediction_unit": {
+      "EDU": "One boundary/no-boundary decision at each token position, inducing an ordered partition of the document token stream.",
+      "connective": "One B-Conn/I-Conn/outside state at each token, decoded into exact connective spans.",
+      "context_is_separate": "ToNy can use a whole document or large chunk as context; this does not change the output into document Topics or non-sequential Topic clusters.",
+      "status": "The partition/cardinality implications are analyst interpretations of the documented encoding and task; the paper does not enumerate every model decoder constraint.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 406,
+          "line_end": 418,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 434,
+          "line_end": 439,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 453,
+          "line_end": 466,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ],
+      "source_sections": [
+        "section 2, including Example (1)",
+        "section 4",
+        "section 4",
+        "section 4 continuation"
+      ]
+    },
+    "contiguity": {
+      "gold": "The shared-task EDU boundary representation yields consecutive nonoverlapping units. BI connective labels describe contiguous spans in the evaluated representation.",
+      "prediction": "The reported tasks recover that linear representation. They do not identify recurring Topics or link non-sequential clusters.",
+      "scope_limit": "This concerns the exported shared-task targets; it is not a claim that every underlying RST/SDRT/PDTB annotation layer or linguistic connective has the same capability.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 99,
+          "line_end": 102,
+          "pdf_pages": [
+            1
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ],
+      "source_sections": [
+        "section 1, including footnote 1",
+        "section 2, including Example (1)"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "EDU": "Binary start/no-start labels; each token lies in one induced EDU, not in several Topic memberships.",
+        "connective": "One B/I/outside target per token; a document may contain multiple connective spans, with no multi-Topic label set."
+      },
+      "prediction": {
+        "EDU": "One boundary decision per token in the evaluated representation.",
+        "connective": "Single BIO-style sequence; multiple memberships for the same token are not represented or scored."
+      },
+      "topic_cardinality": "Neither gold nor predicted Topic memberships exist in this evaluation. Multiple EDUs in a document do not show that one message is assigned to several Topics.",
+      "status": "Encoding-derived interpretation, not a separate multi-label experiment.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ],
+      "source_sections": [
+        "section 2, including Example (1)"
+      ]
+    },
+    "discontinuity": {
+      "within_one_message": {
+        "gold": "No one-Topic identifier linking separated spans within a message is described or evaluated. EDU starts and BI tags provide no such link.",
+        "prediction": "No prediction or scoring of separated pieces as one Topic is reported."
+      },
+      "thread_level": {
+        "gold": "No email thread-level Topic chains, cross-message semantic identities, or interleaved-Topic cluster gold is evaluated.",
+        "prediction": "No corresponding thread-level or cross-Source linkage task is reported."
+      },
+      "connective_qualification": "The overview supplies no discontinuous-connective object encoding or separate discontinuous-span evaluation; do not infer a capability from the underlying PDTB formalism.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 278,
+          "line_end": 292,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ],
+      "source_sections": [
+        "section 2, including Example (1)",
+        "section 3; section 3.1"
+      ]
+    },
+    "overlap": {
+      "gold": {
+        "EDU": "Explicitly nonoverlapping.",
+        "connective": "Single BI/outside encoding; overlapping connective membership is not described as a gold target.",
+        "Topic": "Unsupported as a task capability; no Topic gold is evaluated."
+      },
+      "prediction": {
+        "EDU": "A boundary-induced partition cannot assign one token to overlapping EDUs.",
+        "connective": "The documented output sequence does not express multiple overlapping memberships.",
+        "Topic": "No predicted overlap result."
+      },
+      "scope": "No conclusion about overlapping labels in other annotation layers or other papers.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 99,
+          "line_end": 102,
+          "pdf_pages": [
+            1
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 224,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ],
+      "source_sections": [
+        "section 1, including footnote 1",
+        "section 2, including Example (1)"
+      ]
+    },
+    "dataset_domain": {
+      "description": "Multilingual discourse corpora across RST, SDRT, and PDTB, with written-text resources and the Strategic Conversations corpus. The overview mentions Wall Street Journal material, names a news corpus, and discusses Russian academic abstracts and bibliographies. It does not provide a complete genre breakdown or business-email test set.",
+      "domain_caution": "Do not infer unreported corpus genres from their names. U01 is annotation-unit transfer evidence only for msgloom.",
+      "corpus_inventory": [
+        {
+          "corpus": "deu.rst.pcc",
+          "language": "German",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 2193,
+          "tokens": 33222,
+          "documents": 176,
+          "units": 3018,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 106,
+            "line_end": 106,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "eng.rst.gum",
+          "language": "English",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 5274,
+          "tokens": 98615,
+          "documents": 114,
+          "units": 7311,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 107,
+            "line_end": 107,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "eng.rst.rstdt",
+          "language": "English",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 8318,
+          "tokens": 205824,
+          "documents": 385,
+          "units": 21789,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 108,
+            "line_end": 108,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "eng.sdrt.stac",
+          "language": "English",
+          "framework": "SDRT",
+          "task": "EDU boundary segmentation",
+          "sentences": 10020,
+          "tokens": 47741,
+          "documents": 41,
+          "units": 11531,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 109,
+            "line_end": 109,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "eus.rst.ert",
+          "language": "Basque",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 1660,
+          "tokens": 35313,
+          "documents": 140,
+          "units": 2910,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 110,
+            "line_end": 110,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "fra.sdrt.annodis",
+          "language": "French",
+          "framework": "SDRT",
+          "task": "EDU boundary segmentation",
+          "sentences": 1318,
+          "tokens": 32411,
+          "documents": 86,
+          "units": 3709,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 111,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "nld.rst.nldt",
+          "language": "Dutch",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 1707,
+          "tokens": 24920,
+          "documents": 80,
+          "units": 2371,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 112,
+            "line_end": 112,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "por.rst.cstn",
+          "language": "Portuguese",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 1950,
+          "tokens": 54656,
+          "documents": 136,
+          "units": 4734,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 113,
+            "line_end": 113,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "rus.rst.rrt",
+          "language": "Russian",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 12513,
+          "tokens": 272664,
+          "documents": 178,
+          "units": 19906,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 114,
+            "line_end": 114,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "spa.rst.rststb",
+          "language": "Spanish",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 2136,
+          "tokens": 58591,
+          "documents": 267,
+          "units": 3349,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 115,
+            "line_end": 115,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "spa.rst.sctb",
+          "language": "Spanish",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 478,
+          "tokens": 16512,
+          "documents": 50,
+          "units": 744,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 116,
+            "line_end": 116,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "zho.rst.sctb",
+          "language": "Mandarin",
+          "framework": "RST",
+          "task": "EDU boundary segmentation",
+          "sentences": 563,
+          "tokens": 14442,
+          "documents": 50,
+          "units": 744,
+          "unit_meaning": "EDUs",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 117,
+            "line_end": 117,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "eng.pdtb.pdtb",
+          "language": "English",
+          "framework": "PDTB",
+          "task": "exact explicit-connective span detection",
+          "sentences": 48630,
+          "tokens": 1156648,
+          "documents": 2162,
+          "units": 26048,
+          "unit_meaning": "explicit connectives",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 120,
+            "line_end": 120,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "tur.pdtb.tdb",
+          "language": "Turkish",
+          "framework": "PDTB",
+          "task": "exact explicit-connective span detection",
+          "sentences": 31196,
+          "tokens": 496355,
+          "documents": 197,
+          "units": 8397,
+          "unit_meaning": "explicit connectives",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 121,
+            "line_end": 121,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        },
+        {
+          "corpus": "zho.pdtb.cdtb",
+          "language": "Mandarin",
+          "framework": "PDTB",
+          "task": "exact explicit-connective span detection",
+          "sentences": 2891,
+          "tokens": 73314,
+          "documents": 164,
+          "units": 1660,
+          "unit_meaning": "explicit connectives",
+          "count_scope": "Table 1 corpus inventory; split-specific inclusion and train/dev/test counts are not stated",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 122,
+            "line_end": 122,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "Table 1, section 2"
+        }
+      ],
+      "total_tokens": {
+        "abstract_rounded": 2600000,
+        "analyst_sum_of_Table_1": 2621228,
+        "status": "Consistent with the abstract’s rounded 2.6 million; counts combine both tasks and all Table 1 corpora, not one EDU or email test set.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 27,
+            "line_end": 33,
+            "pdf_pages": [
+              1
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 104,
+            "line_end": 123,
+            "pdf_pages": [
+              2
+            ]
+          }
+        ],
+        "source_sections": [
+          "Abstract",
+          "Table 1, section 2"
+        ]
+      },
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 104,
+          "line_end": 123,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 151,
+          "line_end": 161,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 167,
+          "line_end": 186,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 189,
+          "line_end": 198,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 322,
+          "line_end": 327,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ],
+      "source_sections": [
+        "Table 1, section 2",
+        "section 2",
+        "section 2",
+        "section 2, including Example (1)",
+        "section 3.1"
+      ]
+    },
+    "annotation_process": {
+      "reported": "Existing manually discourse-annotated corpora are normalized into a uniform CoNLL-U-style task format. The paper retains corpus-specific guideline differences instead of establishing one new annotation guideline.",
+      "not_reported": [
+        "annotator counts and recruitment",
+        "annotator training",
+        "annotation time",
+        "adjudication procedure",
+        "new independent annotation audit"
+      ],
+      "syntax_and_sentence_support": [
+        {
+          "corpora": [
+            "rus.rst.rrt"
+          ],
+          "syntax": "automatic",
+          "sentence_splits": "Section 4 calls the Russian data automatically parsed and segmented; this does not establish gold sentence boundaries. Interpreting segmented as input sentence segmentation is consistent with the surrounding discussion, but no separate sentence-quality statistic is reported."
+        },
+        {
+          "corpora": [
+            "deu.rst.pcc",
+            "spa.rst.rststb",
+            "spa.rst.sctb"
+          ],
+          "syntax": "automatic",
+          "sentence_splits": "gold or very high quality; paper does not separate these alternatives corpus by corpus"
+        },
+        {
+          "corpora": [
+            "eng.rst.gum"
+          ],
+          "syntax": "manually produced dependencies",
+          "sentence_splits": "general treebanked description supplies gold splits; no separate corpus-specific sentence-quality statistic"
+        },
+        {
+          "corpora": [
+            "eng.rst.rstdt"
+          ],
+          "syntax": "dependencies converted from constituent annotation in the gold scenario",
+          "sentence_splits": "general treebanked description supplies gold splits; no separate sentence-quality statistic"
+        },
+        {
+          "corpora": [
+            "eng.sdrt.stac",
+            "eus.rst.ert",
+            "fra.sdrt.annodis",
+            "nld.rst.nldt",
+            "por.rst.cstn",
+            "zho.rst.sctb",
+            "eng.pdtb.pdtb",
+            "tur.pdtb.tdb",
+            "zho.pdtb.cdtb"
+          ],
+          "syntax": "individual gold/automatic provenance not fully specified in this overview",
+          "sentence_splits": "individual gold/automatic quality not fully specified; do not extend the generic gold label without qualification"
+        }
+      ],
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 27,
+          "line_end": 33,
+          "pdf_pages": [
+            1
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 124,
+          "line_end": 138,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 205,
+          "line_end": 236,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 312,
+          "line_end": 327,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 419,
+          "line_end": 433,
+          "pdf_pages": [
+            5
+          ]
+        }
+      ],
+      "source_sections": [
+        "Abstract",
+        "section 1 continuation",
+        "section 2, including Example (1)",
+        "section 3.1",
+        "section 4"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported in this overview",
+      "metric": null,
+      "value": null,
+      "population": null,
+      "qualification": "No IAA statistic, double-annotated sample size, or adjudicated agreement population is supplied. Statements about other parsers lagging human annotators are prior-work context, not an IAA estimate for these shared-task datasets.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 49,
+          "line_end": 78,
+          "pdf_pages": [
+            1
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 139,
+          "line_end": 161,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 199,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ],
+      "audit_scope": "Full converted paper, sections 1–5 and references; absence is documentation status.",
+      "source_sections": [
+        "section 1, including footnote 1",
+        "section 2",
+        "section 2, including Example (1)"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "not reported",
+      "train_dev_test_counts": null,
+      "document_disjointness": "not reported",
+      "near_duplicate_controls": "not reported",
+      "cross_corpus_overlap_controls": "not reported",
+      "pretraining_contamination_controls": "not reported",
+      "reported_evaluation": "Section 3.1 explicitly calls Tables 2–3 results on test sets. Section 2 mentions dev and test releases for Turkish. Table 1 gives corpus-level inventory counts without a split breakdown. Table 4 is part of the shared-task results, but its caption and subsection do not separately state a test split.",
+      "model_selection": "The best macro-F1 submission is selected for teams with multiple systems. The selection split is not named; this limits assessment of selection bias, without demonstrating test leakage.",
+      "release_timing": "The paper says 14 datasets were released about 1.5 months before the deadline; Turkish connective data and dev/test sets were released two weeks before it. This is participation context, not an evaluation sample-size claim.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 104,
+          "line_end": 123,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 145,
+          "line_end": 150,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 278,
+          "line_end": 303,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 378,
+          "line_end": 397,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 441,
+          "line_end": 452,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ],
+      "source_sections": [
+        "Table 1, section 2",
+        "section 2",
+        "section 3; section 3.1",
+        "section 3.2",
+        "Table 4, section 3.2"
+      ]
+    },
+    "metrics": {
+      "definitions": [
+        {
+          "id": "EDU_BOUNDARY_PRF",
+          "task": "EDU boundary segmentation",
+          "positive_event": "Exact token position marked as an EDU start",
+          "precision_denominator": "predicted positive boundary locations (standard PR interpretation)",
+          "recall_denominator": "gold positive boundary locations (standard PR interpretation)",
+          "F1": "2PR/(P+R), standard harmonic-mean interpretation; formula and zero-denominator policy are not explicitly printed",
+          "pooling": "micro within a corpus; per-system macro across 12 EDU corpora for each input scenario",
+          "negative_cases": "No credit for correctly predicted non-boundaries",
+          "boundary_conventions": "Sentence-initial points are discussed as useful. The overview does not specify a document-initial-boundary exclusion rule; do not assume one.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 239,
+            "line_end": 249,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "PDF page 3, section 2"
+        },
+        {
+          "id": "CONNECTIVE_EXACT_SPAN_PRF",
+          "task": "Explicit-connective detection",
+          "positive_event": "An exactly matched connective span, not a token",
+          "precision_denominator": "predicted connective spans under standard PR interpretation; paper prose imprecisely names gold spans for both precision and recall (U01-I04)",
+          "recall_denominator": "gold connective spans",
+          "F1": "Standard harmonic mean of precision and recall; implementation not inspected",
+          "pooling": "micro within each corpus; macro over the 3 connective corpora separately per system and input scenario",
+          "partial_credit": "None. Example (1) predicts In order to instead of gold In order, producing one false positive and one false negative.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 250,
+            "line_end": 259,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "PDF page 3, section 2 and Example (1)"
+        }
+      ],
+      "reported_results": [
+        {
+          "id": "table_2",
+          "task": "EDU boundary segmentation",
+          "setting": "treebanked",
+          "split": "test sets explicitly stated in section 3.1",
+          "scale": "0–100",
+          "columns_within_each_system": [
+            "precision",
+            "recall",
+            "F1"
+          ],
+          "system_order": [
+            "ToNy",
+            "GumDrop",
+            "DFKI RF",
+            "IXA"
+          ],
+          "within_corpus_aggregation": "micro over positive boundaries",
+          "macro_denominator_corpora": 12,
+          "rows": [
+            {
+              "corpus": "deu.rst.pcc",
+              "values_P_R_F1": [
+                [
+                  95.22,
+                  94.76,
+                  94.99
+                ],
+                [
+                  93.33,
+                  90.48,
+                  91.88
+                ],
+                [
+                  95.33,
+                  83.33,
+                  88.93
+                ],
+                [
+                  90.91,
+                  91.84,
+                  91.37
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 263,
+                "line_end": 263,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 91.86,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "eng.rst.gum",
+              "values_P_R_F1": [
+                [
+                  95.84,
+                  90.74,
+                  93.21
+                ],
+                [
+                  96.47,
+                  90.77,
+                  93.53
+                ],
+                [
+                  97.96,
+                  83.71,
+                  90.27
+                ],
+                [
+                  95.52,
+                  88.61,
+                  91.94
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 264,
+                "line_end": 264,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 92.38,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "eng.rst.rstdt",
+              "values_P_R_F1": [
+                [
+                  95.29,
+                  96.81,
+                  96.04
+                ],
+                [
+                  94.88,
+                  96.46,
+                  95.67
+                ],
+                [
+                  93.65,
+                  85.47,
+                  89.37
+                ],
+                [
+                  94.56,
+                  94.93,
+                  94.75
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 265,
+                "line_end": 265,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 93.99,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "eng.sdrt.stac",
+              "values_P_R_F1": [
+                [
+                  94.34,
+                  96.22,
+                  95.27
+                ],
+                [
+                  95.26,
+                  95.39,
+                  95.32
+                ],
+                [
+                  97.65,
+                  91.94,
+                  94.71
+                ],
+                [
+                  92.51,
+                  90.71,
+                  91.6
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 266,
+                "line_end": 266,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 94.24,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "eus.rst.ert",
+              "values_P_R_F1": [
+                [
+                  89.77,
+                  82.87,
+                  86.18
+                ],
+                [
+                  90.89,
+                  74.03,
+                  81.6
+                ],
+                [
+                  92.77,
+                  60.54,
+                  73.27
+                ],
+                [
+                  91.19,
+                  80.27,
+                  85.38
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 267,
+                "line_end": 267,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 82.4,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "fra.sdrt.annodis",
+              "values_P_R_F1": [
+                [
+                  94.42,
+                  88.12,
+                  91.16
+                ],
+                [
+                  94.38,
+                  86.47,
+                  90.25
+                ],
+                [
+                  94.04,
+                  81.18,
+                  87.13
+                ],
+                [
+                  91.1,
+                  90.5,
+                  90.79
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 268,
+                "line_end": 268,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 89.96,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "nld.rst.nldt",
+              "values_P_R_F1": [
+                [
+                  97.9,
+                  89.59,
+                  93.56
+                ],
+                [
+                  96.44,
+                  94.48,
+                  95.45
+                ],
+                [
+                  98.38,
+                  88.08,
+                  92.95
+                ],
+                [
+                  90.91,
+                  93.02,
+                  91.95
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 269,
+                "line_end": 269,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 93.6,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "por.rst.cstn",
+              "values_P_R_F1": [
+                [
+                  92.78,
+                  93.06,
+                  92.92
+                ],
+                [
+                  91.77,
+                  89.92,
+                  90.84
+                ],
+                [
+                  93.18,
+                  77.36,
+                  84.54
+                ],
+                [
+                  93.01,
+                  92.38,
+                  92.69
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 270,
+                "line_end": 270,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 90.37,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "rus.rst.rrt",
+              "values_P_R_F1": [
+                [
+                  86.65,
+                  79.49,
+                  82.91
+                ],
+                [
+                  83.47,
+                  75.52,
+                  79.3
+                ],
+                [
+                  82.79,
+                  67.51,
+                  74.37
+                ],
+                [
+                  73.22,
+                  74.11,
+                  73.67
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 271,
+                "line_end": 271,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 77.75,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "spa.rst.rststb",
+              "values_P_R_F1": [
+                [
+                  92.03,
+                  89.52,
+                  90.74
+                ],
+                [
+                  89.02,
+                  81.8,
+                  85.26
+                ],
+                [
+                  93.01,
+                  76.54,
+                  83.99
+                ],
+                [
+                  85.68,
+                  87.94,
+                  86.8
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 272,
+                "line_end": 272,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 86.86,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "spa.rst.sctb",
+              "values_P_R_F1": [
+                [
+                  91.43,
+                  76.19,
+                  83.12
+                ],
+                [
+                  89.76,
+                  67.86,
+                  77.29
+                ],
+                [
+                  95.28,
+                  60.12,
+                  73.72
+                ],
+                [
+                  93.22,
+                  65.48,
+                  76.92
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 273,
+                "line_end": 273,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 79.2,
+              "section": "Table 2, section 3.1"
+            },
+            {
+              "corpus": "zho.rst.sctb",
+              "values_P_R_F1": [
+                [
+                  87.07,
+                  76.19,
+                  81.27
+                ],
+                [
+                  80.95,
+                  80.95,
+                  80.95
+                ],
+                [
+                  88.81,
+                  75.6,
+                  81.67
+                ],
+                [
+                  90.37,
+                  73.57,
+                  81.11
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 274,
+                "line_end": 274,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              "rightmost_Mean_as_printed": 81.54,
+              "section": "Table 2, section 3.1"
+            }
+          ],
+          "macro_P_R_F1_as_printed": [
+            [
+              92.73,
+              87.8,
+              90.11
+            ],
+            [
+              91.38,
+              85.34,
+              88.11
+            ],
+            [
+              93.57,
+              77.61,
+              84.58
+            ],
+            [
+              90.18,
+              85.28,
+              87.41
+            ]
+          ],
+          "macro_source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 275,
+            "line_end": 275,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "PDF page 4, Table 2",
+          "metric_definition_ref": "EDU_BOUNDARY_PRF",
+          "bottom_right_Mean_as_printed": 87.84
+        },
+        {
+          "id": "table_3",
+          "task": "EDU boundary segmentation",
+          "setting": "plain tokenized",
+          "split": "test sets explicitly stated in section 3.1",
+          "scale": "0–100",
+          "columns_within_each_system": [
+            "precision",
+            "recall",
+            "F1"
+          ],
+          "system_order": [
+            "ToNy",
+            "GumDrop",
+            "DFKI RF"
+          ],
+          "within_corpus_aggregation": "micro over positive boundaries",
+          "macro_denominator_corpora": 12,
+          "rows": [
+            {
+              "corpus": "deu.rst.pcc",
+              "values_P_R_F1": [
+                [
+                  94.88,
+                  94.49,
+                  94.68
+                ],
+                [
+                  91.99,
+                  89.8,
+                  90.88
+                ],
+                [
+                  94.2,
+                  71.77,
+                  81.47
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 354,
+                "line_end": 354,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 89.35,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "eng.rst.gum",
+              "values_P_R_F1": [
+                [
+                  92.28,
+                  82.89,
+                  87.33
+                ],
+                [
+                  94.03,
+                  77.22,
+                  84.8
+                ],
+                [
+                  90.29,
+                  64.17,
+                  75.02
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 355,
+                "line_end": 355,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 83.11,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "eng.rst.rstdt",
+              "values_P_R_F1": [
+                [
+                  93.6,
+                  93.27,
+                  93.43
+                ],
+                [
+                  89.56,
+                  91.43,
+                  90.49
+                ],
+                [
+                  45.96,
+                  35.85,
+                  40.28
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 356,
+                "line_end": 356,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 74.87,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "eng.sdrt.stac",
+              "values_P_R_F1": [
+                [
+                  87.56,
+                  80.78,
+                  83.99
+                ],
+                [
+                  84.24,
+                  77.45,
+                  80.7
+                ],
+                [
+                  80.21,
+                  50.3,
+                  61.82
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 357,
+                "line_end": 357,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 76.34,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "eus.rst.ert",
+              "values_P_R_F1": [
+                [
+                  87.43,
+                  80.94,
+                  84.06
+                ],
+                [
+                  90.06,
+                  73.36,
+                  80.86
+                ],
+                [
+                  88.21,
+                  58.01,
+                  69.99
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 358,
+                "line_end": 358,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 79.21,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "fra.sdrt.annodis",
+              "values_P_R_F1": [
+                [
+                  94.31,
+                  89.15,
+                  91.65
+                ],
+                [
+                  94.46,
+                  85.29,
+                  89.64
+                ],
+                [
+                  93.47,
+                  67.35,
+                  78.29
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 359,
+                "line_end": 359,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 87.07,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "nld.rst.nldt",
+              "values_P_R_F1": [
+                [
+                  94.81,
+                  89.97,
+                  92.32
+                ],
+                [
+                  94.72,
+                  88.41,
+                  91.45
+                ],
+                [
+                  95.14,
+                  68.12,
+                  79.39
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 360,
+                "line_end": 360,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 88.26,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "por.rst.cstn",
+              "values_P_R_F1": [
+                [
+                  93.04,
+                  90.72,
+                  91.86
+                ],
+                [
+                  92.95,
+                  85.08,
+                  88.84
+                ],
+                [
+                  90.82,
+                  67.17,
+                  77.22
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 361,
+                "line_end": 361,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 86.41,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "rus.rst.rrt",
+              "values_P_R_F1": [
+                [
+                  83.37,
+                  78.44,
+                  80.83
+                ],
+                [
+                  82.06,
+                  74.84,
+                  78.28
+                ],
+                [
+                  57.27,
+                  42.11,
+                  48.53
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 362,
+                "line_end": 362,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 69.53,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "spa.rst.rststb",
+              "values_P_R_F1": [
+                [
+                  89.11,
+                  90.09,
+                  89.6
+                ],
+                [
+                  87.5,
+                  79.82,
+                  83.49
+                ],
+                [
+                  89.23,
+                  63.6,
+                  74.26
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 363,
+                "line_end": 363,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 82.97,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "spa.rst.sctb",
+              "values_P_R_F1": [
+                [
+                  87.16,
+                  76.79,
+                  81.65
+                ],
+                [
+                  85.27,
+                  65.48,
+                  74.07
+                ],
+                [
+                  88.35,
+                  54.17,
+                  67.16
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 364,
+                "line_end": 364,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 75.57,
+              "section": "Table 3, section 3.1"
+            },
+            {
+              "corpus": "zho.rst.sctb",
+              "values_P_R_F1": [
+                [
+                  66.26,
+                  64.29,
+                  65.26
+                ],
+                [
+                  76.97,
+                  69.64,
+                  73.13
+                ],
+                [
+                  85.71,
+                  57.14,
+                  68.57
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 365,
+                "line_end": 365,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              "rightmost_Mean_as_printed": 69.66,
+              "section": "Table 3, section 3.1"
+            }
+          ],
+          "macro_P_R_F1_as_printed": [
+            [
+              88.65,
+              84.31,
+              86.38
+            ],
+            [
+              88.65,
+              79.82,
+              83.89
+            ],
+            [
+              83.24,
+              58.31,
+              68.5
+            ]
+          ],
+          "macro_source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 366,
+            "line_end": 366,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "PDF page 5, Table 3",
+          "metric_definition_ref": "EDU_BOUNDARY_PRF",
+          "bottom_right_Mean_as_printed": 80.19,
+          "not_reported_systems": [
+            "IXA"
+          ]
+        },
+        {
+          "id": "table_4_treebanked",
+          "task": "exact explicit-connective span detection",
+          "setting": "treebanked",
+          "split": "shared-task evaluation; test interpretation from section 3 context, not separately specified for Table 4",
+          "scale": "0–100",
+          "columns_within_each_system": [
+            "precision",
+            "recall",
+            "F1"
+          ],
+          "system_order": [
+            "ToNy",
+            "GumDrop",
+            "DFKI RF"
+          ],
+          "within_corpus_aggregation": "micro over exact connective spans",
+          "macro_denominator_corpora": 3,
+          "rows": [
+            {
+              "corpus": "eng.pdtb.pdtb",
+              "values_P_R_F1": [
+                [
+                  89.39,
+                  87.84,
+                  88.6
+                ],
+                [
+                  87.91,
+                  88.78,
+                  88.35
+                ],
+                [
+                  84.84,
+                  74.64,
+                  79.41
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 443,
+                "line_end": 443,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            },
+            {
+              "corpus": "tur.pdtb.tdb",
+              "values_P_R_F1": [
+                [
+                  76.89,
+                  64.0,
+                  69.85
+                ],
+                [
+                  76.69,
+                  81.86,
+                  79.19
+                ],
+                [
+                  72.29,
+                  62.63,
+                  67.11
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 444,
+                "line_end": 444,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            },
+            {
+              "corpus": "zho.pdtb.cdtb",
+              "values_P_R_F1": [
+                [
+                  82.67,
+                  76.25,
+                  79.32
+                ],
+                [
+                  81.27,
+                  70.22,
+                  75.35
+                ],
+                [
+                  73.21,
+                  43.22,
+                  54.35
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 445,
+                "line_end": 445,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            }
+          ],
+          "macro_P_R_F1_as_printed": [
+            [
+              82.98,
+              76.03,
+              79.25
+            ],
+            [
+              81.91,
+              80.21,
+              80.93
+            ],
+            [
+              76.78,
+              60.16,
+              66.96
+            ]
+          ],
+          "macro_source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 446,
+            "line_end": 446,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 4",
+          "metric_definition_ref": "CONNECTIVE_EXACT_SPAN_PRF"
+        },
+        {
+          "id": "table_4_plain",
+          "task": "exact explicit-connective span detection",
+          "setting": "plain tokenized",
+          "split": "shared-task evaluation; test interpretation from section 3 context, not separately specified for Table 4",
+          "scale": "0–100",
+          "columns_within_each_system": [
+            "precision",
+            "recall",
+            "F1"
+          ],
+          "system_order": [
+            "ToNy",
+            "GumDrop"
+          ],
+          "within_corpus_aggregation": "micro over exact connective spans",
+          "macro_denominator_corpora": 3,
+          "rows": [
+            {
+              "corpus": "eng.pdtb.pdtb",
+              "values_P_R_F1": [
+                [
+                  91.32,
+                  87.84,
+                  89.54
+                ],
+                [
+                  84.56,
+                  82.81,
+                  83.68
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 448,
+                "line_end": 448,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            },
+            {
+              "corpus": "tur.pdtb.tdb",
+              "values_P_R_F1": [
+                [
+                  84.06,
+                  86.74,
+                  85.37
+                ],
+                [
+                  76.76,
+                  81.74,
+                  79.17
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 449,
+                "line_end": 449,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            },
+            {
+              "corpus": "zho.pdtb.cdtb",
+              "values_P_R_F1": [
+                [
+                  81.64,
+                  71.07,
+                  75.99
+                ],
+                [
+                  80.62,
+                  67.31,
+                  73.37
+                ]
+              ],
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 450,
+                "line_end": 450,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              "section": "Table 4, section 3.2"
+            }
+          ],
+          "macro_P_R_F1_as_printed": [
+            [
+              85.67,
+              81.88,
+              83.63
+            ],
+            [
+              80.65,
+              77.29,
+              78.77
+            ]
+          ],
+          "macro_source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 451,
+            "line_end": 451,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 4",
+          "metric_definition_ref": "CONNECTIVE_EXACT_SPAN_PRF",
+          "not_reported_systems": [
+            "DFKI RF"
+          ],
+          "missing_cell_note": "DFKI RF cells are dashes, not zero scores."
+        }
+      ],
+      "numeric_context": "All P/R/F1 table cells are reported on the paper’s 0–100 scale. Test boundary/span counts, raw TP/FP/FN counts, and per-document distributions are not supplied; Table 1 is not their denominator.",
+      "arithmetic_audit": {
+        "status": "Analyst calculations from displayed rounded cells, not new experiments or corrected published results. Differences of at most 0.01 may reflect rounding/truncation of values and are not treated as material contradictions.",
+        "system_macro_means": [
+          {
+            "table": "table_2",
+            "system": "ToNy",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              92.73,
+              87.8,
+              90.11
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              92.728333,
+              87.796667,
+              90.114167
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 263,
+                "line_end": 274,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 275,
+                "line_end": 275,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 2, section 3.1",
+              "Table 2, section 3.1"
+            ]
+          },
+          {
+            "table": "table_2",
+            "system": "GumDrop",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              91.38,
+              85.34,
+              88.11
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              91.385,
+              85.344167,
+              88.111667
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 263,
+                "line_end": 274,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 275,
+                "line_end": 275,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 2, section 3.1",
+              "Table 2, section 3.1"
+            ]
+          },
+          {
+            "table": "table_2",
+            "system": "DFKI RF",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              93.57,
+              77.61,
+              84.58
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              93.570833,
+              77.615,
+              84.576667
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 263,
+                "line_end": 274,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 275,
+                "line_end": 275,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 2, section 3.1",
+              "Table 2, section 3.1"
+            ]
+          },
+          {
+            "table": "table_2",
+            "system": "IXA",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              90.18,
+              85.28,
+              87.41
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              90.183333,
+              85.28,
+              87.414167
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 263,
+                "line_end": 274,
+                "pdf_pages": [
+                  4
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 275,
+                "line_end": 275,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 2, section 3.1",
+              "Table 2, section 3.1"
+            ]
+          },
+          {
+            "table": "table_3",
+            "system": "ToNy",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              88.65,
+              84.31,
+              86.38
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              88.650833,
+              84.318333,
+              86.388333
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 354,
+                "line_end": 365,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 366,
+                "line_end": 366,
+                "pdf_pages": [
+                  5
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 3, section 3.1",
+              "Table 3, section 3.1"
+            ]
+          },
+          {
+            "table": "table_3",
+            "system": "GumDrop",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              88.65,
+              79.82,
+              83.89
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              88.650833,
+              79.818333,
+              83.885833
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 354,
+                "line_end": 365,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 366,
+                "line_end": 366,
+                "pdf_pages": [
+                  5
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 3, section 3.1",
+              "Table 3, section 3.1"
+            ]
+          },
+          {
+            "table": "table_3",
+            "system": "DFKI RF",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              83.24,
+              58.31,
+              68.5
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              83.238333,
+              58.313333,
+              68.5
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 354,
+                "line_end": 365,
+                "pdf_pages": [
+                  5
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 366,
+                "line_end": 366,
+                "pdf_pages": [
+                  5
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 3, section 3.1",
+              "Table 3, section 3.1"
+            ]
+          },
+          {
+            "table": "table_4_treebanked",
+            "system": "ToNy",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              82.98,
+              76.03,
+              79.25
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              82.983333,
+              76.03,
+              79.256667
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 443,
+                "line_end": 445,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 446,
+                "line_end": 446,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          },
+          {
+            "table": "table_4_treebanked",
+            "system": "GumDrop",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              81.91,
+              80.21,
+              80.93
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              81.956667,
+              80.286667,
+              80.963333
+            ],
+            "differences_exceeding_0_01": [
+              0,
+              1,
+              2
+            ],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 443,
+                "line_end": 445,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 446,
+                "line_end": 446,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          },
+          {
+            "table": "table_4_treebanked",
+            "system": "DFKI RF",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              76.78,
+              60.16,
+              66.96
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              76.78,
+              60.163333,
+              66.956667
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 443,
+                "line_end": 445,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 446,
+                "line_end": 446,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          },
+          {
+            "table": "table_4_plain",
+            "system": "ToNy",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              85.67,
+              81.88,
+              83.63
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              85.673333,
+              81.883333,
+              83.633333
+            ],
+            "differences_exceeding_0_01": [],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 448,
+                "line_end": 450,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 451,
+                "line_end": 451,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          },
+          {
+            "table": "table_4_plain",
+            "system": "GumDrop",
+            "columns": [
+              "P",
+              "R",
+              "F1"
+            ],
+            "printed": [
+              80.65,
+              77.29,
+              78.77
+            ],
+            "analyst_arithmetic_means_of_displayed_corpus_values": [
+              80.646667,
+              77.286667,
+              78.74
+            ],
+            "differences_exceeding_0_01": [
+              2
+            ],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 448,
+                "line_end": 450,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 451,
+                "line_end": 451,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          }
+        ],
+        "rightmost_Mean_columns": [
+          {
+            "table": "table_2",
+            "corpus": "deu.rst.pcc",
+            "printed": 91.86,
+            "analyst_arithmetic_mean_F1": 91.7925,
+            "analyst_harmonic_mean_of_mean_P_R": 91.864842,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 263,
+              "line_end": 263,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "eng.rst.gum",
+            "printed": 92.38,
+            "analyst_arithmetic_mean_F1": 92.2375,
+            "analyst_harmonic_mean_of_mean_P_R": 92.279871,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 264,
+              "line_end": 264,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "eng.rst.rstdt",
+            "printed": 93.99,
+            "analyst_arithmetic_mean_F1": 93.9575,
+            "analyst_harmonic_mean_of_mean_P_R": 94.002563,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 265,
+              "line_end": 265,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "eng.sdrt.stac",
+            "printed": 94.24,
+            "analyst_arithmetic_mean_F1": 94.225,
+            "analyst_harmonic_mean_of_mean_P_R": 94.247485,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 266,
+              "line_end": 266,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "eus.rst.ert",
+            "printed": 82.4,
+            "analyst_arithmetic_mean_F1": 81.6075,
+            "analyst_harmonic_mean_of_mean_P_R": 81.946326,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 267,
+              "line_end": 267,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "fra.sdrt.annodis",
+            "printed": 89.96,
+            "analyst_arithmetic_mean_F1": 89.8325,
+            "analyst_harmonic_mean_of_mean_P_R": 89.893367,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 268,
+              "line_end": 268,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "nld.rst.nldt",
+            "printed": 93.6,
+            "analyst_arithmetic_mean_F1": 93.4775,
+            "analyst_harmonic_mean_of_mean_P_R": 93.543114,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 269,
+              "line_end": 269,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "por.rst.cstn",
+            "printed": 90.37,
+            "analyst_arithmetic_mean_F1": 90.2475,
+            "analyst_harmonic_mean_of_mean_P_R": 90.376395,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 270,
+              "line_end": 270,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "rus.rst.rrt",
+            "printed": 77.75,
+            "analyst_arithmetic_mean_F1": 77.5625,
+            "analyst_harmonic_mean_of_mean_P_R": 77.670324,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 271,
+              "line_end": 271,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "spa.rst.rststb",
+            "printed": 86.86,
+            "analyst_arithmetic_mean_F1": 86.6975,
+            "analyst_harmonic_mean_of_mean_P_R": 86.8395,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 272,
+              "line_end": 272,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "spa.rst.sctb",
+            "printed": 79.2,
+            "analyst_arithmetic_mean_F1": 77.7625,
+            "analyst_harmonic_mean_of_mean_P_R": 77.960794,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 273,
+              "line_end": 273,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_2",
+            "corpus": "zho.rst.sctb",
+            "printed": 81.54,
+            "analyst_arithmetic_mean_F1": 81.25,
+            "analyst_harmonic_mean_of_mean_P_R": 81.36894,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 274,
+              "line_end": 274,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "deu.rst.pcc",
+            "printed": 89.35,
+            "analyst_arithmetic_mean_F1": 89.01,
+            "analyst_harmonic_mean_of_mean_P_R": 89.32758,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 354,
+              "line_end": 354,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "eng.rst.gum",
+            "printed": 83.11,
+            "analyst_arithmetic_mean_F1": 82.383333,
+            "analyst_harmonic_mean_of_mean_P_R": 82.569142,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 355,
+              "line_end": 355,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "eng.rst.rstdt",
+            "printed": 74.87,
+            "analyst_arithmetic_mean_F1": 74.733333,
+            "analyst_harmonic_mean_of_mean_P_R": 74.917778,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 356,
+              "line_end": 356,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "eng.sdrt.stac",
+            "printed": 76.34,
+            "analyst_arithmetic_mean_F1": 75.503333,
+            "analyst_harmonic_mean_of_mean_P_R": 76.072502,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 357,
+              "line_end": 357,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "eus.rst.ert",
+            "printed": 79.21,
+            "analyst_arithmetic_mean_F1": 78.303333,
+            "analyst_harmonic_mean_of_mean_P_R": 78.674459,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 358,
+              "line_end": 358,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "fra.sdrt.annodis",
+            "printed": 87.07,
+            "analyst_arithmetic_mean_F1": 86.526667,
+            "analyst_harmonic_mean_of_mean_P_R": 86.817942,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 359,
+              "line_end": 359,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "nld.rst.nldt",
+            "printed": 88.26,
+            "analyst_arithmetic_mean_F1": 87.72,
+            "analyst_harmonic_mean_of_mean_P_R": 88.071182,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 360,
+              "line_end": 360,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "por.rst.cstn",
+            "printed": 86.41,
+            "analyst_arithmetic_mean_F1": 85.973333,
+            "analyst_harmonic_mean_of_mean_P_R": 86.262811,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 361,
+              "line_end": 361,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "rus.rst.rrt",
+            "printed": 69.53,
+            "analyst_arithmetic_mean_F1": 69.213333,
+            "analyst_harmonic_mean_of_mean_P_R": 69.384348,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 362,
+              "line_end": 362,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "spa.rst.rststb",
+            "printed": 82.97,
+            "analyst_arithmetic_mean_F1": 82.45,
+            "analyst_harmonic_mean_of_mean_P_R": 82.876137,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 363,
+              "line_end": 363,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "spa.rst.sctb",
+            "printed": 75.57,
+            "analyst_arithmetic_mean_F1": 74.293333,
+            "analyst_harmonic_mean_of_mean_P_R": 74.694346,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 364,
+              "line_end": 364,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          },
+          {
+            "table": "table_3",
+            "corpus": "zho.rst.sctb",
+            "printed": 69.66,
+            "analyst_arithmetic_mean_F1": 68.986667,
+            "analyst_harmonic_mean_of_mean_P_R": 69.432578,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 365,
+              "line_end": 365,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          }
+        ]
+      },
+      "historical_comparisons": {
+        "status": "Prior-work scores as reported by U01; cited papers not read or reproduced for this task. They are not additional U01 experiments.",
+        "rows": [
+          {
+            "task": "EDU boundary segmentation",
+            "dataset": "RST-DT",
+            "setting": "previous parsed benchmark in section 3.1",
+            "reported_F1": 93.7,
+            "attribution": "Bach et al. 2012",
+            "split_and_protocol_match": "not independently verified",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 328,
+              "line_end": 333,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "section 3.1"
+          },
+          {
+            "task": "EDU boundary segmentation",
+            "dataset": "RST-DT",
+            "setting": "previous unparsed benchmark",
+            "reported_F1": 89.5,
+            "attribution": "no separate citation next to this value",
+            "split_and_protocol_match": "not independently verified",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 368,
+              "line_end": 376,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "section 3.1 continuation"
+          },
+          {
+            "task": "EDU boundary segmentation",
+            "dataset": "different corpora from current shared task; corpus names and splits not specified here",
+            "reported_F1_by_language": {
+              "Spanish": 80,
+              "French": 73,
+              "Basque": 83,
+              "German_range": [
+                88,
+                93
+              ]
+            },
+            "attributions": [
+              "Da Cunha et al. 2010",
+              "Afantenos et al. 2010",
+              "Iruskieta and Zapirain 2015",
+              "Sidarenka et al. 2015"
+            ],
+            "comparability": "Explicitly different corpora; do not rank against DISRPT cells as matched tests.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 333,
+              "line_end": 338,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "section 3.1"
+          }
+        ]
+      },
+      "not_reported": [
+        "Pk",
+        "WindowDiff",
+        "Topic cluster/pair scores",
+        "Topic-label or multi-label scores",
+        "Topic span F1/IoU",
+        "overlap/discontinuity scores",
+        "decision-bearing preservation metrics",
+        "latency or incremental-update cost",
+        "confidence intervals or significance tests"
+      ]
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measured_evidence": null,
+      "related_error_evidence": "Example (1) demonstrates exact connective-boundary scoring for an extra token. Section 3.1 suggests that within-sentence boundaries are harder than sentence starts. Neither measures loss or broadening of work conditions, evidence, approvals, actions, exceptions, or reply scope.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 250,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 312,
+          "line_end": 327,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ],
+      "interpretive_risk": "A pipeline that treats each EDU as a complete work matter might separate a condition or reason from the relevant action. This is a plausible msgloom risk to test, not an observed U01 error rate.",
+      "source_sections": [
+        "section 2, including Example (1)",
+        "section 3.1"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      {
+        "task": "topic-boundary detection",
+        "status": "not evaluated; EDU boundaries are a different target"
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "not evaluated"
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "not evaluated"
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not evaluated"
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not evaluated for Topics; exact connective detection is distinct"
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not evaluated for Topics"
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not evaluated within one message or across a thread"
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "evaluated only on the DISRPT corpora; no business-email work-matter gold"
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not evaluated"
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not evaluated"
+      }
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "U01-I01",
+        "kind": "unresolved numerical contradiction",
+        "claim_refs": [
+          "U01-F06",
+          "U01-F09"
+        ],
+        "setting": "EDU segmentation, 12 test corpora, treebanked input, macro F1 on 0–100 scale",
+        "prose": {
+          "IXA": 87.18,
+          "DFKI RF": 84.56,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 299,
+            "line_end": 303,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "PDF page 4, section 3.1"
+        },
+        "table_2": {
+          "IXA": 87.41,
+          "DFKI RF": 84.58,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 275,
+            "line_end": 275,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "PDF page 4, Table 2"
+        },
+        "analyst_recalculation": {
+          "definition": "Arithmetic mean of the 12 printed per-corpus F1 cells, separately for each system",
+          "IXA": 87.4141666667,
+          "DFKI RF": 84.5766666667,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 263,
+            "line_end": 274,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "Table 2, section 3.1"
+        },
+        "resolution": "Both values were verified in the original PDF. Recalculation reproduces Table 2 at two decimals. The prose values cannot follow from ordinary rounding of those cells; no alternate mean definition is given. Retain both, and use explicitly table-labeled values only.",
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-04.png"
+      },
+      {
+        "id": "U01-I02",
+        "kind": "unresolved table aggregation discrepancy",
+        "setting": "Exact connective spans, Table 4 shared-task evaluation; macro over eng.pdtb.pdtb, tur.pdtb.tdb, zho.pdtb.cdtb, 0–100 scale",
+        "details": [
+          {
+            "system": "GumDrop",
+            "input": "treebanked",
+            "printed_P_R_F1": [
+              81.91,
+              80.21,
+              80.93
+            ],
+            "analyst_means_of_displayed_rows_P_R_F1": [
+              81.956666667,
+              80.286666667,
+              80.963333333
+            ],
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 443,
+                "line_end": 445,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 446,
+                "line_end": 446,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          },
+          {
+            "system": "GumDrop",
+            "input": "plain tokenized",
+            "printed_F1": 78.77,
+            "analyst_mean_of_displayed_rows_F1": 78.74,
+            "source_locators": [
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 448,
+                "line_end": 450,
+                "pdf_pages": [
+                  6
+                ]
+              },
+              {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+                "line_start": 451,
+                "line_end": 451,
+                "pdf_pages": [
+                  6
+                ]
+              }
+            ],
+            "source_sections": [
+              "Table 4, section 3.2",
+              "Table 4, section 3.2"
+            ]
+          }
+        ],
+        "resolution": "PDF verified. Deviations exceed ordinary two-decimal rounding. The paper provides no explanation; do not silently replace the printed means. Rankings of the reported best systems are unchanged by this arithmetic check.",
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-06.png"
+      },
+      {
+        "id": "U01-I03",
+        "kind": "undefined aggregate with numerical mismatch",
+        "setting": "Rightmost Mean columns of EDU Tables 2 and 3, across displayed systems within each corpus",
+        "details": "These columns are not defined in the prose. They do not consistently equal either the arithmetic mean of displayed F1 values or the harmonic mean of displayed mean precision and recall. They are distinct from the explicitly defined per-system macro-over-corpora score.",
+        "audit_ref": "topic02.metrics.arithmetic_audit.rightmost_Mean_columns",
+        "examples": [
+          {
+            "table": "Table 2",
+            "corpus": "spa.rst.sctb",
+            "printed": 79.2,
+            "analyst_arithmetic_mean_F1": 77.7625,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 273,
+              "line_end": 273,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "Table 2, section 3.1"
+          },
+          {
+            "table": "Table 3",
+            "corpus": "spa.rst.sctb",
+            "printed": 75.57,
+            "analyst_arithmetic_mean_F1": 74.2933333333,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+              "line_start": 364,
+              "line_end": 364,
+              "pdf_pages": [
+                5
+              ]
+            },
+            "section": "Table 3, section 3.1"
+          }
+        ],
+        "resolution": "Preserve these values as printed with an unspecified definition. Do not use them as comparative performance evidence.",
+        "image_paths": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-04.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-05.png"
+        ]
+      },
+      {
+        "id": "U01-I04",
+        "kind": "evaluation-denominator wording ambiguity",
+        "setting": "Exact connective-span precision and recall, section 2",
+        "paper_wording": "The prose assigns both precision and recall to total gold connective spans; Example (1) separately describes a precision error for an invented span and a recall error for a missed gold span.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "line_start": 250,
+          "line_end": 259,
+          "pdf_pages": [
+            3
+          ]
+        },
+        "resolution": "Record the paper wording and the example. Standard PRF interpretation uses predicted spans for precision and gold spans for recall; this interpretation is not a verified scorer implementation. No claim that both denominators were actually gold.",
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-03.png",
+        "section": "section 2, including Example (1)"
+      },
+      {
+        "id": "U01-I05",
+        "kind": "input-label terminology qualification",
+        "setting": "Treebanked versus plain inputs",
+        "details": "Section 2 uses ideally gold syntax and describes gold sentence splits, whereas section 4 names automatic parses and automatic sentence segmentation in some treebanked corpora. Plain input is also called automatically parsed data in section 3.1, although section 2 supplies only tokenized text and document boundaries.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 211,
+            "line_end": 236,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 339,
+            "line_end": 350,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 419,
+            "line_end": 433,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ],
+        "resolution": "Use treebanked as the setting name, with corpus-specific annotation quality. Use plain tokenized for the supplied input; do not imply a common supplied automatic parser or universal gold syntax.",
+        "source_sections": [
+          "section 2, including Example (1)",
+          "section 3.1",
+          "section 4"
+        ]
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "support": "Annotation-unit transfer only: EDU definition and boundary recovery are useful candidates, without evidence that EDUs preserve a Topic’s full scope.",
+        "finding_refs": [
+          "U01-F01",
+          "U01-F03",
+          "U01-F06",
+          "U01-F07"
+        ]
+      },
+      "RQ2": {
+        "support": "No direct email/asynchronous Topic-cluster or interleaving evaluation."
+      },
+      "RQ3": {
+        "support": "No Topic membership gold or predictions; only limits of the EDU/BI representation can be inferred.",
+        "finding_refs": [
+          "U01-F01",
+          "U01-F05"
+        ]
+      },
+      "RQ4": {
+        "support": "No direct or evaluated transfer result for overlapping/discontinuous Topic assignment."
+      },
+      "RQ5": {
+        "support": "No measured work-scope preservation; boundary and connective errors motivate an untested preservation audit.",
+        "finding_refs": [
+          "U01-F04",
+          "U01-F05"
+        ]
+      },
+      "RQ6": {
+        "support": "Strong task-specific scoring documentation, with retained aggregation and denominator ambiguities. No metric equivalence to Topic segmentation.",
+        "finding_refs": [
+          "U01-F04",
+          "U01-F05",
+          "U01-F06",
+          "U01-F07",
+          "U01-F08",
+          "U01-F09"
+        ]
+      },
+      "RQ7": {
+        "support": "Corpus inventory, input-quality differences, access restrictions and missing split/IAA controls constrain unit transfer.",
+        "finding_refs": [
+          "U01-F02",
+          "U01-F03"
+        ]
+      },
+      "RQ8": {
+        "support": "Motivates a unit comparison and boundary-source ablation on reviewed work text; no architecture approval.",
+        "finding_refs": [
+          "U01-F01",
+          "U01-F03",
+          "U01-F04",
+          "U01-F05",
+          "U01-F10"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "U01-A01",
+        "text": "Treat EDU segmentation as a candidate preprocessing unit with recoverable source offsets. The reported scores do not show that one EDU equals one Topic or that discourse relations preserve work scope.",
+        "basis": [
+          "U01-F01",
+          "U01-F04",
+          "U01-F05"
+        ]
+      },
+      {
+        "id": "U01-A02",
+        "text": "Separate sentence-split quality, parse provenance, language, and corpus guideline when assessing transfer. A treebanked-versus-plain difference does not isolate syntax alone.",
+        "basis": [
+          "U01-F03",
+          "U01-F08",
+          "U01-F10"
+        ]
+      },
+      {
+        "id": "U01-A03",
+        "text": "Retain uncertainty about causes. Whole-document context, contextual embeddings, and tree ensembles are plausible factors discussed by the authors, without controlled ablation evidence in U01. The zho.rst.sctb treebanked DFKI advantage called substantial in section 4 is only 0.40 F1 points in Table 2 (81.67 versus 81.27); no significance test is supplied.",
+        "basis": [
+          "U01-F06",
+          "U01-F07"
+        ],
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 274,
+            "line_end": 274,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 434,
+            "line_end": 439,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+            "line_start": 453,
+            "line_end": 466,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "source_sections": [
+          "Table 2, section 3.1",
+          "section 4",
+          "section 4 continuation"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "U01-E01",
+        "status": "untested msgloom research proposal, not approved architecture",
+        "question": "Which candidate unit preserves reviewed work-matter evidence and scope?",
+        "design": "On the same user-reviewed or synthetic work-message sample, compare sentence, clause, EDU, and arbitrary-span/hybrid candidates. Preserve original text offsets. Annotate Topic identities separately, allowing multiple memberships and separated pieces; never force one Topic per EDU.",
+        "evaluation": "Report unit-boundary scores separately from Topic span assignment. Measure omitted or broadened conditions, evidence, exceptions, approval scope, action scope, and reply scope against reviewed evidence bundles. Record disagreements and uncertain assignments.",
+        "basis": [
+          "U01-F01",
+          "U01-F04",
+          "U01-F05"
+        ]
+      },
+      {
+        "id": "U01-E02",
+        "status": "untested msgloom research proposal, not approved architecture",
+        "question": "How much error comes from sentence boundaries and syntax before semantic assignment?",
+        "design": "Use matched messages and the same downstream task with gold versus predicted sentence boundaries and separately controlled parse inputs. Compare EDU recovery and work-scope preservation; keep message/thread groups and near duplicates separated between development and evaluation.",
+        "evaluation": "Report within-sentence and sentence-initial boundary errors separately, then independent preservation and Topic-assignment metrics. Do not interpret a single boundary F1 as end-to-end success.",
+        "basis": [
+          "U01-F03",
+          "U01-F04",
+          "U01-F10"
+        ]
+      },
+      {
+        "id": "U01-E03",
+        "status": "untested msgloom research proposal, not approved architecture",
+        "question": "Can grouping candidate EDUs recover non-contiguous or overlapping evidence without broadening scope?",
+        "design": "Construct reviewed cases with one work matter interrupted by another, a span supporting multiple matters, and a reply that answers only one condition. Evaluate an additional evidence-linking layer while retaining all original content and explicit uncertainty.",
+        "evaluation": "Separate gold representation capacity from predicted assignment quality; report within-message discontinuity and thread-level recurrence as different strata. This is a new task beyond U01, not a claimed capability of DISRPT models.",
+        "basis": [
+          "U01-F01",
+          "U01-F05"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-discourse-unit/2019_zeldes_et_al_disrpt_edu_segmentation_shared_task.pdf",
+      "pdf_sha256": "d9b32f0ca72489c9a4c9a92a388edbf5bbe7670cd367b59c14026261563f99d2",
+      "expected_pdf_sha256": "d9b32f0ca72489c9a4c9a92a388edbf5bbe7670cd367b59c14026261563f99d2",
+      "pdf_sha256_matches_expected": true,
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/U01.md",
+      "converted_text_sha256": "57eafada70adf25856e2c78e82749b77935eff191b38eba700e03aeeb0508848",
+      "fine_conversion_available": false,
+      "exact_locator_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+      "exact_locator_text_sha256": "64bda7e161fce75a3929298acc4f183eec8b870d6e5d993dd2a3550f1cec6d1b",
+      "line_numbering": "1-based inclusive LF lines via text.split(\"\\n\"); form feeds are retained and do not add lines; normalize whitespace only for quote checks, retaining line-break hyphens.",
+      "full_text_read": "Full rough conversion including references; raw text used for exact substantive quotations and table cells. Only U01 is analyzed.",
+      "extraction_quality": "The rough conversion flattens tables and omits Figure 1 content; page-indexed/layout prose can interleave columns; all supplied extractions omit the outside-label underscore at the cited location. The raw table cells match the original PDF. Pages 2–6 were rendered locally and inspected. Selected missing symbols and figure comments have a labeled visual transcription.",
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-discourse-unit/2019_zeldes_et_al_disrpt_edu_segmentation_shared_task.pdf",
+          "sha256": "d9b32f0ca72489c9a4c9a92a388edbf5bbe7670cd367b59c14026261563f99d2",
+          "read_scope": "original PDF; pages 2–6 visually inspected; full paper read through conversion"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/U01.md",
+          "sha256": "57eafada70adf25856e2c78e82749b77935eff191b38eba700e03aeeb0508848",
+          "read_scope": "full primary pipeline conversion, LF lines 1–868, including references; no fine conversion exists"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.raw.txt",
+          "sha256": "64bda7e161fce75a3929298acc4f183eec8b870d6e5d993dd2a3550f1cec6d1b",
+          "read_scope": "primary exact-quote and table locator source; substantive text LF lines 1–525 read and checked; references also available in full rough conversion"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.layout.txt",
+          "sha256": "ec1604345928fc0f2dd2da950b2f7fc37c223ec1436e9b5429de2e155a04479a",
+          "read_scope": "targeted independent layout corroboration"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U01.pages.md",
+          "sha256": "d84cfa269c0a1b2ad3a6fc31c7aac7716b98c03998666406763339b2b654e34d",
+          "read_scope": "targeted page-indexed corroboration; columns interleave in prose"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "U01 selection entry only used; full file hashed"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "full mandatory requirements"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "full Topic02 brief"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "full shared context; current U01-only user authorization governs scope; no Topic01 conclusions used"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "full draft product context"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "full draft principles"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "full skill"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "full installed worker contract"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "full installed JSON schema"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/visual-transcription.md",
+          "sha256": "6db84631f2a97125f173968338fc660e2c47366fc570ae0270cfdcf38bfd525e",
+          "read_scope": "analyzer-created, PDF-verified selected visual transcription"
+        }
+      ],
+      "visual_inspections": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-02.png",
+          "pdf_page": 2,
+          "sha256": "d6df9f577a9178ca948ce974d68717674928fa19263c344417748992d1d17691"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-03.png",
+          "pdf_page": 3,
+          "sha256": "6c761b39a1209664c62d4453e282d0f547e2efd68bcf1df0525a40bfebd97792"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-04.png",
+          "pdf_page": 4,
+          "sha256": "83f66e914fe7ac36cf4bbd81b72df5071c551167d59ff94fd94050f19b5a7953"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-05.png",
+          "pdf_page": 5,
+          "sha256": "26e3aa6e2cc12bcb3a4f72fbdcb521ab93049604308809b5fdb9e208474aa2f0"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/pdf-page-06.png",
+          "pdf_page": 6,
+          "sha256": "0eaa72b944fdc98db4843ebccc7f8e7d586037f3cd0233029b016db89c440389"
+        }
+      ],
+      "visual_transcription_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U01/visual-transcription.md",
+      "network_access": "None used; all links are frozen paper-reported references, not verified live resources.",
+      "runtime": {
+        "model": "gpt-6-astra",
+        "effort": "xhigh",
+        "launcher_reported": {
+          "MSGLOOM_WORKER_ROLE": "paper-U01",
+          "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+          "MSGLOOM_WORKER_EFFORT": "xhigh"
+        },
+        "provenance_scope": "Launcher-reported runtime values from invocation arguments. Parent independently verifies real CLI process, turn_context, effort, and exit receipts. No runtime identifier is inferred or fabricated."
+      },
+      "escalation": {
+        "requested": false,
+        "reason": null,
+        "note": "Worker was launched at xhigh for the known numerical/protocol ambiguity. PDF inspection resolved extraction damage. The paper’s unexplained numerical discrepancies remain recorded; further effort cannot establish an unstated correction."
+      }
+    }
+  },
+  "raw_claims_sections": [
+    "section 1, footnote 1",
+    "section 2",
+    "section 2",
+    "section 3.2"
+  ]
+}

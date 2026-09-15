@@ -1,0 +1,166 @@
+{
+  "schema_version": "topic02-engineering-v1",
+  "case_id": "context-correction",
+  "description": "Later context corrects one ambiguous interpretation without changing a neighboring explicit matter.",
+  "text": "Use the same approval limit as before. North audit remains open.",
+  "topics": [
+    {
+      "topic_id": "ATLAS",
+      "description": "Atlas approval limit",
+      "signature_terms": [
+        "atlas",
+        "approval",
+        "limit"
+      ]
+    },
+    {
+      "topic_id": "BETA",
+      "description": "Beta approval limit",
+      "signature_terms": [
+        "beta",
+        "approval",
+        "limit"
+      ]
+    },
+    {
+      "topic_id": "NORTH",
+      "description": "North audit",
+      "signature_terms": [
+        "north",
+        "audit"
+      ]
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "ref",
+      "span": {
+        "start": 0,
+        "end": 38
+      },
+      "text": "Use the same approval limit as before.",
+      "origin": "authored",
+      "kind": "context_reference"
+    },
+    {
+      "span_id": "neighbor",
+      "span": {
+        "start": 39,
+        "end": 64
+      },
+      "text": "North audit remains open.",
+      "origin": "authored",
+      "kind": "topic_evidence"
+    }
+  ],
+  "memberships": [
+    {
+      "span_id": "ref",
+      "required_topics": [],
+      "alternative_topic_sets": [
+        [
+          "ATLAS"
+        ],
+        [
+          "BETA"
+        ]
+      ],
+      "abstention_allowed": true,
+      "notes": "Message text alone is ambiguous."
+    },
+    {
+      "span_id": "neighbor",
+      "required_topics": [
+        "NORTH"
+      ],
+      "alternative_topic_sets": [],
+      "abstention_allowed": false,
+      "notes": "Control span must remain NORTH through correction."
+    }
+  ],
+  "topic_objects": [
+    {
+      "topic_id": "NORTH",
+      "span_ids": [
+        "neighbor"
+      ]
+    }
+  ],
+  "context_texts": [
+    {
+      "context_id": "ctx1",
+      "text": "Earlier note: the approval limit discussion concerned Atlas."
+    },
+    {
+      "context_id": "ctx2",
+      "text": "Correction: 'same approval limit' in this message refers to Beta, not Atlas."
+    }
+  ],
+  "context_steps": [
+    {
+      "step_id": "no-context",
+      "available_context_ids": [],
+      "expected_span_topic_sets": [
+        {
+          "span_id": "neighbor",
+          "topics": [
+            "NORTH"
+          ]
+        }
+      ],
+      "expected_abstentions": [
+        "ref"
+      ],
+      "notes": ""
+    },
+    {
+      "step_id": "initial-context",
+      "available_context_ids": [
+        "ctx1"
+      ],
+      "expected_span_topic_sets": [
+        {
+          "span_id": "ref",
+          "topics": [
+            "ATLAS"
+          ]
+        },
+        {
+          "span_id": "neighbor",
+          "topics": [
+            "NORTH"
+          ]
+        }
+      ],
+      "expected_abstentions": [],
+      "notes": ""
+    },
+    {
+      "step_id": "corrected-context",
+      "available_context_ids": [
+        "ctx1",
+        "ctx2"
+      ],
+      "expected_span_topic_sets": [
+        {
+          "span_id": "ref",
+          "topics": [
+            "BETA"
+          ]
+        },
+        {
+          "span_id": "neighbor",
+          "topics": [
+            "NORTH"
+          ]
+        }
+      ],
+      "expected_abstentions": [],
+      "notes": "Later explicit correction supersedes only the ambiguous reference; neighboring explicit matter stays unchanged."
+    }
+  ],
+  "tags": [
+    "EV5",
+    "correction"
+  ]
+}

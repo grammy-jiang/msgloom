@@ -1,0 +1,2085 @@
+{
+  "paper_id": "S02",
+  "title": "A Span-Based Model for Joint Overlapped and Discontinuous Named Entity Recognition",
+  "bibliographic_context": {
+    "authors": [
+      "Fei Li",
+      "Zhichao Lin",
+      "Meishan Zhang",
+      "Donghong Ji"
+    ],
+    "year": 2021,
+    "venue": "ACL-IJCNLP 2021",
+    "provenance": "Frozen S02 shortlist entry and PDF front matter; no metadata enrichment"
+  },
+  "research_question": "Can a jointly trained span-recognition and fragment-relation model recognize regular, overlapping, and discontinuous named entities within sentences on existing NER benchmarks?",
+  "methodology": "Supervised NER: contextual word encoders (domain BERT, with added BiLSTM in clinical settings) feed attention-guided dependency GCN representations concatenated with original representations; each enumerated contiguous span is represented by its endpoint vectors and a width embedding, assigned one entity-type/None category, and paired with other recognized fragments for a Succession/Overlapping/Other softmax; a Succession graph is decoded into complete subgraphs and isolated entities, with unspecified maximality. Weighted negative-log-likelihood trains fragment and relation heads jointly. Existing CLEF, CLEF-Dis, CADEC, GENIA, and ACE05 benchmarks, module/encoder ablations, entity-group diagnostics, and selected qualitative cases evaluate NER.",
+  "methodology_evidence_refs": [
+    "method",
+    "word",
+    "gcn",
+    "span",
+    "category",
+    "algorithm",
+    "cliques",
+    "training",
+    "encoder_parser",
+    "stats"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "S02-F01",
+      "finding": "The model recognizes typed contiguous fragments by enumerating spans within a sentence, then predicts fragment-pair relations to reconstruct entities; it is not a sentence partition or Topic-labeling model.",
+      "evidence_type": "supported",
+      "quote": "our model enumerates all possible\ntext spans in a sentence",
+      "section": "PDF page 3; §3 Method",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 296,
+        "line_end": 300,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_refs": [
+        "method",
+        "span",
+        "category",
+        "table2",
+        "table3"
+      ],
+      "scope": "Paper-reported method and benchmarked NER task; Topic distinction is analyst interpretation."
+    },
+    {
+      "finding_id": "S02-F02",
+      "finding": "Predicted nested/overlapping entities arise from span recognition itself. Overlapping is an auxiliary training relation; only Succession edges enter final graph decoding. The category and relation softmaxes do not establish simultaneous multiple entity-type labels for one identical span.",
+      "evidence_type": "supported",
+      "quote": "Overlapping relations are only used during training.",
+      "section": "PDF page 5; §3.4, footnote 5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 556,
+        "line_end": 558,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_refs": [
+        "category",
+        "auxiliary",
+        "overlap_results",
+        "table5"
+      ],
+      "scope": "Model overlap capability is real; arbitrary span-to-Topic set membership is not evaluated."
+    },
+    {
+      "finding_id": "S02-F03",
+      "finding": "The claim of theoretical applicability to any NER dataset is not established as a general representation guarantee. The printed decoder seeks all complete subgraphs, explicitly returns isolated fragments, and leaves maximality, proper subcliques, connected-node singletons, and cross-type consistency unspecified.",
+      "evidence_type": "unsupported",
+      "quote": "which can be applied\nto any NER dataset theoretically",
+      "section": "PDF page 9; §6 Conclusion",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 905,
+        "line_end": 908,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "universal",
+        "algorithm",
+        "cliques",
+        "category",
+        "fig1"
+      ],
+      "scope": "Unsupported applies to the universal claim, not to demonstrated NER accuracy. Missing constraints were verified on original PDF page 5."
+    },
+    {
+      "finding_id": "S02-F04",
+      "finding": "The full model reports final-entity F1 of 83.2 on CLEF and 63.3 on CLEF-Dis. Their listed strongest baselines are 78.3 (Tang et al., 2015) and 62.9 (Dai et al., 2020), respectively. These are different benchmark populations; CLEF-Dis retains only sentences with a discontinuous entity, and its aggregate F1 is not discontinuous-only F1.",
+      "evidence_type": "supported",
+      "quote": "Span-based, BERT 63.3",
+      "section": "PDF page 7; §5.2, Table 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 664,
+        "line_end": 669,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "table2",
+        "table3",
+        "metric",
+        "clef_split",
+        "dis_split"
+      ],
+      "scope": "Reported benchmark test results under §4 setup; table captions do not individually restate the test split. Full-model §5 F1 is stated to average five runs; baselines retain their original reporting protocols."
+    },
+    {
+      "finding_id": "S02-F05",
+      "finding": "On CADEC final-entity evaluation, the full model scores 69.5 F1 versus 69.0 for the listed transition baseline. Removing either dependency-guided GCN or the Overlapping auxiliary task yields 69.9. Combining both enhancements therefore does not improve this setting.",
+      "evidence_type": "supported",
+      "quote": "using them separately (69.9%) than\nusing them jointly (69.5%).",
+      "section": "PDF page 8; §5.3 Results on CADEC",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 773,
+        "line_end": 775,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "table4",
+        "cadec_ablation",
+        "metric"
+      ],
+      "scope": "CADEC benchmark test interpretation, §4 setup; §5 model F1 stated as five-run mean. No statistical significance or variance is supplied."
+    },
+    {
+      "finding_id": "S02-F06",
+      "finding": "For regular plus overlapping NER, the full model reports 77.8 F1 on GENIA and 83.0 on ACE05. Table 5 includes higher scores, 78.3 and 84.3, from Straková et al. with richer representations. Neither dataset evaluates discontinuous entities in this paper.",
+      "evidence_type": "supported",
+      "quote": "Span-based, BERT 77.8 83.0",
+      "section": "PDF page 9; §5.5, Table 5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 861,
+        "line_end": 866,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "table5",
+        "overlap_results",
+        "stats",
+        "genia_split",
+        "metric"
+      ],
+      "scope": "Benchmark test interpretation; GENIA split unit remains unresolved. Aggregate regular-plus-overlap NER is not overlap-only accuracy or Topic performance."
+    },
+    {
+      "finding_id": "S02-F07",
+      "finding": "The authors attribute the Figure 5 advantage mainly to regular entities and describe discontinuous recognition as slightly worse than the transition model. Figure 5 displays cumulative entity groups from one run, with an incompletely tuned comparator, so it supplies no standalone discontinuous-only score or subgroup denominator.",
+      "evidence_type": "supported",
+      "quote": "in recognizing discontinuous entities, our model\nperforms slightly worse than the transition-based\nmodel.",
+      "section": "PDF page 9; §5.4 continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 869,
+        "line_end": 872,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "fig5",
+        "fig5_setting",
+        "type_interpretation",
+        "fig4_setting"
+      ],
+      "scope": "Paper-reported interpretation of limited diagnostic evidence. The figure does not by itself prove the isolated subtype comparison; no fabricated subtype score is supplied."
+    },
+    {
+      "finding_id": "S02-F08",
+      "finding": "On CLEF-Dis, joint fragment recognition and relation training changes entity-fragment F1 from 80.4 to 80.7. This is fragment recognition, not final discontinuous-entity F1 and not a relation-classification score.",
+      "evidence_type": "supported",
+      "quote": "EFR 81.2 79.6 80.4\nEFR(+FRP) 81.4 80.1 80.7",
+      "section": "PDF page 14; Appendix C, Table 8",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1367,
+        "line_end": 1373,
+        "pdf_pages": [
+          14
+        ]
+      },
+      "evidence_refs": [
+        "table8",
+        "joint"
+      ],
+      "scope": "Appendix table does not explicitly identify split, averaging, or fragment duplicate treatment. Results must not be compared as equivalent to Table 3 final-entity F1."
+    },
+    {
+      "finding_id": "S02-F09",
+      "finding": "Table 7 gives shared-fragment entities, including Tone in both Tone/increased and Tone/decreased. The authors report that the full model recognizes these examples correctly while the version without dependency information fails. This supports those example configurations, not arbitrary overlapping work-matter sets.",
+      "evidence_type": "supported",
+      "quote": "Both the two\nexamples are failed in the model without using\ndependency information, but are correctly recog-\nnized in our final model.",
+      "section": "PDF page 14; Appendix B Case Studies",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1378,
+        "line_end": 1381,
+        "pdf_pages": [
+          14
+        ]
+      },
+      "evidence_refs": [
+        "cases",
+        "case_prose",
+        "fig1",
+        "category"
+      ],
+      "scope": "Qualitative CLEF examples, split and sampling method not reported; no measured Topic-scope preservation."
+    },
+    {
+      "finding_id": "S02-F10",
+      "finding": "GENIA split descriptions conflict in the original PDF: Table 1 assigns 1,599/200/200 counts to documents, whereas §4 describes 80%/10%/10% of sentences in 1,999 documents. The actual split unit and document leakage status cannot be resolved from this paper.",
+      "evidence_type": "contradicted",
+      "quote": "CLEF-Dis are sentence numbers, others are document numbers.",
+      "section": "PDF page 6; Table 1 caption",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 573,
+        "line_end": 575,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_refs": [
+        "stats",
+        "genia_split"
+      ],
+      "scope": "Contradicted classification applies to an unqualified document-unit interpretation, because the prose specifies sentence percentages. Both source readings are retained."
+    },
+    {
+      "finding_id": "S02-F11",
+      "finding": "Appendix A broadly claims Word2Vec is more effective than ELMo, but Table 6 reverses that ordering without the added BiLSTM: CLEF 68.5 versus 74.2 and CLEF-Dis 43.5 versus 48.1. With BiLSTM the ordering does match the prose: 78.6 versus 77.1 and 56.4 versus 55.8.",
+      "evidence_type": "contradicted",
+      "quote": "Word2Vec\nis more effective than ELMo",
+      "section": "PDF page 13; Appendix A",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1337,
+        "line_end": 1341,
+        "pdf_pages": [
+          13
+        ]
+      },
+      "evidence_refs": [
+        "table6",
+        "encoder_claim"
+      ],
+      "scope": "Exact entity-F1 context is inferred from surrounding NER experiments; Table 6 has no metric label or explicit split/run count. The unconditional encoder claim is contradicted, while the conditioned comparison holds."
+    }
+  ],
+  "limitations": [
+    "Representation transfer only. No direct email, business Topic identity, conversation interleaving, or cross-message experiment appears in the paper; all span enumeration is sentence-local (S02-F01).",
+    "The decoder and categorical heads do not establish arbitrary multi-membership or all possible overlapping entity sets (S02-F02–F03; S02-I02).",
+    "GENIA split unit conflicts; original annotation process, annotator counts, IAA, exact entity-count denominators, and duplicate/near-duplicate controls are not reported here (S02-I01; topic02 annotation and split fields).",
+    "NER exact-match scores do not measure retention of conditions, evidence, approval scope, action scope, or reply scope. The word mildly is outside the intended NER entity in Figures 1–2; this is not a measured Topic-preservation error (S02-F09).",
+    "CLEF-Dis is selected for discontinuity and overlaps source corpora used in the full CLEF setting. It is not independent evidence from a separate domain, and its aggregate score is not discontinuous-only accuracy (S02-F04).",
+    "No confidence intervals, standard deviations, significance tests, or subtype entity counts are reported. Figure 5 is a one-run comparison with a less-tuned baseline (S02-F07; S02-I03).",
+    "Joint enhancements are not uniformly beneficial (CADEC, S02-F05); the encoder comparison needs conditioning on BiLSTM (S02-F11).",
+    "Paper-reported GPU training costs do not establish CPU/arm64 inference feasibility. The paper does not report online latency, decoding complexity, long-message behavior, or incremental cross-message updates (Appendix D)."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "metrics_reported": true,
+    "code_availability_scope": "Frozen 2021 paper reports https://github.com/foxlf823/sodner; not fetched, checked, or asserted currently available.",
+    "dataset_availability_status": "Existing named benchmarks were used and cited, but this paper does not establish present access, licensing, or public distribution of each prepared split. dataset_available boolean is omitted because unknown is neither false nor a verified true.",
+    "dataset_evidence_refs": [
+      "stats",
+      "clef_split",
+      "dis_split",
+      "genia_split"
+    ],
+    "code_evidence_refs": [
+      "code"
+    ],
+    "implementation": {
+      "framework": "AllenNLP",
+      "encoder": "Clinical BERT for CLEF/CADEC; SciBERT for GENIA; Google BERT for ACE05. CLEF-Dis uses CLEF hyperparameters.",
+      "syntax": "Stanford CoreNLP predicted dependencies; no gold syntax annotations in these datasets.",
+      "optimizer": "BertAdam",
+      "learning_rates": {
+        "BERT": 5e-05,
+        "other_parameters": 0.001
+      },
+      "early_stopping": "No improvement for 15 epochs",
+      "development_tuning": "About five trials on development sets",
+      "evidence_refs": [
+        "training",
+        "hyper",
+        "runtime",
+        "encoder_parser"
+      ]
+    },
+    "hyperparameters": {
+      "columns": [
+        "CLEF (also CLEF-Dis)",
+        "CADEC",
+        "GENIA",
+        "ACE05"
+      ],
+      "rows": {
+        "dh": [
+          400,
+          400,
+          768,
+          768
+        ],
+        "Nhead": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "GCN layers": [
+          2,
+          2,
+          2,
+          1
+        ],
+        "df": [
+          20,
+          20,
+          64,
+          64
+        ],
+        "ds": [
+          860,
+          860,
+          1684,
+          1684
+        ],
+        "MLP layers": [
+          1,
+          1,
+          2,
+          2
+        ],
+        "MLP size": [
+          150,
+          150,
+          150,
+          150
+        ],
+        "alpha": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "beta": [
+          1.0,
+          1.0,
+          1.0,
+          0.6
+        ]
+      },
+      "evidence_refs": [
+        "hyper"
+      ]
+    },
+    "compute": {
+      "status": "Paper-reported training resource figures, not independently measured",
+      "parameters": "about 117M plus BERT, exactly as printed",
+      "hardware": "one NVIDIA Tesla V100 GPU",
+      "memory": "about 10 GB",
+      "training_time": "2–6 minutes per epoch across datasets; per-dataset mapping not reported",
+      "inference_latency": "not reported",
+      "arm64_or_Raspberry_Pi_evaluation": "not reported",
+      "evidence_refs": [
+        "runtime"
+      ]
+    },
+    "missing_details": [
+      "Prepared split identifiers and GENIA split unit",
+      "Annotator protocol and agreement",
+      "Random seeds and result variance",
+      "Duplicate/near-duplicate controls",
+      "Maximality and related graph decoding constraints",
+      "Explicit maximum span width, pruning/candidate-pair sampling policy, and entity-type consistency rules",
+      "Separate FRP accuracy and final-entity conversion error counts",
+      "Exact code revision and dependencies sufficient for a frozen rerun"
+    ]
+  },
+  "confidence_scores": {
+    "S02-F01": 0.99,
+    "S02-F02": 0.99,
+    "S02-F03": 0.98,
+    "S02-F04": 0.99,
+    "S02-F05": 0.99,
+    "S02-F06": 0.99,
+    "S02-F07": 0.94,
+    "S02-F08": 0.99,
+    "S02-F09": 0.98,
+    "S02-F10": 1.0,
+    "S02-F11": 0.99
+  },
+  "confidence_score_meaning": "Confidence in faithful source extraction and qualified interpretation, not probability of successful transfer to msgloom; keys are stable finding IDs.",
+  "raw_claims": [
+    "With the Succession relation, we can rec-\nognize discontinuous entities.",
+    "A predicted entity is counted as true-positive\nif its boundary and type match those of a gold en-\ntity.",
+    "For a discontinuous entity, each span should\nmatch a span of the gold entity.",
+    "All F1 scores re-\nported in Section 5 are the mean values from five\nruns of the same setting.",
+    "The training process\nwould terminate if the performance does not in-\ncrease by 15 epochs."
+  ],
+  "raw_claim_locators": [
+    {
+      "raw_claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 312,
+        "line_end": 313,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 642,
+        "line_end": 644,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 644,
+        "line_end": 645,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 645,
+        "line_end": 647,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 4,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 592,
+        "line_end": 594,
+        "pdf_pages": [
+          6
+        ]
+      }
+    }
+  ],
+  "evidence_catalog": {
+    "method": {
+      "section": "PDF pages 3, 4; §3 Method",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 294,
+        "line_end": 323,
+        "pdf_pages": [
+          3,
+          4
+        ]
+      }
+    },
+    "span": {
+      "section": "PDF page 5; §3.3 Span Representation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 471,
+        "line_end": 493,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "category": {
+      "section": "PDF page 5; §3.4 Decoding, Equations 4–5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 521,
+        "line_end": 540,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "algorithm": {
+      "section": "PDF page 5; §3.4, Algorithm 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 507,
+        "line_end": 520,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "cliques": {
+      "section": "PDF page 5; §3.4 Decoding",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 541,
+        "line_end": 554,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "auxiliary": {
+      "section": "PDF page 5; §3.4, footnote 5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 556,
+        "line_end": 558,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "fig1": {
+      "section": "PDF page 2; §1, Figure 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 98,
+        "line_end": 124,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "fig2": {
+      "section": "PDF page 3; §3, Figure 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 244,
+        "line_end": 248,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "word": {
+      "section": "PDF page 4; §3.1 Word Representation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 324,
+        "line_end": 340,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "gcn": {
+      "section": "PDF pages 4, 5; §§3.2–3.3, Equations 1–2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 408,
+        "line_end": 470,
+        "pdf_pages": [
+          4,
+          5
+        ]
+      }
+    },
+    "training": {
+      "section": "PDF page 6; §3.5 Training",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 576,
+        "line_end": 594,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "stats": {
+      "section": "PDF page 6; Table 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 560,
+        "line_end": 575,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "clef_split": {
+      "section": "PDF page 6; §4 Experimental Setup",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 595,
+        "line_end": 608,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "dis_split": {
+      "section": "PDF page 6; §4 Experimental Setup",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 612,
+        "line_end": 625,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "genia_split": {
+      "section": "PDF page 6; §4 Experimental Setup",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 628,
+        "line_end": 637,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "metric": {
+      "section": "PDF page 6; §4 Evaluation Metrics",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 638,
+        "line_end": 647,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "table2": {
+      "section": "PDF page 7; §5.1, Table 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 649,
+        "line_end": 659,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "table3": {
+      "section": "PDF page 7; §5.2, Table 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 660,
+        "line_end": 669,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "table4": {
+      "section": "PDF page 7; §5.3, Table 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 699,
+        "line_end": 709,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "clef_ablation": {
+      "section": "PDF page 7; §§5.1–5.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 710,
+        "line_end": 734,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "cadec_ablation": {
+      "section": "PDF page 8; §5.3 Results on CADEC",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 767,
+        "line_end": 780,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "fig4_setting": {
+      "section": "PDF page 8; §5.4 and footnote 8",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 781,
+        "line_end": 799,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "fig4": {
+      "section": "PDF page 8; §5.4, Figure 4; visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/visual-transcription.md",
+        "line_start": 6,
+        "line_end": 15,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "fig5": {
+      "section": "PDF page 8; §5.4, Figure 5; visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/visual-transcription.md",
+        "line_start": 17,
+        "line_end": 26,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "fig5_setting": {
+      "section": "PDF page 8; §5.4, transition-based comparison",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 832,
+        "line_end": 845,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "type_interpretation": {
+      "section": "PDF page 9; §5.4 continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 867,
+        "line_end": 874,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "table5": {
+      "section": "PDF page 9; §5.5, Table 5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 847,
+        "line_end": 866,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "overlap_results": {
+      "section": "PDF page 9; §5.5 Results on GENIA and ACE05",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 875,
+        "line_end": 901,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "universal": {
+      "section": "PDF page 9; §6 Conclusion",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 902,
+        "line_end": 916,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "table6": {
+      "section": "PDF page 13; Appendix A, Table 6",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1235,
+        "line_end": 1243,
+        "pdf_pages": [
+          13
+        ]
+      }
+    },
+    "encoder_claim": {
+      "section": "PDF page 13; Appendix A",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1328,
+        "line_end": 1358,
+        "pdf_pages": [
+          13
+        ]
+      }
+    },
+    "cases": {
+      "section": "PDF page 14; Appendix B, Table 7",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1360,
+        "line_end": 1366,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "case_prose": {
+      "section": "PDF page 14; Appendix B Case Studies",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1374,
+        "line_end": 1391,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "table8": {
+      "section": "PDF page 14; Appendix C, Table 8",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1367,
+        "line_end": 1373,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "joint": {
+      "section": "PDF page 14; Appendix C Effect of Joint Training",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1392,
+        "line_end": 1403,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "hyper": {
+      "section": "PDF page 14; Appendix D, Table 9",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1404,
+        "line_end": 1418,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "runtime": {
+      "section": "PDF page 14; Appendix D Implementation Details",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1423,
+        "line_end": 1440,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "encoder_parser": {
+      "section": "PDF page 15; Appendix D continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1442,
+        "line_end": 1455,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "code": {
+      "section": "PDF page 2; §1 Introduction",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 156,
+        "line_end": 159,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "domain_cadec": {
+      "section": "PDF page 10; References, Karimi et al. (2015)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1035,
+        "line_end": 1037,
+        "pdf_pages": [
+          10
+        ]
+      }
+    },
+    "domain_genia": {
+      "section": "PDF page 11; References, Kim et al. (2003)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "line_start": 1044,
+        "line_end": 1046,
+        "pdf_pages": [
+          11
+        ]
+      }
+    }
+  },
+  "topic02": {
+    "evidence_family": "TRANSFER_SPAN",
+    "evaluated_tasks": {
+      "paper_tasks": [
+        "Sentence-local regular, overlapping/nested, and discontinuous named entity recognition on CLEF/CLEF-Dis/CADEC",
+        "Sentence-local regular plus overlapping NER on GENIA/ACE05",
+        "Entity-fragment recognition diagnostic; fragment relation prediction is trained but has no standalone relation accuracy table"
+      ],
+      "topic02_task_mapping": {
+        "topic-boundary detection": "not evaluated",
+        "contiguous topic segmentation": "not evaluated",
+        "segment topic labeling": "not evaluated",
+        "whole-message multi-label classification": "not evaluated",
+        "exact span assignment": "NER analogue only; not assignment to work matters",
+        "overlapping span assignment": "NER analogue only, with predicted overlap and illustrative shared fragments",
+        "non-contiguous assignment to one Topic": "NER entity-fragment analogue only",
+        "discourse/EDU segmentation": "not evaluated",
+        "action/question/reply-scope extraction": "not evaluated",
+        "preservation of decision-bearing conditions/evidence/scope": "not evaluated"
+      },
+      "evidence_refs": [
+        "method",
+        "metric",
+        "table2",
+        "table3",
+        "table4",
+        "table5",
+        "table8"
+      ]
+    },
+    "annotation_unit": {
+      "value": "Typed entity mention, represented by one contiguous word span or several discontinuous fragments; sentence is the model context, not the semantic label unit.",
+      "gold_labels": "NER entity categories and fragment membership; no Topic identities or whole-message labels. Precise character/token conversion and inventory by dataset are not detailed.",
+      "evidence_refs": [
+        "method",
+        "span",
+        "category",
+        "metric",
+        "cases"
+      ]
+    },
+    "prediction_unit": {
+      "value": "One candidate contiguous token span for EFR; one fragment pair for FRP; final entity is a complete Succession subgraph or isolated fragment.",
+      "notes": "Pairwise graph construction occurs within one input sentence; no graph of messages/threads is defined.",
+      "evidence_refs": [
+        "algorithm",
+        "category",
+        "cliques"
+      ]
+    },
+    "contiguity": {
+      "fragments": "Contiguous endpoint-defined spans, not a disjoint partition of all input tokens.",
+      "final_entities": "May be nested/overlapping and may comprise nonadjacent fragments within the sentence.",
+      "non_sequential_topic_cluster": "Not modeled or evaluated; a discontinuous NER mention is not a thread-level Topic cluster.",
+      "evidence_refs": [
+        "span",
+        "fig1",
+        "algorithm"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Multiple mentions may overlap on a token or reuse a fragment; Table 7 explicitly shares Tone and fracture. Gold frequency of identical spans with multiple entity-type categories is not reported; no Topic-cardinality distribution.",
+      "prediction": "Many spans may be accepted in one sentence; each span is classified over entity types plus None with one softmax, and each pair over one of three mutually exclusive relation classes. Same-fragment reuse across reconstructed entities is illustrated, but simultaneous multiple entity-type labels for identical boundaries are not specified.",
+      "topic_membership": "No Topic-label vocabulary, explicit set-valued Topic membership head, calibration, abstention, or uncertainty-preserving assignment evaluation.",
+      "evidence_refs": [
+        "category",
+        "fig1",
+        "cases",
+        "case_prose"
+      ]
+    },
+    "discontinuity": {
+      "gold": "Present in CLEF/CLEF-Dis/CADEC; absent in the evaluated GENIA/ACE05 splits according to Table 1. Percentages are gold entity statistics, not model capability ceilings.",
+      "prediction": "Succession links reconstruct a semantic NER entity from separated fragments; tested at final-entity level with all fragments required to match. Maximality remains unspecified.",
+      "within_one_message": "Only within-one-sentence NER is demonstrated. It can illustrate a representation for part of a message but is not an email experiment.",
+      "thread_level": "Not modeled or evaluated; no links across sentences/messages/Sources or Topic recurrence experiment.",
+      "evidence_refs": [
+        "stats",
+        "method",
+        "cliques",
+        "metric"
+      ]
+    },
+    "overlap": {
+      "gold": "Overlapping entities exist in every benchmark in Table 1; nesting is included. Some discontinuous mentions share fragments, as in Table 7.",
+      "predicted": "Supported for nested/overlapping spans by independent span recognition and evaluated NER results; correct shared-fragment examples are paper-reported. Overlapping relation is auxiliary-only during training, not an Overlap decoder.",
+      "unsupported": "General recovery of arbitrary intersecting work-matter sets, simultaneous type labels on one identical span, and full set-membership information are not demonstrated.",
+      "statistics_note": "Table 1 percentages and Figure 4 category handling are different views: Figure 4 explicitly excludes discontinuous entities from its overlapped category. Do not assume categories or denominators are interchangeable.",
+      "evidence_refs": [
+        "fig1",
+        "stats",
+        "category",
+        "auxiliary",
+        "cases",
+        "case_prose",
+        "fig4_setting"
+      ]
+    },
+    "dataset_domain": {
+      "datasets": {
+        "CLEF": "Clinical notes from ShARe/CLEF eHealth 2013.",
+        "CLEF-Dis": "Selected clinical sentences from CLEF and SemEval 2014 Task 7; each retained sentence has at least one discontinuous entity.",
+        "CADEC": "Adverse drug event annotations, per the paper-cited corpus title. This paper does not describe the original document genre or annotation protocol in detail.",
+        "GENIA": "Biomedical text, per the paper-cited corpus title; exact document genre not detailed here.",
+        "ACE05": "ACE05 entity recognition; detailed document genre composition not reported in this paper."
+      },
+      "source_limits": "Descriptions are limited to S02 text and its reference titles, not external corpus knowledge. No business-email benchmark is reported.",
+      "evidence_refs": [
+        "clef_split",
+        "dis_split",
+        "genia_split",
+        "domain_cadec",
+        "domain_genia"
+      ]
+    },
+    "annotation_process": {
+      "status": "Existing benchmark annotations reused; no new human-annotation study reported.",
+      "reported_processing": "CLEF-Dis is selected by presence of at least one discontinuous gold entity and uses the prior CLEF/SemEval split mapping. Gold span and pair categories supervise joint training.",
+      "not_reported": [
+        "Annotator number, qualifications, instructions, adjudication and disagreement resolution",
+        "Detailed entity category inventories and same-boundary category conflicts",
+        "Detailed creation of pair labels when multiple memberships or overlapping fragments compete"
+      ],
+      "evidence_refs": [
+        "training",
+        "dis_split",
+        "category"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported",
+      "metric": null,
+      "population": null,
+      "scope": "No IAA value for entity boundaries, types, fragment grouping, overlap, or any Topic annotation is given in the fully read paper. This is absence of reporting, not low agreement."
+    },
+    "split_and_leakage": {
+      "order": [
+        "train",
+        "development",
+        "test"
+      ],
+      "datasets": {
+        "CLEF": {
+          "counts": [
+            179,
+            20,
+            99
+          ],
+          "unit": "documents (clinical notes)",
+          "evidence_refs": [
+            "stats",
+            "clef_split"
+          ]
+        },
+        "CLEF-Dis": {
+          "counts": [
+            534,
+            303,
+            430
+          ],
+          "unit": "sentences",
+          "evidence_refs": [
+            "stats",
+            "dis_split"
+          ]
+        },
+        "CADEC": {
+          "counts": [
+            875,
+            187,
+            188
+          ],
+          "unit": "documents",
+          "evidence_refs": [
+            "stats",
+            "dis_split",
+            "domain_cadec"
+          ]
+        },
+        "GENIA": {
+          "counts": [
+            1599,
+            200,
+            200
+          ],
+          "unit": "Table 1 says documents; §4 says 80%/10%/10% sentences in 1,999 documents; unresolved.",
+          "evidence_refs": [
+            "stats",
+            "genia_split",
+            "domain_genia"
+          ]
+        },
+        "ACE05": {
+          "counts": [
+            370,
+            43,
+            51
+          ],
+          "unit": "documents, whose sentences are processed",
+          "evidence_refs": [
+            "stats",
+            "genia_split"
+          ]
+        }
+      },
+      "clef_mapping": "Full CLEF: original 199 training notes become 179 training and 20 development; 99 test notes. CLEF-Dis: CLEF 2013 train → train, CLEF 2013 test → development, SemEval 2014 Task 7 development → test; only sentences containing discontinuity retained.",
+      "leakage_controls": "Duplicate, near-duplicate, patient, author, chronology, and document-overlap checks are not reported. GENIA document separation is unknown due to source conflict. Shared CLEF lineage means full CLEF and CLEF-Dis are not independent-domain replications; no actual within-split leakage is demonstrated.",
+      "evidence_refs": [
+        "stats",
+        "clef_split",
+        "dis_split",
+        "genia_split"
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "final_entity": "Paper-defined true positive requires matching entity type and boundaries; for a discontinuous entity, every span must match a gold span. P=TP/predicted entities, R=TP/gold entities, and F1=2PR/(P+R) are the conventional operational reading; paper names these metrics without printing their formulas.",
+        "denominators": "Absolute entity/fragment/subtype counts and micro-versus-macro aggregation are not explicitly supplied. Do not substitute document counts or gold overlap percentages for these denominators.",
+        "units": "Reported performance values are on a 0–100 scale. Differences described with % in source prose are treated as F1 percentage-point differences when subtracting displayed scores.",
+        "evidence_refs": [
+          "metric"
+        ]
+      },
+      "gold_composition": {
+        "order": [
+          "train",
+          "development",
+          "test"
+        ],
+        "unit": "Percent of annotated entities in the indicated split; raw entity counts and percentage-rounding details not reported",
+        "datasets": {
+          "CLEF": {
+            "overlapping_percent": [
+              6,
+              7,
+              8
+            ],
+            "discontinuous_percent": [
+              11,
+              13,
+              8
+            ]
+          },
+          "CLEF-Dis": {
+            "overlapping_percent": [
+              29,
+              38,
+              36
+            ],
+            "discontinuous_percent": [
+              54,
+              55,
+              52
+            ]
+          },
+          "CADEC": {
+            "overlapping_percent": [
+              15,
+              14,
+              13
+            ],
+            "discontinuous_percent": [
+              11,
+              10,
+              9
+            ]
+          },
+          "GENIA": {
+            "overlapping_percent": [
+              18,
+              18,
+              22
+            ],
+            "discontinuous_percent": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ACE05": {
+            "overlapping_percent": [
+              40,
+              37,
+              39
+            ],
+            "discontinuous_percent": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "category_caution": "Overlapping and discontinuous may overlap; figures use explicitly qualified grouping.",
+        "evidence_refs": [
+          "stats",
+          "fig4_setting"
+        ]
+      },
+      "main_final_entity_results": [
+        {
+          "dataset": "CLEF",
+          "task": "Final entity recognition, including regular, overlapping, and discontinuous entities present in this split",
+          "split": "Benchmark test interpretation from §4; result table does not explicitly label split",
+          "metric": "Entity exact-match F1, percentage scale",
+          "denominator": "Predicted entities for precision; gold entities for recall; absolute entity counts not reported",
+          "averaging": "Own §5 results stated as five-run means; cited baseline run protocols not established here",
+          "columns": [
+            "model/setting",
+            "F1"
+          ],
+          "rows": [
+            [
+              "Tang et al. (2013); CRF BIOHD",
+              75.0
+            ],
+            [
+              "Tang et al. (2015); CRF BIOHD1234",
+              78.3
+            ],
+            [
+              "Dai et al. (2020); transition ELMo",
+              77.7
+            ],
+            [
+              "Full span model; clinical BERT + BiLSTM",
+              83.2
+            ],
+            [
+              "Full minus dependency GCN",
+              82.5
+            ],
+            [
+              "Full minus Overlapping training relation",
+              82.2
+            ],
+            [
+              "Full with PubMed embeddings replacing BERT",
+              78.6
+            ]
+          ],
+          "evidence_refs": [
+            "table2",
+            "metric",
+            "encoder_parser",
+            "hyper"
+          ]
+        },
+        {
+          "dataset": "CLEF-Dis",
+          "task": "Final entity recognition, including regular, overlapping, and discontinuous entities present in this split",
+          "split": "Benchmark test interpretation from §4; result table does not explicitly label split",
+          "metric": "Entity exact-match F1, percentage scale",
+          "denominator": "Predicted entities for precision; gold entities for recall; absolute entity counts not reported",
+          "averaging": "Own §5 results stated as five-run means; cited baseline run protocols not established here",
+          "columns": [
+            "model/setting",
+            "F1"
+          ],
+          "rows": [
+            [
+              "Muis and Lu (2016); hypergraph",
+              52.8
+            ],
+            [
+              "Wang and Lu (2019); hypergraph RNN",
+              56.1
+            ],
+            [
+              "Dai et al. (2020); transition ELMo",
+              62.9
+            ],
+            [
+              "Full span model; clinical BERT + BiLSTM",
+              63.3
+            ],
+            [
+              "Full minus dependency GCN",
+              62.9
+            ],
+            [
+              "Full minus Overlapping training relation",
+              62.6
+            ],
+            [
+              "Full with PubMed embeddings replacing BERT",
+              56.4
+            ]
+          ],
+          "evidence_refs": [
+            "table3",
+            "metric",
+            "encoder_parser",
+            "hyper"
+          ]
+        },
+        {
+          "dataset": "CADEC",
+          "task": "Final entity recognition, including regular, overlapping, and discontinuous entities present in this split",
+          "split": "Benchmark test interpretation from §4; result table does not explicitly label split",
+          "metric": "Entity exact-match F1, percentage scale",
+          "denominator": "Predicted entities for precision; gold entities for recall; absolute entity counts not reported",
+          "averaging": "Own §5 results stated as five-run means; cited baseline run protocols not established here",
+          "columns": [
+            "model/setting",
+            "F1"
+          ],
+          "rows": [
+            [
+              "Metke-Jimenez and Karimi (2016); CRF BIOHD",
+              60.2
+            ],
+            [
+              "Tang et al. (2018); LSTM-CRF Multilabel",
+              66.3
+            ],
+            [
+              "Dai et al. (2020); transition ELMo",
+              69.0
+            ],
+            [
+              "Full span model; clinical BERT + BiLSTM",
+              69.5
+            ],
+            [
+              "Full minus dependency GCN",
+              69.9
+            ],
+            [
+              "Full minus Overlapping training relation",
+              69.9
+            ],
+            [
+              "Full minus BERT",
+              66.8
+            ]
+          ],
+          "evidence_refs": [
+            "table4",
+            "metric",
+            "encoder_parser",
+            "hyper"
+          ]
+        },
+        {
+          "dataset": [
+            "GENIA",
+            "ACE05"
+          ],
+          "task": "Final entity recognition: regular plus overlapping; no gold discontinuous entities",
+          "split": "Benchmark test interpretation from §4; GENIA split unit ambiguous",
+          "metric": "Entity exact-match F1, percentage scale",
+          "denominator": "Predicted/gold final entities; absolute entity counts not reported",
+          "averaging": "Own §5 results stated as five-run means; prior-work rows retain unspecified original protocols",
+          "columns": [
+            "model/setting",
+            "GENIA F1",
+            "ACE05 F1"
+          ],
+          "rows": [
+            [
+              "Finkel and Manning (2009); constituency parsing",
+              70.3,
+              null
+            ],
+            [
+              "Lu and Roth (2015); hypergraph",
+              70.3,
+              58.7
+            ],
+            [
+              "Muis and Lu (2017); hypergraph",
+              70.8,
+              61.3
+            ],
+            [
+              "Katiyar and Cardie (2018); hypergraph RNN",
+              73.8,
+              70.5
+            ],
+            [
+              "Wang et al. (2018); transition parsing RNN",
+              73.9,
+              73.0
+            ],
+            [
+              "Ju et al. (2018); dynamic stacking RNN",
+              74.7,
+              72.2
+            ],
+            [
+              "Zheng et al. (2019); boundary detection RNN",
+              74.7,
+              null
+            ],
+            [
+              "Lin et al. (2019a); anchor detection RNN/CNN",
+              74.8,
+              74.9
+            ],
+            [
+              "Wang and Lu (2018); hypergraph RNN",
+              75.1,
+              74.5
+            ],
+            [
+              "Xia et al. (2019); multi-grained RNN/ELMo",
+              null,
+              78.2
+            ],
+            [
+              "Fisher and Vlachos (2019); merge and label BERT",
+              null,
+              82.4
+            ],
+            [
+              "Luan et al. (2019); span ELMo/coreference",
+              76.2,
+              82.9
+            ],
+            [
+              "Wadden et al. (2019); span BERT/coreference",
+              77.9,
+              null
+            ],
+            [
+              "Straková et al. (2019); seq2seq ELMo/BERT/Flair",
+              78.3,
+              84.3
+            ],
+            [
+              "Full model; SciBERT for GENIA, Google BERT for ACE05",
+              77.8,
+              83.0
+            ],
+            [
+              "Full minus dependency GCN",
+              77.4,
+              82.6
+            ],
+            [
+              "Full minus Overlapping training relation",
+              77.4,
+              82.7
+            ]
+          ],
+          "null_meaning": "Not reported in Table 5; not a negative result",
+          "evidence_refs": [
+            "table5",
+            "overlap_results",
+            "metric",
+            "genia_split",
+            "encoder_parser"
+          ]
+        }
+      ],
+      "fragment_diagnostic": {
+        "dataset": "CLEF-Dis",
+        "task": "Entity fragment recognition (EFR), not reconstructed final entities",
+        "split": "Not explicitly reported in Appendix C",
+        "metric": "P, R, F1; percentage scale",
+        "denominators": "Recognized/gold entity fragments; exact counts, type-matching details at this diagnostic level, and deduplication policy not supplied",
+        "averaging": "Not explicitly reported for this appendix",
+        "columns": [
+          "setting",
+          "P",
+          "R",
+          "F1"
+        ],
+        "rows": [
+          [
+            "EFR alone",
+            81.2,
+            79.6,
+            80.4
+          ],
+          [
+            "EFR + FRP joint training",
+            81.4,
+            80.1,
+            80.7
+          ]
+        ],
+        "evidence_refs": [
+          "table8",
+          "joint"
+        ]
+      },
+      "encoder_ablation": {
+        "datasets": [
+          "CLEF",
+          "CLEF-Dis"
+        ],
+        "task": "Final NER under alternative word encoders",
+        "split": "Not explicitly labeled in Appendix A; same benchmark experimental context",
+        "metric": "Entity F1 inferred from surrounding results; Table 6 itself omits a metric label",
+        "denominators": "Final predicted/gold entity counts not reported",
+        "averaging": "Not explicitly reported for this appendix",
+        "columns": [
+          "encoder",
+          "CLEF",
+          "CLEF-Dis"
+        ],
+        "rows": [
+          [
+            "Word2Vec",
+            68.5,
+            43.5
+          ],
+          [
+            "Word2Vec+BiLSTM",
+            78.6,
+            56.4
+          ],
+          [
+            "ELMo",
+            74.2,
+            48.1
+          ],
+          [
+            "ELMo+BiLSTM",
+            77.1,
+            55.8
+          ],
+          [
+            "BERT",
+            82.5,
+            59.0
+          ],
+          [
+            "BERT+BiLSTM",
+            83.2,
+            63.3
+          ]
+        ],
+        "evidence_refs": [
+          "table6",
+          "encoder_claim"
+        ]
+      },
+      "figure4": {
+        "dataset": "CLEF-Dis",
+        "task": "Diagnostic grouping of predicted entity forms; cumulative regular/overlap/discontinuity inclusion",
+        "split": "Not explicitly labeled in §5.4",
+        "metric": [
+          "Precision",
+          "Recall",
+          "F1"
+        ],
+        "units": "Percentage scale",
+        "setting": "BERT replaced with Glove; comparison setting aligned to cited BiLSTM-CRF setup",
+        "averaging": "Falls under §4 five-run claim; no additional figure-specific run statement",
+        "columns": [
+          "prediction group",
+          "P",
+          "R",
+          "F1"
+        ],
+        "rows": [
+          [
+            "r(BiLSTM-CRF)",
+            67.7,
+            23.9,
+            35.3
+          ],
+          [
+            "r",
+            42.5,
+            26.4,
+            32.6
+          ],
+          [
+            "r+o",
+            41.4,
+            29.8,
+            34.6
+          ],
+          [
+            "r+d",
+            53.3,
+            48.7,
+            50.9
+          ],
+          [
+            "r+o+d",
+            51.4,
+            52.1,
+            51.7
+          ]
+        ],
+        "denominator_caution": "Source classifies predicted entities; it does not specify whether gold recall denominators are filtered for each group or kept fixed. No subtype counts. Discontinuous entities are excluded from o in this figure. Do not present these as conditional subgroup accuracy.",
+        "evidence_refs": [
+          "fig4",
+          "fig4_setting",
+          "metric"
+        ]
+      },
+      "figure5": {
+        "dataset": "CLEF-Dis",
+        "task": "Cumulative entity-form groups compared between transition and span model",
+        "split": "Not explicitly labeled in §5.4",
+        "metric": "F1 inferred from Section 5 context; figure has no metric-axis label",
+        "units": "Percentage scale",
+        "setting": "One-run output analysis; transition comparator not elaborately tuned; encoder for this specific comparison not restated",
+        "columns": [
+          "prediction group",
+          "Dai et al. blue",
+          "Our Model red"
+        ],
+        "rows": [
+          [
+            "r",
+            33.3,
+            41.1
+          ],
+          [
+            "r+o",
+            37.8,
+            44.1
+          ],
+          [
+            "r+d",
+            57.4,
+            61.5
+          ],
+          [
+            "r+o+d",
+            59.9,
+            62.9
+          ]
+        ],
+        "denominator_caution": "No exact group counts or gold-denominator filtering description; no isolated o or d bars. Cannot subtract cumulative F1 values to recover subtype F1.",
+        "evidence_refs": [
+          "fig5",
+          "fig5_setting",
+          "type_interpretation"
+        ]
+      },
+      "comparison_limits": "Final-entity F1, fragment F1, aggregate versus cumulative-group scores, gold composition, and different data splits are not interchangeable. Pk, WindowDiff, IoU, Topic cluster/pair scores, whole-message multi-label scores, and decision-preservation metrics are not reported."
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation",
+      "direct_measured_evidence": null,
+      "related_extraction_evidence": "Exact entity boundary/type matching and qualitative dependency-related recognition errors are measured/reported for NER only (S02-F07–F09).",
+      "scope_example": "Figures 1–2 intentionally mark mitral, leaflets, and thickened as entity fragments while mildly remains outside the entity. This illustrates NER annotation scope. It does not establish measured loss of Topic meaning, condition retention, or clinical decision fidelity.",
+      "evidence_refs": [
+        "fig1",
+        "fig2",
+        "metric",
+        "case_prose"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Concrete work-matter identity independent of conversation/group membership",
+      "Comparison of sentence, clause, arbitrary span, EDU, and hybrid annotation units",
+      "Whole-message multi-label classification and multiple Topic memberships on one identical span",
+      "Nonadjacent Topic evidence across sentences or messages, thread interleaving, and cross-Source Topic linkage",
+      "Action, question, approval, reply scope, conditions, exceptions, and evidence preservation",
+      "Uncertainty, abstention, calibration, and human correction of Topic assignments",
+      "Business-email generalization, streaming updates, CPU/arm64 inference cost, and long-message scalability"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "S02-I01",
+        "kind": "Unresolved split-unit conflict",
+        "description": "See S02-F10. Original PDF confirms Table 1 GENIA counts 1,599/200/200 as documents, versus §4 sentence percentages 80/10/10 in 1,999 documents.",
+        "values_a": {
+          "unit": "documents",
+          "train": 1599,
+          "development": 200,
+          "test": 200
+        },
+        "values_b": {
+          "unit": "sentences",
+          "percentages": [
+            80,
+            10,
+            10
+          ],
+          "source_documents": 1999
+        },
+        "evidence_refs": [
+          "stats",
+          "genia_split"
+        ],
+        "status": "Unresolved; do not infer a document-isolated split or claim leakage occurred."
+      },
+      {
+        "id": "S02-I02",
+        "kind": "Unspecified graph decoder constraint",
+        "description": "Algorithm 1 calls FINDCOMPLETESUBGRAPHS, and §3.4 says all fully connected subgraphs. Neither prints maximal. Isolated fragments explicitly compose entities; connected-node singleton outputs and proper subcliques are unspecified. The triangle example depicts one discontinuous entity but does not give an output listing that resolves the rule.",
+        "evidence_refs": [
+          "algorithm",
+          "cliques",
+          "fig1",
+          "fig2"
+        ],
+        "status": "Text is legible; actual implementation semantics unresolved without code inspection, which was not authorized or performed."
+      },
+      {
+        "id": "S02-I03",
+        "kind": "Run-count generalization versus explicit exception",
+        "values_a": "§4: all Section 5 F1 scores are means from five runs.",
+        "values_b": "§5.4/Figure 5: one run of experiments; baseline not elaborately tuned.",
+        "evidence_refs": [
+          "metric",
+          "fig5_setting"
+        ],
+        "status": "Retain both; Figure 5 is recorded as one run, not silently pooled into the five-run claim."
+      },
+      {
+        "id": "S02-I04",
+        "kind": "Encoder prose versus table, conditional contradiction",
+        "description": "See S02-F11. Word2Vec exceeds ELMo only with the extra BiLSTM in Table 6; the unconditioned prose omits this restriction.",
+        "values_a": {
+          "without_BiLSTM": {
+            "CLEF": {
+              "Word2Vec": 68.5,
+              "ELMo": 74.2
+            },
+            "CLEF-Dis": {
+              "Word2Vec": 43.5,
+              "ELMo": 48.1
+            }
+          }
+        },
+        "values_b": {
+          "with_BiLSTM": {
+            "CLEF": {
+              "Word2Vec": 78.6,
+              "ELMo": 77.1
+            },
+            "CLEF-Dis": {
+              "Word2Vec": 56.4,
+              "ELMo": 55.8
+            }
+          }
+        },
+        "evidence_refs": [
+          "table6",
+          "encoder_claim"
+        ],
+        "status": "Preserved; do not repair source prose."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "relevance": "Indirect",
+        "finding_refs": [
+          "S02-F01",
+          "S02-F09"
+        ],
+        "answer": "Token spans can represent discontinuous NER fragments, but no annotation-unit comparison establishes which unit preserves a work matter."
+      },
+      "RQ2": {
+        "relevance": "None directly",
+        "finding_refs": [
+          "S02-F01"
+        ],
+        "answer": "No asynchronous email clustering, interleaving, or Topic identity method."
+      },
+      "RQ3": {
+        "relevance": "Representation transfer",
+        "finding_refs": [
+          "S02-F02",
+          "S02-F03",
+          "S02-F09"
+        ],
+        "answer": "Gold and predicted NER overlap/shared fragments are relevant; arbitrary Topic membership and cross-message discontinuity remain untested."
+      },
+      "RQ4": {
+        "relevance": "Representation transfer only",
+        "finding_refs": [
+          "S02-F01",
+          "S02-F02",
+          "S02-F03"
+        ],
+        "answer": "A sentence-local fragment graph illustrates overlap/discontinuity without supplying direct-email evidence or a complete arbitrary-set representation guarantee."
+      },
+      "RQ5": {
+        "relevance": "Gap",
+        "finding_refs": [
+          "S02-F09"
+        ],
+        "answer": "NER omissions relative to full sentences are intended annotation scope; no measured decision-bearing preservation result."
+      },
+      "RQ6": {
+        "relevance": "Strong metric-separation warning",
+        "finding_refs": [
+          "S02-F04",
+          "S02-F05",
+          "S02-F06",
+          "S02-F07",
+          "S02-F08",
+          "S02-F11"
+        ],
+        "answer": "Keep final entities, fragments, cumulative groups, gold composition, split definitions, and reporting protocols separate."
+      },
+      "RQ7": {
+        "relevance": "Transfer limitations and reporting gaps",
+        "finding_refs": [
+          "S02-F10"
+        ],
+        "answer": "Existing benchmark reuse and GENIA conflict are documented; IAA and duplicate controls are not reported."
+      },
+      "RQ8": {
+        "relevance": "Untested experiment ideas",
+        "finding_refs": [
+          "S02-F02",
+          "S02-F03",
+          "S02-F09"
+        ],
+        "answer": "Investigate representational round-trip fidelity before any model or product architecture choice."
+      }
+    },
+    "interpretation": [
+      {
+        "id": "S02-A01",
+        "finding_refs": [
+          "S02-F01",
+          "S02-F02",
+          "S02-F09"
+        ],
+        "text": "Span offsets plus explicit fragment-to-object membership are useful representation candidates for tests. NER boundaries identify entities; Topic evidence must instead preserve the meaning of a concrete work matter, including modifiers and scope."
+      },
+      {
+        "id": "S02-A02",
+        "finding_refs": [
+          "S02-F03"
+        ],
+        "text": "A generic pairwise co-membership graph can discard information about which object produced an edge. For synthetic memberships {A,B}, {B,C}, {A,C}, all pairs connect and form a triangle, which also fits {A,B,C}. All-clique output can add unlicensed subsets; maximal-only output can remove valid subset objects. This is an analyst counterexample for arbitrary sets, not a source example, observed S02 error, or reconstruction of the released implementation."
+      },
+      {
+        "id": "S02-A03",
+        "finding_refs": [
+          "S02-F02"
+        ],
+        "text": "A single category per span is compatible with nested spans having different boundaries, yet does not directly encode simultaneous different labels on identical boundaries. Relation softmax categories must not be relabeled as Topic memberships without a separate definition and test."
+      },
+      {
+        "id": "S02-A04",
+        "finding_refs": [
+          "S02-F04",
+          "S02-F07",
+          "S02-F08",
+          "S02-F10"
+        ],
+        "text": "Reported NER results justify considering fragment-link representations, but do not rank Topic assignment methods or quantify the risk of losing work decisions. Dataset and metric ambiguities limit reproducibility rather than proving poor Topic performance."
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "S02-P01",
+        "status": "Untested msgloom proposal; no architecture approval",
+        "basis": [
+          "S02-F01",
+          "S02-F09"
+        ],
+        "experiment": "On the same user-reviewed synthetic or authorized business-message examples, compare sentence, clause, arbitrary span, EDU, and hybrid annotations for identical work matters. Retain conditions, evidence, exceptions, action/approval/reply scope, and uncertainty.",
+        "evaluation": "Measure exact span assignment and decision-bearing omission/broadening separately; use annotation agreement with an explicitly defined population. Do not equate EDU or segmentation accuracy with Topic preservation."
+      },
+      {
+        "id": "S02-P02",
+        "status": "Untested msgloom proposal; no implementation performed",
+        "basis": [
+          "S02-F02",
+          "S02-F03"
+        ],
+        "experiment": "Test gold representation round trips before model training: nested spans, same boundaries with several Topic IDs, disjoint fragments for one Topic, shared fragments, valid subset objects, and a pairwise triangle caused by separate objects. Compare explicit object-membership sets with a precisely specified relation-graph decoder.",
+        "evaluation": "Count exact recovery of gold memberships, false merges, omitted objects, and unlicensed outputs; evaluate gold representability separately from model prediction accuracy."
+      },
+      {
+        "id": "S02-P03",
+        "status": "Untested msgloom proposal; no dataset acquired",
+        "basis": [
+          "S02-F04",
+          "S02-F07",
+          "S02-F08",
+          "S02-F10"
+        ],
+        "experiment": "Evaluate span recognition, link/membership prediction, final Topic evidence assignment, and scope preservation separately on a shared held-out message set. Treat across-message/thread linking as a separate task. Audit document/thread identity and near duplicates before splitting.",
+        "evaluation": "Report predicted/gold span and membership counts, exact-match/IoU as distinct metrics, multi-label results where appropriate, discontinuity/overlap strata with explicit denominators, and scope omission/broadening rates. Include repeated-run uncertainty and the effect of fragment errors on final objects."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2021_li_et_al_span_based_overlapped_discontinuous_ner.pdf",
+      "pdf_sha256": "95b4f4eb42a7f018b2469ff12338de8ff7b377b362400c3ffb6409a9fb237b08",
+      "expected_pdf_sha256": "95b4f4eb42a7f018b2469ff12338de8ff7b377b362400c3ffb6409a9fb237b08",
+      "primary_conversion": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S02.md",
+        "sha256": "0cd06636ca44a0f65255f1cfd5070610c456b4d6251fcc755dc5113f1ee0bea2",
+        "tier": "rough; convert_fine/S02.md absent"
+      },
+      "actual_converted_text_sha256": "0cd06636ca44a0f65255f1cfd5070610c456b4d6251fcc755dc5113f1ee0bea2",
+      "quoted_text": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+        "sha256": "6ca91909d4eefb8262b1e34952f8f412921a71f898d1fbe952939e7221956659"
+      },
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "Full skill read; existing delegated task only, no stage execution"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "Full contract read"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "Full schema read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "Full requirements read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "Full brief read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "Full context read; current user authorization overrides legacy scope text; no linked Topic01 conclusions read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "Full design brief read; resolved repository-level path because Topic directory docs path absent"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "Full design principles read; resolved repository-level path because Topic directory docs path absent"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "Parsed file and read S02 entry only"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2021_li_et_al_span_based_overlapped_discontinuous_ner.pdf",
+          "sha256": "95b4f4eb42a7f018b2469ff12338de8ff7b377b362400c3ffb6409a9fb237b08",
+          "read_scope": "SHA-256 checked; original PDF pages 2–9 and 13–15 rendered and visually inspected"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S02.md",
+          "sha256": "0cd06636ca44a0f65255f1cfd5070610c456b4d6251fcc755dc5113f1ee0bea2",
+          "read_scope": "Full converted text read, LF lines 1–1799, including references and appendices; fine conversion absent"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.raw.txt",
+          "sha256": "6ca91909d4eefb8262b1e34952f8f412921a71f898d1fbe952939e7221956659",
+          "read_scope": "Independent raw conversion; read LF lines 1–975, cited reference entries 1035–1046, and 1231–1462; references also read in full primary conversion"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.layout.txt",
+          "sha256": "b9aa643ba50d219a985e9f04e1403423b458638a2241d4b551c976f4c916bf96",
+          "read_scope": "Independent layout conversion; read LF lines 268–398 to verify decoder and split prose"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S02.pages.md",
+          "sha256": "40a18457dac3394b0ad6b0c5e137ee8304278b9e4f6e1c3c24b0393cc239452c",
+          "read_scope": "Page-indexed conversion metadata/sample read, LF lines 1–25; severe column interleaving, not used as primary citation source"
+        }
+      ],
+      "visual_artifacts": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-02.png",
+          "sha256": "da4bb209940049c219cfb3fc0da83068db7428cd16e5248c625716ccb5901950",
+          "pdf_page": 2
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-03.png",
+          "sha256": "4b1e0744bd290fa237de5af87be797572a202a49ca936f31042b2d3ba50999e5",
+          "pdf_page": 3
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-04.png",
+          "sha256": "11f207161a7e5e50b88a7fa491cc6542da73c4f07715d1498cb4bf62eb0d9591",
+          "pdf_page": 4
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-05.png",
+          "sha256": "2ad38eb867ea4cfecaef9badb38a02aee21627d1bcf84174fa5172c9f6cd0179",
+          "pdf_page": 5
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-06.png",
+          "sha256": "0fcd88604f5ce796fc6827efe6ac8988220eac3f65ccf4f1e765e43aa1a46fad",
+          "pdf_page": 6
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-07.png",
+          "sha256": "e3ddc012e940cd6a1c09dc98675e55105ddb5f14275857116a1c9e743cc801e0",
+          "pdf_page": 7
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-08.png",
+          "sha256": "b69bcdabd412a56261258952bcfd796c0ae254f02aa5386fe6d9465a5e59fb61",
+          "pdf_page": 8
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-09.png",
+          "sha256": "704e7b0e69d75d685cefd3082b329b94682f4845049e8195bf6da7b4da1bf06a",
+          "pdf_page": 9
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-13.png",
+          "sha256": "72ab28c1202ebcd90a618463ea44a869410000eb0934199477afbbddbbb8ae49",
+          "pdf_page": 13
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-14.png",
+          "sha256": "fe59934eb1d0d34616e8064e1d78a66377bcceddd16d3cf5a0922caf5a2af0cc",
+          "pdf_page": 14
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/pdf-page-15.png",
+          "sha256": "787df3cd6fd3330711aedc1399d34bd7e2e06b8e0c49f3d56b6969eaba93369e",
+          "pdf_page": 15
+        }
+      ],
+      "visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S02/visual-transcription.md",
+        "sha256": "f3af3db1441c1a691600a6f25af11d0b319ebfd585722e46cd93ff490cd35268"
+      },
+      "locator_convention": "Absolute paths; 1-based inclusive LF lines using split(\"\\n\"); form feeds mark PDF pages but do not add lines. PDF page 1 is printed page 4814. Quotes normalize whitespace only; source line-break hyphens retained.",
+      "source_verification": "Original PDF resolves rough-conversion table ordering and unreadable chart layouts. All inspected source text is legible. Remaining issues are source ambiguities, not unrecovered extraction damage.",
+      "no_network": true,
+      "no_pipeline_stage_execution": true,
+      "no_code_inspection_or_reproduction": true,
+      "runtime": {
+        "provenance": "Launcher-reported environment values from actual invocation arguments; parent independently verifies turn_context and process/effort receipts",
+        "role": "paper-S02",
+        "model": "gpt-6-astra",
+        "effort": "xhigh",
+        "runtime_identifiers": "Not supplied; none fabricated"
+      },
+      "escalation": {
+        "already_applied_effort": "xhigh",
+        "cause": "Parent-identified GENIA split-unit conflict and graph decoder ambiguity verified against original PDF.",
+        "request": false,
+        "reason": "No further extraction escalation is needed; legible source ambiguities are retained for parent review."
+      }
+    }
+  }
+}

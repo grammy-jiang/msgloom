@@ -1,0 +1,50 @@
+{
+  "status": "rejected",
+  "blocking_issues": [
+    {
+      "id": "B1",
+      "location": "research/02-message-topic-segmentation/engineering-validation/src/topic02_validation/replay.py:54; RESULTS.md, EV5",
+      "finding": "The incremental predictor reads gold expected span IDs to select where it applies context corrections. The reported correction success depends on evaluation answers entering prediction.",
+      "evidence": "With message text, Topic definitions, spans, and available context unchanged, removing expected_span_topic_sets and expected_abstentions from the predictor's step input changes the final correction from BETA to joint ATLAS+BETA. Scoring these predictions against the original gold changes step exact from 5/5 to 4/5 and correction success from 1/1 to 0/1. The reproduction is in /tmp/topic02-fresh-review-ok0x6qae/reviewer_probes.py.",
+      "impact": "The EV5 headline does not establish independent context-correction performance. Available-context filtering works, but gold-dependent correction targeting invalidates the current success claim."
+    }
+  ],
+  "nonblocking_issues": [
+    {
+      "id": "N1",
+      "location": "research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py:6; src/topic02_validation/representation.py:85",
+      "finding": "The main round-trip check compares decoded content with encoder-generated content. It does not independently protect against information lost during conversion from gold.",
+      "evidence": "Two separate temporary-copy mutants passed all 40 tests: replacing every assignment ID with assign:constant, and replacing every span origin/kind with authored/topic_evidence. Independent field comparisons confirmed that the unmodified implementation preserves the checked fields in all 18 cases.",
+      "impact": "Current representation outputs are correct for the checked corpus, but the acceptance tests can miss identity and provenance loss."
+    },
+    {
+      "id": "N2",
+      "location": "research/02-message-topic-segmentation/engineering-validation/src/topic02_validation/preservation.py:35; RESULTS.md, EV4",
+      "finding": "Preservation reporting needs explicit category denominators and eligibility exclusions. Current aggregates cover selected, unambiguous gold annotations.",
+      "evidence": "The scored population contains 20 spans and 24 memberships: 4 conditions, 1 exception, 7 deadlines, 2 approval constraints, 2 decisions, and 4 supporting-evidence spans carrying 8 memberships. The ambiguous-reference deadline is excluded. Category totals are recoverable from rows but are not reported as category metrics. Other source content, such as Legal approval pending in heading-list-scope, has no decision-bearing annotation.",
+      "impact": "The existing aggregate calculations are valid for their selected population. They do not establish source-complete preservation, and the present wording makes that population harder to identify."
+    }
+  ],
+  "recommended_fixes": [
+    "Separate replay prediction inputs from evaluation gold. Determine correction targets from available evidence. Add a test that predictions remain unchanged when hidden expected labels and expected span IDs change. Include an unaffected neighboring span as a correction control.",
+    "Recompute EV5 and its headline after removing gold access. Preserve this rejection and keep review acceptance separate from experiment execution.",
+    "Compare decoded representation fields directly with independent fixture expectations. Add mutation guards for assignment identity, offsets, memberships, alternatives, origins, kinds, and Topic-object components.",
+    "Report EV4 category-specific span and membership denominators, false positives, omissions, and exclusions. Explicitly label predicted decision membership as gold-span-conditioned and distinguish annotation coverage from preservation."
+  ],
+  "verified_points": [
+    "Reran all 40 normal tests: all passed.",
+    "Reran the mutation gate: all four mutants were killed by assertion failures. The failed first-attempt artifact remains preserved. An additional gold-reuse mutant was also killed.",
+    "Created /tmp/topic02-fresh-review-ok0x6qae with only source, tests, and static supporting-audit files before regeneration. metrics.json, RESULTS.md, MANIFEST.json, and all 18 gold JSON files reproduced byte-for-byte.",
+    "Reproduced metrics.json SHA-256 cdad66f4d3b386ecf5aef13865aaac912d1092ea356e2093a84965fea8eed69e and RESULTS.md SHA-256 333d58f19995555f7b879b43b560efc8d9f691791222584637523c31733e5fad.",
+    "Recomputed all four Academic Round 2 synthesis, report, gaps, and reviewer hashes. Every hash matches the expected value in pre-review-audit.json.",
+    "Fixture generation remained byte-identical when tested unit, assignment, representation, and preservation functions were replaced with functions that raise errors. Fixture gold generation is independent of those components.",
+    "The current representation preserves checked offsets, span identity, assignment identity, origins, kinds, joint memberships, alternative sets, and Topic-object components across all 18 cases.",
+    "EV3 separates gold-span-conditioned diagnostics from end-to-end unit-plus-membership results. Independent recounts confirmed membership denominators and one-to-one matching. Injecting a prediction into irrelevant-chatter increased end-to-end false positives from 4 to 5 and the precision denominator from 38 to 39.",
+    "EV4 counts scope broadening: sentence oracle projection has 24 correct memberships among 29 predictions, including 5 false positives. Local-window predicted decision membership includes 12 false positives.",
+    "EV6 calibration and holdout texts have zero exact overlap and use distinct declared templates. Threshold selection uses calibration only. The coverage floor rejects all-abstain success, and the reported joint error/coverage target remains unmet.",
+    "Oracle unit ceilings, synthetic style results, and supplied Topic identities remain bounded claims. Topic 03 identity/count inference, Topic 04 semantic response scope, and Topic 10 general calibration remain separate.",
+    "Supporting audits retain unknown external annotation, scorer, reduction, and split behavior as unknown. No production representativeness, architecture approval, or literature-exhaustion claim was found.",
+    "Current machine-readable review status remains PENDING_INDEPENDENT_REVIEW. This review used no network or production data, changed no repository files, and performed no git-state changes."
+  ],
+  "confidence": 0.99
+}

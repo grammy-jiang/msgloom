@@ -1,0 +1,550 @@
+{
+  "paper_id": "2212.07538v2",
+  "study_id": "A01",
+  "title": "Leveraging Natural Language Processing to Augment Structured Social Determinants of Health Data in the Electronic Health Record",
+  "evidence_role": "TRANSFER_METHOD",
+  "target_stream": "R2-A / G2-A",
+  "task_boundary": "Same-span multi-label prediction and overlapping span extraction for clinical SDOH events. This is transfer-method evidence, explicitly not business-email Topic segmentation or Topic assignment accuracy.",
+  "summary": "mSpERT extends SpERT with argument-subtype classifiers to support multiple labels on a span while retaining overlapping span extraction. SHAC supplies event annotations with triggers, arguments, normalized subtypes, and links. The model reports 0.86 micro-F1 under mixed, relaxed event-slot evaluation. This result does not isolate overlapping predictions or simultaneous same-span labels. Candidate spans are contiguous, while relations connect separate spans into events. The paper does not establish discontinuous entity prediction, unrestricted multiple event-type labels per span, or work-email Topic accuracy. Its source-complementarity analysis measures selected patient-level SDOH documentation, not complete preservation of source content.",
+  "research_question": "Can detailed clinical SDOH event extraction augment structured EHR data, and what limited architectural and evaluation lessons transfer to same-span multi-label prediction and content coverage?",
+  "methodology": "{\"analysis_scope\": \"The full embedded text, including the appendix, was analyzed. Figure captions and surrounding text are available, but the graphical annotation and architecture examples are not represented in the conversion.\", \"architecture\": \"Sentence-level BERT encoding with span representations, an Entity Type classifier, three Entity Subtype classifiers, and a binary relation classifier. Subtype classifiers use span features and Entity Type logits.\", \"design\": \"Supervised clinical entity and relation extraction, followed by note-level validation and a retrospective comparison of structured and NLP-derived patient information.\", \"evaluation\": \"Evaluates event extraction on 518 UW SHAC test notes. Separately evaluates mapped note-level labels on 750 UW validation documents. Compares selected positive SDOH indications across structured records and NLP-derived information during 2021.\", \"training\": \"Fine-tunes BERT and classification layers using gold spans and relations plus sampled negative examples. Hyperparameters use SHAC training and development partitions.\"}",
+  "dataset_and_gold": {
+    "shac": {
+      "units": "4,405 annotated social history sections from MIMIC-III and UW clinical notes.",
+      "partitions_used": "Training: 1,316 MIMIC and 1,751 UW notes. Final test: 518 UW notes. Development data are used for tuning, but their count is not given here.",
+      "semantic_objects": "Events with a trigger and linked arguments. Event types cover Alcohol, Drug, Tobacco, Employment, and living status/situation.",
+      "labels": "Span-only arguments have a span and argument type. Labeled arguments additionally have a normalized subtype. Status Time, Status Employ, and Type Living are the three subtype-classifier families.",
+      "same_span_multiple_labels": "The authors state that SHAC frequently assigns multiple labels to one span. No count, proportion, label-combination distribution, or separate agreement score is reported for these cases.",
+      "overlap": "Overlapping prediction is explicitly supported by the described span architecture. Gold overlap prevalence and overlap-specific prediction results are not reported.",
+      "discontinuity": "Events link distinct trigger and argument spans. The paper does not establish that an individual gold entity can contain discontinuous fragments. The model defines individual candidate spans as contiguous token sequences.",
+      "annotation_scope": "Clinical SDOH events and attributes, not concrete work matters or email Topics. Method appears in the explanatory example and evaluation table but is omitted from the summarized schema and model label inventory."
+    },
+    "uw_validation": {
+      "units": "750 randomly sampled social history sections, with equal proportions of progress notes, emergency notes, and social history documents.",
+      "gold": "One multiclass status value for each of five SDOH categories per document. The most recent described status is used when a category occurs multiple times.",
+      "annotation_process": "Five medical students completed an initial shared training round on 15 sections with mSpERT trigger spans pre-labeled. The 750 validation sections were then single-annotated.",
+      "boundary": "These labels do not annotate span boundaries, simultaneous same-span labels, or detailed event completeness."
+    },
+    "ehr_case_study": {
+      "population": "1,498,499 structured records covering 618,363 patients; 430,406 documents with social history text covering 225,089 patients.",
+      "selection": "Progress and emergency notes without social history sections were discarded. Only the latest 2021 longitudinal social history documentation record per patient was analyzed.",
+      "gold_status": "The large case study compares structured records with model outputs. It is not an exhaustive manually annotated gold dataset of all patient SDOH or all source content."
+    }
+  },
+  "key_findings": [
+    {
+      "finding_id": "F01",
+      "finding": "SHAC supplies same-span multi-label gold annotations, described as frequent, whereas the original SpERT assigns only one label per span.",
+      "evidence_type": "supported",
+      "section": "Information Extraction — Event Extraction",
+      "quote": "allows a single label to be assigned to each span; however, the SHAC annotations frequently assign multiple",
+      "source_line_start": 567,
+      "source_line_end": 567,
+      "interpretation_boundary": "This establishes reported annotation capability and qualitative prevalence. It supplies no numerical prevalence and does not establish multiple msgloom Topics on one span."
+    },
+    {
+      "finding_id": "F02",
+      "finding": "mSpERT adds an Entity Subtype layer for multi-label span prediction while retaining SpERT's Entity Type and Relation layers.",
+      "evidence_type": "supported",
+      "section": "Information Extraction — Event Extraction",
+      "quote": "original SpERT, and the Entity Subtype layer is incorporated to generate multi-label span predictions.",
+      "source_line_start": 579,
+      "source_line_end": 579,
+      "interpretation_boundary": "The described mechanism combines an Entity Type prediction with separate argument-subtype predictions. It does not establish unrestricted simultaneous labels within the Entity Type inventory. No same-span subset score or SpERT ablation is reported."
+    },
+    {
+      "finding_id": "F03",
+      "finding": "Individual candidate spans are contiguous token sequences. Relations connect separate spans into events, which is distinct from predicting one discontinuous entity.",
+      "evidence_type": "supported",
+      "section": "Information Extraction — Input Encoding, Entity Type, and Relation",
+      "quote": "**Entity Type:** The Entity Type classifier labels each span, _s_ _i_ = ( _t, t_ + 1 _, ...t_ + _k_ ), where _i_ is the span",
+      "source_line_start": 597,
+      "source_line_end": 597,
+      "interpretation_boundary": "Separate trigger and argument spans provide a transferable event representation. They do not demonstrate discontinuous entity spans, cross-sentence linking, or consolidation of separated mentions into one work Topic."
+    },
+    {
+      "finding_id": "F04",
+      "finding": "Labeled-argument evaluation ignores argument-span boundaries. Trigger scoring accepts any character overlap, while span-only arguments require exact spans and equivalent connected triggers.",
+      "evidence_type": "supported",
+      "section": "Information Extraction — Evaluation",
+      "quote": "argument subtypes match. The argument span is not considered, and the span of the connected trigger is used",
+      "source_line_start": 740,
+      "source_line_end": 740,
+      "interpretation_boundary": "These event-slot criteria cannot verify exact same-span multi-label prediction. Trigger-match overlap is an evaluation tolerance, not a measure of successful extraction of overlapping entities."
+    },
+    {
+      "finding_id": "F05",
+      "finding": "mSpERT achieves overall precision 0.87, recall 0.85, and micro-F1 0.86 across 5,066 gold triggers and arguments in 518 UW SHAC test notes.",
+      "evidence_type": "supported",
+      "section": "Results — Information Extraction, Table 3",
+      "quote": "**OVERALL** **5,066** **0.87** **0.85** **0.86**",
+      "source_line_start": 945,
+      "source_line_end": 945,
+      "interpretation_boundary": "This measures aggregate clinical event-slot extraction under mixed matching rules. It is not same-span multi-label accuracy, overlap-specific F1, discontinuous-span accuracy, or email Topic accuracy."
+    },
+    {
+      "finding_id": "F06",
+      "finding": "Detailed attribute extraction can have substantial omissions despite the overall F1. Substance Method has recall 0.55 and F1 0.61 on 102 gold instances.",
+      "evidence_type": "supported",
+      "section": "Results — Information Extraction, Table 3",
+      "quote": "Method 102 0.68 0.55 0.61",
+      "source_line_start": 922,
+      "source_line_end": 922,
+      "interpretation_boundary": "Gold-relative argument recall offers a transferable way to inspect omitted attributes. It does not measure missing email conditions, deadlines, evidence, approval constraints, or all semantic content. Method's omission from the stated model label inventory remains unresolved."
+    },
+    {
+      "finding_id": "F07",
+      "finding": "Mapped note-level predictions achieve overall accuracy 0.90 and F1 0.83 on 750 validation documents.",
+      "evidence_type": "supported",
+      "section": "Results — EHR Case Study, Table 4",
+      "quote": "OVERALL 0.90 0.84 0.81 0.83",
+      "source_line_start": 1065,
+      "source_line_end": 1065,
+      "interpretation_boundary": "This is document-level status classification after reducing events to one value per category. It does not evaluate overlapping spans, simultaneous same-span labels, or retention of all event details."
+    },
+    {
+      "finding_id": "F08",
+      "finding": "For patients identified as homeless by either source, NLP alone accounts for 32% in the full comparison population and 39% when restricted to patients with social history text.",
+      "evidence_type": "supported",
+      "section": "Results — Comparison of Extracted and Structured Information, Table 5",
+      "quote": "Living Status (homeless) 11,567 64% 32% 4% 9,390 55% 39% 5%",
+      "source_line_start": 1167,
+      "source_line_end": 1167,
+      "interpretation_boundary": "These are source-complementarity proportions among identified positive patients, not recall against all truly homeless patients or complete source-content coverage. The two results use different populations."
+    },
+    {
+      "finding_id": "F09",
+      "finding": "The qualitative error analysis reports difficulty with nuanced multi-event descriptions, including conflicting patient reports and toxicology evidence.",
+      "evidence_type": "supported",
+      "section": "Appendix — Error Analysis",
+      "quote": "report supporting polysubstance use. The extraction performance tends to decrease, as the number events",
+      "source_line_start": 1862,
+      "source_line_end": 1862,
+      "interpretation_boundary": "The appendix provides qualitative examples and a reported trend, not a numerical performance curve by event count. This supports testing complex and conflicting descriptions, but not a claim that the model preserves evidence attribution or decision qualifiers."
+    },
+    {
+      "finding_id": "F10",
+      "finding": "The strongest transfer limitation is the narrow clinical task and evaluation scope: even performance across other clinical institutions and periods remains uncertain, and no work-email Topic task is evaluated.",
+      "evidence_type": "supported",
+      "section": "Limitations and Future Work",
+      "quote": "the performance of mSpERT for other time periods or institutions is not well understood. The prevalence and",
+      "source_line_start": 1244,
+      "source_line_end": 1244,
+      "interpretation_boundary": "Use this paper as architectural and evaluation-method evidence only. Its clinical event types and status labels cannot be treated as concrete work Topics, and its reported scores cannot estimate msgloom accuracy."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Overall event extraction precision, recall, and micro-F1",
+      "target": "Clinical SDOH triggers and linked arguments",
+      "denominator_or_population": "518 UW SHAC test notes; 5,066 gold items. Recall uses gold items; precision uses predicted items, whose total is not reported.",
+      "reported_result": {
+        "precision": 0.87,
+        "recall": 0.85,
+        "micro_f1": 0.86
+      },
+      "limitations": "Mixes trigger overlap matching, exact span-only argument matching, and span-agnostic labeled-argument matching. No separate overlap or same-span multi-label evaluation. Different task from email Topic assignment."
+    },
+    {
+      "name": "Trigger and labeled-argument F1",
+      "target": "Event identification and normalized clinical attributes",
+      "denominator_or_population": "UW SHAC test set. Trigger gold counts: substance 1,310, employment 153, living status 354. Corresponding required labeled arguments have these category-specific counts.",
+      "reported_result": {
+        "trigger_f1_range": "0.89–0.95",
+        "labeled_argument_f1_range": "0.83–0.89"
+      },
+      "limitations": "Trigger spans need only overlap; labeled-argument spans are ignored. These scores do not prove precise label co-location on one span."
+    },
+    {
+      "name": "Selected span-only argument precision, recall, and F1",
+      "target": "Detailed clinical attributes and gold-relative omissions",
+      "denominator_or_population": "UW SHAC test set; gold counts are specific to each argument and event category.",
+      "reported_result": {
+        "substance_method": {
+          "gold": 102,
+          "precision": 0.68,
+          "recall": 0.55,
+          "f1": 0.61
+        },
+        "substance_type": {
+          "gold": 319,
+          "precision": 0.76,
+          "recall": 0.62,
+          "f1": 0.68
+        },
+        "employment_type": {
+          "gold": 84,
+          "precision": 0.8,
+          "recall": 0.57,
+          "f1": 0.67
+        },
+        "living_status_duration": {
+          "gold": 9,
+          "precision": 0.5,
+          "recall": 0.33,
+          "f1": 0.4
+        }
+      },
+      "limitations": "Exact-span and trigger-link requirements can produce errors without complete semantic omission. Some denominators are very small. The ontology does not cover business decision qualifiers."
+    },
+    {
+      "name": "Note-level classification accuracy, precision, recall, and F1",
+      "target": "One normalized status per SDOH category per document",
+      "denominator_or_population": "750 single-annotated validation documents with five category labels each. Unknown is negative for precision, recall, and F1; accuracy includes all class labels.",
+      "reported_result": {
+        "overall_accuracy": 0.9,
+        "overall_precision": 0.84,
+        "overall_recall": 0.81,
+        "overall_f1": 0.83,
+        "category_f1": {
+          "alcohol": 0.86,
+          "tobacco": 0.86,
+          "drug": 0.87,
+          "employment": 0.77,
+          "living_status": 0.79
+        }
+      },
+      "limitations": "Overall averaging details are not explicitly given. This evaluates reduced document labels on different data from Table 3. It cannot isolate loss caused by the mapping step. Prose gives a conflicting category range of 0.77–0.86."
+    },
+    {
+      "name": "Initial annotation inter-rater agreement",
+      "target": "UW note-level status annotation agreement",
+      "denominator_or_population": "15 shared training sections annotated by five medical students, with extracted trigger spans pre-labeled.",
+      "reported_result": {
+        "f1": 0.95
+      },
+      "limitations": "Not agreement on all 750 validation documents, SHAC span boundaries, overlap, or same-span label combinations. Agreement aggregation details are not provided."
+    },
+    {
+      "name": "NLP-only share of identified positive patients",
+      "target": "Complementarity of selected structured and narrative SDOH information",
+      "denominator_or_population": "Per-SDOH union of positive patients found by either source. Full population: 618,363 patients. Restricted population: 225,089 patients with social history text.",
+      "reported_result": {
+        "full_population": {
+          "current_alcohol": "5% of 148,221 identified positives",
+          "current_tobacco": "19% of 34,871",
+          "current_drug": "10% of 42,309",
+          "any_employment_status": "1% of 575,278",
+          "homeless": "32% of 11,567"
+        },
+        "social_history_text_population": {
+          "current_alcohol": "7% of 106,658 identified positives",
+          "current_tobacco": "26% of 25,675",
+          "current_drug": "13% of 31,222",
+          "any_employment_status": "4% of 200,926",
+          "homeless": "39% of 9,390"
+        }
+      },
+      "limitations": "Model-dependent observed unions are not exhaustive gold denominators. Any positive indication during the year counts despite subsequent changes. Selected sources and SDOH omit other content. Rounded source shares do not always sum to 100%."
+    },
+    {
+      "name": "Overlap-specific and same-span multi-label prediction performance",
+      "target": "The required R2-A / G2-A prediction boundary",
+      "denominator_or_population": "No dedicated evaluation subset or denominator reported.",
+      "reported_result": "Not reported.",
+      "limitations": "Architectural support and a qualitative gold-prevalence statement must remain separate from demonstrated subset accuracy."
+    },
+    {
+      "name": "Normalized substance multiplicity counts",
+      "target": "Patient-level extracted and normalized drug or alcohol categories",
+      "denominator_or_population": "5,807 patients with normalized drug values and 1,429 with normalized alcohol values.",
+      "reported_result": "1,503 drug patients are reported as 25% using more than one drug; 119 alcohol patients are reported as 8% using more than one alcohol kind; 225 patients have both drug and alcohol values.",
+      "limitations": "These are post-extraction patient counts, not same-span multi-label prevalence. The reported 25% is retained; 1,503/5,807 is approximately 25.9%. Figure 4's converted layout does not reliably associate every plotted count with its category and time status."
+    }
+  ],
+  "limitations": [
+    "No direct business-email or work-Topic data, labels, or evaluation.",
+    "No separate gold prevalence counts or prediction scores for overlapping spans or same-span multi-label cases.",
+    "Contiguous candidate spans and sentence input do not establish discontinuous entity prediction or cross-sentence Topic grouping.",
+    "The multi-label mechanism uses distinct classifier families; arbitrary simultaneous labels within one family are not established.",
+    "Relaxed slot evaluation does not establish exact labeled-argument boundaries or exact label co-location.",
+    "The case study selects particular note sections, sources, SDOH categories, and one year at one health system.",
+    "Patient-level source complementarity is affected by extraction errors and cannot measure all missing source content.",
+    "Mapping to the latest document status and counting any positive annual indication answer different questions and discard different temporal distinctions.",
+    "The paper does not empirically measure clinician review-time reduction or patient-outcome improvement."
+  ],
+  "future_work": [
+    "The authors identify evaluation across other periods and institutions as unresolved.",
+    "The authors call for work on integration into social-needs screening, manual data-entry reduction, false-positive stigmatization, and access to care or social services."
+  ],
+  "source_conflicts": [
+    {
+      "issue": "Method is an annotated and evaluated argument but is missing from the summarized schema and declared Entity Type label inventory.",
+      "locations": [
+        "L00403–L00406: Method annotation example",
+        "L00427–L00469: Table 1 omits Method",
+        "L00650–L00656: Entity Type inventory omits Method and reports 11 labels",
+        "L00922: Table 3 reports Method performance"
+      ],
+      "impact": "The supplied text does not provide a consistent complete output-label inventory. Do not silently add Method or change the stated label count."
+    },
+    {
+      "issue": "The account of standalone labeled-argument participation in relations is incomplete.",
+      "locations": [
+        "L00403–L00412: labeled arguments have their own spans",
+        "L00650–L00662: Entity Type excludes labeled-argument types, while separate subtype classifiers predict their values",
+        "L00668–L00671: only Entity Type non-null spans enter relation classification"
+      ],
+      "impact": "The text does not explain how a labeled-argument span without a non-null Entity Type prediction enters a relation. This limits reconstruction of decoding behavior and the exact scope of multi-label output. It does not negate the explicitly described subtype-head mechanism."
+    },
+    {
+      "issue": "The note-level F1 range in the prose excludes the Drug result in Table 4.",
+      "locations": [
+        "L01041: range 0.77–0.86",
+        "L01056: Drug F1 0.87"
+      ],
+      "impact": "Retain both source values. Table 4's listed category results span 0.77–0.87."
+    },
+    {
+      "issue": "Descriptions associated with the substance none label are called homogeneous in the main text and heterogeneous in the appendix.",
+      "locations": [
+        "L01005: concise and homogeneous",
+        "L01742–L01748: concise and heterogeneous"
+      ],
+      "impact": "The linguistic characterization is internally inconsistent. The reported direction of performance remains consistent."
+    },
+    {
+      "issue": "SHAC availability is described in both present and future terms.",
+      "locations": [
+        "L00274–L00280: authors state that they provide code, model, and annotated data",
+        "L01373: dataset will be made available through UW"
+      ],
+      "impact": "Actual dataset availability at publication cannot be determined unambiguously from this paper alone."
+    },
+    {
+      "issue": "The normalized drug multiplicity percentage does not match conventional whole-percent rounding of its counts.",
+      "locations": [
+        "L02173: 1,503 of 5,807 reported as 25%"
+      ],
+      "impact": "Retain the reported counts and percentage. This descriptive result is not evidence about span-label multiplicity."
+    }
+  ],
+  "unsafe_assumptions": [
+    "That 0.86 overall F1 is exact same-span multi-label accuracy.",
+    "That trigger overlap matching measures successful prediction of overlapping entities.",
+    "That adding subtype classifiers permits arbitrary simultaneous event-type or Topic labels on a span.",
+    "That linked trigger and argument spans demonstrate one discontinuous entity.",
+    "That sentence-level extraction supports cross-sentence or cross-message Topic consolidation.",
+    "That the word frequently supplies a measured prevalence of multi-label spans.",
+    "That patient-level multiple substance categories are same-span multiple labels.",
+    "That high note-level accuracy proves detailed event or qualifier preservation.",
+    "That NLP-only patient proportions measure recall against all true patient facts or complete source-content coverage.",
+    "That aggregate recall measures preservation of conditions, exceptions, deadlines, evidence, approval constraints, and decision qualifiers.",
+    "That reported clinical performance estimates business-email Topic segmentation or assignment performance.",
+    "That clinician review-time reduction or better patient outcomes were empirically demonstrated.",
+    "That SHAC and the large UW case-study data are both unambiguously publicly available.",
+    "That missing Method labels or unresolved relation gating can be silently repaired when reconstructing the method.",
+    "That training on all gold spans and relations resolves or overrides the stated inference-time Entity Type gate.",
+    "That the incomplete relation-decoding description proves subtype-only predictions are necessarily lost or makes reported labeled-argument scores invalid.",
+    "That Method is an undocumented alias of Type, or that the implemented Entity Type inventory necessarily contained 12 labels."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "unchanged",
+      "reason": "G1_A is not defined in the supplied context. These adjudications add no evidence for discontinuous entities or separated-mention Topic consolidation."
+    },
+    "G2_A": {
+      "status": "strengthened",
+      "reason": "Retain the limited transfer-method contribution of the described subtype-classifier approach to same-span labels. Complete relation decoding, the implemented output inventory, and the supported label combinations remain incompletely specified. No dedicated same-span accuracy or email Topic accuracy is established."
+    },
+    "G3_A": {
+      "status": "unchanged",
+      "reason": "G3_A is not defined in the supplied context. Qualifying Method's output representation supplies no new evidence of complete content or business-qualifier preservation."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "G4_A is not defined in the supplied context. Resolving the scope of clinical architectural evidence adds no direct business-email Topic evaluation."
+    }
+  },
+  "raw_claims": [
+    "allows a single label to be assigned to each span; however, the SHAC annotations frequently assign multiple",
+    "original SpERT, and the Entity Subtype layer is incorporated to generate multi-label span predictions.",
+    "**Entity Type:** The Entity Type classifier labels each span, _s_ _i_ = ( _t, t_ + 1 _, ...t_ + _k_ ), where _i_ is the span",
+    "argument subtypes match. The argument span is not considered, and the span of the connected trigger is used",
+    "**OVERALL** **5,066** **0.87** **0.85** **0.86**",
+    "Method 102 0.68 0.55 0.61",
+    "OVERALL 0.90 0.84 0.81 0.83",
+    "Living Status (homeless) 11,567 64% 32% 4% 9,390 55% 39% 5%",
+    "report supporting polysubstance use. The extraction performance tends to decrease, as the number events",
+    "the performance of mSpERT for other time periods or institutions is not well understood."
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 567,
+      "text": "allows a single label to be assigned to each span; however, the SHAC annotations frequently assign multiple"
+    },
+    {
+      "line_number": 579,
+      "text": "original SpERT, and the Entity Subtype layer is incorporated to generate multi-label span predictions."
+    },
+    {
+      "line_number": 597,
+      "text": "**Entity Type:** The Entity Type classifier labels each span, _s_ _i_ = ( _t, t_ + 1 _, ...t_ + _k_ ), where _i_ is the span"
+    },
+    {
+      "line_number": 740,
+      "text": "argument subtypes match. The argument span is not considered, and the span of the connected trigger is used"
+    },
+    {
+      "line_number": 945,
+      "text": "**OVERALL** **5,066** **0.87** **0.85** **0.86**"
+    },
+    {
+      "line_number": 922,
+      "text": "Method 102 0.68 0.55 0.61"
+    },
+    {
+      "line_number": 1065,
+      "text": "OVERALL 0.90 0.84 0.81 0.83"
+    },
+    {
+      "line_number": 1167,
+      "text": "Living Status (homeless) 11,567 64% 32% 4% 9,390 55% 39% 5%"
+    },
+    {
+      "line_number": 1862,
+      "text": "report supporting polysubstance use. The extraction performance tends to decrease, as the number events"
+    },
+    {
+      "line_number": 1244,
+      "text": "the performance of mSpERT for other time periods or institutions is not well understood."
+    }
+  ],
+  "confidence_scores": {
+    "F01": 0.98,
+    "F02": 0.96,
+    "F03": 0.99,
+    "F04": 0.99,
+    "F05": 0.99,
+    "F06": 0.98,
+    "F07": 0.99,
+    "F08": 0.99,
+    "F09": 0.94,
+    "F10": 0.99
+  },
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "code_statement": "The authors state that they provide code and a trained model, and list https://github.com/uw-bionlp/mspert at L00337. Availability was not independently checked.",
+    "dataset_statement": "SHAC availability is ambiguous because the contribution section states that annotated data are provided, while the data availability statement uses future tense. Public release of the large UW case-study dataset is not stated.",
+    "metrics_statement": "Event extraction, note classification, annotation agreement, and descriptive source-complementarity results are reported. Dedicated same-span multi-label and overlapping-extraction metrics are absent.",
+    "reconstruction_limits": "The embedded text does not give tuned hyperparameter values, full decoding details, or a consistent complete label inventory."
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [
+    "The relationship between subtype-only argument predictions and Entity Type-based relation gating is materially unclear. This affects the exact model-output capability credited to G2_A.",
+    "Method is evaluated but omitted from the declared output-label inventory. Review should preserve this inconsistency and determine whether it further constrains architectural synthesis. Minor numeric and wording conflicts alone do not motivate escalation."
+  ],
+  "xhigh_adjudication": {
+    "paper_id": "2212.07538v2",
+    "adjudications": [
+      {
+        "issue": "How subtype-only labeled-argument predictions participate in event relations.",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00409–L00412 Labeled arguments have an annotated span, argument type, and normalized subtype.",
+          "L00650–L00662 The Entity Type inventory excludes labeled-argument types; three separate Entity Subtype classifiers predict subtype labels.",
+          "L00668–L00671 Only spans with a non-null Entity Type prediction enter relation classification.",
+          "L00674–L00683 Training includes all gold spans and relations, but this does not explain inference-time eligibility."
+        ],
+        "correction_or_qualification": "The stated relation gate is clear: a span with a null Entity Type prediction is ineligible even if a subtype classifier predicts a non-null label. What remains unspecified is how a labeled argument without a qualifying Entity Type prediction is represented and linked in the final event output. The training description does not resolve this gap. These windows establish neither an alternative decoding route nor that such arguments are necessarily lost.",
+        "synthesis_rule": "Retain the described separate subtype-classifier mechanism as limited clinical transfer-method evidence. Do not credit a fully specified decoder for standalone labeled arguments, unrestricted simultaneous labels within a classifier family, or every possible combination across families. Reported extraction performance does not resolve this architectural gap or establish email Topic accuracy."
+      },
+      {
+        "issue": "Method is annotated and evaluated but absent from the declared Entity Type inventory.",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00394 Method of use is identified as information represented by the annotation example.",
+          "L00403–L00406 Method is explicitly identified as a span-only argument.",
+          "L00650–L00656 The declared Entity Type inventory lists 11 labels, including null, but does not include Method.",
+          "L00922 Table 3 reports Method with 102 gold instances, precision 0.68, recall 0.55, and F1 0.61."
+        ],
+        "correction_or_qualification": "The explicit annotation example and evaluation row cannot be reconciled with the declared inventory from these windows. The source does not establish whether the inventory is incomplete, the evaluated implementation differs, or another explanation applies. Retain the reported Method result without silently adding a label, changing the count, or treating Method as an alias of another label.",
+        "synthesis_rule": "Use Method as a reported clinical argument-evaluation result with an unresolved output-inventory qualification. Do not use it to reconstruct the complete implemented ontology or validate a particular decoding path. This conflict limits architectural reproducibility but does not negate the separately described subtype-classifier design."
+      }
+    ],
+    "finding_repairs": [],
+    "metric_repairs": [
+      {
+        "metric_name_or_issue": "Selected span-only argument precision, recall, and F1: substance Method",
+        "action": "qualify",
+        "qualification": "Retain the reported 102 gold instances, precision 0.68, recall 0.55, and F1 0.61. Method's representation in the implemented output inventory remains unresolved. Its recall is a score under the argument-matching criteria, not a direct measure of complete semantic omission or business-email content preservation."
+      },
+      {
+        "metric_name_or_issue": "Overall event extraction precision, recall, and micro-F1",
+        "action": "qualify",
+        "qualification": "Retain the aggregate clinical extraction result with its existing evaluation qualifications. It does not establish how subtype-only spans enter final events or how Method is represented. Do not infer exact same-span label recovery, complete decoding behavior, or email Topic accuracy from this aggregate."
+      }
+    ],
+    "conflict_repairs": [
+      {
+        "issue": "The account of standalone labeled-argument participation in relations is incomplete.",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "The stated gate excludes Entity Type-null spans from relation classification. The representation and final linking of labeled arguments without a qualifying Entity Type prediction remain unspecified. Preserve the subtype-head mechanism as described, while withholding claims about complete standalone labeled-argument decoding. Do not infer that the missing explanation proves extraction failure."
+      },
+      {
+        "issue": "Method is an annotated and evaluated argument but is missing from the summarized schema and declared Entity Type label inventory.",
+        "action": "rephrase",
+        "replacement_issue": "Method is explicitly described as a span-only argument at L00403–L00406 and evaluated at L00922, but is absent from the declared 11-label Entity Type inventory at L00650–L00656.",
+        "replacement_impact": "The complete implemented output inventory remains unresolved. The embedded Table 1 excerpts do not reconcile the discrepancy. Preserve the reported Method score and declared inventory as conflicting source statements; do not infer a corrected label count or an undocumented mapping."
+      }
+    ],
+    "final_gap_updates": {
+      "G1_A": {
+        "status": "unchanged",
+        "reason": "G1_A is not defined in the supplied context. These adjudications add no evidence for discontinuous entities or separated-mention Topic consolidation."
+      },
+      "G2_A": {
+        "status": "strengthened",
+        "reason": "Retain the limited transfer-method contribution of the described subtype-classifier approach to same-span labels. Complete relation decoding, the implemented output inventory, and the supported label combinations remain incompletely specified. No dedicated same-span accuracy or email Topic accuracy is established."
+      },
+      "G3_A": {
+        "status": "unchanged",
+        "reason": "G3_A is not defined in the supplied context. Qualifying Method's output representation supplies no new evidence of complete content or business-qualifier preservation."
+      },
+      "G4_A": {
+        "status": "unchanged",
+        "reason": "G4_A is not defined in the supplied context. Resolving the scope of clinical architectural evidence adds no direct business-email Topic evaluation."
+      }
+    },
+    "final_unsafe_assumptions": [
+      "That training on all gold spans and relations resolves or overrides the stated inference-time Entity Type gate.",
+      "That the incomplete relation-decoding description proves subtype-only predictions are necessarily lost or makes reported labeled-argument scores invalid.",
+      "That Method is an undocumented alias of Type, or that the implemented Entity Type inventory necessarily contained 12 labels."
+    ],
+    "needs_max_review": false,
+    "max_review_reason": null,
+    "confidence": 0.97
+  },
+  "xhigh_review_sha256": "d91f0f0a01795c47ba22c39b9e002d4f3189491dc3ccc511c03795bbe4a8ccd7",
+  "xhigh_effort": "xhigh",
+  "needs_max_review": false,
+  "xhigh_metric_repairs": [
+    {
+      "metric_name_or_issue": "Selected span-only argument precision, recall, and F1: substance Method",
+      "action": "qualify",
+      "qualification": "Retain the reported 102 gold instances, precision 0.68, recall 0.55, and F1 0.61. Method's representation in the implemented output inventory remains unresolved. Its recall is a score under the argument-matching criteria, not a direct measure of complete semantic omission or business-email content preservation."
+    },
+    {
+      "metric_name_or_issue": "Overall event extraction precision, recall, and micro-F1",
+      "action": "qualify",
+      "qualification": "Retain the aggregate clinical extraction result with its existing evaluation qualifications. It does not establish how subtype-only spans enter final events or how Method is represented. Do not infer exact same-span label recovery, complete decoding behavior, or email Topic accuracy from this aggregate."
+    }
+  ],
+  "xhigh_conflict_repairs": [
+    {
+      "issue": "The account of standalone labeled-argument participation in relations is incomplete.",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "The stated gate excludes Entity Type-null spans from relation classification. The representation and final linking of labeled arguments without a qualifying Entity Type prediction remain unspecified. Preserve the subtype-head mechanism as described, while withholding claims about complete standalone labeled-argument decoding. Do not infer that the missing explanation proves extraction failure."
+    },
+    {
+      "issue": "Method is an annotated and evaluated argument but is missing from the summarized schema and declared Entity Type label inventory.",
+      "action": "rephrase",
+      "replacement_issue": "Method is explicitly described as a span-only argument at L00403–L00406 and evaluated at L00922, but is absent from the declared 11-label Entity Type inventory at L00650–L00656.",
+      "replacement_impact": "The complete implemented output inventory remains unresolved. The embedded Table 1 excerpts do not reconcile the discrepancy. Preserve the reported Method score and declared inventory as conflicting source statements; do not infer a corrected label count or an undocumented mapping."
+    }
+  ]
+}

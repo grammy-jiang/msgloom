@@ -1,0 +1,1223 @@
+{
+  "paper_id": "R04",
+  "title": "A Semantic Framework for Modelling Quotes in Email Conversations",
+  "research_question": "How can email quotes and their responses be represented in a lightweight semantic model and extracted from mailing-list archives to support finer-grained queries and interaction analysis?",
+  "methodology": "Manual reply-style survey of public W3C LOD and Media Fragments messages; SIOC Quotes ontology design with OWL2-RL property chains; Python regular-expression extraction from an OWL-WG mbox archive; SPARQL retrieval and weighted author-network demonstrations. Sources: R04-F01–R04-F07; exact populations and numeric settings are in topic02.metrics.",
+  "key_findings": [
+    {
+      "finding_id": "R04-F01",
+      "finding": "The manual LOD/MF survey reports frequent inline replies: 287 of 449 replies in LOD and 145 of 200 in MF; these are reply-style observations, not Topic annotations.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2; Section 2.2, Table 1",
+      "quote": "Inline replies 287 (63.92%) 145 (72.50%)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 174,
+        "line_end": 176,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_note": "Descriptive empirical counts; Table 1 has an unresolved count/percentage discrepancy and a conditional category-total conflict recorded as R04-I01.",
+      "additional_evidence": [
+        {
+          "section": "Section 2.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 120,
+            "line_end": 146,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F02",
+      "finding": "SIOC Quotes represents an email substructure as a Block containing Quote and Response objects, with explicit containment and inverse properties.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 3; Section 3.1",
+      "quote": "resents a block, i.e., the combination of a quote from the answered item and the reply to this quote. The previous listing (Figure 1) represents such a block;",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 239,
+        "line_end": 246,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_note": "Directly specified and illustrated in Figures 2–3; unsupported means no comparative empirical validation of this unit, not absence of the formal definition.",
+      "additional_evidence": [
+        {
+          "section": "Section 3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 247,
+            "line_end": 255,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "Figure 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 293,
+            "line_end": 311,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F03",
+      "finding": "The ontology omits class disjointness and cardinality restrictions; a Block may become a Quote in a later reply, and several quoted parts may accompany one overall response.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 3; Section 3.1",
+      "quote": "while the three classes are independent, we did not intro- duce any formal disjointness (e.g., via owl:disjointWith) between them in our model. Indeed, in a thread, a Block can later become a Quote in the reply. This ensures a bet-",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 258,
+        "line_end": 267,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_note": "Formal representational capability, not gold or predicted Topic overlap. The several-parts sentence continues after the figure in raw lines 312–313.",
+      "additional_evidence": [
+        {
+          "section": "Section 3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 262,
+            "line_end": 267,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "Section 3.1 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 312,
+            "line_end": 313,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F04",
+      "finding": "Property chains infer quote–response reply links and authorship from email-level relations, including the assumption that a quote has the author of the replied-to item.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 4; Section 3.2.2",
+      "quote": "can be inferred from the original emails: the creator of a response in a block is the same person as the author of the reply message itself. Once again, we relied on the inverse",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 427,
+        "line_end": 437,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_note": "Axioms and illustrative provenance inference; no attribution-accuracy benchmark. Multiple-origin or nested quotes are not empirically tested.",
+      "additional_evidence": [
+        {
+          "section": "Figure 6 and Section 3.2.2 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 447,
+            "line_end": 464,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F05",
+      "finding": "The Python regular-expression extractor parsed 7,074 OWL-WG messages, identified 2,168 messages with inline replies, and created 10,146 blocks; reported runtime was about 40 seconds on the stated MacBook Pro.",
+      "evidence_type": "supported",
+      "section": "PDF p. 5; Section 4.1",
+      "quote": "The process took around 40 seconds on a MacBook Pro In- tel Core 2 Duo 2,53GHz with 4Go Ram, and 7,074 mes- sages have been parsed, including 5,139 replies (i.e., 72%).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 495,
+        "line_end": 503,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_note": "Single archive-processing demonstration. These are output counts and runtime, not precision, recall, or gold coverage.",
+      "additional_evidence": [
+        {
+          "section": "Section 4.1 method",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 481,
+            "line_end": 494,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Section 4.1 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 507,
+            "line_end": 512,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F06",
+      "finding": "A SPARQL query for ISSUE text in a quote and +1 text in its linked response returned two blocks called relevant by the authors.",
+      "evidence_type": "supported",
+      "section": "PDF p. 5; Section 4.2",
+      "quote": "By applying this query to the OWL2 mailing list dataset that we extracted from the mbox files, we were able to iden- tify 2 relevant blocks, including the one from Figure 8.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 545,
+        "line_end": 547,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_note": "Demonstrated query result count; no exhaustive relevance labels or precision/recall denominator. Figure 8 shows one partial result including a proposal and the response rationale.",
+      "additional_evidence": [
+        {
+          "section": "Figure 7",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 532,
+            "line_end": 544,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Figure 8",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 564,
+            "line_end": 585,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F07",
+      "finding": "The authors argue that quote-based social links capture argumentative interaction more closely than message-level reply links.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 5; Section 4.3",
+      "quote": "communities. Our model gives a stronger impression of how a community interacts since instead of having a single link for each message/reply pattern, we can represent the various quotes and responses, thus capturing more closely the argu- mentative discussions between individuals, as showed by [2]",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 554,
+        "line_end": 562,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_note": "A weighted LOD-thread graph is illustrated, but no comparative community or Topic score is reported. The thematic-coherence quotation is attributed to prior work [2], not a new R04 result.",
+      "additional_evidence": [
+        {
+          "section": "Section 4.3 and Figure 9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 586,
+            "line_end": 600,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "R04-F08",
+      "finding": "The prose claim that replies without quoted messages constitute less than 0.5% conflicts with the reply counts in Table 1.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 2; Section 2.2",
+      "quote": "replies, more than 63% (72% on media-fragments) are in- line replies, while only a small percentage (less than 0.5%) are replies without message, the rest being replies on top. In both cases, we therefore observed that more than",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+        "line_start": 162,
+        "line_end": 165,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_note": "R04-I01 preserves the printed counts and percentages. Category sums conflict with total replies if the styles are intended as an exclusive partition; no corrected count or overlapping annotation scheme is inferred.",
+      "additional_evidence": [
+        {
+          "section": "Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 171,
+            "line_end": 177,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No Topic labels, segmentation benchmark, extraction precision/recall, IAA, or evidence-preservation evaluation is reported (Sections 2.2 and 4).",
+    "Direct email domain is restricted to public technical mailing lists; business-email transfer is untested.",
+    "R04-I01/I02 preserve source count/percentage conflicts; the category-total conflict is conditional on an exclusive partition. R04-I03/I04 retain printed property-name mismatches, not a tested failure of the external ontology.",
+    "Several-parts and non-disjoint-class capabilities describe the ontology, not measured gold/model Topic overlap (R04-F03).",
+    "Author attribution assumes the author of the replied-to item authored the quote; copied/nested cases lack validation (R04-F04, R04-INT02).",
+    "No ablation, independent baseline, held-out evaluation, or repeated runtime study is reported; social-network utility is qualitative (R04-F05/F07)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported availability only; no current URL checks.",
+    "code_status": "Python extractor described, but no extractor source release or repository link identified in the paper. False means availability not reported, not proved unavailable.",
+    "dataset_status": "Public W3C source archive URLs and time windows reported; no released labeled Topic/quote gold dataset or frozen RDF snapshot identified.",
+    "ontology_status": "Paper reports SIOC Quotes vocabulary at http://rdfs.org/sioc/quotes and Vapour validation; this is not extractor-code availability.",
+    "metrics_scope": "True for descriptive counts, approximate runtime, and query match count; no predictive accuracy metrics.",
+    "sources": [
+      {
+        "section": "Section 3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 223,
+          "line_end": 235,
+          "pdf_pages": [
+            3
+          ]
+        }
+      },
+      {
+        "section": "Section 2.2 archive URLs",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 154,
+          "line_end": 158,
+          "pdf_pages": [
+            2
+          ]
+        }
+      },
+      {
+        "section": "Section 4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 481,
+          "line_end": 512,
+          "pdf_pages": [
+            5
+          ]
+        }
+      },
+      {
+        "section": "Section 4.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 545,
+          "line_end": 547,
+          "pdf_pages": [
+            5
+          ]
+        }
+      }
+    ]
+  },
+  "confidence_scores": {
+    "R04-F01": 0.96,
+    "R04-F02": 0.99,
+    "R04-F03": 0.98,
+    "R04-F04": 0.95,
+    "R04-F05": 0.98,
+    "R04-F06": 0.98,
+    "R04-F07": 0.96,
+    "R04-F08": 0.99
+  },
+  "confidence_interpretation": "Confidence in accurate source characterization, not calibrated task performance. Formal-design findings use unsupported under the contract because empirical validation is absent.",
+  "raw_claims": [
+    "Yet, we have not observed such practice in the emails we analysed, as we will now discuss.",
+    "As a result, even though some people are not keen on quoting others, their reply will contain a quotation anyway.",
+    "By applying this query to the OWL2 mailing list dataset that we extracted from the mbox files, we were able to iden- tify 2 relevant blocks, including the one from Figure 8."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+      "line_start": 118,
+      "line_end": 119,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+      "line_start": 186,
+      "line_end": 187,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+      "line_start": 545,
+      "line_end": 547,
+      "pdf_pages": [
+        5
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "paper_tasks": [
+        "Manual reply-style distribution survey",
+        "Rule-based inline quote/response extraction with processing counts and elapsed time",
+        "RDF/SPARQL retrieval demonstration",
+        "Qualitative weighted author-interaction graph"
+      ],
+      "topic02_task_status": {
+        "topic-boundary detection": "Not evaluated",
+        "contiguous topic segmentation": "Not evaluated",
+        "segment topic labeling": "Not evaluated",
+        "whole-message multi-label classification": "Not evaluated",
+        "exact span assignment to Topics": "Not evaluated",
+        "overlapping span assignment to Topics": "Not evaluated",
+        "non-contiguous assignment to one Topic": "Not evaluated",
+        "discourse/EDU segmentation": "Not evaluated",
+        "semantic action/question/reply-scope extraction (only structural quote–response linkage and a literal +1 query are demonstrated)": "Not evaluated",
+        "preservation of decision-bearing conditions/evidence/scope": "Not evaluated"
+      }
+    },
+    "annotation_unit": {
+      "value": "Whole email for manual reply-style classification; no Topic span annotations. Quote/Response/Block are representation units, not an annotated span gold standard.",
+      "source": {
+        "section": "Section 2.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 120,
+          "line_end": 141,
+          "pdf_pages": [
+            2
+          ]
+        }
+      }
+    },
+    "prediction_unit": {
+      "value": "Regex-extracted quoted text and response content grouped into RDF blocks; original email metadata. No Topic label or exact source-offset output is specified.",
+      "sources": [
+        {
+          "section": "Section 3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 239,
+            "line_end": 255,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "Section 4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 481,
+            "line_end": 494,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    "contiguity": {
+      "value": "Sub-message quote/response structures plus cross-message reply links. No exhaustive contiguous Topic partition or non-sequential Topic clustering algorithm. Several quoted parts may link to one overall response, but explicit offset lists/order constraints are not specified.",
+      "finding_refs": [
+        "R04-F02",
+        "R04-F03",
+        "R04-F04"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Reply-style classification is presented as message categories. If the categories are intended as an exclusive partition, their totals conflict (R04-I01). The paper does not supply a protocol that resolves this; overlapping survey labels are not inferred. No gold Topic labels or Topic membership counts.",
+      "prediction": "No predicted Topic memberships. Multiple blocks per email are possible, but extractor multiplicity constraints are not reported.",
+      "representation": "No ontology cardinality restrictions on Block/Quote/Response relations; this is not evidence of multiple Topics per span.",
+      "finding_refs": [
+        "R04-F02",
+        "R04-F03",
+        "R04-F05"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "No discontinuous semantic-object/Topic annotations reported.",
+        "thread_level": "No Topic gold clusters reported."
+      },
+      "prediction": {
+        "within_one_message": "No measured discontinuous Topic output; separate quote parts are representable within one block, but extractor success on that case is unreported.",
+        "thread_level": "Quote–response reply relations connect messages; they do not establish identity of a concrete work matter."
+      },
+      "representation": "Several quote parts before one overall response are explicitly allowed. A Block becoming a Quote later is thread-level role reuse, not demonstrated within-message discontinuous Topic assignment.",
+      "finding_refs": [
+        "R04-F03",
+        "R04-F04"
+      ]
+    },
+    "overlap": {
+      "gold": "No overlapping Topic/span gold labels.",
+      "prediction": "Unsupported/unreported for overlapping span assignments or multiple Topic memberships.",
+      "scope": "Absence of class disjointness permits one object to be Block and Quote across conversational reuse. Ontology class overlap and unrestricted object links must not be equated with overlapping character spans or Topic labels.",
+      "finding_refs": [
+        "R04-F03"
+      ]
+    },
+    "dataset_domain": {
+      "value": "Public technical/standards mailing lists: LOD public discussion, Media Fragments Working Group, and OWL Working Group. LOD thread also used for an illustrative social graph.",
+      "sources": [
+        {
+          "section": "Section 2.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 120,
+            "line_end": 146,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "Section 4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 495,
+            "line_end": 512,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Section 4.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 586,
+            "line_end": 598,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "transfer_limit": "Direct email evidence, but not private business email, Outlook HTML, Teams, attachments, or multilingual evaluation."
+    },
+    "annotation_process": {
+      "value": "Authors manually analyzed reply structure using the stated categories. Annotator count, instructions beyond category definitions, adjudication, span alignment, and released annotation records are not reported.",
+      "source": {
+        "section": "Section 2.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 120,
+          "line_end": 146,
+          "pdf_pages": [
+            2
+          ]
+        }
+      }
+    },
+    "inter_annotator_agreement": {
+      "status": "Not reported",
+      "metric": null,
+      "population": "Manual LOD/MF message reply-style survey; no Topic annotation population",
+      "source": {
+        "section": "Section 2.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+          "line_start": 120,
+          "line_end": 199,
+          "pdf_pages": [
+            2
+          ]
+        }
+      }
+    },
+    "split_and_leakage": {
+      "split_unit": "Not reported; descriptive survey and full-archive demonstration, not learned-model evaluation",
+      "counts": "Corpus counts are in topic02.metrics; no train/dev/test counts.",
+      "duplicate_controls": "Not reported. Only one common poster between the two manual-survey lists is reported; this is not a duplicate/leakage control.",
+      "sources": [
+        {
+          "section": "Section 2.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 142,
+            "line_end": 146,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "Section 4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 495,
+            "line_end": 512,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    "metrics": [
+      {
+        "metric_id": "R04-M-LOD",
+        "task": "Manual message reply-style survey",
+        "dataset": "LOD W3C mailing list, January–March 2010",
+        "split": "No train/dev/test split reported; observed archive period",
+        "population": {
+          "messages": 554,
+          "users": 103
+        },
+        "definition": "Counts of messages and users; percentages for non-replies/replies use all messages; reply subtype percentages apparently use replies, but the no-quote row is inconsistent.",
+        "results": [
+          {
+            "category": "Non-replies",
+            "count": 105,
+            "reported_percentage": "18.95%",
+            "denominator": 554
+          },
+          {
+            "category": "Replies",
+            "count": 449,
+            "reported_percentage": "81.05%",
+            "denominator": 554
+          },
+          {
+            "category": "Replies on top",
+            "count": 162,
+            "reported_percentage": "36.08%",
+            "denominator": 449
+          },
+          {
+            "category": "Inline replies",
+            "count": 287,
+            "reported_percentage": "63.92%",
+            "denominator": 449
+          },
+          {
+            "category": "Replies w/o message",
+            "count": 15,
+            "reported_percentage": "00.33%",
+            "denominator_status": "Neither the stated reply count nor the all-message count yields the printed percentage. The intended denominator or correction is not reported."
+          }
+        ],
+        "source": {
+          "section": "Section 2.2, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 168,
+            "line_end": 177,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        "caution": "R04-I01: do not treat subtype counts as a reconciled partition."
+      },
+      {
+        "metric_id": "R04-M-MF",
+        "task": "Manual message reply-style survey",
+        "dataset": "MF W3C mailing list, January–March 2010",
+        "split": "No train/dev/test split reported; observed archive period",
+        "population": {
+          "messages": 275,
+          "users": 16
+        },
+        "definition": "Counts of messages and users; percentages for non-replies/replies use all messages; reply subtype percentages apparently use replies, but the no-quote row is inconsistent.",
+        "results": [
+          {
+            "category": "Non-replies",
+            "count": 75,
+            "reported_percentage": "27.27%",
+            "denominator": 275
+          },
+          {
+            "category": "Replies",
+            "count": 200,
+            "reported_percentage": "72.73%",
+            "denominator": 275
+          },
+          {
+            "category": "Replies on top",
+            "count": 55,
+            "reported_percentage": "27.50%",
+            "denominator": 200
+          },
+          {
+            "category": "Inline replies",
+            "count": 145,
+            "reported_percentage": "72.50%",
+            "denominator": 200
+          },
+          {
+            "category": "Replies w/o message",
+            "count": 7,
+            "reported_percentage": "00.35%",
+            "denominator_status": "Neither the stated reply count nor the all-message count yields the printed percentage. The intended denominator or correction is not reported."
+          }
+        ],
+        "source": {
+          "section": "Section 2.2, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 168,
+            "line_end": 177,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        "caution": "R04-I01: do not treat subtype counts as a reconciled partition."
+      },
+      {
+        "metric_id": "R04-M-USER",
+        "task": "Descriptive participation concentration",
+        "dataset": "Same LOD and MF January–March 2010 survey",
+        "split": "Observed corpus; no predictive split",
+        "definition": "Post share = posts by selected users / list posts; user share = selected users / list users.",
+        "results": [
+          {
+            "dataset": "LOD",
+            "top_user_posts": 125,
+            "all_posts": 554,
+            "reported_post_share": "22.5%",
+            "top_group_users": 24,
+            "all_users": 103,
+            "reported_user_share": "23.30%",
+            "top_group_posts": 395,
+            "reported_group_post_share": "71.30%"
+          },
+          {
+            "dataset": "MF",
+            "top_user_posts": 71,
+            "all_posts": 275,
+            "reported_post_share": "27%",
+            "top_group_users": 4,
+            "all_users": 16,
+            "reported_user_share": "25%",
+            "top_group_posts": 184,
+            "reported_group_post_share": "66.90%"
+          }
+        ],
+        "source": {
+          "section": "Section 2.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 188,
+            "line_end": 199,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        "caution": "MF 71/275 disagrees with 27% (R04-I02); other minor decimal differences should not be silently re-rounded."
+      },
+      {
+        "metric_id": "R04-M-EXTRACT",
+        "task": "Rule-based quote/block extraction and RDF production",
+        "dataset": "Complete OWL Working-Group archive as described, September 2007–April 2010",
+        "split": "Entire processing archive; no held-out test",
+        "definition": "Processed-message, reply-message, inline-reply-message, and generated-block counts; approximate elapsed processing time.",
+        "results": {
+          "processed_messages": 7074,
+          "reply_messages": 5139,
+          "reported_reply_fraction": "72% of 7,074 messages",
+          "inline_reply_messages": 2168,
+          "reported_inline_fraction": "30% of 7,074 messages, not 30% of replies",
+          "generated_blocks": 10146,
+          "runtime_seconds_approx": 40,
+          "hardware": "MacBook Pro Intel Core 2 Duo 2,53GHz with 4Go Ram (paper wording)"
+        },
+        "sources": [
+          {
+            "section": "Section 4.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 495,
+              "line_end": 503,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "Section 4.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 507,
+              "line_end": 512,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "caution": "No repeated timings, variance, gold labels, extraction error rate, or Raspberry Pi runtime. Preserve the printed 72% and 30% as approximate whole-percent summaries; counts give about 72.65% and 30.65% (analyst arithmetic). The rounding/truncation method is not reported. These small differences are not treated as material contradictions. The 30% denominator is all 7,074 messages, not the 5,139 replies."
+      },
+      {
+        "metric_id": "R04-M-QUERY",
+        "task": "SPARQL retrieval of ISSUE-quote/+1-response pairs",
+        "dataset": "Extracted OWL-WG RDF archive from R04-M-EXTRACT",
+        "split": "Same demonstration data; no retrieval evaluation split",
+        "definition": "Number of returned blocks described as relevant; query filters the two content fields separately.",
+        "results": {
+          "relevant_blocks_reported": 2
+        },
+        "denominator": "Total relevant blocks and exhaustively judged retrieved blocks not reported; no precision or recall computable.",
+        "source": {
+          "section": "Section 4.2, Figure 7",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 532,
+            "line_end": 547,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      }
+    ],
+    "measured_work_text_preservation": {
+      "status": "No such evaluation",
+      "value": "No measured loss or broadening of conditions, evidence, exceptions, approval scope, action scope, or reply scope. Figure 8 illustrates retained proposal and response rationale, but neither completeness nor semantic scope is scored. No extraction-error analysis is reported.",
+      "sources": [
+        {
+          "section": "Sections 4.1–4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 481,
+            "line_end": 547,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Figure 8",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 564,
+            "line_end": 585,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "topic-boundary detection",
+      "contiguous topic segmentation",
+      "segment topic labeling",
+      "whole-message multi-label classification",
+      "exact span assignment to Topics",
+      "overlapping span assignment to Topics",
+      "non-contiguous assignment to one Topic",
+      "discourse/EDU segmentation",
+      "semantic action/question/reply-scope extraction (only structural quote–response linkage and a literal +1 query are demonstrated)",
+      "preservation of decision-bearing conditions/evidence/scope",
+      "Comparative sentence/clause/arbitrary-span/EDU/hybrid units",
+      "Cross-Source work-matter identity, uncertain links, and evidence outside quoted text",
+      "Gold provenance attribution for copied, nested, or edited quotes",
+      "Business-user review, action recall, and report coverage"
+    ],
+    "material_inconsistencies": [
+      {
+        "inconsistency_id": "R04-I01",
+        "kind": "Printed count/percentage conflict and conditional category-total conflict; visually confirmed in PDF page 2 at xhigh",
+        "reported_values": "LOD: Replies 449; top 162; inline 287; w/o message 15 (00.33%). MF: Replies 200; top 55; inline 145; w/o message 7 (00.35%). Prose says w/o-message replies less than 0.5%.",
+        "analyst_arithmetic": "15/449 = 3.3408%; 7/200 = 3.5%. Even all-message denominators give 15/554 = 2.7076% and 7/275 = 2.5455%. Top + inline already equals total replies (449 and 200); adding w/o-message gives 464 and 207. If the listed reply styles are intended as an exclusive partition, their category totals conflict with the reported reply totals. The count/percentage conflict remains under either stated denominator.",
+        "sources": [
+          {
+            "section": "Section 2.2 and Table 1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 159,
+              "line_end": 177,
+              "pdf_pages": [
+                2
+              ]
+            }
+          },
+          {
+            "section": "Reply-style definitions",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 132,
+              "line_end": 141,
+              "pdf_pages": [
+                2
+              ]
+            }
+          }
+        ],
+        "resolution": "Retain every printed value and the prose claim. The intended correction and annotation counting protocol are not recoverable from this source. Do not change any count or infer overlapping survey labels. This is a documented source inconsistency, not a remaining contradiction in the analysis."
+      },
+      {
+        "inconsistency_id": "R04-I02",
+        "kind": "Material count/percentage conflict; visually confirmed in PDF page 2",
+        "reported_values": "MF most active participant: 71 posts out of 275, hence 27%.",
+        "analyst_arithmetic": "71/275 = 25.8182%, not 27%.",
+        "sources": [
+          {
+            "section": "Section 2.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 190,
+              "line_end": 196,
+              "pdf_pages": [
+                2
+              ]
+            }
+          }
+        ],
+        "resolution": "Retain both the reported 71/275 counts and 27%. The count-derived 25.8182% is analyst arithmetic, not a replacement source result. The intended correction is not reported; ordinary whole-percent rounding does not yield 27%."
+      },
+      {
+        "inconsistency_id": "R04-I03",
+        "kind": "Property namespace inconsistency; visually confirmed in PDF page 3",
+        "reported_values": "Figure 3 prints sioc:has_block :block, whereas Section 3.1 and Figure 2 define quotes:has_block.",
+        "sources": [
+          {
+            "section": "Figure 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 293,
+              "line_end": 301,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "Section 3.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 247,
+              "line_end": 249,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "Figure 2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 275,
+              "line_end": 292,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "Figure 6",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 451,
+              "line_end": 461,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "resolution": "Retain the printed namespace mismatch. Section 3.1, Figure 2, and Figure 6 use quotes:has_block, but the intended correction to Figure 3 is not established by the paper. The external ontology was not fetched or tested, and no implementation failure is claimed."
+      },
+      {
+        "inconsistency_id": "R04-I04",
+        "kind": "Property-name inconsistency; visually confirmed in PDF pages 4–5",
+        "reported_values": "Section 3.2.2 calls block containment has_reply, then uses has_response; Section 3.1 and Figure 6 use quotes:has_response.",
+        "sources": [
+          {
+            "section": "Section 3.2.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 414,
+              "line_end": 426,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "section": "Section 3.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 253,
+              "line_end": 255,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "Figure 6",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 447,
+              "line_end": 450,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "resolution": "Retain the printed naming discrepancy. Block containment is described as has_reply and then has_response in Section 3.2.2; Figure 6 separately uses quotes:has_response in the chain whose inferred relation is sioc:has_reply. These roles are distinct. The intended prose correction and external ontology behavior are not established."
+      },
+      {
+        "inconsistency_id": "R04-I05",
+        "kind": "Source wording mismatch; likely terminology typo by contextual interpretation, not confirmed author intent; visually confirmed in PDF page 5",
+        "reported_values": "Section 4.1 prints inline queries while describing quote extraction and counting inline replies.",
+        "sources": [
+          {
+            "section": "Section 4.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 481,
+              "line_end": 503,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "Section 4.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+              "line_start": 507,
+              "line_end": 510,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "resolution": "Preserve inline queries in quotations. The section title, extraction method, and inline-reply counts support reading the task as quote extraction. Calling the wording a typo is an analyst interpretation. No question-extraction evaluation or further material contradiction is inferred.",
+        "materiality": "Nonmaterial to task identification after full-context verification; retained under its existing ID for audit continuity."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "R04-F02 supplies a structural quote–response unit; no comparison with sentence, clause, span, EDU, or hybrid units.",
+      "RQ2": "R04-F03/F04 motivate finer email relations; no Topic clusters or interleaving Topic evaluation.",
+      "RQ3": "R04-F03 allows several quote parts and non-disjoint classes; no Topic gold/model cardinality or span overlap.",
+      "RQ4": "Direct email representation support for several quoted parts per block; no direct discontinuous/overlapping Topic extraction result.",
+      "RQ5": "R04-F04/F06 are relevant to attribution and reply scope, but no semantic preservation measurements.",
+      "RQ6": "R04-F01/F05/F06 report descriptive counts/runtime/query matches. R04-I01/I02 prevent unqualified use of some percentages.",
+      "RQ7": "Manual survey and archive domain specified; IAA, held-out splits, duplicate controls, and Topic labels absent.",
+      "RQ8": "Supports investigating quote–response links as optional evidence; experiments below are untested and do not approve architecture."
+    },
+    "interpretation": [
+      {
+        "id": "R04-INT01",
+        "basis": [
+          "R04-F02",
+          "R04-F03"
+        ],
+        "text": "A quote–response link can preserve a narrower reply target than whole-message membership. It remains evidence about discourse, not proof that a block or thread equals a Topic."
+      },
+      {
+        "id": "R04-INT02",
+        "basis": [
+          "R04-F04"
+        ],
+        "text": "The author-inference rule can misattribute copied or nested quotations if the replied-to message author did not author every quoted passage. This is a plausible failure mechanism, not an error measured by R04.",
+        "source": {
+          "section": "Section 2.1 reports multi-email copying not observed in the examined emails",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 114,
+            "line_end": 119,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      },
+      {
+        "id": "R04-INT03",
+        "basis": [
+          "R04-F06"
+        ],
+        "text": "A literal +1 match can retrieve explicit support while failing to resolve which proposition, exception, or condition is endorsed. R04 does not test these semantic cases or prove full evidence preservation."
+      },
+      {
+        "id": "R04-INT04",
+        "basis": [
+          "R04-F01",
+          "R04-F05"
+        ],
+        "text": "Reported inline-reply frequencies describe different lists and collection periods; manual and automated counts also differ in measurement method. Their difference is not extractor recall or a business-email population estimate."
+      },
+      {
+        "id": "R04-INT05",
+        "basis": [
+          "R04-F03",
+          "R04-F04"
+        ],
+        "text": "If several quotes and responses share a block, the Figure 6 property chain links each quote to each response. Whether all such links match intended reply scope needs testing; no scope error rate is reported.",
+        "source": {
+          "section": "Figure 6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+            "line_start": 447,
+            "line_end": 450,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "R04-EXP01",
+        "status": "Untested msgloom proposal",
+        "basis": [
+          "R04-F02",
+          "R04-F06"
+        ],
+        "proposal": "On user-reviewed work-email examples, compare whole-message evidence with quote–response links and sentence/clause/span/EDU/hybrid candidates. Retain original spans and unresolved links.",
+        "evaluation": "Score unit boundaries, quote–response link precision/recall, and decision-bearing evidence omission/broadening separately. Do not report query match counts as Topic accuracy."
+      },
+      {
+        "id": "R04-EXP02",
+        "status": "Untested msgloom proposal",
+        "basis": [
+          "R04-F03"
+        ],
+        "proposal": "Annotate gold Topics independently from quote blocks. Include multiple Topics per message, one span in several Topics, and separated spans belonging to one Topic.",
+        "evaluation": "Report gold representational coverage separately from predicted span/membership performance. Separate within-message discontinuity from thread-level recurrence."
+      },
+      {
+        "id": "R04-EXP03",
+        "status": "Untested msgloom proposal",
+        "basis": [
+          "R04-F04",
+          "R04-INT02",
+          "R04-INT05"
+        ],
+        "proposal": "Test copied, nested, edited, multi-source, and multi-quote replies, plus conditional or partial +1 responses. Preserve provenance uncertainty instead of forcing author or Topic identity.",
+        "evaluation": "Measure attribution accuracy and reply-scope precision/recall against reviewed gold; count lost conditions/evidence and broadened approval/action scopes. Keep related messages and near-duplicate quote copies together when splitting data."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/reused-topic01/2010_passant_et_al_semantic_framework_modelling_quotes_email_conversations.pdf",
+      "pdf_sha256": "7acbec5e605fa7724ce3fddbd9537fe42cc9a881d225120bd0f24f0ab8a4f87d",
+      "expected_pdf_sha256": "7acbec5e605fa7724ce3fddbd9537fe42cc9a881d225120bd0f24f0ab8a4f87d",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R04.md",
+      "converted_text_sha256": "59c692cabb32730cafab7bf7049946b7d4b4c78e597e504d8b885b6ce88dc7a4",
+      "preferred_fine_conversion": "Not present",
+      "locator_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.raw.txt",
+      "locator_text_sha256": "571968cf62da66d66107190f70abd98832eb8ea2a9f0dbfd300b0782991e997a",
+      "line_convention": "1-based LF lines using text.split('\\n'); form-feed is not an additional line",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.pages.md",
+          "sha256": "1a79a00997c8a2588ac194049e2a45557b71f696502ee052015c3b03dc42a136"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R04.layout.txt",
+          "sha256": "ab13b315262a1ed79da33bd715d702c38cd317ef928bb094af6826c629a9f844"
+        }
+      ],
+      "visual_inspection": {
+        "pdf_pages": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "image_paths": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/page-2.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/page-3.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/page-4.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/page-5.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/page-6.png"
+        ],
+        "reason": "Verify Table 1 and prose percentages, omitted RDF/SPARQL listings and figures, property-name discrepancies, and partial query output.",
+        "transcription": "No separate transcription needed: original images and independent raw extraction agree on cited material."
+      },
+      "conversion_limitations": "Primary rough Markdown loses code/figure content and duplicates a property-chain fragment. Page-indexed auxiliary text interleaves columns. Raw pdftotext plus local PDF inspection reliably resolves these defects; source inconsistencies remain unresolved by design.",
+      "network_used": false,
+      "topic01_conclusions_used": false,
+      "xhigh_verification": {
+        "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-review.json",
+        "validation_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-validation.json",
+        "runtime_evidence_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-runtime-evidence.json",
+        "pdf_pages_visually_rechecked": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "fresh_render_paths": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-page-2.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-page-3.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-page-4.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-page-5.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/xhigh-page-6.png"
+        ],
+        "method": "Fresh local pdftoppm render from the frozen PDF; fresh pdftotext -raw bytes match the frozen locator text. No visual transcription is required because the cited raw text and PDF agree.",
+        "archive_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R04/attempt-01-high",
+        "scope": "Focused counts, notation, evidence limits, and provenance review; complete Topic02 fields retained."
+      }
+    }
+  },
+  "runtime_provenance": {
+    "source": "Actual local turn_context record and launcher arguments, read during this focused review",
+    "role": "paper-R04-xhigh",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "thread_id": "01a0a087-e341-7433-9fc1-ec4a1ed3c9c2",
+    "turn_context_records": [
+      {
+        "path": "/home/grammy-jiang/.codex/sessions/2026/09/15/rollout-2026-09-15T01-27-35-01a0a087-e341-7433-9fc1-ec4a1ed3c9c2.jsonl",
+        "line": 8,
+        "line_sha256": "4a8fe5f3f8aa80109b75dfb63eeac41badf414112f4faf1dba6c7f6c939ef59b",
+        "timestamp": "2026-09-14T15:27:36.951Z",
+        "model": "gpt-6-astra",
+        "effort": "xhigh",
+        "turn_id": "01a0a087-e3d9-7e91-855a-c1f8808eb98a",
+        "cwd": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation"
+      }
+    ],
+    "launch_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/workers/paper-R04-xhigh.launch.json",
+    "launch_sha256": "69e5526b2ff535d73b602e979ebdae650657dcdc923154dbfbc8a9908362e5a3",
+    "parent_verification": "Parent owns semantic acceptance and final process-exit/runner receipts; no completion status is asserted here."
+  }
+}

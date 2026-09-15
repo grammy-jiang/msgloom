@@ -1,0 +1,40 @@
+{
+  "status": "accepted_with_issues",
+  "review4_repairs": {
+    "R4-N1": "fixed"
+  },
+  "blocking_issues": [],
+  "nonblocking_issues": [
+    {
+      "id": "R5-N1",
+      "location": "engineering-validation/src/topic02_validation/experiments.py:181; results/experiment-run.json",
+      "finding": "The runner records finished_at_utc before executing EV1–EV7.",
+      "evidence": "run_all evaluates the timestamp before the experiment calls at lines 185–186. An independent interception recorded finished_at_utc=2026-09-15T07:09:41.144200+00:00 and subsequent EV1 entry at 07:09:41.148357+00:00. Evidence: /tmp/topic02-review05-qet7isy1/probes.json. The stored run likewise reports only 24 microseconds between start and finish.",
+      "impact": "The run completion timestamp is inaccurate. This affects execution provenance, but not deterministic metrics or actual completion: run_all returns only after all experiments finish."
+    }
+  ],
+  "recommended_fixes": [
+    "Record finished_at_utc after EV1–EV7 return. Add a controlled-clock regression that verifies timestamp ordering. Regenerate experiment-run.json and its manifest hashes while preserving historical reviews and Academic Round2 artifacts."
+  ],
+  "verified_points": [
+    "Ran all 54 tests in an isolated /tmp copy: all passed.",
+    "Ran the formal 13-mutant gate: all mutants produced test failures, with no import/runtime-error false kills. The call-site-bypass mutant is present and killed.",
+    "Rebuilt from source, tests, and static supporting audit inputs in /tmp/topic02-review05-qet7isy1. metrics.json, RESULTS.md, fixtures/MANIFEST.json, and all 18 gold JSON files matched repository bytes exactly.",
+    "Verified metrics SHA-256 e0b534bd1d7db3a26e805b734f007049f2b44aca0e88955a5ee5cfb9eace2668, RESULTS.md SHA-256 ccb9aa836493bc5940fc7ba0094d380a473ba3a48a0225ca4a0cc13413e7c77e, and fixture-manifest SHA-256 4a52e1ed60d570336ac37802ef421594a0fb864427b3c19dcbed14db7667f221.",
+    "All four Academic Round2 artifact hashes and all four preserved review-verdict hashes match pre-review-05-audit.json. Current source, test, result, fixture-manifest, and supporting-audit hashes match experiment-manifest.json.",
+    "The repaired replay.py docstring, STATUS.md, EV5 prediction_input_contract, and Topic02 parent CURRENT_STATUS.md describe the current materialized-context contract and post-Round2 state.",
+    "Intercepted all five actual replay_case -> predict_step calls. PredictionCase fields were exactly case_id/text/topics/spans; PredictionSpan fields were span_id/span/text; ContextInput fields were step_id/available_contexts. Nested objects contained no evaluation labels. Only currently available context pairs reached prediction.",
+    "Hidden-gold removal/falsification and 15 unavailable-context removal, replacement, or ordering probes preserved predictions. The correction reference follows abstain -> ATLAS -> BETA while its neighbor remains NORTH.",
+    "Direct comparisons against all 18 static gold files verified identities, offsets/text, Topic definitions, origin/kind, joint memberships, alternatives, abstention permission, and Topic components. All 52 valid contract pairs differing only in abstention permission remained distinguishable through conversion and round trip.",
+    "Formal representation mutants cover assignment-ID collapse, origin/kind loss, alternative loss, abstention-policy loss, and component collapse. Additional full-suite mutants for call-site bypass, abstention serialization loss, abstention decoding loss, and offset corruption were killed.",
+    "Fixture generation remained byte-identical when tested assignment, unit, representation, and preservation functions were replaced with failing functions.",
+    "Independently recounted EV4: 21 annotated spans, 20 scored required spans, and 24 required memberships. Category populations and exclusions match. TP/FP/FN are 13/0/11 for span-only prediction, 24/12/0 for local-window prediction, 24/5/0 for sentence projection, and 24/0/0 for clause/EDU-like/hybrid projection.",
+    "Rechecked all eight end-to-end comparators and all 239 recorded IoU matches. Matching is one-to-one. Clause set-valued evaluation has 39 gold memberships, 39 predictions, 35 matches, four FP, and four FN. Injecting a chatter prediction increases FP and the precision denominator by one; removing predictions produces 39 FN.",
+    "All 346 stored fraction values passed arithmetic checks. Gold-span-conditioned membership remains separate from end-to-end evaluation. Oracle unit ceilings remain separate from predicted-unit results. EV4 explicitly limits coverage to selected stress annotations.",
+    "EV6 uses 200 calibration and 200 holdout examples with disjoint texts and declared template families. Selection uses calibration only. The coverage floor rejects all-abstain success. Holdout coverage remains 120/200 and accepted error 40/120; the joint target failure is explicit.",
+    "EV7 remains synthetic-only. G10 identity/count stays with Topic03, semantic response scope with Topic04, and general calibration with Topic10. Supporting external annotation/scorer/split unknowns remain explicit.",
+    "Execution completion and pending independent acceptance remain separate before this verdict. No production-accuracy, representativeness, architecture-approval, or literature-exhaustion claim was found.",
+    "Used local reads and /tmp writes only. No network, mailbox access, repository edits, commits, or git-state changes occurred. Additional evidence is retained in /tmp/topic02-review05-qet7isy1/probes.json and extra-mutants.json."
+  ],
+  "confidence": 0.98
+}

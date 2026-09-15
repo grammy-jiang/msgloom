@@ -1,0 +1,938 @@
+{
+  "paper_id": "D06",
+  "title": "Detecting Action-Items in E-mail",
+  "research_question": "Do fine-grained action-item annotations and sentence-level classifiers improve e-mail action-item detection over document-level supervision, and how do unigram and n-gram representations affect performance?",
+  "methodology": "Compare kNN (s-cut), multinomial naive Bayes, and SVM using unigram/n-gram e-mail body features at document and sentence levels; use RASP segmentation, phrase-derived sentence labels, OR document aggregation, chi-squared feature selection within nested cross-validation, and document-grouped ten-fold evaluation on reconciled university-volunteer e-mail annotations (topic02 evidence refs task, representation, protocol, corpus).",
+  "key_findings": [
+    {
+      "finding_id": "D06-F01",
+      "finding": "The study uses 744 deduplicated university-volunteer e-mails with quoted material manually removed; two annotators marked action-item segments, then reconciled judgments, yielding 328 positive messages. Kappa is 0.85 at document level and 0.82 at sentence level.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, §3 Problem Definition & Approach (continued)",
+      "quote": "Two human annotators labeled all the messages and identified each segment of the e-mail which contained action-items.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 123,
+        "line_end": 127,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.97,
+      "additional_evidence": [
+        {
+          "section": "PDF p. 2, §3 corpus and annotation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 117,
+            "line_end": 127,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "D06-F02",
+      "finding": "Gold phrase markings are projected onto RASP sentences: a sentence is positive if it contains at least 30% of a marked action-item segment. Sentence predictions are aggregated to a positive document if any sentence is positive. This evaluates binary detection, not exact action-span boundaries or Topic membership.",
+      "evidence_type": "supported",
+      "section": "PDF p. 1, §3 Representation and Implementation Overview",
+      "quote": "and then treat any sentence that contains at least 30% of a marked action-item segment as an action-item.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 88,
+        "line_end": 99,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "finding_id": "D06-F03",
+      "finding": "On document detection with document-grouped ten-fold cross-validation of the 744-message corpus, the best sentence model beats the best document model in F1 and accuracy for each classifier. The paper reports significance for these comparisons except SVM F1. Best F1 is kNN sentence n-gram 0.7790; best accuracy is SVM sentence n-gram 0.8173.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, §4 Results & Discussion; Tables 1–2",
+      "quote": "The sentence-level approach wins entirely across the board — lacking significance only for F1 for SVMs.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 156,
+        "line_end": 159,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.97,
+      "additional_evidence": [
+        {
+          "section": "PDF p. 2, Table 1 and §3 evaluation protocol",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 100,
+            "line_end": 116,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 2, Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D06.md",
+            "line_start": 167,
+            "line_end": 171,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D06/page-2.png"
+        }
+      ]
+    },
+    {
+      "finding_id": "D06-F04",
+      "finding": "For document-level training on the same corpus and cross-validation, n-grams improve kNN and SVM F1 and accuracy, while naive Bayes declines from F1 0.6572 to 0.6484 and accuracy 0.6074 to 0.5816. Table 2 marks significant document-level n-gram F1 gains for kNN and SVM, and a significant accuracy gain only for SVM; no sentence-level n-gram gain is marked significant.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, §4 Results & Discussion; Tables 1–2",
+      "quote": "Examining Table 1, they improve performance for every classifier except naı̈ve Bayes.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 129,
+        "line_end": 137,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.97,
+      "additional_evidence": [
+        {
+          "section": "PDF p. 2, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 100,
+            "line_end": 109,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 2, Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D06.md",
+            "line_start": 167,
+            "line_end": 171,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D06/page-2.png"
+        }
+      ]
+    },
+    {
+      "finding_id": "D06-F05",
+      "finding": "For binary sentence detection on the university e-mail corpus under the stated document-grouped cross-validation protocol, sentence n-gram F1 is 0.6686 for kNN, 0.6676 for naive Bayes, and 0.6672 for SVM. Corresponding accuracies are 0.9536, 0.9550, and 0.9579. These are sentence-label metrics, not span F1 or Topic segmentation metrics.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, Table 3 Performance for Sentence Detection",
+      "quote": "kNN 0.9519 0.9536 0.6540 0.6686 naı̈ve Bayes 0.9419 0.9550 0.6176 0.6676 SVM 0.9559 0.9579 0.6271 0.6672",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 178,
+        "line_end": 183,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.97,
+      "additional_evidence": [
+        {
+          "section": "PDF p. 2, §3 evaluation protocol",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 110,
+            "line_end": 116,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "D06-F06",
+      "finding": "The authors attribute naive Bayes degradation to excessive double-counting, but provide no separate causal experiment or ablation that tests this explanation.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 2, §4 Results & Discussion",
+      "quote": "Naı̈ve Bayes is hurt by the n-gram representation because of excessive double-counting.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 129,
+        "line_end": 132,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.65
+    },
+    {
+      "finding_id": "D06-F07",
+      "finding": "The authors explain the small sentence-level unigram/n-gram gap by the small text window implicitly capturing n-gram information. The comparative scores support a small gap in this setting; the proposed mechanism is not separately tested.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 2, §4 Results & Discussion",
+      "quote": "This is because the window of text is so small that the sentence-level unigram represen- tation implicitly picks up on the power of the n-grams.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+        "line_start": 144,
+        "line_end": 150,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.65
+    }
+  ],
+  "limitations": [
+    "No direct Topic segmentation, labeling, clustering, overlapping/discontinuous semantic-object assignment, or work-scope preservation evaluation (topic02.evaluated_tasks; evidence refs task/results).",
+    "University-volunteer corpus with manual quote removal; business-mail, full-thread, and attachment transfer untested (evidence refs corpus/representation).",
+    "Annotation protocol, exact span agreement, sentence counts, class confusion counts, seeds, n-gram orders, and full classifier settings are not reported (evidence refs full_paper).",
+    "Duplicate removal and grouped document folds do not establish thread/time/participant or near-duplicate separation (evidence refs protocol/corpus).",
+    "Causal explanations for representation effects are untested separately; annotation cost is called greater but not measured (D06-F06/F07; raw text pp. 1–2, lines 57–61 and 151–159).",
+    "Ranking and user studies are mentioned but their evaluations are not presented (evidence refs representation/corpus)."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability_status": "not reported in the frozen two-page paper; no code-release statement or link",
+    "dataset_availability_status": "not reported in the frozen paper; corpus provenance is described but no release/access statement or link",
+    "boolean_omission_reason": "Optional code_available and dataset_available booleans are omitted because unreported availability is not evidence of nonavailability. No present-day availability claim or network check.",
+    "evidence_refs": [
+      "full_paper",
+      "corpus"
+    ],
+    "replication_details": "See topic02.split_and_leakage and topic02.metrics."
+  },
+  "confidence_scores": {
+    "D06-F01": 0.97,
+    "D06-F02": 0.97,
+    "D06-F03": 0.97,
+    "D06-F04": 0.97,
+    "D06-F05": 0.97,
+    "D06-F06": 0.65,
+    "D06-F07": 0.65
+  },
+  "confidence_semantics": "Scores assess evidential confidence in each substantive finding, not runtime probability. Unsupported causal explanations receive lower confidence; attribution to the authors is verified.",
+  "raw_claims": [
+    "For this study, only the body of each e-mail message was used.",
+    "We use the simple policy of predicting positive when any of the sentences is predicted positive.",
+    "Two human annotators labeled all the messages and identified each segment of the e-mail which contained action-items. At the"
+  ],
+  "raw_claim_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+      "line_start": 79,
+      "line_end": 79,
+      "pdf_pages": [
+        1
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+      "line_start": 97,
+      "line_end": 98,
+      "pdf_pages": [
+        1
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+      "line_start": 123,
+      "line_end": 124,
+      "pdf_pages": [
+        2
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "evaluated": [
+        "Binary whole-message action-item detection (Table 1).",
+        "Binary action-item sentence detection after automatic sentence segmentation (Table 3)."
+      ],
+      "specified_but_not_evaluated": "Document ranking: length-normalized sum of above-threshold sentence scores is defined; no ranking metric or result is reported.",
+      "ten_task_distinction": {
+        "topic_boundary_detection": "not evaluated",
+        "contiguous_topic_segmentation": "not evaluated",
+        "segment_topic_labeling": "not evaluated",
+        "whole_message_multi_label_classification": "not evaluated; message target is binary action-item presence",
+        "exact_span_assignment": "not evaluated; phrase markings are projected to sentence labels",
+        "overlapping_span_assignment": "not evaluated",
+        "non_contiguous_assignment_to_one_Topic": "not evaluated",
+        "discourse_EDU_segmentation": "not evaluated; RASP sentence segmentation is preprocessing",
+        "action_question_reply_scope_extraction": "related action-item sentence detection evaluated; question boundaries and reply/action scope not evaluated",
+        "decision_bearing_preservation": "not evaluated"
+      },
+      "evidence_refs": [
+        "task",
+        "representation",
+        "results"
+      ]
+    },
+    "annotation_unit": {
+      "reported": "Human annotators mark action-item phrases/segments within each e-mail and label messages. RASP segmentation and the at-least-30%-of-a-marked-segment rule produce binary sentence labels. The paper does not specify whether the percentage measures characters or tokens, nor the precise phrase-boundary annotation protocol.",
+      "comparative_limit": "Compares finer-grained supervision with whole-document supervision; does not compare sentence, clause, arbitrary span, EDU, or hybrid units for work-matter scope.",
+      "evidence_refs": [
+        "task",
+        "representation",
+        "corpus"
+      ]
+    },
+    "prediction_unit": {
+      "reported": "One binary label per whole e-mail or per RASP sentence; sentence positives are OR-aggregated for document detection. Sentence n-gram models also encode relative position in octiles.",
+      "evidence_refs": [
+        "task",
+        "representation"
+      ]
+    },
+    "contiguity": {
+      "reported": "Each predicted text unit is a sentence in the message body. Predictions need not be adjacent because each sentence is classified independently.",
+      "interpretation": "A set of positive sentences is not a non-sequential Topic cluster: no semantic object ID or relation links those sentences. No Topic-boundary model.",
+      "evidence_refs": [
+        "representation"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Yes/no action-item presence per document or derived sentence; phrase-level positive markings may be multiple within a message. Number of action-items and Topics per message is not reported. No gold multi-Topic memberships are specified.",
+      "prediction": "Exactly one binary action-item decision per instance; one message may have multiple positive sentence predictions. No multi-label Topic output.",
+      "evidence_refs": [
+        "task",
+        "representation",
+        "corpus"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Whether multiple separated spans can denote one action-item is not specified. Multiple marked action-items do not establish discontinuous representation of a single object.",
+        "thread_level": "No cross-message action-item/Topic linkage or thread-level discontinuity annotation reported."
+      },
+      "prediction": {
+        "within_one_message": "Separated positive sentences are possible, but there is no shared action-item/Topic identity that denotes a single discontinuous object.",
+        "thread_level": "No predicted thread-level linkage or discontinuous Topic object."
+      },
+      "evidence_refs": [
+        "task",
+        "representation",
+        "corpus"
+      ]
+    },
+    "overlap": {
+      "gold": "Unsupported by the paper: no overlapping action-item annotations or multiple Topic memberships per span are specified. This is absence of reporting, not evidence that the corpus forbids overlap.",
+      "prediction": "Binary sentence labels over a sentence segmentation do not express overlapping memberships or overlapping semantic objects.",
+      "scope": "Neither within-message overlapping Topic spans nor cross-message shared Topic evidence is evaluated.",
+      "evidence_refs": [
+        "task",
+        "representation"
+      ]
+    },
+    "dataset_domain": {
+      "reported": "E-mails volunteered by people at the authors’ university; body text only; duplicate messages eliminated and quoted text removed manually.",
+      "transfer_limit": "Direct e-mail evidence, but business-email representativeness, language distribution, participant count, collection dates, and topic mix are not reported. Attachments and thread context are outside the described input.",
+      "evidence_refs": [
+        "corpus",
+        "representation"
+      ]
+    },
+    "annotation_process": {
+      "reported": "Two annotators label every message and mark segments containing action-items; judgments are reconciled. Positive document labels can be derived from positive phrases.",
+      "missing": "Detailed guidelines, annotator training, adjudication procedure, annotation time/cost, segment counts, and action-item entity IDs are not reported.",
+      "evidence_refs": [
+        "task",
+        "corpus"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "metric": "kappa statistic; exact kappa variant is not named",
+      "document": {
+        "value": 0.85,
+        "population": "Two annotators on all 744 messages, before reconciliation"
+      },
+      "sentence": {
+        "value": 0.82,
+        "population": "Sentence-level action-item labels in the same corpus; sentence denominator not reported"
+      },
+      "not_reported": "Exact-span boundary agreement, Topic membership agreement, confidence intervals, and per-annotator prevalence.",
+      "evidence_refs": [
+        "corpus"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "Document; all sentences from a document remain entirely in train or entirely in test for a fold.",
+      "folds": 10,
+      "corpus_messages": 744,
+      "positive_messages_after_reconciliation": 328,
+      "feature_selection": "Chi-squared feature selection; feature count optimized for document-level F1 in nested cross-validation.",
+      "duplicate_controls": "Duplicate e-mails eliminated; detection method not specified. Quoted material manually removed to prevent chronological taints and balance cognitive load in omitted user studies.",
+      "not_reported": [
+        "Fold membership and per-fold train/test counts",
+        "Near-duplicate method",
+        "Thread-, sender-, participant-, or time-disjoint splitting",
+        "Held-out external corpus",
+        "Random seed",
+        "n-gram order/range and full classifier hyperparameters"
+      ],
+      "interpretation": "Grouping sentences prevents same-message train/test leakage. It does not establish that related threads, senders, or paraphrases are disjoint. Hand removal of quotes differs from automated processing of intact work mail.",
+      "evidence_refs": [
+        "representation",
+        "protocol",
+        "corpus"
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "F1": "Paper reports F1 without an explicit formula. Standard interpretation is 2TP/(2TP+FP+FN) for positive action-item detection; positive-class convention is implied by the binary task, not separately formalized. TP/FP/FN refer to documents in Table 1 and sentences in Table 3. Raw counts are not reported.",
+        "accuracy": "Paper reports accuracy without an explicit formula. Standard interpretation is (TP+TN)/N for the respective document or sentence test instances. Table 1 covers a 744-document corpus through cross-validation; the sentence denominator for Table 3 is absent."
+      },
+      "results": [
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "F1",
+          "classifier": "kNN (s-cut)",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.667,
+            0.7108,
+            0.7615,
+            0.779
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 102,
+            "line_end": 102,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "F1",
+          "classifier": "multinomial naive Bayes",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.6572,
+            0.6484,
+            0.7715,
+            0.7777
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 103,
+            "line_end": 103,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "F1",
+          "classifier": "SVM",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.6904,
+            0.7428,
+            0.7282,
+            0.7682
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 104,
+            "line_end": 104,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "accuracy",
+          "classifier": "kNN (s-cut)",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.7029,
+            0.7486,
+            0.7972,
+            0.8092
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 106,
+            "line_end": 106,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "accuracy",
+          "classifier": "multinomial naive Bayes",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.6074,
+            0.5816,
+            0.7863,
+            0.8145
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 107,
+            "line_end": 107,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary document action-item detection",
+          "dataset": "D06 university-volunteer corpus, 744 deduplicated messages, quotes manually removed; 328 positive",
+          "split": "ten-fold document cross-validation; sentence instances grouped by source document",
+          "metric": "accuracy",
+          "classifier": "SVM",
+          "column_order": [
+            "document unigram",
+            "document n-gram",
+            "sentence unigram aggregated to document",
+            "sentence n-gram aggregated to document"
+          ],
+          "values": [
+            0.7595,
+            0.7904,
+            0.7958,
+            0.8173
+          ],
+          "aggregation": "average document-detection performance across folds (Table 1)",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 108,
+            "line_end": 108,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 1"
+        },
+        {
+          "task": "binary action-item sentence detection",
+          "dataset": "RASP sentences from D06 university-volunteer corpus; sentence count and positive sentence count not reported",
+          "split": "paper-wide ten-fold document cross-validation; no separate Table 3 split stated",
+          "classifier": "kNN (s-cut)",
+          "column_order": [
+            "unigram accuracy",
+            "n-gram accuracy",
+            "unigram F1",
+            "n-gram F1"
+          ],
+          "values": [
+            0.9519,
+            0.9536,
+            0.654,
+            0.6686
+          ],
+          "aggregation": "Table 3 does not separately specify averaging; evaluated under the stated cross-validation protocol",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 180,
+            "line_end": 180,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 3"
+        },
+        {
+          "task": "binary action-item sentence detection",
+          "dataset": "RASP sentences from D06 university-volunteer corpus; sentence count and positive sentence count not reported",
+          "split": "paper-wide ten-fold document cross-validation; no separate Table 3 split stated",
+          "classifier": "multinomial naive Bayes",
+          "column_order": [
+            "unigram accuracy",
+            "n-gram accuracy",
+            "unigram F1",
+            "n-gram F1"
+          ],
+          "values": [
+            0.9419,
+            0.955,
+            0.6176,
+            0.6676
+          ],
+          "aggregation": "Table 3 does not separately specify averaging; evaluated under the stated cross-validation protocol",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 181,
+            "line_end": 181,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 3"
+        },
+        {
+          "task": "binary action-item sentence detection",
+          "dataset": "RASP sentences from D06 university-volunteer corpus; sentence count and positive sentence count not reported",
+          "split": "paper-wide ten-fold document cross-validation; no separate Table 3 split stated",
+          "classifier": "SVM",
+          "column_order": [
+            "unigram accuracy",
+            "n-gram accuracy",
+            "unigram F1",
+            "n-gram F1"
+          ],
+          "values": [
+            0.9559,
+            0.9579,
+            0.6271,
+            0.6672
+          ],
+          "aggregation": "Table 3 does not separately specify averaging; evaluated under the stated cross-validation protocol",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 182,
+            "line_end": 182,
+            "pdf_pages": [
+              2
+            ]
+          },
+          "section": "PDF p. 2, Table 3"
+        }
+      ],
+      "significance": {
+        "test": "two-tailed t-test on per-fold values",
+        "threshold_as_reported": 0.05,
+        "exact_p_values": "not reported",
+        "comparison_results": "See D06-F03 and D06-F04. Table 2 marks significance by bold text (F1 on its left; both metrics on its right) and dagger for accuracy on its left. No sentence-level representation winner on the left is marked significant.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 110,
+          "line_end": 116,
+          "pdf_pages": [
+            2
+          ]
+        },
+        "table_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D06.md",
+          "line_start": 167,
+          "line_end": 171,
+          "pdf_pages": [
+            2
+          ]
+        },
+        "visual_check": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D06/page-2.png"
+      },
+      "not_reported": [
+        "Ranking metrics",
+        "Precision and recall separately",
+        "Class-specific confusion counts",
+        "Span F1/IoU",
+        "Pk/WindowDiff",
+        "Pair/cluster metrics",
+        "Multi-label Topic metrics",
+        "Scope-preservation metrics",
+        "Confidence intervals and fold variance"
+      ],
+      "comparability": "Document F1, sentence F1, and sentence accuracy have different targets/denominators. They are not Topic performance or exact extraction scores."
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation.",
+      "direct_evidence": "Binary sentence detection measures whether a sentence contains an action-item, not retention of all decision-bearing text. No condition, exception, evidence, approval scope, action scope, deadline-retention, or reply-scope metric is reported.",
+      "related_extraction_errors": "False-positive/false-negative sentence behavior is reflected in aggregate F1 and accuracy, but no scope-specific error analysis, counts, or examples of model errors are reported. Figure 1 is an illustrative request with a deadline, not a preservation evaluation.",
+      "evidence_refs": [
+        "representation",
+        "results",
+        "example"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Work-matter Topic identity across Sources or conversations",
+      "A message supporting several Topics",
+      "A span supporting multiple Topics",
+      "Non-contiguous evidence for one Topic within a message or across threads",
+      "Sentence versus clause/span/EDU/hybrid scope preservation",
+      "Conditions, evidence, exceptions, approval scope, action scope, reply scope preservation",
+      "Uncertainty/calibration or abstention",
+      "Reply branches, history, attachments, inline images",
+      "Incremental processing, latency, throughput, or deployment on business mail"
+    ],
+    "material_inconsistencies": {
+      "status": "No material numerical table/prose/count inconsistency found after checking both PDF pages and all three tables.",
+      "qualification": "The broad prose that n-grams show significant improvement at document level must retain its stated naive Bayes exception and Table 2 metric-specific significance. It is not evidence of a gain for every classifier/metric.",
+      "evidence": [
+        {
+          "section": "PDF p. 2, §4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 129,
+            "line_end": 137,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 2, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+            "line_start": 100,
+            "line_end": 109,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 2, Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D06.md",
+            "line_start": 167,
+            "line_end": 171,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ],
+      "conversion_issue": "D06.pages.md mixes columns and merges long passages. The primary rough Markdown and independent raw text are readable; original PDF inspection confirms all scores and Table 2 typography. This is conversion damage, not a source contradiction."
+    },
+    "rq_relevance": {
+      "RQ1": "Direct supporting evidence for fine-grained versus document supervision in action detection (D06-F02/F03); no scope-preserving unit comparison.",
+      "RQ2": "No clusters or interleaving model; body-only binary e-mail task.",
+      "RQ3": "Multiple positive spans/sentences possible; no Topic cardinality, shared identity, or multiple memberships.",
+      "RQ4": "No evaluated overlapping or discontinuous semantic-object representation.",
+      "RQ5": "No directly measured scope/condition/evidence preservation; only related action sentence detection.",
+      "RQ6": "Document and sentence F1/accuracy separated in metrics; ranking unmeasured.",
+      "RQ7": "Small university-volunteer corpus, two-annotator kappa, grouped document CV and manual quote removal; unresolved domain/leakage limitations.",
+      "RQ8": "Motivates controlled action-evidence unit and projection experiments; proposals below are untested."
+    },
+    "interpretation": [
+      {
+        "id": "D06-I01",
+        "text": "Finer-grained action annotations improve message detection in this corpus. This supports testing supervision granularity; it does not establish sentences as the correct Topic or scope unit.",
+        "finding_refs": [
+          "D06-F02",
+          "D06-F03"
+        ]
+      },
+      {
+        "id": "D06-I02",
+        "text": "Projecting partial marked action evidence to a whole-sentence binary label can lose exact boundaries and may omit supporting text outside that sentence or broaden displayed scope. These are plausible risks, not measured errors in this paper.",
+        "finding_refs": [
+          "D06-F02"
+        ],
+        "evidence_refs": [
+          "example"
+        ]
+      },
+      {
+        "id": "D06-I03",
+        "text": "High sentence accuracy alongside lower positive-detection F1 warrants class-aware evaluation. The missing sentence class counts prevent quantifying imbalance or recovering precision/recall.",
+        "finding_refs": [
+          "D06-F05"
+        ]
+      },
+      {
+        "id": "D06-I04",
+        "text": "Semantic linkage is absent: multiple positive sentences cannot alone satisfy the user requirement for non-contiguous evidence tied to one concrete work matter.",
+        "finding_refs": [
+          "D06-F02"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "D06-E01",
+        "status": "untested msgloom proposal; not architecture approval",
+        "proposal": "On synthetic or authorized user-reviewed work mail, annotate exact request evidence and its conditions, exceptions, deadline, approval/action/reply scope. Compare sentence, clause, arbitrary-span, EDU, and hybrid projections with the same model and training budget.",
+        "evaluation": "Keep binary message/sentence detection separate from exact-span F1/IoU, boundary expansion, missed conditions, and broadened scope. Compare unit choices before recommending one.",
+        "basis": [
+          "D06-F02",
+          "D06-F03",
+          "D06-I02"
+        ]
+      },
+      {
+        "id": "D06-E02",
+        "status": "untested msgloom proposal; not architecture approval",
+        "proposal": "Test separated evidence and shared spans with explicit gold work-matter IDs. Compare independent binary sentence detection with representations that retain multiple span memberships and non-contiguous spans for one Topic.",
+        "evaluation": "Report gold and predicted cardinality/overlap/discontinuity separately; distinguish within-message from thread-level cases; preserve uncertain memberships and measure scope errors.",
+        "basis": [
+          "D06-I04"
+        ]
+      },
+      {
+        "id": "D06-E03",
+        "status": "untested msgloom proposal; not architecture approval",
+        "proposal": "Compare intact quoted email with evidence-preserving quote handling, using thread/time-disjoint splits and near-duplicate audits.",
+        "evaluation": "Separate document detection, sentence detection, exact assignment, and decision-bearing preservation; publish denominators, positive-class precision/recall, uncertainty, and annotation cost.",
+        "basis": [
+          "D06-F01"
+        ],
+        "evidence_refs": [
+          "protocol",
+          "corpus"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-email/2005_bennett_carbonell_detecting_action_items_email.pdf",
+      "pdf_sha256": "4e69458975ab6f5936b93c8c990926ace2137ffa72729595e860c369d9cc2f04",
+      "expected_pdf_sha256": "4e69458975ab6f5936b93c8c990926ace2137ffa72729595e860c369d9cc2f04",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D06.md",
+      "converted_text_sha256": "9b2764fb7d7b81bed62bcaa1cd3048592fc14abfe3e0bcc883898aa40537491d",
+      "preferred_fine_conversion": "not present",
+      "citation_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+      "citation_text_sha256": "f00a0036719ee8c5569cf99434884bcb6c026d9d7c8a92527b4f7b389a7b5295",
+      "line_numbering": "1-based LF split; form feed is a page separator, not an extra line. Raw page 2 starts at line 100.",
+      "auxiliary_conversion_quality": "Page-indexed PyMuPDF text has column interleaving. Not used as claim authority.",
+      "visual_inspection": [
+        {
+          "pdf_page": 1,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D06/page-1.png",
+          "checks": "Task definition, phrase-to-sentence projection, Figure 1, implementation details."
+        },
+        {
+          "pdf_page": 2,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D06/page-2.png",
+          "checks": "Every numeric cell in Tables 1 and 3; bold/dagger significance in Table 2; corpus counts and kappa."
+        }
+      ],
+      "network_access": "none; frozen local sources only"
+    },
+    "evidence_references": {
+      "task": {
+        "section": "PDF p. 1, §3 Problem Definition & Approach",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 62,
+          "line_end": 77,
+          "pdf_pages": [
+            1
+          ]
+        }
+      },
+      "representation": {
+        "section": "PDF p. 1, §3 Representation and Implementation Overview",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 79,
+          "line_end": 99,
+          "pdf_pages": [
+            1
+          ]
+        }
+      },
+      "protocol": {
+        "section": "PDF p. 2, §3 evaluation protocol",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 110,
+          "line_end": 116,
+          "pdf_pages": [
+            2
+          ]
+        }
+      },
+      "corpus": {
+        "section": "PDF p. 2, §3 corpus and annotation",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 117,
+          "line_end": 127,
+          "pdf_pages": [
+            2
+          ]
+        }
+      },
+      "results": {
+        "section": "PDF p. 2, Tables 1–3 and §4",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 100,
+          "line_end": 183,
+          "pdf_pages": [
+            2
+          ]
+        }
+      },
+      "example": {
+        "section": "PDF p. 1, Figure 1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 38,
+          "line_end": 44,
+          "pdf_pages": [
+            1
+          ]
+        }
+      },
+      "full_paper": {
+        "section": "PDF pp. 1–2, full paper",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D06.raw.txt",
+          "line_start": 1,
+          "line_end": 204,
+          "pdf_pages": [
+            1,
+            2
+          ]
+        }
+      }
+    }
+  }
+}

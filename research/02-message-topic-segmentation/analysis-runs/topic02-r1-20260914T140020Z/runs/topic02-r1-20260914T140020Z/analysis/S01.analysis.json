@@ -1,0 +1,2037 @@
+{
+  "paper_id": "S01",
+  "title": "An Effective Transition-based Model for Discontinuous NER",
+  "bibliographic_context": {
+    "authors": [
+      "Xiang Dai",
+      "Sarvnaz Karimi",
+      "Ben Hachey",
+      "Cecile Paris"
+    ],
+    "venue": "ACL 2020",
+    "printed_pages": "5860–5870",
+    "pdf_pages": 11,
+    "metadata_source": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+    "metadata_policy": "Frozen local S01 entry only; no network metadata enrichment."
+  },
+  "research_question": "Can a neural transition-based parser recognize discontinuous and overlapping biomedical entity mentions while retaining performance on continuous mentions?",
+  "methodology": "The model reads sentence tokens through a buffer and stores partially built spans on a stack. SHIFT and OUT consume tokens; COMPLETE emits the top span; REDUCE joins the top two spans; LEFT-REDUCE and RIGHT-REDUCE also retain one operand for shared mention components. Token encoding combines word and character-CNN inputs, a bidirectional LSTM, and frozen ELMo features. Stack-LSTM encodes spans; a composition function combines reduced spans. Multiplicative attention relates stack spans to future buffer tokens. The top three spans, their attended buffer representations, and an LSTM representation of action history feed a softmax action selector restricted to valid actions. Evaluation uses strict micro mention precision, recall, and F1 on CADEC ADE and ShARe 13/14 Disorder annotations, with separate full-test, discontinuous-containing-sentence, discontinuous-only, and development-category analyses.",
+  "methodology_evidence": [
+    {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 258,
+        "line_end": 433,
+        "pdf_pages": [
+          3,
+          4,
+          5
+        ]
+      },
+      "section": "Model, Sections 3–3.3"
+    },
+    {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 501,
+        "line_end": 518,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      },
+      "section": "Experimental Setup"
+    },
+    {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 523,
+        "line_end": 566,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "section": "Baseline Models"
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "S01-F01",
+      "finding": "Gold biomedical mentions can contain separated components and share a component with another mention; the model predicts such structures in sentence text. The evaluated entity inventory is ADE only on CADEC and Disorder only on each ShARe dataset.",
+      "evidence_type": "supported",
+      "quote": "The first example contains a discontinuous mention ‘left atrium dilated’, the second example contains two mentions that overlap: ‘muscle pain’ and ‘muscle fa- tigue’ (discontinuous).",
+      "section": "PDF page 1; Introduction, Figure 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 64,
+        "line_end": 67,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 322,
+            "line_end": 341,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "Model, Figure 3 and reduction actions"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 445,
+            "line_end": 488,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Data sets and Table 1"
+        }
+      ],
+      "qualification": "Gold shared membership is not merely a label-set capability. Predicted examples and Table 4 establish some overlap recovery, not arbitrary overlap or multiple entity types per identical span."
+    },
+    {
+      "finding_id": "S01-F02",
+      "finding": "The authors state that action sequences decode unambiguously. The mechanism combines the top two stack spans and can retain one operand for reuse. This one-way decoding claim does not establish that every gold overlap structure has an action encoding.",
+      "evidence_type": "unsupported",
+      "quote": "That is, the output sequence of actions can always be unambiguously decoded into mention outputs.",
+      "section": "PDF page 3; Prior Work, comparison of intermediate representations",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 202,
+        "line_end": 204,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "confidence": 0.98,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 258,
+            "line_end": 292,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "Model, SHIFT/OUT/COMPLETE"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 322,
+            "line_end": 341,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "section": "Model, REDUCE/LEFT-REDUCE/RIGHT-REDUCE"
+        }
+      ],
+      "qualification": "Design property stated and illustrated; no formal completeness proof, oracle representability rate, or exhaustive overlap-coverage test is reported. See topic02.interpretation for the representation limitation."
+    },
+    {
+      "finding_id": "S01-F03",
+      "finding": "On full-test strict micro mention evaluation, Ours reports P/R/F1 of 68.9/69.0/69.0 on CADEC ADE, 80.5/75.0/77.7 on ShARe 13 Disorder, and 78.1/81.2/79.6 on ShARe 14 Disorder. Recall and F1 exceed the comparison rows reported for each dataset; Graph has higher precision.",
+      "evidence_type": "supported",
+      "quote": "Ours 68.9 69.0 69.0 80.5 75.0 77.7 78.1 81.2 79.6",
+      "section": "PDF page 7; Table 2, full test set",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 622,
+        "line_end": 622,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 614,
+            "line_end": 625,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Table 2, header, comparison rows and caption"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 501,
+            "line_end": 518,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          },
+          "section": "Experimental Setup"
+        }
+      ],
+      "qualification": "Percent-scale scores for biomedical mention extraction, not Topic identification. No confidence intervals, seed variance, or significance test is reported. Prior-literature rows are cited results, not all rerun baselines."
+    },
+    {
+      "finding_id": "S01-F04",
+      "finding": "The test subset of sentences containing a gold discontinuous mention still includes continuous mentions. Ours F1 on that subset is 65.4/62.9/63.1 for CADEC/ShARe 13/ShARe 14, whereas discontinuous-mention-only F1 is 37.9/52.5/49.2. Flat scores 42.4/34.2/36.0 on the sentence subset but 0 on discontinuous mentions only.",
+      "evidence_type": "supported",
+      "quote": "Note that sentences in the former setting usually con- tain continuous mentions as well, including those involved in overlapping structure (e.g., ‘muscle pain’ in the sentence ‘muscle pain and fatigue’).",
+      "section": "PDF page 6; Experimental Results, discontinuous evaluation settings",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 592,
+        "line_end": 596,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 626,
+            "line_end": 634,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Table 3, both evaluation populations"
+        }
+      ],
+      "qualification": "Dataset order is fixed above; each score is strict micro mention F1 on the named test population. Test gold/prediction counts are not supplied. BIO E. CADEC F1 is 57.3 on the sentence subset and 1.8 on discontinuous mentions only; these are different denominators."
+    },
+    {
+      "finding_id": "S01-F05",
+      "finding": "Development-set overlap performance varies by category. On no-overlap discontinuous mentions, Ours F1 is 0.0/36.1/57.1 for CADEC/ShARe 13/ShARe 14. It wins left-overlap F1 on CADEC and ShARe 14, while Graph wins left-overlap on ShARe 13 and right-overlap on CADEC and ShARe 13; all right-overlap scores are zero on ShARe 14.",
+      "evidence_type": "supported",
+      "quote": "Ours 0.0 36.1 57.1",
+      "section": "PDF page 9; Table 4, no-overlap row",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 845,
+        "line_end": 845,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 834,
+            "line_end": 879,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "section": "Table 4, category counts and all F1 scores"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 643,
+            "line_end": 648,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Analysis, development-set scope"
+        }
+      ],
+      "qualification": "All category results are development-only discontinuous NER. See topic02.metrics.table4 for gold counts and all model values; small categories do not justify generalization to work text."
+    },
+    {
+      "finding_id": "S01-F06",
+      "finding": "Multi-overlap discontinuous-mention F1 is 0.0 for all three evaluated models on CADEC development data (15 gold mentions) and ShARe 14 development data (6 gold mentions). ShARe 13 development data has 0 gold mentions and reports a dash, not a measured zero. The crossing-composition example also shows missed combinations and a false standalone Stiffness prediction.",
+      "evidence_type": "supported",
+      "quote": "Ours 0.0 – 0.0",
+      "section": "PDF page 9; Table 4, multi-overlap row",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 875,
+        "line_end": 875,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 866,
+            "line_end": 879,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "section": "Table 4, multi-overlap counts and caption"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 913,
+            "line_end": 921,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "section": "Example Predictions, crossing compositions"
+        }
+      ],
+      "qualification": "Empirical failure on evaluated categories; not a negative evaluation of the absent ShARe 13 category. The example is qualitative and its individual split is not explicitly labeled. It does not isolate representational, search, and learning errors."
+    },
+    {
+      "finding_id": "S01-F07",
+      "finding": "Table 1 headline gold discontinuous-mention totals (CADEC 675; ShARe 13 1,090; ShARe 14 1,710) conflict with both the component-count sums and the overlap-category sums (679; 1,088; 1,650, respectively). These are unresolved source-internal count discrepancies.",
+      "evidence_type": "contradicted",
+      "quote": "# Disc.M 675 (10.6) 1,090 (9.7) 1,710 (8.9)",
+      "section": "PDF page 5; Table 1, headline discontinuous count",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 468,
+        "line_end": 468,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "confidence": 1.0,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 473,
+            "line_end": 479,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, component and overlap breakdowns"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S01.md",
+            "line_start": 550,
+            "line_end": 590,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, primary pipeline conversion"
+        }
+      ],
+      "qualification": "The contradicted claim is the headline total as a consistent total of its stated categories. Sums are analyst arithmetic, not substitute paper totals. Original PDF and independent text extractions agree on the printed values; no denominator is silently corrected."
+    },
+    {
+      "finding_id": "S01-F08",
+      "finding": "The Flat baseline expands each discontinuous training mention to its shortest covering span and merges overlapping training mentions. Development and test annotations remain unchanged, so Flat is tested against original complex mention targets.",
+      "evidence_type": "supported",
+      "quote": "we apply these changes only on the training set, but not on the development set and the test set.",
+      "section": "PDF page 6; Baseline Models, Flat model",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 533,
+        "line_end": 535,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 523,
+            "line_end": 535,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "Baseline Models, training-target transformation"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 629,
+            "line_end": 634,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Table 3, Flat baseline results"
+        }
+      ],
+      "qualification": "This transformation changes training boundaries and shared memberships. It is not an experiment showing that covering-span expansion preserves conditions or work-matter identity."
+    },
+    {
+      "finding_id": "S01-F09",
+      "finding": "A source gold example selects left atrium and dilated while omitting is mildly. The authors also describe inconsistent treatment of severity indicators in CADEC and offer sparsity and annotation practice as explanations for no-overlap errors; these explanations are not independently quantified.",
+      "evidence_type": "supported",
+      "quote": "severity indicators are annotated as the interval of the discontinuous mention sometimes, but not of- ten.",
+      "section": "PDF page 8; Impact of Overlapping Structure",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 818,
+        "line_end": 820,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "confidence": 0.98,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 56,
+            "line_end": 67,
+            "pdf_pages": [
+              1
+            ]
+          },
+          "section": "Figure 1, gold selected components"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 664,
+            "line_end": 671,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Characteristics of Discontinuous Mentions, no overlap"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 806,
+            "line_end": 824,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "section": "Qualitative error explanations"
+        }
+      ],
+      "qualification": "The selected gold spans are observed evidence. The causal explanation is an author hypothesis. Loss of a decision-bearing modifier in msgloom is an analyst transfer risk, not a measured work-text error rate."
+    },
+    {
+      "finding_id": "S01-F10",
+      "finding": "Development-set recall generally decreases with mention length, while interval-length effects are nonmonotonic. Figure 4 includes continuous mentions in the zero-interval bin and shows Ours competitive on those bins; it is not a separate continuous-only full-test F1 or a noninferiority test against Flat.",
+      "evidence_type": "supported",
+      "quote": "We found that the recall of all models decreases with the increase of mention length in general (Figure 4 (a – c)),",
+      "section": "PDF page 8; Impact of Mention and Interval Length, Figure 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 829,
+        "line_end": 832,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "confidence": 0.96,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 689,
+            "line_end": 771,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "section": "Figure 4, bins and gold counts"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 880,
+            "line_end": 897,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "section": "Interval length interpretation"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 643,
+            "line_end": 648,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Analysis, development-set scope"
+        }
+      ],
+      "qualification": "Recall coordinates are plotted without exact numeric point labels. No pixel-derived recall values are presented. The proposed annotation explanation for short-interval difficulty remains a hypothesis."
+    },
+    {
+      "finding_id": "S01-F11",
+      "finding": "The paper motivates discontinuous mention extraction as more useful than separate components for pharmacovigilance and summarization, but it does not evaluate those downstream benefits or preservation of decision-bearing conditions, evidence, approval, action, or reply scope.",
+      "evidence_type": "unsupported",
+      "quote": "We argue that, in downstream ap- plications such as pharmacovigilance and summa- rization, recognizing these discontinuous mentions that refer to disorders or symptoms is more useful than recognizing separate components which may refer to body locations or general feelings.",
+      "section": "PDF page 2; Introduction, Motivations",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 98,
+        "line_end": 103,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "confidence": 0.99,
+      "supporting_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 514,
+            "line_end": 518,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "Experimental Setup, evaluation metric"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 623,
+            "line_end": 634,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Tables 2 and 3, NER task scope"
+        }
+      ],
+      "qualification": "No downstream or work-text preservation evaluation is reported; this is an evidence gap, not evidence of a negative downstream result."
+    },
+    {
+      "finding_id": "S01-F12",
+      "finding": "The authors say their fine-tuned BERT variant performed worse than the frozen-ELMo feature variant, but supply no dataset-specific numbers or comparison protocol for that experiment.",
+      "evidence_type": "unsupported",
+      "quote": "However, this fine- tuning approach with BERT does not achieve as good performance as feature extraction approach with ELMo (Peters et al., 2019).",
+      "section": "PDF page 4; Representation of the Parser State",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 378,
+        "line_end": 381,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "confidence": 0.98,
+      "qualification": "Paper-reported qualitative comparison only; insufficient evidence to rank contemporary encoders or explain the contribution of attention. No numerical attention ablation is reported either."
+    }
+  ],
+  "limitations": [
+    "Transfer-span evidence only: biomedical NER does not evaluate Topic identity, business email, asynchronous interleaving, or cross-message assignments (F01, F11; topic02.evaluated_tasks).",
+    "The transition system has local stack construction and destructive completion. Arbitrary shared-span combinations are not established as representable; no oracle coverage or complete constraint specification is reported (F02, F06).",
+    "Multi-overlap development failures, small category populations, and category-specific model reversals limit broad overlap claims (F05–F06).",
+    "Table 1 has unresolved headline-versus-breakdown counts on all datasets. Preserve the exact conflicting denominators (F07; topic02.material_inconsistencies).",
+    "Only one entity type is evaluated per dataset. Optional COMPLETE-y does not demonstrate multiple type labels for an identical span or work-Topic membership prediction (PDF page 3, Model; raw lines 288–292).",
+    "No standalone continuous-only full-test F1, noninferiority test, seed variance, confidence interval, or significance test is supplied. Full-test gains and Figure 4 development recall qualify the no-sacrifice claim (F03, F10).",
+    "Original annotation staffing, adjudication, IAA, duplicate controls, patient/author separation, and ShARe cross-corpus overlap are not reported in this paper; lack of a leakage audit is not proof of leakage (topic02.split_and_leakage).",
+    "No optimizer, learning rate, hidden dimensions, training-seed list, full oracle action-generation procedure, hardware throughput, or resource measurements are specified in the paper. BERT and attention claims lack controlled numeric ablations (F12; Sections 3–7).",
+    "NER gold can omit severity indicators. The paper gives qualitative extraction errors but no decision-scope preservation evaluation (F09, F11)."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported availability only. code_available means that the paper states a code link; dataset_available means that named existing corpora were obtained and used by the authors and a split-download link is reported. Neither flag certifies current access or unrestricted public redistribution.",
+    "code": {
+      "paper_displayed_url": "https://bit.ly/2XazEAO",
+      "embedded_link_in_primary_conversion": "https://github.com/daixiangau/acl2020-transition-discontinuous-ner",
+      "current_access": "Not checked; network prohibited.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 144,
+        "line_end": 145,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "Footnote 1"
+    },
+    "data": {
+      "corpora": [
+        "CADEC",
+        "ShARe 13",
+        "ShARe 14"
+      ],
+      "access_terms_and_versions": "Not fully reported. The authors thank a collaborator for help obtaining ShARe; this is not evidence of unrestricted availability.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 931,
+        "line_end": 938,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "section": "Acknowledgments",
+      "split_link_evidence": {
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 501,
+          "line_end": 512,
+          "pdf_pages": [
+            5
+          ]
+        },
+        "section": "Experimental Setup, footnote 3"
+      }
+    },
+    "reported_metrics": [
+      "Strict micro mention precision",
+      "Strict micro mention recall",
+      "Strict micro mention F1",
+      "Recall by mention/interval-length bin"
+    ],
+    "model_selection": "Best development F1 checkpoint evaluated on test; selection evidence at raw lines 514–518, PDF page 6.",
+    "independent_reproduction": "Not attempted. No repository download, model execution, corpus acquisition, or pipeline stage was run."
+  },
+  "confidence_scores": {
+    "S01-F01": 0.99,
+    "S01-F02": 0.98,
+    "S01-F03": 0.99,
+    "S01-F04": 0.99,
+    "S01-F05": 0.99,
+    "S01-F06": 0.99,
+    "S01-F07": 1.0,
+    "S01-F08": 0.99,
+    "S01-F09": 0.98,
+    "S01-F10": 0.96,
+    "S01-F11": 0.99,
+    "S01-F12": 0.98
+  },
+  "confidence_semantics": "Confidence that the analysis accurately represents the frozen source and its evidence status, not the probability of successful msgloom transfer.",
+  "raw_claims": [
+    "SHIFT moves the first token from the buffer to the stack; it implies this token is part of an entity mention.",
+    "REDUCE pops the top two spans s0 and s1 from the stack and concatenates them as a new span which is then pushed back to the stack.",
+    "RIGHT-REDUCE is the same as LEFT- REDUCE, except that s0 is kept in the stack."
+  ],
+  "raw_claim_locators": [
+    {
+      "claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 283,
+        "line_end": 285,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 322,
+        "line_end": 324,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 331,
+        "line_end": 332,
+        "pdf_pages": [
+          4
+        ]
+      }
+    }
+  ],
+  "topic02": {
+    "evidence_family": "TRANSFER_SPAN",
+    "evaluated_tasks": {
+      "paper_task": "Within-sentence exact biomedical entity mention extraction, including continuous, discontinuous, and overlapping mention structures. ShARe 14 annotations are repurposed for NER rather than its original disorder-attribute template-filling task.",
+      "topic02_task_status": {
+        "topic_boundary_detection": "Not evaluated.",
+        "contiguous_topic_segmentation": "Not evaluated.",
+        "segment_topic_labeling": "Not evaluated.",
+        "whole_message_multi_label_classification": "Not evaluated.",
+        "exact_span_assignment": "Evaluated for biomedical entity mentions only; transfer representation evidence.",
+        "overlapping_span_assignment": "Evaluated for biomedical mention instances only; category-dependent success.",
+        "non_contiguous_assignment_to_one_Topic": "Discontinuous components of one biomedical mention are evaluated; assignment to a concrete work matter is not evaluated.",
+        "discourse_EDU_segmentation": "Not evaluated.",
+        "action_question_reply_scope_extraction": "Not evaluated.",
+        "decision_bearing_conditions_evidence_scope_preservation": "Not evaluated."
+      },
+      "finding_refs": [
+        "S01-F01",
+        "S01-F03",
+        "S01-F04",
+        "S01-F05",
+        "S01-F11"
+      ],
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 623,
+        "line_end": 625,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "section": "Table 2 caption, ShARe 14 task reframing"
+    },
+    "annotation_unit": {
+      "unit": "A biomedical entity mention represented by a span or separated component spans over sentence tokens. Different mention instances can share tokens.",
+      "concept_semantics": "CADEC ADE annotations only; ShARe Disorder spans map to concepts in the SNOMED-CT disorder semantic group.",
+      "scope": "Not an annotation of sentences, clauses, EDUs, complete messages, or work-matter clusters as Topics.",
+      "finding_refs": [
+        "S01-F01"
+      ],
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 445,
+        "line_end": 488,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "Data sets, selected annotation types"
+    },
+    "prediction_unit": {
+      "unit": "An action sequence producing a collection of token spans/components as entity mentions for a sentence.",
+      "complete_y": "The paper proposes extending COMPLETE to COMPLETE-y for an entity type y; the experiments do not demonstrate that extension across multiple types.",
+      "uncertainty": "The decoder selects the most likely valid action. No calibrated membership uncertainty, abstention, or retained alternative Topic assignment is evaluated.",
+      "finding_refs": [
+        "S01-F02"
+      ],
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 288,
+        "line_end": 292,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "Model, COMPLETE-y",
+      "decoding_evidence": {
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 333,
+          "line_end": 341,
+          "pdf_pages": [
+            4
+          ]
+        },
+        "section": "Model, hard action constraints"
+      }
+    },
+    "contiguity": {
+      "gold": "A mention may be continuous or consist of separated ordered components; mention instances need not partition all tokens.",
+      "prediction": "The transition parser can output both continuous and discontinuous mentions with some shared components.",
+      "non_sequential_cluster": "No non-sequential message/conversation cluster, cross-message identity, or thread-level Topic sequence is modeled or evaluated.",
+      "finding_refs": [
+        "S01-F01",
+        "S01-F02",
+        "S01-F04"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "entity_types_in_each_evaluated_dataset": {
+          "CADEC": [
+            "ADE"
+          ],
+          "ShARe 13": [
+            "Disorder"
+          ],
+          "ShARe 14": [
+            "Disorder"
+          ]
+        },
+        "mention_memberships_per_token": "Can exceed one: Figure 1 shares muscle between two mention instances. Table 1 characterizes shared components. No maximum token-membership cardinality distribution is reported.",
+        "multiple_types_on_same_exact_span": "Not demonstrated in the selected evaluation annotations."
+      },
+      "prediction": {
+        "entity_types_in_each_test": "One selected entity type per dataset.",
+        "mention_memberships_per_token": "Multiple predicted mention instances can reuse a component through LEFT-REDUCE or RIGHT-REDUCE. Some shared-membership recovery is demonstrated; arbitrary cardinalities are not tested.",
+        "multiple_types_on_same_exact_span": "Not evaluated; COMPLETE-y would assign type y to an emitted mention, not by itself demonstrate a set of labels for an identical span."
+      },
+      "finding_refs": [
+        "S01-F01",
+        "S01-F02"
+      ],
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 288,
+        "line_end": 292,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "Model, optional label extension"
+    },
+    "discontinuity": {
+      "gold": {
+        "one_semantic_object": "Multiple separated components belong to one biomedical mention. Gold component counts appear in Table 1, with unresolved denominators.",
+        "within_one_message": "Sentence-local text in patient posts or clinical notes; within-email-message discontinuity is not directly evaluated.",
+        "thread_level": "Not annotated or evaluated as a thread-level Topic."
+      },
+      "prediction": {
+        "one_semantic_object": "REDUCE can combine spans separated by intervening tokens into one mention. Table 3 right panel measures exact discontinuous mentions.",
+        "within_one_message": "Demonstrated within source sentences, not an email message task.",
+        "thread_level": "No demonstrated cross-sentence/message/thread linkage."
+      },
+      "finding_refs": [
+        "S01-F01",
+        "S01-F04",
+        "S01-F07"
+      ]
+    },
+    "overlap": {
+      "gold_status": "Present in the annotation targets: no, left, right, and multiple overlap categories; continuous mentions may also overlap.",
+      "predicted_status": "Predicted and evaluated, not gold-only. Success differs by dataset/category; multi-overlap remains an evaluated failure on two development datasets, absent on the third.",
+      "scope": "Shared token components between biomedical mention instances within sentences. Not shared Topics across messages, and not merely wholly nested mentions.",
+      "definition": "Left/right refer to the position of a shared component in a discontinuous mention. Multi-overlap shares multiple components with other mentions and can form crossing compositions.",
+      "unsupported": "Arbitrary crossing combinations, unrestricted membership cardinality, multi-type exact-span assignment, and email Topic overlap are not established.",
+      "finding_refs": [
+        "S01-F01",
+        "S01-F02",
+        "S01-F05",
+        "S01-F06"
+      ],
+      "definition_evidence": [
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 225,
+            "line_end": 241,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "Discontinuous NER vs. Nested NER"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 660,
+            "line_end": 687,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Overlap categories"
+        },
+        {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 772,
+            "line_end": 781,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "section": "Multi-overlap definition"
+        }
+      ]
+    },
+    "dataset_domain": {
+      "CADEC": "AskaPatient medication-experience posts by patients; ADE subset only.",
+      "ShARe 13": "Clinical notes; Disorder mention extraction.",
+      "ShARe 14": "Clinical notes; Disorder mention annotations repurposed for extraction.",
+      "transfer_limit": "Patient descriptions and clinical notes differ from business email in concept ontology, writing practice, annotation targets, and decision scope. These are not three independent email-domain tests.",
+      "statistics": {
+        "population": "Gold annotations across the described datasets; Table 1 is not a test-set score table.",
+        "dataset_order": [
+          "CADEC",
+          "ShARe 13",
+          "ShARe 14"
+        ],
+        "entity_type": [
+          "ADE",
+          "Disorder",
+          "Disorder"
+        ],
+        "documents": [
+          1250,
+          298,
+          433
+        ],
+        "tokens_as_printed": [
+          "121K",
+          "264K",
+          "494K"
+        ],
+        "sentences": [
+          7597,
+          18767,
+          34618
+        ],
+        "mentions": [
+          6318,
+          11161,
+          19131
+        ],
+        "headline_discontinuous_mentions": [
+          675,
+          1090,
+          1710
+        ],
+        "headline_discontinuous_percent_as_printed": [
+          10.6,
+          9.7,
+          8.9
+        ],
+        "avg_mention_length_tokens": [
+          2.7,
+          1.8,
+          1.7
+        ],
+        "avg_discontinuous_mention_length_tokens_excluding_intervals": [
+          3.5,
+          2.6,
+          2.5
+        ],
+        "avg_interval_length_tokens": [
+          3.3,
+          3.0,
+          3.2
+        ],
+        "components": {
+          "2": {
+            "counts": [
+              650,
+              1026,
+              1574
+            ],
+            "percent_as_printed": [
+              95.7,
+              94.3,
+              95.3
+            ]
+          },
+          "3": {
+            "counts": [
+              27,
+              62,
+              76
+            ],
+            "percent_as_printed": [
+              3.9,
+              5.6,
+              4.6
+            ]
+          },
+          "4": {
+            "counts": [
+              2,
+              0,
+              0
+            ],
+            "percent_as_printed": [
+              0.2,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "discontinuous_overlap": {
+          "none": {
+            "counts": [
+              82,
+              582,
+              820
+            ],
+            "percent_as_printed": [
+              12.0,
+              53.4,
+              49.6
+            ]
+          },
+          "left": {
+            "counts": [
+              351,
+              376,
+              616
+            ],
+            "percent_as_printed": [
+              51.6,
+              34.5,
+              37.3
+            ]
+          },
+          "right": {
+            "counts": [
+              152,
+              102,
+              170
+            ],
+            "percent_as_printed": [
+              22.3,
+              9.3,
+              10.3
+            ]
+          },
+          "multiple": {
+            "counts": [
+              94,
+              28,
+              44
+            ],
+            "percent_as_printed": [
+              13.8,
+              2.5,
+              2.6
+            ]
+          }
+        },
+        "continuous_overlap": {
+          "counts": [
+            326,
+            157,
+            228
+          ],
+          "percent_as_printed": [
+            5.7,
+            1.5,
+            1.3
+          ]
+        },
+        "denominator_caution": "Percentages are copied as printed. Headline discontinuous percentage refers to total mentions; component and discontinuous-overlap percentages refer to discontinuous categories, while continuous-overlap percentage refers to continuous mentions. Internally inconsistent totals prevent a single verified exact category denominator. Average-interval aggregation details are not specified.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 461,
+          "line_end": 486,
+          "pdf_pages": [
+            5
+          ]
+        },
+        "section": "Data sets, Table 1"
+      },
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 445,
+        "line_end": 500,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "Data sets, domain and tenor"
+    },
+    "annotation_process": {
+      "reported": "Reuses preexisting CADEC and ShARe annotations; restricts CADEC to ADE, and reframes ShARe 14 as NER. No new work-message annotation was performed.",
+      "not_reported": [
+        "Number and qualifications of original annotators",
+        "Double-annotation population",
+        "Adjudication procedure",
+        "Detailed original annotation instructions",
+        "Sentence/token boundary preprocessing protocol"
+      ],
+      "observed_issue": "The paper discusses inconsistent severity-interval treatment from a linguistic perspective, while allowing that concept-specific clinical conventions may explain it.",
+      "finding_refs": [
+        "S01-F09"
+      ],
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 445,
+        "line_end": 488,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "Data sets, reused annotations"
+    },
+    "inter_annotator_agreement": {
+      "status": "Not reported in this paper.",
+      "metric": null,
+      "population": null,
+      "scope": "No IAA statistic for span boundaries, discontinuity, shared membership, or decision-bearing text. Original corpus papers were not acquired or analyzed in this task.",
+      "review_scope": "Full paper read; dataset and annotation discussion on PDF pages 5 and 8, raw lines 434–512 and 806–824."
+    },
+    "split_and_leakage": {
+      "CADEC": {
+        "split_unit": "Post/document",
+        "train_percent": 70,
+        "development_percent": 15,
+        "test_percent": 15,
+        "test_percent_status": "Remaining posts after the stated training and development allocation.",
+        "assignment": "Random; follows Metke-Jimenez and Karimi (2016).",
+        "exact_split_document_counts": "Not reported. Do not infer integer counts from fractional proportions."
+      },
+      "ShARe 13 and ShARe 14": {
+        "split_unit": "Document",
+        "train_test": "Original corresponding shared-task splits.",
+        "development": "Randomly select 10% of each original training set.",
+        "exact_split_document_counts": "Not reported in this paper."
+      },
+      "selection": "Best development F1 model evaluated on test. Table 4 and Figure 4 are development analyses, not held-out test confirmation.",
+      "leakage_controls": "Patient, author, encounter, temporal, thread, document-near-duplicate, and pretraining-contamination controls are not reported.",
+      "shared_clinical_sources": "Both ShARe datasets draw on the clinical-note source family cited in the paper. Exact shared documents/patients and corpus overlap are not quantified here; independent replication and leakage freedom cannot be assumed.",
+      "claim_boundary": "No evidence here establishes actual train/test leakage. Unknown controls remain unknown.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+        "line_start": 501,
+        "line_end": 518,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      },
+      "section": "Experimental Setup",
+      "clinical_source_evidence": {
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 453,
+          "line_end": 458,
+          "pdf_pages": [
+            5
+          ]
+        },
+        "section": "Data sets, clinical-note source"
+      }
+    },
+    "metrics": {
+      "reported_definition": "Micro-average strict match mention F1; Table 2 also reports precision and recall.",
+      "operational_reading": "Strict mention matching requires the predicted mention components to match a gold mention, with the selected entity type fixed per dataset. Standard micro P = correct predicted mentions / predicted mentions, R = correct predicted mentions / gold mentions, F1 = 2PR/(P+R). The paper names the metric but does not provide executable matching/filtering rules or all raw denominators.",
+      "metric_evidence": {
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 501,
+          "line_end": 518,
+          "pdf_pages": [
+            5,
+            6
+          ]
+        },
+        "section": "Experimental Setup"
+      },
+      "table2": {
+        "task": "Strict micro exact biomedical mention extraction: CADEC ADE, ShARe 13/14 Disorder.",
+        "split": "test",
+        "population": "All mentions in the full test set.",
+        "scale": "percentage points, 0–100",
+        "gold_counts": "Not reported per test split in this paper.",
+        "predicted_counts": "Not reported.",
+        "rerun_or_implemented_baselines": {
+          "Flat": {
+            "CADEC": {
+              "precision": 65.3,
+              "recall": 58.5,
+              "f1": 61.8
+            },
+            "ShARe 13": {
+              "precision": 78.5,
+              "recall": 66.6,
+              "f1": 72.0
+            },
+            "ShARe 14": {
+              "precision": 76.2,
+              "recall": 76.7,
+              "f1": 76.5
+            }
+          },
+          "BIO Extension": {
+            "CADEC": {
+              "precision": 68.7,
+              "recall": 66.1,
+              "f1": 67.4
+            },
+            "ShARe 13": {
+              "precision": 77.0,
+              "recall": 72.9,
+              "f1": 74.9
+            },
+            "ShARe 14": {
+              "precision": 74.9,
+              "recall": 78.5,
+              "f1": 76.6
+            }
+          },
+          "Graph": {
+            "CADEC": {
+              "precision": 72.1,
+              "recall": 48.4,
+              "f1": 58.0
+            },
+            "ShARe 13": {
+              "precision": 83.9,
+              "recall": 60.4,
+              "f1": 70.3
+            },
+            "ShARe 14": {
+              "precision": 79.1,
+              "recall": 70.7,
+              "f1": 74.7
+            }
+          },
+          "Ours": {
+            "CADEC": {
+              "precision": 68.9,
+              "recall": 69.0,
+              "f1": 69.0
+            },
+            "ShARe 13": {
+              "precision": 80.5,
+              "recall": 75.0,
+              "f1": 77.7
+            },
+            "ShARe 14": {
+              "precision": 78.1,
+              "recall": 81.2,
+              "f1": 79.6
+            }
+          }
+        },
+        "prior_literature_rows_as_reported_by_S01": [
+          {
+            "citation": "Metke-Jimenez and Karimi (2016)",
+            "dataset": "CADEC",
+            "precision": 64.4,
+            "recall": 56.5,
+            "f1": 60.2
+          },
+          {
+            "citation": "Tang et al. (2018)",
+            "dataset": "CADEC",
+            "precision": 67.8,
+            "recall": 64.9,
+            "f1": 66.3
+          },
+          {
+            "citation": "Tang et al. (2013b)",
+            "dataset": "ShARe 13",
+            "precision": 80.0,
+            "recall": 70.6,
+            "f1": 75.0
+          }
+        ],
+        "prior_row_scope": "Other dataset cells are dashes, not zeros. These source-reported comparison rows were not independently verified against other papers.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 614,
+          "line_end": 625,
+          "pdf_pages": [
+            7
+          ]
+        },
+        "section": "Experimental Results, Table 2"
+      },
+      "table3": {
+        "task": "Strict micro exact biomedical mention extraction: CADEC ADE, ShARe 13/14 Disorder.",
+        "split": "test",
+        "scale": "percentage points, 0–100",
+        "sentence_subset": {
+          "population": "All mentions in test sentences containing at least one gold discontinuous mention, including continuous mentions.",
+          "gold_and_predicted_counts": "Not reported.",
+          "results": {
+            "Flat": {
+              "CADEC": {
+                "precision": 50.2,
+                "recall": 36.7,
+                "f1": 42.4
+              },
+              "ShARe 13": {
+                "precision": 43.5,
+                "recall": 28.1,
+                "f1": 34.2
+              },
+              "ShARe 14": {
+                "precision": 41.5,
+                "recall": 31.9,
+                "f1": 36.0
+              }
+            },
+            "BIO Extension": {
+              "CADEC": {
+                "precision": 63.8,
+                "recall": 52.0,
+                "f1": 57.3
+              },
+              "ShARe 13": {
+                "precision": 51.8,
+                "recall": 39.5,
+                "f1": 44.8
+              },
+              "ShARe 14": {
+                "precision": 37.5,
+                "recall": 38.4,
+                "f1": 37.9
+              }
+            },
+            "Graph": {
+              "CADEC": {
+                "precision": 69.5,
+                "recall": 43.2,
+                "f1": 53.3
+              },
+              "ShARe 13": {
+                "precision": 82.3,
+                "recall": 47.4,
+                "f1": 60.2
+              },
+              "ShARe 14": {
+                "precision": 60.0,
+                "recall": 52.8,
+                "f1": 56.2
+              }
+            },
+            "Ours": {
+              "CADEC": {
+                "precision": 66.5,
+                "recall": 64.3,
+                "f1": 65.4
+              },
+              "ShARe 13": {
+                "precision": 70.5,
+                "recall": 56.8,
+                "f1": 62.9
+              },
+              "ShARe 14": {
+                "precision": 61.9,
+                "recall": 64.5,
+                "f1": 63.1
+              }
+            }
+          }
+        },
+        "discontinuous_only": {
+          "population": "Only discontinuous mentions considered in the test evaluation. The source does not fully spell out the sentence universe or false-positive filtering implementation for this right-hand panel.",
+          "gold_and_predicted_counts": "Not reported.",
+          "results": {
+            "Flat": {
+              "CADEC": {
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              "ShARe 13": {
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              "ShARe 14": {
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              }
+            },
+            "BIO Extension": {
+              "CADEC": {
+                "precision": 5.8,
+                "recall": 1.0,
+                "f1": 1.8
+              },
+              "ShARe 13": {
+                "precision": 39.7,
+                "recall": 12.3,
+                "f1": 18.8
+              },
+              "ShARe 14": {
+                "precision": 8.8,
+                "recall": 4.5,
+                "f1": 6.0
+              }
+            },
+            "Graph": {
+              "CADEC": {
+                "precision": 60.8,
+                "recall": 14.8,
+                "f1": 23.9
+              },
+              "ShARe 13": {
+                "precision": 78.4,
+                "recall": 36.6,
+                "f1": 50.0
+              },
+              "ShARe 14": {
+                "precision": 42.7,
+                "recall": 39.5,
+                "f1": 41.1
+              }
+            },
+            "Ours": {
+              "CADEC": {
+                "precision": 41.2,
+                "recall": 35.1,
+                "f1": 37.9
+              },
+              "ShARe 13": {
+                "precision": 78.5,
+                "recall": 39.4,
+                "f1": 52.5
+              },
+              "ShARe 14": {
+                "precision": 56.1,
+                "recall": 43.8,
+                "f1": 49.2
+              }
+            }
+          },
+          "flat_zero_convention": "All three metrics are printed as zero although Flat cannot output discontinuous mentions. Its precision is therefore a reporting convention with no predicted discontinuous mentions, not evidence of a nonempty false-positive set."
+        },
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 626,
+          "line_end": 634,
+          "pdf_pages": [
+            7
+          ]
+        },
+        "section": "Experimental Results, Table 3",
+        "population_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 582,
+            "line_end": 612,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "Discontinuous evaluation settings"
+        }
+      },
+      "table4": {
+        "task": "Strict micro exact biomedical mention extraction: CADEC ADE, ShARe 13/14 Disorder.",
+        "split": "development only",
+        "population": "Gold discontinuous mentions classified by overlap structure.",
+        "metric": "strict micro mention F1, percent scale",
+        "dataset_order": [
+          "CADEC",
+          "ShARe 13",
+          "ShARe 14"
+        ],
+        "model_order": [
+          "BIO Extension",
+          "Graph",
+          "Ours"
+        ],
+        "categories": {
+          "no_overlap": {
+            "gold_counts": [
+              9,
+              41,
+              39
+            ],
+            "f1_by_model": [
+              [
+                0.0,
+                7.5,
+                0.0
+              ],
+              [
+                0.0,
+                32.1,
+                45.2
+              ],
+              [
+                0.0,
+                36.1,
+                57.1
+              ]
+            ]
+          },
+          "left_overlap": {
+            "gold_counts": [
+              54,
+              11,
+              30
+            ],
+            "f1_by_model": [
+              [
+                6.0,
+                25.0,
+                15.7
+              ],
+              [
+                9.2,
+                45.5,
+                37.7
+              ],
+              [
+                28.6,
+                33.3,
+                49.2
+              ]
+            ]
+          },
+          "right_overlap": {
+            "gold_counts": [
+              16,
+              19,
+              5
+            ],
+            "f1_by_model": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                45.2,
+                21.4,
+                0.0
+              ],
+              [
+                29.3,
+                13.3,
+                0.0
+              ]
+            ]
+          },
+          "multi_overlap": {
+            "gold_counts": [
+              15,
+              0,
+              6
+            ],
+            "f1_by_model": [
+              [
+                0.0,
+                null,
+                0.0
+              ],
+              [
+                0.0,
+                null,
+                0.0
+              ],
+              [
+                0.0,
+                null,
+                0.0
+              ]
+            ]
+          }
+        },
+        "null_semantics": "Printed dash for ShARe 13 multi-overlap: no gold examples; not an evaluated zero.",
+        "precision_denominators": "Predicted counts and exact category assignment of false positives are not specified.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 834,
+          "line_end": 879,
+          "pdf_pages": [
+            9
+          ]
+        },
+        "section": "Analysis, Table 4",
+        "scope_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 643,
+            "line_end": 648,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "Analysis, development-set scope"
+        }
+      },
+      "figure4": {
+        "task": "Strict micro exact biomedical mention extraction: CADEC ADE, ShARe 13/14 Disorder.",
+        "split": "development only",
+        "metric": "Recall, correct exact mentions / gold mentions in each plotted bin.",
+        "models": [
+          "BIO E.",
+          "Graph",
+          "Ours"
+        ],
+        "mention_length_bins_tokens": [
+          "1",
+          "2",
+          "3",
+          "4",
+          ">=5"
+        ],
+        "gold_counts_by_mention_length": {
+          "CADEC": [
+            280,
+            307,
+            136,
+            69,
+            106
+          ],
+          "ShARe 13": [
+            292,
+            238,
+            109,
+            23,
+            7
+          ],
+          "ShARe 14": [
+            352,
+            261,
+            115,
+            26,
+            17
+          ]
+        },
+        "interval_length_bins_tokens": [
+          "0",
+          "1",
+          "2",
+          "3",
+          ">=4"
+        ],
+        "gold_counts_by_interval_length": {
+          "CADEC": [
+            804,
+            8,
+            42,
+            14,
+            30
+          ],
+          "ShARe 13": [
+            598,
+            15,
+            26,
+            12,
+            18
+          ],
+          "ShARe 14": [
+            691,
+            10,
+            33,
+            20,
+            17
+          ]
+        },
+        "zero_interval": "Continuous mentions; positive interval bins are discontinuous mentions.",
+        "point_values": "Not transcribed as exact numbers: source provides plotted curves, not numeric point labels.",
+        "interpretation_refs": [
+          "S01-F10"
+        ],
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "line_start": 689,
+          "line_end": 771,
+          "pdf_pages": [
+            8
+          ]
+        },
+        "section": "Analysis, Figure 4",
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-08.png"
+      },
+      "not_reported": [
+        "Pk",
+        "WindowDiff",
+        "Topic pair/cluster scores",
+        "Span IoU",
+        "Whole-message multi-label metrics",
+        "Decision-scope preservation metrics",
+        "Calibrated uncertainty metrics",
+        "Runtime or latency measurements"
+      ],
+      "comparison_rule": "Do not compare full-test, selected-sentence, discontinuous-only, and development-category scores as if they share a denominator. Do not compare NER F1 to Topic segmentation or preservation metrics."
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation.",
+      "direct_measured_evidence": null,
+      "related_extraction_errors": "Gold severity omissions and qualitative boundary/decoding errors are relevant observations (F09; PDF page 9, Section 7.4, raw lines 899–921). They are not measured condition, approval, action, or reply-scope loss.",
+      "paper_motivation_not_measurement": [
+        "S01-F11"
+      ],
+      "transfer_risk": "Applying NER span exclusion to Topic evidence could omit decision-bearing modifiers. The source example does omit mildly from the entity target. Whether that omission changes a work decision requires separate annotated evaluation.",
+      "finding_refs": [
+        "S01-F09",
+        "S01-F11"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Concrete work-matter Topic identity or message-to-Topic linking.",
+      "Direct email/asynchronous interleaving, conversation branches, quoted replies, or cross-Source linkage.",
+      "Whole-message multi-label classification or several Topic labels for the exact same span.",
+      "Sentence, clause, arbitrary span, EDU, and hybrid units compared for meaning preservation.",
+      "Action/question/reply scope, approval conditions, negation, exceptions, and evidence needed for decisions.",
+      "Uncertainty retention, abstention, human review, or calibrated alternative memberships.",
+      "Incremental updates, long-history processing, deployment cost, latency, or Raspberry Pi throughput."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "S01-I01",
+        "dataset": "CADEC",
+        "task": "Corpus descriptive statistics for gold discontinuous biomedical mentions; not an evaluation split.",
+        "headline_total": 675,
+        "component_counts": [
+          650,
+          27,
+          2
+        ],
+        "component_sum_analyst_arithmetic": 679,
+        "overlap_counts": [
+          82,
+          351,
+          152,
+          94
+        ],
+        "overlap_sum_analyst_arithmetic": 679,
+        "headline_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 468,
+            "line_end": 468,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, # Disc.M"
+        },
+        "breakdown_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 473,
+            "line_end": 479,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, discontinuous mention breakdowns"
+        },
+        "pdf_check": "Both alternatives confirmed in original PDF page 5; also agree with primary rough, raw, layout, and page-indexed extractions.",
+        "resolution": "Unresolved source-internal inconsistency. Keep all printed quantities and percentages. Do not pool rates or substitute a corrected denominator."
+      },
+      {
+        "id": "S01-I02",
+        "dataset": "ShARe 13",
+        "task": "Corpus descriptive statistics for gold discontinuous biomedical mentions; not an evaluation split.",
+        "headline_total": 1090,
+        "component_counts": [
+          1026,
+          62,
+          0
+        ],
+        "component_sum_analyst_arithmetic": 1088,
+        "overlap_counts": [
+          582,
+          376,
+          102,
+          28
+        ],
+        "overlap_sum_analyst_arithmetic": 1088,
+        "headline_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 468,
+            "line_end": 468,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, # Disc.M"
+        },
+        "breakdown_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 473,
+            "line_end": 479,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, discontinuous mention breakdowns"
+        },
+        "pdf_check": "Both alternatives confirmed in original PDF page 5; also agree with primary rough, raw, layout, and page-indexed extractions.",
+        "resolution": "Unresolved source-internal inconsistency. Keep all printed quantities and percentages. Do not pool rates or substitute a corrected denominator."
+      },
+      {
+        "id": "S01-I03",
+        "dataset": "ShARe 14",
+        "task": "Corpus descriptive statistics for gold discontinuous biomedical mentions; not an evaluation split.",
+        "headline_total": 1710,
+        "component_counts": [
+          1574,
+          76,
+          0
+        ],
+        "component_sum_analyst_arithmetic": 1650,
+        "overlap_counts": [
+          820,
+          616,
+          170,
+          44
+        ],
+        "overlap_sum_analyst_arithmetic": 1650,
+        "headline_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 468,
+            "line_end": 468,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, # Disc.M"
+        },
+        "breakdown_evidence": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 473,
+            "line_end": 479,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "Table 1, discontinuous mention breakdowns"
+        },
+        "pdf_check": "Both alternatives confirmed in original PDF page 5; also agree with primary rough, raw, layout, and page-indexed extractions.",
+        "resolution": "Unresolved source-internal inconsistency. Keep all printed quantities and percentages. Do not pool rates or substitute a corrected denominator."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "strength": "Limited representation transfer",
+        "assessment": "Supports examining component spans, but supplies no sentence/clause/EDU/hybrid comparison and permits clinically intentional severity exclusion.",
+        "finding_refs": [
+          "S01-F01",
+          "S01-F09"
+        ]
+      },
+      "RQ2": {
+        "strength": "No direct evidence",
+        "assessment": "No email clusters, thread interleaving, or non-sequential message Topic identity task."
+      },
+      "RQ3": {
+        "strength": "Representation transfer",
+        "assessment": "Shared token membership and one mention with separated components are present in gold and some predictions. Entity-type cardinality and work-Topic cardinality are separate.",
+        "finding_refs": [
+          "S01-F01",
+          "S01-F02",
+          "S01-F06"
+        ]
+      },
+      "RQ4": {
+        "strength": "Representation transfer only",
+        "assessment": "Useful action-based construction and overlap-category failures; no universal expressivity result.",
+        "finding_refs": [
+          "S01-F02",
+          "S01-F05",
+          "S01-F06"
+        ]
+      },
+      "RQ5": {
+        "strength": "Risk evidence, no direct work-scope measurement",
+        "assessment": "Severity omission and malformed mention examples motivate preservation checks; downstream value is asserted, not measured.",
+        "finding_refs": [
+          "S01-F09",
+          "S01-F11"
+        ]
+      },
+      "RQ6": {
+        "strength": "Strong evaluation-design lesson within NER",
+        "assessment": "Retain each denominator and development/test separation; preserve source count conflicts.",
+        "finding_refs": [
+          "S01-F03",
+          "S01-F04",
+          "S01-F05",
+          "S01-F07",
+          "S01-F10"
+        ]
+      },
+      "RQ7": {
+        "strength": "Partial dataset/split evidence",
+        "assessment": "Named corpora and split rules are given; IAA, exact split counts, duplicate controls, and corpus independence remain unreported."
+      },
+      "RQ8": {
+        "strength": "Motivates untested experiments",
+        "assessment": "Compare representation coverage and decision-scope preservation with independent measures; proposed experiments below are not architecture approval."
+      }
+    },
+    "interpretation": [
+      {
+        "id": "S01-A01",
+        "status": "Analyst interpretation",
+        "statement": "A set of source-anchored component spans with shared membership is a candidate representation to test for Topic evidence. Biomedical mention identity is not Topic identity, and these NER scores cannot select a Topic architecture.",
+        "finding_refs": [
+          "S01-F01",
+          "S01-F03",
+          "S01-F04"
+        ]
+      },
+      {
+        "id": "S01-A02",
+        "status": "Analyst interpretation of representation limits",
+        "statement": "The described decoder consumes the buffer in order, combines only the top two stack spans, and retains at most one reduction operand; COMPLETE removes a span from the stack. No explicit split, arbitrary-span copy, or revisit action is supplied. These construction restrictions matter for crossing shared components. Unambiguous action-to-mention decoding does not imply mention-to-action coverage. The paper supplies neither an oracle coverage measure nor a proof that every gold structure is encodable, so multi-overlap failures must not be attributed solely to training sparsity. Exact unreachable structures should be determined by an oracle audit rather than inferred from F1 alone.",
+        "finding_refs": [
+          "S01-F02",
+          "S01-F06"
+        ],
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 283,
+            "line_end": 292,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 322,
+            "line_end": 341,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S01-A03",
+        "status": "Analyst interpretation",
+        "statement": "Separable component spans can preserve exact provenance while still excluding critical text. The left-atrium example shows why a flexible representation and decision-scope completeness require different validation.",
+        "finding_refs": [
+          "S01-F09",
+          "S01-F11"
+        ]
+      },
+      {
+        "id": "S01-A04",
+        "status": "Analyst interpretation",
+        "statement": "The proposed nested-NER reinterpretation adds Body Location and General Feeling types and a covering ADE span. The paper does not evaluate a reversible recovery of original component-to-mention combinations under this reinterpretation. It is not evidence that bounding-span or nesting conversion preserves Topic membership.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+            "line_start": 225,
+            "line_end": 257,
+            "pdf_pages": [
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S01-A05",
+        "status": "Analyst interpretation",
+        "statement": "Selecting only sentences with gold discontinuity makes a different evaluation population. Report all-mention and discontinuous-only results together, and label development diagnostics clearly. A dominant easy population can conceal failures on rare shared structures.",
+        "finding_refs": [
+          "S01-F04",
+          "S01-F05",
+          "S01-F06"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "S01-P01",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "proposal": "Construct a small synthetic, source-anchored gold set with no/left/right/multiple overlap, crossing combinations, and separated components. Audit whether each gold assignment can be encoded and decoded without loss before training. Record unencodable, ambiguously decoded, and predicted-incorrect cases separately.",
+        "comparison": "Compare a transition action encoding, contiguous covering spans, and explicit component sets. Include identical spans assigned to several Topic IDs independently of entity-type labels.",
+        "metrics": "Exact gold-structure round-trip coverage and membership recovery; state the number of gold structures by category. Then measure model span/membership errors separately.",
+        "motivated_by": [
+          "S01-F02",
+          "S01-F06",
+          "S01-F08"
+        ]
+      },
+      {
+        "id": "S01-P02",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "proposal": "Annotate synthetic work messages where a condition, negation, exception, supporting evidence, or approval/reply/action scope lies between or beside candidate Topic spans. Compare sentence, clause, span, EDU, and hybrid units using the same source text and gold work-matter identities.",
+        "metrics": "Decision-bearing gold-unit recall, omitted-scope rate, broadened-scope rate, and reviewer-rated decision equivalence. Report exact span F1 separately. Retain ambiguous membership cases rather than force one assignment.",
+        "motivated_by": [
+          "S01-F09",
+          "S01-F11"
+        ]
+      },
+      {
+        "id": "S01-P03",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "proposal": "Evaluate all messages and explicitly labeled multi-Topic, overlapping, and discontinuous subsets. Separate within-message component assignment from cross-message Topic linking. Freeze document/thread/source-grouped splits and audit duplicate leakage before model comparison.",
+        "metrics": "Task-specific span and membership P/R/F1, whole-message multi-label metrics, cross-message cluster metrics, and preservation metrics with separate gold/prediction counts. Measure overlap categories and report confidence intervals; do not pool incompatible denominators.",
+        "motivated_by": [
+          "S01-F03",
+          "S01-F04",
+          "S01-F05",
+          "S01-F07"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2020_dai_et_al_transition_based_discontinuous_ner.pdf",
+        "sha256": "e297bf10d3eff69aa571ecc862df8885211c0e45fd5b30da22fdfe37c23ca066",
+        "expected_sha256": "e297bf10d3eff69aa571ecc862df8885211c0e45fd5b30da22fdfe37c23ca066",
+        "hash_matches": true,
+        "pages": 11
+      },
+      "primary_converted_text": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S01.md",
+        "sha256": "8166038a14e1dc0642600120389e9e2a9ce7176402626467aca23a6c69283317",
+        "kind": "pipeline convert_rough",
+        "read_scope": "Full text, LF lines 1–1631, including references.",
+        "fine_conversion": "No S01 convert_fine file present."
+      },
+      "auxiliary_texts": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.raw.txt",
+          "sha256": "4143a2ecb1986c7add0b6b5872fe2803ee190a24d7d01510dcb848cd2e55a769",
+          "read_scope": "Full independent raw pdftotext text, including references."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.layout.txt",
+          "sha256": "b87ddfc9661bbeea91e0ac0b732bca8e4194fc6fa7ff68ba7edb9a5d939c1c51",
+          "read_scope": "Selected Table 1, methods, split, and evaluation text lines 285–410."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S01.pages.md",
+          "sha256": "4f4de8805646173b3fd768c8a379ed92a17055939b68147b72d6088ddeb0066d",
+          "read_scope": "Selected early-page and Table 1 excerpts; not the primary reading source."
+        }
+      ],
+      "line_convention": "1-based LF lines using text.split(\"\\n\"); inclusive end; form-feed characters do not create a new line. Quotes use whitespace normalization only and retain line-break hyphens.",
+      "pdf_visual_checks": [
+        {
+          "pdf_page": 1,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-01.png",
+          "checked": "Figure 1 selected components and omitted modifier"
+        },
+        {
+          "pdf_page": 3,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-03.png",
+          "checked": "Action inventory, optional labels and decoding claim"
+        },
+        {
+          "pdf_page": 4,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-04.png",
+          "checked": "Figure 3, action semantics and encoding equations"
+        },
+        {
+          "pdf_page": 5,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-05.png",
+          "checked": "Equation 2 and every Table 1 count/percentage; conflicting totals confirmed"
+        },
+        {
+          "pdf_page": 7,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-07.png",
+          "checked": "Tables 2 and 3, all result columns and evaluation captions"
+        },
+        {
+          "pdf_page": 8,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-08.png",
+          "checked": "Figure 4 labels/curves and qualitative overlap discussion"
+        },
+        {
+          "pdf_page": 9,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S01/S01.pdf-page-09.png",
+          "checked": "Table 4 category counts, null cells and F1; crossing example"
+        }
+      ],
+      "extraction_damage": "Rough conversion scrambles Figure 3 layout, Equation 2, and Table 4 row grouping. Independent raw text plus original PDF resolves these details. Table 1 conflicts persist in the PDF and are not conversion errors.",
+      "escalation": {
+        "selected_effort": "xhigh",
+        "status": "Already launched at xhigh for source inconsistencies and representation limits; no further escalation requested.",
+        "unresolved_source_issue": "The paper does not explain Table 1 count conflicts. Retained as source limitations, not repaired."
+      },
+      "scope_policy": "Only S01 analyzed. No network calls, external acquisition, other-paper analysis, pipeline stages, workflow edits, or result submission."
+    }
+  }
+}

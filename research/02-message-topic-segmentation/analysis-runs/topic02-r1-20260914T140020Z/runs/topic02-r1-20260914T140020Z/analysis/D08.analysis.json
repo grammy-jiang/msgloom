@@ -1,0 +1,1024 @@
+{
+  "paper_id": "D08",
+  "title": "Task-Focused Summarization of Email",
+  "research_question": "Can a system identify task-bearing sentences in email and reformulate them into a task-focused summary that supports adding items to a to-do list?",
+  "methodology": "SmartMail separates new message bodies from headers and forwarded text, classifies body sentences as Task/non-Task with a linear SVM trained by sequential minimal optimization, and studies feature ablations using message, surface, and NLPWin linguistic features. Gold uses single speech-act labels, with majority labels and whole-message disagreement filtering for development/blind test. It evaluates sentence and derived message precision–recall curves, illustrates rule-based logical-form reformulation, and demonstrates Outlook interfaces; reformulation/user studies remain future work.",
+  "methodology_evidence_refs": [
+    "E01",
+    "E02",
+    "E03",
+    "E05",
+    "E06",
+    "E07",
+    "E09",
+    "E11",
+    "E13"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "D08-F01",
+      "finding": "Gold annotation assigns one speech-act tag per message-body sentence; Task means a suitable ongoing to-do item and usually excludes simple factual questions. Annotators use whole-message context for ambiguous formulaic requests.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 2, §2 Data",
+      "quote": "Annotators were instructed to mark a sentence as containing a task if it looked like an appropriate item to add to an on-going “to do” list. By this criterion, simple factual questions would not usually be annotated as tasks; merely responding with an answer fulfills any obligation. Annotators",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 114,
+        "line_end": 119,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_basis": "Reported annotation specification, not an experimentally established definition of all work requiring a response.",
+      "evidence_refs": [
+        "E01",
+        "E02",
+        "E04"
+      ]
+    },
+    {
+      "finding_id": "D08-F02",
+      "finding": "Pairwise Cohen’s Kappa for speech-act sentence tags on a separate 146-message agreement set is 85.8%, 82.6%, and 82.3% for annotator pairs 1–2, 1–3, and 2–3, respectively; these are not Task-only scores.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, §2 Data",
+      "quote": "bodies using Cohen’s Kappa. Annotator 1 and annotator 2 measured 85.8%; annotator 1 and annotator 3 measured 82.6%; annotator 2 and annotator 3 measured 82.3%. We consider this",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 93,
+        "line_end": 96,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_basis": "Measured annotation agreement; sentence denominator and class-specific agreement are not reported.",
+      "evidence_refs": [
+        "E03"
+      ]
+    },
+    {
+      "finding_id": "D08-F03",
+      "finding": "On the blind email test set, the authors report that all features give the best sentence-level Task-versus-non-Task precision–recall results in approximate recall ranges 0.2–0.4 and 0.5–0.6; the two linguistic-feature ablations differ negligibly.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §4 Results / Figure 1",
+      "quote": "Figure 1 shows final results for these feature sets on the blind test set: for recall between approximately 0.2 and 0.4 and between approximately 0.5 and 0.6 the use of all features produces the best results. The distinction between the “no linguistic features” and “no deep linguistic features” scenarios is negligible; word n-grams appear to be highly predictive.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 213,
+        "line_end": 220,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Empirical curves and author interpretation; no significance test, exact point table, or fixed-threshold score.",
+      "evidence_refs": [
+        "E05",
+        "E06"
+      ]
+    },
+    {
+      "finding_id": "D08-F04",
+      "finding": "Using all features, flagging a message when any sentence is predicted Task gives a higher precision–recall curve than sentence-level classification; this is evidence about finding at least one task, not recovering every task.",
+      "evidence_type": "supported",
+      "section": "PDF pp. 3–4, §4 Results / Figure 2",
+      "quote": "those that do not, using all features. A message was marked as containing a task if it contained at least one sentence classified as a task. Since",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 228,
+        "line_end": 230,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Visual curve comparison. The paper calls the improvement accuracy but plots precision and recall; Figure 2 does not separately restate its test split.",
+      "evidence_refs": [
+        "E07",
+        "E08"
+      ]
+    },
+    {
+      "finding_id": "D08-F05",
+      "finding": "Task reformulation selects a task-bearing clause, prunes other logical-form content, removes selected modality and modifiers, resolves some deictic expressions, and generates an imperative; no preservation score is reported.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 4, §5 Reformulation of Tasks",
+      "quote": "as please or a modal verb are used. All parts of the logical form not subsumed by the task clause are pruned. 3. Transform the task portion of the LF to exclude extraneous words (e.g. please, must, could), extraneous subordinate clauses, adverbial modifiers, and vocative phrases. We replace certain deictic",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 293,
+        "line_end": 300,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_basis": "Source-grounded transformation specification with illustrative outputs; unsupported denotes no experimental semantic-preservation evaluation. Example 1 documents omitted context and confidence text and the modal/subject deletion while retaining the embassy action and visa-stamping purpose (E14); it supplies no paired gold fidelity judgment.",
+      "evidence_refs": [
+        "E09",
+        "E10",
+        "E13",
+        "E14"
+      ]
+    },
+    {
+      "finding_id": "D08-F06",
+      "finding": "When a spanning parse fails, SmartMail falls back to quoting the original sentence with sender and date; Example 3 illustrates this behavior.",
+      "evidence_type": "supported",
+      "section": "PDF p. 5, §5 Example 3",
+      "quote": "complement clause. SmartMail’s back-off strategy for non-spanning parses is to enclose the entire original sentence in quotes, prefixed with a matrix sentence indicating the date and the name of the sender.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 381,
+        "line_end": 385,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_basis": "Qualitative demonstrated output and explanation, not a measured fallback success rate.",
+      "evidence_refs": [
+        "E10"
+      ]
+    },
+    {
+      "finding_id": "D08-F07",
+      "finding": "The paper explicitly reports that SmartMail fails to detect task assignment conveyed by proper-name section headings with scope over the following task list.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 6, §6 Task-Focused Summarization",
+      "quote": "is a list of tasks assigned to Matt, a list assigned to Eric or Mo, and a list assigned to Mo. SmartMail does not currently detect this explicit assignment of tasks to individuals.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 440,
+        "line_end": 443,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_basis": "Source-grounded author-reported system limitation illustrated by Figures 3–4. Unsupported denotes no experimental scope evaluation or error frequency, not lack of a source for the limitation.",
+      "evidence_refs": [
+        "E12"
+      ]
+    },
+    {
+      "finding_id": "D08-F08",
+      "finding": "The prototype offers task checkboxes, original-message links, in-context highlighting, and a classifier threshold slider; user studies of usefulness and reformulation variants remain planned.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 6, §7 Conclusion",
+      "quote": "We plan to conduct user studies by distributing the prototype as an Outlook add-in to volunteers who would use it to read and process their own mail over a period of several weeks. We intend to measure more than the precision and recall of our classifier by observing how many identified tasks users actually add to their “to do” list and by administering qualitative surveys of user satisfaction.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 465,
+        "line_end": 473,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_basis": "Interface description and future study plan, not measured workload reduction or preservation.",
+      "evidence_refs": [
+        "E11",
+        "E13"
+      ]
+    },
+    {
+      "finding_id": "D08-F09",
+      "finding": "The authors expect that omitting deeper linguistic features will retain good classification performance in languages without an NLPWin parser, but report no cross-language evaluation.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 3, §4 Results",
+      "quote": "Based on these results, we expect that for languages where we do not have an NLPWin parser, we can safely exclude the deeper linguistic features and still expect good classifier performance.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 221,
+        "line_end": 225,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_basis": "Expectation extrapolated from the reported email ablation; no multilingual result.",
+      "evidence_refs": [
+        "E06"
+      ]
+    }
+  ],
+  "limitations": [
+    "The narrow Task label usually excludes factual questions requiring only an answer; it is not a comprehensive obligation label (D08-F01).",
+    "No Topic identities, Topic segmentation, exact-span gold, multi-membership, overlap, or discontinuous semantic-object evaluation (E01/E02/E06/E09).",
+    "Heading-to-task assignee scope is explicitly reported as not detected (D08-F07); no preservation metrics assess reformulation (D08-F05).",
+    "Corpus source population and language inventory are unspecified; mostly Outlook usage and rare inline interleaving limit demonstrated coverage (E02).",
+    "No positive-class/test-sentence counts, detailed hyperparameters, exact curve points, uncertainty intervals, or significance tests (E03/E05/E06/E07).",
+    "Consensus filtering may omit difficult messages; sender separation does not demonstrate thread/duplicate isolation (E02/E03, analyst inference).",
+    "No completed user study, measured reading-effort reduction, or task-reformulation preference results (D08-F08).",
+    "Retain original enumeration, metric-wording, and corpus-accounting issues D08-I01–I03."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability_status": "Not reported in the frozen paper; no release location or license is given. No claim about current availability.",
+    "dataset_availability_status": "Not reported in the frozen paper; collected corpus is described without a release location or license. No claim about current availability.",
+    "boolean_policy": "code_available and dataset_available are omitted because the schema permits omission and absence of a paper statement cannot establish false availability.",
+    "implementation": "Linear SVM/SMO, approximate feature inventory, NLPWin, LF rewrite steps, and split policy are described. Code, exact trained parameters, preprocessing implementation, model selection detail, and full annotation guide are not supplied.",
+    "evidence_refs": [
+      "E02",
+      "E03",
+      "E05",
+      "E06",
+      "E09",
+      "E13"
+    ]
+  },
+  "confidence_scores": {
+    "D08-F01": 0.99,
+    "D08-F02": 0.99,
+    "D08-F03": 0.94,
+    "D08-F04": 0.91,
+    "D08-F05": 0.98,
+    "D08-F06": 0.98,
+    "D08-F07": 0.99,
+    "D08-F08": 0.99,
+    "D08-F09": 0.98
+  },
+  "confidence_interpretation": "Confidence in faithful extraction and evidence qualification, not probability of operational success. Unsupported method descriptions and limitations are source-grounded but not experimentally evaluated under the installed contract.",
+  "raw_claims": [
+    "We collected a corpus of 15,741 email messages.",
+    "Annotators were instructed to mark a sentence as containing a task if it looked like an appropriate item to add to an on-going “to do” list.",
+    "Each sentence in the message body is described by a vector of approximately 53,000 features.",
+    "All parts of the logical form not subsumed by the task clause are pruned.",
+    "SmartMail does not currently detect this explicit assignment of tasks to individuals."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+      "line_start": 55,
+      "line_end": 56,
+      "pdf_pages": [
+        1
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+      "line_start": 114,
+      "line_end": 116,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+      "line_start": 148,
+      "line_end": 149,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+      "line_start": 293,
+      "line_end": 295,
+      "pdf_pages": [
+        4
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+      "line_start": 441,
+      "line_end": 443,
+      "pdf_pages": [
+        6
+      ]
+    }
+  ],
+  "evidence_index": {
+    "E01": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 36,
+        "line_end": 53,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "section": "PDF p. 1, §1 Introduction"
+    },
+    "E02": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 55,
+        "line_end": 84,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "section": "PDF p. 1, §2 Data and footnote 1"
+    },
+    "E03": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 88,
+        "line_end": 105,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, §2 Data"
+    },
+    "E04": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 114,
+        "line_end": 146,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, §2 Data"
+    },
+    "E05": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 148,
+        "line_end": 184,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, §§3–4 Features / Results"
+    },
+    "E06": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 188,
+        "line_end": 225,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF p. 3, §4 Results / Figure 1"
+    },
+    "E07": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 226,
+        "line_end": 237,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF p. 3, §4 Results"
+    },
+    "E08": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 256,
+        "line_end": 272,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF p. 4, Figure 2"
+    },
+    "E09": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 274,
+        "line_end": 336,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF p. 4, §5 Reformulation of Tasks / Example 1"
+    },
+    "E10": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 337,
+        "line_end": 385,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF p. 5, §5 Examples 2–3"
+    },
+    "E11": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 387,
+        "line_end": 435,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF p. 5, §6 Task-Focused Summarization"
+    },
+    "E12": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 436,
+        "line_end": 454,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      },
+      "section": "PDF pp. 5–6, §6 Task-Focused Summarization"
+    },
+    "E13": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 465,
+        "line_end": 483,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "section": "PDF p. 6, §7 Conclusion"
+    },
+    "E14": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+        "line_start": 319,
+        "line_end": 336,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF p. 4, §5 Reformulation of Tasks / Example 1 and explanation"
+    }
+  },
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": [
+      {
+        "task": "Binary sentence classification: Task versus non-Task",
+        "evaluation": "Precision–recall curves; feature ablations on development data and final Figure 1 on blind test.",
+        "evidence_refs": [
+          "E05",
+          "E06"
+        ]
+      },
+      {
+        "task": "Binary whole-message classification: contains at least one Task",
+        "evaluation": "Figure 2 compares message and sentence precision–recall curves with all features. It is not whole-message multi-label Topic classification.",
+        "evidence_refs": [
+          "E07",
+          "E08"
+        ]
+      },
+      {
+        "task": "Speech-act label annotation reliability",
+        "evaluation": "Pairwise Cohen’s Kappa across the full speech-act inventory, on a separate agreement sample.",
+        "evidence_refs": [
+          "E02",
+          "E03"
+        ]
+      },
+      {
+        "task": "Task reformulation",
+        "evaluation": "Illustrative input/output examples only; no quantitative extraction-scope, semantic preservation, or usability evaluation.",
+        "evidence_refs": [
+          "E09",
+          "E10",
+          "E13"
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "unit": "Message-body sentence; one application-specific speech-act tag. Whole-message context informs interpretation. No clause/span/EDU boundary gold is described.",
+      "evidence_refs": [
+        "E01",
+        "E02",
+        "E04"
+      ]
+    },
+    "prediction_unit": {
+      "unit": "Binary Task label per sentence; derived binary flag per message. Subsequent rules select a clause or whole sentence in a logical form and generate task text. No exact character-offset assignment is evaluated.",
+      "evidence_refs": [
+        "E06",
+        "E07",
+        "E09"
+      ]
+    },
+    "contiguity": {
+      "status": "Sentence classification followed by a list of independently extracted tasks. No contiguous Topic segmentation or non-sequential Topic clustering.",
+      "scope": "A list may contain separated sentences from one message; this does not establish that they support one semantic object.",
+      "evidence_refs": [
+        "E01",
+        "E11"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Exactly one speech-act tag per annotated sentence, including the default None of the above; no multiple Topic memberships. A message can contain multiple Task sentences, without separate work-matter identities.",
+      "prediction": "One binary Task/non-Task decision per sentence at a chosen threshold; one contains-Task flag per message. No multilabel span or message Topic predictions.",
+      "evidence_refs": [
+        "E02",
+        "E07",
+        "E11"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "No annotation linking non-contiguous spans to one task or Topic is reported.",
+        "thread_level": "No gold linkage of tasks/Topics across messages is reported."
+      },
+      "prediction": {
+        "within_one_message": "Separated task sentences can be selected, but no identity relation combines discontinuous spans as one task/Topic. Logical-form pruning is not a discontinuous Topic-span representation.",
+        "thread_level": "No task/Topic cluster prediction across messages; header/body/forward separation is preprocessing only."
+      },
+      "evidence_refs": [
+        "E01",
+        "E02",
+        "E09",
+        "E11"
+      ]
+    },
+    "overlap": {
+      "gold": "The stated single-tag sentence scheme does not encode overlapping task or Topic spans. No gold multi-membership or nested assignment reported.",
+      "prediction": "No overlapping task/Topic span assignment described or evaluated.",
+      "scope": "Neither multiple tasks per email nor sender-heading scope establishes overlapping Topic membership.",
+      "evidence_refs": [
+        "E02",
+        "E09",
+        "E12"
+      ]
+    },
+    "dataset_domain": {
+      "name": "Unnamed collected email corpus",
+      "paper_reported": "Email; most senders used Microsoft Outlook, and interleaving of quoted original messages with new content was extremely uncommon.",
+      "not_reported": "Sampling dates, organizational population, domain breakdown, and corpus language inventory. English examples are visible, but no language proportions are reported.",
+      "evidence_refs": [
+        "E02",
+        "E04"
+      ]
+    },
+    "annotation_process": {
+      "procedure": "Three annotators label sentences using one tag from Salutation, Chit-chat, Task, Meeting, Promise, Farewell, Sig_Name, Sig_Title, Sig_Affiliation, Sig_Location, Sig_Phone, Sig_Email, Sig_URL, Sig_Other, and None of the above. Task excludes most simple factual questions. Context distinguishes social formulae from requests for review/comment.",
+      "test_gold": "All three annotate development and blind test. Majority sentence tag is gold. If any sentence has no majority, the entire message is discarded.",
+      "training_gold": "The paper states that three annotators labeled the corpus but does not specify independent coverage or adjudication for each training sentence.",
+      "evidence_refs": [
+        "E02",
+        "E03",
+        "E04"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "metric": "Pairwise Cohen’s Kappa; the paper reports percentage notation, not raw percent agreement.",
+      "population": "All speech-act sentence tags in 146 separate messages excluded from training, development, and blind test; number of sentences not reported.",
+      "results": [
+        {
+          "annotator_pair": "1–2",
+          "paper_value": "85.8%",
+          "normalized_kappa": 0.858
+        },
+        {
+          "annotator_pair": "1–3",
+          "paper_value": "82.6%",
+          "normalized_kappa": 0.826
+        },
+        {
+          "annotator_pair": "2–3",
+          "paper_value": "82.3%",
+          "normalized_kappa": 0.823
+        }
+      ],
+      "not_reported": "Task-only Kappa, span agreement, uncertainty labels, confidence intervals, and agreement on work-matter identity.",
+      "evidence_refs": [
+        "E03"
+      ]
+    },
+    "split_and_leakage": {
+      "counts": {
+        "reported_corpus_messages": 15741,
+        "training_messages": 14535,
+        "training_body_sentences": 106700,
+        "development_messages_after_filter": 507,
+        "blind_test_messages_after_filter": 699,
+        "separate_iaa_messages": 146,
+        "selected_senders": 3098,
+        "maximum_messages_per_sender": 50
+      },
+      "split_unit": "Messages allocated with all mail from each sender in training or test, to test previously unseen senders. Whether development and blind test are mutually sender-disjoint is not stated.",
+      "controls": "Sender cap and train/test sender separation are reported. Thread grouping, temporal split, duplicate/near-duplicate filtering, quoted-content deduplication, and cross-sender thread leakage controls are not reported.",
+      "missing": "Development/blind sentence counts, positive Task counts at both units, pre-filter test counts, discarded-message counts, seed, and detailed split membership.",
+      "interpretation": "Whole-message removal on any unresolved label can select a less ambiguous test population; no quantified effect is reported. Sender separation alone does not establish thread or content independence.",
+      "evidence_refs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "metrics": [
+      {
+        "metric": "Sentence Task precision and recall",
+        "definition": "Standard interpretation: precision = true Task sentences / predicted Task sentences; recall = true Task sentences / gold Task sentences. Formulas are not explicitly printed.",
+        "dataset_task_split": "Unnamed email corpus; binary sentence Task detection; final Figure 1 blind test, 699 retained messages; sentence and positive-class denominators not reported.",
+        "setting": "Linear SVM trained with sequential minimal optimization. Approximately 53,000 features per sentence in the full description: message, surface n-grams/punctuation/name cues, and NLPWin linguistic features. Development ablations determine run-time feature selection; explicit final selected configuration and SVM hyperparameters are not fully specified.",
+        "results": "D08-F03; all-features, no-deep-linguistic-features, and no-linguistic-features curves. Exact plotted coordinates, F1, AUC, precision at a fixed recall, recall at a fixed precision, and statistical tests are not reported as numeric tables.",
+        "reported_numeric_context": {
+          "all_features_advantage_recall_intervals_approximate": [
+            [
+              0.2,
+              0.4
+            ],
+            [
+              0.5,
+              0.6
+            ]
+          ],
+          "precisions_at_those_intervals": "Not numerically specified."
+        },
+        "evidence_refs": [
+          "E03",
+          "E05",
+          "E06"
+        ]
+      },
+      {
+        "metric": "Message contains-Task precision and recall",
+        "definition": "Standard interpretation: precision = correctly flagged Task-containing messages / predicted Task-containing messages; recall = correctly flagged Task-containing messages / gold Task-containing messages. A predicted message is positive if any sentence is predicted Task. Gold message construction is implied by contains-task evaluation but not separately formalized.",
+        "dataset_task_split": "Same email study; Figure 2 with all features. Blind test is the surrounding final-results context, but the Figure 2 paragraph/caption does not explicitly restate its split or message count. Do not treat a Figure 2 denominator of 699 as independently confirmed.",
+        "results": "D08-F04; higher message-level curve. No exact numeric performance points or class counts. The prose term accuracy is not a reported scalar accuracy metric.",
+        "evidence_refs": [
+          "E07",
+          "E08"
+        ]
+      },
+      {
+        "metric": "Pairwise Cohen’s Kappa",
+        "dataset_task_split": "Separate annotation-agreement set, all speech-act sentence tags, 146 messages; not model evaluation.",
+        "results_ref": "topic02.inter_annotator_agreement",
+        "evidence_refs": [
+          "E03"
+        ]
+      },
+      {
+        "metric": "Topic segmentation / assignment and preservation metrics",
+        "status": "Not evaluated: Pk, WindowDiff, Topic pair/cluster scores, exact/overlapping/discontinuous span F1 or IoU, Topic multi-label scores, condition/evidence/approval/reply-scope preservation metrics.",
+        "evidence_scope": "Full paper; §§4–7 restrict measured results to classifier curves and annotation agreement, with reformulation/user tests not completed.",
+        "evidence_refs": [
+          "E03",
+          "E06",
+          "E07",
+          "E09",
+          "E13"
+        ]
+      }
+    ],
+    "measured_work_text_preservation": {
+      "direct_measurement": "No direct semantic-preservation evaluation or denominator is reported. No score for conditions, exceptions, evidence, action scope, approval scope, or reply scope.",
+      "related_reported_errors": [
+        {
+          "finding_ref": "D08-F07",
+          "type": "Author-reported missed heading-to-task assignee scope; qualitative limitation."
+        },
+        {
+          "finding_ref": "D08-F06",
+          "type": "Illustrated parse error and sentence-quotation fallback; not a preservation metric."
+        }
+      ],
+      "plausible_risk": "Analyst interpretation: clause, modifier, or modality pruning can remove decision-bearing conditions/evidence or broaden action scope. Example 1 documents text changes, but no paired gold fidelity judgment establishes condition loss or broadened scope. General subordinate-clause pruning is not evidence that the paper demonstrated deletion of a conditional clause.",
+      "evidence_refs": [
+        "E09",
+        "E10",
+        "E12",
+        "E13",
+        "E14"
+      ],
+      "documented_text_transformations": [
+        {
+          "id": "D08-T01",
+          "finding_ref": "D08-F05",
+          "evidence_ref": "E14",
+          "section": "PDF p. 4, §5 Example 1",
+          "evidence_kind": "Documented text transformation; qualitative source input/output example",
+          "source_input": {
+            "quote": "On the H-1 visa issue, I am positive that you need to go to the Embassy in London to get your visa stamped into your passport.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 320,
+              "line_end": 324,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          "source_output": {
+            "quote": "Go to the Embassy in London to get your visa stamped into your passport.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 326,
+              "line_end": 328,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          "source_explanation": {
+            "quote": "In this example, the embedded sentential complement, that is, the part of the sentence following positive, is selected as the part of the sentence containing the task, because of the modal verb need and the second person subject; only that part of the sentence gets reformulated. The modal verb and the second person subject are deleted to form an imperative sentence.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 329,
+              "line_end": 336,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          "observed_changes": [
+            "The displayed output omits the explicit context 'On the H-1 visa issue' and the sender's assertion of confidence 'I am positive'.",
+            "The source explains that the embedded complement is selected and the modal verb need and second-person subject are deleted to form an imperative.",
+            "The output retains going to the Embassy in London and the purpose of getting the recipient's visa stamped into the recipient's passport."
+          ],
+          "fidelity_judgment": "No paired gold semantic-fidelity judgment is supplied. The displayed omissions are not automatically classified as semantic errors.",
+          "aggregate_preservation_metric": "Not reported; this one example supplies no aggregate preservation denominator or rate.",
+          "conditional_clause_boundary": "Example 1 does not demonstrate deletion of a conditional clause. The general rule mentions pruning subordinate clauses; that alone cannot establish an observed conditional-deletion error. The conditional task sentence in §2 (raw lines 143–146, PDF p. 2) is not paired with a reformulation."
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Topic-boundary detection.",
+      "Contiguous Topic segmentation.",
+      "Segment Topic labeling.",
+      "Whole-message multi-label Topic classification; contains-Task classification is distinct.",
+      "Exact source-span assignment to a concrete work matter.",
+      "Overlapping Topic span assignment.",
+      "Non-contiguous assignment to one Topic, within one message or across a thread.",
+      "Discourse/EDU segmentation or comparative annotation-unit evaluation.",
+      "Complete action/question/reply-scope extraction: related Task detection is evaluated, but most factual questions are excluded and assignment scope is not modeled.",
+      "Preservation of decision-bearing conditions, evidence, exceptions, approval scope, action scope, and reply scope."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "D08-I01",
+        "type": "Original-paper enumeration inconsistency",
+        "values": [
+          "Prose says three feature sets.",
+          "Original PDF enumerates items 1, 2, 3, 4; item 2 continues the parenthesized all-features description.",
+          "Figure 1 legend names three feature configurations."
+        ],
+        "locators": [
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 199,
+              "line_end": 209,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "section": "PDF p. 3, §4 feature list"
+          },
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 252,
+              "line_end": 255,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "section": "PDF p. 3, Figure 1 legend/caption"
+          }
+        ],
+        "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-3.png",
+        "disposition": "Retain all values. Treat three named plotted configurations as observed; do not invent a fourth ablation. The numbering defect is visible in the PDF, not a conversion-only error.",
+        "xhigh_verification": {
+          "result": "Confirmed in the original local PDF; prior qualified disposition retained.",
+          "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-review.json",
+          "author_intent": "Unavailable from the frozen source; no resolution inferred."
+        }
+      },
+      {
+        "id": "D08-I02",
+        "type": "Metric terminology mismatch",
+        "values": [
+          "Prose calls Figure 2 accuracy and says it is substantially higher per message.",
+          "Figure 2 axes and caption specify precision–recall."
+        ],
+        "locators": [
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 226,
+              "line_end": 237,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "section": "PDF p. 3, §4 Results"
+          },
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 256,
+              "line_end": 272,
+              "pdf_pages": [
+                4
+              ]
+            },
+            "section": "PDF p. 4, Figure 2"
+          }
+        ],
+        "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-4.png",
+        "disposition": "Report precision–recall comparison only; no scalar accuracy value is available.",
+        "xhigh_verification": {
+          "result": "Confirmed in the original local PDF; prior qualified disposition retained.",
+          "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-review.json",
+          "author_intent": "Unavailable from the frozen source; no resolution inferred."
+        }
+      },
+      {
+        "id": "D08-I03",
+        "type": "Unresolved corpus accounting ambiguity, not a proven numerical contradiction",
+        "values": [
+          "Reported corpus: 15,741 messages.",
+          "Training 14,535 plus retained development 507 plus retained blind test 699 equals 15,741 (analyst arithmetic).",
+          "A separate 146-message IAA set is excluded from those splits; ambiguous test messages were discarded, with no discard count."
+        ],
+        "locators": [
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 55,
+              "line_end": 67,
+              "pdf_pages": [
+                1
+              ]
+            },
+            "section": "PDF p. 1, §2 Data"
+          },
+          {
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+              "line_start": 88,
+              "line_end": 105,
+              "pdf_pages": [
+                2
+              ]
+            },
+            "section": "PDF p. 2, §2 Data"
+          }
+        ],
+        "visual_verification": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-1.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-2.png"
+        ],
+        "disposition": "Do not infer an initial corpus total including IAA and discarded messages. The paper does not clarify whether its corpus total is before or after filtering.",
+        "xhigh_verification": {
+          "result": "Confirmed in the original local PDF; prior qualified disposition retained.",
+          "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-review.json",
+          "author_intent": "Unavailable from the frozen source; no resolution inferred."
+        }
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "D08-F01/F05/F07: sentences for classification, clauses for rewriting, and headings outside the sentence for assignee scope; no comparative unit evidence.",
+      "RQ2": "No task/Topic clusters across email; original/new-content interleaving described as uncommon, not solved or evaluated (E01/E02).",
+      "RQ3": "Single-label gold and binary predictions; separated selected sentences are not shared Topic membership (D08-F01/F04).",
+      "RQ4": "No direct evidence for overlapping or discontinuous Topic-span representation (E02/E09/E11).",
+      "RQ5": "D08-F05/F06/F07 and E14: distinguish Example 1's documented context/confidence and modal/subject removal, the demonstrated whole-sentence parse fallback, and the explicitly reported missed heading-to-task responsibility scope. Condition-loss and broadened-scope risks remain interpretation; no paired gold fidelity judgment or aggregate preservation metric is supplied.",
+      "RQ6": "D08-F02/F03/F04 and D08-I01/I02: separate sentence PR, message PR, and full-inventory Kappa; incomplete denominators.",
+      "RQ7": "Sender-separated splits, consensus filtering, unnamed email population, and unreported duplicate controls (E02/E03).",
+      "RQ8": "Motivates limited task/scope-preservation experiments; none is an approved representation choice."
+    },
+    "interpretation": [
+      {
+        "id": "D08-A01",
+        "statement": "Task is narrower than msgloom work needing a response. A classifier that reproduces this gold could correctly exclude a factual question while missing work important to msgloom. This is a target-definition mismatch, not a measured model error.",
+        "basis": [
+          "D08-F01"
+        ]
+      },
+      {
+        "id": "D08-A02",
+        "statement": "A message flag can remain correct while additional actions or their scope are missed. Its superior curve cannot validate complete work coverage or Topic span assignment.",
+        "basis": [
+          "D08-F04"
+        ]
+      },
+      {
+        "id": "D08-A03",
+        "statement": "The missed heading scope motivates testing context beyond a sentence, but does not establish sentence, clause, EDU, arbitrary-span, or hybrid superiority.",
+        "basis": [
+          "D08-F07"
+        ]
+      },
+      {
+        "id": "D08-A04",
+        "statement": "Keep source extraction and optional rewriting separately assessable. The fallback and links preserve access to source text, but access alone does not prove that a summary retained all decision-bearing meaning.",
+        "basis": [
+          "D08-F05",
+          "D08-F06",
+          "D08-F08"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "D08-X01",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "experiment": "On user-reviewed synthetic business-email examples, compare sentence, clause, EDU, arbitrary-span, and hybrid annotation while holding work-matter definitions fixed. Include assignee headings, factual replies, and conditions outside action clauses. Permit uncertainty and multiple memberships.",
+        "evaluation": "Annotator agreement and missed/broadened action or reply scope per gold obligation; separately report Topic assignment metrics.",
+        "basis": [
+          "D08-A01",
+          "D08-A03"
+        ]
+      },
+      {
+        "id": "D08-X02",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "experiment": "Compare verbatim task sentences, the described clause-pruning rewrite, and rewrites linked to explicit supporting spans on the same reviewed examples. Include discontinuous conditions/evidence and shared scope across tasks.",
+        "evaluation": "For each gold condition, exception, evidence item, assignee, action, approval, and reply scope, record preserved, omitted, or broadened meaning. Keep extraction recall separate from rewrite fidelity.",
+        "basis": [
+          "D08-A04"
+        ]
+      },
+      {
+        "id": "D08-X03",
+        "status": "Untested msgloom research proposal; not architecture approval",
+        "experiment": "Compare an any-task message flag with complete per-message obligation recovery. Use sender and thread grouping plus duplicate checks in evaluation splits.",
+        "evaluation": "Separate message precision/recall, obligation precision/recall, and exact/multi-membership Topic-span scores; count missed obligations in correctly flagged messages.",
+        "basis": [
+          "D08-A02"
+        ],
+        "additional_evidence_refs": [
+          "E02",
+          "E03"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-email/2004_corston_oliver_et_al_task_focused_summarization_email.pdf",
+      "pdf_sha256": "c1d60cd1f3c2de1c25f98613f8777197cfe1c7b56e8542148a95b64a64300d43",
+      "expected_pdf_sha256": "c1d60cd1f3c2de1c25f98613f8777197cfe1c7b56e8542148a95b64a64300d43",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D08.md",
+      "converted_text_sha256": "a8166cf67dd77d39c9fe8169668e21d80a3efb6ee4607c0f904c16d31fe3ec52",
+      "fine_conversion": "Not present; full rough conversion read.",
+      "auxiliary_texts": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt",
+          "sha256": "a4f9bfa5da6ad20c33975038a609fa300d8b0dedc77fabbd04d8b773d4788bc0",
+          "read_extent": "Full text"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.pages.md",
+          "sha256": "0606b420251d62bdf384c82669d7e6c327e6bee4443847e2f678f71b3bca693c",
+          "read_extent": "Full text"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.layout.txt",
+          "sha256": "bd63815b6d07516bf7bd5c16170ab5d37075bcb95e4ca1b1e42fbd0a2539e282",
+          "read_extent": "Full text"
+        }
+      ],
+      "locator_convention": "1-based LF newline lines, inclusive; form feed is a page separator but not an extra line. Quotes normalize whitespace only; source hyphens are retained.",
+      "visual_inspection": {
+        "pages": [
+          1,
+          2,
+          3,
+          4,
+          7
+        ],
+        "purpose": "Verify corpus/IAA counts, feature-list numbering, graphical metrics and prototype task display. Plots omitted or mangled by rough conversion were inspected in local PDF images; no exact point values were invented.",
+        "images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-1.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-2.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-3.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-4.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/page-7.png"
+        ],
+        "visual_transcription": "None required; cited claims are present in stable raw text, and plots support only qualitative comparison.",
+        "review_stage": "Archived high-stage inspection; the current xhigh inspection is recorded separately below."
+      },
+      "conversion_caveats": "Page-indexed and layout conversions interleave columns. Rough conversion loses graph data and sometimes joins hyphenated words. Raw text preserves readable prose and line-break hyphens; footnote 1 is split by column reading order, so both raw line ranges 42–45 and 82–84 are needed.",
+      "network_used": false,
+      "xhigh_verification": {
+        "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-review.json",
+        "full_text_read": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D08.md",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D08.raw.txt"
+        ],
+        "original_pdf_pages_visually_inspected": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "page_images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-page-1.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-page-2.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-page-3.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D08/xhigh-page-4.png"
+        ],
+        "page_numbering": "Actual 1-based PDF pages; the PDF has 8 pages.",
+        "auxiliary_scope": "Raw and rough text read fully in this review. Page-indexed/layout hashes checked against the archived analysis; their earlier full-read claims belong to the archived high review.",
+        "network_used": false
+      }
+    }
+  },
+  "runtime_provenance": {
+    "source": "Current D08 xhigh invocation: user-specified actual runtime, live worker environment, and saved launcher arguments agree. Parent independently verifies actual turn_context and final process exit.",
+    "MSGLOOM_WORKER_ROLE": "paper-D08-xhigh",
+    "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+    "MSGLOOM_WORKER_EFFORT": "xhigh",
+    "actual_model": "gpt-6-astra",
+    "actual_effort": "xhigh",
+    "launch_record_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/workers/paper-D08-xhigh.launch.json",
+    "launch_record_sha256": "4ecec1853d79b62d7af716ef45f313ff85e673c620edbc62ef8f45ea5e25cbc1",
+    "runtime_identifier": "No independent runtime identifier supplied; none fabricated.",
+    "parent_runtime_verification": "Separate parent responsibility; not claimed by this worker."
+  },
+  "evidence_classification_note": "Evidence labels use the installed paper_analyzer contract: supported means backed by experiments/results; unsupported means stated without experimental backing. For a method description or reported limitation, unsupported means not experimentally evaluated under this contract, not absent from or untraceable to the source. Illustrative outputs establish the displayed transformation or fallback only; they do not establish fidelity or an aggregate rate."
+}

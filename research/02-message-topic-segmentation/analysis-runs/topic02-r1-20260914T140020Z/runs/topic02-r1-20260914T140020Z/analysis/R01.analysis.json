@@ -1,0 +1,1806 @@
+{
+  "paper_id": "R01",
+  "title": "Detection of Question-Answer Pairs in Email Conversations",
+  "authors": [
+    "Lokesh Shrestha",
+    "Kathleen McKeown"
+  ],
+  "year": 2004,
+  "research_question": "Can learned question detection and email-thread features identify question–answer segment pairs for use in email summarization better than lexical similarity alone?",
+  "methodology": "Ripper learns interrogative-question rules from labeled SWITCHBOARD utterances and is evaluated on selected ACM email speech acts, followed by a manual comma-phrase fallback. A separate Ripper classifier labels pairs of paragraph discourse segments using lexical/count, thread-position, and answer-candidate features. DB, GR, Union, and Inter annotation-derived datasets are evaluated with five-fold cross-validation, with an additional Union partition by candidate count. Answer evaluation uses annotated questions with marked answers, not predictions from the question detector. Method details and source locators are in E03–E14.",
+  "methodology_details": {
+    "question_features": "First and last five POS tags, padded for short utterances; utterance length; POS-bigrams from the 100 most discriminating training-data bigrams (PDF page 3, section 3; E03).",
+    "answer_features": "Non-stop-word counts for each segment; cosine similarity and Euclidean distance; intervening-message count; relative message positions within thread; first answer-candidate indicator; total and remaining candidate counts; fraction of candidates preceding the candidate; whether q is the most cosine-similar ancestor segment of a (PDF page 5, section 4.2; E10–E11).",
+    "quoting": "Candidates exclude content quoted from past messages. The authors omit quoted-reply features because they report that phenomenon as rare in ACM; no frequency is provided (PDF page 5, section 4.2 and footnote 4; E09–E10).",
+    "formula_warning": "I01 preserves printed errors and conventional definitions separately; implemented feature formulas are unknown."
+  },
+  "key_findings": [
+    {
+      "finding_id": "R01-F01",
+      "finding": "For annotated-question answer-link classification on the ACM Union dataset, five-fold cross-validation reports P/R/F1 of 0.698/0.619/0.656 with the full feature set versus 0.610/0.429/0.503 with cosine similarity alone; all four annotation-derived datasets show higher recall and F1 with full features.",
+      "evidence_type": "supported",
+      "section": "PDF page 6, section 4.4, Tables 3–4",
+      "quote": "Union 0.698 0.619 0.656",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 535,
+        "line_end": 540,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_refs": [
+        "E12",
+        "E13"
+      ],
+      "qualification": "Union has 430 candidate pairs, 168 positives, 118 question segments, and 97 QA-containing threads (Table 2). These are conditional pair-classification scores, not Topic, span, or end-to-end QA scores. Fold grouping and uncertainty are unreported; full features add length/distance as well as thread features, so the gain cannot be assigned solely to thread structure. See I01–I03 for replication ambiguities."
+    },
+    {
+      "finding_id": "R01-F02",
+      "finding": "On ACM Union answer-link classification, separate full-feature classifiers for questions with at most two versus more than two answer candidates yield combined P/R/F1 of 0.728/0.732/0.730 over 430 pairs with 168 positives, compared with unsplit 0.698/0.619/0.656.",
+      "evidence_type": "supported",
+      "section": "PDF page 7, Table 5; experiment described in section 4.4 on page 6",
+      "quote": "Combined 0.728 0.732 0.730 168 430",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 582,
+        "line_end": 588,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "E14"
+      ],
+      "qualification": "The at-most-two-candidate subset has only 79 pairs and 63 positives; its F1 is 0.899 versus 0.887 for predicting all pairs positive. The larger subset has F1 0.625 over 351 pairs with 105 positives. This split uses candidate count, not the count of correct answers. Subset question counts and fold grouping are absent; candidate-count means do not reconcile under ordinary rounding (I04)."
+    },
+    {
+      "finding_id": "R01-F03",
+      "finding": "For interrogative-question detection on 300 manually selected ACM questions and 300 declarative statements, Ripper+ reports recall 0.72 and F1 0.82 versus Ripper recall 0.56 and F1 0.70; both report precision 0.96.",
+      "evidence_type": "supported",
+      "section": "PDF page 3, section 3, Table 1; modification on page 4",
+      "quote": "Recall 0.56 0.72 Precision 0.96 0.96 F1-score 0.70 0.82",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 231,
+        "line_end": 236,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_refs": [
+        "E03",
+        "E04"
+      ],
+      "qualification": "Ripper was trained on SWITCHBOARD speech acts. Ripper+ was manually changed after inspecting errors on the stated email test set; no fresh post-modification test is reported. Trying comma-delimited phrases is a classification heuristic, not an evaluated clause-boundary or scope extractor."
+    },
+    {
+      "finding_id": "R01-F04",
+      "finding": "The authors motivate paragraph-based discourse segments by the observation that separate issues tend to use separate paragraphs, but provide no comparison showing that paragraphs preserve issue scope better than sentences, clauses, arbitrary spans, or EDUs.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 4, section 4, paragraph segmentation rationale",
+      "quote": "users tend to use separate paragraphs to address separate issues in the same email message.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 341,
+        "line_end": 343,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_refs": [
+        "E06"
+      ],
+      "qualification": "Unsupported denotes the untested generalization about issue-aligned paragraphs. The fact that the method uses paragraphs is directly documented. This is not a negative experimental result for paragraphs."
+    },
+    {
+      "finding_id": "R01-F05",
+      "finding": "The annotation-derived training data contain more positive QA-segment pairs than question segments (for example, ACM Union: 168 versus 118), supporting multiple answer links for some question segments at the gold-relation level.",
+      "evidence_type": "supported",
+      "section": "PDF page 6, section 4.3, Table 2",
+      "quote": "positives 89 139 168 59 questions 72 98 118 52",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 491,
+        "line_end": 495,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_refs": [
+        "E07",
+        "E08",
+        "E09",
+        "E11",
+        "E12"
+      ],
+      "qualification": "This is aggregate evidence of one-question-to-multiple-answer relations. The paper supplies no relation-degree distribution, shared-answer count, overlapping Topic gold labels, or within-message discontinuous Topic object. Independent pair decisions can permit multiple predicted links, but that model capability is not a reported overlap evaluation."
+    },
+    {
+      "finding_id": "R01-F06",
+      "finding": "The ACM annotation study reports kappa 0.68 for identifying question segments and kappa 0.81 for linking question and answer segments given a question segment.",
+      "evidence_type": "supported",
+      "section": "PDF page 5, section 4.1 continued",
+      "quote": "for identifying ques- tion segments is 0.68, and for linking question and answer segments given a question segment is 0.81.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 384,
+        "line_end": 386,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "evidence_refs": [
+        "E07",
+        "E08"
+      ],
+      "qualification": "These are separate annotation tasks. The common double-annotated population, contingency tables, exact kappa variant, uncertainty, and adjudication procedure are not reported. The second score conditions on a question segment and is not end-to-end agreement."
+    },
+    {
+      "finding_id": "R01-F07",
+      "finding": "The proposed benefit of including linked answers in email summaries is motivated by an omitted-answer example; improved summary completeness or preservation of decision-bearing scope is not experimentally established.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 2, section 1; Figure 1 on page 1 and future work on page 7",
+      "quote": "A summarization module that includes answers to questions posed in extractive summaries, then, be- comes very useful.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 89,
+        "line_end": 91,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "evidence_refs": [
+        "E01",
+        "E16"
+      ],
+      "qualification": "The paper evaluates question classification and answer links. The displayed summary and prose identify missing answers, but provide no summary-quality, decision-coverage, condition, evidence, approval-scope, or exact reply-scope metric."
+    }
+  ],
+  "limitations": [
+    "The paragraph/issue alignment assumption has no comparative unit or boundary evaluation (R01-F04; E06).",
+    "Answer-link scores condition on annotated questions with at least one marked answer; unanswered questions and propagated question-detection errors are not evaluated (E12–E14).",
+    "Ripper+ was changed after test-error inspection; a fresh final test is not reported (R01-F03; E04).",
+    "Answer cross-validation grouping, exact folds, duplicate controls, uncertainty, and statistical tests are absent (E13–E14).",
+    "The small student-board email domain limits business-mail transfer; annotations were incomplete and IAA denominators are unspecified (E07–E08).",
+    "Declarative-question detection, rhetorical-question identification, and summary integration remain future work (E15–E16).",
+    "Printed feature formulas and population counts constrain reproduction; no repair is assumed (I01–I04).",
+    "No direct measurement establishes exact work-matter scope, Topic overlap/discontinuity, or preservation of decision-bearing text (R01-F07; E06, E13–E16)."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability_status": "Not reported in this frozen paper. Ripper is named and cited; no implementation release for this study is identified.",
+    "dataset_availability_status": "The ACM study corpus and QA annotations are described without a release/access statement. Footnote 1 reports a URL for SWITCHBOARD DAMSL training annotations.",
+    "boolean_availability_fields": "code_available and dataset_available deliberately omitted: the schema makes them optional, and unknown study-artifact release status must not be encoded as false.",
+    "paper_reported_training_resource": {
+      "url": "http://www.colorado.edu/ling/jurafsky/ws97/",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 227,
+        "line_end": 230,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF page 3, footnote 1",
+      "status": "Historical paper-reported pointer only; not accessed or verified in this task."
+    },
+    "implementation_gaps": [
+      "Ripper version/options and learned rules",
+      "POS tagger and stop-word list",
+      "precise segmentation and quote removal",
+      "fold identities and seeds",
+      "unambiguous implemented similarity formulas",
+      "annotation-to-feature count mapping"
+    ],
+    "frozen_availability_only": true,
+    "evidence_refs": [
+      "E03",
+      "E04",
+      "E06",
+      "E07",
+      "E09",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "E14"
+    ]
+  },
+  "confidence_scores": {
+    "R01-F01": 0.95,
+    "R01-F02": 0.93,
+    "R01-F03": 0.91,
+    "R01-F04": 0.99,
+    "R01-F05": 0.95,
+    "R01-F06": 0.96,
+    "R01-F07": 0.99
+  },
+  "confidence_definition": "Confidence in each narrowly qualified evidence assessment, not a probability of business-email performance or a statistical confidence interval. Unsupported findings can have high confidence that the asserted benefit remains untested.",
+  "raw_claims": [
+    "We then used Ripper (Cohen, 1996) to learn rules for question detection.",
+    "We computed four sets of training data.",
+    "We obtained the results presented here us- ing five-fold cross-validation.",
+    "The automatic detection of these question types are still under investigation."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "raw_claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 243,
+        "line_end": 244,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF page 3, section 3"
+    },
+    {
+      "raw_claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 482,
+        "line_end": 482,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF page 5, section 4.3"
+    },
+    {
+      "raw_claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 525,
+        "line_end": 526,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "section": "PDF page 6, section 4.4"
+    },
+    {
+      "raw_claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 607,
+        "line_end": 608,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "section": "PDF page 7, section 5"
+    }
+  ],
+  "evidence_index": {
+    "E01": {
+      "section": "PDF pages 1–2, section 1 and Figure 1: motivation and omitted answers",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 47,
+        "line_end": 91,
+        "pdf_pages": [
+          1,
+          2
+        ]
+      }
+    },
+    "E02": {
+      "section": "PDF page 2, section 1: QA-focused threads",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 92,
+        "line_end": 109,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "E03": {
+      "section": "PDF page 3, section 3: question detector training and features",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 204,
+        "line_end": 242,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E04": {
+      "section": "PDF pages 3–4, section 3 and footnotes 2–3: test set and adaptive modification",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 243,
+        "line_end": 291,
+        "pdf_pages": [
+          3,
+          4
+        ]
+      }
+    },
+    "E05": {
+      "section": "PDF page 4, section 4: asynchronous and parallel questions",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 292,
+        "line_end": 338,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E06": {
+      "section": "PDF page 4, section 4: paragraph segmentation rationale",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 339,
+        "line_end": 351,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E07": {
+      "section": "PDF page 4, section 4.1: corpus and annotation counts",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 355,
+        "line_end": 378,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E08": {
+      "section": "PDF page 5, section 4.1 continued: sentence-to-segment labels and agreement",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 379,
+        "line_end": 386,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E09": {
+      "section": "PDF page 5, section 4.2: answer candidate population",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 388,
+        "line_end": 400,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E10": {
+      "section": "PDF page 5, sections 4.2.1–4.2.2 and footnotes 4–6",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 401,
+        "line_end": 447,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E11": {
+      "section": "PDF page 5, section 4.2.3: candidate features and pair labels",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 448,
+        "line_end": 480,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E12": {
+      "section": "PDF pages 5–6, section 4.3 and Table 2: derived datasets",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 481,
+        "line_end": 520,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      }
+    },
+    "E13": {
+      "section": "PDF page 6, section 4.4 and Tables 3–4: answer-link experiment",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 521,
+        "line_end": 558,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "E14": {
+      "section": "PDF pages 6–7, section 4.4 and Table 5: candidate-count split",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 559,
+        "line_end": 589,
+        "pdf_pages": [
+          6,
+          7
+        ]
+      }
+    },
+    "E15": {
+      "section": "PDF page 7, section 5: unaddressed question types",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 590,
+        "line_end": 608,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "E16": {
+      "section": "PDF page 7, section 5: summarization remains future work",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+        "line_start": 609,
+        "line_end": 619,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "E17": {
+      "section": "PDF page 5, section 4.2.1, footnote 5: visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/visual-transcription.md",
+        "line_start": 7,
+        "line_end": 10,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-5-formulas.png"
+    },
+    "E18": {
+      "section": "PDF page 5, section 4.2.1, footnote 6: visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/visual-transcription.md",
+        "line_start": 12,
+        "line_end": 15,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-5-formulas.png"
+    },
+    "E19": {
+      "section": "PDF page 3, section 3, footnote 3: visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/visual-transcription.md",
+        "line_start": 17,
+        "line_end": 20,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-3.png"
+    }
+  },
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "paper_tasks": [
+        {
+          "task": "Binary interrogative-question detection on preselected speech acts",
+          "evidence_refs": [
+            "E03",
+            "E04"
+          ]
+        },
+        {
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "evidence_refs": [
+            "E09",
+            "E12",
+            "E13",
+            "E14"
+          ]
+        }
+      ],
+      "topic02_task_separation": [
+        {
+          "task": "topic-boundary detection",
+          "status": "not evaluated"
+        },
+        {
+          "task": "contiguous topic segmentation",
+          "status": "not evaluated; paragraph breaks are an input heuristic"
+        },
+        {
+          "task": "segment topic labeling",
+          "status": "not evaluated"
+        },
+        {
+          "task": "whole-message multi-label classification",
+          "status": "not evaluated"
+        },
+        {
+          "task": "exact span assignment",
+          "status": "not evaluated"
+        },
+        {
+          "task": "overlapping span assignment",
+          "status": "not evaluated"
+        },
+        {
+          "task": "non-contiguous assignment to one Topic",
+          "status": "not evaluated"
+        },
+        {
+          "task": "discourse/EDU segmentation",
+          "status": "not evaluated; paragraphs are called discourse segments without EDU annotation"
+        },
+        {
+          "task": "action/question/reply-scope extraction",
+          "status": "partially related: interrogative-question classification and paragraph QA linking are evaluated separately; exact action or reply scope is not scored"
+        },
+        {
+          "task": "preservation of decision-bearing conditions/evidence/scope",
+          "status": "not evaluated"
+        }
+      ],
+      "scope_note": "QA links support reply-association research. They are not Topic identity, clustering, or a score for any of the other nine task definitions."
+    },
+    "annotation_unit": {
+      "email": "Annotators highlight and link questions and answers. A paragraph segment receives a question label if it contains a highlighted question sentence, and an answer relation if a sentence in it is paired with a question. Exact highlighting/boundary instructions are not reported.",
+      "speech_training": "SWITCHBOARD utterances with DAMSL labels; these are distinct from the email paragraph-pair units.",
+      "evidence_refs": [
+        "E03",
+        "E06",
+        "E07",
+        "E08"
+      ]
+    },
+    "prediction_unit": {
+      "question_detector": "Binary speech-act/utterance classification; failed cases are rechecked using first, then last, comma-delimited phrase.",
+      "answer_detector": "Binary ordered pair of a question paragraph and a candidate answer paragraph. It does not predict the exact highlighted answer sentence or token extent.",
+      "evidence_refs": [
+        "E04",
+        "E06",
+        "E09",
+        "E11"
+      ]
+    },
+    "contiguity": {
+      "local_unit": "Contiguous paragraph segments based on existing paragraph divisions.",
+      "relations": "A question paragraph can link to original-content paragraphs in any subsequent message in the same header-constructed thread; intervening messages need not be assigned to that relation.",
+      "cluster_status": "No Topic clustering output, contiguous Topic partition, or Topic-boundary evaluation.",
+      "evidence_refs": [
+        "E05",
+        "E06",
+        "E09"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "per_pair": "Binary answer relation for a specified q,a pair; separate annotator, Union, and Inter labels.",
+        "per_question": "Several positive answer relations are possible, supported by aggregate Table 2 counts (R01-F05). Some highlighted questions have no answers, but those questions are excluded from answer training/evaluation.",
+        "per_answer": "Whether one answer paragraph is linked to several questions, and how often, is not reported.",
+        "per_message_or_span_topic_memberships": "No Topic labels or Topic-membership cardinality annotation."
+      },
+      "prediction": {
+        "per_pair": "One binary classification for each candidate pair.",
+        "per_question": "Independent pair classification permits zero, one, or several positive links; no top-one or global exclusivity rule is stated. This is a method interpretation, not a reported prediction-degree analysis.",
+        "per_answer": "The procedure can evaluate the same paragraph against several earlier question segments; actual multiple-link predictions and their accuracy are not reported.",
+        "per_message_or_span_topic_memberships": "Unsupported; no predicted Topic memberships."
+      },
+      "evidence_refs": [
+        "E09",
+        "E11",
+        "E12",
+        "E13"
+      ]
+    },
+    "discontinuity": {
+      "semantic_object": "Distinguish a QA relation or its answer set from one discontinuous Topic evidence object.",
+      "gold": {
+        "within_one_message": "No explicit discontiguous span object. Several paragraph answers in one message could link to a question elsewhere, but the corpus does not report this configuration or its frequency.",
+        "thread_level": "Question-to-answer links across messages and multiple answers per question are represented; gap-length distributions and discontinuity-specific gold counts are absent."
+      },
+      "prediction": {
+        "within_one_message": "Separate positive paragraph edges could retain separated answer paragraphs, but the model does not assemble or score a within-message discontinuous semantic span.",
+        "thread_level": "Candidate generation supports later nonadjacent messages, rather than just the immediate reply; distance-specific accuracy is not reported.",
+        "one_topic": "No model for assigning discontinuous spans to one Topic."
+      },
+      "evidence_refs": [
+        "E05",
+        "E09",
+        "E11",
+        "E12"
+      ]
+    },
+    "overlap": {
+      "gold": "No reported overlapping Topic spans or gold multiple Topic memberships. One-question-to-many-answer relation evidence is not shared-token overlap.",
+      "prediction": "No predicted overlapping spans. Reuse of one fixed paragraph node in several candidate pair decisions is structurally possible; shared-answer predictions are not separately reported.",
+      "scope": "Paragraph relation endpoints, not arbitrary nested/intersecting spans. Do not classify this paper as demonstrating overlap extraction.",
+      "status_for_topic_overlap": "unsupported / not evaluated",
+      "evidence_refs": [
+        "E06",
+        "E08",
+        "E09",
+        "E11",
+        "E12"
+      ]
+    },
+    "dataset_domain": {
+      "email": "Columbia ACM student-organization board email, mainly event planning, over one academic year. This is direct asynchronous organizational email evidence with limited transfer to diverse business email.",
+      "corpus_reported": {
+        "threads_approximate": 300,
+        "messages_approximate": 1000,
+        "mean_messages_per_thread": 3.25,
+        "minimum_messages_per_thread": 2,
+        "maximum_messages_per_thread": 18
+      },
+      "thread_construction": "In-Reply-To links join parent and child messages. Membership is a candidate-search boundary, not evidence of one work matter.",
+      "question_training": "SWITCHBOARD transcribed conversations with DAMSL speech-act labels. Email test data are manually selected; speech and email results must remain distinct.",
+      "frozen_prevalence_note": "About 20% primarily QA-focused threads is a descriptive full-corpus claim with approximate denominator; see I05.",
+      "evidence_refs": [
+        "E02",
+        "E03",
+        "E07"
+      ]
+    },
+    "annotation_process": {
+      "annotators": [
+        "DB",
+        "GR"
+      ],
+      "completed_annotation_population": {
+        "DB": {
+          "threads_annotated": 138,
+          "qa_containing_threads": 62,
+          "question_segments": 72,
+          "qa_pairs": 92
+        },
+        "GR": {
+          "threads_annotated": 200,
+          "qa_containing_threads": 81,
+          "question_segments": 98,
+          "qa_pairs": 142
+        }
+      },
+      "derived_feature_populations": {
+        "DB": {
+          "candidate_pair_datapoints": 259,
+          "positive_answer_pairs": 89,
+          "question_segments": 72,
+          "qa_containing_threads": 62,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 2, section 4.3"
+        },
+        "GR": {
+          "candidate_pair_datapoints": 355,
+          "positive_answer_pairs": 139,
+          "question_segments": 98,
+          "qa_containing_threads": 81,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 2, section 4.3"
+        },
+        "Union": {
+          "candidate_pair_datapoints": 430,
+          "positive_answer_pairs": 168,
+          "question_segments": 118,
+          "qa_containing_threads": 97,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 2, section 4.3"
+        },
+        "Inter": {
+          "candidate_pair_datapoints": 181,
+          "positive_answer_pairs": 59,
+          "question_segments": 52,
+          "qa_containing_threads": 46,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, Table 2, section 4.3"
+        }
+      },
+      "gold_construction": "DB and GR use the respective annotator. Union includes QA threads/questions marked by either annotator and labels a pair positive if either marks the answer. Inter uses QA threads marked by both and requires both for positive pairs. No adjudicated consensus gold is reported.",
+      "selection": "Feature examples are created for questions with a marked answer and all their candidate answer paragraphs. Highlighted unanswered questions are excluded.",
+      "not_reported": [
+        "annotation manual",
+        "annotator background or training",
+        "adjudication",
+        "complete doubly annotated sample size",
+        "precise sentence/paragraph splitting and quote-removal rules"
+      ],
+      "evidence_refs": [
+        "E07",
+        "E08",
+        "E09",
+        "E12"
+      ],
+      "count_warning_refs": [
+        "I02",
+        "I03"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "results": [
+        {
+          "metric": "kappa statistic",
+          "value": 0.68,
+          "task": "identify question segments",
+          "population": "DB/GR common annotation population; exact size and negative-unit universe not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 384,
+            "line_end": 386,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "PDF page 5, section 4.1"
+        },
+        {
+          "metric": "kappa statistic",
+          "value": 0.81,
+          "task": "link question and answer segments given a question segment",
+          "population": "Conditional DB/GR link decisions; exact size and candidate universe not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 384,
+            "line_end": 386,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "section": "PDF page 5, section 4.1"
+        }
+      ],
+      "not_reported": "Exact kappa variant/calculation, contingency tables, confidence intervals, and adjudication. Do not assume the comparison includes all 138 DB threads or all 200 GR threads.",
+      "finding_ref": "R01-F06"
+    },
+    "split_and_leakage": {
+      "question_detection": {
+        "training": "5,000 positive and 5,000 negative SWITCHBOARD utterances. Positive tags qy/qw/qh; negative sv/sd. Most discriminating POS-bigrams are selected from training data.",
+        "testing": "300 interrogative questions and 300 declarative statements manually extracted from ACM. Selection and representativeness are unreported.",
+        "test_adaptation": "Ripper+ changes follow inspection of missed questions in that test data; no independent final test is stated. This is observed test-set adaptation, not a claim of accidental duplicate leakage.",
+        "thread_message_separation": "Not reported for the selected test examples."
+      },
+      "answer_linking": {
+        "evaluation": "Five-fold cross-validation on each derived dataset; Table 2 counts are total feature-population sizes, not individual train or test fold sizes.",
+        "split_unit": "Not reported; cannot assume pair-, question-, message-, or thread-grouped folds.",
+        "per_fold_counts": "Not reported.",
+        "unanswered_questions": "Excluded by construction; no open-set/no-answer performance is established.",
+        "candidate_count_partition": "Union_a uses at most two candidate paragraphs per question; Union_b uses more than two. Fold assignment/coordination after partition and nested model selection are not described."
+      },
+      "duplicate_controls": "No near-duplicate, repeated-content, temporal, sender, or thread leakage audit reported. Excluding quoted candidate content is not evidence of train/test deduplication.",
+      "risk_interpretation": "Pairs can share question/answer text and thread context. If folds separate pairs from one thread, related content could cross train and test; the paper does not establish whether that occurred. Whole-thread/candidate-count features also use later context, so online causality is not demonstrated.",
+      "evidence_refs": [
+        "E03",
+        "E04",
+        "E09",
+        "E10",
+        "E11",
+        "E12",
+        "E13",
+        "E14"
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "precision": "Standard interpretation: true positive decisions / all predicted positive decisions for the specified task; paper does not separately state the formula.",
+        "recall": "Standard interpretation: true positive decisions / all gold positive decisions in the specified evaluation population. For answer linking, gold is the respective annotation-derived positive-pair set, conditional on included questions.",
+        "f1": "Paper footnote 3 defines 2PR/(P+R); see E19. Answer cross-validation pooling versus fold averaging is not reported.",
+        "denominator_limits": "Gold population sizes are recorded per result. Predicted-positive counts, confusion matrices, per-fold denominators, and treatment of undefined scores are not reported. Do not back-calculate integer confusion counts from rounded scores."
+      },
+      "results": [
+        {
+          "result_id": "M01",
+          "task": "Binary interrogative-question detection on preselected speech acts",
+          "dataset": "ACM manually extracted email test set",
+          "model": "Ripper",
+          "precision": 0.96,
+          "recall": 0.56,
+          "f1": 0.7,
+          "setting": "Train on SWITCHBOARD; test on selected ACM speech acts.",
+          "population": {
+            "test_interrogative_questions": 300,
+            "test_declarative_statements": 300,
+            "train_positive_switchboard_utterances": 5000,
+            "train_negative_switchboard_utterances": 5000,
+            "population_evidence_refs": [
+              "E03",
+              "E04"
+            ]
+          },
+          "section": "PDF page 3, section 3, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 231,
+            "line_end": 236,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "result_id": "M02",
+          "task": "Binary interrogative-question detection on preselected speech acts",
+          "dataset": "ACM manually extracted email test set",
+          "model": "Ripper+",
+          "precision": 0.96,
+          "recall": 0.72,
+          "f1": 0.82,
+          "setting": "Same stated test set after test-error-driven comma-phrase modification; fresh test absent.",
+          "population": {
+            "test_interrogative_questions": 300,
+            "test_declarative_statements": 300,
+            "train_positive_switchboard_utterances": 5000,
+            "train_negative_switchboard_utterances": 5000,
+            "population_evidence_refs": [
+              "E03",
+              "E04"
+            ]
+          },
+          "section": "PDF page 3, section 3, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 231,
+            "line_end": 236,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "result_id": "M03",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM DB",
+          "model": "Ripper using cosine similarity only",
+          "precision": 0.6,
+          "recall": 0.27,
+          "f1": 0.372,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 259,
+            "positive_answer_pairs": 89,
+            "question_segments": 72,
+            "qa_containing_threads": 62,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 499,
+            "line_end": 499,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M04",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM GR",
+          "model": "Ripper using cosine similarity only",
+          "precision": 0.629,
+          "recall": 0.439,
+          "f1": 0.517,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 355,
+            "positive_answer_pairs": 139,
+            "question_segments": 98,
+            "qa_containing_threads": 81,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 500,
+            "line_end": 500,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M05",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union",
+          "model": "Ripper using cosine similarity only",
+          "precision": 0.61,
+          "recall": 0.429,
+          "f1": 0.503,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 430,
+            "positive_answer_pairs": 168,
+            "question_segments": 118,
+            "qa_containing_threads": 97,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 501,
+            "line_end": 501,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M06",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Inter",
+          "model": "Ripper using cosine similarity only",
+          "precision": 0.571,
+          "recall": 0.407,
+          "f1": 0.475,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 181,
+            "positive_answer_pairs": 59,
+            "question_segments": 52,
+            "qa_containing_threads": 46,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 502,
+            "line_end": 502,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M07",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM DB",
+          "model": "Ripper using full feature set",
+          "precision": 0.69,
+          "recall": 0.652,
+          "f1": 0.671,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 259,
+            "positive_answer_pairs": 89,
+            "question_segments": 72,
+            "qa_containing_threads": 62,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 536,
+            "line_end": 536,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M08",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM GR",
+          "model": "Ripper using full feature set",
+          "precision": 0.68,
+          "recall": 0.612,
+          "f1": 0.644,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 355,
+            "positive_answer_pairs": 139,
+            "question_segments": 98,
+            "qa_containing_threads": 81,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 537,
+            "line_end": 537,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M09",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union",
+          "model": "Ripper using full feature set",
+          "precision": 0.698,
+          "recall": 0.619,
+          "f1": 0.656,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 430,
+            "positive_answer_pairs": 168,
+            "question_segments": 118,
+            "qa_containing_threads": 97,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 538,
+            "line_end": 538,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M10",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Inter",
+          "model": "Ripper using full feature set",
+          "precision": 0.6,
+          "recall": 0.508,
+          "f1": 0.55,
+          "setting": "Five-fold cross-validation; split grouping and aggregation not reported.",
+          "population": {
+            "candidate_pair_datapoints": 181,
+            "positive_answer_pairs": 59,
+            "question_segments": 52,
+            "qa_containing_threads": 46,
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+              "line_start": 491,
+              "line_end": 497,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF page 6, Table 2, section 4.3"
+          },
+          "section": "PDF page 6, section 4.4, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 539,
+            "line_end": 539,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "result_id": "M11",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union_a",
+          "model": "Ripper full features; candidate count <= 2",
+          "precision": 0.879,
+          "recall": 0.921,
+          "f1": 0.899,
+          "setting": "Five-fold cross-validation as stated for section 4.4; partition by answer-candidate count per question. Exact fold coordination and metric aggregation are unreported.",
+          "population": {
+            "candidate_pair_datapoints": 79,
+            "positive_answer_pairs": 63,
+            "question_segments": "not reported",
+            "qa_containing_threads": "not reported",
+            "population_evidence_refs": [
+              "E12",
+              "E14"
+            ]
+          },
+          "section": "PDF page 7, section 4.4, Table 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 583,
+            "line_end": 583,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "result_id": "M12",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union_a",
+          "model": "Majority-class baseline (all positive)",
+          "precision": 0.797,
+          "recall": 1.0,
+          "f1": 0.887,
+          "setting": "Five-fold cross-validation as stated for section 4.4; partition by answer-candidate count per question. Exact fold coordination and metric aggregation are unreported.",
+          "population": {
+            "candidate_pair_datapoints": 79,
+            "positive_answer_pairs": 63,
+            "question_segments": "not reported",
+            "qa_containing_threads": "not reported",
+            "population_evidence_refs": [
+              "E12",
+              "E14"
+            ]
+          },
+          "section": "PDF page 7, section 4.4, Table 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 584,
+            "line_end": 584,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "result_id": "M13",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union_b",
+          "model": "Ripper full features; candidate count > 2",
+          "precision": 0.631,
+          "recall": 0.619,
+          "f1": 0.625,
+          "setting": "Five-fold cross-validation as stated for section 4.4; partition by answer-candidate count per question. Exact fold coordination and metric aggregation are unreported.",
+          "population": {
+            "candidate_pair_datapoints": 351,
+            "positive_answer_pairs": 105,
+            "question_segments": "not reported",
+            "qa_containing_threads": "not reported",
+            "population_evidence_refs": [
+              "E12",
+              "E14"
+            ]
+          },
+          "section": "PDF page 7, section 4.4, Table 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 585,
+            "line_end": 585,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "result_id": "M14",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Combined",
+          "model": "Combined predictions from the two subset classifiers",
+          "precision": 0.728,
+          "recall": 0.732,
+          "f1": 0.73,
+          "setting": "Five-fold cross-validation as stated for section 4.4; partition by answer-candidate count per question. Exact fold coordination and metric aggregation are unreported.",
+          "population": {
+            "candidate_pair_datapoints": 430,
+            "positive_answer_pairs": 168,
+            "question_segments": 118,
+            "qa_containing_threads": 97,
+            "population_evidence_refs": [
+              "E12",
+              "E14"
+            ]
+          },
+          "section": "PDF page 7, section 4.4, Table 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 586,
+            "line_end": 586,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "result_id": "M15",
+          "task": "Binary answer-link classification for an annotated question paragraph and a later candidate paragraph",
+          "dataset": "ACM Union",
+          "model": "Ripper full features without candidate-count partition",
+          "precision": 0.698,
+          "recall": 0.619,
+          "f1": 0.656,
+          "setting": "Five-fold cross-validation as stated for section 4.4; partition by answer-candidate count per question. Exact fold coordination and metric aggregation are unreported.",
+          "population": {
+            "candidate_pair_datapoints": 430,
+            "positive_answer_pairs": 168,
+            "question_segments": 118,
+            "qa_containing_threads": 97,
+            "population_evidence_refs": [
+              "E12",
+              "E14"
+            ]
+          },
+          "section": "PDF page 7, section 4.4, Table 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 587,
+            "line_end": 587,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "other_numeric_observations": {
+        "candidate_count_means": {
+          "Union_a": 1.5,
+          "Union_b": 5.7,
+          "unit": "candidate answer paragraphs per included question",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 559,
+            "line_end": 567,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF page 6, section 4.4",
+          "warning_ref": "I04"
+        },
+        "iaa": "See topic02.inter_annotator_agreement; not a model score.",
+        "descriptive_corpus_counts": "See dataset_domain and annotation_process; not evaluation scores."
+      },
+      "uncertainty": "No error bars, confidence intervals, significance test, random seed, or fold dispersion. The prose calls recall improvement significant, but reports no statistical test.",
+      "not_reported": [
+        "Pk",
+        "WindowDiff",
+        "Topic boundary F1",
+        "Topic clustering scores",
+        "exact span F1 or IoU",
+        "overlap/discontinuous span metrics",
+        "whole-message multi-label scores",
+        "decision-bearing work-text preservation metrics",
+        "latency or memory benchmarks"
+      ],
+      "comparison_rule": "Keep question detection, conditional answer-pair classification, and IAA separate. No score here is a Topic-assignment score."
+    },
+    "measured_work_text_preservation": {
+      "direct_evaluation": "No such evaluation. No scored preservation of conditions, evidence, exceptions, action scope, approval scope, or exact reply scope.",
+      "related_extraction_evidence": "R01-F03 measures missed interrogative speech acts and discusses declarative introductory phrases. R01-F01/R01-F02 measure paragraph QA link decisions. Figure 1 and section 1 identify omitted answers in one illustrative extractive summary.",
+      "scope_limit": "A correct paragraph link does not establish that a conditional answer, supporting evidence, or the precise extent of a partial reply is retained. That risk is an interpretation, not a measured R01 error rate.",
+      "evidence_refs": [
+        "E01",
+        "E04",
+        "E13",
+        "E14",
+        "E16"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Comparative sentence, clause, arbitrary-span, EDU, or hybrid units for preserving a concrete work matter.",
+      "Topic identities, segment labels, cross-thread/cross-Source Topic links, or whole-message multi-label assignment.",
+      "Overlapping Topic spans, discontinuous within-message Topic evidence, or uncertain multiple memberships.",
+      "Exact scope of replies, approvals, actions, conditions, exceptions, or supporting evidence.",
+      "End-to-end question detection plus answer linking, unanswered-question triage, or improved summary/report completeness.",
+      "Separate automatic detection of declarative questions and rhetorical questions. Rhetorical qh training examples do not establish a detector that excludes rhetorical requests for answers.",
+      "Quoted-reply alignment, same-message question-to-answer candidates, or attachment/inline-image evidence.",
+      "Modern business-mail generalization, chronological incremental evaluation, real-time update cost, or large-mailbox performance."
+    ],
+    "not_evaluated_evidence_refs": [
+      "E03",
+      "E04",
+      "E06",
+      "E09",
+      "E10",
+      "E12",
+      "E13",
+      "E14",
+      "E15",
+      "E16"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "I01",
+        "kind": "Printed mathematical errors confirmed in original PDF",
+        "source_reported": {
+          "cosine": "cosine_sim(x,y) = sum_i(c_xi*c_yi) / sqrt(sum_j(c_xj^2)*sum_j(c_xj^2))",
+          "euclidean": "euclidean_dis(x,y) = sqrt(sum_i(c_xi^2-c_yi^2))",
+          "notation_note": "Plain-text indexed-count notation; exact visual LaTeX transcription is in E17–E18."
+        },
+        "evidence_refs": [
+          "E10",
+          "E17",
+          "E18"
+        ],
+        "conventional_formulas_not_attributed_to_paper": {
+          "cosine": "sum_i(c_xi*c_yi) / sqrt(sum_j(c_xj^2)*sum_j(c_yj^2))",
+          "euclidean": "sqrt(sum_i((c_xi-c_yi)^2))"
+        },
+        "assessment": "The printed cosine repeats x in both denominator factors. The printed Euclidean expression uses a difference of squares, which can yield a negative radicand. These are source-level errors, not merely extraction damage. The software implementation is unknown; do not silently repair or infer its results. Footnote 3 F1 is conventional in the PDF (E19).",
+        "resolution": "Visual ambiguity resolved at xhigh; implementation ambiguity remains unresolved."
+      },
+      {
+        "id": "I02",
+        "kind": "Annotation counts versus feature-population positives",
+        "source_reported": {
+          "section_4_1": {
+            "DB_qa_pairs": 92,
+            "GR_qa_pairs": 142
+          },
+          "table_2": {
+            "DB_positive_feature_pairs": 89,
+            "GR_positive_feature_pairs": 139
+          }
+        },
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 368,
+            "line_end": 378,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "evidence_refs": [
+          "E07",
+          "E08",
+          "E09",
+          "E12"
+        ],
+        "assessment": "Each annotator has three fewer positive feature pairs than annotation QA pairs; this difference is analyst arithmetic. Paragraph aggregation or candidate exclusions could matter, but the paper gives no reconciliation. Annotation totals and feature-population totals must remain separate. Use Table 2 positives as the reported answer-classification population, not the section 4.1 pair totals.",
+        "resolution": "Unresolved population mapping; neither value corrected."
+      },
+      {
+        "id": "I03",
+        "kind": "Union/intersection count identity does not hold for all Table 2 rows",
+        "source_reported": {
+          "DB_GR_Union_Inter_datapoints": [
+            259,
+            355,
+            430,
+            181
+          ],
+          "DB_GR_Union_Inter_positives": [
+            89,
+            139,
+            168,
+            59
+          ],
+          "DB_GR_Union_Inter_questions": [
+            72,
+            98,
+            118,
+            52
+          ],
+          "DB_GR_Union_Inter_threads": [
+            62,
+            81,
+            97,
+            46
+          ]
+        },
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 481,
+            "line_end": 497,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 504,
+            "line_end": 520,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "assessment": "Analyst arithmetic: DB+GR versus Union+Inter is 614 versus 611 candidate datapoints and 228 versus 227 positives. Question counts both sum to 170 and thread counts both sum to 143. Exact set-union/intersection identities would require equality, but the construction/population details may differ; the paper does not explain these differences. Do not infer missing records or relabel any count.",
+        "resolution": "Unresolved construction/count discrepancy, conditional on literal set interpretation."
+      },
+      {
+        "id": "I04",
+        "kind": "Candidate means versus subset datapoints and total questions",
+        "source_reported": {
+          "Union_a_mean_candidates_per_question": 1.5,
+          "Union_b_mean_candidates_per_question": 5.7,
+          "Union_a_datapoints": 79,
+          "Union_b_datapoints": 351,
+          "Union_total_questions": 118
+        },
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 559,
+            "line_end": 567,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 582,
+            "line_end": 588,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 491,
+            "line_end": 497,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "assessment": "Analyst denominator check: if these are pooled per-question means rounded to the nearest tenth and each candidate gives one datapoint, the first subset can have 51–54 questions and the second 62, totaling 113–116 rather than 118. The paper does not report subset question counts, a different averaging convention, or an exclusion rule. Retain all printed numbers; do not reconstruct subgroup sizes.",
+        "resolution": "Unresolved under the stated ordinary-rounding assumptions."
+      },
+      {
+        "id": "I05",
+        "kind": "Different prevalence definitions, not an established contradiction",
+        "source_reported": {
+          "section_1": "about 20% of all threads focus primarily on a QA exchange",
+          "section_4_1_GR": "81 of 200 annotated threads contain QA pairs",
+          "section_4_1_DB": "62 of 138 annotated threads contain QA pairs"
+        },
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 98,
+            "line_end": 103,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+            "line_start": 368,
+            "line_end": 378,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ],
+        "assessment": "Primarily QA-focused and containing any QA pair are different labels on different reported populations. The approximate full-corpus prevalence has no exact numerator or annotation protocol. Do not treat it as the QA-containing rate or use it to overwrite annotation counts.",
+        "resolution": "Definitions kept separate; no contradiction asserted."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "contribution": "A paragraph baseline with sentence-derived labels; no comparative unit evidence.",
+        "finding_refs": [
+          "R01-F04"
+        ],
+        "evidence_refs": [
+          "E06",
+          "E08"
+        ]
+      },
+      "RQ2": {
+        "contribution": "Direct email evidence for nonadjacent QA links and thread/candidate-position features; no Topic cluster model.",
+        "finding_refs": [
+          "R01-F01"
+        ],
+        "evidence_refs": [
+          "E05",
+          "E09",
+          "E10",
+          "E11"
+        ]
+      },
+      "RQ3": {
+        "contribution": "Gold one-question-to-many-answer relations; multiple pair predictions possible. Multi-topic message labels and shared-span Topic memberships absent.",
+        "finding_refs": [
+          "R01-F05"
+        ]
+      },
+      "RQ4": {
+        "contribution": "Thread-level nonadjacent relations only; no overlap or within-message discontinuous span evaluation.",
+        "evidence_refs": [
+          "E06",
+          "E09",
+          "E11",
+          "E12"
+        ]
+      },
+      "RQ5": {
+        "contribution": "Question omissions and illustrative missing summary answers are related evidence. Preservation of decision-bearing scope is not measured.",
+        "finding_refs": [
+          "R01-F03",
+          "R01-F07"
+        ]
+      },
+      "RQ6": {
+        "contribution": "Separate interrogative classification and conditional pair P/R/F1; explicit formula/count qualifications.",
+        "finding_refs": [
+          "R01-F01",
+          "R01-F02",
+          "R01-F03"
+        ],
+        "inconsistency_refs": [
+          "I01",
+          "I02",
+          "I03",
+          "I04",
+          "I05"
+        ]
+      },
+      "RQ7": {
+        "contribution": "Organizational student email, partial dual annotation and kappa; test-adapted question heuristic and unspecified cross-validation grouping.",
+        "finding_refs": [
+          "R01-F06"
+        ],
+        "evidence_refs": [
+          "E03",
+          "E04",
+          "E07",
+          "E08",
+          "E12",
+          "E13"
+        ]
+      },
+      "RQ8": {
+        "contribution": "Motivates paragraph, relation-candidate, and leakage-aware evaluation baselines for investigation.",
+        "proposal_refs": [
+          "R01-X01",
+          "R01-X02",
+          "R01-X03"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "R01-I01",
+        "statement": "Paragraph QA links are useful direct-email support for studying reply association. They do not identify a concrete Topic or prove that one paragraph contains only one work matter.",
+        "finding_refs": [
+          "R01-F01",
+          "R01-F04",
+          "R01-F05"
+        ]
+      },
+      {
+        "id": "R01-I02",
+        "statement": "Paragraph-level labels may include unrelated clauses or omit context in another paragraph. Comma-based question recognition may ignore a condition outside the tested phrase if downstream extraction copies only that phrase. The paper neither makes that downstream choice nor measures those failures.",
+        "evidence_refs": [
+          "E04",
+          "E06",
+          "E08"
+        ],
+        "status": "Plausible preservation risks; unmeasured"
+      },
+      {
+        "id": "R01-I03",
+        "statement": "Restricting candidates to original paragraphs in later messages of one In-Reply-To thread cannot establish same-message or cross-thread coverage. Treat uncertain Topic links and unanswered questions as separate research targets.",
+        "evidence_refs": [
+          "E07",
+          "E09",
+          "E12"
+        ]
+      },
+      {
+        "id": "R01-I04",
+        "statement": "Strong performance on the short candidate list partly coincides with a positive majority. Candidate count and gold answer cardinality are distinct. Union-versus-Inter results use different labels and populations, so they do not establish which annotation policy is more valid.",
+        "finding_refs": [
+          "R01-F02"
+        ],
+        "evidence_refs": [
+          "E12",
+          "E13",
+          "E14"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "R01-X01",
+        "status": "Untested msgloom research proposal; no architecture approval",
+        "experiment": "Compare paragraph, sentence, clause, arbitrary-span, EDU, and hybrid units on the same synthetic or authorized user-reviewed multi-matter messages. Annotate exact evidence, overlapping memberships, non-contiguous evidence, conditions, exceptions, and partial replies without forcing exclusivity.",
+        "evaluation": "Score boundaries separately from Topic memberships and exact span/link accuracy. Add missed decision-bearing evidence and scope-broadening/condition-loss measures; report IAA for each annotation task.",
+        "motivation_refs": [
+          "R01-F04",
+          "R01-F07"
+        ]
+      },
+      {
+        "id": "R01-X02",
+        "status": "Untested msgloom research proposal; no architecture approval",
+        "experiment": "Use paragraph QA linking as a baseline. Compare later-thread candidates with same-message, quote-aligned, and cross-thread candidates on examples that need each scope. Include unanswered questions, multiple answers, shared answers, and separated answer paragraphs.",
+        "evaluation": "Report candidate recall, conditional pair P/R/F1, end-to-end question-plus-link results, and reply-scope preservation separately. Stratify by candidate count, true answer count, gap length, quote dependence, and within-message versus thread-level discontinuity.",
+        "motivation_refs": [
+          "R01-F01",
+          "R01-F02",
+          "R01-F05"
+        ],
+        "evidence_refs": [
+          "E09",
+          "E10",
+          "E12"
+        ]
+      },
+      {
+        "id": "R01-X03",
+        "status": "Untested msgloom research proposal; no architecture approval",
+        "experiment": "For any local reimplementation, declare conventional versus printed feature formulas explicitly. Keep paired text in grouped chronological train/test partitions, audit near duplicates, and select heuristics without viewing the final test. Compare lexical features, full features, and a majority baseline.",
+        "evaluation": "Record exact corpus-to-feature counts, fold groupings, candidate means, uncertainty, and ablations. Preserve the published R01 numbers as historical claims; do not present a corrected implementation as a verified reproduction.",
+        "motivation_refs": [
+          "R01-F01",
+          "R01-F02",
+          "R01-F03"
+        ],
+        "inconsistency_refs": [
+          "I01",
+          "I02",
+          "I03",
+          "I04"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/reused-topic01/2004_shrestha_mckeown_detection_question_answer_pairs_email_conversations.pdf",
+      "pdf_sha256": "e538dbbc76847e1b1cc2aa5756f999113e64af4a285c29a950d0757a02f77286",
+      "expected_pdf_sha256": "e538dbbc76847e1b1cc2aa5756f999113e64af4a285c29a950d0757a02f77286",
+      "pdf_sha256_matches_expected": true,
+      "pdf_pages": 7,
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R01.md",
+      "converted_text_sha256": "cb811d56316c6cd555483330ca2eefdaaed05aecae11864dad918badb06229d7",
+      "conversion_tier": "convert_rough; convert_fine/R01.md absent",
+      "full_text_read": "All converted Markdown, all page-indexed auxiliary text, and all independent raw text read. Original PDF pages 3–7 visually inspected for tables, corpus counts, and formulas.",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.raw.txt",
+          "sha256": "fe875db9d8f8c1e01d3ab0715ba9663d52224ea9fa172fbbdc4aea514fb8bd1b",
+          "use": "Fully read; primary line-locator source because it preserves column order and line-break hyphens."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.pages.md",
+          "sha256": "364e7ed8fb81b03e88adde52698ed4705cde2cebba2f8080e5cbf49ccb3cf27c",
+          "use": "Fully read; confirms page mapping, but its columns interleave."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R01.layout.txt",
+          "sha256": "0787d4dd4d1eea99a7ad4e81886f3b7bc9be8929b8d065534bdaf8c38738b22c",
+          "use": "Lines 190–350 inspected independently for corpus counts, formulas, and results."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/visual-transcription.md",
+          "sha256": "50db057bc5315696db371d449a8639d93b1b7a794bf3dff81be4245db023e2c2",
+          "use": "Analyst visual transcription; formulas only, explicitly labeled."
+        }
+      ],
+      "visual_inspection": [
+        {
+          "pdf_page": 3,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-3.png",
+          "sha256": "1a08c0843ddb4fbd339cff2e2ca0faf0467d311f2a55427c83e7445eedff005b"
+        },
+        {
+          "pdf_page": 4,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-4.png",
+          "sha256": "aa13edd5eead4c770962c6169946b08a727d1e8089ac068dd94e31caa9e389ae"
+        },
+        {
+          "pdf_page": 5,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-5.png",
+          "sha256": "a9fb0d5d732ed30a5a067510acc6297c391a5487af06bdf4bb1833789abfce90"
+        },
+        {
+          "pdf_page": 6,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-6.png",
+          "sha256": "65d47817b6b3c5ebefeae27b721d02cc85edc3e75f421ff18bee6c77ff6247ba"
+        },
+        {
+          "pdf_page": 7,
+          "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-7.png",
+          "sha256": "76d325849cc3cb86b373a2201688d489315f4d770f2fdb56940ca862f6513e44"
+        }
+      ],
+      "formula_crop": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R01/pdf-page-5-formulas.png",
+        "sha256": "9628de392667894e2f3599686554b974e3e7c97a9b3e24ce442a3861dd972702"
+      },
+      "line_numbering": "1-based LF lines via text.split('\\n'); a form-feed does not create another line. Quote checking normalizes whitespace only; line-break hyphens remain.",
+      "context_resolution": "Topic-local docs/design-brief.md and docs/design-principles.md are absent; read the repository documents at /home/grammy-jiang/Projects/msgloom/docs/. The current explicit Topic02 authorization supersedes the older CONTEXT.md first-batch restriction.",
+      "fresh_analysis": "R01 alone. No Topic01 conclusions, previous analysis/extract/summary artifacts, or other papers were read. No network, pipeline stages, workflow-state edits, code installation, or result submission."
+    }
+  },
+  "runtime_provenance": {
+    "launcher_reported": {
+      "MSGLOOM_WORKER_ROLE": "paper-R01",
+      "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+      "MSGLOOM_WORKER_EFFORT": "xhigh"
+    },
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "source": "Launcher environment values from the arguments used for the actual invocation, per task instructions. Parent independently verifies turn_context and exit receipts.",
+    "runtime_session_or_turn_id": "Not recorded; no runtime identifier fabricated.",
+    "effort_reason": "Launched at xhigh for damaged/potentially inconsistent source formulas and corpus/feature denominators.",
+    "additional_escalation_requested": false,
+    "additional_escalation_reason": "Original-PDF inspection resolved the visual formula ambiguity. Printed formula errors and unreconciled counts remain explicitly qualified source limitations, not unresolved extraction."
+  }
+}

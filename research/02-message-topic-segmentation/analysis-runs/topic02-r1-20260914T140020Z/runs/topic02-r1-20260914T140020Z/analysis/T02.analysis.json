@@ -1,0 +1,2209 @@
+{
+  "paper_id": "T02",
+  "title": "A Critique and Improvement of an Evaluation Metric for Text Segmentation",
+  "research_question": "How do Pk and simple modifications respond to segmentation errors, segment-size variation, and error-location distributions?",
+  "methodology": "Theoretical analysis of flat segmentation metrics, illustrated with reference/hypothesis boundary diagrams, followed by synthetic perturbation experiments comparing Pk, a doubled-false-positive variant Pk_prime, and WindowDiff; see topic02.metrics.experiment_contexts and evidence_registry.simulation for the full recipe.",
+  "methodology_evidence_refs": [
+    "simulation",
+    "units_and_ranges",
+    "error_distribution_definitions"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "T02-F01",
+      "finding": "Pk penalizes false negatives more than uniformly placed false positives in the paper's synthetic contiguous-segmentation settings. At p=0.5 and segment-size range (20,30), Table 1 reports mean Pk 0.245 for FN and 0.128 for FP. This is an error-metric comparison, not a segmenter accuracy comparison.",
+      "evidence_type": "supported",
+      "section": "PDF p. 11, §4.1",
+      "quote": "positives, but the penalty for the Table 1b segmentations is consistently about half that for those in Table 1a. Thus, algorithms prone to false positives are penalized less harshly than those prone to false negatives.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 603,
+        "line_end": 605,
+        "pdf_pages": [
+          11
+        ]
+      },
+      "evidence_refs": [
+        "fn_assumptions",
+        "fp_penalty",
+        "simulation",
+        "table1"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F02",
+      "finding": "WindowDiff compares reference and hypothesis boundary counts in each window, so it detects count mismatches that Pk's binary same/different-segment test can miss. It averages mismatch indicators over N-k windows; it does not sum the magnitude of the count difference.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §3",
+      "quote": "metric, which we call WindowDiff, works as follows: for each position of the probe, simply compare the number of reference segmentation boundaries that fall in this interval (ri) with the number of boundaries that are assigned by the algorithm (ai). The algorithm is penalized if ri̸ = ai (which is computed as |ri −ai| > 0).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 433,
+        "line_end": 436,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "boundary_count",
+        "wd_definition",
+        "table1"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F03",
+      "finding": "WindowDiff reduces, but does not eliminate, sensitivity to segment-size variation in these simulations. For FN at p=0.5, widening uniform size range from (20,30) to (5,45) changes mean WD from 0.245 to 0.237 and Pk from 0.245 to 0.223. Mixed FP+FN WD changes from 0.376 to 0.343 under those same ranges.",
+      "evidence_type": "supported",
+      "section": "PDF p. 10, Table 1(a)",
+      "quote": "Pk 0.245 0.245 0.240 0.223 P′k 0.245 0.245 0.240 0.223 WD 0.245 0.245 0.242 0.237",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 545,
+        "line_end": 547,
+        "pdf_pages": [
+          10
+        ]
+      },
+      "evidence_refs": [
+        "simulation",
+        "units_and_ranges",
+        "table1"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F04",
+      "finding": "For the Figure 5 average-size examples, Pk assigns unnormalized penalty e to a pure added boundary near a correct boundary but 2e to a shifted boundary. WindowDiff assigns about k to the pure added boundary and 2e to the shifted boundary, with e presumed much smaller than k. The authors' preference for the latter ordering is application dependent; detailed near-miss simulation results are not supplied.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §2.4",
+      "quote": "the segmentations assigned by Algorithms A-1 and A-3, and suppose that both contain an incorrect boundary some small distance e from the actual one. Then the penalty for Algorithm A-1 is e, while the penalty for Algorithm A-3 is 2e. This should not be the case; Algorithm A-1 should be penalized more than Algorithm A-3, since a near-miss error is better than a pure false positive, even if it is close to the boundary.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 415,
+        "line_end": 419,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "near_miss_preference",
+        "near_miss_penalties",
+        "wd_definition",
+        "near_miss_simulations"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F05",
+      "finding": "WindowDiff still depends on error placement. For uniform reference sizes (15,35) and nominal p=0.5, Table 3 gives mean WD 0.240 for per-segment-uniform FP1, 0.236 for boundary-centered FP2, and 0.211 for document-uniform FP3. The paper attributes lower scores for clustered false positives to several errors sharing penalized windows.",
+      "evidence_type": "supported",
+      "section": "PDF p. 15, §4.2",
+      "quote": "we examine the results for the FP segmentations. WD penalizes pure false positives the same amount regardless of how close they are to a boundary; the only way false positives are underpenalized is if they occur in bunches. As mentioned earlier, this is most likely to happen in FP3. It is least likely to happen in FP1, since in FP1 there is a maximum of one false positive per segment, and this false positive is not necessarily close to a boundary. In FP2, false positives are also limited to one per segment, but they are also more likely to be close to boundaries. This increases the likelihood that 2 false positives will be within k sentences of each other and thus makes WD give a slightly lower score to the FP2 segmentation than to the FP1 segmentation.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 874,
+        "line_end": 882,
+        "pdf_pages": [
+          15
+        ]
+      },
+      "evidence_refs": [
+        "simulation",
+        "table3",
+        "error_distribution_definitions",
+        "bunching"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F06",
+      "finding": "The validation uses generated reference and perturbed boundary sequences whose units are deliberately unspecified. It compares metric behavior, supplies no trained segmentation model, and does not establish which linguistic unit preserves work-matter scope.",
+      "evidence_type": "supported",
+      "section": "PDF p. 9, §4.1",
+      "quote": "segmentations with segment size uniformly distributed between two numbers. Note that the units of segmentation are deliberately left unspeciﬁed. So a segment of size 25 can refer to 25 words, clauses, or sentences—whichever is applicable to the task under consideration. Also note that the same tests were run using larger segment sizes than those reported here, with the results remaining nearly identical.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 503,
+        "line_end": 507,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "simulation",
+        "units_and_ranges"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    },
+    {
+      "finding_id": "T02-F07",
+      "finding": "The claim that WindowDiff is more meaningful than Pk is an author judgment. The paper acknowledges that interpretation of metric values remains unresolved; it provides no user study or downstream preservation evaluation to validate that judgment.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 16, §5",
+      "quote": "The discussion above addresses Problems 1 through 4 but does not address Prob- lem 5: how does one interpret the values produced by the metric? From the tests we have run, it appears that the WD metric grows in a roughly linear fashion with the difference between the reference and the experimental segmentations. In addition, we feel that WD is a more meaningful metric than Pk. Comparing two stretches of text to see how many discrepancies occur between the reference and the algorithm’s result seems more intuitive than determining how often two text units are incorrectly labeled as being in different segments.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 934,
+        "line_end": 941,
+        "pdf_pages": [
+          16
+        ]
+      },
+      "evidence_refs": [
+        "residual_limits"
+      ],
+      "confidence_basis": "Confidence in the scoped extraction and evidential status, not a probability of business-email transfer."
+    }
+  ],
+  "limitations": [
+    "Synthetic metric validation supplies no natural-language segmenter benchmark or direct email transfer evidence (T02-F06).",
+    "Units are unspecified; linguistic-unit quality and semantic Topic memberships are not tested (T02-F06).",
+    "WindowDiff is not invariant to segment-size variance or bunched errors (T02-F03, T02-F05).",
+    "Preference for near-miss versus added-boundary penalties is application dependent; detailed near-miss and weighted-WD comparisons are omitted (near_miss_preference, near_miss_simulations, weighted_variant).",
+    "Aggregate simulation scores lack seeds, uncertainty estimates, integer k rules, and a complete endpoint convention (simulation, k_setting; T02-I03).",
+    "The §2.3 conditions are not a reliable exact implementation specification, and nominally matching table settings have small unreconciled differences (T02-I01, T02-I02)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "availability_semantics": "The false booleans mean no paper-reported release of this study's implementation or generated dataset was located; actual availability is unknown. These are frozen publication statements, not a current availability check.",
+    "code_status": "Not reported as a released study artifact. A footnote credits gaussrand() and a then-online URL for normal random generation; this is not release evidence for the study implementation.",
+    "dataset_status": "Synthetic generation recipe reported; no downloadable generated benchmark or real evaluation dataset reported.",
+    "evidence_refs": [
+      "simulation",
+      "gaussian_generator"
+    ]
+  },
+  "confidence_scores": {
+    "T02-F01": 0.99,
+    "T02-F02": 0.99,
+    "T02-F03": 0.99,
+    "T02-F04": 0.97,
+    "T02-F05": 0.99,
+    "T02-F06": 0.99,
+    "T02-F07": 0.98
+  },
+  "raw_claims": [
+    "Text segmentation is the task of determining the positions at which topics change in a stream of text.",
+    "Another problem with precision and recall is that they are not sensitive to near misses.",
+    "We explored a weighted version of WindowDiff, in which the penalty is weighted by the difference |ri −ai|.",
+    "However, the results of the simulations were nearly identical with those of the nonweighted version of this metric, so we do not consider the weighted version further."
+  ],
+  "raw_claims_provenance": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+      "line_start": 28,
+      "line_end": 29,
+      "pdf_pages": [
+        1
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+      "line_start": 143,
+      "line_end": 144,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+      "line_start": 470,
+      "line_end": 471,
+      "pdf_pages": [
+        9
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+      "line_start": 471,
+      "line_end": 473,
+      "pdf_pages": [
+        9
+      ]
+    }
+  ],
+  "evidence_registry": {
+    "scope": {
+      "section": "PDF p. 1, §1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 28,
+        "line_end": 36,
+        "pdf_pages": [
+          1
+        ]
+      }
+    },
+    "human_gold_background": {
+      "section": "PDF p. 2, §1.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 92,
+        "line_end": 108,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "precision_recall": {
+      "section": "PDF p. 2, §1.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 109,
+        "line_end": 120,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "pk_definition": {
+      "section": "PDF p. 3, §1.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 167,
+        "line_end": 175,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "fn_assumptions": {
+      "section": "PDF p. 4, §2.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 217,
+        "line_end": 229,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "fp_penalty": {
+      "section": "PDF p. 5, §2.1; fractions visually verified",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 252,
+        "line_end": 274,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "boundary_count": {
+      "section": "PDF pp. 5–6, §2.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 276,
+        "line_end": 307,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      }
+    },
+    "small_segment_conditions": {
+      "section": "PDF p. 6, §2.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 309,
+        "line_end": 329,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "near_miss_preference": {
+      "section": "PDF p. 7, §2.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 372,
+        "line_end": 394,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "near_miss_penalties": {
+      "section": "PDF p. 8, §2.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 405,
+        "line_end": 419,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "wd_definition": {
+      "section": "PDF p. 8, §3; equation visually verified",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 428,
+        "line_end": 457,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "weighted_variant": {
+      "section": "PDF p. 9, §3 continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 470,
+        "line_end": 473,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "simulation": {
+      "section": "PDF p. 9, §4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 475,
+        "line_end": 498,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "units_and_ranges": {
+      "section": "PDF p. 9, §4.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 500,
+        "line_end": 520,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "table1": {
+      "section": "PDF p. 10, Table 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 533,
+        "line_end": 563,
+        "pdf_pages": [
+          10
+        ]
+      }
+    },
+    "k_setting": {
+      "section": "PDF p. 10, §4.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 575,
+        "line_end": 579,
+        "pdf_pages": [
+          10
+        ]
+      }
+    },
+    "error_counts": {
+      "section": "PDF p. 11, §4.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 601,
+        "line_end": 605,
+        "pdf_pages": [
+          11
+        ]
+      }
+    },
+    "decomposition": {
+      "section": "PDF p. 11, §4.1; fractions visually verified",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 620,
+        "line_end": 652,
+        "pdf_pages": [
+          11
+        ]
+      }
+    },
+    "estimates": {
+      "section": "PDF p. 12, §4.1; fractions visually verified",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 663,
+        "line_end": 705,
+        "pdf_pages": [
+          12
+        ]
+      }
+    },
+    "table2": {
+      "section": "PDF p. 13, Table 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 728,
+        "line_end": 789,
+        "pdf_pages": [
+          13
+        ]
+      }
+    },
+    "error_distribution_setup": {
+      "section": "PDF p. 12, §4.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 708,
+        "line_end": 714,
+        "pdf_pages": [
+          12
+        ]
+      }
+    },
+    "table3": {
+      "section": "PDF p. 14, Table 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 803,
+        "line_end": 814,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "error_distribution_definitions": {
+      "section": "PDF p. 14, §4.2; fractions visually verified",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 820,
+        "line_end": 839,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "gaussian_generator": {
+      "section": "PDF p. 14, §4.2 footnote 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 857,
+        "line_end": 858,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "bunching": {
+      "section": "PDF p. 15, §4.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 868,
+        "line_end": 892,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "near_miss_simulations": {
+      "section": "PDF p. 15, §4.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 894,
+        "line_end": 898,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "conclusion": {
+      "section": "PDF p. 15, §5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 902,
+        "line_end": 918,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "residual_limits": {
+      "section": "PDF p. 16, §5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+        "line_start": 929,
+        "line_end": 941,
+        "pdf_pages": [
+          16
+        ]
+      }
+    },
+    "visual_fp_fraction": {
+      "section": "PDF p. 5, §2.1; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 9,
+        "line_end": 10,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-05.png"
+    },
+    "visual_small_segment_conditions": {
+      "section": "PDF p. 6, §2.3; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 14,
+        "line_end": 18,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-06.png"
+    },
+    "visual_wd_formula": {
+      "section": "PDF p. 8, §3 and §2.4; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 23,
+        "line_end": 28,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-08.png"
+    },
+    "visual_error_decomposition": {
+      "section": "PDF p. 11, §4.1; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 37,
+        "line_end": 41,
+        "pdf_pages": [
+          11
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-11.png"
+    },
+    "visual_estimate_formulas": {
+      "section": "PDF p. 12, §4.1; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 45,
+        "line_end": 48,
+        "pdf_pages": [
+          12
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-12.png"
+    },
+    "visual_error_distributions": {
+      "section": "PDF p. 14, §4.2; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "line_start": 57,
+        "line_end": 60,
+        "pdf_pages": [
+          14
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-14.png"
+    },
+    "xhigh_visual_i01": {
+      "section": "PDF p. 6; xhigh visual verification with labeled interpretation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md",
+        "line_start": 20,
+        "line_end": 22,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-06.png"
+    },
+    "xhigh_visual_wd_definition": {
+      "section": "PDF p. 8; xhigh visual verification with labeled interpretation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md",
+        "line_start": 35,
+        "line_end": 35,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-08.png"
+    },
+    "xhigh_visual_estimates": {
+      "section": "PDF p. 12; xhigh visual verification with labeled interpretation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md",
+        "line_start": 67,
+        "line_end": 69,
+        "pdf_pages": [
+          12
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-12.png"
+    },
+    "xhigh_visual_fp_distributions": {
+      "section": "PDF p. 14; xhigh visual verification with labeled interpretation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md",
+        "line_start": 81,
+        "line_end": 82,
+        "pdf_pages": [
+          14
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-14.png"
+    }
+  },
+  "topic02": {
+    "evidence_family": "TRANSFER_SEGMENTATION",
+    "evaluated_tasks": {
+      "summary": "Evaluation-metric analysis for topic-boundary detection and contiguous topic segmentation, using synthetic reference/hypothesis boundary sequences; no learned detector is evaluated.",
+      "task_status": {
+        "topic-boundary detection": "Metric behavior evaluated with artificial insertions/deletions/shifts; no real-text detector performance.",
+        "contiguous topic segmentation": "Metric behavior evaluated on flat contiguous partitions.",
+        "segment topic labeling": "Not evaluated; no semantic labels.",
+        "whole-message multi-label classification": "Not evaluated.",
+        "exact span assignment": "Not evaluated; boundary agreement is not Topic span assignment.",
+        "overlapping span assignment": "Not evaluated.",
+        "non-contiguous assignment to one Topic": "Not evaluated.",
+        "discourse/EDU segmentation": "Not evaluated; clauses are mentioned as possible generic units only.",
+        "action/question/reply-scope extraction": "Not evaluated.",
+        "preservation of decision-bearing conditions/evidence/scope": "Not evaluated."
+      },
+      "evidence_refs": [
+        "scope",
+        "simulation",
+        "units_and_ranges"
+      ]
+    },
+    "annotation_unit": {
+      "status": "No human annotation in the reported experiments. Synthetic ordered units are deliberately unspecified; words, clauses, and sentences are examples, not compared annotation schemes.",
+      "evidence_refs": [
+        "units_and_ranges"
+      ]
+    },
+    "prediction_unit": {
+      "status": "Generated boundary positions between ordered units, defining contiguous segments. No trained model, semantic Topic labels, or confidence/abstention predictions.",
+      "evidence_refs": [
+        "pk_definition",
+        "wd_definition",
+        "simulation"
+      ]
+    },
+    "contiguity": {
+      "gold": "Flat contiguous partition of a synthetic sequence.",
+      "prediction": "Perturbed flat contiguous partition; not a non-sequential Topic cluster.",
+      "scope": "Generic document sequence, not an email message or thread dataset.",
+      "evidence_refs": [
+        "scope",
+        "simulation"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "One segment membership per base unit is implicit in the partition. No semantic Topic label vocabulary or multi-Topic gold labels.",
+      "prediction": "One hypothesized segment membership per base unit; no multi-label Topic predictions.",
+      "qualification": "Structural interpretation of the boundary representation, not an independently evaluated semantic-cardinality claim.",
+      "evidence_refs": [
+        "pk_definition",
+        "simulation"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not represented or evaluated.",
+        "thread_level": "Not represented or evaluated.",
+        "one_semantic_object": "No linkage of separated spans to the same Topic."
+      },
+      "prediction": {
+        "within_one_message": "Not represented or evaluated.",
+        "thread_level": "Not represented or evaluated.",
+        "one_semantic_object": "No predicted non-contiguous Topic object."
+      },
+      "evidence_refs": [
+        "scope",
+        "simulation"
+      ]
+    },
+    "overlap": {
+      "gold": "No overlapping memberships in the simulated flat partition; no gold overlapping Topic spans.",
+      "prediction": "No predicted overlapping memberships.",
+      "scope": "Overlap of metric windows is computational, not semantic span overlap.",
+      "support_status": "Unsupported as evidence for multi-Topic span capability.",
+      "evidence_refs": [
+        "pk_definition",
+        "wd_definition",
+        "simulation"
+      ]
+    },
+    "dataset_domain": {
+      "reported_evaluation": "Synthetic segmentation sequences; no natural-language corpus or business-email dataset is evaluated.",
+      "background_only": "Introduction discusses news, retrieval, summarization, and discourse applications; the Stargazers article illustrates segmentation and is not an evaluation dataset.",
+      "evidence_refs": [
+        "scope",
+        "simulation",
+        "units_and_ranges"
+      ]
+    },
+    "annotation_process": {
+      "status": "Algorithmically generated reference partitions and error distributions. Human gold-standard disagreement is background discussion, not a reported annotation exercise.",
+      "evidence_refs": [
+        "human_gold_background",
+        "simulation",
+        "units_and_ranges",
+        "error_distribution_definitions"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "Not reported; no human-annotated evaluation population.",
+      "metric": null,
+      "population": null,
+      "evidence_refs": [
+        "human_gold_background",
+        "simulation"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "No train/development/test split; no learned model.",
+      "counts": "Per experiment: 10 trials; each trial has one generated 1,000-segment reference and 100 generated experimental segmentations. Scores are averaged within trial and then across trials.",
+      "derived_comparison_count": 1000,
+      "derived_count_note": "10 × 100 metric comparisons per setting; these share references within trials and are not 1,000 independent held-out documents.",
+      "duplicate_controls": "Not reported; seeds, duplicate checks, and reuse of generated references across separately reported experiments are not specified.",
+      "business_email_transfer": "Sender/thread/time separation and quoted-message leakage are not tested.",
+      "evidence_refs": [
+        "simulation"
+      ]
+    },
+    "metrics": {
+      "definitions": [
+        {
+          "name": "Pk",
+          "task": "Flat contiguous segmentation boundary agreement.",
+          "definition": "Fraction of k-separated endpoint pairs for which reference and hypothesis disagree on whether both endpoints belong to the same segment.",
+          "numerator": "Number of endpoint same/different disagreements.",
+          "denominator": "Number of measured windows; N-k for the common sliding-window convention. §1.2 states number of measurements rather than a displayed Pk formula.",
+          "direction": "Lower is less disagreement; a matching partition scores zero.",
+          "k": "Half the average true/reference segment size.",
+          "evidence_refs": [
+            "pk_definition"
+          ]
+        },
+        {
+          "name": "Pk_prime",
+          "task": "Same synthetic metric-validation task.",
+          "definition": "Pk modified to double false-positive penalties; false-negative penalty is unchanged.",
+          "denominator": "Same measurement averaging as the Pk modification; no separate formula or renormalization rule is printed.",
+          "direction": "Lower is less weighted disagreement; do not call this an unqualified probability.",
+          "evidence_refs": [
+            "fp_penalty",
+            "simulation"
+          ]
+        },
+        {
+          "name": "WindowDiff",
+          "task": "Flat contiguous segmentation boundary-count agreement.",
+          "definition": "(1/(N-k))*SUM[i=1..N-k] indicator(|b(ref_i,ref_(i+k))-b(hyp_i,hyp_(i+k))|>0).",
+          "numerator": "Windows with unequal reference and hypothesis boundary counts, one penalty per mismatched window.",
+          "denominator": "N-k windows; N is the number of sentences in §3, generalized to unspecified units in simulations.",
+          "direction": "Lower is less disagreement.",
+          "qualification": "Equal boundary counts within a particular window incur no penalty even when the positions differ; other windows may still detect the shift. This follows from the formula.",
+          "evidence_refs": [
+            "wd_definition",
+            "units_and_ranges",
+            "visual_wd_formula"
+          ],
+          "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md"
+        },
+        {
+          "name": "Boundary precision / recall",
+          "task": "Exact boundary detection, discussed as background.",
+          "definition": "Precision: matched boundaries / predicted boundaries. Recall: matched boundaries / reference boundaries.",
+          "results": "No real-data precision/recall benchmark. The hypothetical Figure 1 example illustrates lack of near-miss credit.",
+          "evidence_refs": [
+            "precision_recall"
+          ]
+        }
+      ],
+      "experiment_contexts": {
+        "SIM-SIZE": {
+          "dataset": "Synthetic ordered boundary sequences, no natural text.",
+          "task": "Metric response to fixed-probability boundary errors as segment-size variance changes.",
+          "split": "No train/dev/test split.",
+          "reference_segments_per_trial": 1000,
+          "trial_count": 10,
+          "hypotheses_per_trial": 100,
+          "aggregation": "Mean of the 100 metric measurements in each trial, then mean across 10 trials.",
+          "mean_segment_size": 25,
+          "unit": "Deliberately unspecified.",
+          "uniform_segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "k_paper_prose": 12.5,
+          "k_integer_rounding": "Not reported.",
+          "FN": "Remove a boundary with p at each reference boundary.",
+          "FP": "At most one spurious boundary per segment with probability p, position uniformly distributed in that segment.",
+          "FNP": "Combine FN and FP at their stated probabilities.",
+          "evidence_refs": [
+            "simulation",
+            "units_and_ranges",
+            "k_setting",
+            "bunching"
+          ]
+        },
+        "SIM-DISTRIBUTION": {
+          "dataset": "Synthetic ordered boundary sequences.",
+          "task": "Metric response to different error-location distributions.",
+          "split": "No train/dev/test split.",
+          "reference_segments_per_trial": 1000,
+          "trial_count": 10,
+          "hypotheses_per_trial": 100,
+          "aggregation": "Same averaging procedure as SIM-SIZE.",
+          "uniform_segment_size_range": [
+            15,
+            35
+          ],
+          "nominal_error_probability": 0.5,
+          "FN": "Boundary deletion with probability 0.5.",
+          "FP1": "Uniformly located false positive per segment, occurrence probability 0.5; at most one per segment.",
+          "FP2": "False positives normally distributed around boundaries, standard deviation one quarter of segment size, occurrence probability 0.5; later prose says at most one per segment. Gaussian truncation and out-of-range handling are not reported.",
+          "FP3": "Each point receives a false positive with probability number_of_segments/(length*2); global uniform placement can bunch false positives and does not cap them at one per segment.",
+          "FNP1_FNP2_FNP3": "Combine FN with the corresponding FP distribution.",
+          "lower_probability_runs": "The paper says analogous 0.05 and 0.25 runs were performed; no corresponding Table 3 numeric results are supplied. At 0.05 some WD distribution differences disappear.",
+          "evidence_refs": [
+            "simulation",
+            "error_distribution_setup",
+            "table3",
+            "error_distribution_definitions",
+            "bunching",
+            "visual_error_distributions"
+          ],
+          "visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md"
+        }
+      },
+      "reported_numeric_results": [
+        {
+          "result_id": "Table 1(a)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FN",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.245,
+              0.245,
+              0.24,
+              0.223
+            ],
+            "Pk_prime": [
+              0.245,
+              0.245,
+              0.24,
+              0.223
+            ],
+            "WindowDiff": [
+              0.245,
+              0.245,
+              0.242,
+              0.237
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 545,
+            "line_end": 547,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF p. 10, Table 1(a)"
+        },
+        {
+          "result_id": "Table 1(b)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FP",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.128,
+              0.122,
+              0.112,
+              0.107
+            ],
+            "Pk_prime": [
+              0.256,
+              0.245,
+              0.225,
+              0.213
+            ],
+            "WindowDiff": [
+              0.24,
+              0.241,
+              0.238,
+              0.236
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 553,
+            "line_end": 555,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF p. 10, Table 1(b)"
+        },
+        {
+          "result_id": "Table 1(c)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.317,
+              0.309,
+              0.29,
+              0.268
+            ],
+            "Pk_prime": [
+              0.446,
+              0.432,
+              0.403,
+              0.375
+            ],
+            "WindowDiff": [
+              0.376,
+              0.37,
+              0.357,
+              0.343
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 561,
+            "line_end": 563,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF p. 10, Table 1(c)"
+        },
+        {
+          "result_id": "Table 2(a)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FN",
+          "error_probability": 0.05,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.025,
+              0.025,
+              0.024,
+              0.022
+            ],
+            "Pk_prime": [
+              0.025,
+              0.025,
+              0.024,
+              0.022
+            ],
+            "WindowDiff": [
+              0.025,
+              0.025,
+              0.024,
+              0.024
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 747,
+            "line_end": 749,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(a)"
+        },
+        {
+          "result_id": "Table 2(b)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FP",
+          "error_probability": 0.05,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.013,
+              0.012,
+              0.011,
+              0.011
+            ],
+            "Pk_prime": [
+              0.026,
+              0.025,
+              0.023,
+              0.021
+            ],
+            "WindowDiff": [
+              0.024,
+              0.024,
+              0.024,
+              0.024
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 755,
+            "line_end": 757,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(b)"
+        },
+        {
+          "result_id": "Table 2(c)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.05,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.037,
+              0.036,
+              0.035,
+              0.032
+            ],
+            "Pk_prime": [
+              0.05,
+              0.048,
+              0.046,
+              0.042
+            ],
+            "WindowDiff": [
+              0.048,
+              0.048,
+              0.048,
+              0.047
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 763,
+            "line_end": 765,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(c)"
+        },
+        {
+          "result_id": "Table 2(d)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FN",
+          "error_probability": 0.25,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.122,
+              0.122,
+              0.121,
+              0.11
+            ],
+            "Pk_prime": [
+              0.122,
+              0.122,
+              0.121,
+              0.11
+            ],
+            "WindowDiff": [
+              0.122,
+              0.122,
+              0.122,
+              0.121
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 771,
+            "line_end": 773,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(d)"
+        },
+        {
+          "result_id": "Table 2(e)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FP",
+          "error_probability": 0.25,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.064,
+              0.061,
+              0.056,
+              0.053
+            ],
+            "Pk_prime": [
+              0.129,
+              0.123,
+              0.112,
+              0.106
+            ],
+            "WindowDiff": [
+              0.121,
+              0.121,
+              0.121,
+              0.12
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 779,
+            "line_end": 781,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(e)"
+        },
+        {
+          "result_id": "Table 2(f)",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.25,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "metric_order": [
+            "Pk",
+            "Pk_prime",
+            "WindowDiff"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.172,
+              0.168,
+              0.161,
+              0.147
+            ],
+            "Pk_prime": [
+              0.236,
+              0.229,
+              0.217,
+              0.2
+            ],
+            "WindowDiff": [
+              0.215,
+              0.213,
+              0.211,
+              0.205
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 787,
+            "line_end": 789,
+            "pdf_pages": [
+              13
+            ]
+          },
+          "section": "PDF p. 13, Table 2(f)"
+        },
+        {
+          "result_id": "Table 3",
+          "experiment_id": "SIM-DISTRIBUTION",
+          "nominal_error_probability": 0.5,
+          "segment_size_range": [
+            15,
+            35
+          ],
+          "error_setting_order": [
+            "FN",
+            "FP1",
+            "FP2",
+            "FP3",
+            "FNP1",
+            "FNP2",
+            "FNP3"
+          ],
+          "mean_errors": {
+            "Pk": [
+              0.245,
+              0.122,
+              0.091,
+              0.112,
+              0.308,
+              0.267,
+              0.304
+            ],
+            "Pk_prime": [
+              0.245,
+              0.244,
+              0.182,
+              0.224,
+              0.431,
+              0.354,
+              0.416
+            ],
+            "WindowDiff": [
+              0.245,
+              0.24,
+              0.236,
+              0.211,
+              0.37,
+              0.341,
+              0.363
+            ]
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 803,
+            "line_end": 814,
+            "pdf_pages": [
+              14
+            ]
+          },
+          "section": "PDF p. 14, Table 3"
+        }
+      ],
+      "approximate_model_estimates_vs_actual": [
+        {
+          "metric": "Pk",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "estimate": [
+            0.315,
+            0.306,
+            0.288,
+            0.272
+          ],
+          "actual": [
+            0.317,
+            0.309,
+            0.29,
+            0.268
+          ],
+          "formula": "3*a/2 + b/2",
+          "formula_variables": "a and b are the same metric's scores for 500 Type A and 500 Type B errors under the paper's approximate linearity model.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 670,
+            "line_end": 671,
+            "pdf_pages": [
+              12
+            ]
+          },
+          "section": "PDF p. 12, §4.1",
+          "formula_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+          "evidence_refs": [
+            "decomposition",
+            "estimates",
+            "visual_error_decomposition",
+            "visual_estimate_formulas"
+          ]
+        },
+        {
+          "metric": "Pk_prime",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "estimate": [
+            0.443,
+            0.429,
+            0.401,
+            0.378
+          ],
+          "actual": [
+            0.446,
+            0.432,
+            0.403,
+            0.375
+          ],
+          "formula": "5*a/4 + b/2",
+          "formula_variables": "a and b are the same metric's scores for 500 Type A and 500 Type B errors under the paper's approximate linearity model.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 686,
+            "line_end": 687,
+            "pdf_pages": [
+              12
+            ]
+          },
+          "section": "PDF p. 12, §4.1",
+          "formula_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+          "evidence_refs": [
+            "decomposition",
+            "estimates",
+            "visual_error_decomposition",
+            "visual_estimate_formulas"
+          ]
+        },
+        {
+          "metric": "WindowDiff",
+          "experiment_id": "SIM-SIZE",
+          "error_setting": "FNP",
+          "error_probability": 0.5,
+          "segment_size_ranges": [
+            [
+              20,
+              30
+            ],
+            [
+              15,
+              35
+            ],
+            [
+              10,
+              40
+            ],
+            [
+              5,
+              45
+            ]
+          ],
+          "estimate": [
+            0.363,
+            0.364,
+            0.359,
+            0.355
+          ],
+          "actual": [
+            0.376,
+            0.37,
+            0.357,
+            0.343
+          ],
+          "formula": "a + b/2",
+          "formula_variables": "a and b are the same metric's scores for 500 Type A and 500 Type B errors under the paper's approximate linearity model.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+            "line_start": 695,
+            "line_end": 696,
+            "pdf_pages": [
+              12
+            ]
+          },
+          "section": "PDF p. 12, §4.1",
+          "formula_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+          "evidence_refs": [
+            "decomposition",
+            "estimates",
+            "visual_error_decomposition",
+            "visual_estimate_formulas"
+          ]
+        }
+      ],
+      "uncertainty": "No standard deviations, confidence intervals, significance tests, seeds, or exact k rounding are reported for the aggregate scores.",
+      "qualitative_only_results": [
+        {
+          "claim": "Weighted WindowDiff using |ri-ai| reportedly produced nearly identical simulation results.",
+          "status": "Reported but no numeric comparison or complete settings are supplied.",
+          "evidence_refs": [
+            "weighted_variant"
+          ]
+        },
+        {
+          "claim": "A small near-miss simulation reportedly confirms the expected relative penalty behavior of Pk, Pk_prime, and WD.",
+          "status": "Evaluation is claimed; results and settings are omitted for space. This is not no evaluation and not a negative result.",
+          "evidence_refs": [
+            "near_miss_simulations"
+          ]
+        }
+      ],
+      "cross_task_warning": "These numbers are metric penalties for generated perturbations. They are not span F1/IoU, semantic multi-label scores, cluster scores, EDU scores, or work-text preservation scores.",
+      "xhigh_verification": {
+        "core_definition": {
+          "disposition": "Verified without numerical or formula repair.",
+          "detail": "Standard WD has denominator N-k and summation range i=1..N-k. Each unequal boundary count contributes one. The absolute-count-difference weighting is a separate variant, with only qualitative simulation reporting.",
+          "evidence_refs": [
+            "wd_definition",
+            "weighted_variant",
+            "visual_wd_formula"
+          ]
+        },
+        "units_and_denominators": {
+          "disposition": "Preserve distinctions already present in the high analysis.",
+          "detail": "N denotes sentences in the definition and generic ordered units in the simulations; it is not the 1,000 reference segments. Per setting, the paper averages 100 comparison scores for each reference and then averages 10 trials. FN p applies at a boundary, FP/FP1 p per segment, and FP3 p at each point. Local k/e penalties are unnormalized counts. The 1,000 comparisons are not 1,000 independent reference documents.",
+          "configured_versus_realized": "Mean size 25 and k=12.5 are the printed configuration/prose values. Exact realized sequence lengths, k rounding, and shared random samples are not supplied. No exact realized N or alternative denominator is inferred from the reported means.",
+          "evidence_refs": [
+            "pk_definition",
+            "simulation",
+            "units_and_ranges",
+            "k_setting",
+            "error_distribution_definitions"
+          ]
+        },
+        "near_miss_assumptions": {
+          "disposition": "Figure-specific findings retained; no additional contradiction asserted.",
+          "detail": "The Figure 5 argument assumes average-size reference neighbors and an application where introducing spurious boundaries matters. Its WD comparison assumes e much smaller than k. A-1 adds a nearby boundary while retaining the true one; A-3 shifts it. Penalties e, 2e, and about k are counts before normalization, not general identities for many overlapping errors.",
+          "distinct_distance_contexts": "The printed p. 8 opening threshold is k/2; the p. 11 near parenthetical is also k/2. The later p. 11 Type C model instead uses separation e<k and uniform-distance/linearity assumptions. All are preserved in context; a single universal near threshold is not attributed to the paper.",
+          "reporting_limits": "The paper says near-miss simulations and weighted-WD simulations were run, but supplies no detailed numeric comparison. This is omitted reporting, not no evaluation.",
+          "evidence_refs": [
+            "near_miss_preference",
+            "near_miss_penalties",
+            "wd_definition",
+            "decomposition",
+            "estimates",
+            "near_miss_simulations"
+          ]
+        },
+        "fraction_transcriptions": {
+          "disposition": "All scoped transcriptions confirmed from freshly rendered PDF images.",
+          "expressions": [
+            "k/2",
+            "p/2",
+            "a/2 + b/2 + c/2",
+            "3*a/2 + b/2",
+            "3*k/2",
+            "5*a/4 + b/2",
+            "a + b/2",
+            "1/4",
+            "number_of_segments/(length*2)"
+          ],
+          "detail": "These are linearized printed expressions. Estimate formulas retain the paper's approximate linearity model. Printed estimate/actual numbers are retained rather than recomputed from rounded table inputs.",
+          "evidence_refs": [
+            "visual_fp_fraction",
+            "visual_error_decomposition",
+            "visual_estimate_formulas",
+            "visual_error_distributions"
+          ],
+          "visual_verification_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md"
+        }
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation.",
+      "direct_measurement": false,
+      "detail": "No conditions, evidence, exceptions, approval scope, action scope, or reply scope are annotated or measured. FN/FP in this paper mean omitted/added segmentation boundaries, not omitted/added work requirements.",
+      "related_errors": "Near-miss and spurious boundary errors are related structural diagnostics only.",
+      "evidence_refs": [
+        "fn_assumptions",
+        "near_miss_preference",
+        "simulation"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Business-email Topic identity, including topics crossing Source or conversation boundaries.",
+      "Messages supporting several Topics and spans with multiple memberships.",
+      "Non-contiguous evidence for one Topic within one message or across a thread.",
+      "Sentence versus clause versus arbitrary span versus EDU preservation quality.",
+      "Action, question, approval, condition, exception, evidence, and reply-scope preservation.",
+      "Topic uncertainty, abstention, incremental updates, latency, or Raspberry Pi resource requirements."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T02-I01",
+        "type": "Printed logical overstatement; confirmed by focused xhigh verification.",
+        "statement_a": "§2.3 states full FN penalty k when Size(A)+Size(B)>2k.",
+        "statement_a_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 316,
+          "line_end": 318,
+          "pdf_pages": [
+            6
+          ]
+        },
+        "statement_b": "The same paragraph says the penalty falls when either segment drops below k and links ri>ai to both adjacent segments exceeding k.",
+        "statement_b_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 319,
+          "line_end": 326,
+          "pdf_pages": [
+            6
+          ]
+        },
+        "assessment": "The sum condition is not equivalent to both segments being at least k: a long neighbor can compensate for a short one in the sum. The later claim that both neighbors must exceed k for ri>ai also overstates what is required for any count deficit or any nonzero Pk disagreement. This is a defect in the printed prose, not extraction damage. The qualitative small-segment sensitivity remains supported. The analysis is resolved at this scope; the authors' intended correction is not established, and no analyst implementation formula is reported as theirs.",
+        "visual_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-06.png",
+        "printed_statements": [
+          {
+            "quote": "Then the algorithm will be penalized k times if Size(A)+ Size(B) > 2k, that is, as long as each segment is about half the average size or larger.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 317,
+              "line_end": 318,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF p. 6 (printed p. 24)"
+          },
+          {
+            "quote": "To be more exact, the penalty actually decreases linearly as the size of either segment decreases below k.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 320,
+              "line_end": 321,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF p. 6 (printed p. 24)"
+          },
+          {
+            "quote": "In order for this to be true, both the segment to the left and the segment to the right of the missed boundary have to be of size greater than k; otherwise, the penalty can only be equal to the size of the smaller segment.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 323,
+              "line_end": 325,
+              "pdf_pages": [
+                6
+              ]
+            },
+            "section": "PDF p. 6 (printed p. 24)"
+          }
+        ],
+        "context_check": {
+          "assessment": "Section 2.1 explicitly uses two length-2k segments for its example. Section 2.3 explicitly varies the sizes and does not assert A=B or a lower bound on each size before stating the sum condition. Reading the surrounding text therefore does not supply a stated assumption that repairs the general claim.",
+          "evidence_refs": [
+            "fn_assumptions",
+            "small_segment_conditions",
+            "boundary_count",
+            "pk_definition"
+          ],
+          "author_intent": "An intended restriction to equal-size or sufficiently long neighbors is possible, but not established. It is not silently added to the source."
+        },
+        "analyst_counterexample": {
+          "status": "Analyst reasoning only; not a paper example, simulation result, or general implementation formula.",
+          "reference_segment_lengths": [
+            25,
+            5,
+            25,
+            25
+          ],
+          "k": 10,
+          "setup": "Mean reference size is 20. A is the second segment (size 5), and B is the third (size 25). Delete only their boundary after unit 30; retain boundaries after units 25 and 55.",
+          "reasoning": "A+B=30>2k=20 while A=5<k. Under k-separated endpoint pairs on units 1..80, only starts 26..30 have one endpoint in A and the other in B without crossing a retained boundary. They yield five unnormalized Pk penalties, not ten. This also shows nonzero Pk disagreement with a neighbor below k.",
+          "convention_check": "The example is away from document ends and does not use equality at k. A strict-versus-inclusive one-position convention cannot make the sum imply both individual bounds.",
+          "count_deficit_check": "For a sole missing internal boundary, ri>ai also holds in windows crossing it and a retained boundary. Such windows can have ri=2, ai=1 and no Pk endpoint-status disagreement, as §2.2 explains."
+        },
+        "xhigh_disposition": "Retain and qualify I01; no unresolved material analysis contradiction.",
+        "xhigh_visual_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-06.png"
+      },
+      {
+        "id": "T02-I02",
+        "type": "Small cross-table differences under nominally matching settings; not established contradictions.",
+        "context": "Synthetic p=0.5, uniform reference-size range (15,35), same reported trial aggregation. Table 1 FP corresponds to Table 3 FP1; Table 1 FNP corresponds to Table 3 FNP1.",
+        "pairs": [
+          {
+            "metric": "Pk_prime",
+            "error": "FP/FP1",
+            "table1": 0.245,
+            "table3": 0.244
+          },
+          {
+            "metric": "WindowDiff",
+            "error": "FP/FP1",
+            "table1": 0.241,
+            "table3": 0.24
+          },
+          {
+            "metric": "Pk",
+            "error": "FNP/FNP1",
+            "table1": 0.309,
+            "table3": 0.308
+          },
+          {
+            "metric": "Pk_prime",
+            "error": "FNP/FNP1",
+            "table1": 0.432,
+            "table3": 0.431
+          }
+        ],
+        "statement_a_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 549,
+          "line_end": 563,
+          "pdf_pages": [
+            10
+          ]
+        },
+        "statement_b_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 803,
+          "line_end": 814,
+          "pdf_pages": [
+            14
+          ]
+        },
+        "assessment": "Keep each table's values. Separate stochastic runs could explain the differences, but the paper does not explicitly reconcile them or supply seeds. Do not select or average values as a correction.",
+        "xhigh_disposition": "Retain as cross-table differences, not confirmed contradictions. Every paired value matches the original PDF.",
+        "context_check": "Sections 4.1 and 4.2 describe separate experiment sets with nominally matching settings for these pairs. The paper does not establish shared stochastic realizations. Equal settings and aggregation do not require equal sample means.",
+        "evidence_refs": [
+          "simulation",
+          "table1",
+          "error_distribution_setup",
+          "table3"
+        ]
+      },
+      {
+        "id": "T02-I03",
+        "type": "Expected-count approximation or endpoint-count ambiguity; not an exact contradiction.",
+        "statement_a": "The experiment uses 1,000 reference segments and boundary-level FN probability 0.5.",
+        "statement_a_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 491,
+          "line_end": 520,
+          "pdf_pages": [
+            9
+          ]
+        },
+        "statement_b": "The explanatory prose says average 500 missed boundaries and uses 250 errors of each Type A/B/C.",
+        "statement_b_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+          "line_start": 620,
+          "line_end": 634,
+          "pdf_pages": [
+            11
+          ]
+        },
+        "assessment": "The PDF prints 500, with an on-average/expected-count context. A finite linear partition with 1,000 segments has 999 internal boundaries, giving 499.5 expected deletions at probability 0.5 if only internal boundaries are eligible (analyst arithmetic). Endpoint eligibility is unspecified and 500 may be rounded. Preserve the printed 500 and 250 values as the authors' expectation/model counts. Do not replace them with 499.5 or treat them as exact realized counts. Each joint Type C event comprises one FP and one FN; the three type counts are not 750 individual FP/FN operations.",
+        "printed_statements": [
+          {
+            "quote": "The experimental segmentations in Table 1a contain on average 500 false negatives, while the ones in Table 1b contain on average 500 false positives,",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 601,
+              "line_end": 603,
+              "pdf_pages": [
+                11
+              ]
+            },
+            "section": "PDF p. 11 (printed p. 29)"
+          },
+          {
+            "quote": "Since we are working with reference segmentations of 1,000 segments, this means 500 missed boundaries and 500 incorrect boundaries.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 622,
+              "line_end": 623,
+              "pdf_pages": [
+                11
+              ]
+            },
+            "section": "PDF p. 11 (printed p. 29)"
+          },
+          {
+            "quote": "Since the probabilities are uniformly distributed across all segments and all boundaries, on average one would expect the following distribution of errors:",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+              "line_start": 623,
+              "line_end": 625,
+              "pdf_pages": [
+                11
+              ]
+            },
+            "section": "PDF p. 11 (printed p. 29)"
+          }
+        ],
+        "xhigh_disposition": "Count wording qualified; no confirmed source contradiction or unresolved material analysis contradiction."
+      },
+      {
+        "id": "T02-I04",
+        "type": "Resolved extraction damage, not a paper contradiction.",
+        "details": "Fractions including k/2, 1/4, and a/2 and the WindowDiff equation are reordered or duplicated in conversions. Original images resolve their layout. T02.pages.md 259 visually means k/2, not 2k; 409 and 616 use k/2, not 2k; 830 uses 1/4.",
+        "evidence_refs": [
+          "fp_penalty",
+          "near_miss_penalties",
+          "decomposition",
+          "error_distribution_definitions"
+        ],
+        "visual_transcription": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "status": "Original fractions and WindowDiff equation independently rechecked at xhigh; extraction damage resolved.",
+        "xhigh_visual_verification": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md"
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Indirect: generic units are possible, but the paper does not compare preservation by unit. See T02-F06.",
+      "RQ2": "No direct email, asynchronous clustering, or interleaving evidence.",
+      "RQ3": "No gold or predicted multi-membership/non-contiguous Topic assignment.",
+      "RQ4": "No overlapping or discontinuous span representation evidence; segmentation-metric transfer only.",
+      "RQ5": "No direct preservation measurements; application-dependent error costs motivate tests, not conclusions about scope loss.",
+      "RQ6": "Primary relevance: definitions, denominators, assumptions, and failure modes of Pk and WindowDiff; T02-F01–F05.",
+      "RQ7": "Synthetic generation recipe and reporting gaps; no email annotations, IAA, split, or leakage evidence.",
+      "RQ8": "Supports investigating separate structural and semantic-preservation diagnostics; proposed experiments below are untested."
+    },
+    "interpretation": [
+      {
+        "id": "T02-INT01",
+        "text": "Use T02 as evidence about metric behavior for contiguous partitions. A low WindowDiff score alone cannot establish Topic identity or complete evidence assignment.",
+        "basis": [
+          "T02-F02",
+          "T02-F06"
+        ]
+      },
+      {
+        "id": "T02-INT02",
+        "text": "Boundary displacement and semantic harm need separate evaluation. A short displacement could exclude a decision-bearing condition; this is a plausible msgloom risk, not a measured finding in T02.",
+        "basis": [
+          "T02-F04",
+          "T02-F07"
+        ]
+      },
+      {
+        "id": "T02-INT03",
+        "text": "Compare Pk/WD only with consistent unit definitions, k rules, sequence boundaries, and aggregation. Report length and error-location strata because the paper shows score dependence on these factors.",
+        "basis": [
+          "T02-F01",
+          "T02-F03",
+          "T02-F05"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T02-EXP01",
+        "status": "Untested research proposal; no architecture approval.",
+        "proposal": "On public or synthetic work messages reviewed for this purpose, perturb boundaries while keeping the underlying messages fixed. Include missing boundaries, added boundaries, small shifts, short segments, and bunched errors. Compare exact boundary precision/recall with Pk and WindowDiff under declared unit and k conventions.",
+        "evaluation": "Report each metric separately and stratify by error type and segment length; include endpoint and k-rounding checks.",
+        "basis": [
+          "T02-F01",
+          "T02-F03",
+          "T02-F05"
+        ]
+      },
+      {
+        "id": "T02-EXP02",
+        "status": "Untested research proposal; no preferred annotation unit.",
+        "proposal": "Compare sentence, clause, arbitrary-span, and EDU candidates against reviewer-identified Topic evidence and decision-bearing scope. Include non-contiguous and overlapping gold memberships.",
+        "evaluation": "Retain overlapping/discontinuous gold assignments; evaluate exact span assignment, membership, and scope preservation separately. Compute segmentation metrics only for a declared contiguous view and record information lost by that view.",
+        "basis": [
+          "T02-F02",
+          "T02-F06"
+        ]
+      },
+      {
+        "id": "T02-EXP03",
+        "status": "Untested research proposal.",
+        "proposal": "Construct paired boundary shifts of equal distance, one that removes or broadens a condition or approval scope and one that leaves work meaning intact.",
+        "evaluation": "Test whether equal structural penalties mask different reviewer-assessed losses of conditions, evidence, exceptions, action scope, approval scope, or reply scope. Preserve uncertainty instead of forcing a single Topic.",
+        "basis": [
+          "T02-F04",
+          "T02-F07"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-segmentation/2002_pevzner_hearst_windowdiff.pdf",
+      "pdf_sha256": "d512e6953f671a18aa18eb899d025b58dc1648aee5765e8f92a1aa17d58f4637",
+      "expected_pdf_sha256": "d512e6953f671a18aa18eb899d025b58dc1648aee5765e8f92a1aa17d58f4637",
+      "primary_converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T02.md",
+      "primary_converted_text_sha256": "5cbc9bf663535efb4b5580f92789c690c6987e1031adf1c7568e887d2278672f",
+      "fine_conversion_status": "No convert_fine/T02.md exists.",
+      "page_indexed_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.pages.md",
+      "page_indexed_text_sha256": "a8145cd8e385cd54ec649ab35efbc3c9e045c78099bdbc3c7bdb14cb886eec4e",
+      "independent_texts": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.raw.txt",
+          "sha256": "11b0c16858cf2d1e597016b199b6ab0add6fb46c30599094838710dc9c52e75d",
+          "read_scope": "Targeted equation, condition, and Table 3 checks."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T02.layout.txt",
+          "sha256": "ca2846bf0ae41ab81a42ecfcc6d71ca939c34dbdcd073418c819a76321b35acb",
+          "read_scope": "Targeted equation, condition, and Table 3 checks."
+        }
+      ],
+      "full_text_read": "Entire primary rough conversion and page-indexed text, including references; bounded reads filled truncated output gaps.",
+      "pdf_page_convention": "One-based original PDF pages; printed journal page = PDF page + 18.",
+      "line_convention": "LF lines, matching text.split('\\n'); form feeds do not create lines.",
+      "visually_inspected_pdf_pages": [
+        5,
+        6,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/visual-transcription.md",
+        "sha256": "f2ea36b6a44ffe76ab7834d131f72bfad351a3ba71ed1120349328b09feec4e3"
+      },
+      "network_access": "None. Only frozen local paper and supplied context used.",
+      "metadata": "T02 shortlist entry reports Pevzner and Hearst, 2002, Computational Linguistics 28(1). No external enrichment.",
+      "context_resolution": "docs/design-brief.md and docs/design-principles.md do not exist in the Topic directory; read the repository docs files instead. Shared CONTEXT.md is historical; this delegated T02 authorization controls the current scope. No Topic01 conclusions were read.",
+      "page_images": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-05.png",
+          "sha256": "1ddb47eef8c48c0cf0f52c44e3ee459921e07b9537bc4098a738cefa171f2342",
+          "pdf_page": 5
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-06.png",
+          "sha256": "e86d17b6cda64f339d9fdcf37dc51fd347e4670b2bd8c0d1c25d6ab7e71b2fb4",
+          "pdf_page": 6
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-08.png",
+          "sha256": "ed258e15259b6453feedb38b676e90e3e2c48f25aacbd44b38124a46e63c3360",
+          "pdf_page": 8
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-10.png",
+          "sha256": "2789f2340211a4687d46d93b93d8f0f0cc1e31d48087c95da1b8cb2cff981250",
+          "pdf_page": 10
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-11.png",
+          "sha256": "c2ba872cc8e86fed89d4cf48272f6a652bc4c824011fc0ff586489a571f1939a",
+          "pdf_page": 11
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-12.png",
+          "sha256": "06400d6b8dc02359797231ad1dca3c9dd903416bb2546a23bcbbd2408ae0cf67",
+          "pdf_page": 12
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-13.png",
+          "sha256": "ebb6f17cf39cd375a96dc495cfcd0db4e83bbb1a9323ad8201f5c0727e4ee230",
+          "pdf_page": 13
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/pdf-page-14.png",
+          "sha256": "8863f6ad4cbedc8734ba15e33df50d8fe842205ea8d1c52c2699251d7ef18201",
+          "pdf_page": 14
+        }
+      ],
+      "read_scope_attribution": "Existing full-text and context-read statements describe attempt-01-high. The separate xhigh_verification record states the current focused read scope.",
+      "xhigh_verification": {
+        "model": "gpt-6-astra",
+        "actual_effort": "xhigh",
+        "runtime_evidence_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-runtime.json",
+        "review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-review.json",
+        "validation_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-validation.json",
+        "text_read_scope": "T02.pages.md LF lines 1–941 (substantive text through conclusions); rough conversion LF lines 152–549, 629–858, 940–1056; entire archived analysis JSON, Markdown, and worker receipt. No new broad paper analysis.",
+        "visually_inspected_pdf_pages": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "visual_verification": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-visual-verification.md",
+          "sha256": "e5fe895d10a82394ab121de566d9f13e263a1b557e8c00f1ec32deb0c86c32bf"
+        },
+        "page_render_manifest": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-render.json",
+          "sha256": "3707469112b0270c70b85bae30bc5bbc4445a798a1bf07840cf139c6b8a92a6d"
+        },
+        "page_images": [
+          {
+            "pdf_page": 5,
+            "printed_page": 23,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-05.png",
+            "sha256": "08a1388d6263660b51b9aa7fbf5b7ef3fa604612a4b8b5ee539270221ff98ff5"
+          },
+          {
+            "pdf_page": 6,
+            "printed_page": 24,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-06.png",
+            "sha256": "5a9e35d9a6ba1aba728da168fbae63c942e245ae3fc3dd9310046f563bb44733"
+          },
+          {
+            "pdf_page": 7,
+            "printed_page": 25,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-07.png",
+            "sha256": "a641b1aa070a01f27f53e22ad940a535338dd17d077d7a89e834eea94bbb51f9"
+          },
+          {
+            "pdf_page": 8,
+            "printed_page": 26,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-08.png",
+            "sha256": "98af730182102dc6aa121a2fee767f5655985cdcf30605833ed6b9a2b7781e4a"
+          },
+          {
+            "pdf_page": 9,
+            "printed_page": 27,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-09.png",
+            "sha256": "1317f0ceb50dd4a0a74efbf3fcbd851dcc9863a7e76469b33f562e4306b264cc"
+          },
+          {
+            "pdf_page": 10,
+            "printed_page": 28,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-10.png",
+            "sha256": "f935d8a7f2b5be924505663e19dfa719354329c0d10c7263378d2cd7292a4fed"
+          },
+          {
+            "pdf_page": 11,
+            "printed_page": 29,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-11.png",
+            "sha256": "02a1acaf87982ce922856dfe664d063faaed00e46cb1d031b5603726f4fa13a5"
+          },
+          {
+            "pdf_page": 12,
+            "printed_page": 30,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-12.png",
+            "sha256": "6be092675937116867e20af320a51d2eabbfb3177e73a195077da03a31bc6d4c"
+          },
+          {
+            "pdf_page": 13,
+            "printed_page": 31,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-13.png",
+            "sha256": "0909ec8a08435e91c48d48d193709e187c317efa403ea32740ddd6846e510c9c"
+          },
+          {
+            "pdf_page": 14,
+            "printed_page": 32,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T02/xhigh-pdf-page-14.png",
+            "sha256": "b2fde1e24f0e362f6e33f40328018df8a6a2cab17c2446b111dc56aa4ed11ccf"
+          }
+        ]
+      }
+    }
+  }
+}

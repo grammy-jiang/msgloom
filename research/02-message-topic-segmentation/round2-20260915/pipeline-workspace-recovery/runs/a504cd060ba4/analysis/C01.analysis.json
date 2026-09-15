@@ -1,0 +1,753 @@
+{
+  "paper_id": "C01",
+  "study_id": "C01",
+  "title": "MAILEX: Email Event and Argument Extraction",
+  "year": 2023,
+  "venue": "EMNLP",
+  "evidence_role": "DIRECT_EMAIL_SUPPORT",
+  "target_stream": [
+    "R2-A",
+    "R2-B",
+    "R2-C"
+  ],
+  "task_boundary": "Direct conversational email event-trigger and argument extraction. This is domain support for msgloom, not evidence for segmenting or assigning Topics defined as concrete work matters.",
+  "summary": "MAILEX annotates event instances in Enron email threads. Its gold representation permits discontinuous triggers and partially shared trigger words between instances of the same event type. Arguments are continuous and do not overlap within an event instance. Baselines demonstrate limited prediction success for shared triggers. Argument recall and a sampled error analysis address extraction omissions, but do not establish complete coverage of work-matter content or decision qualifiers. Internal inconsistencies in argument matching and taxonomy reporting require review before quantitative synthesis.",
+  "research_question": "How can event triggers, event types, argument spans, and selected meta semantic roles be extracted from conversational email using preceding messages as context?",
+  "methodology": "{\"dataset_construction\": \"Two annotators labeled Enron emails using a speech-act taxonomy. The paper says each email was annotated twice by each annotator. Agreed overlapping spans were retained; disagreement could remove events or threads.\", \"evaluation_design\": \"Thread-level 80/10/10 split; end-to-end extraction, gold-trigger argument extraction, and history ablations. Additional qualitative and sampled error analyses.\", \"input_limits\": \"Fine-tuned models use a maximum sequence length of 512. BART input is left-truncated. GPT inputs are left-truncated to a stated 4000-token limit; generation is limited to 300 tokens.\", \"models\": [\"BERT-large-uncased trigger labeling with BIOS tags, followed by trigger-conditioned BIO argument labeling and meta semantic role classifiers.\", \"BART-large generation of filled event templates.\", \"Five-shot template generation with text-davinci-003 and gpt-3.5-turbo.\"], \"scope_of_analysis\": \"Based only on the complete embedded paper. No external resources, code, dataset, or schema file were inspected.\"}",
+  "dataset_and_gold": {
+    "source": "Enron; top 50 users by inbox count from a collection described as containing 150 users. Single-email threads were excluded.",
+    "units": {
+      "threads": 1500,
+      "emails": 3936,
+      "non_event_emails": 776,
+      "event_instances": 8392,
+      "train": {
+        "threads": 1200,
+        "emails": 3117,
+        "events": 6571
+      },
+      "development": {
+        "threads": 150,
+        "emails": 414,
+        "events": 946
+      },
+      "test": {
+        "threads": 150,
+        "emails": 405,
+        "events": 875
+      }
+    },
+    "labels": {
+      "reported_event_type_count": 10,
+      "event_types": [
+        "Request Data",
+        "Request Meeting",
+        "Request Action",
+        "Request Action Data",
+        "Request Meeting Data",
+        "Deliver Data",
+        "Deliver Action Data",
+        "Deliver Meeting Data",
+        "Amend Data",
+        "Amend Meeting Data"
+      ],
+      "reported_argument_role_count": 76,
+      "meta_semantic_roles": [
+        "Request Attribute",
+        "Confirmation",
+        "Amend Type"
+      ],
+      "qualifier_support": "Includes dates, times, members, descriptions, positive/negative/unsure Confirmation, and Context/Revision roles for amendments. The prose also calls uncertain Confirmation tentative.",
+      "taxonomy_conflict": "Table 5 additionally mentions rare Amend Action Data events, although this type is absent from the stated ten-type taxonomy."
+    },
+    "actually_annotated": "Current-email trigger words, event types, event-specific argument spans, and predefined meta semantic role values. Earlier emails supply context. The paper does not annotate concrete work-matter Topic identities, Topic boundaries, or cross-message Topic assignment.",
+    "discontinuity": "An individual trigger can comprise separated words or segments. Argument spans are explicitly continuous, although they can extend across sentences.",
+    "overlap": "Gold examples permit partial trigger sharing between separate event instances of the same type. Arguments within one event instance do not share spans. The paper does not establish arbitrary simultaneous different event-type labels on one span or simultaneous msgloom Topic labels.",
+    "prevalence": "No corpus-wide rate of discontinuous triggers or shared triggers is reported. The conditional mean of 3.05 repeated same-type events is not such a rate.",
+    "gold_selection": "Partial agreements retain overlapping words. Appendix B.1 specifies Jaccard similarity greater than 0.3. Event-type disagreements and nonoverlapping triggers are discarded; entirely disagreed threads can also be removed. Ambiguity is filtered rather than preserved as alternative labels.",
+    "coverage_limits": "The taxonomy excludes opinions and complex news-like information and removes some trivial or infrequent argument roles. Tables receive coarse Data IdString/Data Value annotations rather than cell-level relations. Exhaustive preservation of conditions, exceptions, evidence, approval constraints, and decision qualifiers is not established."
+  },
+  "key_findings": [
+    {
+      "finding_id": "C01-F01",
+      "finding": "The task extracts event triggers and event-specific arguments within emails. It does not evaluate msgloom Topic segmentation or assignment.",
+      "evidence_type": "supported",
+      "section": "4.1 Task Formulation",
+      "quote": "(1) **Trigger Extraction**, where we identify the trigger span within each email and determine the associated event type",
+      "source_line_start": 509,
+      "source_line_end": 509,
+      "interpretation_boundary": "Event type labels describe speech acts and their objects. They are not identities of concrete work matters."
+    },
+    {
+      "finding_id": "C01-F02",
+      "finding": "The gold representation permits one event trigger to use separated source words. This directly supports discontinuous trigger representability in email.",
+      "evidence_type": "supported",
+      "section": "A.2 Complete Event and Argument Role Definitions",
+      "quote": "an event trigger could span over non-continuous words",
+      "source_line_start": 1652,
+      "source_line_end": 1652,
+      "interpretation_boundary": "This applies to event triggers. Argument spans remain continuous. No discontinuity prevalence or dedicated discontinuous-trigger score is supplied."
+    },
+    {
+      "finding_id": "C01-F03",
+      "finding": "Two Deliver Action Data event instances can share the trigger word 'will'. This demonstrates shared source membership between instances of the same event type.",
+      "evidence_type": "supported",
+      "section": "2.2 Note on Non-Continuous, Shared Triggers",
+      "quote": "share the trigger word “will”.",
+      "source_line_start": 268,
+      "source_line_end": 268,
+      "interpretation_boundary": "Shared instance membership is not evidence that one span receives multiple different event-type labels or multiple msgloom Topics."
+    },
+    {
+      "finding_id": "C01-F04",
+      "finding": "The BERT argument model assumes nonoverlapping arguments within each event instance. Its trigger model assigns one BIOS label per word, with an S tag for sharing among same-type instances.",
+      "evidence_type": "supported",
+      "section": "4.2 BERT-based Sequence Labeling",
+      "quote": "arguments of the same event instance do not share spans.",
+      "source_line_start": 552,
+      "source_line_end": 552,
+      "interpretation_boundary": "The S tag is a specialized representation for shared triggers, not a general multilabel token decoder. Per-event argument processing does not establish or exclude sharing across different event instances."
+    },
+    {
+      "finding_id": "C01-F05",
+      "finding": "The gold construction retains agreed overlapping spans and removes disputed annotations. It therefore does not preserve all plausible readings as simultaneous labels.",
+      "evidence_type": "supported",
+      "section": "B.1 Annotation Details and Guidelines",
+      "quote": "event type, overlapping trigger words, and overlapping argument spans for the same role.",
+      "source_line_start": 1976,
+      "source_line_end": 1976,
+      "interpretation_boundary": "Agreement scores describe annotation consistency under this procedure. They do not measure exhaustive semantic coverage or the prevalence of ambiguity in unfiltered email."
+    },
+    {
+      "finding_id": "C01-F06",
+      "finding": "BART demonstrates some prediction capability for nearby shared triggers, while BERT merges or misses them. Both approaches struggle with larger separation.",
+      "evidence_type": "supported",
+      "section": "5.2.2 Challenges in Extracting Triggers; E.2 Shared Triggers; Table 7",
+      "quote": "BART was able to correctly extract shared triggers with shorter distances",
+      "source_line_start": 784,
+      "source_line_end": 784,
+      "interpretation_boundary": "This is qualitative evidence with examples. No distance threshold, subgroup denominator, or dedicated shared-trigger precision/recall is reported. General reliable prediction is not established."
+    },
+    {
+      "finding_id": "C01-F07",
+      "finding": "Argument recall evaluates recovery of annotated arguments and can expose extraction omissions. The main evaluation permits partial argument matching, while Appendix E.3 describes exact-match rejection, leaving the operational rule unresolved.",
+      "evidence_type": "supported",
+      "section": "5.1 Evaluation Metrics; Table 2; E.3 In-context Learning Analysis",
+      "quote": "partial matching is allowed for arguments",
+      "source_line_start": 689,
+      "source_line_end": 689,
+      "interpretation_boundary": "This measures event-argument extraction, not coverage of all work-matter content. Partial credit can conceal loss within long arguments. Neither aggregate recall nor F1 establishes preservation of conditions, exceptions, evidence, deadlines, or approval qualifiers."
+    },
+    {
+      "finding_id": "C01-F08",
+      "finding": "The GPT-3.5-turbo analysis separates missing arguments from extra, incorrect, fabricated, and semantically correct nonmatching arguments. Missing arguments account for a reported 6% of a sample selected for errors.",
+      "evidence_type": "supported",
+      "section": "5.2.5 Analysis of In-context Learning; Figure 3; E.3",
+      "quote": "We analyzed 50 randomly sampled erroneous",
+      "source_line_start": 902,
+      "source_line_end": 902,
+      "interpretation_boundary": "The sample uses gold triggers and erroneous predictions. The 6% is an error-category share, not a corpus omission rate, argument recall, or estimate that 94% of content is preserved. Placeholder errors are analyzed separately."
+    },
+    {
+      "finding_id": "C01-F09",
+      "finding": "The annotation target deliberately omits some email content and argument roles. It cannot serve as an exhaustive gold standard for msgloom coverage.",
+      "evidence_type": "supported",
+      "section": "A.1 Verb and Noun Acts; A.2 Table 4; B.3 Dataset Analysis",
+      "quote": "we do not consider subjective information (e.g., opinions)",
+      "source_line_start": 1529,
+      "source_line_end": 1529,
+      "interpretation_boundary": "Dates, times, confirmations, and revisions offer useful structured examples. They do not provide a complete ontology or evaluation of conditions, exceptions, evidence, approval constraints, or decision qualifiers."
+    },
+    {
+      "finding_id": "C01-F10",
+      "finding": "The strongest transfer limitation is the combination of task mismatch and restricted corpus scope: a 2023 event-extraction study on Enron does not validate modern work-email Topic segmentation or assignment.",
+      "evidence_type": "supported",
+      "section": "Limitations; 3.1 Data Annotation; 4.1 Task Formulation",
+      "quote": "is not a fully open-domain one.",
+      "source_line_start": 1056,
+      "source_line_end": 1056,
+      "interpretation_boundary": "The publication is modern relative to older email studies, but that does not make the underlying Enron communications contemporary. No cross-corpus or msgloom Topic evaluation is reported."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Trigger Identification precision/recall/F1",
+      "target": "Exact recovery of annotated event-trigger spans.",
+      "denominator_or_population": "MAILEX test set: 150 threads, 405 emails, 875 gold events. Precision concerns predicted triggers; recall concerns gold triggers. Aggregation and discontinuous-span matching implementation are not fully specified.",
+      "reported_result": {
+        "BERT": [
+          0.581,
+          0.499,
+          0.537
+        ],
+        "BART": [
+          0.701,
+          0.395,
+          0.505
+        ],
+        "text-davinci-003": [
+          0.167,
+          0.171,
+          0.169
+        ],
+        "gpt-3.5-turbo": [
+          0.183,
+          0.095,
+          0.121
+        ]
+      },
+      "limitations": "Event extraction metric, not Topic segmentation. No separate result for discontinuous or shared triggers."
+    },
+    {
+      "name": "Trigger Classification precision/recall/F1",
+      "target": "Exact trigger recovery with the correct event type.",
+      "denominator_or_population": "MAILEX test predictions and gold event triggers.",
+      "reported_result": {
+        "BERT": [
+          0.566,
+          0.486,
+          0.523
+        ],
+        "BART": [
+          0.701,
+          0.394,
+          0.5
+        ],
+        "text-davinci-003": [
+          0.1,
+          0.101,
+          0.1
+        ],
+        "gpt-3.5-turbo": [
+          0.098,
+          0.06,
+          0.072
+        ],
+        "significance": "BERT versus BART marked significant under a Wilcoxon signed-rank test at alpha 0.05."
+      },
+      "limitations": "Event-type classification is not assignment to concrete work matters. Aggregate scores do not establish simultaneous multilabel prediction."
+    },
+    {
+      "name": "Argument Identification precision/recall/F1",
+      "target": "Recovery of event argument spans without requiring the correct role.",
+      "denominator_or_population": "Predicted and gold arguments on the MAILEX test set, evaluated end to end. The number of gold arguments is not supplied.",
+      "reported_result": {
+        "BERT": [
+          0.491,
+          0.403,
+          0.454
+        ],
+        "BART": [
+          0.592,
+          0.351,
+          0.441
+        ],
+        "text-davinci-003": [
+          0.068,
+          0.069,
+          0.068
+        ],
+        "gpt-3.5-turbo": [
+          0.058,
+          0.045,
+          0.05
+        ]
+      },
+      "limitations": "Partial-versus-exact matching is unresolved. The BERT F1 is preserved as printed despite not equaling the harmonic mean of the printed precision and recall. This is not a qualifier-level completeness measure."
+    },
+    {
+      "name": "Argument Classification precision/recall/F1",
+      "target": "Recovery of argument spans with correct event-specific roles.",
+      "denominator_or_population": "Predicted and gold test-set arguments. Main rows use predicted triggers; gold-trigger rows condition on supplied correct triggers.",
+      "reported_result": {
+        "end_to_end": {
+          "BERT": [
+            0.355,
+            0.383,
+            0.368
+          ],
+          "BART": [
+            0.374,
+            0.35,
+            0.363
+          ],
+          "text-davinci-003": [
+            0.058,
+            0.06,
+            0.058
+          ],
+          "gpt-3.5-turbo": [
+            0.056,
+            0.04,
+            0.048
+          ]
+        },
+        "gold_triggers": {
+          "BERT": [
+            0.642,
+            0.66,
+            0.651
+          ],
+          "BART": [
+            0.688,
+            0.471,
+            0.56
+          ],
+          "text-davinci-003": [
+            0.349,
+            0.33,
+            0.338
+          ],
+          "gpt-3.5-turbo": [
+            0.242,
+            0.19,
+            0.211
+          ]
+        },
+        "without_history_f1": {
+          "BERT": 0.356,
+          "BART": 0.354
+        },
+        "significance": "No significant BERT-versus-BART difference reported for end-to-end Argument Classification F1."
+      },
+      "limitations": "Gold-trigger results are conditional, not autonomous extraction performance. BART and GPT gold-trigger experiments additionally feed templates one by one. No separate completeness results are provided for conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers. Inclusion of meta semantic roles in aggregate scoring is not clearly specified."
+    },
+    {
+      "name": "Word-level Cohen's kappa",
+      "target": "Agreement on trigger/event-type and argument-role annotations.",
+      "denominator_or_population": "Compared annotator word labels, permitting partial agreement through overlap. Argument agreement is conditioned on matching trigger and event type.",
+      "reported_result": {
+        "trigger_event_type": 0.791,
+        "argument_role": 0.81,
+        "meta_semantic_roles": "No disagreements observed among annotators agreeing on event triggers."
+      },
+      "limitations": "Annotation agreement does not measure model performance, content coverage, or multilabel prevalence. Exact treatment of filtered annotations in the agreement population is not fully specified."
+    },
+    {
+      "name": "Conditional same-type event multiplicity",
+      "target": "Repeated instances of the same event type within one email.",
+      "denominator_or_population": "Cases in which an event type appears at least twice in an email; exact aggregation details are not supplied.",
+      "reported_result": 3.05,
+      "limitations": "Not the proportion of emails with repeated types, shared triggers, discontinuous triggers, or multiple Topics."
+    },
+    {
+      "name": "Previous-turn dependence in a manual sample",
+      "target": "Whether event decision-making requires the previous email turn.",
+      "denominator_or_population": "50 randomly sampled emails.",
+      "reported_result": {
+        "required_previous_turn": 11,
+        "percentage": 22
+      },
+      "limitations": "Small manual sample. Measures contextual need for event decisions, not extraction success, cross-message Topic linking, or complete historical coverage."
+    },
+    {
+      "name": "Erroneous argument category distribution",
+      "target": "Kinds of argument-value errors from gpt-3.5-turbo with gold triggers.",
+      "denominator_or_population": "50 sampled erroneous predictions. The prose alternates between predictions, instances, and arguments, leaving the precise counting unit unclear.",
+      "reported_result": {
+        "semantically_incorrect_percent": 42,
+        "semantically_incorrect_and_fabricated_percent": 36,
+        "semantically_correct_but_not_exact_spans_percent": 8,
+        "extra_arguments_percent": 8,
+        "missing_arguments_percent": 6
+      },
+      "limitations": "Conditional error distribution, not prevalence over all predictions or gold arguments. Missing content and fabrication are separated, but omission within an otherwise extracted argument is not systematically measured."
+    },
+    {
+      "name": "Argument placeholder error analysis",
+      "target": "Extra, missing, or incorrect unfilled template placeholders.",
+      "denominator_or_population": "A separate sample of 50 generated templates selected for placeholder errors.",
+      "reported_result": "The paper says missing or incorrect placeholders dominate. The embedded conversion contains no readable numerical percentages for Figure 7.",
+      "limitations": "Missing placeholders are template-format failures and must not be merged with the 6% missing argument-value category. This is not a coverage rate."
+    }
+  ],
+  "source_conflicts": [
+    {
+      "issue": "The main evaluation explicitly permits partial argument matching, but Appendix E.3 says semantically correct non-exact arguments are rejected by the evaluation script and includes trivial added words among incorrect arguments.",
+      "locations": [
+        "L00685-L00693",
+        "L02372-L02381"
+      ],
+      "impact": "Material for R2-B: the operational credit for partial content recovery is unclear. The text could describe an additional source-span gate, but does not establish one. Do not silently choose a scoring interpretation."
+    },
+    {
+      "issue": "The stated ten-type taxonomy excludes Amend Action Data, but Table 5 says it omits rare Amend Action Data events at 0.028%. The table also reports Non-Event O at 8.825 without a clear denominator.",
+      "locations": [
+        "L00152-L00155",
+        "L01728-L01766",
+        "L01946-L01949",
+        "L00298-L00301"
+      ],
+      "impact": "The final label inventory and distribution population are unclear. Do not infer an eleventh modeled class or interpret the O percentage as the proportion of non-event emails."
+    },
+    {
+      "issue": "Table 2 prints BERT Argument Identification precision 0.491, recall 0.403, and F1 0.454. The harmonic mean of the printed precision and recall is approximately 0.443.",
+      "locations": [
+        "L00652",
+        "L00680-L00693"
+      ],
+      "impact": "The reported F1 may reflect unreported averaging or a reporting error. Preserve 0.454 as printed and do not silently recompute or claim that the source is definitively wrong."
+    },
+    {
+      "issue": "The final role table, examples, and distribution table do not fully align. The converted Table 4 lacks Context: Data IdString for Amend Data, while amendment examples and Table 5 use it; earlier prose describes a broader role inventory before pruning.",
+      "locations": [
+        "L01551-L01558",
+        "L01716-L01721",
+        "L01756-L01766",
+        "L01936-L01938",
+        "L02478"
+      ],
+      "impact": "The exact final inventory of 76 roles cannot be reconstructed confidently from this conversion. Possible table-conversion loss must remain distinct from an established annotation inconsistency."
+    },
+    {
+      "issue": "The operational meaning of the qualitative error categories is unstable. Added trivial words can count as semantically incorrect, and the Table 11 fabricated-error example is a refusal-like response rather than an invented entity argument.",
+      "locations": [
+        "L00905-L00915",
+        "L02377-L02386",
+        "L02510-L02522"
+      ],
+      "impact": "Do not treat the reported 36% as a cleanly validated entity-hallucination rate or the error categories as a general semantic coverage benchmark."
+    }
+  ],
+  "limitations": [
+    "The task is event and argument extraction, not concrete work-matter Topic segmentation or assignment.",
+    "Enron is the only evaluated source corpus; contemporary work-email generalization is untested.",
+    "No corpus-level prevalence or dedicated prediction metrics are reported for discontinuous or shared triggers.",
+    "Gold annotations restrict arguments to continuous nonoverlapping spans within each event and filter annotation disagreement.",
+    "The taxonomy deliberately excludes content and removes some roles, so recall is bounded by a selective gold target.",
+    "Long arguments can contain omitted qualifiers even when partial matching gives credit; the actual matching procedure is internally unclear.",
+    "Input truncation can remove context or current-email content. The paper does not quantify the resulting coverage loss.",
+    "The GPT results concern the stated 2023 models and prompting setup, not current models.",
+    "Several figure values are unavailable as readable text in the embedded conversion."
+  ],
+  "unsafe_assumptions": [
+    "A msgloom Topic is equivalent to an event type, event instance, meeting agenda, or action description.",
+    "A discontinuous event trigger proves discontinuous Topic prediction.",
+    "Shared words between same-type event instances prove simultaneous different labels or multiple Topics on one span.",
+    "The S tag provides unrestricted multilabel output or solves shared-trigger extraction.",
+    "Continuous arguments imply that all semantic objects in email are continuous.",
+    "The conditional mean of 3.05 repeated events measures overlap or discontinuity prevalence.",
+    "High annotation agreement establishes exhaustive content coverage.",
+    "The reported 6% missing-argument category is an overall omission rate or implies 94% content coverage.",
+    "Argument F1 or partial matching guarantees preservation of conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers.",
+    "Positive, negative, and unsure Confirmation fully model approval conditions or decision status.",
+    "Gold-trigger argument scores describe an autonomous end-to-end system.",
+    "A 2023 publication using Enron establishes performance on contemporary business email.",
+    "Reported shared-trigger examples establish reliable performance across arbitrary separation distances.",
+    "Truncation and template-length limits have no effect on coverage.",
+    "Temperature 0 and top_p 1 guarantee copying or prevent fabrication; the paper supplies no controlled evidence for that causal claim.",
+    "An established source-span validity gate reconciles the partial-matching and exact-match statements, or all argument results use universal exact-gold matching.",
+    "The Amend Action Data entry proves an eleventh modeled class or is definitively a harmless reporting error.",
+    "Non-Event O at 8.825 measures non-event emails or has an established token denominator.",
+    "The reported 76 roles form a fully reconciled final schema, or the missing Context: Data IdString entry proves intentional pruning or confirmed conversion loss.",
+    "Unreported averaging explains BERT Argument Identification F1 0.454, or its recomputed harmonic mean is an authorized correction.",
+    "The 42% category measures only semantic errors, the 36% category measures only invented entities, or the sampled categories form a validated semantic partition.",
+    "The 50 sampled erroneous predictions necessarily correspond to 50 independently coded arguments."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "unchanged",
+      "reason": "The formal gap definition was not supplied. These adjudications do not alter the retained event-trigger representation finding or establish Topic segmentation."
+    },
+    "G2_A": {
+      "status": "unchanged",
+      "reason": "The formal gap definition was not supplied. These adjudications do not expand shared event-instance evidence into simultaneous different labels or multiple Topics."
+    },
+    "G3_A": {
+      "status": "unchanged",
+      "reason": "The formal gap definition was not supplied. Matching rules and error-category semantics remain unresolved but bounded. Argument recovery and omission categories do not establish complete qualifier coverage."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "The formal gap definition was not supplied. The evidence remains direct-email event-extraction support, without task-matched evidence for concrete work-matter Topic segmentation or assignment."
+    }
+  },
+  "raw_claims": [
+    "an event trigger could span over non-continuous words",
+    "share the trigger word “will”.",
+    "arguments of the same event instance do not share spans.",
+    "partial matching is allowed for arguments",
+    "In total, we keep 76 argument roles in the final version of M AIL E X .",
+    "we do not consider subjective information (e.g., opinions)",
+    "is not a fully open-domain one.",
+    "BART was able to correctly extract shared triggers with shorter distances"
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 1652,
+      "text": "an event trigger could span over non-continuous words"
+    },
+    {
+      "line_number": 268,
+      "text": "share the trigger word “will”."
+    },
+    {
+      "line_number": 552,
+      "text": "arguments of the same event instance do not share spans."
+    },
+    {
+      "line_number": 689,
+      "text": "partial matching is allowed for arguments"
+    },
+    {
+      "line_number": 1766,
+      "text": "In total, we keep 76 argument roles in the final version of M AIL E X ."
+    },
+    {
+      "line_number": 1529,
+      "text": "we do not consider subjective information (e.g., opinions)"
+    },
+    {
+      "line_number": 1056,
+      "text": "is not a fully open-domain one."
+    },
+    {
+      "line_number": 784,
+      "text": "BART was able to correctly extract shared triggers with shorter distances"
+    }
+  ],
+  "confidence_scores": {
+    "C01-F01": 0.99,
+    "C01-F02": 0.99,
+    "C01-F03": 0.99,
+    "C01-F04": 0.99,
+    "C01-F05": 0.98,
+    "C01-F06": 0.95,
+    "C01-F07": 0.97,
+    "C01-F08": 0.97,
+    "C01-F09": 0.99,
+    "C01-F10": 0.99
+  },
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_basis": "The paper states that source code and dataset can be obtained from https://github.com/salokr/Email-Event-Extraction at L00054-L00055. Availability was not independently verified.",
+    "details_reported": "Model families, learning rates, batch sizes, optimizer, sequence limits, early stopping, split sizes, hardware, runtime, and GPT experiment date range are provided.",
+    "limitations": "The precise argument matching implementation, some aggregation details, exact final role inventory, and stable GPT model snapshots remain unclear.",
+    "schema_validation": "paper_analysis.schema.json was named but not embedded. Exact conformance to unspecified schema fields and types could not be verified."
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [
+    "The partial-versus-exact argument matching ambiguity materially affects interpretation of omission and content-coverage evidence for R2-B.",
+    "The ten-type taxonomy conflicts with the additional Amend Action Data entry, and the final role inventory is inconsistent across the converted table and examples.",
+    "The sampled semantic-error categories have definition/example mismatches that limit quantitative synthesis of omission versus fabrication."
+  ],
+  "xhigh_adjudication": {
+    "paper_id": "C01",
+    "adjudications": [
+      {
+        "issue": "Partial argument matching versus rejection of non-exact arguments",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00685-L00693 The main evaluation allows partial argument matching.",
+          "L02372-L02381 Appendix E.3 describes rejection of semantically correct non-exact arguments and includes trivial additions among incorrect arguments."
+        ],
+        "correction_or_qualification": "The windows do not establish how partial matching interacts with rejection of generated argument text. A source-span validity gate could reconcile some statements, but the source does not specify such a gate. Neither universal exact-gold matching nor a particular partial-credit procedure can be inferred.",
+        "synthesis_rule": "Retain C01-F07. Describe argument scores as author-reported extraction results with unresolved matching rules. Do not infer qualifier preservation, quantify loss within partially recovered arguments, or treat these scores as directly comparable with a known matching protocol."
+      },
+      {
+        "issue": "Ten event types versus the Amend Action Data distribution entry",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00152-L00161 The paper states a focus on ten event types.",
+          "L01551-L01558 Appendix A.2 again states ten event types.",
+          "L01728-L01740 Request event headings are listed.",
+          "L01746-L01756 Deliver and Amend event headings are listed.",
+          "L01946-L01949 Table 5 mentions omitted Amend Action Data events at 0.028%."
+        ],
+        "correction_or_qualification": "The stated taxonomy and the additional distribution entry are not reconciled. The windows do not show whether Amend Action Data was retained, removed, remapped, or reported in error.",
+        "synthesis_rule": "Report ten types as the stated taxonomy and preserve the additional entry as an unresolved reporting conflict. Do not infer an eleventh modeled class or use its reported frequency to reconstruct the evaluated label inventory."
+      },
+      {
+        "issue": "Population represented by Non-Event O at 8.825",
+        "verdict": "qualified",
+        "source_basis": [
+          "L00298-L00301 Table 1 reports 776 non-event emails among 3,936 emails.",
+          "L01946-L01949 Table 5 reports Non-Event annotations O at 8.825 without specifying the counting population.",
+          "L01958-L01960 O also appears in the description of token annotation."
+        ],
+        "correction_or_qualification": "The directly reported email counts imply approximately 19.72% non-event emails. Therefore, 8.825 cannot be treated as that same email proportion. Its denominator remains unspecified; the description of token annotation does not establish that Table 5 uses a token denominator.",
+        "synthesis_rule": "Use the explicit email counts when describing non-event email prevalence. Leave the Table 5 O value uninterpreted as to population."
+      },
+      {
+        "issue": "Final argument-role inventory and Context: Data IdString",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L01551-L01558 The combined-role description reports 76 roles.",
+          "L01704-L01721 Amendment definitions and examples include Context and Revision roles, including Context: Data IdString.",
+          "L01756-L01766 The supplied Table 4 text omits Context: Data IdString for Amend Data and reports 76 final roles after pruning.",
+          "L01936-L01938 The distribution text includes Context Data IdString.",
+          "L02478 The Amend Data generation example includes CNT:Data IdString."
+        ],
+        "correction_or_qualification": "Context: Data IdString is explicitly represented in examples, distribution text, and a generation template. Its absence from the supplied Table 4 text does not establish intentional removal. The windows cannot distinguish conversion loss from inconsistency in the paper or reconstruct the complete final inventory.",
+        "synthesis_rule": "Retain the specific amendment-role examples and describe 76 as the reported role count. Do not present a verified final schema, infer pruning chronology from textual order, or attribute the discrepancy definitively to conversion."
+      },
+      {
+        "issue": "BERT Argument Identification F1 does not match the displayed precision and recall",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00649-L00652 Table 2 reports precision 0.491, recall 0.403, and F1 0.454.",
+          "L00680-L00693 The evaluation description does not specify an aggregation procedure that reconciles these values."
+        ],
+        "correction_or_qualification": "The harmonic mean of the displayed precision and recall is approximately 0.443. Ordinary rounding to three decimal places does not explain 0.454. The windows do not establish which value or reporting procedure accounts for the discrepancy.",
+        "synthesis_rule": "Preserve 0.454 as printed, with the discrepancy stated. Do not replace it with 0.443, declare a specific source value erroneous, or assert that unreported averaging explains it."
+      },
+      {
+        "issue": "Semantic meaning and counting unit of the sampled argument-error categories",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00902-L00915 The analysis selects 50 erroneous predictions with gold triggers and reports percentages for argument-value error categories.",
+          "L02368-L02381 Missing arguments can appear as unfilled placeholders, while semantically incorrect arguments include trivial added words.",
+          "L02381-L02386 Fabricated arguments are defined by absence from instructions or current emails.",
+          "L02510-L02518 The displayed fabricated-error example asserts that the template cannot be filled instead of supplying an invented entity argument.",
+          "L00918-L00921 and L02389-L02395 Placeholder errors receive a separate analysis."
+        ],
+        "correction_or_qualification": "The category names do not define a stable partition of semantic failures. The 42% category includes some surface-form deviations. The displayed example for the 36% category is a template-filling failure, which does not substantiate an entity-only hallucination interpretation. The sampling unit is described as predictions, while the percentages discuss arguments; the coding denominator is not fully specified. The missing-argument definition covers an absent value replaced by a placeholder, not systematic measurement of omitted content within an extracted value.",
+        "synthesis_rule": "Retain C01-F08 as a report of author-defined categories. Treat all percentages as descriptive shares within an error-selected, gold-trigger analysis. Do not recode the example, redistribute percentages, interpret 36% as a validated entity-hallucination rate, or combine the 6% missing-value category with the separate placeholder-error analysis."
+      }
+    ],
+    "finding_repairs": [],
+    "metric_repairs": [
+      {
+        "metric_name_or_issue": "Argument Identification and Argument Classification precision/recall/F1",
+        "action": "exclude_from_cross_paper_comparison",
+        "qualification": "Retain printed values for descriptive reporting. Exclude them from like-for-like numerical comparison or pooling until matching and aggregation rules are established. Keep end-to-end and gold-trigger results distinct. These are event-argument scores, not Topic accuracy or exhaustive content-coverage scores."
+      },
+      {
+        "metric_name_or_issue": "BERT end-to-end Argument Identification F1",
+        "action": "qualify",
+        "qualification": "Report 0.454 as printed and flag that the harmonic mean of printed precision 0.491 and recall 0.403 is approximately 0.443. Do not substitute a recomputed value or use the discrepant F1 for derived numerical claims."
+      },
+      {
+        "metric_name_or_issue": "Erroneous argument category distribution",
+        "action": "exclude_from_cross_paper_comparison",
+        "qualification": "Preserve 42%, 36%, 8%, 8%, and 6% under the paper's category names. The error-selected population, uncertain coding unit, and definition/example mismatches prevent treatment as standardized semantic-error, omission, or hallucination rates."
+      },
+      {
+        "metric_name_or_issue": "Amend Action Data 0.028% and Non-Event O 8.825",
+        "action": "exclude_from_cross_paper_comparison",
+        "qualification": "The additional event type conflicts with the stated taxonomy, and the O denominator is unspecified. Do not derive class prevalence or non-event email prevalence from these entries. Table 1 separately reports 776 non-event emails out of 3,936."
+      }
+    ],
+    "conflict_repairs": [
+      {
+        "issue": "Partial-versus-exact argument matching",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "The operational relationship between partial matching and rejection of non-exact generated arguments remains unspecified. This blocks standardized quantitative comparison, but permits bounded reporting of the paper's extraction results."
+      },
+      {
+        "issue": "Ten-type taxonomy, Amend Action Data, and Non-Event O",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "The evaluated status of Amend Action Data and the denominator of O remain unknown. The explicit email counts establish that O at 8.825 is not the reported non-event email proportion."
+      },
+      {
+        "issue": "BERT Argument Identification F1 arithmetic discrepancy",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "Retain the printed F1 with a discrepancy flag. Neither correction of a particular table value nor an aggregation explanation is established by the windows."
+      },
+      {
+        "issue": "Final argument-role inventory",
+        "action": "rephrase",
+        "replacement_issue": "The supplied Table 4 text omits Context: Data IdString for Amend Data, although amendment examples, distribution text, and the generation template explicitly use that role. The complete reported 76-role inventory cannot be verified from these windows.",
+        "replacement_impact": "The role's documented use is supported. Its omission from the converted table cannot establish deletion from the final schema, and conversion loss cannot be confirmed as the cause."
+      },
+      {
+        "issue": "Semantic-error category definitions and examples",
+        "action": "rephrase",
+        "replacement_issue": "The author-defined error categories mix semantic errors, surface-form deviations, and template-filling failures. Their definitions and examples do not establish a consistent semantic partition, and the precise coding unit remains unclear.",
+        "replacement_impact": "Keep the reported percentages as descriptive results from the selected error sample. Do not interpret them as standardized omission or entity-hallucination rates, recalculate them, or merge argument-value and placeholder analyses."
+      }
+    ],
+    "final_gap_updates": {
+      "G1_A": {
+        "status": "unchanged",
+        "reason": "The formal gap definition was not supplied. These adjudications do not alter the retained event-trigger representation finding or establish Topic segmentation."
+      },
+      "G2_A": {
+        "status": "unchanged",
+        "reason": "The formal gap definition was not supplied. These adjudications do not expand shared event-instance evidence into simultaneous different labels or multiple Topics."
+      },
+      "G3_A": {
+        "status": "unchanged",
+        "reason": "The formal gap definition was not supplied. Matching rules and error-category semantics remain unresolved but bounded. Argument recovery and omission categories do not establish complete qualifier coverage."
+      },
+      "G4_A": {
+        "status": "unchanged",
+        "reason": "The formal gap definition was not supplied. The evidence remains direct-email event-extraction support, without task-matched evidence for concrete work-matter Topic segmentation or assignment."
+      }
+    },
+    "final_unsafe_assumptions": [
+      "An established source-span validity gate reconciles the partial-matching and exact-match statements, or all argument results use universal exact-gold matching.",
+      "The Amend Action Data entry proves an eleventh modeled class or is definitively a harmless reporting error.",
+      "Non-Event O at 8.825 measures non-event emails or has an established token denominator.",
+      "The reported 76 roles form a fully reconciled final schema, or the missing Context: Data IdString entry proves intentional pruning or confirmed conversion loss.",
+      "Unreported averaging explains BERT Argument Identification F1 0.454, or its recomputed harmonic mean is an authorized correction.",
+      "The 42% category measures only semantic errors, the 36% category measures only invented entities, or the sampled categories form a validated semantic partition.",
+      "The 50 sampled erroneous predictions necessarily correspond to 50 independently coded arguments."
+    ],
+    "needs_max_review": false,
+    "max_review_reason": null,
+    "confidence": 0.97
+  },
+  "xhigh_review_sha256": "123abd99256db3dd100d95e4470108392d513e7d17aedf85319a86c776340435",
+  "xhigh_effort": "xhigh",
+  "needs_max_review": false,
+  "xhigh_metric_repairs": [
+    {
+      "metric_name_or_issue": "Argument Identification and Argument Classification precision/recall/F1",
+      "action": "exclude_from_cross_paper_comparison",
+      "qualification": "Retain printed values for descriptive reporting. Exclude them from like-for-like numerical comparison or pooling until matching and aggregation rules are established. Keep end-to-end and gold-trigger results distinct. These are event-argument scores, not Topic accuracy or exhaustive content-coverage scores."
+    },
+    {
+      "metric_name_or_issue": "BERT end-to-end Argument Identification F1",
+      "action": "qualify",
+      "qualification": "Report 0.454 as printed and flag that the harmonic mean of printed precision 0.491 and recall 0.403 is approximately 0.443. Do not substitute a recomputed value or use the discrepant F1 for derived numerical claims."
+    },
+    {
+      "metric_name_or_issue": "Erroneous argument category distribution",
+      "action": "exclude_from_cross_paper_comparison",
+      "qualification": "Preserve 42%, 36%, 8%, 8%, and 6% under the paper's category names. The error-selected population, uncertain coding unit, and definition/example mismatches prevent treatment as standardized semantic-error, omission, or hallucination rates."
+    },
+    {
+      "metric_name_or_issue": "Amend Action Data 0.028% and Non-Event O 8.825",
+      "action": "exclude_from_cross_paper_comparison",
+      "qualification": "The additional event type conflicts with the stated taxonomy, and the O denominator is unspecified. Do not derive class prevalence or non-event email prevalence from these entries. Table 1 separately reports 776 non-event emails out of 3,936."
+    }
+  ],
+  "xhigh_conflict_repairs": [
+    {
+      "issue": "Partial-versus-exact argument matching",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "The operational relationship between partial matching and rejection of non-exact generated arguments remains unspecified. This blocks standardized quantitative comparison, but permits bounded reporting of the paper's extraction results."
+    },
+    {
+      "issue": "Ten-type taxonomy, Amend Action Data, and Non-Event O",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "The evaluated status of Amend Action Data and the denominator of O remain unknown. The explicit email counts establish that O at 8.825 is not the reported non-event email proportion."
+    },
+    {
+      "issue": "BERT Argument Identification F1 arithmetic discrepancy",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "Retain the printed F1 with a discrepancy flag. Neither correction of a particular table value nor an aggregation explanation is established by the windows."
+    },
+    {
+      "issue": "Final argument-role inventory",
+      "action": "rephrase",
+      "replacement_issue": "The supplied Table 4 text omits Context: Data IdString for Amend Data, although amendment examples, distribution text, and the generation template explicitly use that role. The complete reported 76-role inventory cannot be verified from these windows.",
+      "replacement_impact": "The role's documented use is supported. Its omission from the converted table cannot establish deletion from the final schema, and conversion loss cannot be confirmed as the cause."
+    },
+    {
+      "issue": "Semantic-error category definitions and examples",
+      "action": "rephrase",
+      "replacement_issue": "The author-defined error categories mix semantic errors, surface-form deviations, and template-filling failures. Their definitions and examples do not establish a consistent semantic partition, and the precise coding unit remains unclear.",
+      "replacement_impact": "Keep the reported percentages as descriptive results from the selected error sample. Do not interpret them as standardized omission or entity-hallucination rates, recalculate them, or merge argument-value and placeholder analyses."
+    }
+  ]
+}

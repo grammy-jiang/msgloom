@@ -1,0 +1,122 @@
+{
+  "schema_version": "topic02-engineering-v1",
+  "case_id": "ambiguous-reference",
+  "description": "The current message alone does not identify which matter 'this change' refers to.",
+  "text": "This change needs approval before Friday.",
+  "topics": [
+    {
+      "topic_id": "ATLAS",
+      "description": "Atlas budget change",
+      "signature_terms": [
+        "atlas",
+        "budget"
+      ]
+    },
+    {
+      "topic_id": "BETA",
+      "description": "Beta release change",
+      "signature_terms": [
+        "beta",
+        "release"
+      ]
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "amb",
+      "span": {
+        "start": 0,
+        "end": 41
+      },
+      "text": "This change needs approval before Friday.",
+      "origin": "authored",
+      "kind": "topic_evidence"
+    },
+    {
+      "span_id": "deadline",
+      "span": {
+        "start": 34,
+        "end": 40
+      },
+      "text": "Friday",
+      "origin": "authored",
+      "kind": "deadline"
+    }
+  ],
+  "memberships": [
+    {
+      "span_id": "amb",
+      "required_topics": [],
+      "alternative_topic_sets": [
+        [
+          "ATLAS"
+        ],
+        [
+          "BETA"
+        ]
+      ],
+      "abstention_allowed": true,
+      "notes": "Either matter is possible from current text; abstention is valid."
+    },
+    {
+      "span_id": "deadline",
+      "required_topics": [],
+      "alternative_topic_sets": [
+        [
+          "ATLAS"
+        ],
+        [
+          "BETA"
+        ]
+      ],
+      "abstention_allowed": true,
+      "notes": ""
+    }
+  ],
+  "topic_objects": [],
+  "context_texts": [
+    {
+      "context_id": "ctx-atlas",
+      "text": "Earlier context: this change is the Atlas budget revision."
+    }
+  ],
+  "context_steps": [
+    {
+      "step_id": "without-context",
+      "available_context_ids": [],
+      "expected_span_topic_sets": [],
+      "expected_abstentions": [
+        "amb",
+        "deadline"
+      ],
+      "notes": "Must abstain without antecedent context."
+    },
+    {
+      "step_id": "with-atlas-context",
+      "available_context_ids": [
+        "ctx-atlas"
+      ],
+      "expected_span_topic_sets": [
+        {
+          "span_id": "amb",
+          "topics": [
+            "ATLAS"
+          ]
+        },
+        {
+          "span_id": "deadline",
+          "topics": [
+            "ATLAS"
+          ]
+        }
+      ],
+      "expected_abstentions": [],
+      "notes": "Context resolves the matter."
+    }
+  ],
+  "tags": [
+    "EV5",
+    "EV6",
+    "ambiguity"
+  ]
+}

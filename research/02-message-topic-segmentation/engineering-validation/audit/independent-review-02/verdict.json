@@ -1,0 +1,57 @@
+{
+  "status": "rejected",
+  "review1_repairs": {
+    "B1": "not_fixed",
+    "N1": "fixed",
+    "N2": "fixed"
+  },
+  "blocking_issues": [
+    {
+      "id": "R2-B1",
+      "location": "engineering-validation/src/topic02_validation/replay.py:59-76; tests/test_replay.py:18-23",
+      "finding": "The original gold-dependent computation is removed, but the required prediction-only boundary is incomplete. predict_step still receives BenchmarkCase, including context_steps with every expected assignment and abstention. Only its second argument is sanitized.",
+      "evidence": "Independent probes confirmed that current predictions remain unchanged when hidden gold is removed or falsified throughout BenchmarkCase. However, a temporary-copy mutant restored gold-dependent correction targeting through case.context_steps and passed all 49 tests. The existing invariance test changes the separate step object while leaving case.context_steps unchanged. Reproduction: /tmp/topic02-review02-puf10g5i/additional_mutants.py and additional_mutants.json.",
+      "impact": "Current EV5 numbers are reproducible and showed no active gold dependency. Nevertheless, the explicit structural isolation requirement and the reported prediction-input contract are not satisfied. The regression suite still permits the rejected failure mechanism."
+    },
+    {
+      "id": "R2-B2",
+      "location": "engineering-validation/src/topic02_validation/representation.py:14-19,72-82; tests/test_representation.py:6-17; results/metrics.json:EV1.claim_boundary",
+      "finding": "Conversion silently drops MembershipGold.abstention_allowed. The representation cannot distinguish an ambiguous assignment that permits abstention from one that forbids it.",
+      "evidence": "The current gold contains three ambiguous rows with abstention_allowed=true. Changing this flag to false in ambiguous-reference produces another valid BenchmarkCase, but from_gold returns byte-identical canonical representations. AssignmentRecord has no field that preserves this distinction. The repaired field comparisons omit it. Reproduction: /tmp/topic02-review02-puf10g5i/probes.py and probes.json, abstention_permission_collision.",
+      "impact": "Two semantically different valid assignment contracts collapse into one representation. The 18/18 encoder-to-decoder round trips therefore do not establish the stated lossless representation of authored gold, including its abstention semantics."
+    }
+  ],
+  "nonblocking_issues": [
+    {
+      "id": "R2-N1",
+      "location": "engineering-validation/STATUS.md:Repairs now applied; CASE_CATALOG.md:context-correction",
+      "finding": "Two documentation statements do not match the corrected target.",
+      "evidence": "STATUS.md says the eight-mutant gate includes reintroduced gold-dependent correction targeting. The actual gate contains two future-context mutants but no gold-targeting mutant. CASE_CATALOG.md still lists context-correction as two Topics and one span; its current gold has three Topics and two spans.",
+      "impact": "These discrepancies obscure the reviewed coverage and fixture inventory. They do not change the calculated scores."
+    }
+  ],
+  "recommended_fixes": [
+    "Pass predict_step a complete prediction-only object containing message evidence, supplied Topic definitions, and currently available context. Keep memberships, Topic-object gold, expected assignments, expected abstentions, and future context outside that object.",
+    "Add a regression that mutates or removes hidden labels throughout every predictor argument. Add the surviving case.context_steps gold-targeting mutant to the gate.",
+    "Preserve abstention permission separately from assignment status. Add valid fixtures that differ only in abstention permission and require distinguishable decoded results.",
+    "Correct the mutation-coverage statement and context-correction catalog row. Rebuild artifacts and obtain another fresh review."
+  ],
+  "verified_points": [
+    "Ran all 49 tests in an isolated copy: all passed. Ran the eight-mutant gate: all eight mutants were killed by assertion failures.",
+    "Created /tmp/topic02-review02-puf10g5i from source, tests, and static supporting-audit inputs. Freshly generated metrics.json, RESULTS.md, fixture MANIFEST.json, and all 18 fixture gold files matched the current target byte-for-byte.",
+    "Reproduced metrics SHA-256 5a7ab0429214b08e224b5da903c336ab563020264d94973f2cc9b4ae259baddd and RESULTS.md SHA-256 ccb9aa836493bc5940fc7ba0094d380a473ba3a48a0225ca4a0cc13413e7c77e.",
+    "Verified all four Academic Round2 artifact hashes against pre-review-02-audit.json. The accepted synthesis, report, gaps, and reviewer artifact remain unchanged. The preserved review-01 verdict hash also matches.",
+    "Current EV5 predictions survived 10 hidden-gold removal/falsification variants and 15 unavailable-context removal, replacement, or ordering variants. The reference follows abstain -> ATLAS -> BETA. The neighbor remains NORTH at every step. No active future-context dependency was found.",
+    "Direct comparisons with static fixture JSON confirmed assignment IDs, offsets, text, Topic definitions, origin/kind, joint memberships, alternatives, and Topic-object components across all 18 cases. Original N1 ID-collapse and origin/kind-loss mutants are now killed. Additional alternative-loss and component-collapse mutants were also killed.",
+    "Fixture generation remained byte-identical with tested unit, assignment, representation, and preservation functions replaced by functions that raise exceptions.",
+    "Independent gold recount confirmed 21 selected decision-bearing annotations, 20 scored spans, and 24 required memberships. One ambiguous deadline is excluded. Required populations are four conditions, one exception, seven deadlines, two approval constraints, two decisions, and four supporting-evidence spans carrying eight memberships.",
+    "EV4 category and aggregate denominators agree. Span-only prediction has TP/FP/FN 13/0/11. Local-window prediction has 24/12/0. Sentence oracle projection has 24/5/0. Scope-broadening false positives are retained by kind and in aggregate.",
+    "EV4 explicitly describes selected stress annotations rather than source-complete semantics. Predicted decision membership is correctly labeled gold-span-conditioned and is not presented as decision-span detection.",
+    "End-to-end scores include extra predictions and missed gold spans. Matching is one-to-one. Injecting a prediction into irrelevant-chatter increased clause-baseline false positives from four to five and its precision denominator from 39 to 40.",
+    "EV6 uses 200 calibration and 200 holdout examples with zero exact text overlap and disjoint declared templates. Threshold selection uses calibration only. The coverage floor prevents all-abstain success. Holdout coverage is 120/200 and accepted error is 40/120; failure remains explicit.",
+    "Unit ceilings remain separate from predicted-unit evaluation. Joint membership remains distinct from ambiguity. EV7 retains its synthetic-only boundary. Supplied Topic identities do not establish automatic identity/count inference.",
+    "Topic03 identity/count, Topic04 semantic response scope, and Topic10 general calibration handoffs remain explicit. Execution completion remains separate from pending review acceptance. No production accuracy, architecture approval, or literature-exhaustion claim was found.",
+    "This review used local files and temporary copies only. It made no repository edits, network requests, mailbox accesses, commits, or git-state changes."
+  ],
+  "confidence": 0.97
+}

@@ -1,0 +1,2224 @@
+{
+  "paper_id": "T01",
+  "title": "TextTiling: Segmenting Text into Multi-Paragraph Subtopic Passages",
+  "research_question": "Can changes in lexical repetition identify multi-paragraph subtopic boundaries in expository text that correspond to reader judgments?",
+  "methodology": "Unsupervised lexical boundary detection: lowercase and morphologically normalize non-stop-word features; retain paragraph locations and fixed-size token-sequences. Compare adjacent blocks by cosine similarity of term counts, or count first-occurrence vocabulary in a centered interval. Smooth scores, measure valley depth on both sides, rank candidate boundaries, apply document-relative LC/HC thresholds, and adjust to paragraph gaps. Evaluate on reader-marked magazine paragraphs and separately on seams between concatenated newspaper articles. See the evidence catalog, topic02 metrics, and indexing caveat T01-C01.",
+  "methodology_evidence_refs": [
+    "V06",
+    "V07",
+    "V08",
+    "V09",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V17",
+    "V18",
+    "V19",
+    "V28"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "T01-F01",
+      "finding": "TextTiling partitions expository documents into contiguous, nonoverlapping multi-paragraph passages. Its evaluated output is boundaries, without semantic topic labels or membership links.",
+      "evidence_type": "supported",
+      "section": "PDF p. 2, 1. Introduction",
+      "quote": "Because the goal is to partition texts into contigu-\nous, nonoverlapping subtopic segments",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 13,
+        "line_end": 16,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png",
+      "confidence": 0.99,
+      "evidence_basis": "Implemented method and boundary evaluations; a statement of the output contract, not proof that every passage contains only one real-world matter.",
+      "supporting_evidence_refs": [
+        "V02",
+        "V04",
+        "V31",
+        "V34"
+      ]
+    },
+    {
+      "finding_id": "T01-F02",
+      "finding": "On the same 12 magazine test texts, Table 1 reports block comparison at LC with precision .66, recall .75, κ .46; at HC with precision .71, recall .59, κ .47. Vocabulary introduction reports LC .52/.78/.23 and HC .58/.64/.32 (precision/recall/κ). The random baseline reports precision .50 and recall .51; judges report .83/.71/.65. These are boundary scores averaged across texts, not span or email Topic scores.",
+      "evidence_type": "supported",
+      "section": "PDF p. 24, 6.4 Results: Quantitative Analysis",
+      "quote": "The scores for the blocks version of the algorithm are stronger than those of the\nvocabulary introduction version.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 417,
+        "line_end": 420,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "confidence": 0.99,
+      "supporting_evidence_refs": [
+        "V31",
+        "V32",
+        "V33",
+        "V34"
+      ],
+      "metric_refs": [
+        "T01-M01"
+      ]
+    },
+    {
+      "finding_id": "T01-F03",
+      "finding": "For paragraph-boundary judgments on 12 magazine articles, each judge is compared with a group boundary decision defined as at least 3 of 7 judges marking the gap. The paper reports mean κ .647. This is judge-versus-group agreement, not pairwise independent annotator agreement. Only primary choices enter evaluation when a judge marks an alternative.",
+      "evidence_type": "supported",
+      "section": "PDF p. 22, 6.1 Reader Judgments",
+      "quote": "The average κ for these texts was .647.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 302,
+        "line_end": 305,
+        "pdf_pages": [
+          22
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-22.png",
+      "confidence": 0.99,
+      "supporting_evidence_refs": [
+        "V20",
+        "V24",
+        "V25",
+        "V27"
+      ],
+      "metric_refs": [
+        "T01-M02"
+      ]
+    },
+    {
+      "finding_id": "T01-F04",
+      "finding": "Default parameters were selected after trying settings on the evaluated texts. Table 2 shows text-dependent performance; no held-out tuning/test separation is reported for the magazine study. Thus its results do not establish unseen-domain generalization.",
+      "evidence_type": "supported",
+      "section": "PDF p. 23, 6.2 Parameter Settings",
+      "quote": "Initial testing was done on the texts evaluated with several different sets of param-\neter settings",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 322,
+        "line_end": 328,
+        "pdf_pages": [
+          23
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+      "confidence": 0.99,
+      "evidence_basis": "Reported experimental procedure and Table 2; the generalization limit is an analyst inference.",
+      "supporting_evidence_refs": [
+        "V36",
+        "V37",
+        "V39"
+      ]
+    },
+    {
+      "finding_id": "T01-F05",
+      "finding": "At each text’s average human recall target in Table 2, block settings B7/B9/B10/B12 all fail to attain that target for texts 6 and 7. Vocabulary introduction attains some targets for these texts. A dash means target recall was not reached, not zero precision or a missing experiment.",
+      "evidence_type": "supported",
+      "section": "PDF p. 25, 6.4 Results: Quantitative Analysis",
+      "quote": "the algorithm does not produce a recall level as high as\nthat found by the judges",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 470,
+        "line_end": 475,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "confidence": 0.99,
+      "supporting_evidence_refs": [
+        "V36",
+        "V37",
+        "V38"
+      ],
+      "metric_refs": [
+        "T01-M03"
+      ]
+    },
+    {
+      "finding_id": "T01-F06",
+      "finding": "The paper identifies qualitative failures involving summary vocabulary, short quotations, and discarded pronoun cues. The discussion of office-politics text 7 proposes a cause by inspection; it is not a controlled ablation of pronoun retention or a work-scope preservation evaluation.",
+      "evidence_type": "supported",
+      "section": "PDF p. 25, 6.4 Results: Quantitative Analysis",
+      "quote": "Text 7, for example, scores especially poorly.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 483,
+        "line_end": 488,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "confidence": 0.96,
+      "evidence_basis": "Observed per-text scores and author’s qualitative error analysis; causal attribution remains tentative.",
+      "supporting_evidence_refs": [
+        "V29",
+        "V36",
+        "V41"
+      ]
+    },
+    {
+      "finding_id": "T01-F07",
+      "finding": "In the Stargazers example, five of seven readers split between paragraphs 18 and 19, whereas the algorithm shows only a slight valley. The author says paragraph 19 answers a question posed at the end of paragraph 18. This illustrates disagreement between boundary judgments and a question-answer relation, without measuring reply-scope preservation.",
+      "evidence_type": "supported",
+      "section": "PDF p. 23, 6.3 Results: Qualitative Analysis",
+      "quote": "Five out of seven readers indicated a break between paragraphs 18 and 19.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 348,
+        "line_end": 353,
+        "pdf_pages": [
+          23
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+      "confidence": 0.98,
+      "evidence_basis": "Single qualitative example; no claim of email reply extraction accuracy."
+    },
+    {
+      "finding_id": "T01-F08",
+      "finding": "On 44 consecutive 1989 Wall Street Journal articles (691 paragraphs, articles shorter than 10 sentences removed), the block algorithm uses a ±3-sentence article-boundary tolerance. Table 3 reports 29 correct among 43 predictions at the precision/recall breakeven point, .67/.67; at 70 predictions it reports 41 correct, .59/.95. This separate surrogate task does not evaluate within-message Topics.",
+      "evidence_type": "supported",
+      "section": "PDF p. 27, Table 3",
+      "quote": "43* 29 .67 .67",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 557,
+        "line_end": 565,
+        "pdf_pages": [
+          27
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-27.png",
+      "confidence": 0.99,
+      "supporting_evidence_refs": [
+        "V42",
+        "V43",
+        "V44",
+        "V45",
+        "V47"
+      ],
+      "metric_refs": [
+        "T01-M04"
+      ],
+      "caveat_refs": [
+        "T01-C03"
+      ]
+    },
+    {
+      "finding_id": "T01-F09",
+      "finding": "The paper suggests downstream information-access uses, but does not establish that its segmentation improves retrieval over other segmentation strategies. It provides no direct evidence for preserving business conditions, approvals, action scope, or reply scope.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 20, 6. Evaluation",
+      "quote": "this\nwork does not show whether or not the results of these algorithms produce better per-\nformance than the results of some other segmentation strategy would.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 592,
+        "line_end": 595,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "confidence": 0.99,
+      "evidence_basis": "Explicitly unestablished comparative downstream benefit; the absence of a business-scope evaluation is not a negative experimental result."
+    }
+  ],
+  "limitations": [
+    "T01-F01: linear, contiguous, nonoverlapping passage boundaries; no semantic Topic identity, overlap, discontinuity, or label prediction.",
+    "T01-F03/F04: small magazine sample, loose annotation guidance, only primary ambiguous choices retained, judge-versus-group agreement, and same-text parameter selection.",
+    "T01-F06/F07: lexical repetition can disagree with discourse relations; reported causes are qualitative and do not measure preservation of business meaning.",
+    "T01-F08: the WSJ seam test uses a three-sentence tolerance and a different task; its results cannot be substituted for within-message segmentation accuracy.",
+    "T01-C01–C08: preserve indexing, gold-rule terminology, cutoff coverage, local count, κ precision, explicit length exceptions, baseline sampling/table caveats, and Table 3 count/recall rounding.",
+    "No complete evaluation-corpus release, duplicate controls, runtime/resource measurements, or decision-scope metrics are reported. Absence of those reports is not evidence of poor performance."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported status only; no current code/data availability check performed.",
+    "code_availability_status": "Paper footnote 1 offers a free C version for research purposes by contacting the author; no repository, version, open-source license, or executable hash is supplied.",
+    "dataset_availability_status": "not_reported",
+    "dataset_available_boolean_meaning": "False means no affirmative dataset-release statement was found in the frozen paper; it does not assert that the data are inaccessible or unavailable today.",
+    "replication_limits": "Detailed algorithms, defaults, annotation instructions, and three result tables are given. Window endpoint notation is inconsistent; full stop list, exact article manifest, unrounded scores, and independent test split are not supplied.",
+    "evidence_refs": [
+      "V03",
+      "V07",
+      "V10",
+      "V11",
+      "V14",
+      "V20",
+      "V24",
+      "V28",
+      "V31",
+      "V36",
+      "V43",
+      "V46"
+    ]
+  },
+  "confidence_scores": {
+    "T01-F01": 0.99,
+    "T01-F02": 0.99,
+    "T01-F03": 0.99,
+    "T01-F04": 0.99,
+    "T01-F05": 0.99,
+    "T01-F06": 0.96,
+    "T01-F07": 0.98,
+    "T01-F08": 0.99,
+    "T01-F09": 0.99
+  },
+  "confidence_interpretation": "Confidence in faithful extraction and stated qualification, not a probability of transfer to msgloom or an estimate of model accuracy.",
+  "raw_claims": [
+    "The depth scores are sorted and used to determine segment boundaries.",
+    "The remaining gaps are considered\nnonboundaries.",
+    "This task violates a major assumption of the TextTiling algorithm.",
+    "A free version of the code, written in C, is available for research purposes."
+  ],
+  "raw_claim_locators": [
+    {
+      "claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 204,
+        "line_end": 210,
+        "pdf_pages": [
+          19
+        ]
+      },
+      "section": "PDF p. 19, 5.3 Boundary Identification",
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-19.png"
+    },
+    {
+      "claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 302,
+        "line_end": 305,
+        "pdf_pages": [
+          22
+        ]
+      },
+      "section": "PDF p. 22, 6.1 Reader Judgments",
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-22.png"
+    },
+    {
+      "claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 508,
+        "line_end": 514,
+        "pdf_pages": [
+          26
+        ]
+      },
+      "section": "PDF p. 26, 6.5 Detecting Breaks between Consecutive Documents",
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png"
+    },
+    {
+      "claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 35,
+        "line_end": 36,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, 1. Introduction, footnote 1",
+      "source_image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png"
+    }
+  ],
+  "topic02": {
+    "evidence_family": "TRANSFER_SEGMENTATION",
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated",
+        "scope": "Paragraph-gap subtopic boundaries against reader consensus. Separate supplementary article-seam task uses a sentence tolerance.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "evaluated via boundaries",
+        "scope": "A linear passage partition is induced. No separate segment identity or clustering accuracy is reported.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "not evaluated",
+        "scope": "Explicitly outside the article’s focus.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not evaluated",
+        "scope": "Inputs are magazine/newspaper documents; no message labels.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not evaluated",
+        "scope": "Boundary marks do not assign arbitrary source spans to semantic Topic identities.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not evaluated",
+        "scope": "Output passages are nonoverlapping.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not evaluated",
+        "scope": "No common Topic identity links separated passages.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "not evaluated",
+        "scope": "Coarse paragraph passage task; no EDU gold or predictions.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not evaluated",
+        "scope": "One qualitative question-answer example is discussed, without extraction annotations or scoring.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not evaluated",
+        "scope": "No direct preservation test or loss metric.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V19",
+          "V30",
+          "V34",
+          "V42",
+          "V44"
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "description": "Human subtopic boundary decisions at existing paragraph gaps; derived multi-paragraph passages. Annotators were not asked to mark sentences, clauses, EDUs, arbitrary spans, Topic IDs, or multiple memberships. The separate WSJ task uses original article seams.",
+      "evidence_refs": [
+        "V20",
+        "V23",
+        "V24",
+        "V43"
+      ]
+    },
+    "prediction_unit": {
+      "description": "Lexical scores at fixed-length token-sequence gaps, then depth-ranked boundaries adjusted to paragraph gaps when available. A token-sequence is a pseudosentence, not a syntactic sentence. Default w=20, block k=10; minimum three intervening token-sequences. Token-sequence windows overlap for scoring, while final passages do not.",
+      "evidence_refs": [
+        "V01",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V17",
+        "V28"
+      ]
+    },
+    "contiguity": {
+      "description": "A linear partition into contiguous, nonoverlapping passages within one document. Neither non-sequential clustering nor cross-document Topic identity is predicted.",
+      "evidence_refs": [
+        "V01",
+        "V02"
+      ],
+      "gold": "Paragraph-gap boundary gold induces a contiguous partition; no semantic cluster labels.",
+      "prediction": "Contiguous passage intervals only."
+    },
+    "label_cardinality": {
+      "gold": {
+        "description": "Boundary/nonboundary at a candidate paragraph gap. Each token has one positional passage in an induced partition; semantic Topic-label cardinality is unannotated. Seven judges are multiple observations, not seven Topic memberships.",
+        "evidence_refs": [
+          "V01",
+          "V20",
+          "V25"
+        ]
+      },
+      "prediction": {
+        "description": "Each token belongs to one output passage in the partition; the method does not predict semantic Topic labels or any multi-label cardinality.",
+        "evidence_refs": [
+          "V01",
+          "V02"
+        ]
+      }
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not evaluated: no message corpus. Within-document annotations do not link separated regions as one semantic object.",
+        "thread_level": "Not evaluated: no threads or conversation clusters."
+      },
+      "prediction": {
+        "within_one_message": "Not supported by the passage output contract; within-document passages are contiguous and have no recurring-topic identity links.",
+        "thread_level": "Not represented or evaluated."
+      },
+      "evidence_refs": [
+        "V01",
+        "V02",
+        "V20",
+        "V43"
+      ]
+    },
+    "overlap": {
+      "gold": "Not annotated for semantic Topic membership: a boundary-derived partition has no overlapping passages.",
+      "prediction": "Nonoverlapping passage output. Overlapping lexical windows are intermediate computations, not multi-Topic span assignments.",
+      "scope": "Within single expository documents. Multiple simultaneous themes are discussed qualitatively, but no gold or predicted overlapping semantic spans are evaluated. Thread-level overlap is absent from the task.",
+      "status": "unsupported for Topic overlap capability",
+      "evidence_refs": [
+        "V01",
+        "V05",
+        "V11"
+      ]
+    },
+    "dataset_domain": [
+      {
+        "description": "Twelve English magazine articles with little structural demarcation. Stated length criterion 1800–2500 words, with an explicit 2932-word exception. Examples include Stargazers and an office-politics article, not email or workplace messages. Table 2 preserves per-text paragraph and consensus-boundary counts.",
+        "evidence_refs": [
+          "V04",
+          "V20",
+          "V21",
+          "V36",
+          "V40"
+        ],
+        "dataset_id": "T01-MAG12"
+      },
+      {
+        "description": "Forty-four consecutive 1989 Wall Street Journal articles after excluding articles shorter than ten sentences; 691 paragraphs. Some documents contain multiple stories, tables, or interest-rate listings. This is article-seam detection.",
+        "evidence_refs": [
+          "V43"
+        ],
+        "dataset_id": "T01-WSJ44"
+      }
+    ],
+    "annotation_process": {
+      "description": "Seven technical-researcher readers per magazine article marked where topics seemed to change at paragraph gaps, with loose granularity guidance and permission to revise. Instructions recommended quick reading and allowed a secondary candidate, but evaluation retained only the primary mark. Group gold used at least 3/7 votes. Short paragraphs were combined with neighbors under the reported major-boundary rule. Short headers were removed from two texts. One previously used text was excluded for inconsistent paragraph break locations. No externally adjudicated Topic identities or uncertainty-preserving gold representation is reported.",
+      "evidence_refs": [
+        "V20",
+        "V21",
+        "V22",
+        "V23",
+        "V24",
+        "V25",
+        "V27"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "metric_ref": "T01-M02",
+      "description": "Judge-versus-group chance-corrected κ for binary paragraph-gap decisions, including a judge’s own vote in the group unless otherwise specified; the paper reports no leave-one-out exclusion. Mean .647 in prose; Table 1 prints .65 on a normalized scale. See T01-C05 for precision/aggregation caveat.",
+      "evidence_refs": [
+        "V25",
+        "V26",
+        "V31",
+        "V36"
+      ]
+    },
+    "split_and_leakage": {
+      "magazine": {
+        "description": "Initial parameter selection and evaluation use the same 12 texts. No train/development/test division or untouched test set is reported; this is an unsupervised algorithm with evaluation-informed defaults. One article’s judgments came from an earlier experiment. Article IDs for all texts, near-duplicate controls, and annotator assignment overlap across texts are not reported.",
+        "evidence_refs": [
+          "V20",
+          "V21",
+          "V28"
+        ]
+      },
+      "newspaper": {
+        "description": "A separate sequence of 44 consecutive articles from 1989 was evaluated with the default block parameters. The exact date range, document identifiers, train/test partition, and duplicate or near-duplicate controls are not reported.",
+        "evidence_refs": [
+          "V43",
+          "V44"
+        ]
+      }
+    },
+    "metrics": [
+      {
+        "metric_id": "T01-M01",
+        "name": "Table 1: exact paragraph-boundary precision, recall, and κ",
+        "task": "Within-document multi-paragraph subtopic boundary detection",
+        "dataset": "12 magazine articles; same texts used for initial parameter selection",
+        "split": "No held-out split reported",
+        "definition": "Precision = selected consensus boundaries / all selected boundaries. Recall = selected consensus boundaries / all consensus boundaries. κ compares algorithm decisions with group boundary decisions. Scores are averaged over texts; judge scores average judges and texts. No ±sentence tolerance is specified here; paragraph-location adjustment and short-paragraph normalization apply.",
+        "gold": "At least 3 of 7 judges; binary paragraph-gap decisions. The paper also calls these majority boundaries, although 3/7 is not a strict majority.",
+        "denominators": "Per-text selected and consensus boundaries; Table 2 gives per-text consensus counts. Per-configuration prediction counts and pooled true-positive counts are not reported in Table 1.",
+        "settings": {
+          "w": 20,
+          "block_k": 10,
+          "smoothing_rounds": 1,
+          "smoothing_width": 2,
+          "LC": "depth > mean(depth) − SD(depth)",
+          "HC": "depth > mean(depth) − SD(depth)/2"
+        },
+        "table_display_scale": "Table 1 prints integer scores without decimal points (e.g., 66). Normalized values below divide printed entries by 100, consistent with surrounding fractional κ and Table 2.",
+        "results": [
+          {
+            "method": "Random baseline",
+            "precision": 0.5,
+            "recall": 0.51,
+            "kappa": null,
+            "setting": "Boundary independently assigned with probability .39 at each potential gap; average of 10,000 runs per text"
+          },
+          {
+            "method": "Vocabulary introduction",
+            "cutoff": "LC",
+            "precision": 0.52,
+            "recall": 0.78,
+            "kappa": 0.23
+          },
+          {
+            "method": "Vocabulary introduction",
+            "cutoff": "HC",
+            "precision": 0.58,
+            "recall": 0.64,
+            "kappa": 0.32
+          },
+          {
+            "method": "Block comparison",
+            "cutoff": "LC",
+            "precision": 0.66,
+            "recall": 0.75,
+            "kappa": 0.46
+          },
+          {
+            "method": "Block comparison",
+            "cutoff": "HC",
+            "precision": 0.71,
+            "recall": 0.59,
+            "kappa": 0.47
+          },
+          {
+            "method": "Judges",
+            "precision": 0.83,
+            "recall": 0.71,
+            "kappa": 0.65,
+            "setting": "Averages against group decision; not an independent expert upper bound"
+          }
+        ],
+        "evidence_refs": [
+          "V18",
+          "V25",
+          "V27",
+          "V28",
+          "V31",
+          "V32",
+          "V33",
+          "V34"
+        ],
+        "caveat_refs": [
+          "T01-C02",
+          "T01-C05",
+          "T01-C07"
+        ]
+      },
+      {
+        "metric_id": "T01-M02",
+        "name": "Judge-versus-group κ and boundary prevalence",
+        "task": "IAA for paragraph-gap subtopic boundary judgments",
+        "dataset": "12 magazine articles, 7 readers per article",
+        "definition": "κ = (P(A) − P(E)) / (1 − P(E)); each judge compared with the group decision, not leave-one-judge-out. Paper reports P(E) from overall boundary/nonboundary frequencies.",
+        "denominators": "Paragraph-gap decisions; total number of coder decisions and exact weighting of all κ averages not explicitly reported.",
+        "results": {
+          "boundary_frequency": 0.391,
+          "nonboundary_frequency": 0.609,
+          "expected_chance_agreement": 0.524,
+          "mean_kappa_prose": 0.647,
+          "mean_kappa_Table1": 0.65
+        },
+        "evidence_refs": [
+          "V20",
+          "V25",
+          "V26",
+          "V31",
+          "V36"
+        ],
+        "caveat_refs": [
+          "T01-C05"
+        ]
+      },
+      {
+        "metric_id": "T01-M03",
+        "name": "Table 2: precision at each text’s average judge recall",
+        "task": "Within-document subtopic boundary detection",
+        "dataset": "The same 12 magazine articles; text 12 is the Stargazers illustration, text 7 concerns office politics",
+        "split": "No held-out split reported; parameter sweep on evaluation texts",
+        "definition": "Rank positive depth scores. Add candidate boundaries in depth-score order; compute precision after each correct boundary. Return precision at the text’s average judge recall, linearly interpolating when crossing it. LC/HC thresholds are not used.",
+        "denominators": "Precision denominator is the number of ranked boundaries selected at the target; recall denominator is NB in each row. Fractional interpolated precision is not an integer confusion-matrix count.",
+        "settings": {
+          "B7/B9/B10/B12": "block size k = 7/9/10/12 token-sequences; w = 20",
+          "V10/V16/V20/V24": "vocabulary-introduction token-sequence size w = 10/16/20/24"
+        },
+        "missing_value_semantics": "null transcribes a printed dash: target recall was not reached because nonpositive-depth paragraph locations cannot become boundaries; not zero and not unevaluated.",
+        "results": [
+          {
+            "text_id": 1,
+            "paragraphs": 18,
+            "consensus_boundaries": 8,
+            "judge_precision": 0.809,
+            "judge_recall": 0.696,
+            "judge_kappa": 0.56,
+            "B7": 0.58,
+            "B9": 0.58,
+            "B10": 0.611,
+            "B12": 0.524,
+            "V10": 0.48,
+            "V16": 0.5,
+            "V20": 0.442,
+            "V24": 0.442,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 2,
+            "paragraphs": 30,
+            "consensus_boundaries": 10,
+            "judge_precision": 0.897,
+            "judge_recall": 0.714,
+            "judge_kappa": 0.74,
+            "B7": 0.877,
+            "B9": null,
+            "B10": null,
+            "B12": 0.781,
+            "V10": 0.505,
+            "V16": 0.617,
+            "V20": 0.633,
+            "V24": null,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 3,
+            "paragraphs": 21,
+            "consensus_boundaries": 9,
+            "judge_precision": 0.907,
+            "judge_recall": 0.778,
+            "judge_kappa": 0.72,
+            "B7": 0.875,
+            "B9": 0.875,
+            "B10": 0.875,
+            "B12": 0.788,
+            "V10": 0.583,
+            "V16": 0.5,
+            "V20": 0.778,
+            "V24": 0.636,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 4,
+            "paragraphs": 41,
+            "consensus_boundaries": 14,
+            "judge_precision": 0.892,
+            "judge_recall": 0.684,
+            "judge_kappa": 0.68,
+            "B7": 0.593,
+            "B9": 0.577,
+            "B10": 0.614,
+            "B12": 0.79,
+            "V10": 0.528,
+            "V16": 0.558,
+            "V20": 0.633,
+            "V24": null,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 5,
+            "paragraphs": 30,
+            "consensus_boundaries": 9,
+            "judge_precision": 0.716,
+            "judge_recall": 0.619,
+            "judge_kappa": 0.72,
+            "B7": 0.48,
+            "B9": 0.687,
+            "B10": 0.687,
+            "B12": null,
+            "V10": 0.478,
+            "V16": 0.649,
+            "V20": 0.5,
+            "V24": 0.581,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 6,
+            "paragraphs": 25,
+            "consensus_boundaries": 16,
+            "judge_precision": 0.932,
+            "judge_recall": 0.688,
+            "judge_kappa": 0.52,
+            "B7": null,
+            "B9": null,
+            "B10": null,
+            "B12": null,
+            "V10": 0.785,
+            "V16": 0.785,
+            "V20": null,
+            "V24": null,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 7,
+            "paragraphs": 39,
+            "consensus_boundaries": 8,
+            "judge_precision": 0.736,
+            "judge_recall": 0.732,
+            "judge_kappa": 0.75,
+            "B7": null,
+            "B9": null,
+            "B10": null,
+            "B12": null,
+            "V10": 0.422,
+            "V16": 0.634,
+            "V20": 0.402,
+            "V24": 0.467,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 8,
+            "paragraphs": 28,
+            "consensus_boundaries": 10,
+            "judge_precision": 0.793,
+            "judge_recall": 0.657,
+            "judge_kappa": 0.63,
+            "B7": 1.0,
+            "B9": 1.0,
+            "B10": 0.766,
+            "B12": 0.766,
+            "V10": 0.522,
+            "V16": 0.464,
+            "V20": 0.541,
+            "V24": 0.45,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 9,
+            "paragraphs": 27,
+            "consensus_boundaries": 11,
+            "judge_precision": 0.917,
+            "judge_recall": 0.649,
+            "judge_kappa": 0.65,
+            "B7": 0.682,
+            "B9": 0.854,
+            "B10": 0.781,
+            "B12": 0.683,
+            "V10": 0.46,
+            "V16": 0.416,
+            "V20": 0.704,
+            "V24": 0.588,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 10,
+            "paragraphs": 24,
+            "consensus_boundaries": 8,
+            "judge_precision": 0.743,
+            "judge_recall": 0.857,
+            "judge_kappa": 0.67,
+            "B7": 0.695,
+            "B9": null,
+            "B10": 0.707,
+            "B12": 0.707,
+            "V10": 0.478,
+            "V16": null,
+            "V20": null,
+            "V24": 0.471,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 11,
+            "paragraphs": 17,
+            "consensus_boundaries": 8,
+            "judge_precision": 0.812,
+            "judge_recall": 0.768,
+            "judge_kappa": 0.61,
+            "B7": null,
+            "B9": 0.605,
+            "B10": 0.544,
+            "B12": null,
+            "V10": 0.38,
+            "V16": 0.458,
+            "V20": 0.591,
+            "V24": 0.662,
+            "evidence_ref": "V36"
+          },
+          {
+            "text_id": 12,
+            "paragraphs": 21,
+            "consensus_boundaries": 9,
+            "judge_precision": 0.839,
+            "judge_recall": 0.651,
+            "judge_kappa": 0.58,
+            "B7": 0.673,
+            "B9": 0.673,
+            "B10": 0.745,
+            "B12": 0.745,
+            "V10": 0.5,
+            "V16": 0.604,
+            "V20": 0.539,
+            "V24": 0.455,
+            "evidence_ref": "V36"
+          }
+        ],
+        "evidence_refs": [
+          "V28",
+          "V36",
+          "V37",
+          "V38",
+          "V39",
+          "V40"
+        ]
+      },
+      {
+        "metric_id": "T01-M04",
+        "name": "Table 3: article-boundary precision and recall with ±3-sentence tolerance",
+        "task": "Detect seams between consecutively concatenated newspaper articles; not within-article subtopic segmentation",
+        "dataset": "44 Wall Street Journal articles from 1989, 691 paragraphs, after excluding articles shorter than 10 sentences",
+        "split": "One concatenated sequence; separate from magazine evaluation; exact article identifiers and duplicate checks not reported",
+        "definition": "Depth-ranked block boundaries; B = number predicted, C = number correct within three sentences of a true article seam; P = C/B. A recall denominator of 43 is inferred from 44 consecutive articles and fits all but one displayed row under nearest-two-decimal rounding; preserve the B=60, C=36, R=.83 exception (T01-C08).",
+        "denominators": {
+          "true_internal_article_boundaries": 43,
+          "derivation": "44 − 1, analyst arithmetic, consistent with all other displayed recall rows; B=60 has the T01-C08 rounding inconsistency.",
+          "matching_policy": "Tolerance reported; one-to-one matching and tie handling not reported"
+        },
+        "settings": "Default block settings: w=20, k=10, n=1, s=2; rank cutoff varied by B rather than LC/HC",
+        "results": [
+          {
+            "predicted_boundaries": 10,
+            "correct_boundaries": 8,
+            "precision": 0.8,
+            "recall": 0.19,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 20,
+            "correct_boundaries": 16,
+            "precision": 0.8,
+            "recall": 0.37,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 30,
+            "correct_boundaries": 22,
+            "precision": 0.73,
+            "recall": 0.51,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 40,
+            "correct_boundaries": 27,
+            "precision": 0.68,
+            "recall": 0.63,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 43,
+            "correct_boundaries": 29,
+            "precision": 0.67,
+            "recall": 0.67,
+            "breakeven": true
+          },
+          {
+            "predicted_boundaries": 50,
+            "correct_boundaries": 31,
+            "precision": 0.62,
+            "recall": 0.72,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 60,
+            "correct_boundaries": 36,
+            "precision": 0.6,
+            "recall": 0.83,
+            "breakeven": false
+          },
+          {
+            "predicted_boundaries": 70,
+            "correct_boundaries": 41,
+            "precision": 0.59,
+            "recall": 0.95,
+            "breakeven": false
+          }
+        ],
+        "evidence_refs": [
+          "V28",
+          "V42",
+          "V43",
+          "V44",
+          "V46",
+          "V47"
+        ],
+        "caveat_refs": [
+          "T01-C03",
+          "T01-C08"
+        ]
+      }
+    ],
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measured_evidence": "None for conditions, evidence, exceptions, action scope, approval scope, or reply scope in work messages.",
+      "related_evidence": "Boundary false positives/negatives are measured. Summary-vocabulary, quoted-speech/pronoun, and question-answer examples are qualitative error discussions (T01-F06/F07). They do not quantify preservation of decision-bearing meaning.",
+      "important_distinction": "Stop-word removal affects lexical scoring features. The paper does not demonstrate deletion of those words from the preserved source text; do not infer physical evidence loss from feature filtering.",
+      "evidence_refs": [
+        "V06",
+        "V09",
+        "V29",
+        "V30",
+        "V34",
+        "V40",
+        "V41"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Business email or asynchronous message topics; thread interleaving and source-to-Topic identity.",
+      "Whole-message multi-label classification, semantic segment labels, exact arbitrary spans, overlapping memberships, and discontinuous spans of one Topic.",
+      "A comparison of sentence, clause, arbitrary-span, EDU, and hybrid annotation units for preserving work scope.",
+      "Action, approval, question, and reply-scope extraction; preservation of conditions, evidence, exceptions, and decision scope.",
+      "Streaming updates, incremental costs, business-email latency, memory use, and calibrated uncertainty.",
+      "Pk, WindowDiff, pair/cluster scores, span F1/IoU, multi-label metrics, and work-preservation metrics."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T01-C01",
+        "type": "Internal indexing/count inconsistency",
+        "materiality": "Reimplementation window size and lexical-score replication",
+        "description": "Section 5.2.1 defines k as the number of token-sequences in each block, but prints inclusive ranges i−k through i and i+1 through i+k+1, which each enumerate k+1 positions. Section 5.2.2 similarly says an interval has length 2w with equal halves, but its indexed halves enumerate w+1 positions each. Preserve these formulas and prose without silently changing endpoints.",
+        "reported_values": [
+          "k token-sequences per block versus inclusive k+1 indices",
+          "interval length 2w versus inclusive 2(w+1) token indices"
+        ],
+        "evidence_refs": [
+          "V10",
+          "V11",
+          "V13",
+          "V14"
+        ],
+        "images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17-detail.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18-detail.png"
+        ],
+        "resolution": "Both versions are visually legible. The intended index correction is not established by this frozen paper alone; no implementation was run."
+      },
+      {
+        "id": "T01-C02",
+        "type": "Terminology versus numerical gold rule",
+        "materiality": "Gold construction",
+        "description": "Section 6.4 calls gold boundaries “majority” boundaries, while Section 6.1 explicitly uses at least three of seven judges. Three of seven is not a strict majority. Analysis retains the explicit 3/7 rule.",
+        "reported_values": [
+          "at least three out of seven",
+          "majority"
+        ],
+        "evidence_refs": [
+          "V25",
+          "V34"
+        ],
+        "resolution": "Use the explicit numerical rule for describing the paper; do not relabel it as majority voting without qualification."
+      },
+      {
+        "id": "T01-C03",
+        "type": "Prose/table coverage difference; not a proven contradiction at an identical cutoff",
+        "materiality": "Article-boundary recall ceiling",
+        "description": "Section 6.5 says only one transition is missed entirely. At the largest displayed cutoff, B=70, Table 3 instead has C=41 and R=.95. With 43 internal seams, this displayed row leaves two unmatched seams. The prose could refer to more candidates than shown, but no such cutoff or additional row is reported. Do not claim the table demonstrates 42/43 recovery.",
+        "reported_values": [
+          "one transition missed entirely",
+          "41 correct at 70 predictions; .95 recall; 2 of 43 not recovered at that cutoff (analyst arithmetic)"
+        ],
+        "evidence_refs": [
+          "V43",
+          "V45",
+          "V46",
+          "V47"
+        ],
+        "resolution": "Both retained; operating-point scope unresolved. Visual ambiguity is resolved; no further effort escalation needed."
+      },
+      {
+        "id": "T01-C04",
+        "type": "Illustrative count mismatch",
+        "materiality": "Local reader-boundary example only",
+        "description": "The prose says “next three major boundaries” but lists paragraphs 5, 9, 12 and 13, four positions. No correction is guessed.",
+        "reported_values": [
+          "three",
+          "5, 9, 12 and 13"
+        ],
+        "evidence_refs": [
+          "V48"
+        ],
+        "resolution": "Retain as a local wording/count inconsistency; it does not change transcribed evaluation tables."
+      },
+      {
+        "id": "T01-C05",
+        "type": "Reported κ aggregation precision caveat",
+        "materiality": "Exact IAA reproduction",
+        "description": "The prose reports average κ=.647; Table 1 prints 65 on its integer score scale (.65). Table 2 prints the twelve text κ values at two decimal places; their arithmetic mean is .6525. This derived average does not exactly reconstruct .647, and unrounded values/precise averaging details are absent. Do not replace any source number with the derived mean.",
+        "reported_values": [
+          0.647,
+          0.65,
+          0.6525
+        ],
+        "evidence_refs": [
+          "V26",
+          "V31",
+          "V36"
+        ],
+        "resolution": "Treat .65 as a low-precision table report. The small remaining aggregation difference is retained, without diagnosing its cause."
+      },
+      {
+        "id": "T01-C06",
+        "type": "Explicit length-criterion exception, not a contradiction",
+        "materiality": "Dataset characterization",
+        "description": "The stated magazine length criterion is 1800–2500 words, with one explicitly disclosed 2932-word article retained because judgments already existed. Both the criterion and exception must accompany corpus descriptions.",
+        "reported_values": [
+          "1800–2500 words",
+          "one text of 2932 words"
+        ],
+        "evidence_refs": [
+          "V20",
+          "V21"
+        ],
+        "resolution": "Resolved by the paper’s own footnote; not an extraction problem."
+      },
+      {
+        "id": "T01-C07",
+        "type": "Baseline procedure/table discrepancy under the literal sampling description",
+        "materiality": "Baseline recall interpretation",
+        "description": "The prose describes independently assigning each potential gap a boundary with probability .39, averaged over 10,000 runs per text. Table 1 reports baseline precision .50 and recall .51. For a fixed eligible gold-boundary set under literal independent gap sampling, expected recall would be .39 (analyst inference), not .51. The paper does not explain candidate normalization or another implementation detail that could reconcile these numbers. Retain the table results as reported, without treating the inferred expectation as a measured score.",
+        "reported_values": [
+          "boundary sampling probability .39",
+          "Table 1 precision .50 and recall .51",
+          "expected recall .39 under the literal fixed-gap Bernoulli model (analyst inference)"
+        ],
+        "evidence_refs": [
+          "V27",
+          "V31",
+          "V32",
+          "V33",
+          "V34"
+        ],
+        "resolution": "No correction guessed. Possible effects of paragraph/candidate normalization are not specified for the baseline."
+      },
+      {
+        "id": "T01-C08",
+        "type": "Table 3 count/recall rounding inconsistency",
+        "materiality": "Exact article-seam metric reproduction",
+        "description": "At B=60, Table 3 prints C=36, precision .60, recall .83. For 43 internal seams inferred from 44 consecutive articles, 36/43=.837209..., which rounds to .84 at two decimals. The other displayed recall rows agree with nearest-two-decimal rounding using 43. No alternative denominator or truncation convention is supplied; retain .83 as the paper-reported value.",
+        "reported_values": [
+          "B=60, C=36, P=.60, R=.83",
+          "36/43=.837209..., nearest-two-decimal .84 (analyst arithmetic)"
+        ],
+        "evidence_refs": [
+          "V43",
+          "V46",
+          "V47"
+        ],
+        "resolution": "The page image clearly prints .83. This is a source arithmetic/rounding caveat, not a transcription correction."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "description": "Transfer only: distinguishes computational token windows from annotation/output units. It supplies no comparative evidence that paragraphs or pseudosentences preserve a work matter’s scope better than clauses, spans, EDUs, or hybrids.",
+        "evidence_refs": [
+          "V08",
+          "V10",
+          "V23"
+        ]
+      },
+      "RQ2": {
+        "description": "No direct email or asynchronous clustering evidence. Linear segmentation cannot establish a recurring or interleaved Topic identity.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V43"
+        ]
+      },
+      "RQ3": {
+        "description": "No semantic multi-label gold or predictions. Multiple lexical themes and overlapping score windows must not be counted as Topic membership capability.",
+        "evidence_refs": [
+          "V01",
+          "V02",
+          "V05",
+          "V11"
+        ]
+      },
+      "RQ4": {
+        "description": "Negative capability boundary of the representation, not a negative experiment: output intervals are contiguous and nonoverlapping. No discontinuous semantic object is evaluated.",
+        "evidence_refs": [
+          "V01"
+        ]
+      },
+      "RQ5": {
+        "description": "Relevant qualitative cases expose lexical/discourse disagreement, including a split across a question-answer relation. Direct work-scope preservation remains unmeasured.",
+        "evidence_refs": [
+          "V29",
+          "V30",
+          "V40",
+          "V41"
+        ]
+      },
+      "RQ6": {
+        "description": "Useful historical boundary evaluation baseline. Keep exact paragraph-gap P/R/κ, human-target-recall precision, and tolerant article-seam P/R distinct; do not equate them with Topic spans, clustering, or preservation.",
+        "evidence_refs": [
+          "V25",
+          "V31",
+          "V34",
+          "V36",
+          "V37",
+          "V44",
+          "V46"
+        ]
+      },
+      "RQ7": {
+        "description": "Provides a small human-labeled magazine evaluation with loose instructions, explicit consensus threshold, judgment normalization, and same-text parameter tuning. It also tests a separate WSJ sequence. Data release and duplicate controls are not reported.",
+        "evidence_refs": [
+          "V20",
+          "V21",
+          "V22",
+          "V24",
+          "V25",
+          "V27",
+          "V28",
+          "V43"
+        ]
+      },
+      "RQ8": {
+        "description": "Supports investigating a lexical boundary baseline and targeted diagnostic cases; it does not approve a msgloom representation.",
+        "evidence_refs": [
+          "V16",
+          "V28",
+          "V30",
+          "V40",
+          "V41",
+          "V50",
+          "V51"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "T01-I01",
+        "statement": "Use TextTiling as a candidate baseline for contiguous boundary detection. A lexical passage is not necessarily a concrete work matter. Scope-bearing relations can cross a boundary, and repeated matters can recur beyond it.",
+        "basis": [
+          "T01-F01",
+          "T01-F07"
+        ],
+        "status": "analyst interpretation, not paper-reported email performance"
+      },
+      {
+        "id": "T01-I02",
+        "statement": "Preserve source text and keep a boundary proposal separate from any later semantic assignment. Feature filtering and a hard consensus boundary rule do not provide uncertainty-preserving work evidence by themselves.",
+        "basis": [
+          "T01-F03",
+          "T01-F06"
+        ],
+        "status": "analyst interpretation; no architecture approval"
+      },
+      {
+        "id": "T01-I03",
+        "statement": "The source supports transfer at the segmentation level only. It supplies no evidence to force each message or span into one Topic.",
+        "basis": [
+          "T01-F01",
+          "T01-F09"
+        ],
+        "status": "analyst interpretation"
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T01-E01",
+        "status": "untested msgloom research proposal",
+        "proposal": "On a fixed, user-reviewed business-message sample, compare TextTiling boundary candidates with sentence-, clause-, arbitrary-span-, EDU-, and hybrid-based annotations. Preserve raw offsets and semantic work-matter identities independently from boundaries.",
+        "evaluation": "Report boundary precision/recall separately from exact/overlap span scores, multi-label membership, and retention of conditions/evidence/scope. Split by work matter/thread and near-duplicate group before tuning; do not reuse the test set for defaults.",
+        "motivation": [
+          "T01-F01",
+          "T01-F04",
+          "T01-F07"
+        ]
+      },
+      {
+        "id": "T01-E02",
+        "status": "untested msgloom research proposal",
+        "proposal": "Create diagnostic message cases with repeated vocabulary across different matters, recurring non-contiguous material for one matter, overlapping evidence, short quoted replies, pronouns, and approval conditions. Measure whether a boundary-only baseline misses these relations.",
+        "evaluation": "Annotate gold overlap/cardinality/discontinuity explicitly at within-message and thread levels. Track missed or broadened conditions, approval scope, and reply targets separately; a boundary score alone is insufficient.",
+        "motivation": [
+          "T01-F06",
+          "T01-F07"
+        ]
+      },
+      {
+        "id": "T01-E03",
+        "status": "untested msgloom research proposal",
+        "proposal": "Compare lexical feature variants and local discourse cues near candidate boundaries while retaining all original text. Preserve ambiguous annotator alternatives for review, and test candidate rankings and calibration separately from hard partitions.",
+        "evaluation": "Hold out entire work matters for testing. Report accuracy and preservation changes together; resolve the frozen paper’s indexing ambiguity explicitly in any separate reproduction specification.",
+        "motivation": [
+          "T01-F03",
+          "T01-F04",
+          "T01-F06"
+        ],
+        "evidence_refs": [
+          "V16",
+          "V50",
+          "V51"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-segmentation/1997_hearst_texttiling.pdf",
+      "pdf_sha256": "fd754dbe913a4b590d23f778cbf23f717069668d7eebe8dc0119f095ebf9a4e5",
+      "expected_pdf_sha256": "fd754dbe913a4b590d23f778cbf23f717069668d7eebe8dc0119f095ebf9a4e5",
+      "pdf_hash_matches": true,
+      "pdf_page_count": 33,
+      "pdf_version_note": "Frozen manuscript says “To Appear in Computational Linguistics, March 1997”; use its PDF pages 1–33, not externally inferred published pagination.",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T01.md",
+      "converted_text_sha256": "f5b7480b44f4697de6922485bb85eafa3735ca38d7580a94f686056307099bb6",
+      "fine_conversion_available": false,
+      "converted_text_status": "Custom Type 3 font extraction is garbled across the paper. Neither pipeline Markdown nor independent text conversions are reliable prose evidence.",
+      "auxiliary_conversions": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T01.pages.md",
+          "sha256": "a7d744b515a71d7f9f9fa23ae8ee86e26e0304f1742a32d4a12b8239c9acbe47",
+          "status": "Damaged extraction; diagnostic only, not a claim source"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T01.raw.txt",
+          "sha256": "927c832c5ef72067345b6fe835714967c33b12f2a767060232260f30817cb93a",
+          "status": "Damaged extraction; diagnostic only, not a claim source"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T01.layout.txt",
+          "sha256": "625c35e321ef1e5d5b33760c35c08357e4454d957bb1799b295d478f42e455bc",
+          "status": "Damaged extraction; diagnostic only, not a claim source"
+        }
+      ],
+      "visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "sha256": "8ff92043f1cb07e7b485d3b67efd5b35157bb67ad3572374ec39ebc643eea308",
+        "status": "Faithful manually verified selected excerpts, not converter output or OCR",
+        "evidence_index_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/evidence-index.json",
+        "page_images": [
+          {
+            "pdf_page": 1,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-01.png",
+            "sha256": "22d85bf7defa67b26ab5159a3ddf185807269eff45e5e4dca7d21d41d4ec424e"
+          },
+          {
+            "pdf_page": 2,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png",
+            "sha256": "87bd7f490d57365a8efdb7ff48f00ada3ef952803dc95031655e0b2d90fafca8"
+          },
+          {
+            "pdf_page": 3,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-03.png",
+            "sha256": "79a611ae360fc3380c76a2952e2cae194884f3218884997e39fac8a675c2bbb7"
+          },
+          {
+            "pdf_page": 4,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-04.png",
+            "sha256": "46a5d3c32be9ecfa7889ad6a11f23580798a9b0cd01620a12a66b453b54fbc38"
+          },
+          {
+            "pdf_page": 5,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-05.png",
+            "sha256": "a328cb18f3ac884b2f8d9677182c8764ea9f524f94db0e1f45561d65f500eb20"
+          },
+          {
+            "pdf_page": 6,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-06.png",
+            "sha256": "9e7593cdbb46af5330be5f1b58fbd107033421bd2b36c902645a9fc23f1f3fb2"
+          },
+          {
+            "pdf_page": 7,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-07.png",
+            "sha256": "c5a977856cb59c2c3a033b8ae2cdd8d3ea6ad5db0be6488d1669ae0c18ab8e51"
+          },
+          {
+            "pdf_page": 8,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-08.png",
+            "sha256": "ec553b5dae5a0b62cba68dce0d939f359139c81656ebc43426568018074640a0"
+          },
+          {
+            "pdf_page": 9,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-09.png",
+            "sha256": "7714371f2c2b735bccf5ea85d16c0ed119ab888ec9c542ca5e90e36351e6e02d"
+          },
+          {
+            "pdf_page": 10,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-10.png",
+            "sha256": "1241e3500a01892388b63ea9ae022e11835e2fcdd8f5fff623166f164e401bd3"
+          },
+          {
+            "pdf_page": 11,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-11.png",
+            "sha256": "2a23f1876f21fc7f2597ffe3f71a4ac15f0e892ef68b1ad60e0a5d38b6de9610"
+          },
+          {
+            "pdf_page": 12,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-12.png",
+            "sha256": "e474c95ab460c75a4dca01f5c35722a82b265b13e6dee96bc389647fdc366113"
+          },
+          {
+            "pdf_page": 13,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-13.png",
+            "sha256": "53c7573cda9de00a7295774effe98790a57be312fa30b0906410e65bfb67fe44"
+          },
+          {
+            "pdf_page": 14,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-14.png",
+            "sha256": "62fd3c4f6235076a983bbc170653437966298dbd9d6c5c23dc4a73569027dd18"
+          },
+          {
+            "pdf_page": 15,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-15.png",
+            "sha256": "4ef9186e71043b157fc32f57bd15ea14beafd69c5df66c91bca19f10816d393c"
+          },
+          {
+            "pdf_page": 16,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-16.png",
+            "sha256": "573be86004286bc08d0df8f00a8b2fa7df07c08e08e252da441c31103cc4134f"
+          },
+          {
+            "pdf_page": 17,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+            "sha256": "c3d9074e4ef1a24f536f19c6d9bab062e74b92ffabc33109591889458207fac9"
+          },
+          {
+            "pdf_page": 18,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18.png",
+            "sha256": "c8b50fcb5bf2f3da7fdd931a3abfbcdc6cefe45ae4e01b066f6979ed1179d25e"
+          },
+          {
+            "pdf_page": 19,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-19.png",
+            "sha256": "8ca2e3acf3f899219bd9efd6fe246dd6d4a79feb76ef0e14e851e415e7532c63"
+          },
+          {
+            "pdf_page": 20,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+            "sha256": "02de21ef061d7f84aa74120a02fa63e07e954f39affd23efc776c424bc951a33"
+          },
+          {
+            "pdf_page": 21,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+            "sha256": "e9c75de4a5b37244a59e763b9725c3e6e89f59a4447b2cea16d9dc8658f05e76"
+          },
+          {
+            "pdf_page": 22,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-22.png",
+            "sha256": "61bc216db46a737417ae1ac256b227600fb36e085fc3c8d91b417ae0532475b3"
+          },
+          {
+            "pdf_page": 23,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+            "sha256": "6cbaf164bf469032666049290dd1c1c4d38c611098982dad46fad7c9e4065299"
+          },
+          {
+            "pdf_page": 24,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+            "sha256": "4e1f5b2dad30682cab7e9c731c46f164352d41bb9fd5901fcca83a15292be62d"
+          },
+          {
+            "pdf_page": 25,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+            "sha256": "92f6d51ae6165e18b14355f2514a96b5902263fe8faaf72664ba44616683dffb"
+          },
+          {
+            "pdf_page": 26,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png",
+            "sha256": "9b9730ddc39aec70dd02e9a2ed4521173172aa66c236e1a536be4ff3d9ca5667"
+          },
+          {
+            "pdf_page": 27,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-27.png",
+            "sha256": "a91714a4725e4cef68528eb46e8663955df5a437150c3a2fa8b2a6769bbbb493"
+          },
+          {
+            "pdf_page": 28,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-28.png",
+            "sha256": "ad0aacf0d6a0820c09949227d50f7dde12d7722c1633108577679d92b354af5c"
+          },
+          {
+            "pdf_page": 29,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-29.png",
+            "sha256": "ae20df94c1674fa9edf098832071b083841858d1d0baec4e75aecfdea5a6d922"
+          },
+          {
+            "pdf_page": 30,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-30.png",
+            "sha256": "7e3a46757c3961bf5660b2d7a89c7950aa482d4cce33635a8fb5ce5ef889237a"
+          },
+          {
+            "pdf_page": 31,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-31.png",
+            "sha256": "05e76e7867239c49fc434f82fe732920e3ddf2c3c88c1637bc8aac23b44ebabc"
+          },
+          {
+            "pdf_page": 32,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-32.png",
+            "sha256": "a46ab3a2a810f2bb4b50b5807267cc08e04aaed18bd8da6b3f3fca21ad72f295"
+          },
+          {
+            "pdf_page": 33,
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-33.png",
+            "sha256": "e30647531560487f357916aef5270b2c0e5c5b7d0164bc7c96f7c4c972aa6d4e"
+          }
+        ]
+      },
+      "read_coverage": "All 33 original PDF page images visually read, including all tables/equations/figures and references. Damaged conversions audited as damaged sources. T01 metadata only selected from shortlist. No prior paper analysis or Topic01 conclusions reused.",
+      "locator_convention": "Absolute paths; LF newline numbering via text.split(\"\\n\"); 1-based inclusive line endpoints. Quotes checked after whitespace normalization only; line-break hyphens retained.",
+      "network_access": "None; immutable local corpus only"
+    }
+  },
+  "evidence_catalog": {
+    "V01": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 13,
+        "line_end": 16,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, 1. Introduction",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V02": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 24,
+        "line_end": 27,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, 1. Introduction",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V03": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 35,
+        "line_end": 36,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF p. 2, 1. Introduction, footnote 1",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-02.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V04": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 44,
+        "line_end": 51,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF p. 3, 2. Why Multi-Paragraph Units?",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-03.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V05": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 59,
+        "line_end": 61,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "section": "PDF p. 9, 4. Detecting Subtopic Change via Lexical Co-occurrence Patterns",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-09.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V06": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 69,
+        "line_end": 74,
+        "pdf_pages": [
+          16
+        ]
+      },
+      "section": "PDF p. 16, 5.1 Tokenization",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-16.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V07": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 82,
+        "line_end": 83,
+        "pdf_pages": [
+          16
+        ]
+      },
+      "section": "PDF p. 16, 5.1 Tokenization, footnote 8",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-16.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V08": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 91,
+        "line_end": 97,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "section": "PDF p. 17, 5.1 Tokenization",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V09": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 105,
+        "line_end": 108,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "section": "PDF p. 17, 5.1 Tokenization",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V10": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 116,
+        "line_end": 122,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "section": "PDF p. 17, 5.2.1 Blocks",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V11": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 130,
+        "line_end": 137,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "section": "PDF p. 17, 5.2.1 Blocks",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+      "transcription_type": "faithful prose and inline mathematical transcription; subscripts rendered in Unicode"
+    },
+    "V12": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 145,
+        "line_end": 146,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "section": "PDF p. 17, 5.2.1 Blocks",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-17.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V13": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 154,
+        "line_end": 158,
+        "pdf_pages": [
+          18
+        ]
+      },
+      "section": "PDF p. 18, 5.2.2 Vocabulary Introduction",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V14": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 166,
+        "line_end": 172,
+        "pdf_pages": [
+          18
+        ]
+      },
+      "section": "PDF p. 18, 5.2.2 Vocabulary Introduction",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18.png",
+      "transcription_type": "faithful prose and equation transcription; equation linearized and subscripts rendered in Unicode"
+    },
+    "V15": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 180,
+        "line_end": 184,
+        "pdf_pages": [
+          18
+        ]
+      },
+      "section": "PDF p. 18, 5.3 Boundary Identification",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V16": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 192,
+        "line_end": 196,
+        "pdf_pages": [
+          18
+        ]
+      },
+      "section": "PDF p. 18, 5.3 Boundary Identification",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-18.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V17": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 204,
+        "line_end": 210,
+        "pdf_pages": [
+          19
+        ]
+      },
+      "section": "PDF p. 19, 5.3 Boundary Identification",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-19.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V18": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 218,
+        "line_end": 222,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "section": "PDF p. 20, 5.5 Determining the Number of Boundaries",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "transcription_type": "faithful prose and inline mathematical transcription; mean and standard deviation symbols retained"
+    },
+    "V19": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 230,
+        "line_end": 231,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "section": "PDF p. 20, 6. Evaluation",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V20": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 239,
+        "line_end": 241,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "section": "PDF p. 20, 6.1 Reader Judgments",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V21": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 249,
+        "line_end": 250,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "section": "PDF p. 20, 6.1 Reader Judgments, footnote 9 (begins)",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V22": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 258,
+        "line_end": 259,
+        "pdf_pages": [
+          21
+        ]
+      },
+      "section": "PDF p. 21, 6.1 Reader Judgments, footnote 9 (continues)",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V23": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 267,
+        "line_end": 268,
+        "pdf_pages": [
+          21
+        ]
+      },
+      "section": "PDF p. 21, 6.1 Reader Judgments",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V24": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 276,
+        "line_end": 282,
+        "pdf_pages": [
+          21
+        ]
+      },
+      "section": "PDF p. 21, 6.1 Reader Judgments, footnote 10",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V25": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 290,
+        "line_end": 294,
+        "pdf_pages": [
+          21
+        ]
+      },
+      "section": "PDF p. 21, 6.1 Reader Judgments",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+      "transcription_type": "faithful prose and inline mathematical transcription; superscripts rendered in Unicode"
+    },
+    "V26": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 302,
+        "line_end": 305,
+        "pdf_pages": [
+          22
+        ]
+      },
+      "section": "PDF p. 22, 6.1 Reader Judgments",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-22.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V27": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 313,
+        "line_end": 314,
+        "pdf_pages": [
+          22
+        ]
+      },
+      "section": "PDF p. 22, 6.1 Reader Judgments, footnote 11",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-22.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V28": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 322,
+        "line_end": 328,
+        "pdf_pages": [
+          23
+        ]
+      },
+      "section": "PDF p. 23, 6.2 Parameter Settings",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V29": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 336,
+        "line_end": 340,
+        "pdf_pages": [
+          23
+        ]
+      },
+      "section": "PDF p. 23, 6.3 Results: Qualitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V30": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 348,
+        "line_end": 353,
+        "pdf_pages": [
+          23
+        ]
+      },
+      "section": "PDF p. 23, 6.3 Results: Qualitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-23.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V31": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 361,
+        "line_end": 372,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, Table 1",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "faithful table-cell transcription; horizontal column groups placed on separate lines; numbers retain printed scale"
+    },
+    "V32": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 380,
+        "line_end": 386,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, Table 1 caption",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V33": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 394,
+        "line_end": 397,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V34": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 405,
+        "line_end": 409,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V35": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 417,
+        "line_end": 420,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V36": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 428,
+        "line_end": 440,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "section": "PDF p. 25, Table 2",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "transcription_type": "faithful table-cell transcription; first field of each data row is the unheaded text number"
+    },
+    "V37": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 448,
+        "line_end": 453,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "section": "PDF p. 25, Table 2 caption",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V38": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 461,
+        "line_end": 462,
+        "pdf_pages": [
+          24
+        ]
+      },
+      "section": "PDF p. 24, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-24.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V39": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 470,
+        "line_end": 475,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "section": "PDF p. 25, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V40": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 483,
+        "line_end": 488,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "section": "PDF p. 25, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V41": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 496,
+        "line_end": 500,
+        "pdf_pages": [
+          25
+        ]
+      },
+      "section": "PDF p. 25, 6.4 Results: Quantitative Analysis",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-25.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V42": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 508,
+        "line_end": 514,
+        "pdf_pages": [
+          26
+        ]
+      },
+      "section": "PDF p. 26, 6.5 Detecting Breaks between Consecutive Documents",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V43": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 522,
+        "line_end": 528,
+        "pdf_pages": [
+          26
+        ]
+      },
+      "section": "PDF p. 26, 6.5 Detecting Breaks between Consecutive Documents",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V44": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 536,
+        "line_end": 539,
+        "pdf_pages": [
+          26
+        ]
+      },
+      "section": "PDF p. 26, 6.5 Detecting Breaks between Consecutive Documents",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V45": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 547,
+        "line_end": 549,
+        "pdf_pages": [
+          26
+        ]
+      },
+      "section": "PDF p. 26, 6.5 Detecting Breaks between Consecutive Documents",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-26.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V46": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 557,
+        "line_end": 565,
+        "pdf_pages": [
+          27
+        ]
+      },
+      "section": "PDF p. 27, Table 3",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-27.png",
+      "transcription_type": "faithful table-cell transcription; asterisk identifies the paper’s precision/recall breakeven point"
+    },
+    "V47": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 573,
+        "line_end": 575,
+        "pdf_pages": [
+          27
+        ]
+      },
+      "section": "PDF p. 27, Table 3 caption",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-27.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V48": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 583,
+        "line_end": 584,
+        "pdf_pages": [
+          21
+        ]
+      },
+      "section": "PDF p. 21, 6.1 Reader Judgments",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-21.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V49": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 592,
+        "line_end": 595,
+        "pdf_pages": [
+          20
+        ]
+      },
+      "section": "PDF p. 20, 6. Evaluation",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-20.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V50": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 603,
+        "line_end": 606,
+        "pdf_pages": [
+          28
+        ]
+      },
+      "section": "PDF p. 28, 7. Summary And Future Work",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-28.png",
+      "transcription_type": "verbatim prose"
+    },
+    "V51": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/T01.visual-transcription.md",
+        "line_start": 614,
+        "line_end": 616,
+        "pdf_pages": [
+          28
+        ]
+      },
+      "section": "PDF p. 28, 7. Summary And Future Work",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T01/page-28.png",
+      "transcription_type": "verbatim prose"
+    }
+  },
+  "runtime_provenance": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "provenance": "Launcher-reported values from MSGLOOM_WORKER_* environment; parent independently verifies actual turn_context and exit receipts.",
+    "launcher_reported": {
+      "MSGLOOM_WORKER_ROLE": "paper-T01",
+      "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+      "MSGLOOM_WORKER_EFFORT": "xhigh"
+    },
+    "runtime_identifiers": "Not supplied or inferred"
+  },
+  "analysis_scope": "T01 only; no other paper analyzed, no workers spawned, no pipeline stage or workflow-state mutation, no network activity."
+}

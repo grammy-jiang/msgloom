@@ -1,0 +1,2037 @@
+{
+  "paper_id": "S04",
+  "title": "Aspect-based Analysis of Advertising Appeals for Search Engine Advertising",
+  "research_question": "Can advertising-aspect annotation and detection identify industry-specific appeals associated with click-through rate and improve click-through-rate prediction?",
+  "methodology": "The authors created a Japanese Google Ads advertising-aspect corpus using expert-informed hierarchical labels and majority-agreed expression spans. They compared BERT-based contiguous character-span detection plus multi-label classification with whole-ad multi-label classification and an oracle-span condition. They then correlated predicted aspect presence with observed CTR and supplied predicted aspects to a separate BERT CTR model. This is advertising representation-transfer evidence, not email Topic segmentation. See topic02 for separate units, datasets, metrics and exact source locators.",
+  "methodology_sources": [
+    {
+      "section": "§§3.2–3.4",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+      "line_start": 246,
+      "line_end": 295,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "section": "§§4–4.1",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+      "line_start": 369,
+      "line_end": 422,
+      "pdf_pages": [
+        3,
+        4
+      ]
+    },
+    {
+      "section": "§6.1 Dataset",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+      "line_start": 491,
+      "line_end": 504,
+      "pdf_pages": [
+        4
+      ]
+    },
+    {
+      "section": "§§6–7",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+      "line_start": 480,
+      "line_end": 824,
+      "pdf_pages": [
+        4,
+        5,
+        6,
+        7
+      ]
+    }
+  ],
+  "key_findings": [
+    {
+      "id": "F01",
+      "finding": "The gold annotation scheme explicitly permits multiple aspect labels on the same advertising-expression span; its membership-discount example illustrates discount-price and limited-target labels on one interval. This establishes allowed coincident-boundary multiple membership in this advertising task. The paper does not report its observed frequency in the retained gold data or establish arbitrary crossing or nested boundaries.",
+      "evidence_type": "supported",
+      "section": "PDF page 3; §3.2 Label Types and Annotation Scheme",
+      "quote": "Moreover, we allowed the annotators to provide multiple labels for each span because an expression of advertising appeals may contain multiple aspects.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 251,
+        "line_end": 262,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "F02",
+      "finding": "The evaluated span model is formulated to predict contiguous character intervals and multiple aspect labels per interval, using BERT, BIOE boundaries, a linear-chain CRF and a sigmoid classifier over an averaged span vector. The document model instead predicts multiple labels for an entire ad text. Figure 2 illustrates two labels on one detected interval; actual multi-label output counts and overlap-subset scores are not reported.",
+      "evidence_type": "supported",
+      "section": "PDF page 3; §4.1 Span-Based Model",
+      "quote": "We consider characters as a unit (token) in the span-based model.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 302,
+        "line_end": 314,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 382,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 398,
+          "line_end": 422,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§4.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 434,
+          "line_end": 445,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "finding": "The annotation study used six advertising-agency participants, three per text, retaining spans only when at least two agreed on boundaries and labels. It reports token-level pairwise Cohen kappa 0.612 and span-level pairwise F1 0.451. These are different agreement units; the paper does not provide pair-specific scores or aggregation details.",
+      "evidence_type": "supported",
+      "section": "PDF page 3; §3.4 Annotated Dataset Statistics",
+      "quote": "We obtained relatively high agreement among the annotators: _κ_ = 0 _._ 612 _, F_ 1 = 0 _._ 451.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 344,
+        "line_end": 347,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§3.3",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 268,
+          "line_end": 279,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 285,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "finding": "For the Japanese advertising-aspect test set of 410 ad texts, Table 2 reports macro F1 0.32 for predicted spans plus labels, 0.46 for labels on oracle spans, and 0.56 for whole-ad labels. Span-model true positives require both correct span and label. The document score must not be treated as span localization or Topic assignment performance.",
+      "evidence_type": "supported",
+      "section": "PDF page 5; Table 2 and §6.1 Evaluation Metrics",
+      "quote": "**Macro average** 0.32 0.46 0.56",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 554,
+        "line_end": 557,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§6.1 Dataset",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 491,
+          "line_end": 495,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§6.1 Evaluation Metrics",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 567,
+          "line_end": 576,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "section": "§6.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 582,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "finding": "On that same 410-ad aspect-detection test set, the Pred model has separately reported span-detection F1 0.69. The lower joint span-and-label macro F1 is consistent with boundary errors, but the paper does not isolate boundary-error types or measure loss of conditions or reply scope.",
+      "evidence_type": "supported",
+      "section": "PDF page 5; §6.2 Aspect Detection",
+      "quote": "In fact, we found that the _F_ 1 score for the span detection is 0.69 for the Pred model.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 602,
+        "line_end": 611,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "id": "F06",
+      "finding": "Problem solving and First-time limited have F1 0.00 in all three Table 2 settings on the 410-ad test set. Their full annotated-corpus label-span counts are 17 and 25, respectively; test-set positive counts are not reported. The paper attributes difficulty to limited annotated cases, without a controlled data-size study.",
+      "evidence_type": "supported",
+      "section": "PDF page 5; §6.2 Aspect Detection",
+      "quote": "The aspect detection was difficult for several aspects in which the numbers of annotated cases were limited, such as (8) and (15), as indicated from Tables 1 and 2.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 625,
+        "line_end": 628,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 5",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1130,
+          "line_end": 1164,
+          "pdf_pages": [
+            10
+          ]
+        },
+        {
+          "section": "Table 2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 530,
+          "line_end": 541,
+          "pdf_pages": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "finding": "The annotated data were Japanese Google Ads texts filtered to 15–200 characters and deduplicated with normalized Levenshtein distance. The paper reports 2,738 texts before exclusion of six inappropriately annotated texts, then aspect train/development/test counts of 1,857/465/410. The title count is internally inconsistent: 666 in prose and 766 in Table 7.",
+      "evidence_type": "supported",
+      "section": "PDF page 2; §3.1 Data Collection",
+      "quote": "Furthermore, we excluded duplicates and highly similar texts using the normalized Levenshtein distance metric (Levenshtein, 1966; Greenhill, 2011), because the majority of the ad texts were created from templates for the sake of cost efficiency (Fujita et al., 2010).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 188,
+        "line_end": 201,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§3.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 168,
+          "line_end": 175,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "section": "§6.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 491,
+          "line_end": 504,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "Appendix A",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1063,
+          "line_end": 1071,
+          "pdf_pages": [
+            9
+          ]
+        },
+        {
+          "section": "Table 7",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1192,
+          "line_end": 1224,
+          "pdf_pages": [
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "finding": "For CTR prediction on the separate 15,976-example test set, Table 4 reports BERT AUC/RMSE/MAE 0.683/0.220/0.142, with span-predicted aspect features 0.709/0.218/0.137, and with document-predicted aspect features 0.713/0.217/0.136. These are downstream advertising results from one reported run, not evidence-preservation or Topic metrics.",
+      "evidence_type": "supported",
+      "section": "PDF page 6; Table 4 and §6.4 CTR Prediction",
+      "quote": "BERT 0.683 0.220 0.142 + **l** _span_ 0.709 0.218 0.137 + **l** _doc_ **0.713** **0.217** **0.136**",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 737,
+        "line_end": 745,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§6.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 496,
+          "line_end": 504,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§6.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 775,
+          "line_end": 795,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "section": "Appendix D",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1097,
+          "line_end": 1108,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "finding": "Using doc-predicted aspect presence and actual CTR on industry subsets of the CTR training set, the paper reports industry-dependent correlations. For example, reward points has point-biserial r=0.443 in Finance (20,183 ad texts) and r=0.377 in Travel (8,093); special gift has r=0.339 in Finance and r=-0.332 in Travel. These are associations with predicted labels, not causal effects of adding an appeal.",
+      "evidence_type": "supported",
+      "section": "PDF page 6; Table 3 and §6.3",
+      "quote": "(3) 0.183 0.000 **0.443** _−_ **0.377**",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 660,
+        "line_end": 664,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 3 caption and sample counts",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 695,
+          "line_end": 703,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "section": "§6.3 and footnote 6",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 718,
+          "line_end": 733,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "section": "Appendix C",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1086,
+          "line_end": 1091,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "finding": "The claim that presenting effective expressions to ad creators may aid ad creation remains an untested application claim in this paper. The conclusion leaves real-world ad-creation assistance to future work.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 6; §6.3 Correlation between Aspects and CTR",
+      "quote": "We believe that the presentation of these effective expressions to ad creators may provide actionable insights and aid in the ad creation process.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 763,
+        "line_end": 769,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§7 Conclusions",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 818,
+          "line_end": 824,
+          "pdf_pages": [
+            7
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No direct email, concrete work-matter Topic, thread or business-scope evaluation; see topic02.evaluated_tasks and sources.",
+    "The described single BIOE sequence plus labels does not establish arbitrary nested/crossing spans or linked discontinuous objects; §§4–4.1, PDF pages 3–4.",
+    "The whole-ad and span-model F1 scores have different prediction units; §6.1 and Table 2, PDF page 5.",
+    "Multi-label prevalence, overlap-specific performance, unique gold interval count and decoding threshold are not reported in §§3–4.",
+    "IAA is pairwise token kappa and span F1 with incomplete aggregation/matching details; §3.4, PDF page 3.",
+    "Title counts and label-16 names conflict, and the prose industry enumeration omits Others; see material_inconsistencies.",
+    "Near-duplicate threshold, aspect split grouping and cross-dataset leakage audit are not reported; §§3.1,6.1, PDF pages 2,4.",
+    "Only one experimental run is reported; no confidence intervals or significance tests. Character-based and word-based BERT models also differ across span/doc conditions; Appendix D and Table 6, PDF pages 9–10.",
+    "CTR association is not causal evidence of ad-creation benefit, and the exact binary target for ROC AUC is unspecified; §§6.1,6.3,7, PDF pages 5–7.",
+    "No paper-specific code or dataset release statement was found in the full paper. Public pretrained BERT/Transformers availability is paper-reported only; Appendix D, PDF page 9."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "availability_boolean_scope": "False means that the frozen paper does not establish availability of its own code or datasets; it does not mean proven unavailable. No current availability check was made.",
+    "code_status": "not reported for paper-specific implementation",
+    "dataset_status": "not reported for either study dataset",
+    "paper_reported_dependencies": "Appendix D reports publicly available pretrained BERT models from Transformers and Apache 2.0 for the framework. The cited model paths are cl-tohoku/bert-base-japanese-char and cl-tohoku/bert-base-japanese. These are frozen paper statements, not current availability claims.",
+    "training": "Tesla V100 on Google Cloud Platform; Optuna validation-set tuning capped at 30 trials for aspect models; one experimental run. Table 6 reports model, optimizer and loss settings.",
+    "missing": [
+      "Paper-specific source code and data release paths/licenses.",
+      "Seed and variance, multi-label threshold, full hyperparameter search space.",
+      "Duplicate threshold and complete split-generation details.",
+      "IAA aggregation and CTR AUC target specification."
+    ],
+    "sources": [
+      {
+        "section": "Appendix D",
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 1097,
+        "line_end": 1123,
+        "pdf_pages": [
+          9
+        ]
+      },
+      {
+        "section": "Table 6",
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 1167,
+        "line_end": 1188,
+        "pdf_pages": [
+          10
+        ]
+      },
+      {
+        "section": "§6.1 Dataset",
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+        "line_start": 491,
+        "line_end": 504,
+        "pdf_pages": [
+          4
+        ]
+      }
+    ]
+  },
+  "confidence_scores": {
+    "F01": 0.98,
+    "F02": 0.98,
+    "F03": 0.98,
+    "F04": 0.98,
+    "F05": 0.98,
+    "F06": 0.98,
+    "F07": 0.98,
+    "F08": 0.98,
+    "F09": 0.98,
+    "F10": 0.97
+  },
+  "confidence_scope": "Confidence in faithful extraction and evidence classification, not in transfer accuracy or causal benefit.",
+  "raw_claims": [
+    "We recruited six participants who worked at an ad- vertising agency.",
+    "We adopted annotated spans only if at least two of the three annotators for each span text agreed with their boundaries and labels.",
+    "We obtained relatively high agreement among the annotators: κ = 0.612, F1 = 0.451.",
+    "We used the campaign ID of each ad for data division to prevent leakage between the datasets.",
+    "In fact, we found that the F1 score for the span detection is 0.69 for the Pred model.",
+    "Therefore, we performed our experiments in a single run."
+  ],
+  "raw_claim_source_locators": [
+    {
+      "quote": "We recruited six participants who worked at an ad- vertising agency.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 233,
+        "line_end": 234,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF page 3; §3.3"
+    },
+    {
+      "quote": "We adopted annotated spans only if at least two of the three annotators for each span text agreed with their boundaries and labels.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 249,
+        "line_end": 251,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF page 3; §3.4"
+    },
+    {
+      "quote": "We obtained relatively high agreement among the annotators: κ = 0.612, F1 = 0.451.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 274,
+        "line_end": 275,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF page 3; §3.4"
+    },
+    {
+      "quote": "We used the campaign ID of each ad for data division to prevent leakage between the datasets.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 416,
+        "line_end": 418,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF page 4; §6.1"
+    },
+    {
+      "quote": "In fact, we found that the F1 score for the span detection is 0.69 for the Pred model.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 506,
+        "line_end": 507,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF page 5; §6.2"
+    },
+    {
+      "quote": "Therefore, we performed our experiments in a single run.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+        "line_start": 841,
+        "line_end": 843,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "section": "PDF page 9; Appendix D"
+    }
+  ],
+  "topic02": {
+    "evidence_family": "TRANSFER_SPAN; representation transfer only. Advertising-aspect extraction is not direct email or work-matter Topic evidence.",
+    "evaluated_tasks": {
+      "paper_tasks": [
+        "Exact contiguous advertising-expression span detection and multi-label span classification (Pred).",
+        "Multi-label classification of supplied gold expression spans (Oracle).",
+        "Whole-ad-text multi-label aspect classification (Doc-based).",
+        "Correlation of predicted aspect presence with actual CTR.",
+        "CTR regression using aspect predictions as extra features."
+      ],
+      "ten_task_separation": {
+        "topic_boundary_detection": "not evaluated",
+        "contiguous_topic_segmentation": "not evaluated; expression extraction need not partition all input",
+        "segment_topic_labeling": "advertising-aspect labels only; no work-matter Topic labels",
+        "whole_message_multi_label_classification": "whole-ad-text analog evaluated; email messages not evaluated",
+        "exact_span_assignment": "evaluated for contiguous advertising-expression spans with aspect labels",
+        "overlapping_span_assignment": "multiple labels on identical boundaries supported; no separate arbitrary-boundary overlap evaluation",
+        "non_contiguous_assignment_to_one_Topic": "not evaluated",
+        "discourse_EDU_segmentation": "not evaluated",
+        "action_question_reply_scope_extraction": "not evaluated",
+        "decision_bearing_conditions_evidence_scope_preservation": "not evaluated"
+      },
+      "sources": [
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "§4.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 434,
+          "line_end": 445,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§§6–7",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 480,
+          "line_end": 824,
+          "pdf_pages": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    "annotation_unit": {
+      "unit": "Advertising-expression span inside a Japanese title, description or LP meta-description; not prescribed as a sentence, clause or EDU. Boundaries and aspect labels are jointly agreed.",
+      "inventory": "Five coarse and sixteen fine labels; no reported comparison of unit choices.",
+      "sources": [
+        {
+          "section": "§§3.2–3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 246,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "Table 5",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1130,
+          "line_end": 1164,
+          "pdf_pages": [
+            10
+          ]
+        }
+      ]
+    },
+    "prediction_unit": {
+      "span_model": "Character-level contiguous interval S(i,j), then a binary aspect vector for that interval; span vector averages BERT outputs over the interval.",
+      "doc_model": "Binary aspect vector for the whole input ad text from BERT [CLS]; no predicted evidence offsets.",
+      "ctr_model": "One CTR score for title/description, industry and keywords with predicted aspect features.",
+      "sources": [
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "§4.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 434,
+          "line_end": 445,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§5",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 458,
+          "line_end": 477,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    "contiguity": {
+      "gold": "Annotated expression spans are described as intervals; multiple expressions may occur in one ad text. No gold multi-piece semantic-object representation is reported.",
+      "prediction": "One BIOE boundary-label sequence decoded by linear-chain CRF; contiguous interval outputs. Analyst inference: this described decoding has no representation for crossing or nested distinct intervals in one sequence.",
+      "non_sequential_cluster": "No Topic clusters, thread links, reply structure or cross-ad identity.",
+      "sources": [
+        {
+          "section": "§§3.2–3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 246,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "§4.1 BIOE boundary-label sequence",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 302,
+          "line_end": 314,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "status": "multi-label per span explicitly allowed",
+        "inventory_size": 21,
+        "coarse_labels": 5,
+        "fine_labels": 16,
+        "example": "members get an extra 20% off: discount price and limited-target offer",
+        "empirical_cardinality_distribution": "not reported; neither fraction of multi-label spans nor maximum observed labels per span is given",
+        "reported_mean_spans_per_ad": 1.54,
+        "mean_denominator_note": "See I04. The report states spans per ad text in the 2,738-text annotation context. It does not state labels per span. The count semantics of the numerator, and thus whether 1.54 describes unique intervals or label-span assignments, are not established by the table sum."
+      },
+      "prediction": {
+        "status": "multi-label sigmoid outputs per detected span or entire ad text",
+        "example_is_schematic": "Figure 2/§4.1 illustrate free plus first-time limited offer on Get the First Month Free.",
+        "empirical_cardinality_distribution": "not reported",
+        "threshold_and_hierarchy_constraints": "Prediction threshold, calibration, label-cardinality constraints and enforced hierarchy closure are not reported."
+      },
+      "sources": [
+        {
+          "section": "§§3.2–3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 246,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "§4.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 434,
+          "line_end": 445,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "§3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 285,
+          "line_end": 291,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not represented or evaluated as one semantic object with separated evidence pieces; corpus consists of ad texts, not messages.",
+        "thread_level": "Not studied; no threads."
+      },
+      "prediction": {
+        "within_one_message": "No discontinuous object output is described. Separate spans sharing an aspect label would not establish one concrete work-matter identity.",
+        "thread_level": "No clustering/linking model or evaluation."
+      },
+      "sources": [
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "§§6–7",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 480,
+          "line_end": 824,
+          "pdf_pages": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    "overlap": {
+      "gold": {
+        "status": "explicitly allowed by the gold annotation scheme for identical-boundary multi-label membership",
+        "scope": "One advertising-expression interval can receive different aspect labels. The paper does not report how many retained gold intervals have multiple labels. Gold crossing/nested intervals with different boundaries are not reported."
+      },
+      "prediction": {
+        "status": "supported by the evaluated model formulation for identical-boundary multi-label outputs; observed output cardinality not reported",
+        "scope": "Per-aspect sigmoid classification of a detected interval permits multiple labels. Figure 2 supplies an illustrative example, and Table 2 evaluates Pred span-plus-label outputs in aggregate. No actual multi-label output count or overlap-specific score is supplied. Analyst inference from the described single BIOE sequence: it does not encode simultaneous distinct-boundary nested/crossing intervals; no additional candidate-span pairing or multi-layer decoder is described."
+      },
+      "warning": "The cited precursor is a nested-NER paper; its title does not establish nested-span support for this implementation.",
+      "sources": [
+        {
+          "section": "§3.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 251,
+          "line_end": 262,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§§4–4.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 369,
+          "line_end": 422,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        },
+        {
+          "section": "Reference to Zheng et al.",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1034,
+          "line_end": 1040,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "section": "§4.1 BIOE boundary-label sequence",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 302,
+          "line_end": 314,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§§6.1–6.2 evaluation and Pred/Oracle comparison",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 567,
+          "line_end": 611,
+          "pdf_pages": [
+            5
+          ]
+        }
+      ]
+    },
+    "dataset_domain": {
+      "language": "Japanese; English examples/translations appear in the paper.",
+      "source": "Google Ads; March 1, 2020 through February 28, 2021.",
+      "aspect_dataset": "2,738 collected ad texts across the Table 7 industry categories, including titles, descriptions and LP meta-descriptions; six removed before model experiments. See I01/I03 for count/list discrepancies.",
+      "sampling": "782,158 ads initially; paper reports sampling 5,000 ad texts per advertiser and keeping 15–200-character texts, yielding 34,952 before deduplication. Handling advertisers with fewer than 5,000 texts is not specified.",
+      "ctr_dataset": "Separate 168,412 examples of ad texts, keywords and industry types with observed CTR.",
+      "business_email_transfer_limit": "Short persuasive promotional texts, a fixed aspect taxonomy and CTR outcomes do not establish concrete work-matter identity, long-message scope or asynchronous context behavior.",
+      "sources": [
+        {
+          "section": "§3.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 168,
+          "line_end": 201,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "section": "§6.1 Dataset",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 491,
+          "line_end": 504,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "Tables 7–8",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1192,
+          "line_end": 1249,
+          "pdf_pages": [
+            10
+          ]
+        }
+      ]
+    },
+    "annotation_process": {
+      "process": "Authors refined labels from preliminary data inspection and experienced ad creators. Six advertising-agency participants split into two teams of three annotated disjoint sets of 1,100 and 1,638 texts. Training included a one-hour lecture and 30 separate practice texts, followed by questions and shared difficult-case guidance. Spans entered gold only when at least two of three agreed on both boundaries and labels.",
+      "effort_reported": "42 total hours and 55.2 seconds per ad text for the 2,738-text annotation exercise. Whether hours mean aggregate annotator time is not clarified.",
+      "uncertainty_note": "Majority filtering does not retain disagreement as explicit uncertainty in the described gold data; excluded-span counts and adjudication records are not reported.",
+      "sources": [
+        {
+          "section": "§3.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 207,
+          "line_end": 231,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "section": "§§3.3–3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 268,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "token_pairwise_cohen_kappa": 0.612,
+      "span_pairwise_f1": 0.451,
+      "population": "Pairs of annotators within the two three-person teams assigned to the collected 2,738 ad texts; span F1 treats one annotation as truth and another as prediction.",
+      "not_reported": [
+        "Pair-specific scores and aggregation/weighting across teams.",
+        "Exact token encoding for the multi-label kappa computation.",
+        "Detailed span matching and label handling for IAA F1.",
+        "Overlap-only or rare-label IAA."
+      ],
+      "interpretation": "The authors call agreement relatively high; token kappa and span F1 must remain separate and are not model accuracy.",
+      "sources": [
+        {
+          "section": "§3.4",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 285,
+          "line_end": 295,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§3.4 continuation",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 344,
+          "line_end": 347,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "aspect_split": {
+        "unit": "Ad-text sample (title, description or LP content)",
+        "train": 1857,
+        "development": 465,
+        "test": 410,
+        "removed_before_split": 6
+      },
+      "ctr_split": {
+        "unit": "Ad example, grouped by campaign ID as reported in §6.1",
+        "train": 136352,
+        "development": 16084,
+        "test": 15976,
+        "correlation_uses": "CTR training split"
+      },
+      "controls": "Normalized Levenshtein duplicate/high-similarity exclusion is reported for the annotated collection. Campaign-ID splitting is stated at the end of the dataset paragraph after the CTR split description. Its application to the aspect split is not separately established.",
+      "not_reported": [
+        "Levenshtein threshold and retained-pair audit.",
+        "Aspect train/dev/test sampling algorithm or seed.",
+        "Whether same-ad title/description/LP components or advertisers are disjoint across the aspect splits.",
+        "Cross-dataset overlap between aspect training and CTR evaluation.",
+        "Explicit duplicate-text filtering for the CTR collection."
+      ],
+      "coverage_limit": "Table 8 has zero development and test examples for Entertainment, Automobile, Beauty&Health and Real estate. CTR test scores do not assess those industries.",
+      "sources": [
+        {
+          "section": "§3.1",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 168,
+          "line_end": 201,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "section": "§6.1 Dataset",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 491,
+          "line_end": 504,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "section": "Table 8",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 1228,
+          "line_end": 1249,
+          "pdf_pages": [
+            10
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "aspect_detection": {
+        "dataset": "Japanese advertising-aspect corpus; 1,857 train, 465 development, 410 test ad texts",
+        "label_space": "21 labels; macro average across label types as reported in Table 2",
+        "pred": "Per-label F1 requiring correct predicted span and label; precision denominator is predicted label-span instances and recall denominator is gold label-span instances under the stated matching rule. Exact matching implementation and counts are not supplied.",
+        "oracle": "Per-label F1 with gold spans supplied, then predicted aspect labels. Gold-span label counts per test class are not supplied.",
+        "doc": "Per-label F1 on whole-ad presence/absence; denominator concerns ad-label predictions/gold ad labels, not label-span instances. The reduction from span annotations to document labels is not detailed.",
+        "macro_f1": {
+          "pred": 0.32,
+          "oracle": 0.46,
+          "doc": 0.56
+        },
+        "span_detection_f1": {
+          "pred": 0.69,
+          "scope": "Span detection alone on the aspect-detection experiment; averaging and raw correct/predicted/gold boundary counts not reported."
+        },
+        "table2_per_label": [
+          {
+            "label_index": 1,
+            "table2_label": "Special deals",
+            "pred_span_label_f1": 0.11,
+            "oracle_span_label_f1": 0.19,
+            "doc_label_f1": 0.7,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 428,
+              "line_end": 428,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 2,
+            "table2_label": "Discount price",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.57,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 429,
+              "line_end": 429,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 3,
+            "table2_label": "Reward points",
+            "pred_span_label_f1": 0.62,
+            "oracle_span_label_f1": 0.74,
+            "doc_label_f1": 0.75,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 430,
+              "line_end": 430,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 4,
+            "table2_label": "Free",
+            "pred_span_label_f1": 0.68,
+            "oracle_span_label_f1": 0.88,
+            "doc_label_f1": 0.94,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 431,
+              "line_end": 431,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 5,
+            "table2_label": "Special gift",
+            "pred_span_label_f1": 0.28,
+            "oracle_span_label_f1": 0.4,
+            "doc_label_f1": 0.65,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 432,
+              "line_end": 432,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 6,
+            "table2_label": "Features",
+            "pred_span_label_f1": 0.5,
+            "oracle_span_label_f1": 0.7,
+            "doc_label_f1": 0.72,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 433,
+              "line_end": 433,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 7,
+            "table2_label": "Quality",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.44,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 434,
+              "line_end": 434,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 8,
+            "table2_label": "Problem solving",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.0,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 435,
+              "line_end": 435,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 9,
+            "table2_label": "Speed",
+            "pred_span_label_f1": 0.51,
+            "oracle_span_label_f1": 0.66,
+            "doc_label_f1": 0.92,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 436,
+              "line_end": 436,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 10,
+            "table2_label": "User-friendliness",
+            "pred_span_label_f1": 0.46,
+            "oracle_span_label_f1": 0.59,
+            "doc_label_f1": 0.56,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 437,
+              "line_end": 437,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 11,
+            "table2_label": "Transportation",
+            "pred_span_label_f1": 0.91,
+            "oracle_span_label_f1": 1.0,
+            "doc_label_f1": 0.53,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 438,
+              "line_end": 438,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 12,
+            "table2_label": "Limited offers",
+            "pred_span_label_f1": 0.38,
+            "oracle_span_label_f1": 0.53,
+            "doc_label_f1": 0.62,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 439,
+              "line_end": 439,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 13,
+            "table2_label": "Limited time",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.47,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 440,
+              "line_end": 440,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 14,
+            "table2_label": "Limited target",
+            "pred_span_label_f1": 0.26,
+            "oracle_span_label_f1": 0.57,
+            "doc_label_f1": 0.44,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 441,
+              "line_end": 441,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 15,
+            "table2_label": "First-time limited",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.0,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 442,
+              "line_end": 442,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 16,
+            "table2_label": "Performance",
+            "pred_span_label_f1": 0.27,
+            "oracle_span_label_f1": 0.5,
+            "doc_label_f1": 0.48,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 443,
+              "line_end": 443,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 17,
+            "table2_label": "Largest/no. 1",
+            "pred_span_label_f1": 0.67,
+            "oracle_span_label_f1": 0.8,
+            "doc_label_f1": 0.82,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 444,
+              "line_end": 444,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 18,
+            "table2_label": "Product lineup",
+            "pred_span_label_f1": 0.42,
+            "oracle_span_label_f1": 0.67,
+            "doc_label_f1": 0.67,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 445,
+              "line_end": 445,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 19,
+            "table2_label": "Trend",
+            "pred_span_label_f1": 0.41,
+            "oracle_span_label_f1": 0.56,
+            "doc_label_f1": 0.47,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 446,
+              "line_end": 446,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 20,
+            "table2_label": "Others",
+            "pred_span_label_f1": 0.0,
+            "oracle_span_label_f1": 0.0,
+            "doc_label_f1": 0.39,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 447,
+              "line_end": 447,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "label_index": 21,
+            "table2_label": "Story",
+            "pred_span_label_f1": 0.32,
+            "oracle_span_label_f1": 0.83,
+            "doc_label_f1": 0.53,
+            "source": {
+              "section": "Table 2",
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+              "line_start": 448,
+              "line_end": 448,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "no_equivalence": "Document-label F1, span-only F1 and exact label-span F1 measure different tasks. No Topic Pk, WindowDiff, cluster, IoU, discontinuous-set or scope-preservation result is reported.",
+        "sources": [
+          {
+            "section": "§6.1 Dataset",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 491,
+            "line_end": 504,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "section": "Table 2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 518,
+            "line_end": 557,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "section": "§§6.1–6.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 628,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ]
+      },
+      "ctr_prediction": {
+        "dataset": "Google Ads CTR corpus; campaign-grouped train/dev/test 136,352/16,084/15,976 examples",
+        "target": "CTR = clicks / impressions in [0,1].",
+        "metrics_definition": "AUC is named as ROC area; conversion of continuous CTR to binary ROC targets is not specified. RMSE and MAE compare predicted and observed CTR scores. Per-ad versus impression weighting is not specified.",
+        "test_results": {
+          "BERT": {
+            "AUC": 0.683,
+            "RMSE": 0.22,
+            "MAE": 0.142
+          },
+          "BERT_plus_span_aspects": {
+            "AUC": 0.709,
+            "RMSE": 0.218,
+            "MAE": 0.137
+          },
+          "BERT_plus_doc_aspects": {
+            "AUC": 0.713,
+            "RMSE": 0.217,
+            "MAE": 0.136
+          }
+        },
+        "uncertainty": "One reported run; no confidence interval, significance test or seed variance.",
+        "sources": [
+          {
+            "section": "§5",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 458,
+            "line_end": 477,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "section": "§6.1 Dataset",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 491,
+            "line_end": 504,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "section": "§6.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 576,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "section": "Table 4",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 737,
+            "line_end": 745,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "section": "Appendix D",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1097,
+            "line_end": 1123,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      },
+      "correlation": {
+        "metric": "Point-biserial correlation between doc-predicted binary aspect presence and actual continuous CTR; observational.",
+        "population": "Industry subsets of the CTR training split.",
+        "industry_counts": {
+          "VOD&eBook": 30536,
+          "EC": 20671,
+          "Finance": 20183,
+          "Human resources": 10823,
+          "Travel": 8093
+        },
+        "examples": [
+          {
+            "aspect": "reward points",
+            "Finance_r": 0.443,
+            "Travel_r": 0.377
+          },
+          {
+            "aspect": "special gift",
+            "Finance_r": 0.339,
+            "Travel_r": -0.332
+          }
+        ],
+        "missing_label_marker": "A dash means the corresponding predicted label was not found; not a measured zero correlation.",
+        "not_reported": "Confidence intervals, multiplicity controls, causal intervention and confounding adjustment.",
+        "sources": [
+          {
+            "section": "Table 3 and §6.3",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 657,
+            "line_end": 733,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "section": "§6.3",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 748,
+            "line_end": 755,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "section": "Appendix C",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1086,
+            "line_end": 1091,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measured_evidence": "None for conditions, evidence, exceptions, approval scope, action scope or reply scope in business messages.",
+      "related_extraction_evidence": "Span-only F1 and exact span-plus-label F1 measure extraction; rare-label failures are reported. Neither quantifies preservation of decision-bearing meaning. The membership-discount annotation example includes a restriction, but it is not a scope-preservation experiment.",
+      "sources": [
+        {
+          "section": "§3.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 251,
+          "line_end": 262,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "section": "§§6.1–6.2",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 567,
+          "line_end": 628,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "section": "§§6–7",
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+          "line_start": 480,
+          "line_end": 824,
+          "pdf_pages": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Sentence/clause/arbitrary-span/EDU/hybrid comparison for work-matter scope.",
+      "Email or Teams messages, asynchronous threads and multiple Sources.",
+      "Concrete Topic identity distinct from a generic aspect label.",
+      "Nested/crossing interval assignment and linked discontinuous evidence for one Topic.",
+      "Overlap-specific model accuracy, gold cardinality distributions and uncertainty retention.",
+      "Action/question/reply scope, approval conditions, evidence and exception preservation.",
+      "Incremental updates, latency, memory use or Raspberry Pi execution."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "I01",
+        "kind": "confirmed_numeric_contradiction",
+        "description": "§3.1 and Appendix A report 666 titles, 1,532 descriptions and 440 LP contents, with total 2,738. Table 7 reports 766 titles and the same other counts and total. Analyst arithmetic: the prose components sum to 2,638; the table components and its title rows sum consistently to 2,738 and 766, respectively. Preserve both values; do not silently repair the prose. The annotation groups sum to 2,738 (1,100 + 1,638); the later aspect splits sum to 2,732, exactly 2,738 minus the six stated exclusions. Those checks support the reported collection total but do not authorize changing the printed 666 or assert the true title count.",
+        "values": {
+          "prose_title_count": 666,
+          "table_title_count": 766,
+          "reported_total": 2738,
+          "prose_component_sum_analyst_calculation": 2638,
+          "table_column_sums_analyst_calculation": {
+            "titles": 766,
+            "descriptions": 1532,
+            "LP_contents": 440,
+            "subtotals": 2738
+          },
+          "annotation_group_sum_analyst_calculation": 2738,
+          "aspect_split_sum_analyst_calculation": 2732
+        },
+        "sources": [
+          {
+            "section": "§3.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 195,
+            "line_end": 197,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "section": "Appendix A",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1063,
+            "line_end": 1071,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "section": "Table 7",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1192,
+            "line_end": 1224,
+            "pdf_pages": [
+              10
+            ]
+          },
+          {
+            "section": "§3.3 annotation groups",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 268,
+            "line_end": 270,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "§6.1 aspect split and six exclusions",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 491,
+            "line_end": 495,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ],
+        "visual_check": "page-02.png, page-03.png, page-04.png, page-09.png and page-10.png confirm the printed values.",
+        "disposition": "confirmed contradiction",
+        "author_intent": "Not established. A printed numerical inconsistency is confirmed; an intended correction or true source-data title count is not inferred."
+      },
+      {
+        "id": "I02",
+        "kind": "confirmed_label_name_inconsistency",
+        "description": "Label (16) is Track record in Tables 1 and 5 but Performance in Table 2. Results for index 16 must keep this discrepancy visible; no undocumented relabeling is assumed.",
+        "sources": [
+          {
+            "section": "Table 1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 128,
+            "line_end": 137,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "section": "Table 2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 544,
+            "line_end": 547,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "section": "Table 5",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1154,
+            "line_end": 1157,
+            "pdf_pages": [
+              10
+            ]
+          }
+        ],
+        "visual_check": "page-02.png, page-05.png, page-10.png.",
+        "disposition": "confirmed contradiction",
+        "qualification": "The contradiction is in the label name at index 16, not in an independently verified change of label semantics. Table 5 defines Track record; retain Performance verbatim for the Table 2 row and do not assume an undocumented rename."
+      },
+      {
+        "id": "I03",
+        "kind": "enumeration_omission",
+        "description": "The prose says 13 industries but footnote 3 and Appendix A name only 12. Table 7 explicitly contains those 12 categories plus Others (532 texts). The additional table category is resolved from explicit source evidence; both prose enumerations remain incomplete. This identifies a table/prose omission without guessing why the authors omitted Others.",
+        "sources": [
+          {
+            "section": "§3.1 footnote 3",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 237,
+            "line_end": 239,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "section": "Appendix A",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1065,
+            "line_end": 1071,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "section": "Table 7",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1195,
+            "line_end": 1218,
+            "pdf_pages": [
+              10
+            ]
+          }
+        ],
+        "visual_check": "page-02.png footnote 3, page-09.png Appendix A, and page-10.png Table 7.",
+        "disposition": "resolved from explicit source",
+        "residual_source_issue": "Confirmed omission of Others from the two prose lists; the table category itself is not unresolved."
+      },
+      {
+        "id": "I04",
+        "kind": "count_semantics_ambiguity_not_established_contradiction",
+        "description": "§3.4 states 1.54 spans per ad text in the 2,738-text annotation context. Table 1 and Appendix B explicitly define #spans as the number of span texts annotated with each label. Analyst sum of all 21 Table 5 counts is 4,219 label-span assignments; 4,219 / 2,738 = 1.540906, which rounds to 1.54. This numerical agreement does not establish that the authors used this numerator, or that 4,219 counts unique intervals. Multiple labels on one interval can contribute to several label rows. The unresolved issue is the counting convention for the mean, not an established contradictory denominator. Preserve the reported 1.54; unique-interval count, multi-label prevalence and mean labels per interval are not reported.",
+        "sources": [
+          {
+            "section": "§3.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 251,
+            "line_end": 262,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "§3.4",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 285,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "Table 5",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1130,
+            "line_end": 1164,
+            "pdf_pages": [
+              10
+            ]
+          },
+          {
+            "section": "Appendix B definition of #spans",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1077,
+            "line_end": 1080,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "section": "Table 1 caption definition of #spans",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 133,
+            "line_end": 137,
+            "pdf_pages": [
+              2
+            ]
+          }
+        ],
+        "disposition": "qualified as ambiguity",
+        "visual_check": "page-02.png Table 1 caption, page-03.png §3.4, page-09.png Appendix B, and page-10.png Table 5.",
+        "analyst_calculation": {
+          "label_span_sum": 4219,
+          "collection_ad_count_used_for_consistency_check": 2738,
+          "ratio": 1.5409057706355003,
+          "reported_mean": 1.54,
+          "inference_limit": "This is a consistency calculation, not a recovered unique-span count or a verified author computation."
+        }
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Limited representation evidence for arbitrary expression spans; no unit comparison.",
+      "RQ2": "No email clusters, interleaving or non-sequential Topics.",
+      "RQ3": "Direct within-paper support for gold and model same-span multiple aspect labels; no empirical cardinality or discontinuous-object evaluation.",
+      "RQ4": "Transfer only; coincident boundaries, with no demonstrated arbitrary overlap/discontinuity.",
+      "RQ5": "No work-text preservation evaluation; membership restriction is an annotation example.",
+      "RQ6": "Useful warning about different F1 units; distinct IAA, span-label, document-label and CTR metrics.",
+      "RQ7": "Small Japanese advertising dataset with annotation, IAA and partial duplicate/leakage controls; table/prose discrepancies and unavailable release details.",
+      "RQ8": "Motivates controlled span-vs-document and gold-boundary ablations on authorized synthetic or user-reviewed work text."
+    },
+    "interpretation": [
+      {
+        "claim": "One interval can retain several label memberships. This is a useful representation candidate for shared Topic evidence, but generic advertising labels do not identify concrete work matters.",
+        "sources": [
+          {
+            "section": "§§3.2–3.4",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 246,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "§§4–4.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 369,
+            "line_end": 422,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "claim": "A higher whole-text label score does not show better evidence localization. Pred/oracle comparison can help isolate boundary effects, but this paper provides no controlled work-scope preservation result.",
+        "sources": [
+          {
+            "section": "§§6.1–6.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 628,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "section": "§4.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 434,
+            "line_end": 445,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "claim": "A single BIOE sequence can select multiple separate contiguous expressions; it does not link them into one discontinuous semantic object. Repeated labels must not be mistaken for Topic identity.",
+        "sources": [
+          {
+            "section": "§§4–4.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 369,
+            "line_end": 422,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "claim": "Short domain-specific ad texts and single-run results leave substantial uncertainty for transfer to long business messages.",
+        "sources": [
+          {
+            "section": "§3.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 168,
+            "line_end": 201,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "section": "Appendix D",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 1097,
+            "line_end": 1123,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "status": "untested msgloom research proposal; no architecture approval",
+        "proposal": "Compare sentence, clause, arbitrary span, EDU and hybrid annotations on the same synthetic or user-reviewed business messages. Retain original offsets and all decision-bearing text; measure unit agreement and condition/evidence/scope omission separately.",
+        "motivation_sources": [
+          {
+            "section": "§§3.2–3.4",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 246,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "§§6.1–6.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 628,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "status": "untested msgloom research proposal; no architecture approval",
+        "proposal": "Compare whole-message multi-label classification, gold-span multi-label classification and predicted-span classification on the same held-out Topic cases. Report document-label, exact label-span and boundary-only metrics separately. Add scope-preservation measures rather than choosing by document F1.",
+        "motivation_sources": [
+          {
+            "section": "§4.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 434,
+            "line_end": 445,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "section": "§§6.1–6.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 628,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "status": "untested msgloom research proposal; no architecture approval",
+        "proposal": "Construct separate strata for identical-boundary multiple memberships, crossing/nested spans, separated evidence for one Topic within a message, and interleaved evidence across messages. Compare the contiguous BIOE baseline against representations that explicitly encode each stratum. Preserve uncertain assignments in annotation and evaluation.",
+        "motivation_sources": [
+          {
+            "section": "§§3.2–3.4",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 246,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "section": "§§4–4.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 369,
+            "line_end": 422,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "status": "untested msgloom research proposal; no architecture approval",
+        "proposal": "Use work-matter and source/conversation-aware held-out splits plus near-duplicate checks. Publish disagreement/cardinality statistics and compare rare scope-bearing cases. Measure runtime on the target hardware only after correctness evaluation.",
+        "motivation_sources": [
+          {
+            "section": "§6.1 Dataset",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 491,
+            "line_end": 504,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "section": "§3.1",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 168,
+            "line_end": 201,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "section": "§§6.1–6.2",
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+            "line_start": 567,
+            "line_end": 628,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2022_murakami_et_al_multi_label_spans_advertising_appeals.pdf",
+      "pdf_sha256": "ff548355eddf6642d3933234e046ec7090cd8596cd07ef5f6e85f19ab32100d9",
+      "expected_pdf_sha256": "ff548355eddf6642d3933234e046ec7090cd8596cd07ef5f6e85f19ab32100d9",
+      "primary_conversion_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S04.md",
+      "primary_conversion_sha256": "14ffdc40f50cf47bdd2d05aea3d2edc82634514da1ca9f87f866e4118e2bfb76",
+      "fine_conversion": "not present",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.raw.txt",
+          "sha256": "cdd974bd733a9937802f3527436cf4fcc269c2254e7efc8ddc8421c70511c941"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.layout.txt",
+          "sha256": "0af97190696cdf0ec19a54b224df9211025001f8a0b28f5cfd07d3c4b7574657"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S04.pages.md",
+          "sha256": "39a702d381e2df7177e0892c319d086ce261a95168b165924758273f12074665"
+        }
+      ],
+      "read_extent": "Full primary conversion, including references and appendices. Targeted independent raw/layout/page-indexed checks. The xhigh review visually inspected original PDF pages 2,3,4,5,6,9,10 using existing images and a new page-09 render from the hash-matched immutable PDF.",
+      "conversion_issues": "Rough text has fragmented equations and figure-label encoding loss. Page-indexed conversion interleaves columns. Raw text preserves line-break hyphens. Local PDF inspection resolves the model equations, figures and cited tables; no unresolved extraction damage remains for the analysis claims.",
+      "page_numbering": "PDF pages are 1-based; printed pages run 69–78.",
+      "visual_evidence": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-02.png",
+          "sha256": "656248533e3ddfe7e690487fc63fb5aaedc05d5a99fe9b6c23ad049f4dce5bfb",
+          "pdf_page": 2
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-03.png",
+          "sha256": "541b1467d2d093791179f46bbe0e680863831dc8b997df3b038b5173bd5a27a1",
+          "pdf_page": 3
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-04.png",
+          "sha256": "be0b5d8fb60877db22cf364ea17d75144abb27d353bd2045fb4c1a88a5e33142",
+          "pdf_page": 4
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-05.png",
+          "sha256": "8f75dea6eb58a08a2192e8e7d83421cbeb8be69f24a98e2be102e1015869d6f4",
+          "pdf_page": 5
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-06.png",
+          "sha256": "54aed2164c3bd4837511e64828f6d90bdfe8b114b99e3820662d429e0270b769",
+          "pdf_page": 6
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-10.png",
+          "sha256": "0e81e28f35cfa6b0eedfe43069f6a43be221c6a7ebe245c47d06f561e932b6ac",
+          "pdf_page": 10
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S04/page-09.png",
+          "sha256": "8180214846d996f91ed1d3a0752394e92c5546a0f647010b87611461fe44fdac",
+          "pdf_page": 9
+        }
+      ],
+      "transcription": "No visual-only quote is used. Existing exact text locators support claims; images verify layout and inconsistent values.",
+      "network_used": false
+    }
+  }
+}

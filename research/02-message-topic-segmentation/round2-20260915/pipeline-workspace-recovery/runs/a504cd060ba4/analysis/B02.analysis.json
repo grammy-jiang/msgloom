@@ -1,0 +1,387 @@
+{
+  "paper_id": "B02",
+  "study_id": "B02",
+  "title": "Revisiting the Gold Standard: Grounding Summarization Evaluation with Robust Human Evaluation",
+  "evidence_role": "TRANSFER_EVAL",
+  "target_stream": "R2-B / G3-A",
+  "task_boundary": "Atomic Content Unit human semantic coverage/salience evaluation of summaries against reference summaries. This is not Topic segmentation, Topic assignment, or direct business/work-email evaluation.",
+  "summary": "The paper provides a reusable human evaluation protocol that decomposes reference summaries into fine-grained facts and checks each fact's presence in candidate summaries. Its recall denominator makes omitted reference content measurable. RoSE supports this protocol with human agreement results, system comparisons, protocol comparisons, and automatic metric meta-evaluation. Transfer to msgloom is methodological: the paper does not establish complete coverage of source documents, reliable preservation of specific business constraints, or any capability for overlapping or discontinuous Topics.",
+  "methodology": "{\"acu_matching\": \"Qualified MTurk workers assign binary presence judgments for reference-derived ACUs in system summaries. Reference summaries provide context. The protocol comparison identifies ACU evaluation as using references without input documents.\", \"acu_writing\": \"Annotators write fine-grained factual statements from reference summaries. Annotators first familiarize themselves with the protocol and proofread one another's annotations. After this calibration, one annotator writes ACUs for each reference summary.\", \"aggregation\": \"The unnormalized score is the fraction of reference ACUs present in a candidate. ACUs receive equal weight. A separate normalized score applies a length-related penalty.\", \"comparisons\": \"The study compares ACU evaluation with Prior, Ref-free, and Ref-based human ratings. It evaluates automatic metrics through correlations with human scores.\", \"design\": \"Human annotation benchmark and summarization meta-evaluation across CNNDM, XSum, and SamSum.\", \"statistical_analysis\": \"System-comparison power uses resampled examples and paired bootstrap significance tests. Metric-comparison power uses permutation significance tests. Summary-level correlations average within-example correlations across systems; system-level correlations use system scores averaged across examples.\"}",
+  "dataset_and_gold": {
+    "benchmark": "RoSE",
+    "language": "English only",
+    "datasets": [
+      "CNNDM",
+      "XSum",
+      "SamSum"
+    ],
+    "domain_boundary": "News and dialogue summarization; no direct business/work-email Topic dataset is evaluated.",
+    "reported_scale": {
+      "systems": "28 systems across three datasets, as reported in the abstract.",
+      "summary_level_annotations": "Approximately 22,000.",
+      "individual_summary_level_judgments": "Approximately 50,000.",
+      "acu_level_annotations": "Approximately 21,800, using the paper's terminology; the missing Table 2 prevents verification of this count's precise unit.",
+      "test_examples": "Tables 3, 9, and 10 each state 500 annotated examples for their respective datasets.",
+      "additional_split": "CNNDM validation annotations support automatic metric training.",
+      "protocol_comparison": "100 CNNDM examples, with three annotations per summary for the additional protocols."
+    },
+    "units": "Written, reference-derived factual statements called Atomic Content Units; these are semantic evaluation units, not concrete work matters.",
+    "labels": "Binary presence or absence of each reference ACU in a candidate summary. Additional protocols use summary ratings from 1 to 5.",
+    "what_is_actually_annotated": "Reference fact decomposition and candidate coverage of those facts. Table 13 separately evaluates identity, role, location, timing, replacement, and event facts.",
+    "salience_gold": "Reference summaries act as the salience standard. The paper acknowledges that references may not be the actual gold standard.",
+    "weighting": "ACUs are unweighted during aggregation. Importance weighting is future work.",
+    "overlap": "The example contains related propositions, including 'clashed' and 'clattered' facts. This does not establish shared token-span annotation or simultaneous Topic labels. No overlap prevalence is reported.",
+    "discontinuity": "No discontinuous span schema, separated-span annotation, or discontinuity prevalence is reported. Semantic matching across texts does not demonstrate discontinuous Topic representation.",
+    "model_output_capability": "The evaluated systems generate summaries. Automatic evaluators produce scores or use existing metric mechanisms. Human ACU annotations do not establish that a model outputs ACUs, missing-fact lists, span links, or Topics."
+  },
+  "key_findings": [
+    {
+      "finding_id": "B02_F01",
+      "finding": "ACU evaluation measures recall of reference-derived facts through separate writing and matching steps. Reusing the written units fixes the content denominator for comparisons with new summaries.",
+      "evidence_type": "supported",
+      "section": "3.2 ACU Annotation Protocol",
+      "quote": "formulate the ACU protocol as a _**recall-based**_ protocol",
+      "source_line_start": 309,
+      "source_line_end": 309,
+      "interpretation_boundary": "This supports omission measurement relative to an enumerated reference inventory. It does not measure every source-document fact, candidate precision, or hallucination rates."
+    },
+    {
+      "finding_id": "B02_F02",
+      "finding": "The strongest transfer limitation is that the gold inventory comes from reference summaries and its ACUs have equal weight. Important source content absent from the reference cannot contribute to this recall denominator, and the score does not distinguish business-critical omissions from other omitted units.",
+      "evidence_type": "supported",
+      "section": "3.1 Preliminaries; 8 Limitations",
+      "quote": "multi-reference evaluation and weighting of semantic content units, while we do not weight ACUs",
+      "source_line_start": 1091,
+      "source_line_end": 1091,
+      "interpretation_boundary": "The denominator consequence follows from the stated protocol. Business-critical coverage is a msgloom transfer concern, not an outcome tested by this paper. No direct email Topic evidence is supplied."
+    },
+    {
+      "finding_id": "B02_F03",
+      "finding": "The worked example makes timing information separately auditable: the ACU that Oscar was taken off at half time is marked present for BRIO and absent for GPT-3.",
+      "evidence_type": "supported",
+      "section": "Appendix D.2 Results Analysis; Table 13",
+      "quote": "- Oscar was taken off at half time. ✓ ✗",
+      "source_line_start": 2930,
+      "source_line_end": 2930,
+      "interpretation_boundary": "This demonstrates one annotated timing-sensitive unit. It does not establish systematic sensitivity to deadlines, conditions, exceptions, evidence requirements, approval constraints, or decision qualifiers."
+    },
+    {
+      "finding_id": "B02_F04",
+      "finding": "The paper reports Krippendorff's alpha of 0.7571 for aggregated summary-level ACU matching and 0.7528 at the ACU level.",
+      "evidence_type": "supported",
+      "section": "3.3 ACU Annotation Collection",
+      "quote": "score is 0.7528.",
+      "source_line_start": 427,
+      "source_line_end": 427,
+      "interpretation_boundary": "These are human matching agreement results. They are not ACU-writing agreement, model extraction accuracy, Topic agreement, or correctness guarantees. Section 8 explicitly separates agreement from correctness."
+    },
+    {
+      "finding_id": "B02_F05",
+      "finding": "The authors argue that using the same written ACUs for all candidates should prevent ACU-writing subjectivity from biasing summary comparison. The paper does not directly establish this invariance empirically.",
+      "evidence_type": "unsupported",
+      "section": "3.2 ACU Annotation Protocol",
+      "quote": "such subjectivity should be unbiased in summary",
+      "source_line_start": 334,
+      "source_line_end": 334,
+      "interpretation_boundary": "A common inventory standardizes comparison but does not prove that inventory selection or decomposition affects all systems equally. Appendix A.1 reports a preliminary observation about downstream matching agreement, not a controlled test of ranking bias."
+    },
+    {
+      "finding_id": "B02_F06",
+      "finding": "Normalized ACU adds a length-related redundancy penalty, with its strength selected to decorrelate normalized scores from summary length.",
+      "evidence_type": "supported",
+      "section": "3.2 Scoring Summaries with ACU; Appendix A.3",
+      "quote": "This normalization is in effect a _redundancy penalty_",
+      "source_line_start": 383,
+      "source_line_end": 383,
+      "interpretation_boundary": "Normalized ACU combines coverage with a length preference. It is not pure missing-content recall or a directly measured semantic precision score. The converted equation is damaged, so an exact implementation should not be reconstructed silently."
+    },
+    {
+      "finding_id": "B02_F07",
+      "finding": "Human protocol choice changes the measured preference. For fine-tuned systems, Prior and Ref-free ratings have system-level Pearson correlation 0.926, while Ref-free and Ref-based ratings correlate at -0.247.",
+      "evidence_type": "supported",
+      "section": "5.2 Results Analysis; Table 4",
+      "quote": "Ref-free 0.926   - **-0.247** -0.093",
+      "source_line_start": 625,
+      "source_line_end": 625,
+      "interpretation_boundary": "These correlations concern summary evaluation on a 100-example CNNDM subset. They support explicit evaluation targets but do not establish a causal mechanism for annotator preference or prove that human-feedback training caused overfitting."
+    },
+    {
+      "finding_id": "B02_F08",
+      "finding": "Automatic metric agreement with ACU scores is stronger at the system level than at the summary level in the reported ROUGE1 results: Kendall correlations are 0.788/0.468 on CNNDM, 0.714/0.293 on XSum, and 0.929/0.439 on SamSum.",
+      "evidence_type": "supported",
+      "section": "6.1 Metric Evaluation with ACU Annotations; Table 6",
+      "quote": "ROUGE1 .788 **.468** **.714** **.293** .929 .439",
+      "source_line_start": 759,
+      "source_line_end": 759,
+      "interpretation_boundary": "These are correlations with human summary coverage scores, not percentages of facts recovered, omission-detector accuracy, or Topic segmentation performance. Strong aggregate ranking does not validate individual business-constraint checks."
+    },
+    {
+      "finding_id": "B02_F09",
+      "finding": "The separate automatic statistic named Coverage measures extractiveness: the percentage of summary words belonging to extractive fragments.",
+      "evidence_type": "supported",
+      "section": "Appendix E.1 Metrics",
+      "quote": "of words that are part of an extractive fragment",
+      "source_line_start": 2876,
+      "source_line_end": 2876,
+      "interpretation_boundary": "This metric measures a different target from G3-A semantic missing-content coverage. Its denominator is summary words, not required facts or source facts."
+    },
+    {
+      "finding_id": "B02_F10",
+      "finding": "Larger human evaluation samples improve estimated power, but close systems remain difficult to distinguish. For a 1–2 point ROUGE1 recall difference, the paper reports power around 0.50 with 500 examples and around 0.20 with 100 examples.",
+      "evidence_type": "supported",
+      "section": "4.1 Power Analysis; Appendix B",
+      "quote": "a power of around 0.20.",
+      "source_line_start": 505,
+      "source_line_end": 505,
+      "interpretation_boundary": "These are resampling-based estimates for summarization system comparisons. ROUGE differences serve as proxies, and the analysis assumes real system differences. These sample sizes are not established requirements for msgloom evaluation."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Unnormalized ACU recall",
+      "target": "Coverage of reference-derived atomic facts by a candidate summary.",
+      "denominator_or_population": "All written ACUs for the corresponding reference summary; numerator is the ACUs judged present in the candidate. Units receive equal weight.",
+      "reported_result": "Table 3 reports CNNDM CTRLSum 44.58 and BRIO 44.03 on a scale multiplied by 100. Table 13 illustrates approximately 7/9 coverage for BRIO and 3/9 for GPT-3.",
+      "limitations": "Not exhaustive source coverage, hallucination precision, business-constraint recall by category, or Topic segmentation. Missing reference content remains outside the denominator."
+    },
+    {
+      "name": "Normalized ACU",
+      "target": "Reference ACU coverage adjusted by a length-related redundancy penalty.",
+      "denominator_or_population": "The same reference ACU inventory, with an additional factor involving candidate length, reference length, and alpha.",
+      "reported_result": "Table 3 reports CNNDM BRIO 37.20 and CTRLSum 36.13, multiplied by 100. Appendix A.3 reports alpha values 2, 5, and 0.5 for CNNDM, XSum, and SamSum.",
+      "limitations": "Mixes coverage and length. It is not semantic F1. Equation 2 is corrupted in the supplied conversion, and the prose alone is insufficient to verify its exact algebra and penalty threshold."
+    },
+    {
+      "name": "Krippendorff's alpha for ACU matching",
+      "target": "Inter-annotator reliability of human presence judgments and their summary-level aggregation.",
+      "denominator_or_population": "Collected ACU matching annotations with multiple judgments; the exact agreement-analysis population is not enumerated in the available text.",
+      "reported_result": "Summary level: 0.7571. ACU level: 0.7528.",
+      "limitations": "Agreement is not correctness. The results do not quantify writing reliability, annotation exhaustiveness, or model prediction accuracy."
+    },
+    {
+      "name": "Krippendorff's alpha for other human protocols",
+      "target": "Agreement on summary-level ratings.",
+      "denominator_or_population": "Twelve fine-tuned systems on the 100-example CNNDM protocol-comparison subset, with three annotations per summary.",
+      "reported_result": "Prior: 0.3455. Ref-free: 0.2201. Ref-based: 0.2741.",
+      "limitations": "These protocols use different judgments and interfaces from ACU matching. Their agreement differences do not isolate the causal effect of atomic decomposition."
+    },
+    {
+      "name": "Pearson correlation between human protocols",
+      "target": "Association between evaluation protocols and summary length.",
+      "denominator_or_population": "Twelve fine-tuned systems on 100 CNNDM examples. System-level correlations compare average system scores; summary-level correlations average within-example correlations.",
+      "reported_result": "Prior/Ref-free: 0.926 system level and 0.526 summary level. Ref-free/Ref-based: -0.247 system level and 0.070 summary level. Ref-based/normalized ACU: 0.762 system level and 0.355 summary level.",
+      "limitations": "Correlation does not prove causal preference contamination. These are summary evaluation associations, not missing-fact detection or Topic assignment scores."
+    },
+    {
+      "name": "Kendall correlation of automatic metrics with ACU recall",
+      "target": "Automatic metric agreement with human reference-content coverage judgments.",
+      "denominator_or_population": "System scores and within-example system comparisons on CNNDM, XSum, and SamSum. Dataset tables identify 500 annotated examples per dataset and list 12, 8, and 8 systems respectively.",
+      "reported_result": "Table 6 system/summary pairs: ROUGE1 0.788/0.468, 0.714/0.293, 0.929/0.439; GPTScore 0.636/0.129, 0.214/0.099, 0.429/0.158; G-Eval-4 0.779/0.274, 0.691/0.185, 0.929/0.405.",
+      "limitations": "Ranking correlation is not recall calibration or per-ACU classification accuracy. The tested historical LLM versions and prompts do not establish current model performance."
+    },
+    {
+      "name": "Modified Kendall correlation for system-difference buckets",
+      "target": "Automatic metric ranking agreement for systems with different degrees of ACU-score separation.",
+      "denominator_or_population": "CNNDM system pairs divided into six equal-sized buckets by ACU-score difference; Appendix E.4 lists 11 pairs per bucket.",
+      "reported_result": "ROUGE1 correlation is 0.091 in the closest bucket, 0.636 in the second bucket, and 1.00 in buckets 3–6.",
+      "limitations": "Measures ranking discrimination for these system pairs. It does not measure detection of individual omissions or justify a universal closeness threshold."
+    },
+    {
+      "name": "Estimated statistical power for system comparison",
+      "target": "Probability of detecting a significant system difference under the study's resampling procedure.",
+      "denominator_or_population": "Repeated resampled example sets and system pairs; significance threshold is 0.05.",
+      "reported_result": "For CNNDM pairs separated by 1–2 ROUGE1 recall points, approximately 0.50 power at 500 examples versus 0.20 at 100 examples.",
+      "limitations": "Depends on the observed dataset, effect proxy, and assumption of real differences. It is not a validated msgloom sample-size prescription."
+    },
+    {
+      "name": "Estimated statistical power and confidence intervals for metric comparison",
+      "target": "Stability and significance of automatic metric correlation comparisons.",
+      "denominator_or_population": "Twenty selected metrics produce 190 metric pairs. The analysis uses resampling and permutation significance tests.",
+      "reported_result": "Larger samples yield tighter confidence intervals and greater estimated power. Exact interval endpoints are not recoverable from the converted figures.",
+      "limitations": "Supports evaluation design, not semantic coverage capability. No numerical interval endpoints should be invented from the damaged figure representations."
+    },
+    {
+      "name": "Coverage statistic",
+      "target": "Extractiveness of generated summaries.",
+      "denominator_or_population": "Summary words; numerator is words belonging to extractive fragments.",
+      "reported_result": "Table 16 reports summary-level Kendall correlations with unnormalized ACU of 0.003 on CNNDM, -0.037 on XSum, and 0.037 on SamSum.",
+      "limitations": "This is a different task from G3-A missing-content coverage. It does not use required semantic units as its denominator."
+    }
+  ],
+  "limitations": [
+    "Reference-derived recall cannot detect omissions of important source facts that the reference itself omits.",
+    "Unweighted ACUs do not encode the relative importance of deadlines, exceptions, approval constraints, or other business requirements.",
+    "The paper evaluates English summarization, with no direct work-email Topic segmentation or assignment experiment.",
+    "No category-specific coverage results establish preservation of conditions, exceptions, evidence requirements, approvals, or decision qualifiers.",
+    "High matching agreement does not establish correct or exhaustive ACU writing.",
+    "Automatic metric correlations do not establish calibrated fact recall or reliable per-item omission detection.",
+    "The supplied conversion omits Table 2 and parts of the ACU-writing description and damages scoring equations and figures.",
+    "The referenced paper_analysis.schema.json was not embedded. Exact compliance with unprovided schema fields and types cannot be verified from this input."
+  ],
+  "relevance_to_research_questions": {
+    "R2_A": "No direct support for discontinuous Topic spans or simultaneous multiple Topic labels. Semantic fact decomposition must remain separate from span representability, prediction, and annotation prevalence.",
+    "R2_B": "Strengthens the methodological basis for evaluating missing content with an explicit, reusable reference fact inventory and binary semantic matching. It leaves source-inventory completeness and business-critical qualifier coverage unvalidated.",
+    "R2_C": "No direct business/work-email Topic segmentation or assignment evidence. Dialogue summarization does not satisfy the task boundary."
+  },
+  "research_gaps": [
+    "Construct and validate a source-grounded inventory that includes business-critical conditions, exceptions, deadlines, evidence requirements, approval constraints, and decision qualifiers.",
+    "Measure coverage separately for each critical information category instead of relying only on an unweighted aggregate.",
+    "Validate whether semantic matching preserves the scope of qualifiers rather than accepting a weaker proposition.",
+    "Evaluate omission detection and unsupported additions separately.",
+    "Test any automated ACU writing or matching system directly; human gold availability is not evidence of model capability.",
+    "Obtain task-matched email Topic annotation and evaluation evidence independently."
+  ],
+  "source_conflicts": [
+    {
+      "issue": "The supplied conversion refers to Table 2 but does not contain that table. Its reported approximately 21.8k ACU-level annotations cannot be assigned confidently to unique written units versus matching judgments from the available text.",
+      "locations": [
+        "L00412-L00422",
+        "L00026-L00027",
+        "L00573-L00580",
+        "L02190-L02197",
+        "L02255-L02262"
+      ],
+      "impact": "Preserve the reported counts and their terminology. Do not reconstruct missing split statistics or reinterpret 21.8k as a verified count of binary matching judgments."
+    },
+    {
+      "issue": "The ACU-writing definition is interrupted after 'which no', and Equation 2 is fragmented. The prose describes a length penalty, but the exact normalization expression is not reliably recoverable.",
+      "locations": [
+        "L00312-L00336",
+        "L00368-L00387",
+        "L02235-L02238"
+      ],
+      "impact": "Raw ACU recall remains usable for methodological synthesis. Exact atomicity rules and normalized-score implementation require a clearer source; no silent repair is justified."
+    },
+    {
+      "issue": "Appendix F contains inconsistent survey percentages. Significance testing is reported as 68% in prose and 69% in Table 14 for 27 of 39 papers. The table reports 28% for 12 of 39 agreement-reporting papers and 97% for 37 of 39 participant-reporting papers.",
+      "locations": [
+        "L03328-L03341",
+        "L03368-L03379"
+      ],
+      "impact": "The stated counts and percentages must remain distinguishable. These peripheral survey discrepancies do not change the ACU coverage interpretation."
+    },
+    {
+      "issue": "The responsible NLP checklist broadly states that collected data contains no free-form text, while the benchmark description includes manually written ACUs.",
+      "locations": [
+        "L02039-L02051",
+        "L02908-L02937",
+        "L03906-L03913"
+      ],
+      "impact": "The checklist may refer only to crowdworker matching responses, but that scope is not explicit. Do not use it to characterize the whole benchmark as containing no written text."
+    }
+  ],
+  "unsafe_assumptions": [
+    "An ACU is a msgloom Topic or a concrete work matter.",
+    "Multiple facts in a sentence establish simultaneous multiple Topic labels on a span.",
+    "Semantic matching establishes a representation for one Topic supported by separated spans.",
+    "RoSE reports overlap or discontinuity prevalence.",
+    "Human-written ACUs demonstrate that a model can produce accurate ACUs, Topic assignments, or missing-fact lists.",
+    "Reference ACU recall measures all important content in the source document.",
+    "Unnormalized ACU recall detects hallucinations or measures candidate precision.",
+    "Normalized ACU is semantic F1 or directly measures redundancy.",
+    "The statistic named Coverage measures missing semantic content.",
+    "An isolated timing-sensitive example validates all conditions, exceptions, deadlines, evidence requirements, approvals, and decision qualifiers.",
+    "High human agreement guarantees correct gold annotations.",
+    "Equal ACU weights adequately reflect business-critical omission costs.",
+    "High system-level metric correlation guarantees reliable checks on individual summaries or constraints.",
+    "The protocol correlations prove that human-feedback training caused evaluation overfitting.",
+    "SamSum results provide direct work-email Topic segmentation evidence.",
+    "The reported sample sizes and normalization settings can be adopted for msgloom without validation."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "unchanged",
+      "reason": "No separated-span Topic representation, annotation, prediction, or evaluation evidence is provided."
+    },
+    "G2_A": {
+      "status": "unchanged",
+      "reason": "No simultaneous multiple Topic labels on a span or overlap prevalence is reported. Multiple reference facts are a different annotation object."
+    },
+    "G3_A": {
+      "status": "strengthened",
+      "reason": "The paper supplies an explicit reference-unit recall protocol, binary semantic matching, reusable gold inventories, and empirical evaluation reliability evidence. Transfer remains conditional on complete source-grounded inventories and validation of business-critical qualifiers."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "The experiments concern news and dialogue summarization. They do not supply modern direct business/work-email Topic segmentation or assignment evidence."
+    }
+  },
+  "raw_claims": [
+    "formulate the ACU protocol as a _**recall-based**_ protocol",
+    "multi-reference evaluation and weighting of semantic content units, while we do not weight ACUs",
+    "- Oscar was taken off at half time. ✓ ✗",
+    "score is 0.7528.",
+    "such subjectivity should be unbiased in summary",
+    "This normalization is in effect a _redundancy penalty_",
+    "Ref-free 0.926   - **-0.247** -0.093",
+    "ROUGE1 .788 **.468** **.714** **.293** .929 .439",
+    "of words that are part of an extractive fragment",
+    "a power of around 0.20."
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 309,
+      "text": "formulate the ACU protocol as a _**recall-based**_ protocol"
+    },
+    {
+      "line_number": 1091,
+      "text": "multi-reference evaluation and weighting of semantic content units, while we do not weight ACUs"
+    },
+    {
+      "line_number": 2930,
+      "text": "- Oscar was taken off at half time. ✓ ✗"
+    },
+    {
+      "line_number": 427,
+      "text": "score is 0.7528."
+    },
+    {
+      "line_number": 334,
+      "text": "such subjectivity should be unbiased in summary"
+    },
+    {
+      "line_number": 383,
+      "text": "This normalization is in effect a _redundancy penalty_"
+    },
+    {
+      "line_number": 625,
+      "text": "Ref-free 0.926   - **-0.247** -0.093"
+    },
+    {
+      "line_number": 759,
+      "text": "ROUGE1 .788 **.468** **.714** **.293** .929 .439"
+    },
+    {
+      "line_number": 2876,
+      "text": "of words that are part of an extractive fragment"
+    },
+    {
+      "line_number": 505,
+      "text": "a power of around 0.20."
+    }
+  ],
+  "confidence_scores": {
+    "B02_F01": 0.99,
+    "B02_F02": 0.99,
+    "B02_F03": 0.99,
+    "B02_F04": 0.99,
+    "B02_F05": 0.95,
+    "B02_F06": 0.97,
+    "B02_F07": 0.99,
+    "B02_F08": 0.99,
+    "B02_F09": 0.99,
+    "B02_F10": 0.98
+  },
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "basis": "Lines 175–176 state release of the benchmark and evaluation scripts at https://github.com/Yale-LILY/ROSE. Lines 400–401 state release of system outputs. Multiple tables report metrics and correlations.",
+    "verification_boundary": "Availability reflects the paper's statements only. No repository, dataset, or script was accessed or verified."
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [],
+  "research_question": "The paper provides a reusable human evaluation protocol that decomposes reference summaries into fine-grained facts and checks each fact's presence in candidate summaries.",
+  "needs_max_review": false,
+  "xhigh_adjudication": null
+}
