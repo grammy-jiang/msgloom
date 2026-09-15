@@ -1,0 +1,102 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "boilerplate-collision",
+  "description": "Identical boilerplate in unrelated sources must remain an alternative-source set.",
+  "family": "ambiguous_source",
+  "messages": [
+    {
+      "message_id": "boiler-a",
+      "expected_text": "Please review the attached proposal.\nDecision: approve Alpha.",
+      "arrival_rank": 1,
+      "internet_message_id": "<boiler-a@synthetic.invalid>",
+      "subject": "Proposal",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "boiler-b",
+      "expected_text": "Please review the attached proposal.\nDecision: reject Beta.",
+      "arrival_rank": 2,
+      "internet_message_id": "<boiler-b@synthetic.invalid>",
+      "subject": "Proposal",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "boiler-reply",
+      "expected_text": "> Please review the attached proposal.\n\nWhich one?",
+      "arrival_rank": 3,
+      "internet_message_id": "<boiler-reply@synthetic.invalid>",
+      "subject": "Re: Proposal",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [
+    {
+      "occurrence_id": "boiler-q1",
+      "message_id": "boiler-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 38
+      },
+      "source_candidates": [
+        {
+          "message_id": "boiler-a",
+          "span": {
+            "start": 0,
+            "end": 36
+          }
+        },
+        {
+          "message_id": "boiler-b",
+          "span": {
+            "start": 0,
+            "end": 36
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": "Unique source attribution is unsupported."
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "boiler-a-decision",
+      "message_id": "boiler-a",
+      "span": {
+        "start": 37,
+        "end": 61
+      },
+      "kind": "decision_bearing",
+      "text": "Decision: approve Alpha.",
+      "notes": ""
+    },
+    {
+      "span_id": "boiler-b-decision",
+      "message_id": "boiler-b",
+      "span": {
+        "start": 37,
+        "end": 59
+      },
+      "kind": "decision_bearing",
+      "text": "Decision: reject Beta.",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "boiler-a",
+      "boiler-b",
+      "boiler-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "E4"
+  ]
+}

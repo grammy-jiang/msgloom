@@ -1,0 +1,117 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "interleaved-inline-reply",
+  "description": "Two separated quote occurrences from one source are interleaved with distinct new reply text.",
+  "family": "interleaved_reply",
+  "messages": [
+    {
+      "message_id": "inline-source",
+      "expected_text": "Question one: approve Alpha?\nQuestion two: approve Beta?",
+      "arrival_rank": 1,
+      "internet_message_id": "<inline-source@synthetic.invalid>",
+      "subject": "Inline",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "inline-reply",
+      "expected_text": "> Question one: approve Alpha?\nYes for Alpha.\n\n> Question two: approve Beta?\nNo for Beta.",
+      "arrival_rank": 2,
+      "internet_message_id": "<inline-reply@synthetic.invalid>",
+      "subject": "Re: Inline",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "inline-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "inline-source"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "inline-q1",
+      "message_id": "inline-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 30
+      },
+      "source_candidates": [
+        {
+          "message_id": "inline-source",
+          "span": {
+            "start": 0,
+            "end": 28
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    },
+    {
+      "occurrence_id": "inline-q2",
+      "message_id": "inline-reply",
+      "occurrence_span": {
+        "start": 47,
+        "end": 76
+      },
+      "source_candidates": [
+        {
+          "message_id": "inline-source",
+          "span": {
+            "start": 29,
+            "end": 56
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "inline-new-a",
+      "message_id": "inline-reply",
+      "span": {
+        "start": 31,
+        "end": 45
+      },
+      "kind": "new_content",
+      "text": "Yes for Alpha.",
+      "notes": ""
+    },
+    {
+      "span_id": "inline-new-b",
+      "message_id": "inline-reply",
+      "span": {
+        "start": 77,
+        "end": 89
+      },
+      "kind": "new_content",
+      "text": "No for Beta.",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "inline-source",
+      "inline-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "E3"
+  ]
+}

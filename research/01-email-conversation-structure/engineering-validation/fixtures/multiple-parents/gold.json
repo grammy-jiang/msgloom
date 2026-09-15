@@ -1,0 +1,109 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "multiple-parents",
+  "description": "A message can carry more than one parent identifier; the benchmark does not collapse it to a tree.",
+  "family": "multiple_parent",
+  "messages": [
+    {
+      "message_id": "multi-a",
+      "expected_text": "Question A: approve red?",
+      "arrival_rank": 1,
+      "internet_message_id": "<multi-a@synthetic.invalid>",
+      "subject": "Two approvals",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "multi-b",
+      "expected_text": "Question B: approve blue?",
+      "arrival_rank": 2,
+      "internet_message_id": "<multi-b@synthetic.invalid>",
+      "subject": "Two approvals",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "multi-reply",
+      "expected_text": "> Question A: approve red?\n> Question B: approve blue?\n\nBoth approved.",
+      "arrival_rank": 3,
+      "internet_message_id": "<multi-reply@synthetic.invalid>",
+      "subject": "Re: Two approvals",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "multi-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "multi-a",
+        "multi-b"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "multi-q-a",
+      "message_id": "multi-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 26
+      },
+      "source_candidates": [
+        {
+          "message_id": "multi-a",
+          "span": {
+            "start": 0,
+            "end": 24
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": "First occurrence in a composite displayed block; requires source A."
+    },
+    {
+      "occurrence_id": "multi-q-b",
+      "message_id": "multi-reply",
+      "occurrence_span": {
+        "start": 27,
+        "end": 54
+      },
+      "source_candidates": [
+        {
+          "message_id": "multi-b",
+          "span": {
+            "start": 0,
+            "end": 25
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": "Second occurrence in a composite displayed block; requires source B."
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "multi-a",
+      "multi-b",
+      "multi-reply"
+    ],
+    [
+      "multi-reply",
+      "multi-b",
+      "multi-a"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3"
+  ]
+}

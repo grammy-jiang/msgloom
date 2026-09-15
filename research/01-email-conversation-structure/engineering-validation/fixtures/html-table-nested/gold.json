@@ -1,0 +1,84 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "html-table-nested",
+  "description": "HTML blockquote containing a table must preserve decision-bearing cell text and structure.",
+  "family": "html_table",
+  "messages": [
+    {
+      "message_id": "html-source",
+      "expected_text": "Approval limit:\nRegion | Limit\nAU | AUD 50,000",
+      "arrival_rank": 1,
+      "internet_message_id": "<html-source@synthetic.invalid>",
+      "subject": "Limits",
+      "content_kind": "text/html",
+      "notes": ""
+    },
+    {
+      "message_id": "html-reply",
+      "expected_text": "Approval limit:\nRegion | Limit\nAU | AUD 50,000\nKeep the AU limit unchanged.",
+      "arrival_rank": 2,
+      "internet_message_id": "<html-reply@synthetic.invalid>",
+      "subject": "Re: Limits",
+      "content_kind": "text/html",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [
+    {
+      "occurrence_id": "html-q1",
+      "message_id": "html-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 46
+      },
+      "source_candidates": [
+        {
+          "message_id": "html-source",
+          "span": {
+            "start": 0,
+            "end": 46
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "html_blockquote",
+      "notes": ""
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "html-source-limit",
+      "message_id": "html-source",
+      "span": {
+        "start": 36,
+        "end": 46
+      },
+      "kind": "decision_bearing",
+      "text": "AUD 50,000",
+      "notes": ""
+    },
+    {
+      "span_id": "html-reply-limit",
+      "message_id": "html-reply",
+      "span": {
+        "start": 36,
+        "end": 46
+      },
+      "kind": "decision_bearing",
+      "text": "AUD 50,000",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "html-source",
+      "html-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2"
+  ]
+}

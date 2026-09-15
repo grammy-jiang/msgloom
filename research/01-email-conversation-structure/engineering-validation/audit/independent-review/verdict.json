@@ -1,0 +1,71 @@
+{
+  "status": "rejected",
+  "blocking_issues": [
+    {
+      "id": "B1",
+      "location": "engineering-validation/src/topic01_validation/fixtures.py:69; experiments.py:70",
+      "finding": "The 40/40 extraction result uses circular gold construction.",
+      "evidence": "Every message constructor derives expected_text from the extractor being evaluated. Experiments regenerate these expectations instead of loading independent frozen gold. An in-memory mutation that removed 'Deadline: Friday.' still produced 40/40 extraction success and 11/11 decision/condition preservation.",
+      "impact": "The headline cannot support independent extraction correctness or complete preservation. The narrower checks against explicit labeled strings remain useful. E2 completion needs corrected evidence or a narrower claim."
+    },
+    {
+      "id": "B2",
+      "location": "engineering-validation/src/topic01_validation/experiments.py:138; results/metrics.json:E2.reuse_augmented_end_to_end_source_resolution",
+      "finding": "The reported end-to-end accepted attribution error excludes false-positive quote detections.",
+      "evidence": "Source-resolution evaluation iterates only over gold quotes. Scoring every augmented prediction with the existing full-context matcher produced 3 incorrect accepted attributions among 18 acceptances. The stored metric reports 0/15. The excluded errors are two reverse attributions in late-parent-arrival and one attribution in the repeated-boilerplate negative control.",
+      "impact": "The current end-to-end error label materially misstates attribution performance. Detection precision exposes the false positives, but does not correct the source-resolution denominator."
+    }
+  ],
+  "nonblocking_issues": [
+    {
+      "id": "N1",
+      "location": "engineering-validation/PLAN.md; src/topic01_validation/uncertainty.py:42; src/topic01_validation/experiments.py:304",
+      "finding": "E4 does not implement the planned held-out template-family split. Both splits use the same five families. Fifteen test examples are content-identical to calibration examples, all in edited_unique. Different seeds do not guarantee disjoint examples.",
+      "impact": "The numbers remain reproducible generator diagnostics. They do not establish the stated independent family holdout."
+    },
+    {
+      "id": "N2",
+      "location": "engineering-validation/src/topic01_validation/replay.py:166; experiments.py:227",
+      "finding": "Replay scoring has blind spots. stale_final_relations compares history against the same final snapshot and returns zero even when a relation disappears. Quote-policy scoring matches any assessment in a message, so one correct source assessment can satisfy both interleaved gold occurrences. Parent accuracy excludes unexpected relations and the ancestry label.",
+      "impact": "The current comparator findings remain supported, but these metrics cannot reliably detect several correction, retraction, and occurrence-coverage regressions."
+    },
+    {
+      "id": "N3",
+      "location": "engineering-validation/src/topic01_validation/models.py:73; fixtures.py:269",
+      "finding": "The quote contract conflates alternative sources with jointly required sources. multiple-parents contains distinct text from two known sources, but len(source_candidates) > 1 labels it ambiguous and rewards abstention.",
+      "impact": "The reported two ambiguous occurrences combine one alternative-source case with one composite quotation. The contract cannot express separate occurrence segments and their required source links."
+    },
+    {
+      "id": "N4",
+      "location": "engineering-validation/src/topic01_validation/experiments.py:82",
+      "finding": "E2 combines prior-arrival context for reuse detection with complete-case context for source matching. Matching can access a source that arrived after the quote. The end-to-end path also slices expected_text and takes marker handling from gold annotations.",
+      "impact": "The result is a hybrid diagnostic. It should not be interpreted as attribution performance at arrival time or as a fully independent pipeline evaluation."
+    },
+    {
+      "id": "N5",
+      "location": "engineering-validation/tests/",
+      "finding": "Missing regression tests cover the defects above. Existing tests do not enforce independent extraction gold, content-disjoint calibration/test splits, inclusion of false accepted attributions, occurrence-specific replay scoring, or detection of stale and removed relations.",
+      "impact": "Passing tests and stable hashes establish reproducibility, but do not establish metric validity."
+    }
+  ],
+  "recommended_fixes": [
+    "For B1, define expected bodies independently of extract_body and evaluate against frozen gold without regenerating it. Add an in-memory corruption test that must reduce preservation or extraction accuracy.",
+    "For B2, score all predicted quote occurrences with one-to-one gold assignment. Count accepted sources attached to unmatched occurrences as false attributions. Retain gold-conditioned diagnostics under explicit names.",
+    "For N1, enforce content-disjoint splits. Implement the promised family holdout or narrow the plan and status to same-family generator diagnostics. Select thresholds only on calibration data.",
+    "For N2, score replay assessments by occurrence identity and source span. Test resolved-to-ambiguous transitions, removed relations, and deliberately stale assessments against independent expected states.",
+    "For N3, distinguish alternative-source sets from composite quotations with multiple required source segments.",
+    "For N4, state the source-availability policy for each metric. Use extracted prediction text and detector metadata in the end-to-end path.",
+    "After correcting the affected metrics, regenerate results and audit records. Revise E1–E4 completion statements to match the validated scope. These are harness and research-status fixes; they do not require product design changes."
+  ],
+  "verified_points": [
+    "Read all requested documents, Python modules, tests, metrics, and final audit locally. No files were changed and no network access was used.",
+    "E2, E3, and E4 recomputed in memory exactly match the stored metrics. All 23 checked source, test, and artifact hashes match final-audit.json. Generated fixture content matches the frozen corpus.",
+    "Forty tests passed without file writes. The three experiment tests were inspected but not executed because they create files.",
+    "The unsafe duplicate Message-ID comparator is arrival-order dependent. The ambiguity-preserving comparator retains both alternatives and removes that failure for the tested orders.",
+    "Reply-parent and quote-source relations remain separate in the conflict and missing-parent fixtures.",
+    "Reuse detection uses strictly earlier arrival ranks. Its reported 18/22 precision includes four false-positive occurrences and preserves the reverse-provenance failure.",
+    "E4 threshold selection uses calibration examples only. The recorded test diagnostic includes one incorrect near-collision acceptance among 81 acceptances. General calibration and production reliability remain assigned to Topic 10.",
+    "Synthetic-only and production-representativeness boundaries are explicit. A2/A7 remain open without automatic Round 3. The handoffs are explicit, and no production architecture approval is asserted."
+  ],
+  "confidence": 0.98
+}

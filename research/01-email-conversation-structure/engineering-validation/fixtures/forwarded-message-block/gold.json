@@ -1,0 +1,74 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "forwarded-message-block",
+  "description": "Forwarded content remains evidence even without RFC-style quote markers; the simple structural quote detector is expected to miss it.",
+  "family": "forwarded_block",
+  "messages": [
+    {
+      "message_id": "forward-source",
+      "expected_text": "Decision: approve Gamma rollout.",
+      "arrival_rank": 1,
+      "internet_message_id": "<forward-source@synthetic.invalid>",
+      "subject": "Gamma",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "forward-wrapper",
+      "expected_text": "FYI\n\n---------- Forwarded message ----------\nFrom: synthetic@example.invalid\nSubject: Gamma\n\nDecision: approve Gamma rollout.",
+      "arrival_rank": 2,
+      "internet_message_id": "<forward-wrapper@synthetic.invalid>",
+      "subject": "Fwd: Gamma",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [
+    {
+      "occurrence_id": "forward-q1",
+      "message_id": "forward-wrapper",
+      "occurrence_span": {
+        "start": 93,
+        "end": 125
+      },
+      "source_candidates": [
+        {
+          "message_id": "forward-source",
+          "span": {
+            "start": 0,
+            "end": 32
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "forwarded_block",
+      "notes": ""
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "forward-decision",
+      "message_id": "forward-wrapper",
+      "span": {
+        "start": 93,
+        "end": 125
+      },
+      "kind": "decision_bearing",
+      "text": "Decision: approve Gamma rollout.",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "forward-source",
+      "forward-wrapper"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "forward"
+  ]
+}

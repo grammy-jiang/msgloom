@@ -1,0 +1,118 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "sibling-branches",
+  "description": "Independent sibling replies share a parent but do not imply sibling visibility.",
+  "family": "branching",
+  "messages": [
+    {
+      "message_id": "branch-root",
+      "expected_text": "Choose supplier A.\nBudget cap is AUD 20,000.",
+      "arrival_rank": 1,
+      "internet_message_id": "<branch-root@synthetic.invalid>",
+      "subject": "Supplier",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "branch-left",
+      "expected_text": "> Choose supplier A.\n\nI support supplier A.",
+      "arrival_rank": 2,
+      "internet_message_id": "<branch-left@synthetic.invalid>",
+      "subject": "Re: Supplier",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "branch-right",
+      "expected_text": "> Budget cap is AUD 20,000.\n\nPlease confirm the cap.",
+      "arrival_rank": 3,
+      "internet_message_id": "<branch-right@synthetic.invalid>",
+      "subject": "Re: Supplier",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "branch-left",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "branch-root"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    },
+    {
+      "message_id": "branch-right",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "branch-root"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "branch-q1",
+      "message_id": "branch-left",
+      "occurrence_span": {
+        "start": 0,
+        "end": 20
+      },
+      "source_candidates": [
+        {
+          "message_id": "branch-root",
+          "span": {
+            "start": 0,
+            "end": 18
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    },
+    {
+      "occurrence_id": "branch-q2",
+      "message_id": "branch-right",
+      "occurrence_span": {
+        "start": 0,
+        "end": 27
+      },
+      "source_candidates": [
+        {
+          "message_id": "branch-root",
+          "span": {
+            "start": 19,
+            "end": 44
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "branch-root",
+      "branch-left",
+      "branch-right"
+    ],
+    [
+      "branch-root",
+      "branch-right",
+      "branch-left"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3"
+  ]
+}

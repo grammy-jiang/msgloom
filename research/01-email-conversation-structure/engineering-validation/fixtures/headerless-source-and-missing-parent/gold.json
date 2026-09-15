@@ -1,0 +1,77 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "headerless-source-and-missing-parent",
+  "description": "Quoted content can align to an observed source even when reply-parent metadata points to an unavailable identifier.",
+  "family": "missing_identifier",
+  "messages": [
+    {
+      "message_id": "headerless-source",
+      "expected_text": "Retain clause 9 unchanged.",
+      "arrival_rank": 1,
+      "internet_message_id": "",
+      "subject": "Clause 9",
+      "content_kind": "text/plain",
+      "notes": "Raw source deliberately lacks Message-ID."
+    },
+    {
+      "message_id": "headerless-reply",
+      "expected_text": "> Retain clause 9 unchanged.\n\nAcknowledged.",
+      "arrival_rank": 2,
+      "internet_message_id": "<headerless-reply@synthetic.invalid>",
+      "subject": "Re: Clause 9",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "headerless-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [],
+      "missing_target_ids": [
+        "<unknown-parent@synthetic.invalid>"
+      ],
+      "ambiguous": false,
+      "notes": "Do not substitute content similarity for the missing header parent."
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "headerless-q1",
+      "message_id": "headerless-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 28
+      },
+      "source_candidates": [
+        {
+          "message_id": "headerless-source",
+          "span": {
+            "start": 0,
+            "end": 26
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "headerless-source",
+      "headerless-reply"
+    ],
+    [
+      "headerless-reply",
+      "headerless-source"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3",
+    "missing-id"
+  ]
+}
