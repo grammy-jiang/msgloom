@@ -1,5 +1,24 @@
 # Topic 02 current status
 
+**This topic is CLOSED.** It stopped on `review_decision`: after round 2 a
+project-value review read the gaps and did not authorise a third academic
+round. That is a decision about the evidence, and it is a stronger closure
+signal than the `round_cap_reached` the later topics hit — those stopped
+because a four-round budget ran out while papers were still arriving.
+
+Topic 02 ran under the earlier process, so it differs from Topics 03–10 in
+three ways that matter to anything reading the programme:
+
+| | Topic 02 | Topics 03–10 |
+| --- | --- | --- |
+| Rounds | 2 academic, then a review declined a third | 4, all stopping on the cap |
+| Gap id namespace | `G<n>-A` / `G<n>-E` | `gap-<n>` |
+| Engineering work | a separate validation phase, EV1–EV7, accepted and closed | classified as gaps, not built |
+
+The report, `gaps.json` and this file are all at the conventional paths, so a
+tool will find them. Only the vocabulary differed, and that is what this
+header fixes.
+
 ## Academic research
 
 - Round 1: complete over the frozen 29-paper corpus.

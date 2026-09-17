@@ -1,10 +1,30 @@
 # Topic 01 current status
 
+**This topic is CLOSED.** It stopped on `review_decision`: after round 2 a
+project-value review read the retained gaps and declined to authorise a third
+academic round. That is a decision about the evidence, and it is a stronger
+closure signal than the `round_cap_reached` the later topics hit — those
+stopped because a four-round budget ran out while papers were still arriving.
+
+Topic 01 ran before the current pipeline existed, so its shape differs from
+Topics 03–10. Nothing below is missing; it is filed differently:
+
+| What | Where |
+| --- | --- |
+| Round reports | `local-corpus-20260914/` (round 1), `round2-20260915/` (round 2) |
+| Index at the conventional path | `msgloom-topic-01-email-conversation-structure-research-report.md` — a pointer, not a synthesis |
+| Gaps, current state | `gaps.json` at this root |
+| Gaps, round-2 snapshot | `round2-20260915/gaps.json` |
+| Gap id namespace | `A<n>` / `E<n>`, not `gap-<n>` |
+| Built-and-measured work | `engineering-validation/` |
+| Rounds | 2 academic, not 4 |
+
 ## Academic research
 
 - Round 1: complete.
 - Round 2: complete, independently reviewed and strictly validated.
-- Automatic Academic Round 3: **not started**.
+- Automatic Academic Round 3: **not started** — declined by the post-round-2
+  project-value review, not abandoned.
 - Retained academic gaps:
   - A2 structural quote-to-source-span alignment: medium, targeted refresh only if later candidate selection needs it or stronger candidates still fail relevant strata.
   - A7 modern/incremental/LLM direct-email reconstruction: high, retained but not sufficient by itself to trigger another broad round now.
