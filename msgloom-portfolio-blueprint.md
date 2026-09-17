@@ -417,19 +417,49 @@ Thirty-six elements, enumerated from the design documents before consulting the
 research. Full table in `design_verdicts.md`; the distribution and the
 decision-bearing rows are here.
 
-**Distribution:** SUPPORTED 19 · CHALLENGED 3 · OPEN 10 · UNCOVERED 4
+**Distribution:** SUPPORTED 19 · CHALLENGED 2 · WITHDRAWN 1 · OPEN 10 · UNCOVERED 4
 
 **Every OPEN below rests on a search that stopped at a budget, not at
 saturation.** Eight of ten topics stopped on `round_cap_reached` with new
 papers still arriving.
 
-### The three CHALLENGED elements
+### The CHALLENGED elements — two, after one was withdrawn
 
 | Element | Verdict | Source | Evidence against | Recommendation |
 | --- | --- | --- | --- | --- |
 | **Reply structure is reliable mechanical work** (DP-01 applied to threading) | **CHALLENGED** | `design-principles.md §DP-01`, `design.md §4` | Topic 04 (HIGH confidence) "adjacency, nearest-turn, and Reply/Reply-All structure are insufficient as semantic scope rules" | Move reply-scope resolution to the AI side of DP-01 and keep transport metadata as candidate generation only. **A human decides.** This is the one place research relocated a boundary the design drew |
 | **Topic details reference every source message** | **CHALLENGED** | `design-brief.md §5` | Topic 04 (HIGH confidence) "reply scope must be represented below whole-message level when the antecedent contains multiple questions or propositions" | The requirement stands; its granularity does not. Restate the contract at span level. **A human decides** whether to amend the brief |
-| **Avoid custom infrastructure** (DP-10) | **CHALLENGED** | `design-principles.md §DP-10` | `[07: HONEYBEE]` the best-evidenced permission-aware retrieval mechanism is RBAC over a vector database, which `phase-roadmap.md` classes as an implementation option | Both hold. The lattice puts correct meaning above ease of maintenance, so the product designs for the permission guarantee — but that is which side to build for, not which side is right. **Recorded as an open decision** |
+| **Avoid custom infrastructure** (DP-10) | **WITHDRAWN 2026-09-17** | `design-principles.md §DP-10` | `[07: HONEYBEE]` — but see below | **This review's error, not a finding.** The challenge does not apply to this product |
+
+**Why the DP-10 challenge is withdrawn.** The owner asked for it to be
+re-checked and was right to. HONEYBEE is *Role-Based Access Control for Vector
+Databases via Dynamic Partitioning* — it partitions an index so that different
+roles retrieve different subsets, and it is measured against PostgreSQL
+row-level security. Its whole cluster in Topic 07 is the same shape: PPPARITL,
+Provably Secure RAG and IAM-delegated Permission-Aware RAG are all multi-user
+enterprise settings, and Topic 07 itself rates that finding MEDIUM "because
+these are not direct workplace-communication investigation evaluations".
+
+**This product has one owner and no roles.** Nothing in the index may be
+withheld from the only person who reads it, so there is no partitioning problem
+to solve and no custom infrastructure to weigh against DP-10. The challenge was
+constructed by matching the word *permission* across two settings that do not
+match.
+
+**The real invariant, which replaces it:**
+
+> The index contains only what the owner can already see in the source system.
+> Permission is enforced at ingestion by the source, never re-implemented in
+> retrieval.
+
+This holds for team messages as much as for mail: a channel the owner is not in
+never enters the product. **DP-10 stands unchallenged**, and the architecture
+does not need a permission-aware retrieval layer.
+
+**One permission concern survives and it is a different one.** An item the
+*owner personally* cannot open — a shared-drive link whose owner forgot to grant
+access. That is external, the source system enforces it, and D-1 already settles
+what happens: report the item and say why it could not be read.
 
 ### The OPEN elements that block a decision
 
@@ -912,7 +942,7 @@ what it produced is the acceptance apparatus for whatever Phase 1 ships.
 | Q2 | Do `[06: gap-7]` and Topic 10's F4 describe the same benchmark? | Read both | **An hour.** IG8 — worth doing before anything else on this list |
 | Q3 | Does Topic-scoped retrieval avoid the context degradation Topic 05 measured? | `[05: gap-7]`'s ablation | One controlled comparison — resolves C1 |
 | Q4 | Is Topic 01's synthetic quotation result transferable? | Apply it to real mail under the same gold contract | Unblocks IG9 and stops three topics re-opening the same problem |
-| Q5 | Who owns cost, and who owns attachment security? | The project | A decision. IG4 and IG11 are both "nobody claimed it" |
+| Q5 | ~~Who owns cost, and who owns attachment security?~~ | **Both answered 2026-09-17** | Attachment security: R-A…R-M in the security review. Cost: **there is no cost or token budget at this stage** — owner decision D-9. Correctness first |
 | Q6 | What does the reader see when the system is not allowed to tell them? | Design decision informed by `[07: gap-4]` | §12's fourth state — no design document mentions it |
 
 **The validation plan is Topic 01's method, applied outward.** Executable gold
@@ -959,7 +989,7 @@ hypothesis composed from supported modules.
 | Stage | Decision | Depends On | Confidence | Reason | Blocks Next Step? | Revisit Trigger |
 | --- | --- | --- | --- | --- | --- | --- |
 | **decision: cost function** | **DEFER** | MVP-0 running for a few days | HIGH | Q1. Four topics stopped here. **The number is not knowable before the tool runs** — it is a count of how many false obligations a week the product actually produces, and nothing produces it yet. Deferred to measurement, not to convenience | **No longer** — see R1–R3 below | When MVP-0 has produced a few days of counts |
-| **architecture-design** | **RUN** | R1–R3, not the number | MEDIUM | §11, §13, §14 and §21 give it contracts, a hypothesis architecture and four named decisions. `[07: gap-8]` means it designs a hypothesis, which is legitimate and must be labelled | Yes — tech stack and UX both wait on it | If IG1 or IG6 is resolved differently than assumed |
+| **architecture-design** | **RUN** | R1–R3 and `msgloom-owner-decisions.md` | MEDIUM | §11, §13, §14 and §21 give it contracts, a hypothesis architecture and four named decisions. `[07: gap-8]` means it designs a hypothesis, which is legitimate and must be labelled | Yes — tech stack and UX both wait on it | If IG1 or IG6 is resolved differently than assumed |
 | **tech-stack-selection** | **DEFER** | architecture-design | MEDIUM | DP-10 and the CHALLENGED DP-10 row make this a real decision, not a formality. Premature selection would pre-empt §6 row 17 | No | When architecture-design declares it needs a stack |
 | **ux-design** | **RUN** | architecture-design | MEDIUM | §12 states intent and the research creates a specific obligation: four reader-visible states where the design has two. The fourth — *not allowed to tell you* — appears in no design document | No | If §12's interaction modes change |
 | **security-review** | **RUN** | architecture-design | HIGH | **IG11 — attachment security has no owner**, Topic 08 marked it ❌ Missing and no topic took it. DP-09 is a fixed boundary and the programme never tested it | Yes for Phase 2 | Immediately, if attachment handling enters MVP-0 |

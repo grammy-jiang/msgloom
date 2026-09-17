@@ -38,5 +38,5 @@ EV1–EV7 synthetic/adversarial validation is **ACCEPTED_AND_CLOSED_FOR_CURRENT_
 - Semantic response/partial-agreement scope: Topic 04.
 - General calibration/selective-prediction methodology: Topic 10.
 - External-method reproduction/license checks: conditional on candidate selection.
-- Raspberry Pi performance: deferred until correctness/preservation/uncertainty method selection is mature.
+- ~~Raspberry Pi performance: deferred until correctness/preservation/uncertainty method selection is mature.~~ **Void 2026-09-17 (owner decision D-8):** the deployment target is x86 plus cloud services.
 - No production architecture has been approved by Topic 02 research.

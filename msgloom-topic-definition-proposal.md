@@ -1,0 +1,614 @@
+# What a Topic is — a proposal
+
+**Status: §7 decided, §§1–6 proposed.** The owner asked for help defining the
+product's central concept (decision D-10). §7's four questions were put to them
+on 2026-09-17 and all four are now settled — three by the owner (D-11, D-12,
+D-13) and one resolved here as a design default because only measurement can
+answer it. **§§1–6 remain a recommendation** and have not been approved.
+
+**Two sources, kept separate on purpose:**
+
+| Source | What it supplies |
+| --- | --- |
+| The owner, 2026-09-17 | **What makes something a Topic at all.** No research covers this |
+| Topic 03, `cross-thread-topic-tracking`, 4 rounds | **What makes one Topic one Topic.** Themes 1–6, mostly HIGH confidence |
+
+`docs/design-brief.md §2` already says: *"A work matter described by information
+from one or more sources."* That stays true. It is not operational — it does not
+say how to tell one matter from two, or what disqualifies something. This
+proposal makes it operational without replacing it.
+
+---
+
+## 1. The definition
+
+> A **Topic** is a **work matter** that places a claim on the owner's attention —
+> something they must act on, or must know about — assembled from evidence that
+> may arrive in any number of messages, threads and sources.
+
+Three parts, each load-bearing:
+
+- **A work matter** — a thing in the world. A purchase, a hire, an incident, a
+  contract, a request. Not a conversation and not a subject line.
+- **A claim on the owner's attention** — this is the admission test, §2.
+- **Assembled from evidence** — the Topic is not any message. It is what the
+  messages are about. Every statement in it cites its source (D-6) and
+  attributes it (D-7).
+
+## 2. The admission test — is this a Topic?
+
+The owner's criterion, made testable. **A matter is a Topic if either door
+opens:**
+
+| Door | Test | Example |
+| --- | --- | --- |
+| **Action** | Something is owed — by the owner, or to the owner by someone else | "Can you approve this by Friday?" · an invoice you are waiting on |
+| **Knowledge** | Nothing is owed, **but a decision you might make would change if you knew it** | A supplier's factory has shut down. Nobody asked you anything. It changes what you promise next week |
+
+**If neither door opens, it is not a Topic.** An industry newsletter is
+interesting and changes no decision — it is information, not a Topic. This test
+is what keeps a mailbox from producing thousands of Topics.
+
+**A consequence that matters for the architecture.** The knowledge door depends
+on what the owner is currently doing. A matter that was not a Topic in March
+becomes one in June when the owner takes over that project. **Topic-ness is
+therefore not a fixed property of messages.** It is re-evaluated against the
+working context, and the working context is versioned (`DP-02`). A report must
+be able to say *this became relevant to you, and here is why now*.
+
+## 3. Identity — what makes one Topic one Topic
+
+This is where Topic 03 did four rounds of work. Its results are used directly.
+
+### 3.1 A thread is not a Topic
+
+**[HIGH]** Work activities span multiple reply threads; participant sets evolve;
+the same people run several distinct matters at once. Thread membership, shared
+participants, subject-line overlap and semantic similarity are **evidence
+features, never sufficient merge conditions**.
+
+Similarity may still *retrieve* candidates. It may not *decide*.
+
+### 3.2 Anchor on the business object when one exists
+
+**[HIGH]** Identity should rest on several independent, mutually compatible
+dimensions at once: the people and their roles, the action, the temporal
+relations, business attributes, and the document structure.
+
+**[MEDIUM]** A concrete business object — an invoice number, a PO, a ticket ID,
+a contract reference — is a **stronger anchor than a person**. People and other
+high-connectivity entities will link unrelated matters if trusted naïvely. Alice
+appears in forty matters; invoice INV-2291 appears in one.
+
+**[HIGH] Incompatible evidence counts as much as similarity.** Two matters that
+look alike but name different amounts are not the same matter. The system must
+be able to use a contradiction to keep things apart, not only use resemblance to
+join them.
+
+### 3.2.1 Anchors are configured, not built in — owner decision D-17
+
+> "In the real world it can be like the number of the deal, or a certain name of
+> a product, or even just a certain request to approve these kinds of things. So
+> the anchors should be configurable, and the user can edit them by a
+> configuration file."
+
+**An invoice number is an example, not the design.** Every workplace anchors its
+matters on something different, and the product cannot ship a fixed list.
+
+**Two kinds, reusing a split the design already makes.** `DP-01` divides triage
+rules into deterministic ones that code can evaluate and semantic ones that need
+AI interpretation in plain English. **Anchors take the same two forms**, so there
+is no new vocabulary, no new config shape and no new trust model:
+
+| | Form | Evaluated by | Examples |
+| --- | --- | --- | --- |
+| **Deterministic anchor** | A pattern | Code | `INV-\d{4}` · `DEAL-\d+` · a ticket key · a contract reference |
+| **Semantic anchor** | A description in plain English | The AI, under the Phase 1 rules | "the name of a product we sell" · "a request to approve spending" |
+
+Deterministic anchors are exact, cheap and need no model call. Prefer them
+wherever the workplace has an identifier. Semantic anchors cover what has no
+identifier, which is most approval traffic.
+
+**Configuration is instruction; a match is data.** D-2 already names the owner's
+rules as configuration, which is the trusted side. **The anchor definition may
+steer behaviour. The value it extracts from a message may not** — that value came
+from a source and stays data. This distinction needs to survive into the
+implementation, because the two live next to each other.
+
+### 3.2.2 A bad anchor is worse than no anchor
+
+This is the one real hazard configurability introduces, and it follows directly
+from Theme 2's own warning about high-connectivity entities.
+
+**A product name is a plausible anchor and a dangerous one.** If the product is
+sold to everybody, anchoring on it merges every unrelated matter that mentions
+it — the same failure as anchoring on a person, reached by a different route.
+Alice appears in forty matters; so does "the X1 controller".
+
+**The guard is measurement, not judgement.** An anchor's usefulness is how few
+matters it appears in, and that is countable:
+
+- The system records, per anchor, **how many distinct Topics it links**.
+- An anchor linking far more than the others is reported to the owner as a
+  probable over-merger.
+- **This needs no threshold** and no cost function. It is a ranking, and the
+  owner reads it.
+
+**Recommended default for a semantic anchor:** treat it as candidate retrieval
+rather than as a merge condition, unless it is corroborated by a second
+dimension. Theme 1 already requires exactly this of similarity, and a semantic
+anchor is closer to similarity than to an identifier.
+
+### 3.2.3 Every anchor carries a kind and a weight — owner decision D-18
+
+> "I think we should have both category and also the importance score or related
+> score… An invoice number, a deal number, a certain name of an event, or a Jira
+> issue ticket number are quite important and somehow deterministic… For other
+> things like from the same company, or from the same users, or even just things
+> happening in the same period of time — these are not that important… only when
+> it's from the same company and also the same people and maybe in the same
+> period of time, then the signal becomes strong from weak."
+
+**Two properties, configured per anchor, doing two different jobs.**
+
+| Property | What it is | What it decides |
+| --- | --- | --- |
+| **Kind** | What sort of evidence this is. A type, not a ranking | **Whether two matches may stack.** See below — this is why a weight alone is not enough |
+| **Weight** | How much a match contributes | How close the pair gets to verification |
+
+#### Why a weight alone is not enough
+
+Theme 2 requires identity to rest on **independent** dimensions. A plain weighted
+sum does not know what is independent.
+
+*Same sender* and *same recipient* both match. Under a plain sum that is two
+signals. **It is one** — they are the same kind of evidence about the same
+relationship, and counting them twice manufactures confidence that is not there.
+
+**So the kind exists to stop correlated evidence from stacking.** The rule is
+mechanical:
+
+- **Matches of the same kind do not accumulate.** The strongest one counts.
+- **Matches of different kinds add.**
+
+That is Theme 2's "several independent dimensions" expressed as arithmetic
+rather than as advice.
+
+#### The kinds
+
+Drawn from the evidence dimensions Theme 2 lists. The set is configuration, so a
+workplace may add to it.
+
+| Kind | Examples |
+| --- | --- |
+| **identifier** | invoice number, deal number, Jira issue key, contract reference, a named event |
+| **participant** | sender, recipient, people named in the body |
+| **organisation** | company, supplier, department |
+| **temporal** | within the same period, close in arrival time |
+| **content** | a product, a quantity, lexical or semantic similarity |
+| **artifact** | the same attachment, the same document version |
+
+**Weights are set per anchor, not per kind.** A supplier name is weak in a
+company with three thousand suppliers and strong in one with three. Only the
+owner knows which they are in.
+
+#### Two rules that override the arithmetic
+
+1. **An identifier match reaches verification on its own.** It does not need to
+   accumulate with anything. This is what the owner means by *deterministic* —
+   an invoice number is not a hint about the same matter, it names it.
+2. **A hard contradiction vetoes**, whatever the total. The same invoice number
+   against two different amounts is not one matter with strong evidence; it is
+   two matters, or an error worth reporting. Theme 2's third finding, kept as a
+   rule rather than a subtracted weight.
+
+#### What the total selects
+
+| Total | Behaviour |
+| --- | --- |
+| **At or above the verification level** | **The AI takes a deep look.** It examines both matters for *incompatible* evidence and returns CONTINUE or NEW **with its reason** |
+| **Below it** | **Never merges.** Presented as related context, and **the wording names exactly what matched** |
+
+**The wording must scale with the evidence, and this is the owner's point.**
+These are three different sentences and must not be written as one:
+
+> You have had other conversations with this person.
+>
+> This supplier appears in another matter you are tracking.
+>
+> The same supplier and the same three people, within the same week, appear in a
+> matter you are tracking.
+
+The third is close to the line and says so by being specific. **None of them
+asserts that the matters are the same** — D-7's rule again.
+
+#### The threshold question, answered honestly
+
+The previous version of this section avoided a number on the grounds that a
+threshold needs the cost function IG5 defers. **That objection does not apply
+here, and the difference is worth being precise about.**
+
+| | If the number is wrong |
+| --- | --- |
+| **IG5's abstention threshold** | An obligation is dropped and **nobody ever learns it existed**. Silent |
+| **This verification level** | Too low: the AI verifies more often than needed — **tokens, which D-9 says are not a constraint now**. Too high: a real link is shown as context instead of merged — **the owner sees the material anyway** |
+
+**Neither failure here is silent.** So this number can be set by hand, watched,
+and tuned — and it must not be confused with the one that cannot.
+
+#### Who computes what
+
+`DP-01`, applied without strain:
+
+- **Code** matches anchors, applies the kind rule, sums the weights and checks
+  the two override rules. Deterministic, cheap, auditable, and it runs on every
+  pair without a model call.
+- **The AI** does the deep look when the total warrants it, and writes the
+  contextual wording when it does not.
+
+**Weights stay in configuration and the AI never sets them.** D-2 puts
+configuration on the instruction side and everything from a source on the data
+side. A model that could rewrite its own weights from what it read in a mailbox
+would move configuration to the wrong side of that line.
+
+#### Measuring it
+
+D-17's guard extends without change. Per anchor, record how many distinct Topics
+it links **and how often its weight is what carried a pair over the verification
+level.** An anchor that is always the deciding vote is either the best one
+configured or badly over-weighted, and the count says which.
+
+### 3.2.4 Changing the anchor configuration
+
+`docs/tech-stack.md` already requires configuration to reject unknown fields at
+startup and an intentional change to produce a new version for later runs. Two
+consequences specific to anchors:
+
+1. **Existing Topics are not rebuilt.** A new anchor is new evidence, and §3.4's
+   repair mechanism already handles new evidence. Matters that should merge will
+   merge when the anchor next matches; nothing is recomputed from the beginning.
+2. **A report says which configuration version produced it**, because a change to
+   the anchors changes identity decisions and therefore changes the report.
+
+**The system may propose anchors; it never adopts them.** Noticing that
+`DEAL-\d+` recurs across many messages is mechanical work code can do, and
+suggesting it costs nothing. Adopting it is an edit to the configuration file,
+which is the owner's. This keeps §5's self-maintenance honest: the system
+maintains Topics without curation, and the owner still owns the rules.
+
+### 3.3 Three outcomes, not two
+
+**[HIGH]** When new evidence arrives, the decision is **CONTINUE / NEW /
+UNCERTAIN**, and `UNCERTAIN` is a first-class outcome, not a failure. This has
+classical support in record linkage (link / possible-link / non-link) and modern
+support in selective prediction.
+
+**[MEDIUM] The thresholds cannot be set from the literature.** They need the cost
+of a false merge against a false split — which is IG5, deferred to measurement.
+Until then MVP-0 surfaces everything and sets no threshold (blueprint R1–R3).
+
+**§3.2.3 supplies these three outcomes without a threshold at all.** Anchor
+strength selects a behaviour directly: an identifying match goes to verification
+and returns CONTINUE or NEW with a reason, and a contextual match is the
+`UNCERTAIN` region — presented as related context that never asserts sameness.
+The scoring formula above stays illustrative; the product does not need it to
+ship MVP-0.
+
+### 3.4 Identity must be repairable
+
+**[HIGH]** A first assignment cannot be treated as final. Evidence arrives out of
+order and late evidence changes earlier conclusions. **MERGE and reassignment are
+normal operations, not migrations.**
+
+**[MEDIUM]** Keep a **persistent identifier separate from the mutable
+description**. The ID survives; the name, the summary and the membership all
+change. This is what makes "self-maintained" safe — the system can revise its
+understanding without the owner losing the thread.
+
+### 3.5 "Related" is not "the same"
+
+**[HIGH]** Exact identity, subevent membership, and evolving continuity are
+different relations, and **some of them are not transitive**:
+
+> A relates to B, and B relates to C, does **not** imply A relates to C.
+
+So they cannot be collapsed into Topic equality. If the product represents only
+"same Topic / different Topic", it will merge things that are merely adjacent.
+
+**[LOW]** What a subevent means in a workplace setting — CONTINUE, or
+RELATED-BUT-SEPARATE — is not established by the corpus. **§7's Q-A settles it
+for this product**: the level at which an action is owed. A subevent acted on
+separately is its own Topic with a membership edge.
+
+### 3.6 Adaptation drifts
+
+**[HIGH]** A Topic's representation must absorb names and facts that appear only
+later. The same adaptation drifts toward a generic class, and distinct matters
+then merge. Whatever adapts needs something that holds it in place — in practice,
+the anchor from §3.2.
+
+### 3.7 How this runs over a mailbox — owner decision D-19
+
+> "We should use some deterministic ways to check this first… regular expressions
+> to filter certain format strings, like the deal numbers, the invoice numbers or
+> the Jira issue ticket… then I can send one group of emails to the AI agent, so
+> the AI agent doesn't need to browse all of the emails at once… and the AI agent
+> can reply to say *you give me 10 emails and nine of them are actually talking
+> about one topic and the other one is not*."
+
+**Three stages. Code narrows, the AI judges, and what is left over is not
+thrown away.**
+
+| Stage | Who | What it does |
+| --- | --- | --- |
+| **1 — Bucket** | Code | Extract identifier-kind anchors by pattern and group messages that share one. No model call. **§3.8 generalises this**: the same anchors also query the Topic store, which is how existing Topics receive new evidence |
+| **2 — Adjudicate** | The AI | Read **one group at a time** and return which members belong to one matter and which do not, with reasons |
+| **3 — Residue** | Both | Everything that no bucket claimed, handled below. **Never dropped** |
+
+#### Why this is a correctness measure, not an optimisation
+
+**It is the design answer to something Topic 05 measured.** Topic 05 found that
+quality degrades as context grows, and blueprint Q3 asks whether Topic-scoped
+retrieval avoids that degradation. **This is Topic-scoped retrieval**: the model
+reads ten related messages instead of a mailbox.
+
+That makes the claim testable rather than hopeful — `[05: gap-7]`'s ablation is
+exactly the experiment, and it now has a concrete design to run against.
+
+**A second benefit, smaller but real.** An injected instruction in one message
+can only affect its own group's analysis. The blast radius is a group, not the
+mailbox.
+
+#### The deterministic step proposes; the AI disposes
+
+The owner's example carries an important asymmetry, and it must hold in that
+direction only.
+
+**The AI may remove a member from a group** — "nine of these ten, and here is why
+the tenth is not". A shared invoice number in a forwarded thread is a real and
+common false positive, and the AI is the thing that can see it.
+
+**The AI cannot add a member**, because it never sees messages outside the group.
+**So a message the bucketing missed stays missed at this stage**, and that is the
+limitation to design around rather than to hope about. The residue pass below is
+that design.
+
+#### The residue is first class
+
+> "I may receive 100 emails and process them into three or four topics, and there
+> are another 20 emails the AI cannot determine which topic they are talking on."
+
+The numbers illustrate a shape, not a target. What matters is that **the residue
+is where a missed obligation hides**, and goal 1 is that nothing needing a
+response is missed. It gets its own cascade, using D-18's kinds:
+
+1. **Weak-signal grouping.** Messages with no identifier are grouped by the
+   accumulating kinds — participant, organisation, temporal, content. A group
+   that crosses the verification level goes to stage 2 like any other.
+2. **Still ungrouped.** Presented individually, each against the admission test in
+   §2. A message that owes something is a Topic of one, which is a perfectly good
+   Topic.
+3. **The count is reported every run.** How many messages ended in residue, and
+   how many of those became Topics. **A residue that grows is the system telling
+   the owner their anchors no longer fit their work.**
+
+#### Two failure modes to design against
+
+**A group that is too large.** A badly chosen anchor — D-17's over-merger —
+produces a group of four hundred, which puts the context problem back exactly
+where stage 1 removed it. **A group above a configured size is not adjudicated;
+it is reported as a probable anchor defect**, and D-17's per-anchor Topic count
+says which anchor did it.
+
+**Batch thinking.** "100 emails into 3 Topics" is the cold start. The steady state
+is a handful of new messages, most joining Topics that already exist. The design
+must be incremental — §3.4's repair already requires that — and the residue
+cascade runs over new messages plus the standing residue, not over the mailbox
+again.
+
+### 3.8 The Topic store and how it is queried — owner decision D-20
+
+> "We should have a place to store the topics. And one topic should not have only
+> one thing to query — it should involve the invoice number, deal number, Jira
+> issue ticket number, the company's name, the receiver's name, and also a short
+> description, and maybe some keywords… And this query is more like a
+> deterministic query and fuzzy query together. And AI should read the results
+> and identify which one is close."
+
+#### This generalises §3.7's first stage
+
+§3.7 buckets **new messages against each other**. That finds matters that are new.
+It does not find the matter that started eight months ago.
+
+**Querying a store finds new evidence for Topics that already exist**, which is
+the ordinary case once the product has been running. Both are needed and they are
+not the same operation.
+
+#### A Topic's identity record
+
+The **mutable description** §3.4 requires be kept separate from the persistent
+ID. Every field is multi-valued, because one matter genuinely carries several
+identifiers.
+
+| Field | Kind (D-18) | Drifts? |
+| --- | --- | --- |
+| Identifiers — invoice, deal, Jira key, contract | identifier | **No.** These are why the rest can be trusted |
+| Participants | participant | Slowly — people join and leave a matter |
+| Organisations | organisation | Rarely |
+| Time window | temporal | Extends |
+| Short description | content | **Yes — written by the AI** |
+| Keywords | content | **Yes — written by the AI** |
+
+**The last two are where Theme 6's drift lives.** An adaptive representation
+improves tracking and, left alone, broadens toward a generic class until distinct
+matters merge. **The identifiers are what holds it in place**, and they are also
+the fields that cannot be rewritten by the model.
+
+**There is a feedback loop to be aware of:** the AI writes the description, the
+description retrieves candidates, the AI reads those candidates and updates the
+description. Drift compounds through it. Two things keep it honest — identifiers
+always participate in matching and never drift, and each description version
+records what it was derived from, so the drift is visible rather than silent.
+
+#### Three layers, and they must stay separate
+
+| Layer | Does | Never does |
+| --- | --- | --- |
+| **The store** | Returns candidates, with **which fields matched** | Decides |
+| **D-18's scoring** | Applies kinds and weights to those matches | Reads message text |
+| **The AI** | Adjudicates when the total warrants it | Sees anything the store did not return |
+
+**Theme 1 requires exactly this separation**: similarity-based retrieval remains
+useful *provided the final identity decision uses stronger corroborating
+evidence*. Fuzzy retrieval is legitimate here because it only proposes.
+
+#### What the store must do
+
+Requirements, not a product. **Selecting the technology belongs to stack
+selection, not here.**
+
+1. **Exact lookup on multi-valued identifier fields.** Cheap and indexed.
+2. **Similarity search over description and keywords.**
+3. **It must return which fields matched, not only a score.** D-18 cannot apply
+   its no-stacking rule without knowing the kind of each match, and §3.2.3's
+   contextual wording has to name what matched. **A store that returns a bare
+   similarity number is insufficient**, which rules out the simplest vector-only
+   design.
+4. **Versioned writes** — `DP-02`.
+5. **It grows forever.** D-12 keeps every Topic.
+6. **Single user, no roles.** Blueprint §6 withdrew the permission-partitioning
+   challenge; the store needs no access-control layer.
+
+**A note against over-building.** "Fuzzy" invites a vector database. At one
+person's mailbox scale, lexical matching may be enough, and `DP-10` says to avoid
+custom infrastructure. **This is a stack decision with a real choice in it**, not
+a foregone conclusion.
+
+## 4. What a Topic holds
+
+The owner named four. Each needs more precision than its name suggests.
+
+| Element | Precise form | Note |
+| --- | --- | --- |
+| **People** | Not addresses — **roles in this matter**: who asked, who owes, who decides, who is only watching | The same person holds different roles in different Topics |
+| **Time** | Four distinct kinds, not one: when things **happened**; when something is **due**; when the owner **last learned** something; when the Topic was last **assessed** | **Deadline time is the weak one.** Topic 10 covered three of the four and not this one — that is IG8's residue |
+| **Action** | **Two directions**, tracked separately: what the owner owes, and what is owed to the owner | Goal 1 is about the first; most waiting-on failures are the second |
+| **Background** | The accumulated understanding. Every claim carries a permalink (D-6) and an attribution (D-7) | Never states a source's claim as fact |
+| **State** | new / open / resolved / superseded — Topic 09's vocabulary | **D-7 binds here:** "resolved" may not mean *someone said it was done* |
+| **Identity** | A persistent ID, plus the anchor evidence that justifies it | §3.4 |
+
+## 5. Self-maintenance
+
+The owner said a Topic is self-maintained. Taken as: **the system keeps it
+current without the owner curating it.** Three obligations follow.
+
+1. **New evidence updates the Topic without being asked.** The owner does not
+   file messages into Topics.
+2. **The system revises its own earlier decisions** — §3.4's repair. A merge
+   that later proves wrong gets split, and the report says a split happened.
+3. **The owner can always override**, and an override is remembered. It must be
+   rare. If the owner has to correct identity often, the anchor is wrong, not
+   the owner.
+
+## 6. The relationships the owner asked for
+
+> "We need to build the relationship between the topics and the people and the
+> schedule or the timeline and also the action we need to take."
+
+This makes the data model **a small graph, not a list of summaries**. The minimum
+edge set:
+
+| Edge | Carries | Why it cannot be derived on demand |
+| --- | --- | --- |
+| Topic → Person | the role in this matter | The same person is a decider here and a bystander there |
+| Topic → Time | which of the four kinds, and its source | A deadline stated in an attachment is not the same as one inferred |
+| Topic → Action | direction, who owes it, its state | Goal 1 depends on this being enumerable, not inferred per report |
+| Topic → Evidence | permalink plus locator (D-6) | The report contract requires every detail to reference its source |
+| Topic → Topic | **`supersedes` only, for now** | See §7 |
+
+**Why `supersedes` is the only Topic-to-Topic edge proposed.** It is already in
+Topic 09's state vocabulary, so it exists whether or not it is modelled. Every
+other Topic-to-Topic relation runs into §3.5's non-transitivity and has no
+established workplace semantics. **Adding them later is cheap; getting them
+wrong now silently merges matters.**
+
+---
+
+## 7. The four questions — all answered 2026-09-17
+
+### Q-A — Granularity · **ANSWERED (D-11)**
+
+**A Topic sits at the level at which an action is owed.** If the owner would act
+on the Q3 budget as a whole, it is one Topic. If they would act on each of its
+five decisions separately, each is one.
+
+The admission test in §2 therefore does double duty as the granularity rule, and
+there is no second mechanism to build. This also gives §3.5's non-transitive
+relations something to attach to: a decision that belongs to the budget but is
+acted on separately is its own Topic **and** carries a membership edge, rather
+than being merged or lost.
+
+### Q-B — Does a Topic end? · **ANSWERED (D-12)**
+
+> "It should be the same topic and it should inherit the previous records — or
+> you can call it memory — automatically. The status can say it's resolved, but
+> it doesn't mean the topic is gone… In fact, in the future this topic can be
+> reopened, can be raised again."
+
+**A Topic is permanent. Only its state changes.**
+
+| State | In the report? | Identity |
+| --- | --- | --- |
+| new / open | Yes | — |
+| **resolved** | **No — it stops being picked up** | **Kept, with everything it accumulated** |
+| **reopened** | Yes again | **The same Topic and the same ID** |
+
+Four consequences, all binding on the architecture:
+
+1. **Nothing is ever deleted or garbage-collected.** A Topic's store grows for
+   the life of the product. That is accepted, not a leak.
+2. **Reopening inherits automatically.** The owner does not re-link anything.
+   The Topic's people, timeline, actions and background are all still there.
+3. **`supersedes` narrows.** A matter coming back is *not* supersession — it is
+   the same Topic reopening. `supersedes` is reserved for genuine replacement,
+   such as a revised contract replacing the one it revises. This removes the
+   main case that would have been modelled wrongly.
+4. **Reopening is evidence-driven**, and D-7 still binds: no source's claim may
+   flip a Topic to `resolved`.
+
+**This bears on IG1, which is still open.** If a Topic reopens after eight
+months, the report must carry its history forward — the owner has forgotten it.
+So "already told the user" cannot be a permanent fact about a passage; its force
+decays. That is a constraint on IG1's eventual answer, not the answer itself.
+
+### Q-C — Who names a Topic? · **ANSWERED (D-13)**
+
+**The system names it. The owner may rename it, and the rename sticks.**
+
+This confirms §5's assumption: self-maintained means no curation is required.
+Renaming is a convenience, never a step in the loop. The name is part of the
+mutable description, so §3.4 already separates it from the persistent ID and a
+rename changes no identity.
+
+### Q-D — Is the knowledge door too wide? · **NOT A QUESTION FOR THE OWNER**
+
+Recorded here as a design default with its revisit trigger, because nothing the
+owner knows today can settle it — only counts from a running system can.
+
+**Default: keep the wide door in MVP-0.**
+
+**Why.** MVP-0 ships in surface-everything mode with no filtering and no
+threshold (blueprint R1–R3). Narrowing the door before it runs would suppress
+exactly the observations needed to decide whether it should be narrowed. And the
+two errors are not symmetric in visibility: an extra Topic is visible and
+irritating, while a missed Topic is invisible. **Only the wide setting makes both
+countable.**
+
+**Revisit trigger.** The first few days of MVP-0 counts. If the knowledge door
+produces an unusable number of Topics, narrow it to matters that connect to
+something already in the working context or an existing Topic — accepting that
+this loses genuinely new matters, which is the case §2's supplier example is
+about.
+
+**This is a good first customer for the cost function** (IG5): it is a concrete,
+countable trade-off in exactly the form the deferred decision needs.

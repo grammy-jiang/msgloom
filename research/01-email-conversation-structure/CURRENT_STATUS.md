@@ -47,7 +47,7 @@ This is the strongest conclusion justified now without production mailbox data:
 - Semantic response/partial agreement: Topic 04.
 - General calibration and reliability methodology: Topic 10.
 - E5 external artifacts/licenses/reproduction: after candidate method selection.
-- E6 Raspberry Pi performance: after candidate correctness/preservation is established.
+- ~~E6 Raspberry Pi performance: after candidate correctness/preservation is established.~~ **Void 2026-09-17 (owner decision D-8):** the deployment target is x86 plus cloud services. E6's premise is gone. Throughput and peak memory still matter; arm64 and 16 GB do not.
 - Cross-group/source Topic identity: Topic 03 / Phase 2.
 
 Historical Academic Round 1 and Round 2 reports, syntheses, and gap snapshots remain unchanged. This status file records subsequent engineering evidence rather than rewriting research history.
