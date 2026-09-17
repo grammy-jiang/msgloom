@@ -1,5 +1,9 @@
 # Topic 01: Email conversation structure, branching, and inline replies
 
+**Research agent:** Read [TOPIC_CONTEXT.md](TOPIC_CONTEXT.md) before planning, searching, classifying gaps, or starting a new research round.
+
+> **AI research agent:** Read [`TOPIC_CONTEXT.md`](TOPIC_CONTEXT.md) completely before planning or running this Topic. It contains the self-contained product background, Topic relationships, current handoffs, gap-evaluation rules, and refined/pre-research academic search terminology.
+
 ## Objective
 
 Recover reply relationships and quotation structure without losing unique contributions or conflating conversation membership with Topic identity.
