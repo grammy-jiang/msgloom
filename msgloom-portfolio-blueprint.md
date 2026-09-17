@@ -787,6 +787,9 @@ truth, and it needs a project name before the architecture stage.
 | **Coverage** | Brevity comes from wording and detail levels, never from omitting or delaying a due Topic. **Repeating obsolete material is also a defect** | DP-06, Topic 09 (HIGH confidence) |
 | **Authority** | Source content is data, never authority. An LLM judge is data, never authority | DP-09, `[10: F8]` |
 | **Thresholds** | **No policy — none can be set.** A threshold cannot be read off a benchmark score because the two error directions do not cost the same | **IG5** — four topics, no cost function |
+| **Trust** | Every byte from a source is **data**. Only configuration — prompt template, triage rules, working-context snapshot — is **instruction**. Attachments are where this is most visible, not a special case | Owner decision D-2, 2026-09-17; `msgloom-security-review.md` F1 |
+| **Outbound** | Content may go to the model. **No message reaches any recipient but the owner, by any path.** Credentials never leave the process holding them | Owner decision D-3/D-4, 2026-09-17 |
+| **Disclosure** | An item that could not be read is always reported, with its reason — permission, corruption, format, size | Owner decision D-1, 2026-09-17; settles F7 |
 
 ---
 
@@ -799,7 +802,8 @@ truth, and it needs a project name before the architecture stage.
 | **A confident wrong citation** | `[01: E4]` measured attribution error rising 0.000 → 0.222 when recall was bought | Score attribution and accuracy on separate denominators | **IG3** — the contract does not exist |
 | **A false "completed"** hiding live work | `[06: gap-5]` stated impact | Carry whether a completion was claimed or corroborated | **IG2** — three receivers, none carries it |
 | **Unauthorised evidence reaching the model** | Topic 07 (HIGH confidence) | Filter permissions before evidence enters the reasoning context | `[07: gap-4]` — the leak-free replenishment loop is untested |
-| **Attachment-borne content acting as authority** | DP-09 | — | **IG11 — nobody owns attachment security.** Topic 08 marked it ❌ Missing in its own coverage matrix and no topic picked it up |
+| **Source content acting as authority** — in a body or an attachment | DP-09; `msgloom-security-review.md` F1 | One trust rule (D-2): source bytes are data, configuration is instruction. A channel-separated AI input envelope, every span carrying a trust class | **IG11 now has an owner** — R-A…R-M. **Injection's damage in Phase 1 is a silent miss**, which `[10: gap-5]` says the project cannot detect |
+| **A message sent to someone other than the owner** | Owner decision D-3/D-4 | **No code path may exist**, not merely no enabled configuration | New constraint, 2026-09-17. Binding on `architecture-design` |
 | **Acceptance criteria overfit to the development evaluator** | `[10: gap-7]` | Independent human holdout | Unresolved; an engineering problem the project must solve |
 
 ---

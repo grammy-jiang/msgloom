@@ -326,10 +326,13 @@ extra work.
    deadline/constraint time or the ablation `gap-7` actually asks for. The gap
    stays open and is materially narrower. See
    `research/06-.../gap-7-triage.md`.
-4. **IG11 + IG9** — **owned as of 2026-09-17.** R-A…R-K in
-   `msgloom-security-review.md`. The cheapest item there is F5: XML external
-   entities are disabled for one parser and not the others, and fixing it costs
-   almost nothing.
+4. **IG11 + IG9** — **owned as of 2026-09-17.** R-A…R-M in
+   `msgloom-security-review.md`. F5 was measured rather than assumed and came
+   back **corrected**: lxml's default already refuses external entities, and
+   the real trap is that `no_network=True` blocks the network while doing
+   nothing about local file reads. The probe is
+   `research/security-probes/xxe_probe.py` and it is meant to be re-run on
+   every dependency upgrade.
 5. **IG2** — carry claimed-versus-corroborated as a field. A schema decision in
    the architecture stage.
 6. **IG1** — define "already told the user" before Phase 2 begins.
