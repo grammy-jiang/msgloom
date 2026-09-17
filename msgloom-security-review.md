@@ -168,17 +168,51 @@ isolation alone is not a complete security sandbox" and stops. **That is the
 second time a document names a hole and does not claim it** — the first was
 Topic 08's coverage matrix.
 
-### F5 — XML entity protection covers one parser · Phase 1 · CHEAPEST
+### F5 — XML external entities · Phase 1 · **corrected by measurement**
 
-`defusedxml` appears in `tech-stack.md` Parser selection **only on the openpyxl
-line**. DOCX is zip-of-XML parsed through python-docx → lxml, and that line
-names lxml itself. `.ods` is the same shape. lxml's defaults resolve entities
-and may reach the network unless explicitly disabled.
+**The original finding was wrong in three ways and the corrections are more
+useful than it was.** Measured on lxml 6.1.0 / libxml2 2.14.6 —
+`research/security-probes/xxe_probe.py`, run 2026-09-17.
 
-**Requirement:** one rule covering every XML entry point — docx, xlsx, ods, any
-MIME or HTML path that touches XML — plus a verification test: feed a document
-containing an external entity; assert it is not resolved and no network request
-is made. **Cost now: near zero.**
+*What F5 originally said:* `defusedxml` appears in `tech-stack.md` Parser
+selection only on the openpyxl line; DOCX goes through python-docx → lxml with
+no protection; lxml's defaults resolve entities; therefore add defusedxml to
+the Word path.
+
+| Parser configuration | Reads a local file? | Network request? |
+| --- | --- | --- |
+| **Default** | **No — refuses, raises `XMLSyntaxError`** | No |
+| `resolve_entities=False` | No | No |
+| **`resolve_entities=True`, `no_network=True`** | **YES** | No |
+
+**Correction 1 — the default is safe on this version.** lxml refuses the
+entity outright, so "the Word path is exposed by default" does not hold today.
+The risk class is real; the premise was not.
+
+**Correction 2 — `no_network=True` is not protection.** This is the finding
+worth keeping. Someone who enables entity resolution for a legitimate reason
+and sets `no_network=True` will reasonably believe they are safe. They are
+not: `no_network` blocks the network and does nothing about `file://`. A
+`.docx` carrying a local-file entity reads that file into the extracted text,
+and the extracted text goes to the model.
+
+**Correction 3 — the recommended fix is being removed.** `defusedxml.lxml`
+warns that it "is no longer supported and will be removed in a future
+release". `defusedxml.ElementTree` still refuses the same bytes, so defusedxml
+remains right for stdlib-ElementTree paths — which is what the openpyxl row
+uses it for, correctly.
+
+**Requirement, corrected:**
+
+> Never set `resolve_entities=True` on a parser that touches source bytes. If a
+> format genuinely needs entity expansion, that is a recorded decision with a
+> reason, not a default. `no_network=True` is not a substitute. **Verify on
+> every dependency upgrade** by running the probe — the current default is an
+> observation about lxml 6.1.0, not a guarantee from lxml.
+
+**This is why the requirement was always "disable *and verify*".** The
+verification half turned out to be the whole of it: the thing to guard against
+here is not a bad default but a well-meant override.
 
 ### F6 — An externally-effective field may come from an attachment, unmarked · Phase 3/4, with a Phase 1 consequence
 
@@ -262,7 +296,7 @@ with the design's existing habit.
 | R-A | AI input envelope separates channels; instruction region built only from configuration | Injection fixture: no source-derived byte in the instruction region |
 | R-B | Every span carries a trust class — authored / quoted / attachment-derived / system | Envelope snapshot assertion |
 | R-C | Provenance address includes container path, extractor identity and version, trust class | Every extracted span resolves back to bytes and a location |
-| R-D | XML external entities disabled **and verified** in **every** parser | External-entity document: not resolved, no network request |
+| R-D | `resolve_entities` never enabled; **verified on every dependency upgrade** — `no_network` is not a substitute | `research/security-probes/xxe_probe.py` passes; a real `.docx` and `.xlsx` through the actual parser path |
 | R-E | Parser limits OS-enforced — cgroup, rlimit, wall-clock, output cap, expansion ratio | Malicious fixture suite; host headroom preserved |
 | R-F | Vulnerability audit covers the container layer and vendored native libraries; patch SLA in `§9` | Scope includes LibreOffice, PDFium, libxml2, model assets |
 | R-G | Maximum nesting depth and explicit scope inheritance; over-depth recorded as a limitation | A depth N+1 file produces a visible limitation |
@@ -304,6 +338,123 @@ Neither belongs to this review.
 2. **F6 — should an externally-effective field derived only from attachment
    content block by default?** The review recommends blocking; it increases the
    human review burden in Phase 4.
+
+---
+
+## Product owner decisions — 2026-09-17
+
+Recorded from the review session. These are the owner's, not this review's.
+
+### D-0 — Security and privacy are the highest priority
+
+> "This tool is going to read my own inbox so it definitely should be secure,
+> safe, and also protect my privacy. This is the highest priority."
+
+**This may amend `design-principles.md §2`.** That section currently makes user
+permissions a fixed boundary and then orders correct meaning, traceability,
+ease of use and speed within it. The statement above is broader than
+permissions and sits above the whole ordering.
+
+**Decided and applied 2026-09-17.** The owner authorised the change, and §2 of
+`design-principles.md` (and its zh-CN counterpart) now states the priority
+explicitly and carries two boundaries under it: the trust rule from D-2 and the
+outbound rule from D-3/D-4.
+
+### D-1 — An unreadable attachment is always reported, with its reason
+
+**Answers F7.** Disclosure is the default, and the reason is stated whatever it
+is — permission, corruption, unsupported format, size.
+
+> "This is my private inbox. So I definitely have the privilege to know
+> everything… you should mention if there's any attachment you can't read
+> because of permission. Well, because of anything."
+
+The realistic case is a OneDrive link whose owner forgot to grant access. The
+report says so plainly.
+
+**What this removes:** the leak-free requirement from `[07: gap-4]` does not
+apply to this product's own mailbox, so no mechanism is needed to decide
+whether the user may know a file exists. `R-K` narrows to "state the reason";
+the four-state disclosable classification is no longer needed.
+
+### D-2 — One trust rule, not an attachment-specific one
+
+The review framed this as attachment security. **That framing was too narrow
+and the owner corrected it:** anyone can send an email, so message bodies are
+untrusted content by the same argument. Injection does not need an attachment.
+
+> "Even in the content of the email, we still need to think about, like, the
+> prompt injection."
+
+**The rule, singular:**
+
+> Every byte that came from a source is **data**. Only configuration — the
+> prompt template, the user's triage rules, the working-context snapshot — is
+> **instruction**.
+
+`R-A` and `R-B` are unchanged in substance and simpler in scope: they apply to
+all source content, and attachments are merely where the problem is most
+visible. One rule is easier to implement and harder to bypass than two.
+
+### D-3 — Content may go to the model; credentials and outbound sends may not
+
+**Accepted:** message and attachment content is sent to Anthropic for
+interpretation. That is how the product works, and `tech-stack.md` already
+records it as an explicit service exception rather than leaving it implicit.
+
+**Refused, and this is a new constraint:**
+
+> "It shouldn't automatically send email or my credentials to someone else."
+
+| | Allowed |
+| --- | --- |
+| Content to the model, for interpretation | **Yes** |
+| A report delivered to the owner's own mailbox | **Yes** — this is the product |
+| Any message to any other recipient | **No, not automatically** |
+| Credentials leaving the process that holds them | **No, ever** |
+
+The design already separates credentials — parser workers receive none, and the
+AI process holds model credentials only. **The outbound-send constraint is the
+new part**, and it is stronger than the phase roadmap alone implies: Phase 4
+exists to execute approved external actions, and this says no such action
+happens without the owner, ever, by any path.
+
+### D-4 — Nothing is sent at all, for now
+
+> "Currently, I do not want to send anything."
+
+Read as: no external business action of any kind in the current scope. This
+matches Phase 1 and Phase 2 as written — Phase 3 produces drafts only, Phase 4
+executes — and makes it a stated constraint rather than a consequence of
+sequencing.
+
+**Design obligation:** there must be no code path that can send, not merely no
+configuration that does. A disabled feature is one flag away from an enabled
+one.
+
+### D-5 — Attachment-derived recipients: deferred to Phase 3
+
+F6's question — should a recipient read out of an attachment be blocked by
+default — is **out of scope now** and the owner was right to say so. Phases 3
+and 4 are two phases away and no research topic covered them.
+
+The Phase 1 half of F6 needs no new work: `DP-02` already binds each stage
+result to its inputs and versions, and `design.md §2` already requires an
+attachment's observed version to be preserved.
+
+**Revisit before Phase 3 begins.**
+
+## What changes in the requirements
+
+| # | Change |
+| --- | --- |
+| R-A, R-B | Scope widens from attachments to **all source content**. Substance unchanged |
+| R-K | Narrows to "state the reason an item could not be read". The disclosable classification is dropped — D-1 settles it |
+| **R-L** | **New.** No code path exists by which a message reaches a recipient other than the owner. Not a flag, not a configuration — no path |
+| **R-M** | **New.** Credentials never leave the process holding them, and no source-derived value can name a send destination |
+
+R-D (XML entities disabled and verified in every parser) is unchanged and is
+still the cheapest item on the list.
 
 ## Correction to how IG11 and IG6 are ranked
 
