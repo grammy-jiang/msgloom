@@ -1,0 +1,250 @@
+{
+ "topic": "evidence attribution, factuality, completeness and reliability evaluation for workplace communication systems: what exact evidence supports each decision-relevant statement, whether it is current and correctly attributed, what was omitted, and when the system should abstain",
+ "paper_count": 17,
+ "executive_summary": "Across 17 distinct studies, the literature supports decomposing reliability into multiple independently measurable dimensions rather than treating factuality, attribution, completeness, temporal validity, confidence, and abstention as one score. Citation presence or topical relevance does not establish factual support, and source support does not establish source truth or currency. Evidence localization can improve verification and human review, while retrieval remains a major source of error and additional context can sometimes degrade synthesis. Temporal ordering and benchmark aging introduce failure modes invisible to static claim checking. Raw model confidence is often miscalibrated, particularly under domain shift, and contradictory evidence produces substantial over-answering. Automatic judges can assist evaluation but require human validation because aggregate agreement can conceal instance-level errors, directional bias, abstention effects, and metric gaming. Direct evidence for private workplace communication remains absent.",
+ "themes": [
+  "Reliability is multidimensional: answer correctness, evidence support, citation precision, citation completeness, source accessibility, temporal validity, confidence calibration, and abstention measure different failure modes.",
+  "Claim-level or sentence-level evidence localization improves traceability and can assist human verification, but localized support does not establish the truth or freshness of the underlying source.",
+  "Retrieval quality materially affects verification, yet evidence presence alone does not guarantee correct evidence use, and increasing retrieved context can introduce additional synthesis failures.",
+  "Temporal reliability requires reasoning about ordering, observation time, and changing facts rather than checking isolated propositions against static evidence.",
+  "Accuracy and model confidence are distinct: high task accuracy can coexist with overconfidence, domain-transfer calibration error, and unsafe answering under insufficient or contradictory evidence.",
+  "Automatic evaluators and LLM judges require explicit measurement protocols, human validation, directional error analysis, and careful treatment of abstentions.",
+  "Human evaluation quality depends on sampling, annotation protocol, reproducibility, and the distinction between system-level stability and item-level agreement."
+ ],
+ "findings": [
+  {
+   "statement": "Across attributed QA, citation-generation, and deep-research evaluation, separately scoring answer correctness, citation support, citation coverage or recall, citation precision, link accessibility, and topical relevance exposes failures that are hidden when those dimensions are treated as interchangeable.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.08037",
+     "section": "3 Evaluating Attributed QA; 7 Analysis"
+    },
+    {
+     "paper_id": "2305.14627",
+     "section": "3 Automatic Evaluation; 5.1 Main Results"
+    },
+    {
+     "paper_id": "2605.06635",
+     "section": "4.1 Overall Citation Quality"
+    }
+   ]
+  },
+  {
+   "statement": "In scientific claim verification and news summarization, verification systems can associate verdicts with sentence- or span-level evidence; in the FactCC human study, showing predicted evidence spans reduced mean annotation time and increased inter-annotator agreement.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1910.12840",
+     "section": "5 Explainability; 5.1 Human Evaluation"
+    },
+    {
+     "paper_id": "2004.14974",
+     "section": "2 Background and task definition; 3 The SciFact dataset"
+    }
+   ]
+  },
+  {
+   "statement": "Evidence retrieval and evidence use are separate error sources in the evaluated verification and citation-generation systems: oracle retrieval or rationales improve SciFact verification, ALCE shows that relevant evidence in context does not guarantee successful use and that more passages need not improve performance, and a two-model deep-research ablation found factual citation support decreasing as search depth increased.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2004.14974",
+     "section": "6.2 Full task"
+    },
+    {
+     "paper_id": "2305.14627",
+     "section": "5.3 Retrieval Analysis"
+    },
+    {
+     "paper_id": "2605.06635",
+     "section": "4.3 Search Depth Ablation"
+    }
+   ]
+  },
+  {
+   "statement": "Temporal evaluation can change a factual verdict even when individual events appear independently supported: ChronoFact's chronological-order component materially improved temporal fact verification, while benchmark-aging experiments showed that stale gold answers and stale supplied context can penalize or redirect answers that better match later information.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2410.14964",
+     "section": "5.3 Ablation Studies; 6 Case Studies"
+    },
+    {
+     "paper_id": "2510.07238",
+     "section": "3.1 RQ1; 3.2 RQ2; D.3 BoolQ TAG Comparison by Controlling Context"
+    }
+   ]
+  },
+  {
+   "statement": "In formal runtime monitoring over synthetic out-of-order event streams, an explicit unknown truth value permits missing information to remain unresolved, Boolean verdicts are stable under observation refinement, and the proposed monitor is sound and observationally complete for its defined semantics without assuming timestamp-ordered arrival.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1707.05555",
+     "section": "3.3 Properties; 4 Monitoring Algorithm"
+    }
+   ]
+  },
+  {
+   "statement": "High answer accuracy does not imply reliable confidence or abstention behavior in the evaluated QA settings: generative QA models can remain overconfident when wrong, calibration transfers imperfectly across domains, and all seven models in the evidence-sufficiency benchmark over-answered more than 65% of conflicting-evidence cases.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-tacl-a-00407",
+     "section": "5.2 Are LM-based QA Models Well Calibrated?; 5.3 Can LM-based QA Models be Calibrated?"
+    },
+    {
+     "paper_id": "doi-10-32604-cmc-2026-086343",
+     "section": "6.1 Evidence Sufficiency Curve; 6.2 Cross-family Results under Conflicting Evidence; 6.5 Helpfulness-Safety Trade-off"
+    }
+   ]
+  },
+  {
+   "statement": "Evaluator protocol choices can materially alter reported reliability without changing underlying model outputs: abstention handling changes the estimand and produced large accuracy differences in reconstructed judge evaluations, while citation judges with similar aggregate F1 showed substantially different false-positive, false-negative, and pass-rate biases.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2606.00093",
+     "section": "5.1 Abstention Handling Modes; 5.4 Example: Handling Rules and Bounds; 5.5 A Rubric Benchmark with Human Abstention"
+    },
+    {
+     "paper_id": "2607.08700",
+     "section": "5.1 Judge Accuracy; 5.2 Directional Bias"
+    }
+   ]
+  },
+  {
+   "statement": "Human-evaluation conclusions depend on sampling and reporting granularity: constrained active sampling preserved full-dataset NLG rankings better than random sampling in the reported experiments, Pyramid evaluations showed strong system-level robustness to annotator choice, and a clinical-text replication reproduced aggregate system ordering despite substantially weaker agreement at the individual-item level.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2406.07967",
+     "section": "Results and Analysis / Full Inter-System Ranking Accuracy"
+    },
+    {
+     "paper_id": "doi-10-1017-s1351324909005051",
+     "section": "5.1 Formal assessment; 5.2 Functional assessment"
+    },
+    {
+     "paper_id": "manual-f5ce52cae2",
+     "section": "4 Results; 4 Reproducibility Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "LLM judges can be useful auxiliary evaluators without being interchangeable with human ground truth: AutoAIS had strong system-level correlation but weaker instance-level agreement and became misleading for systems optimized against it; other citation judges showed substantial directional biases, while a statistical sampling framework treats LLM ratings as auxiliary measurements and retains human ratings as the inferential target.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.08037",
+     "section": "7 Analysis, AutoAIS"
+    },
+    {
+     "paper_id": "2607.08700",
+     "section": "5.2 Directional Bias; 5.4 Reward Noise from Disagreement"
+    },
+    {
+     "paper_id": "2605.16354",
+     "section": "2.2 The estimator; 3.1 Sample Size Calculations"
+    }
+   ]
+  },
+  {
+   "statement": "Evidence attribution establishes a relationship between a claim and a cited source, not the independent truth, authority, or currency of that source; this limitation is stated explicitly in attributed QA, scientific verification, and deep-research citation evaluation.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.08037",
+     "section": "8 Broader Impact and Limitations"
+    },
+    {
+     "paper_id": "2004.14974",
+     "section": "2 Background and task definition"
+    },
+    {
+     "paper_id": "2605.06635",
+     "section": "Limitations"
+    }
+   ]
+  }
+ ],
+ "contradictions": [],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "No admitted study validates one end-to-end evaluation scheme that jointly measures claim correctness, evidence attribution correctness, citation or evidence completeness, temporal/current-state correctness, omission, calibrated uncertainty, and abstention while preserving the separate denominators of those dimensions. The corpus validates individual components or smaller combinations.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus contains no direct evaluation on private workplace email or Teams-style communication with realistic revisions, quoted history, conflicting updates, delayed or out-of-order arrival, versioned attachments, and permission-constrained evidence. Target-domain fixtures and gold data therefore remain an engineering validation gap.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-3",
+   "description": "Calibration and selective prediction for unconstrained free-form generation remain insufficiently answered by this corpus. The calibration study explicitly excludes free-form abstractive QA, while the evidence-sufficiency benchmark measures behavioral abstention in controlled QA conditions rather than calibrated probabilities for open-ended outputs.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"selective prediction\" free-form generation calibration domain shift NLP abstention risk coverage"
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not establish a general method for measuring evidence completeness when a generated claim is compound, partially supported, supported by multiple sources, or requires temporally versioned evidence. Existing citation-recall methods and attributed-QA criteria cover narrower settings.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"citation completeness\" multi-source partial support compound claims temporal versioned evidence attribution evaluation"
+  },
+  {
+   "id": "gap-5",
+   "description": "Report-level omission and coverage of decision-relevant content remain underexplored in this corpus. Pyramid evaluates reference-summary content units and ALCE evaluates citation support coverage, but neither establishes omission detection for evolving workplace work items or due information.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"summary completeness\" omission detection content units decision-focused evaluation factual coverage"
+  },
+  {
+   "id": "gap-6",
+   "description": "A target-domain human-review protocol still has to specify representative or risk-stratified sampling, minimum human-review volume, multi-rater adjudication, confusion matrices, abstention handling, coverage reporting, and validation of any LLM-assisted judge against independent human judgments.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-7",
+   "description": "The corpus demonstrates evaluator gaming and directional judge bias but does not provide a project-specific procedure for preventing optimization against the same automatic evaluator used for acceptance. Independent holdouts, evaluator separation, and regression checks remain an engineering validation problem.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "gap-8",
+   "description": "Calibration under continuing temporal or distributional change remains open in this corpus. Cross-domain calibration transfer is imperfect and benchmark aging can change the correct target over time, but no admitted paper establishes a calibrated selective-prediction method for a non-stationary communication stream.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"uncertainty calibration\" non-stationary streams temporal distribution shift language models selective prediction"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: maintain separate evaluation outputs for semantic claim correctness, attribution correctness, evidence completeness, temporal/current-state validity, omission, calibrated confidence, and abstention rather than collapsing them into one reliability score.",
+  "Synthesis-derived recommendation: represent every decision-relevant generated claim as an independently reviewable unit linked to the exact evidence used for that assessment, while allowing multiple evidence items and unresolved support.",
+  "Synthesis-derived recommendation: evaluate retrieval failure, evidence-selection failure, reasoning failure, stale-evidence failure, unsupported generation, and omission as distinguishable error categories so one stage cannot hide another stage's errors.",
+  "Synthesis-derived recommendation: treat unknown, conflicting, insufficient, and not-yet-currently-resolvable states as explicit outcomes rather than forcing binary supported/unsupported decisions.",
+  "Synthesis-derived recommendation: keep automatic judges auxiliary to independently defined gold or human-reviewed targets; measure false-positive and false-negative behavior separately and retain raw contingency data rather than only aggregate agreement scores.",
+  "Synthesis-derived recommendation: use held-out or independently reviewed acceptance samples that are not optimized by the same evaluator used during development, and include difficult disagreement cases instead of validating only average cases.",
+  "Synthesis-derived recommendation: construct target-domain longitudinal fixtures with revisions, cancellations, contradictory updates, stale late arrivals, out-of-order ingestion, missing evidence, and version changes, and evaluate at explicit observation cutoffs.",
+  "Synthesis-derived recommendation: record evaluator protocol metadata including target population, judgment scale, abstention rule, coverage, aggregation procedure, sampling method, source version or observation time, and human-adjudication procedure so results remain reconstructible."
+ ],
+ "confidence_summary": "The corpus provides well-supported design principles for decomposed reliability evaluation, evidence localization, temporal validation, calibration, abstention measurement, and human validation of automatic judges. Confidence is highest for the claim that these dimensions expose distinct failure modes because several independent studies demonstrate this across summarization, QA, scientific verification, web research, and evaluation methodology. Confidence in direct transfer to workplace communication is substantially lower: none of the admitted studies evaluates a private email-and-Teams stream with the project's combination of permissions, revisions, versions, temporal state, omissions, and user-specific decision relevance. The component principles are therefore well supported, while their combined operation in the target domain remains untested.",
+ "limitations": [
+  "No admitted paper directly evaluates private workplace email or Teams communication; most evidence comes from news summarization, open-domain QA, scientific fact verification, Wikipedia, web research, synthetic temporal benchmarks, or general NLG evaluation.",
+  "Several strong results concern transfer domains or synthetic data. ChronoClaims is largely synthetic, the runtime-monitoring experiments use synthetic banking-compliance streams, and the evidence-sufficiency benchmark derives controlled conditions from SQuAD and HotpotQA; none establishes production workplace accuracy.",
+  "The corpus validates multiple components of a reliability framework separately, but no paper validates their proposed combination as one end-to-end scheme.",
+  "Some automatic-evaluation results depend on NLI or LLM judges whose own errors, biases, and prompt sensitivity are documented within the corpus.",
+  "Temporal-currentness evidence is limited: the benchmark-aging study uses a fixed July 2025 web-retrieval window, and cited web sources in deep-research evaluation can themselves change after evaluation.",
+  "Human-evaluation evidence spans different constructs, annotator populations, sampling strategies, and aggregation levels, so robust system ranking in one study should not be interpreted as universal human-label reliability.",
+  "No duplicate titles were present among the 17 supplied analyses, so this synthesis treats them as 17 distinct studies; it does not infer independence beyond the information supplied.",
+  "Inherited handoffs from earlier project Topics were treated only as project context and were not used as evidence for findings or gaps in this synthesis.",
+  "No prior-round synthesis gap identifiers were supplied in the task, so there are no prior gaps to classify in gap_status."
+ ],
+ "gap_status": []
+}

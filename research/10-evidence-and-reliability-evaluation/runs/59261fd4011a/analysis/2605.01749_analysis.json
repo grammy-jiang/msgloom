@@ -1,0 +1,85 @@
+{
+ "paper_id": "2605.01749",
+ "title": "Only Say What You Know: Calibration-Aware Generation for Long-Form Factuality",
+ "research_question": "Can a long-form reasoning model improve factuality without resorting to coarse whole-answer abstention by estimating the reliability of intermediate reasoning and selectively committing only to sufficiently reliable content?",
+ "methodology": "The paper proposes Calibration-Aware Generation, which decouples reasoning exploration from final-answer commitment by attaching reliability levels to intermediate reasoning steps. Reliability supervision is derived by decomposing reasoning steps into atomic claims and scoring them with VeriScore using retrieved external evidence; Calibration-Aware Structured Supervision trains models to reason and reconstruct answers using those signals, while Calibration-Aware Policy Distillation transfers the behavior to smaller models. Experiments span five LLMs and five long-form factuality benchmarks, with additional testing on PopQA, GPQA, Vicuna QA, and RAG settings. Evaluation includes VeriScore-based factuality and helpfulness, ablations, reliability-versus-correctness AUC, threshold sensitivity, decoding time, and token usage.",
+ "key_findings": [
+  {
+   "finding": "Calibration-Aware Generation improves long-form factuality across multiple models and benchmarks, with the paper reporting gains of up to 13 percent without a substantial loss of overall informativeness in the evaluated settings.",
+   "evidence_type": "supported",
+   "section": "Sections 1, 3, and 4"
+  },
+  {
+   "finding": "Both calibrated exploration and selective commitment are necessary: removing either component consistently degrades performance across tested benchmarks and model sizes.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Selective commitment creates an explicit factuality-versus-coverage trade-off: lower reliability thresholds retain more information but admit more hallucinations, while higher thresholds improve factuality by discarding more potentially useful content.",
+   "evidence_type": "supported",
+   "section": "Appendix D and Appendix E"
+  },
+  {
+   "finding": "Reliability estimates become better aligned with factual correctness than those of the corresponding vanilla models, as measured by AUC on Biography and FAVA.",
+   "evidence_type": "supported",
+   "section": "Section 4.5"
+  },
+  {
+   "finding": "Benefits extend beyond the main long-form benchmarks to knowledge-intensive QA, chatbot evaluation, and retrieval-augmented generation.",
+   "evidence_type": "supported",
+   "section": "Sections 4.2-4.3"
+  },
+  {
+   "finding": "Suppressing unreliable answer content can reduce generation cost as well as hallucination; reported decoding-time reductions reach 37.36 percent for the evaluated Qwen models.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  },
+  {
+   "finding": "The work does not evaluate whether reliability-based omission preserves complete coverage of all decision-relevant facts or all available multi-source evidence.",
+   "evidence_type": "unsupported",
+   "section": "Evaluation scope in Sections 3-4"
+  },
+  {
+   "finding": "The benchmarks do not test temporally superseded evidence, version-aware provenance, or calibration degradation as facts change over time.",
+   "evidence_type": "unsupported",
+   "section": "Section 3.1"
+  }
+ ],
+ "limitations": [
+  "Prioritizing highly reliable content can bias generation toward conservative and shorter answers, creating a factuality-informativeness trade-off.",
+  "Smaller models benefit more from policy distillation, indicating that accurate reliability estimation remains capacity-sensitive.",
+  "The factuality-supervision and evaluation pipeline depends on claim extraction, external retrieval, VeriScore, and GPT-5-backed evaluation components.",
+  "At the version reviewed, the authors state that code and data are not yet openly released and are intended for release upon acceptance.",
+  "The evaluation does not directly quantify omitted-but-supported information, evidence recall, or completeness of multi-source synthesis.",
+  "No dedicated temporal-change or longitudinal distribution-drift benchmark is evaluated."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "factuality_gain": 0.97,
+  "both_components_needed": 0.96,
+  "factuality_coverage_tradeoff": 0.99,
+  "calibration_auc_improvement": 0.95,
+  "cross_setting_generalization": 0.94,
+  "decoding_efficiency": 0.99,
+  "completeness_not_measured": 0.94,
+  "no_temporal_evaluation": 0.98
+ },
+ "raw_claims": [
+  "Coarse answer-level abstention can reduce errors but also discards useful information that might have been retained safely.",
+  "Calibration-Aware Generation separates broad reasoning exploration from what the model ultimately commits to in its answer.",
+  "Intermediate reasoning steps receive reliability estimates derived from factual verification of their atomic claims.",
+  "Selective commitment uses those reliability signals to prioritize reliable reasoning when constructing the final response.",
+  "Experiments cover five model variants and five long-form factuality benchmarks.",
+  "Removing calibrated exploration or selective commitment harms performance.",
+  "Increasing the reliability threshold improves factuality but can remove useful information.",
+  "Calibration-aware models show stronger association between predicted reliability and factual correctness.",
+  "The method also improves results in knowledge-intensive QA, chatbot, and retrieval-augmented settings.",
+  "The reviewed version states that code and data will be released later rather than being currently available."
+ ],
+ "source_url": "https://arxiv.org/html/2605.01749",
+ "access": "full_text"
+}

@@ -1,0 +1,72 @@
+{
+ "paper_id": "1910.12840",
+ "title": "Evaluating the Factual Consistency of Abstractive Text Summarization",
+ "research_question": "Can factual inconsistencies in abstractive summaries be detected and localized using weak supervision generated from synthetic transformations rather than requiring a large manually labeled training set?",
+ "methodology": "The authors create weakly supervised training examples by applying rule-based transformations such as entity, number, pronoun, date, negation, noise, and paraphrasing operations to source-derived sentences from CNN/DailyMail. A BERT-based model is trained jointly to classify a summary sentence as consistent or inconsistent, identify a supporting span in the source document, and identify the inconsistent span in the summary when applicable. Evaluation uses manually annotated development and test examples from outputs of several summarization systems and compares FactCC variants with models trained on NLI and fact-verification data. Additional human studies test whether extracted explanatory spans make manual factuality assessment faster and more consistent.",
+ "key_findings": [
+  {
+   "finding": "FactCC substantially outperformed the evaluated BERT models trained on MNLI or FEVER, reaching 74.15 class-balanced accuracy and 0.5106 F1 on the manually annotated test set.",
+   "evidence_type": "supported",
+   "section": "4 Experimental Results, Table 3"
+  },
+  {
+   "finding": "Training from synthetic perturbations can transfer to factual errors produced by multiple abstractive summarization systems despite not requiring those system outputs as the main training supervision.",
+   "evidence_type": "supported",
+   "section": "3 Method and 4 Experimental Results"
+  },
+  {
+   "finding": "Checking a summary sentence against the whole source document addresses cases for which sentence-to-sentence comparison lacks enough context.",
+   "evidence_type": "supported",
+   "section": "2 Factual Consistency and 3 Method"
+  },
+  {
+   "finding": "FactCC's source and claim span predictions provide useful evidence localization in addition to a binary consistency decision.",
+   "evidence_type": "supported",
+   "section": "5 Explainability"
+  },
+  {
+   "finding": "Providing model-generated evidence highlights reduced mean human annotation time from 224.89 seconds to 178.34 seconds and increased Fleiss' kappa from 0.1571 to 0.2526 in the reported study.",
+   "evidence_type": "supported",
+   "section": "5.1 Human Evaluation, Table 7"
+  },
+  {
+   "finding": "The approach remains weak on commonsense errors and on inconsistencies requiring dependencies across multiple summary sentences, including temporal inconsistencies and incorrect coreference.",
+   "evidence_type": "supported",
+   "section": "5.2 Limitations"
+  }
+ ],
+ "limitations": [
+  "Synthetic transformations do not adequately reproduce commonsense errors, which account for many inspected model mistakes.",
+  "The document-sentence formulation does not handle some dependencies across different summary sentences, including temporal inconsistency and incorrect coreference.",
+  "The evaluation domain is primarily CNN/DailyMail news, so reliability outside summarization and outside news is not established by this study.",
+  "The manually annotated development set contains 931 examples and the test set 503 examples, limiting the scale of direct human-grounded evaluation.",
+  "Evidence spans indicate text associated with a decision but do not establish whether the underlying source document itself is true or current."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "factcc_beats_baselines": 0.99,
+  "synthetic_supervision_transfers": 0.97,
+  "document_context_helps": 0.96,
+  "evidence_spans_useful": 0.97,
+  "human_verification_improves": 0.99,
+  "known_error_categories": 0.99
+ },
+ "raw_claims": [
+  "Common summarization metrics do not directly measure whether a generated summary is factually consistent with its source.",
+  "The method generates training supervision by modifying source-derived sentences with controlled transformations.",
+  "The training set contains 1,003,355 generated examples with approximately balanced consistent and inconsistent labels.",
+  "The model jointly predicts consistency and explanatory spans in both the source and the claim.",
+  "Each summary sentence is checked against the full source document rather than against one source sentence at a time.",
+  "The manually labeled development set contains 931 examples and the test set contains 503 examples.",
+  "FactCC achieves 74.15 class-balanced accuracy and 0.5106 F1 on the manually annotated test data.",
+  "Model-generated highlights helped annotators perform the factuality task faster in the reported human study.",
+  "Commonsense inconsistencies remain a major source of classification errors.",
+  "Cross-summary-sentence temporal and coreference inconsistencies are not covered by the document-sentence formulation."
+ ],
+ "source_url": "https://arxiv.org/html/1910.12840",
+ "access": "full_text"
+}

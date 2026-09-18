@@ -1,0 +1,385 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-32604-cmc-2026-086343",
+   "title": "Do LLMs Know When Evidence is Insufficient? An Evidence Sufficiency Benchmark for Answer-Abstention Calibration in Retrieval-Augmented Generation",
+   "research_question": "Can current LLMs reliably recognize when retrieved evidence is sufficient to justify an answer and abstain when evidence is irrelevant, absent, incomplete, or contradictory?",
+   "methodology": "The authors construct the Evidence Sufficiency Benchmark from 200 seed questions, split evenly between SQuAD and HotpotQA, and transform each question into five controlled evidence conditions ranging from full support to conflicting evidence. Seven LLMs from five model families are evaluated with three prompting strategies, producing about 29,400 model calls, and outputs are categorized as answers, abstentions, or invalid responses. Evaluation uses accuracy on answerable conditions, abstention and over-answer rates on insufficient-evidence conditions, wrong-answer rate under conflicts, a Behavioral Expected Calibration Error, bootstrap confidence intervals, and position-randomization experiments. The authors also manually validate 200 stratified examples.",
+   "key_findings": [
+    {
+     "finding": "All seven evaluated models substantially over-answer when presented with conflicting evidence, with L5 over-answer rates above 65%.",
+     "evidence_type": "supported",
+     "section": "6.2 Cross-family Results under Conflicting Evidence"
+    },
+    {
+     "finding": "Models generally recognize complete evidence absence more reliably than internal contradiction between plausible evidence passages.",
+     "evidence_type": "supported",
+     "section": "6.1 Evidence Sufficiency Curve / 7.1 Why is Conflicting Evidence Harder than No Context?"
+    },
+    {
+     "finding": "Abstention prompting and chain-of-thought prompting can improve behavior, but gains vary sharply across model families and do not eliminate conflict-driven over-answering.",
+     "evidence_type": "supported",
+     "section": "6.3 Prompt Sensitivity / 7.3 Prompting Helps but Does Not Solve Over-Answering"
+    },
+    {
+     "finding": "Six of seven models exhibit significant sensitivity to the order in which conflicting passages are presented.",
+     "evidence_type": "supported",
+     "section": "6.4 Position Bias under Conflicting Evidence"
+    },
+    {
+     "finding": "High answer accuracy under well-supported evidence does not imply reliable evidence-sufficiency behavior under insufficient or contradictory evidence.",
+     "evidence_type": "supported",
+     "section": "6.5 Helpfulness-Safety Trade-off"
+    },
+    {
+     "finding": "Manual checking of 200 stratified samples found 89% agreement with the automatic behavior classifier overall, but only 75% agreement under the conflicting-evidence condition.",
+     "evidence_type": "supported",
+     "section": "7.7 Human Validation"
+    }
+   ],
+   "limitations": [
+    "The benchmark is based on only 200 underlying questions from two general open-domain QA datasets.",
+    "Medical, legal, financial, educational, multilingual, and workplace communication domains were not evaluated.",
+    "Automatic abstention detection relies on explicit refusal phrases and may misclassify implicit or mixed abstention behavior.",
+    "Human validation was performed internally by the authors rather than by multiple independent annotators, and no inter-rater reliability statistic was reported.",
+    "The study evaluates inference-time prompting only and does not test fine-tuning, preference optimization, or dedicated contradiction-verification modules.",
+    "The benchmark data and code are promised for public release upon acceptance, but the full-text page read for this analysis does not provide a repository URL from which availability can be verified."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "conflict_over_answering": 0.99,
+    "absence_easier_than_conflict": 0.98,
+    "prompting_model_dependent": 0.98,
+    "position_bias": 0.97,
+    "accuracy_not_sufficient": 0.97,
+    "human_validation": 0.98
+   },
+   "raw_claims": [
+    "The benchmark defines five evidence levels from full support through conflicting evidence.",
+    "L1 and L2 are treated as answerable, while L3 through L5 are treated as conditions in which the model should abstain.",
+    "The experiments use 100 SQuAD questions and 100 HotpotQA questions.",
+    "Seven LLMs from five model families are tested under three prompting strategies.",
+    "All tested models over-answer more than 65% of the time under conflicting evidence.",
+    "Abstention rises when evidence is irrelevant or absent but falls again when the context contains conflicting answer-bearing passages.",
+    "Six of the seven models show significant position bias under conflicting evidence.",
+    "Prompt engineering improves abstention for some models but produces much smaller gains for others.",
+    "The automatic response classifier agrees with manual review on 89% of the 200 validation examples.",
+    "The authors argue that RAG systems need explicit evidence-quality and contradiction checks rather than relying on answer accuracy alone."
+   ],
+   "source_url": "https://www.techscience.com/cmc/v89n1/68467/html",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2004.14974",
+   "title": "Fact or Fiction: Verifying Scientific Claims",
+   "research_question": "How can a system retrieve scientific evidence, identify the exact rationale sentences supporting a decision, and determine whether an individual scientific source supports or refutes a claim?",
+   "methodology": "The authors introduce SciFact, containing 1,409 expert-written scientific claims evaluated against a corpus of 5,183 scientific abstracts, with supporting or refuting abstracts annotated at sentence-level rationale granularity. They develop VeriSci, a three-stage pipeline consisting of TF-IDF abstract retrieval, a BERT-based rationale selector, and a BERT-based Supports/Refutes/NoInfo classifier. Models are evaluated in both oracle-evidence and open-retrieval settings using sentence- and abstract-level precision, recall, and F1, with 10,000 bootstrap resamples for uncertainty analysis. A separate case study applies the system to COVID-19 claims against CORD-19.",
+   "key_findings": [
+    {
+     "finding": "SciFact links claim-verification decisions to minimal sentence-level rationales, enabling evaluation of whether the predicted verdict is supported by identifiable source evidence.",
+     "evidence_type": "supported",
+     "section": "2 Background and task definition / 3 The SciFact dataset"
+    },
+    {
+     "finding": "Training on in-domain SciFact data substantially improves evidence selection and end-to-end verification compared with zero-shot transfer from general fact-checking datasets.",
+     "evidence_type": "supported",
+     "section": "6.1 Pipeline components / 6.2 Full task"
+    },
+    {
+     "finding": "In the open-retrieval setting, VeriSci reaches 39.5 sentence-level Selection+Label F1 and 46.5 abstract-level Label+Rationale F1, leaving large room for improvement.",
+     "evidence_type": "supported",
+     "section": "6.2 Full task"
+    },
+    {
+     "finding": "Oracle experiments show that both document retrieval and rationale selection make substantial contributions to total verification error.",
+     "evidence_type": "supported",
+     "section": "6.2 Full task"
+    },
+    {
+     "finding": "Independent re-annotation yields Cohen's kappa of 0.75 for claim-abstract labels and 0.71 for sentence-level rationale membership.",
+     "evidence_type": "supported",
+     "section": "3.3 Claim verification"
+    },
+    {
+     "finding": "Errors frequently require scientific background knowledge, directionality reasoning, numerical interpretation, causal reasoning, or coreference resolution.",
+     "evidence_type": "supported",
+     "section": "6.4 Error analysis"
+    },
+    {
+     "finding": "The task does not establish a global truth label for a scientific claim; it predicts whether particular abstracts support or refute that claim.",
+     "evidence_type": "supported",
+     "section": "2 Background and task definition"
+    }
+   ],
+   "limitations": [
+    "Claims are verified against abstracts rather than full papers, so evidence that appears only in methods, results, appendices, tables, or other full-text sections is unavailable.",
+    "SciFact evaluates support and refutation relationships between a claim and individual abstracts rather than determining globally whether a scientific claim is true.",
+    "Although real scientific claims may have both supporting and refuting literature, this situation does not occur among the annotated SciFact claims.",
+    "The dataset is relatively small and concentrates heavily on biomedical and scientific literature.",
+    "The COVID-19 demonstration contains only 36 claims and is a research prototype rather than a validated decision-support system.",
+    "Successful verification still depends on background scientific knowledge and reasoning capabilities that are not explicitly represented in the evidence sentences."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "rationale_grounding": 0.99,
+    "in_domain_training": 0.98,
+    "open_setting_performance": 0.99,
+    "pipeline_error_sources": 0.98,
+    "annotation_agreement": 0.99,
+    "reasoning_error_types": 0.97,
+    "not_global_truth": 0.99
+   },
+   "raw_claims": [
+    "SciFact contains 1,409 scientific claims and a corpus of 5,183 abstracts.",
+    "Evidence-bearing abstracts are annotated as supporting or refuting a claim and include sentence-level rationales.",
+    "A rationale is intended to contain the minimal collection of sentences needed to justify a support or refutation decision.",
+    "Independent annotation produces substantial agreement for both labels and rationale sentences.",
+    "VeriSci first retrieves abstracts, then selects rationale sentences, and finally predicts the evidence relation.",
+    "Training on SciFact improves performance relative to models transferred directly from general-domain fact verification.",
+    "Providing oracle rationales substantially improves verification performance.",
+    "Providing oracle evidence abstracts produces an additional large improvement, showing that retrieval remains a major error source.",
+    "Some verification errors require scientific background knowledge that is not stated directly in the selected evidence.",
+    "The paper releases both SciFact data and VeriSci code."
+   ],
+   "source_url": "https://arxiv.org/html/2004.14974",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2510.07238",
+   "title": "When Benchmarks Age: Temporal Misalignment through Large Language Model Factuality Evaluation",
+   "research_question": "How much do static factuality benchmarks become temporally misaligned with current real-world facts, and how does that aging distort evaluations of modern LLM factuality?",
+   "methodology": "The study examines five widely used QA factuality benchmarks and eight LLMs released at different times. An LLM-assisted detector identifies time-sensitive benchmark questions, while a web-search pipeline using Google and Brave retrieves current answers during a fixed July 18-19, 2025 window; human evaluations assess both time-sensitive classification and retrieved-answer quality. The authors introduce Dataset Drift Score, Evaluation Misleading Rate, and Temporal Alignment Gap to distinguish agreement with stale benchmark labels from agreement with current information. They additionally run a controlled BoolQ experiment comparing model behavior with and without potentially stale passage context.",
+   "key_findings": [
+    {
+     "finding": "Among time-sensitive questions, Dataset Drift Scores range from 24.19% to 63.78% across the five investigated benchmarks, except that the paper separately notes TriviaQA has relatively few time-sensitive questions overall.",
+     "evidence_type": "supported",
+     "section": "3.1 RQ1: A Considerable Portion of the Benchmarks Are Outdated"
+    },
+    {
+     "finding": "More than half of the reported model-benchmark combinations have an Evaluation Misleading Rate above 10%, meaning current answers can be scored as wrong because benchmark labels are stale.",
+     "evidence_type": "supported",
+     "section": "3.2 RQ2: Benchmark Aging Affects the Reliability of LLM Evaluation"
+    },
+    {
+     "finding": "Seventy percent of Temporal Alignment Gap measurements are positive, indicating that model outputs more often align better with current web-derived facts than with benchmark gold answers.",
+     "evidence_type": "supported",
+     "section": "3.2 RQ2: Benchmark Aging Affects the Reliability of LLM Evaluation"
+    },
+    {
+     "finding": "Supplying outdated BoolQ passages can pull models toward obsolete benchmark information even when their unaided responses better reflect current facts.",
+     "evidence_type": "supported",
+     "section": "D.3 BoolQ TAG Comparison by Controlling Context"
+    },
+    {
+     "finding": "The web-search pipeline was judged correct on 89.52% of a 105-question human-evaluated sample, with Cohen's kappa of 0.58.",
+     "evidence_type": "supported",
+     "section": "C.3 Web Search Pipeline"
+    },
+    {
+     "finding": "The paper's LLM-as-a-judge comparison procedure achieved 97% accuracy in its human validation and average Cohen's kappa of 0.72 among three evaluators.",
+     "evidence_type": "supported",
+     "section": "C.4 LLM-as-a-judge Prompt"
+    }
+   ],
+   "limitations": [
+    "The study's approximation of present-day truth is produced by a web-search and LLM-processing pipeline rather than by an authoritative ground-truth database.",
+    "Human validation of the web-search answers reports only moderate inter-annotator agreement, with Cohen's kappa of 0.58.",
+    "All current-fact retrieval is tied to the fixed July 18-19, 2025 observation window, so the derived current answers themselves will age.",
+    "The analysis covers five QA benchmarks and eight models and may not generalize to other factuality tasks, languages, or domains.",
+    "Time-sensitive sample detection and pairwise answer comparison partly rely on LLM-based classifiers and judges, introducing another learned component into the evaluation chain.",
+    "The paper's model-size observation is based on comparisons within the Qwen family and should not by itself be interpreted as a universal scaling law.",
+    "The public code repository provides the pipeline but expects users to supply source benchmark data and external search/API access."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "benchmark_drift": 0.98,
+    "misleading_evaluation": 0.98,
+    "positive_temporal_alignment_gap": 0.97,
+    "stale_context_anchoring": 0.96,
+    "search_validation": 0.99,
+    "judge_validation": 0.98
+   },
+   "raw_claims": [
+    "The study evaluates five static factuality benchmarks using eight LLMs.",
+    "The benchmark questions include a non-negligible subset whose correct answers can change over time.",
+    "Dataset Drift Score measures disagreement between benchmark gold answers and web-derived current answers.",
+    "Evaluation Misleading Rate counts cases where a model matches the current answer but is penalized by the old benchmark label.",
+    "Temporal Alignment Gap contrasts alignment with current information against alignment with benchmark labels.",
+    "A substantial fraction of time-sensitive benchmark answers had changed by the July 2025 retrieval window.",
+    "Many modern-model responses align better with current information than with the old gold answers.",
+    "Outdated passages can override more recent information already represented in an LLM.",
+    "The current-answer search pipeline uses both Google Search and Brave Search and may issue repeated searches until evidence is sufficient.",
+    "The authors release code for the benchmark-aging analysis pipeline."
+   ],
+   "source_url": "https://arxiv.org/html/2510.07238",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-f5ce52cae2",
+   "title": "ReproHum #0892-01: The painful route to consistent results: A reproduction study of human evaluation in NLG",
+   "research_question": "Can the human understandability evaluation from a prior clinical text-simplification study be reproduced reliably despite incomplete documentation and unavoidable changes in the experimental setup?",
+   "methodology": "The authors reproduce the human ranking experiment from Shardlow and Nawaz's 2019 clinical text-simplification study using the same 100 groups of four system outputs. Because the original Figure Eight platform was unavailable, they recruit 40 Prolific participants, divide the material into four 25-item surveys, add quality-control questions, and collect ten assessments per item. They compare the original and reproduced system rankings using average rank, coefficient of variation, Krippendorff's alpha, Pearson correlation, and Spearman correlation, and also compare inter-annotator agreement.",
+   "key_findings": [
+    {
+     "finding": "The reproduced study preserves the same overall system ordering as the original evaluation, with NTS plus Phrase Table ranked best and the Phrase Table Baseline ranked worst.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "The best system's average rank is 1.93 in the original experiment and 1.82 in the reproduction.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "System-level results are extremely highly correlated across studies, with Pearson r of 0.98 and Spearman rho of 1.00.",
+     "evidence_type": "supported",
+     "section": "4 Reproducibility Analysis"
+    },
+    {
+     "finding": "Correlations between average annotations for individual sentences are lower but still positive, with Pearson r of 0.76 and Spearman rho of 0.75.",
+     "evidence_type": "supported",
+     "section": "4 Reproducibility Analysis"
+    },
+    {
+     "finding": "Inter-annotator agreement is higher in the replication than in the original study, with Krippendorff's alpha of 0.40 versus 0.22, while agreement between the two studies is 0.30.",
+     "evidence_type": "supported",
+     "section": "4 Reproducibility Analysis"
+    },
+    {
+     "finding": "Reproduction required substantial procedural changes and clarification of undocumented details, yet the high-level original conclusion remained stable.",
+     "evidence_type": "supported",
+     "section": "3 Reproduction Study / 5 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The original crowdsourcing platform no longer existed, so the replication necessarily used Prolific instead of Figure Eight.",
+    "The original and replicated participant populations and screening criteria differ, with 98 original annotators versus 40 replication annotators.",
+    "The original annotator compensation was undocumented, preventing exact reproduction of this condition.",
+    "The replication used fixed 25-item surveys and additional quality-control items because of platform and ReproHum requirements.",
+    "An initial misunderstanding of the mapping between outputs and systems produced incorrect preliminary results, illustrating the risk created by incomplete experimental documentation.",
+    "Cross-study Krippendorff agreement is only 0.30 despite very high system-level correlations, showing that replication of aggregate rankings does not imply close agreement on individual judgments.",
+    "The experiment concerns one clinical text-simplification evaluation and does not establish reproducibility of NLG human evaluation generally."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "same_system_order": 0.99,
+    "best_system_rank": 0.99,
+    "system_level_correlation": 0.99,
+    "item_level_correlation": 0.99,
+    "annotator_agreement": 0.99,
+    "procedural_changes": 0.98
+   },
+   "raw_claims": [
+    "The replication evaluates the same 100 four-way groups of clinical text outputs used in the original study.",
+    "Ten annotators evaluate each group in both studies.",
+    "The replication collects 1,000 usable rankings, whereas the original analysis retained 980 after removing invalid rankings.",
+    "The original Figure Eight platform was replaced by Prolific because Figure Eight was no longer available.",
+    "The replication used 40 participants rather than the original study's 98 participants.",
+    "NTS plus Phrase Table ranks as the easiest-to-understand system in both experiments.",
+    "The Phrase Table Baseline ranks worst in both experiments.",
+    "Aggregate system scores have Pearson correlation of 0.98 and Spearman correlation of 1.00 across studies.",
+    "Inter-annotator agreement is higher in the reproduced data than in the original data.",
+    "Incomplete experimental information made faithful reproduction materially more difficult."
+   ],
+   "source_url": "https://aclanthology.org/2024.humeval-1.24.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2410.14964",
+   "title": "ChronoFact: Timeline-based Temporal Fact Verification",
+   "research_question": "Can explicitly modeling the chronological relationships among multiple claim and evidence events improve verification of complex temporal claims?",
+   "methodology": "ChronoFact retrieves relevant Wikipedia evidence, extracts events from claims and evidence, represents them at token, event, and time levels, and aligns them through multi-level attention. Separate classifiers predict individual claim-event veracity and whether the chronological ordering of claim events agrees with the evidence timeline; soft logical constraints combine these predictions into the final claim verdict. The authors construct ChronoClaims from a November 2022 Wikidata snapshot using timeline facts and GPT-based claim generation and rephrasing, yielding 40,249 training, 3,544 validation, and 3,735 test claims. ChronoFact is compared with several evidence-based and temporal verification baselines on ChronoClaims, T-FEVER, T-FEVEROUS, and T-QuanTemp using macro and micro F1, with ablations and error analysis.",
+   "key_findings": [
+    {
+     "finding": "ChronoFact achieves 85.49 macro F1 on ChronoClaims, substantially exceeding the compared baselines, whose best reported macro F1 is 63.42.",
+     "evidence_type": "supported",
+     "section": "5.2 Comparative Experiments"
+    },
+    {
+     "finding": "ChronoFact remains comparatively strong as claims contain more events and when events overlap or recur.",
+     "evidence_type": "supported",
+     "section": "5.2 Comparative Experiments"
+    },
+    {
+     "finding": "ChronoFact also reports the strongest performance among the compared systems on T-FEVER, T-FEVEROUS, and the real-world T-QuanTemp subset.",
+     "evidence_type": "supported",
+     "section": "5.2 Comparative Experiments"
+    },
+    {
+     "finding": "Removing the chronological-order classifier causes the largest macro-F1 degradation on ChronoClaims, supporting the value of explicit sequence verification.",
+     "evidence_type": "supported",
+     "section": "5.3 Ablation Studies"
+    },
+    {
+     "finding": "In a manual analysis of 50 incorrect ChronoClaims predictions, 82% of errors involve implicit temporal information and the remaining 18% involve events with multiple dates or varying temporal granularity.",
+     "evidence_type": "supported",
+     "section": "5.2 Error Analysis"
+    },
+    {
+     "finding": "Human checks of 500 generated ChronoClaims examples agree with the generated labels on 96.8% and 97% of examples for the two annotators, respectively.",
+     "evidence_type": "supported",
+     "section": "4 ChronoClaims Dataset"
+    },
+    {
+     "finding": "Timeline reasoning can reverse a verdict even when every individual event appears independently supported, because the claimed event ordering itself may contradict the evidence.",
+     "evidence_type": "supported",
+     "section": "6 Case Studies"
+    }
+   ],
+   "limitations": [
+    "ChronoClaims is synthetic, being generated from a November 2022 Wikidata snapshot using GPT transformations and rephrasing rather than naturally occurring claims.",
+    "GPT rephrasing can accidentally alter event order, and the authors report needing a second verification stage to remove such examples.",
+    "ChronoClaims includes only SUPPORT and REFUTE labels and lacks NOT ENOUGH INFO, making its classification setting simpler than T-FEVER and T-FEVEROUS.",
+    "The pipeline depends on upstream entity linking, semantic-role labeling, evidence retrieval, event extraction, and GPT-based chronological reordering, so errors in these stages can propagate to the final verdict.",
+    "Implicit temporal relations remain a major failure mode and account for 82% of the sampled errors.",
+    "Most experimental data are synthetic or derived temporal fact-verification datasets; evidence from naturally occurring real-world claims is more limited.",
+    "The full text does not provide a public code or ChronoClaims download link, so artifact availability could not be verified."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "chronoclaims_macro_f1": 0.99,
+    "complex_event_robustness": 0.97,
+    "cross_dataset_performance": 0.97,
+    "chronological_classifier_ablation": 0.99,
+    "implicit_time_errors": 0.99,
+    "dataset_human_validation": 0.99,
+    "timeline_changes_verdict": 0.98
+   },
+   "raw_claims": [
+    "ChronoFact models individual event truth and chronological consistency separately before predicting an overall claim label.",
+    "Its attention mechanism compares claim and evidence information at token, event, and time levels.",
+    "ChronoClaims is generated from a November 2022 Wikidata snapshot.",
+    "ChronoClaims contains 40,249 training claims, 3,544 validation claims, and 3,735 test claims.",
+    "The generated benchmark contains claims with three to five events and includes overlapping and recurring-event cases.",
+    "Two human annotators agree with generated ChronoClaims labels on approximately 97% of a 500-claim validation sample.",
+    "ChronoFact achieves 85.49 macro F1 and 85.45 micro F1 on ChronoClaims.",
+    "Removing the chronological-order classifier produces the largest ChronoClaims performance drop among the reported ablations.",
+    "Most sampled ChronoFact errors involve temporal relationships that are implicit rather than explicitly dated.",
+    "Correct verification sometimes requires matching a repeated event to the occurrence that fits the surrounding event timeline rather than to an earlier occurrence."
+   ],
+   "source_url": "https://arxiv.org/html/2410.14964",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

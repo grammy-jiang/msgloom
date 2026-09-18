@@ -1,0 +1,76 @@
+{
+ "paper_id": "2402.05629",
+ "title": "Merging Facts, Crafting Fallacies: Evaluating the Contradictory Nature of Aggregated Factual Claims in Long-Form Generations",
+ "research_question": "Can a long-form response be globally misleading even when its individual atomic claims are independently verifiable, and how should factuality metrics detect this failure under entity ambiguity?",
+ "methodology": "The authors construct AmbigBio by randomly selecting 500 ambiguous names from Wikipedia disambiguation pages and use RAG to generate biographies from top-five retrieved Wikipedia passages. They demonstrate that models can combine true statements about different same-named entities into a single misleading biography, then extend FActScore into D-FActScore by grouping claims according to the entity a reader would perceive them as describing, linking each group to one entity, and verifying all facts in that group against that entity's evidence. Human annotation on generated biographies is compared with an automatic GPT-3.5/ChatGPT-based evaluation pipeline, followed by experiments across multiple LLMs and prompting conditions.",
+ "key_findings": [
+  {
+   "finding": "Independent verification of atomic claims can substantially overestimate paragraph-level factuality when true facts about multiple entities are merged into a narrative that appears to describe one entity.",
+   "evidence_type": "supported",
+   "section": "1 Introduction / 4.3 Results"
+  },
+  {
+   "finding": "Human D-FActScore is 8 to 16 percentage points lower than FActScore for the tested Llama and Tulu generations, exposing entity-mixing errors hidden by independent claim verification.",
+   "evidence_type": "supported",
+   "section": "4.2-4.3 Human Evaluation"
+  },
+  {
+   "finding": "FActScore and D-FActScore can reverse the relative ordering of systems because copying individually supportable sentences does not guarantee correct entity-level aggregation.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "The automatic D-FActScore pipeline reproduces the same model ordering as human evaluation and has an overall per-paragraph Pearson correlation of 0.75 with human D-FActScore.",
+   "evidence_type": "supported",
+   "section": "5.2 Human VS Automatic Evaluation"
+  },
+  {
+   "finding": "Providing demonstrations containing ambiguous names does not improve D-FActScore relative to demonstrations without ambiguity in the reported experiments.",
+   "evidence_type": "supported",
+   "section": "5.3 Different LLMs and Demonstrations"
+  },
+  {
+   "finding": "Increasing Llama model size from 13B to 70B yields less than a two-point D-FActScore improvement, indicating that scaling alone does not resolve the tested entity-disambiguation failure.",
+   "evidence_type": "supported",
+   "section": "5.3 Different LLMs and Demonstrations"
+  }
+ ],
+ "limitations": [
+  "The empirical study is centered on human-biography generation rather than diverse long-form generation domains.",
+  "Both retrieval and fact verification use Wikipedia, so results do not establish performance with heterogeneous or unstructured multi-source evidence.",
+  "D-FActScore assumes that evidence can be partitioned or linked to distinct entities; applying it to ambiguous unstructured Web evidence may require substantially harder entity resolution.",
+  "The automatic evaluator depends on GPT-3.5/ChatGPT for decomposition, grouping, and fact verification and systematically yields somewhat higher D-FActScore than human annotation.",
+  "The work studies entity ambiguity but not temporal inconsistency, conflicting source versions, calibrated abstention, or general non-stationary distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "atomic_truth_does_not_imply_global_factuality": 0.99,
+  "FActScore_overestimates_entity_mixed_answers": 0.99,
+  "metric_choice_can_reverse_model_order": 0.99,
+  "automatic_DFActScore_tracks_humans": 0.98,
+  "ambiguity_demonstrations_do_not_help": 0.96,
+  "model_scaling_only_marginally_helps": 0.97
+ },
+ "raw_claims": [
+  "A paragraph can be misleading even when every atomic statement can be supported somewhere in the knowledge source.",
+  "AmbigBio contains 500 ambiguous names sampled from Wikipedia disambiguation pages.",
+  "Each AmbigBio name corresponds on average to multiple distinct Wikipedia entities.",
+  "The generation experiments retrieve five Wikipedia passages for each target name.",
+  "FActScore verifies atomic claims independently and can therefore miss cross-claim entity inconsistency.",
+  "D-FActScore groups facts that the paragraph presents as belonging to the same distinguishable entity.",
+  "Each D-FActScore fact group is linked to one entity before its claims are verified.",
+  "Human evaluation shows substantial gaps between FActScore and D-FActScore for models that mix entities.",
+  "FActScore and D-FActScore produce different relative system rankings in the reported comparison.",
+  "The automatic D-FActScore pipeline uses language models for fact extraction, grouping, entity linking, and verification.",
+  "Automatic and human D-FActScore produce the same ordering of the three models in the validation experiment.",
+  "Automatic D-FActScore is somewhat more optimistic than human D-FActScore.",
+  "Ambiguous-name demonstrations do not eliminate entity-mixing errors.",
+  "The paper releases AmbigBio and D-FActScore code."
+ ],
+ "source_url": "https://arxiv.org/html/2402.05629",
+ "access": "full_text"
+}

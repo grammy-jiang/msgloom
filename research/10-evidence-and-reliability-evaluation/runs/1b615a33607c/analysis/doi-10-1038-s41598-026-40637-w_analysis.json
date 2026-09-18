@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-1038-s41598-026-40637-w",
+ "title": "Conformal selective prediction with cost aware deferral for safe clinical triage under distribution shift",
+ "research_question": "Can calibrated probabilities, conformal prediction, and cost-aware deferral be combined to make clinical triage safer while maintaining useful coverage under temporal distribution shift?",
+ "methodology": "The study uses the PhysioNet 2019 early-sepsis dataset with a temporally separated out-of-distribution test set and trains an MLP to predict sepsis six hours ahead. Probabilities are temperature-calibrated, and the authors compare vanilla split conformal prediction, gender-Mondrian conformal prediction, and importance-weighted conformal prediction. A single confidence-based deferral threshold is chosen on a held-out calibration set by minimizing an expected cost that weights false negatives, false positives, and deferrals differently, and the same threshold is then used on both in-distribution and temporally shifted data.",
+ "key_findings": [
+  {
+   "finding": "At 80% retained coverage, selective prediction reduced retained-case error by 49.6% on the in-distribution test set and 46.7% on the temporally shifted test set relative to predicting on every case.",
+   "evidence_type": "supported",
+   "section": "Results: Selective prediction and deferral"
+  },
+  {
+   "finding": "The calibration-set cost optimization selected a deferral threshold of 0.8, yielding expected cost 0.5640 in distribution and 0.7053 under temporal shift, a 25.1% relative increase under shift.",
+   "evidence_type": "supported",
+   "section": "Results: Cost-aware deferral"
+  },
+  {
+   "finding": "Importance-weighted conformal prediction preserved target coverage better under temporal shift than the vanilla and gender-Mondrian variants, attaining 88.2% empirical coverage against a 90% target.",
+   "evidence_type": "supported",
+   "section": "Results: Conformal prediction under distribution shift"
+  },
+  {
+   "finding": "Temperature scaling produced low expected calibration error on both evaluations, with ECE 0.016 in distribution and 0.030 on the shifted test set.",
+   "evidence_type": "supported",
+   "section": "Results: Probability calibration"
+  },
+  {
+   "finding": "Gender-Mondrian conformal prediction produced similar in-distribution coverage for female and male groups, with a reported coverage gap of 1.4 percentage points.",
+   "evidence_type": "supported",
+   "section": "Results: Group-conditional coverage"
+  },
+  {
+   "finding": "The clinical benefit of deferral depended materially on the assumed false-negative, false-positive, and deferral costs, and the originally optimized operating point was not uniformly superior to a trivial baseline under every evaluation condition.",
+   "evidence_type": "supported",
+   "section": "Sensitivity analysis: Cost assumptions"
+  }
+ ],
+ "limitations": [
+  "The conformal guarantees rely on exchangeability, while the temporal out-of-distribution evaluation deliberately violates that assumption; empirical coverage consequently falls below the nominal level.",
+  "Importance-weighted conformal prediction requires access to representative unlabeled target covariates and depends on the quality of the estimated density ratio.",
+  "The study uses a single public sepsis dataset and therefore does not establish external validity across hospitals, clinical populations, modalities, or deployment workflows.",
+  "The deferral policy uses one offline calibration-selected threshold rather than an online mechanism that continually recalibrates under non-stationary streams.",
+  "Operational deferral can create clinician workload or treatment delay if escalation capacity is insufficient.",
+  "Cost-optimal conclusions are sensitive to the chosen cost vector, so the numerical operating point is not universally optimal.",
+  "The work evaluates patient-level predictive uncertainty rather than evidence completeness, compound claims, or longitudinal work-item state transitions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retained_error_reduction": 0.99,
+  "cost_aware_threshold": 0.99,
+  "weighted_conformal_robustness": 0.98,
+  "probability_calibration": 0.99,
+  "group_conditional_coverage": 0.97,
+  "cost_sensitivity": 0.96
+ },
+ "raw_claims": [
+  "The study formulates six-hour-ahead sepsis prediction as a selective clinical-triage problem.",
+  "The analytic cohort contains 2,155 patients with a reported sepsis prevalence of 7.0%.",
+  "A later-admission cohort is reserved as a temporal out-of-distribution test set.",
+  "The target conformal coverage is 90%.",
+  "The cost model assigns substantially greater cost to false negatives than to false positives.",
+  "The calibration procedure selects a confidence threshold of 0.8 for deferral.",
+  "Importance weighting gives the closest out-of-distribution coverage to the nominal conformal target among the evaluated conformal variants.",
+  "The same deferral threshold is applied without re-optimization to the in-distribution and temporally shifted test sets.",
+  "The authors make the implementation code public and use the publicly accessible PhysioNet 2019 challenge data."
+ ],
+ "source_url": "https://www.nature.com/articles/s41598-026-40637-w",
+ "access": "full_text"
+}

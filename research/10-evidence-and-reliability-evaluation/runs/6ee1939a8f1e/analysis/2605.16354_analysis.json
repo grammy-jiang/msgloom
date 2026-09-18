@@ -1,0 +1,78 @@
+{
+ "paper_id": "2605.16354",
+ "title": "Augmenting Human Evaluation with LLM Judges: How Many Human Reviews Do You Need?",
+ "research_question": "How can LLM-generated ratings be used as auxiliary measurements to reduce human evaluation cost while retaining a principled target level of statistical precision or power?",
+ "methodology": "The paper reformulates LLM-assisted evaluation as a two-stage sampling problem in which LLM ratings are collected for the full sample and human ratings for a designed subsample. It applies a doubly robust estimator whose human-rating observation probabilities are known by design, derives its asymptotic variance, and uses that variance to obtain human and LLM sample-size relationships for a target effective sample size. It then analytically studies uniform and stratified sampling designs under different assumed LLM-human predictive R-squared values and illustrates their human-review requirements.",
+ "key_findings": [
+  {
+   "finding": "Because human-review probabilities are controlled and known by design, the doubly robust estimator can retain valid inference for the human-rating target even when the model predicting human ratings from auxiliary measurements is misspecified.",
+   "evidence_type": "supported",
+   "section": "2.2 The estimator"
+  },
+  {
+   "finding": "The number of required human reviews decreases as the predictive relationship between LLM and human ratings becomes stronger and as the available LLM-rated pool becomes larger.",
+   "evidence_type": "supported",
+   "section": "3.1 Sample Size Calculations"
+  },
+  {
+   "finding": "For a fixed predictive quality, increasing the number of LLM evaluations has diminishing returns, and the required human sample approaches a nonzero floor proportional to one minus the squared predictive correlation.",
+   "evidence_type": "supported",
+   "section": "3.1 Behavior of sample size"
+  },
+  {
+   "finding": "If LLM ratings contain no predictive information about human ratings, increasing the LLM-rated sample does not reduce the required human-review count.",
+   "evidence_type": "supported",
+   "section": "3.1 Sample Size Calculations"
+  },
+  {
+   "finding": "Stratifying human review according to heterogeneous LLM reliability can save human annotations by allocating more review to strata where LLM predictions are less reliable.",
+   "evidence_type": "supported",
+   "section": "3.2 Stratified sampling"
+  },
+  {
+   "finding": "In the paper's modeled two-stratum scenarios, stratification reduced human-review requirements by up to 12.9 percent relative to uniform allocation when predictive quality differed sharply between strata.",
+   "evidence_type": "supported",
+   "section": "3.2 Comparison of designs"
+  },
+  {
+   "finding": "The framework's numerical results are analytic design examples rather than empirical validation on a newly collected LLM-evaluation dataset.",
+   "evidence_type": "supported",
+   "section": "3 Main Results / 4 Limitations"
+  }
+ ],
+ "limitations": [
+  "The sample-size calculation requires an estimate of predictive R-squared from pilot data.",
+  "Overestimating predictive R-squared because of small pilots, overfitting or distribution mismatch can cause underallocation of human review and invalidate the intended precision target.",
+  "The framework treats human ratings as the target or gold standard and does not solve unreliable, inconsistent or construct-ambiguous human judgment.",
+  "The main formulation covers one human rater rather than multiple-rater reliability.",
+  "The examples primarily concern discrete, single-turn evaluations and require extension for multi-turn dialogue or sequential interactions.",
+  "The paper provides analytic and simulated design illustrations rather than a broad empirical comparison across deployed LLM judges and real evaluation datasets."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "doubly_robust_design_validity": 0.96,
+  "human_sample_depends_on_predictability": 0.99,
+  "diminishing_returns": 0.99,
+  "stratified_allocation": 0.97,
+  "empirical_generalization": 0.72
+ },
+ "raw_claims": [
+  "The paper treats human judgment as the inferential target and LLM judgment as auxiliary information rather than as a replacement.",
+  "Human labels are observed on a designed subsample while LLM ratings can be observed for the full evaluation pool.",
+  "Known sampling probabilities make the missing-human-label mechanism controlled by the investigator.",
+  "A doubly robust estimator combines observed human labels with predictions derived from auxiliary information.",
+  "Better prediction of human ratings reduces the amount of human review needed for a fixed precision target.",
+  "LLM ratings that have zero predictive value do not reduce the necessary human sample.",
+  "Adding more LLM-rated examples yields progressively smaller reductions in human annotation requirements.",
+  "Human-review effort can be concentrated in strata where LLM ratings predict human ratings poorly.",
+  "The required sample calculation is sensitive to the quality of the pilot estimate of predictive performance.",
+  "The framework does not establish that human raters themselves are reliable.",
+  "Extension to multiple human raters and multi-turn evaluations is left for future work."
+ ],
+ "source_url": "https://arxiv.org/html/2605.16354",
+ "access": "full_text"
+}

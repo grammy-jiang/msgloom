@@ -1,0 +1,232 @@
+{
+ "streams": [
+  {
+   "id": "TF01",
+   "description": "Joint multi-dimensional reliability evaluation for generated text, preserving distinct dimensions such as claim correctness, attribution, completeness, omission, uncertainty, and abstention rather than collapsing them into one score."
+  },
+  {
+   "id": "TF03",
+   "description": "Attributed generation and citation/evidence completeness, including whether generated claims are supported by identified sources and whether all required support is present."
+  },
+  {
+   "id": "TF04",
+   "description": "Content selection, summary coverage, and omission evaluation, including explicit representations of required or salient content and detection of missing content."
+  },
+  {
+   "id": "TF05",
+   "description": "Temporal, freshness, revision, and current-state factuality evaluation where evidence validity depends on observation time, freshness, supersession, or version."
+  },
+  {
+   "id": "TF06",
+   "description": "Selective generation and evidence-based abstention for open-ended outputs, including withholding, partial retention, or escalation based on estimated reliability."
+  },
+  {
+   "id": "TF07",
+   "description": "Probability calibration and uncertainty estimation for generative language models, especially confidence attached to long-form or claim-level generated content."
+  },
+  {
+   "id": "TF08",
+   "description": "Calibration and selective prediction under distribution shift and non-stationarity, including sequential adaptation to changing data distributions."
+  },
+  {
+   "id": "TF09",
+   "description": "Reject-option, risk-coverage, and conformal risk control methods that explicitly trade accepted coverage against bounded error or structured generation risk."
+  },
+  {
+   "id": "TF10",
+   "description": "Human evaluation reliability, adjudication, and evaluator meta-evaluation, including validation of automatic or LLM-assisted evaluators against appropriate human judgments."
+  },
+  {
+   "id": "TF11",
+   "description": "RAG and multi-source grounded-generation evaluation that separates retrieval quality or sufficiency from generated-answer synthesis, faithfulness, and evidence use."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2305.14975",
+   "decision": "REJECT",
+   "reason": "The abstract concerns calibrated answer confidence and possible deferral on QA benchmarks, but the open academic gap is specifically calibration and selective prediction for unconstrained free-form generation. Stronger verified candidates in this set directly study long-form or claim-level free-form outputs, so this narrower QA result would not materially strengthen the remaining gap."
+  },
+  {
+   "paper_id": "2404.00474",
+   "decision": "ADMIT",
+   "stream_id": "TF07",
+   "role": "DIRECT",
+   "confidence": 0.98,
+   "reason": "The abstract directly studies calibration of long-form generations rather than only fixed-label or short-answer QA. It defines a calibration target for generated confidence statements, evaluates both automatically and with humans, and tests substantial domain shift. This materially strengthens gap-3 and also provides relevant evidence for gap-8."
+  },
+  {
+   "paper_id": "2608.22483",
+   "decision": "ADMIT",
+   "stream_id": "TF07",
+   "role": "DIRECT",
+   "confidence": 0.99,
+   "reason": "The abstract explicitly calibrates confidence at the individual factual-claim level after atomic claim decomposition and uses that confidence for selective retrieval or human review. This directly addresses free-form claim-level calibration and connects calibrated probabilities to actionable selective decisions, materially strengthening gap-3."
+  },
+  {
+   "paper_id": "doi-10-1007-s44163-026-02240-w",
+   "decision": "REJECT",
+   "reason": "The described capability substantially overlaps the verified claim-level calibration candidate 2608.22483: atomic claim decomposition, self-verification signals, post-hoc calibration, and selective accuracy/coverage. Because this identifier is UNCHECKED and a verified candidate already supplies the same core contribution, it does not justify an additional reading slot."
+  },
+  {
+   "paper_id": "2605.01749",
+   "decision": "ADMIT",
+   "stream_id": "TF06",
+   "role": "DIRECT",
+   "confidence": 0.94,
+   "reason": "The abstract describes calibration-aware long-form generation in which intermediate information receives reliability estimates and uncertain material is deliberately excluded from final committed claims. That is a direct selective-generation mechanism for open-ended outputs and materially strengthens gap-3 beyond merely measuring confidence."
+  },
+  {
+   "paper_id": "doi-10-1109-access-2026-3679691",
+   "decision": "ADMIT",
+   "stream_id": "TF05",
+   "role": "TRANSFER",
+   "confidence": 0.91,
+   "reason": "The abstract explicitly separates final-answer correctness from temporal validity of supporting evidence and evaluates evidence freshness with program-verifiable diagnostics. This is unusually close to msgloom's distinction between evidence support and current-state correctness and materially strengthens the temporal-evaluation stream. The identifier is UNCHECKED, so canonical identity should be confirmed during acquisition, but no verified candidate here provides an equivalent temporal-evidence evaluation."
+  },
+  {
+   "paper_id": "2404.15588",
+   "decision": "ADMIT",
+   "stream_id": "TF03",
+   "role": "DIRECT",
+   "confidence": 0.99,
+   "reason": "The abstract formalizes minimal sets of evidence pieces that collectively give full claim support, distinguishes full from partial support, and permits multiple alternative evidence groups. This directly addresses gap-4's unresolved problem of evidence completeness for claims requiring multiple pieces of evidence and is substantially more informative than citation-presence or single-source support metrics."
+  },
+  {
+   "paper_id": "2605.03534",
+   "decision": "ADMIT",
+   "stream_id": "TF11",
+   "role": "DIRECT",
+   "confidence": 0.97,
+   "reason": "The abstract treats evidence sufficiency as a set-level property rather than passage relevance and jointly considers coverage, support strength, conflict, and uncertainty before allowing an answer. This materially strengthens multi-source grounded-generation evaluation and gap-4 by providing a direct model of whether the retrieved evidence set is adequate to support generation."
+  },
+  {
+   "paper_id": "2508.20867",
+   "decision": "ADMIT",
+   "stream_id": "TF11",
+   "role": "DIRECT",
+   "confidence": 0.92,
+   "reason": "The abstract evaluates cases where required information is distributed across multiple sources and no single source suffices, while separating retrieval effectiveness from synthesis ability through normal and oracle-retrieval settings. This directly strengthens the multi-source evaluation stream and is useful for distinguishing evidence acquisition failures from generation/integration failures."
+  },
+  {
+   "paper_id": "2106.00170",
+   "decision": "ADMIT",
+   "stream_id": "TF08",
+   "role": "TRANSFER",
+   "confidence": 0.99,
+   "reason": "The abstract directly addresses sequential calibration under unknown distribution change by adapting conformal miscoverage online rather than assuming exchangeability. This is a strong methodological transfer for gap-8, which specifically lacks calibration under continuing temporal or distributional change."
+  },
+  {
+   "paper_id": "2606.29054",
+   "decision": "ADMIT",
+   "stream_id": "TF09",
+   "role": "TRANSFER",
+   "confidence": 0.99,
+   "reason": "The abstract applies conformal risk control specifically to structured language-model outputs, derives conditions under which target risk cannot be certified without abstention, and studies adaptation under cross-dataset shift. It therefore connects formal risk guarantees, selective generation, and distribution shift and materially strengthens both gap-3 and gap-8."
+  },
+  {
+   "paper_id": "2512.17776",
+   "decision": "ADMIT",
+   "stream_id": "TF01",
+   "role": "DIRECT",
+   "confidence": 0.98,
+   "reason": "The abstract evaluates expert report generation with a multidimensional rubric and report-wide verification covering cited and uncited claims, evidence quality, and logical-completeness failures. It is one of the closest candidates to gap-1's desired decomposed report-level reliability framework and also contributes to omission/completeness evaluation. It does not appear to cover every gap-1 dimension, so it strengthens rather than closes that gap."
+  },
+  {
+   "paper_id": "2509.26184",
+   "decision": "ADMIT",
+   "stream_id": "TF10",
+   "role": "DIRECT",
+   "confidence": 0.94,
+   "reason": "The abstract operationalizes completeness, accuracy, and citation-oriented diagnostics for long-form reports and, critically, evaluates the automated LLM-based evaluator against human judgments at system level. This materially strengthens evaluator meta-evaluation and provides evidence relevant to validating an LLM-assisted judge rather than assuming its outputs are ground truth."
+  },
+  {
+   "paper_id": "2312.09300",
+   "decision": "ADMIT",
+   "stream_id": "TF06",
+   "role": "DIRECT",
+   "confidence": 0.96,
+   "reason": "The abstract explicitly studies selective generation for open-ended outputs and evaluates scoring strategies for deciding when generation should be withheld, including a none-of-the-above mechanism. This directly addresses gap-3's selective-prediction component in free-form generation rather than only classification or fixed-answer settings."
+  },
+  {
+   "paper_id": "2505.23912",
+   "decision": "ADMIT",
+   "stream_id": "TF07",
+   "role": "DIRECT",
+   "confidence": 0.98,
+   "reason": "The abstract attaches numerical confidence estimates to individual statements in long-form generation and evaluates calibration in both free-form and iterative confidence-tagging settings, including cross-domain generalization. This is highly direct evidence for gap-3 and provides a useful contrast with linguistic rather than numerical confidence methods."
+  },
+  {
+   "paper_id": "2607.19322",
+   "decision": "ADMIT",
+   "stream_id": "TF04",
+   "role": "DIRECT",
+   "confidence": 0.99,
+   "reason": "The abstract targets factual completeness rather than generated-claim precision and represents required content, importance, sets, processes, and relations as structured criteria compiled into checks, with expert verification of evidence-backed rubrics. This directly strengthens gap-5 by supplying an explicit framework for detecting missing required content in open-ended outputs."
+  },
+  {
+   "paper_id": "2307.09254",
+   "decision": "ADMIT",
+   "stream_id": "TF06",
+   "role": "DIRECT",
+   "confidence": 0.99,
+   "reason": "The abstract develops selective-generation algorithms for language-model sequences with explicit statistical control of a generation risk while retaining useful output. This directly addresses free-form selective generation and provides a risk-coverage-style decision mechanism rather than merely ranking confidence, materially strengthening gap-3."
+  },
+  {
+   "paper_id": "manual-32d5793dca",
+   "decision": "ADMIT",
+   "stream_id": "TF10",
+   "role": "DIRECT",
+   "confidence": 0.88,
+   "reason": "The abstract identifies a concrete failure mode in LLM-judge validation when human tasks admit multiple reasonable ratings but evaluation forces one gold label, and proposes response-set ratings validated across real-world tasks. This materially strengthens the human/evaluator reliability stream because msgloom requires independent validation of LLM-assisted judging. The identifier is UNCHECKED, so canonical identity should be confirmed during acquisition."
+  },
+  {
+   "paper_id": "2012.14983",
+   "decision": "ADMIT",
+   "stream_id": "TF07",
+   "role": "DIRECT",
+   "confidence": 0.93,
+   "reason": "The abstract evaluates whether free-form conversational agents express confidence or doubt in proportion to factual correctness and modifies generation using predicted correctness to improve linguistic calibration. Although older and not report-focused, it directly studies calibration expressed inside free-form generated language and therefore adds distinct evidence relevant to gap-3."
+  },
+  {
+   "paper_id": "manual-72858daf56",
+   "decision": "REJECT",
+   "reason": "The project status explicitly states that Pyramid already supplies reference-summary content-unit coverage evidence in the admitted corpus. Reading the same foundational method again would duplicate evidence already established rather than close the remaining omission gap. Its identifier is also UNCHECKED."
+  },
+  {
+   "paper_id": "2604.12046",
+   "decision": "ADMIT",
+   "stream_id": "TF06",
+   "role": "DIRECT",
+   "confidence": 0.96,
+   "reason": "The abstract decomposes long-form outputs into atomic claims with explicit confidence and then uses those calibrated claim confidences to abstain selectively from uncertain claims. That partial-output abstention behavior is directly relevant to gap-3 and is distinct from whole-answer deferral or confidence reporting alone."
+  },
+  {
+   "paper_id": "2205.14334",
+   "decision": "REJECT",
+   "reason": "The abstract establishes verbalized probability calibration and some distribution-shift testing, but its named evaluation setting is CalibratedMath rather than unconstrained free-form generation. The remaining gap specifically concerns free-form abstractive outputs, and multiple verified candidates here directly test long-form or claim-level generation, so this paper would add less incremental value."
+  },
+  {
+   "paper_id": "2406.17819",
+   "decision": "REJECT",
+   "reason": "The abstract addresses input-dependent difficulty and approximate conditional conformal risk control, but it does not show continuing temporal or distributional adaptation. For the open non-stationarity gap, 2106.00170 directly treats sequential unknown distribution shift and 2606.29054 treats adaptation of structured-generation risk control, so this candidate does not materially strengthen the targeted gap."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w19-8642",
+   "decision": "ADMIT",
+   "stream_id": "TF10",
+   "role": "DIRECT",
+   "confidence": 0.87,
+   "reason": "The abstract directly examines reliability measurement for human NLG evaluation and argues, using survey and case-study evidence, that inter-annotator agreement alone can be misleading when legitimate linguistic variability exists, recommending correlation as an additional view. This materially informs the human-review reliability stream and the design of the project's multi-rater evaluation protocol. The identifier is UNCHECKED, so canonical identity should be verified during acquisition."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-acl-long-837",
+   "decision": "ADMIT",
+   "stream_id": "TF03",
+   "role": "DIRECT",
+   "confidence": 0.95,
+   "reason": "The abstract creates a benchmark for complex evidence attribution with fine-grained attribution categories, deliberately subtle attribution distinctions, comparison of automatic evaluators with human evaluators, and evaluator fine-tuning. This materially strengthens both attribution evaluation and evaluator meta-evaluation, especially where support is more complex than simple citation presence. The identifier is UNCHECKED, but no verified candidate here provides the same fine-grained attribution-evaluator benchmark."
+  }
+ ],
+ "notes": "The admitted set is intentionally concentrated on the still-open academic gaps: free-form calibration/selective generation (gap-3), compound and multi-source evidence completeness (gap-4), report-level omission/completeness (gap-5), temporal evidence validity (gap-1/gap-5 temporal component), and calibration/risk control under distribution shift (gap-8). No candidate directly closes the private workplace-domain engineering gap or the project-specific end-to-end human-review and evaluator-separation engineering gaps. No admitted abstract demonstrates the complete single end-to-end scheme required by gap-1; DEER and related report evaluators strengthen subsets of that requirement but should not be treated as closing it."
+}

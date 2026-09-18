@@ -1,0 +1,84 @@
+{
+ "paper_id": "2404.15588",
+ "title": "Minimal Evidence Group Identification for Claim Verification",
+ "research_question": "Can claim-verification systems identify the smallest non-redundant set of evidence passages that is collectively sufficient to support a claim instead of retrieving a redundant union of all relevant evidence?",
+ "methodology": "The paper formalizes a minimal evidence group as a sufficient evidence group for which no member is redundant. It converts WiCE and SciFact claim-verification data into WiCE-MEG and SciFact-MEG under explicit assumptions about full support, partial support, and non-labeled evidence. Its algorithm predicts whether candidate evidence groups fully, partially, or do not support the claim, then performs bottom-up merging of partially supporting groups while pruning redundant combinations; experiments use PaLM-2L for support prediction and redundancy checking. Intrinsic evaluation reports exact-match precision and best-soft-match precision, recall, and F0.5, while extrinsic evaluation tests evidence-budget effects in retrieval-augmented claim generation.",
+ "key_findings": [
+  {
+   "finding": "The proposed bottom-up MEG method substantially improves precision and F0.5 over direct LLM prediction and classic evidence-selection baselines on both WiCE-MEG and SciFact-MEG.",
+   "evidence_type": "supported",
+   "section": "Section 5.2"
+  },
+  {
+   "finding": "On WiCE-MEG, the proposed method reaches 0.809 soft-match precision and 0.684 F0.5, compared with 0.176 precision and 0.203 F0.5 for direct LLM prediction.",
+   "evidence_type": "supported",
+   "section": "Table 1"
+  },
+  {
+   "finding": "On SciFact-MEG, the proposed method reaches 0.612 soft-match precision and 0.533 F0.5, outperforming the reported direct and classic baselines on those precision-oriented measures.",
+   "evidence_type": "supported",
+   "section": "Table 1"
+  },
+  {
+   "finding": "The precision gains come with lower recall than several baselines, illustrating that selecting minimal sufficient evidence and exhaustively recovering all annotated evidence groups are different objectives.",
+   "evidence_type": "supported",
+   "section": "Table 1"
+  },
+  {
+   "finding": "Minimal evidence groups dramatically reduce evidence volume in the downstream claim-generation experiment while preserving performance close to much larger evidence sets under comparable computation budgets.",
+   "evidence_type": "supported",
+   "section": "Section 6 and Table 2"
+  },
+  {
+   "finding": "The available human annotations are not exhaustive enough to establish a true gold standard for all minimal sufficient evidence groups, which limits direct evaluation of evidence completeness.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  },
+  {
+   "finding": "Contradictory evidence is excluded from the task, so the framework does not establish completeness when supporting and conflicting sources coexist.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  },
+  {
+   "finding": "The experiments do not address temporal validity, evidence supersession, source versions, or performance under temporal distribution shift.",
+   "evidence_type": "unsupported",
+   "section": "Task and experimental scope"
+  }
+ ],
+ "limitations": [
+  "The task only models supporting versus non-supporting evidence and explicitly leaves contradiction handling for future work.",
+  "No purpose-built gold-standard MEG dataset exists, and the converted datasets require assumptions that annotated evidence groups are sufficient and minimal.",
+  "Human annotators generally do not enumerate every possible valid evidence group, so measured recall cannot represent exhaustive evidence completeness.",
+  "The approach requires combinatorial evidence-set reasoning and uses pruning because explicit combination checking is NP-hard.",
+  "Experiments rely on PaLM-2L prompting, so behavior may depend on the underlying support classifier and redundancy checker.",
+  "The work does not model temporal validity, changing evidence versions, or distribution drift."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "precision_f05_improvement": 0.99,
+  "wice_meg_result": 0.99,
+  "scifact_meg_result": 0.99,
+  "precision_recall_tradeoff": 0.98,
+  "budgeted_generation_value": 0.94,
+  "annotation_completeness_problem": 0.99,
+  "contradictions_excluded": 0.99,
+  "no_temporal_evaluation": 0.99
+ },
+ "raw_claims": [
+  "A minimal evidence group must collectively support the claim while containing no redundant evidence passage.",
+  "The method searches from smaller evidence combinations upward and stops after finding fully supporting groups at the smallest discovered size.",
+  "Candidate combinations predicted as already fully supporting or non-supporting are not expanded further.",
+  "WiCE-MEG and SciFact-MEG are derived from existing claim-verification datasets rather than newly exhaustively annotated MEG corpora.",
+  "The proposed approach obtains higher precision-oriented MEG scores than direct LLM prompting and classic baselines.",
+  "Its MEG predictions have lower recall than some competing approaches despite their higher precision.",
+  "Using minimal evidence can reduce the number of evidence sentences supplied to downstream generation.",
+  "Contradictory evidence is outside the evaluated task.",
+  "Human evidence annotations are not guaranteed to contain every valid minimal evidence group."
+ ],
+ "source_url": "https://arxiv.org/html/2404.15588",
+ "access": "full_text"
+}

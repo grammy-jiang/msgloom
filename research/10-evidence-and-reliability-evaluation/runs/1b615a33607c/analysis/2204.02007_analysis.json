@@ -1,0 +1,82 @@
+{
+ "paper_id": "2204.02007",
+ "title": "Fact Checking with Insufficient Evidence",
+ "research_question": "Can fact-checking systems learn to abstain with an insufficient-evidence decision when the available evidence has been partially removed or is otherwise inadequate to determine a claim's truth?",
+ "methodology": "The paper constructs fluent insufficient-evidence examples by deleting selected syntactic constituents or complete evidence sentences from gold evidence in FEVER, VitaminC, and HoVer. Human annotators determine whether the remaining evidence is still sufficient, producing the SufficientFacts diagnostic resource, and BERT, RoBERTa, and ALBERT fact-checkers are evaluated on these cases. The authors then train models with omission-based counterfactual data augmentation and contrastive objectives, and additionally test robustness to incorrect evidence and claim-only shortcuts.",
+ "key_findings": [
+  {
+   "finding": "When all three baseline models agree that the remaining evidence is sufficient, human annotators still label 430 of 1000 examined cases as insufficient, showing a substantial false-sufficiency problem.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "When all three baseline models agree that evidence is insufficient, their consensus matches the human insufficiency judgment in 972 of 1000 examined cases.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "Sensitivity to evidence omission depends strongly on what is removed: adverbial modifiers are among the hardest omissions for the models, while date-related omissions are substantially easier.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "Omission-driven counterfactual and contrastive training improves performance on the SufficientFacts diagnostic set, with Section 6.2 reporting gains of up to 17.2 F1 points.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "The same training approaches can preserve or improve ordinary fact-checking performance, with Section 6.2 reporting gains of up to 3.6 F1 points on the original test sets.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "The proposed training methods also improve robustness when the supplied evidence is incorrect, with reported accuracy gains reaching 27 points in the evaluated settings.",
+   "evidence_type": "supported",
+   "section": "Section 6.4"
+  },
+  {
+   "finding": "For HoVer claim-only inputs, omission-aware training reduces the reported rate of non-NEI predictions to below one percent for the evaluated models, substantially reducing the observed claim-only shortcut.",
+   "evidence_type": "supported",
+   "section": "Section 6.5"
+  }
+ ],
+ "limitations": [
+  "The principal experiments manipulate gold evidence rather than jointly evaluating retrieval and verification in an end-to-end system.",
+  "The insufficient-evidence cases are synthetically created through controlled omissions and may not capture all naturally occurring forms of partial or contradictory evidence.",
+  "SufficientFacts is primarily a diagnostic test resource rather than a naturally matched training distribution.",
+  "Pretrained language models may still exploit factual knowledge acquired during pretraining instead of relying exclusively on the supplied evidence.",
+  "Annotators were instructed to judge only from the provided evidence, and the paper notes that avoiding outside world knowledge can be difficult.",
+  "The experiments focus on English-language datasets and three Transformer model families.",
+  "The task is static per claim and does not evaluate temporally evolving evidence, superseded facts, deadlines, or longitudinal work-item state transitions.",
+  "The paper's abstract and Section 6.2 report different headline maximum improvements, so exact summary gains should be tied to the section from which they are taken."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "false_sufficiency_under_model_consensus": 0.99,
+  "insufficiency_consensus_accuracy": 0.99,
+  "omission_type_sensitivity": 0.98,
+  "sufficientfacts_training_gain": 0.97,
+  "original_test_gain": 0.97,
+  "incorrect_evidence_robustness": 0.98,
+  "claim_only_bias_reduction": 0.98
+ },
+ "raw_claims": [
+  "A fact checker should return an insufficient-evidence decision when the available evidence cannot justify a veracity label.",
+  "The paper creates incomplete evidence by removing syntactic constituents or entire evidence sentences while attempting to preserve fluency.",
+  "Human judgments are used to determine whether the evidence remaining after an omission is still sufficient.",
+  "Baseline Transformer fact checkers frequently treat partially informative evidence as sufficient when human annotators do not.",
+  "Agreement among the models is much more reliable when all of them predict that evidence is insufficient.",
+  "Different omitted linguistic components produce substantially different error rates.",
+  "Counterfactual augmentation trains models on paired sufficient and insufficient variants of evidence.",
+  "Contrastive learning is used to separate representations of sufficient and insufficient evidence conditions.",
+  "Omission-aware training improves the diagnostic insufficient-evidence task without necessarily sacrificing standard fact-checking accuracy.",
+  "The same training strategies improve resistance to misleading or incorrect evidence.",
+  "Claim-only tests reveal shortcut behavior that is sharply reduced after omission-aware training."
+ ],
+ "source_url": "https://arxiv.org/html/2204.02007",
+ "access": "full_text"
+}

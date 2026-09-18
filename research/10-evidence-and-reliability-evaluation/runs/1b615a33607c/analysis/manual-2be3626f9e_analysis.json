@@ -1,0 +1,79 @@
+{
+ "paper_id": "manual-2be3626f9e",
+ "title": "Optimal Strategies for Reject Option Classifiers",
+ "research_question": "Do the principal cost-based, risk-constrained, and coverage-constrained formulations of classification with a reject option share a common optimal decision strategy, and can the uncertainty ordering required by that strategy be learned for arbitrary black-box predictors?",
+ "methodology": "The paper develops a decision-theoretic analysis of cost-based rejection, bounded-improvement selection, and bounded-coverage selection and derives their Bayes-optimal prediction and selection rules. It defines proper uncertainty scores that preserve the ordering induced by conditional expected risk and proposes two ways to learn such scores for an already trained predictor: regression on observed loss and the SELE objective, a tractable surrogate related to area under the risk-coverage curve. Fisher-consistency results are established for the learning objectives. Empirical experiments use classification, ordinal-regression, and structured-output datasets, comparing learned uncertainty scores with task-specific confidence baselines using risk-coverage performance.",
+ "key_findings": [
+  {
+   "finding": "The cost-based, bounded-improvement, and bounded-coverage formulations have the same structural form of Bayes-optimal strategy: a Bayes predictor paired with a selection rule based on thresholding conditional expected risk, with possible randomization on the decision boundary.",
+   "evidence_type": "supported",
+   "section": "Optimal strategies"
+  },
+  {
+   "finding": "The paper establishes explicit relationships between the rejection threshold and boundary randomization parameters across the three formulations, linking cost, target selective risk, and target coverage.",
+   "evidence_type": "supported",
+   "section": "Relations between reject-option models"
+  },
+  {
+   "finding": "A proper uncertainty score only needs to preserve the ordering induced by conditional expected risk, allowing selective decisions to be constructed even when the exact conditional risk is unavailable.",
+   "evidence_type": "supported",
+   "section": "Learning uncertainty scores"
+  },
+  {
+   "finding": "Both regression-on-loss and the SELE objective are shown to be Fisher-consistent approaches for learning an uncertainty score for a fixed black-box predictor.",
+   "evidence_type": "supported",
+   "section": "Consistency of uncertainty-score learning"
+  },
+  {
+   "finding": "In the classification experiments, SELE significantly outperformed several conventional confidence or regression baselines in some model settings, although the statistical tests did not distinguish every pair of methods.",
+   "evidence_type": "supported",
+   "section": "Experiments: Classification"
+  },
+  {
+   "finding": "For ordinal regression, both learned uncertainty approaches significantly outperformed the margin baseline, while the experiment did not establish a significant difference between SELE and regression.",
+   "evidence_type": "supported",
+   "section": "Experiments: Ordinal regression"
+  },
+  {
+   "finding": "On the 300-W structured-output face-landmark task, the learned uncertainty scores outperformed the detector's native uncertainty baseline, demonstrating that the framework extends beyond ordinary multiclass classification.",
+   "evidence_type": "supported",
+   "section": "Experiments: Structured output"
+  }
+ ],
+ "limitations": [
+  "The theoretical and learning framework assumes a two-stage procedure in which the predictor and its uncertainty score are trained separately; joint end-to-end training is left open.",
+  "The paper does not provide a general finite-sample analysis of the generalization error introduced when empirical data are used to set rejection thresholds and boundary acceptance probabilities.",
+  "The reported uncertainty-score models are linear in their learned parameters; richer nonlinear or neural score models are left for future investigation.",
+  "The analysis concerns stationary supervised-learning distributions rather than continuous online recalibration under non-stationary streams.",
+  "The experiments concern prediction loss and selective coverage, not source-grounded generative claims, evidence completeness, or partial support within compound statements.",
+  "The framework contains no explicit representation of longitudinal work-item transitions such as new, open, resolved, due, or superseded states.",
+  "No public implementation link was identified in the paper text that was read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "shared_optimal_strategy": 0.99,
+  "model_relationships": 0.98,
+  "proper_uncertainty_ordering": 0.99,
+  "fisher_consistency": 0.99,
+  "classification_results": 0.96,
+  "ordinal_results": 0.97,
+  "structured_output_results": 0.96
+ },
+ "raw_claims": [
+  "The paper studies cost-based rejection, bounded-improvement selection, and bounded-coverage selection in a common framework.",
+  "All three formulations yield an optimal rule based on the predictor's conditional expected risk.",
+  "Randomization can be required for examples lying exactly on the rejection boundary.",
+  "A proper uncertainty score preserves the ranking generated by conditional expected risk.",
+  "The REG method learns uncertainty by regressing observed predictor losses.",
+  "The SELE method directly optimizes a surrogate related to selective risk-coverage performance.",
+  "The paper proves Fisher consistency for the proposed uncertainty-learning approaches.",
+  "Experiments cover ordinary classification, ordinal regression, and structured face-landmark prediction.",
+  "Area under the risk-coverage curve is a principal empirical evaluation metric."
+ ],
+ "source_url": "https://arxiv.org/html/2101.12523",
+ "access": "full_text"
+}

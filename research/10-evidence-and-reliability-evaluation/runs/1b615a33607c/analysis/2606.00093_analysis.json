@@ -1,0 +1,81 @@
+{
+ "paper_id": "2606.00093",
+ "title": "Agreement Measurement for Rubric-based LLM Judges: What to Report and Why",
+ "research_question": "What measurement protocol and reporting practices are necessary for human-LLM judge agreement numbers to be interpretable, reconstructible and comparable, especially when evaluations include abstentions, multiple criteria and different aggregation choices?",
+ "methodology": "The paper develops a measurement-protocol view of LLM-judge evaluation by assembling established statistical results from psychometrics, econometrics and annotation research and deriving their implications for rubric-based evaluation. It proves or restates identities among binary agreement statistics, analyzes Cohen's kappa under marginal mismatch, develops abstention-handling and identification bounds, and examines multi-judge aggregation. The authors then reconstruct or reanalyze three published LLM-judge evaluations and conduct a descriptive, explicitly non-systematic coding of 24 recent LLM-as-judge papers before synthesizing the results into a reporting checklist.",
+ "key_findings": [
+  {
+   "finding": "For non-degenerate binary verdict vectors, Pearson correlation, Spearman correlation, Kendall tau-b, phi and Matthews correlation are mathematically identical, so reporting several of them adds no independent evidence.",
+   "evidence_type": "supported",
+   "section": "4.1 Five Metrics, One Statistic"
+  },
+  {
+   "finding": "Cohen's kappa differs from phi through a marginal-mismatch factor and equals phi when the human and judge positive-label rates match.",
+   "evidence_type": "supported",
+   "section": "4.2 Marginal Normalization: Kappa Versus Phi"
+  },
+  {
+   "finding": "Excluding, recoding or retaining abstentions changes the estimand, and therefore agreement numbers produced under different abstention rules cannot be treated as measurements of the same quantity.",
+   "evidence_type": "supported",
+   "section": "5.1 Abstention Handling Modes"
+  },
+  {
+   "finding": "When abstained cases are excluded, covered accuracy and coverage identify full-set forced-choice accuracy only within an interval whose width equals the uncovered fraction.",
+   "evidence_type": "supported",
+   "section": "5.2 Coverage and Bounds on Full-Set Accuracy"
+  },
+  {
+   "finding": "In a reconstructed abstaining judge cascade, the same released predictions yield substantially different headline accuracies depending on abstention handling, including approximately 0.874 covered accuracy, approximately 0.73 after recoding and 0.534 with abstention retained as a third class.",
+   "evidence_type": "supported",
+   "section": "5.4 Example: Handling Rules and Bounds"
+  },
+  {
+   "finding": "On the analyzed rubric benchmark, protocol choices moved reported accuracy across a range of 34.8 percentage points without changing the underlying judge verdicts.",
+   "evidence_type": "supported",
+   "section": "5.5 A Rubric Benchmark with Human Abstention"
+  },
+  {
+   "finding": "A reconstructible agreement claim should report the judgment scale, target metric, contingency tables and marginals, handling of abstentions or invalid outputs, coverage, aggregation rules and ensemble conventions rather than only a headline agreement number.",
+   "evidence_type": "supported",
+   "section": "7 A Reporting Checklist"
+  }
+ ],
+ "limitations": [
+  "The literature scan of 24 papers is descriptive and non-exhaustive rather than a systematic review.",
+  "The literature coding was performed by one author without independent double coding, adjudication or an inter-coder reliability statistic.",
+  "The exact equivalence among the five association metrics applies only to non-degenerate binary verdicts.",
+  "The asymptotic variance equivalence discussed for kappa and phi is specific to matched positive-label rates.",
+  "The empirical abstention case studies are unilateral: one has judge-side abstention and another human-side abstention, rather than both sides abstaining.",
+  "The rubric case study evaluates one judge model in one domain and has weak underlying judge-human agreement, limiting conclusions about how protocol effects behave for strong judges.",
+  "The framework validates judges against a human reference but does not itself establish the reliability or construct validity of that human reference."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "binary_metric_identity": 0.99,
+  "kappa_marginal_effect": 0.99,
+  "abstention_changes_estimand": 0.99,
+  "coverage_identification_bound": 0.99,
+  "protocol_effect_empirical": 0.98,
+  "reporting_checklist": 0.97
+ },
+ "raw_claims": [
+  "An agreement number is meaningful only relative to the measurement protocol that defines its target population, scale and handling rules.",
+  "Five commonly reported association coefficients collapse to the same statistic on non-degenerate binary verdicts.",
+  "A low kappa can partly reflect different human and judge label prevalences rather than simply poor item-wise association.",
+  "A confusion matrix contains diagnostic information that cannot be reconstructed from headline agreement metrics alone.",
+  "Abstention should not automatically be treated as an ordinary negative verdict.",
+  "Excluding abstentions changes the evaluated population to the subset on which neither side abstains.",
+  "Covered accuracy cannot by itself establish performance over the full evaluation population.",
+  "Identification uncertainty from unobserved abstained cases is distinct from sampling uncertainty.",
+  "Undefined metrics on degenerate criteria should be reported as unavailable rather than entered as zero.",
+  "Agreement among members of a judge ensemble cannot replace validation against an external human reference.",
+  "Protocol choices alone can materially change reported judge performance while leaving every raw verdict unchanged.",
+  "The authors provide ancillary Python scripts intended to reproduce all computed values and the literature-scan coding."
+ ],
+ "source_url": "https://arxiv.org/html/2606.00093",
+ "access": "full_text"
+}

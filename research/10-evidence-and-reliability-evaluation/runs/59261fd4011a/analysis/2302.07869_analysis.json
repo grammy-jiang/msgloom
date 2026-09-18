@@ -1,0 +1,67 @@
+{
+ "paper_id": "2302.07869",
+ "title": "Improved Online Conformal Prediction via Strongly Adaptive Online Learning",
+ "research_question": "Can online conformal prediction be made strongly adaptive so that prediction sets maintain useful coverage and efficiency across localized time intervals under changing or arbitrarily shifting data distributions?",
+ "methodology": "The authors formulate Strongly Adaptive Online Conformal Prediction (SAOCP), a meta-algorithm that maintains multiple finite-lifetime online-learning experts operating on different active intervals, and instantiate those experts with Scale-Free Online Gradient Descent (SF-OGD). They prove strongly adaptive regret and coverage guarantees, including a near-optimal regret rate simultaneously over all interval lengths. Empirical evaluation covers multi-horizon forecasting on M4 and NN5 time-series datasets and image classification under sudden and gradual corruption shifts on TinyImageNet/TinyImageNet-C and ImageNet/ImageNet-C, using coverage, prediction-set size or width, local coverage error, and strongly adaptive regret.",
+ "key_findings": [
+  {
+   "finding": "SAOCP achieves strongly adaptive regret of order approximately sqrt(k) up to logarithmic factors simultaneously for every interval length k, whereas the compared FACI guarantee can be tuned to a comparable rate for a particular interval length but not all lengths simultaneously.",
+   "evidence_type": "supported",
+   "section": "4.1 Strongly Adaptive Regret"
+  },
+  {
+   "finding": "SF-OGD has a distribution-free empirical coverage-error bound that converges to zero, while SAOCP receives a distribution-free bound for a randomized expert-selection variant and stronger interval-wise coverage guarantees under additional distributional regularity assumptions.",
+   "evidence_type": "supported",
+   "section": "4.2 Coverage"
+  },
+  {
+   "finding": "Across the three M4 forecasting datasets, SAOCP maintained global coverage near the 0.9 target and consistently obtained the best or second-best interval width, local coverage error, and strongly adaptive regret across the tested base predictors.",
+   "evidence_type": "supported",
+   "section": "5.1 Time Series Forecasting"
+  },
+  {
+   "finding": "Under sudden and gradual image-distribution shifts, SAOCP and SF-OGD kept local coverage closest to the 0.9 target, with the advantage most pronounced around abrupt change points.",
+   "evidence_type": "supported",
+   "section": "5.2 Image Classification Under Distribution Shift"
+  },
+  {
+   "finding": "Directly predicting the conformal radius, as done by SF-OGD and SAOCP, was empirically more robust than quantile-style parameterizations in several cases where the underlying forecasting model had relatively high prediction error.",
+   "evidence_type": "supported",
+   "section": "5.1 Results"
+  }
+ ],
+ "limitations": [
+  "The principal distribution-free coverage theorem for SAOCP is stated for a randomized variant that samples an expert rather than for the deterministic weighted-radius form used as the main algorithm.",
+  "The strongest interval-wise coverage result requires additional regularity assumptions and depends on temporal variation in the true quantiles.",
+  "The theoretical formulation assumes nested prediction sets and a bounded maximum radius parameter.",
+  "Empirical evaluation is confined to time-series forecasting and image corruption benchmarks rather than free-form generative models.",
+  "The experiments use specific benchmark shift processes, so they do not exhaust the range of non-stationary or adversarial changes that could occur in deployment.",
+  "The paper addresses calibration through prediction-set coverage rather than evidence completeness, omission detection, or selective abstention for long-form text."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "strongly_adaptive_regret": 0.99,
+  "coverage_guarantees": 0.96,
+  "time_series_performance": 0.97,
+  "image_shift_performance": 0.96,
+  "direct_radius_parameterization": 0.91
+ },
+ "raw_claims": [
+  "SAOCP manages multiple experts whose active intervals are localized in time.",
+  "At most logarithmically many experts are active at a given time when the lifetime multiplier is constant.",
+  "SAOCP attains a near-optimal strongly adaptive regret rate simultaneously over all interval lengths.",
+  "SF-OGD's empirical coverage error converges toward the target without distributional assumptions.",
+  "The forecasting evaluation uses 5,111 time series across M4 and NN5.",
+  "Forecasting metrics include global coverage, median interval width, worst-case local coverage error, and strongly adaptive regret.",
+  "SAOCP outperforms the main adaptive baselines on localized coverage and regret across the reported M4 experiments.",
+  "Image experiments include both abrupt and gradual changes in corruption severity.",
+  "SAOCP and SF-OGD react more effectively to image-distribution change points than the slower-adapting baselines.",
+  "The authors provide experimental code in a public repository."
+ ],
+ "source_url": "https://arxiv.org/html/2302.07869",
+ "access": "full_text"
+}

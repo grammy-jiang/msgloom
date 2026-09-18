@@ -1,0 +1,22 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/10-evidence-and-reliability-evaluation/runs/59261fd4011a/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 3 slightly over-combines two distinct results. Paper 2402.05629 directly supports the strong claim that individually supportable atomic facts can still form an incorrect entity-level or cross-claim aggregation. Paper 2607.19322 supports the need for structured meta-rubrics because flat independent fact lists misrepresent structured answer requirements, but its supplied findings do not establish that structured answer dependencies themselves 'remain wrong even when individual claims appear supportable.' That final clause should be scoped specifically to the entity-mixing/cross-claim result or split into a separate GAMUT-supported statement.",
+  "The contradictions array is empty. No clear like-for-like empirical contradiction requiring rejection is visible in the reduced analyses, because the apparent tensions generally concern different tasks, metrics, methods, or populations. However, the synthesis would be more coherent if it explicitly recorded important setting-dependent tensions rather than relegating them only to limitations: for example, doi-10-1162-tacl-a-00407 reports imperfect cross-domain calibration transfer, whereas 2404.00474 and 2505.23912 report useful out-of-domain transfer for their respective calibration methods; similarly, adaptive conformal methods show favorable local-coverage behavior in 2106.00170 and 2302.07869, while 2606.29054 shows severe emitted-risk failures for static CRC and ACI under genuine cross-dataset structured-generation shift. These are not necessarily contradictions, but they are material boundary conditions.",
+  "Finding 9 cites 2404.15588 alongside evidence-sufficiency and selective-RAG claims. That paper directly establishes a distinction between minimal sufficient evidence and exhaustive evidence recovery, but the supplied findings do not establish selective-RAG risk behavior. The selective-RAG portion is adequately supported by 2605.03534, so this is a citation-specific relevance issue rather than a failure of the finding as a whole."
+ ],
+ "unsupported_claims": [
+  "Finding 3: the generalized clause that 'structured answer dependencies can remain wrong even when individual claims appear supportable' is stronger than the supplied key findings for 2607.19322. The supported version is that structured answer requirements are often misrepresented by a flat list of independently required facts; the stronger individually-supportable-yet-globally-wrong result is directly established by 2402.05629 for entity mixing and aggregation."
+ ],
+ "required_fixes": [],
+ "confidence": 0.95,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.9,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the supplied analyses. All cited paper_ids are in the permitted set, and the major findings on separable correctness/attribution/completeness dimensions, omission under oracle evidence, temporal validity, calibration-versus-ranking distinctions, selective risk-coverage trade-offs, evidence-sufficiency failures, judge reliability, retrieval limitations, and transfer limits are traceable to the cited analyses. The seven carried gaps are consistently kept open, including the absence of an integrated end-to-end scheme, direct private-workplace validation, general compound/multi-source/temporal completeness evaluation, longitudinal workplace omission evaluation, target-domain human-review design, evaluator-isolation procedures, and selective prediction under continuing workplace distribution shift. Transfer-domain evidence is generally labeled as indirect and is not presented as production validation. The identified issues are correctable scoping and coherence problems rather than evidence failures sufficient to reject the synthesis."
+}

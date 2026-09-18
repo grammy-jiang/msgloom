@@ -1,0 +1,77 @@
+{
+ "paper_id": "2509.26184",
+ "title": "Auto-ARGUE: LLM-Based Report Generation Evaluation",
+ "research_question": "Can the ARGUE framework for evaluating long-form citation-backed reports be automated with an LLM judge while retaining useful agreement with human judgments of coverage and citation support?",
+ "methodology": "Auto-ARGUE implements ARGUE as a sequence of sentence-level binary judgments, using few-shot LLM judging for non-trivial decisions and deterministic lookup where possible. It evaluates report content through question-answer nuggets, including AND and OR structures, and separately assesses citation relevance, citation support, repeated information, and assertions of ignorance. Report-level metrics include sentence precision, nugget recall, weighted variants, F1, and finer-grained citation measures. The authors validate the implementation on 51 TREC 2024 NeuCLIR runs across Chinese, Russian, and Farsi collections and on assessor-judged TREC 2024 RAG AG and RAG runs.",
+ "key_findings": [
+  {
+   "finding": "Auto-ARGUE produced system-level rankings that agreed well with human ARGUE judgments on the TREC NeuCLIR report-generation pilot, with especially strong agreement for sentence precision.",
+   "evidence_type": "supported",
+   "section": "4.1 TREC NeuCLIR 2024"
+  },
+  {
+   "finding": "On TREC RAG 2024, Auto-ARGUE nugget recall correlated moderately to strongly with AutoNuggetizer's human-grounded nugget-support evaluation, with Spearman correlations of 0.81-0.86 and Kendall correlations of 0.65-0.72.",
+   "evidence_type": "supported",
+   "section": "4.2 TREC RAG 2024"
+  },
+  {
+   "finding": "The framework directly operationalizes evidence completeness as nugget recall rather than treating factual correctness alone as sufficient report quality.",
+   "evidence_type": "supported",
+   "section": "2 ARGUE; 3 Auto-ARGUE"
+  },
+  {
+   "finding": "ARGUE explicitly represents justified abstention-like behavior through negative assertions, rewarding claims of unavailable information only when the corresponding nugget truly has no answer.",
+   "evidence_type": "supported",
+   "section": "2 ARGUE - Edge Cases"
+  },
+  {
+   "finding": "The paper's NeuCLIR validation did not test negative-assertion judgments because every NeuCLIR nugget was answerable.",
+   "evidence_type": "supported",
+   "section": "4.1 TREC NeuCLIR 2024"
+  },
+  {
+   "finding": "Fine-grained inspection with ARGUE-viz revealed that the authors' own NeuCLIR systems repeatedly struggled with AND nuggets requiring multiple answers.",
+   "evidence_type": "supported",
+   "section": "5 ARGUE-viz"
+  },
+  {
+   "finding": "Citation scoring requires each cited document to support the entire sentence that cites it, which creates a structural preference for simpler sentences.",
+   "evidence_type": "supported",
+   "section": "3 Auto-ARGUE - Citation Support"
+  }
+ ],
+ "limitations": [
+  "The main validation is system-level ranking agreement, so the reported results do not establish equally strong reliability for every individual sentence, nugget, or report.",
+  "The NeuCLIR experiments cannot validate the negative-assertion or justified-ignorance branch because all evaluated nuggets were answerable.",
+  "The requirement that every cited document support an entire citing sentence can disadvantage complex sentences whose claims are jointly supported by multiple sources.",
+  "Evaluation quality depends on the chosen LLM judge, prompts, nugget construction, relevance labels, and document-to-nugget mappings.",
+  "The empirical study is restricted to TREC 2024 tasks and does not directly test temporal drift, stale evidence, changing source versions, or distribution shift over time.",
+  "The RAG comparison converts AutoNuggetizer claims into question-answer nuggets with an LLM, adding an additional transformation step to the comparison."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "human_agreement": 0.96,
+  "rag_rank_correlation": 0.99,
+  "completeness_via_nuggets": 0.99,
+  "negative_assertions": 0.99,
+  "negative_assertions_not_validated": 0.99,
+  "and_nugget_difficulty": 0.94,
+  "complex_sentence_bias": 0.99
+ },
+ "raw_claims": [
+  "Auto-ARGUE automates the binary sentence-level decisions required by the ARGUE report-evaluation framework.",
+  "Nugget recall measures how much of the expected information a report correctly covers.",
+  "Sentence precision measures whether sentences requiring evidence are fully supported by their citations.",
+  "Negative assertions are rewarded only when the relevant information is genuinely absent from the reference nuggets.",
+  "NeuCLIR evaluation covered 51 runs over 21 topics for each of three source languages.",
+  "All NeuCLIR nuggets in the experiment were answerable, so negative-assertion judgments were not exercised.",
+  "The TREC RAG comparison produced Spearman correlations between 0.81 and 0.86 and Kendall correlations between 0.65 and 0.72.",
+  "Auto-ARGUE and ARGUE-viz are released as open-source tools."
+ ],
+ "source_url": "https://arxiv.org/html/2509.26184",
+ "access": "full_text"
+}

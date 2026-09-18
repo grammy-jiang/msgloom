@@ -1,0 +1,74 @@
+{
+ "paper_id": "2212.08037",
+ "title": "Attributed Question Answering: Evaluation and Modeling for Attributed Large Language Models",
+ "research_question": "How should attributed question answering be evaluated, how well can automatic attribution metrics reproduce human judgments, and which modeling approaches produce answers that are supported by their cited sources?",
+ "methodology": "The paper defines Attributed Question Answering and an Attribution Information Score based on human judgments of whether an answer is interpretable and fully supported by a supplied source passage. Experiments use Natural Questions-derived prompts and a Wikipedia attribution corpus, with human evaluation based on majority judgments from five trained raters over a 1,000-question sample. The authors also construct AutoAIS, an NLI-based automatic evaluator, and compare its results with human AIS and exact-match answer scoring. Several attribution architectures are evaluated, including retrieve-then-read, post-hoc retrieval, lower-resource variants, LLM-as-retriever approaches, and attribution reranking.",
+ "key_findings": [
+  {
+   "finding": "Human AIS explicitly requires the answer's information to be interpretable and fully supported by the attributed passage, making source support a separate evaluation target from ordinary answer exact match.",
+   "evidence_type": "supported",
+   "section": "3 Evaluating Attributed QA"
+  },
+  {
+   "finding": "The strongest reported retrieve-then-read configuration reached 65.5 AIS before attribution reranking, while AutoAIS reranking raised human AIS to 71.4 in the summarized architecture comparison.",
+   "evidence_type": "supported",
+   "section": "6 Results, Table 1"
+  },
+  {
+   "finding": "Exact-match answer quality and attribution quality were only moderately aligned at the system level, with a reported Pearson correlation of 0.45 between EM and AIS.",
+   "evidence_type": "supported",
+   "section": "7 Analysis"
+  },
+  {
+   "finding": "AutoAIS correlated strongly with human AIS at the system level, with Pearson correlation 0.96, but agreement was substantially weaker and more variable at the individual-question level.",
+   "evidence_type": "supported",
+   "section": "7 Analysis, AutoAIS"
+  },
+  {
+   "finding": "Using AutoAIS itself to select attribution passages created outlier systems whose human attribution ratings were lower than their automatic scores would suggest, showing that an evaluation metric can become unreliable when directly optimized as a system component.",
+   "evidence_type": "supported",
+   "section": "7 Analysis, AutoAIS"
+  },
+  {
+   "finding": "The attribution criterion verifies support from the cited source but does not establish that the source itself is factually correct, unbiased, or current.",
+   "evidence_type": "supported",
+   "section": "8 Broader Impact and Limitations"
+  }
+ ],
+ "limitations": [
+  "The experiments primarily use Natural Questions and Wikipedia, so generalization to workplace communication, private corpora, and other QA distributions is not demonstrated.",
+  "Attributed QA is evaluated only in English.",
+  "Several of the strongest approaches are computationally and data intensive.",
+  "Instance-level AutoAIS judgments are substantially noisier than aggregate system-level scores.",
+  "Optimizing attribution selection directly against AutoAIS can exploit or amplify metric error.",
+  "The framework evaluates whether a source supports an answer but does not verify whether the source itself contains inaccurate or biased information."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "ais_defines_source_support": 0.99,
+  "retrieve_then_read_performance": 0.99,
+  "em_ais_misalignment": 0.99,
+  "autoais_system_correlation": 0.99,
+  "metric_optimization_risk": 0.98,
+  "support_not_source_truth": 0.96
+ },
+ "raw_claims": [
+  "Attributed QA requires a system to return both an answer and material that supports that answer.",
+  "Human AIS treats an attribution as valid only when the answer is interpretable and fully supported by the provided source.",
+  "The main evaluation uses a random sample of 1,000 questions and majority judgments from five trained raters.",
+  "AutoAIS uses an NLI-oriented model to estimate whether the attribution entails the answer.",
+  "The retrieve-then-read architecture achieved 65.5 human AIS in the main comparison.",
+  "AutoAIS reranking increased the reported human AIS of the retrieve-then-read system to 71.4.",
+  "System-level exact match correlates only moderately with human attribution quality.",
+  "System-level AutoAIS has a reported Pearson correlation of 0.96 with human AIS.",
+  "Per-question AutoAIS agreement is weaker than its aggregate system-level correlation.",
+  "Systems that optimize attribution selection using AutoAIS reveal that automatic evaluator scores can be exploited or become misleading.",
+  "The authors publicly release system outputs together with human and automatic ratings."
+ ],
+ "source_url": "https://arxiv.org/html/2212.08037",
+ "access": "full_text"
+}

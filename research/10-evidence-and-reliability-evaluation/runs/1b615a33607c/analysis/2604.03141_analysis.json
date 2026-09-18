@@ -1,0 +1,75 @@
+{
+ "paper_id": "2604.03141",
+ "title": "Beyond Precision: Importance-Aware Recall for Factuality Evaluation in Long-Form LLM Generation",
+ "research_question": "How can long-form LLM factuality evaluation measure not only whether generated claims are evidence-supported but also whether the response omits relevant and important facts?",
+ "methodology": "The paper constructs retrieval-conditioned reference fact sets from external knowledge sources, decomposes retrieved passages into atomic facts, deduplicates them, and scores each fact for query relevance and topic salience. Generated responses are separately decomposed into atomic claims; LLM judges then assess claim support for factual precision and reference-fact coverage for factual recall, including an importance-weighted recall variant and an F1 combination. The framework is evaluated with six LLMs across FactScore biography prompts, a stratified sample of LongFact, and a sample of LongForm prompts.",
+ "key_findings": [
+  {
+   "finding": "Fine-grained recall exposes factual incompleteness that precision-only evaluation cannot measure, because reference facts absent from the generation are scored explicitly.",
+   "evidence_type": "supported",
+   "section": "3.4 Factual Precision and Recall Scoring"
+  },
+  {
+   "finding": "The evaluated models show severe recall limitations in the biography and LongForm settings, while LongFact exhibits different precision-recall operating points and several models attain recall comparable to or above precision.",
+   "evidence_type": "supported",
+   "section": "4.2.1 Factuality in LLMs (Equal Importance)"
+  },
+  {
+   "finding": "Longer generation is neither necessary nor sufficient for better factuality; excessive claim production can raise recall while lowering precision.",
+   "evidence_type": "supported",
+   "section": "4.2.1 Claim to fact ratio and the precision–recall trade-off"
+  },
+  {
+   "finding": "Unsupported claims are reported as more common than directly contradicted claims across the evaluated models and datasets, while biography generation has comparatively elevated contradiction rates.",
+   "evidence_type": "supported",
+   "section": "4.2.1 Contradiction rates"
+  },
+  {
+   "finding": "For very small reference-fact budgets, salience is especially useful for identifying facts models tend to cover first, whereas relevance becomes more important as broader fact coverage is considered.",
+   "evidence_type": "supported",
+   "section": "4.2.2 Factuality in LLMs (Varying Importance)"
+  },
+  {
+   "finding": "The text states that GPT-4o-mini has a 44.4% LongFact F1, but Table 1 reports 36.8 F1 for GPT-4o-mini and assigns 44.4 to Gemini-2.5-Flash-Lite recall, so that exact numerical statement is inconsistent with the table.",
+   "evidence_type": "contradicted",
+   "section": "4.2.1 Factuality in LLMs (Equal Importance)"
+  }
+ ],
+ "limitations": [
+  "Recall quality depends on the completeness, correctness, and consistency of the retrieved external evidence used to construct the reference fact set.",
+  "Errors can propagate through retrieval, reference-fact extraction, claim decomposition, importance scoring, coverage judgment, and claim verification.",
+  "The empirical evaluation is restricted to the selected models, datasets, and domains.",
+  "The framework evaluates a reference fact inventory induced by retrieved evidence, so facts absent from retrieval cannot contribute to measured recall.",
+  "The study does not directly evaluate temporal validity, version-aware provenance, calibrated abstention, or robustness under explicit non-stationary distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "reference_fact_recall_measures_omission": 0.99,
+  "recall_is_domain_dependent": 0.98,
+  "verbosity_precision_recall_tradeoff": 0.97,
+  "unsupported_more_common_than_contradicted": 0.96,
+  "importance_weighting_changes_coverage_view": 0.96,
+  "reported_LongFact_F1_inconsistency": 0.99
+ },
+ "raw_claims": [
+  "The framework evaluates factual precision and factual recall as complementary properties of long-form generation.",
+  "Reference facts are extracted from query-conditioned external evidence rather than inferred only from model outputs.",
+  "Facts receive importance scores combining query relevance and topic salience.",
+  "Factual recall measures how many reference facts are covered by the generated response.",
+  "Importance-weighted recall gives greater weight to covered facts judged more relevant or salient.",
+  "Factual precision counts the fraction of generated atomic claims supported by retrieved evidence.",
+  "The experiments use FactScore biographies, LongFact, and LongForm prompts.",
+  "Different models occupy different precision-recall operating points across domains.",
+  "Producing more claims can improve recall without producing better overall factuality.",
+  "Most factual errors observed by the authors are classified as unsupported rather than direct contradictions.",
+  "Biography generation exhibits relatively high direct-contradiction rates.",
+  "Salience is particularly useful when evaluation focuses only on the single most important fact.",
+  "The quality of recall estimates is bounded by the quality of retrieved evidence."
+ ],
+ "source_url": "https://arxiv.org/html/2604.03141",
+ "access": "full_text"
+}

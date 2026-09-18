@@ -1,0 +1,261 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1155-2016-1340973",
+   "title": "Mining Sequential Update Summarization with Hierarchical Text Analysis",
+   "research_question": "Can a hierarchical combination of time-sensitive retrieval, topic-level keyword mining, and sentence-level scoring produce novel, timely, and comprehensive updates for rapidly developing news events?",
+   "methodology": "The authors build a sequential update summarization pipeline with preprocessing and Indri retrieval, hierarchical LDA keyword extraction, and three sentence-scoring methods called KLP, SKD, and KS, followed by duplicate removal that keeps the earliest occurrence. For each event and hour, the system retrieves the 500 most relevant documents and mines hierarchical topic keywords. It is evaluated on the ten events of the TREC 2013 Temporal Summarization sequential-update task, assessing the top 60 updates per topic against human-created gold nuggets. Evaluation uses expected gain, expected latency gain, comprehensiveness, and latency comprehensiveness, which jointly reflect relevance/precision, coverage, novelty, verbosity, and timeliness.",
+   "key_findings": [
+    {
+     "finding": "The keyword-diversity-only KS method achieved expected gain 0.149 and expected latency gain 0.136, equal to the best reported values used for comparison in the paper.",
+     "evidence_type": "supported",
+     "section": "6.2 Experimental Results"
+    },
+    {
+     "finding": "The more coverage-oriented KLP method attained substantially higher comprehensiveness than KS; its best reported configuration reached 0.224 comprehensiveness and 0.292 latency comprehensiveness versus 0.099 and 0.126 for KS.",
+     "evidence_type": "supported",
+     "section": "6.2 Experimental Results"
+    },
+    {
+     "finding": "The experiments expose a precision-coverage trade-off: KS performs better on gain-oriented metrics while KLP covers more distinct gold nuggets but is more prone to selecting long sentences.",
+     "evidence_type": "supported",
+     "section": "6.2 Experimental Results"
+    },
+    {
+     "finding": "Changing KLP's sentence-length and sentence-position weights had little effect relative to the importance of keyword diversity.",
+     "evidence_type": "supported",
+     "section": "6.2 Experimental Results"
+    },
+    {
+     "finding": "The evaluation explicitly penalizes delayed updates and verbose updates while measuring coverage of atomic gold nuggets, providing a joint treatment of novelty, timeliness, and omission-like coverage failure.",
+     "evidence_type": "supported",
+     "section": "5 Evaluation Method"
+    },
+    {
+     "finding": "The paper does not evaluate explicit work-item state transitions such as open, resolved, or superseded states, nor selective prediction or online calibration under distribution shift.",
+     "evidence_type": "unsupported",
+     "section": "Scope of the reported methodology and experiments"
+    }
+   ],
+   "limitations": [
+    "Evaluation is limited to ten unexpected-news events from the TREC 2013 Temporal Summarization task.",
+    "The approach is extractive and sentence-based, so it does not model structured longitudinal state transitions or dependencies as first-class state.",
+    "Novelty is primarily handled through update scoring, gold-nugget matching, and duplicate removal rather than explicit semantic tracking of supersession.",
+    "The evaluation uses fixed historical data rather than online adaptation or non-stationary calibration.",
+    "No selective-prediction, confidence-calibration, or abstention mechanism is evaluated.",
+    "The paper does not report a released implementation of the proposed system."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "KS leads gain metrics": 0.99,
+    "KLP improves nugget coverage": 0.99,
+    "precision coverage tradeoff": 0.98,
+    "keyword diversity dominates KLP weighting": 0.96,
+    "joint temporal and coverage evaluation": 0.98,
+    "no calibration or state-transition evaluation": 0.96
+   },
+   "raw_claims": [
+    "The system observes a temporally ordered stream and emits sentence-length updates about developing events.",
+    "For each event and hour, the method retrieves the 500 highest-ranked relevant documents.",
+    "Hierarchical LDA is used to extract event-relevant keywords at each time interval.",
+    "Three sentence-scoring approaches, KLP, SKD, and KS, are evaluated.",
+    "Duplicate removal retains the earliest occurrence when identical update sentences appear multiple times.",
+    "Gold nuggets represent atomic pieces of novel event information and receive importance grades from assessors.",
+    "Expected gain is used as a precision-like measure and comprehensiveness as a recall-like measure.",
+    "Latency-adjusted versions of both gain and comprehensiveness reward earlier delivery of useful information.",
+    "KS obtains the strongest expected-gain and latency-gain results among the proposed scoring methods.",
+    "KLP obtains higher comprehensiveness than KS but suffers lower gain because it tends to select longer sentences.",
+    "The experiments use ten TREC 2013 temporal-summarization events.",
+    "The evaluation does not test adaptive confidence calibration or explicit longitudinal work-item states."
+   ],
+   "source_url": "https://onlinelibrary.wiley.com/doi/10.1155/2016/1340973",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2305.11859",
+   "title": "Complex Claim Verification with Evidence Retrieved in the Wild",
+   "research_question": "How effectively can a fully automated system verify complex real-world claims using only web evidence that was available when the claim was made, rather than curated or future fact-checking evidence?",
+   "methodology": "The pipeline decomposes each complex claim into multiple yes/no subquestions, searches the web for each subquestion subject to temporal and fact-checking-site constraints, retrieves fine-grained spans with BM25, generates claim-focused summaries, and predicts a six-way veracity label with a fine-tuned DeBERTa model. Experiments use ClaimDecomp, containing 1,200 complex political claims split into 800 training, 200 development, and 200 test examples. End-to-end classification is evaluated with accuracy, soft accuracy, macro-F1, and mean absolute error, while human studies separately evaluate summary faithfulness and comprehensiveness. The authors also repeat first-stage retrieval over time to study instability of commercial web-search results.",
+   "key_findings": [
+    {
+     "finding": "Under the realistic before-claim and non-fact-checking-site constraints, retrieval plus summarization improved test accuracy from 25.5% for the claim-only baseline to 33.0%, with corresponding improvements on several other veracity metrics.",
+     "evidence_type": "supported",
+     "section": "5.1 Constrained vs. Unconstrained Search"
+    },
+    {
+     "finding": "Removing temporal or site constraints substantially improves apparent fact-checking performance, indicating that unconstrained search often benefits from later fact-check articles rather than contemporaneous raw evidence.",
+     "evidence_type": "supported",
+     "section": "5.1 Constrained vs. Unconstrained Search"
+    },
+    {
+     "finding": "Searching with generated subquestions performs markedly better than searching with the original compound claim, showing that decomposition helps retrieve evidence for multiple aspects of a complex claim.",
+     "evidence_type": "supported",
+     "section": "5.2 Stage Ablations"
+    },
+    {
+     "finding": "Few-shot claim-focused summaries were rated fully faithful in 82.5% of 200 evaluated document-summary pairs, compared with 66.0% for the zero-shot text-davinci-003 summaries.",
+     "evidence_type": "supported",
+     "section": "6.1 Faithfulness Evaluation"
+    },
+    {
+     "finding": "Evidence completeness remains a major bottleneck: for few-shot summaries, 42.9% of evaluated subquestions were answerable, 21.1% partially answerable, and 36.0% unanswerable.",
+     "evidence_type": "supported",
+     "section": "6.2 Comprehensiveness Evaluation"
+    },
+    {
+     "finding": "At the compound-claim level, 36 of 50 claims contained at least one unanswerable gold subquestion, showing that evidence sufficient for only part of a claim is common.",
+     "evidence_type": "supported",
+     "section": "6.3 Combined Evaluation"
+    },
+    {
+     "finding": "First-stage web retrieval is non-stationary: the authors report that only about 30% of retrieved URLs overlapped when the same queries were issued two months apart, although veracity-classification performance changed relatively little.",
+     "evidence_type": "supported",
+     "section": "5.3 Stability of First-stage Retrieval"
+    },
+    {
+     "finding": "The system does not implement calibrated selective prediction or an automatic abstention policy that converts evidence incompleteness or retrieval instability into a controlled decision to withhold a verdict.",
+     "evidence_type": "unsupported",
+     "section": "Limitations and Future Directions"
+    }
+   ],
+   "limitations": [
+    "First-stage retrieval is the main bottleneck, and some required evidence is unavailable on the public web.",
+    "Generated subquestions may omit relevant aspects or may not be sufficiently decontextualized.",
+    "Commercial-search results change over time, making exact retrieval experiments difficult to reproduce.",
+    "The study covers English-language political claims and does not establish generalization to other languages, domains, or multimodal claims.",
+    "Human evaluations of faithfulness and comprehensiveness have relatively low Fleiss kappa values, reflecting annotation subjectivity.",
+    "The system may generate summarization errors even when retrieval succeeds.",
+    "The paper advocates human-in-the-loop iterative retrieval but does not implement or evaluate the proposed interactive stopping process.",
+    "No calibrated abstention, selective-risk guarantee, or online recalibration procedure is evaluated."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieved evidence improves constrained verification": 0.99,
+    "temporal constraints expose harder realistic retrieval": 0.99,
+    "claim decomposition improves first-stage retrieval": 0.98,
+    "few-shot summaries are more faithful": 0.99,
+    "compound claims frequently remain partially unsupported": 0.99,
+    "retrieval results drift over time": 0.99,
+    "no calibrated selective prediction": 0.97
+   },
+   "raw_claims": [
+    "The pipeline restricts web evidence to material published before the claim was made.",
+    "Fact-checking websites are filtered from the realistic retrieval condition.",
+    "Each claim is decomposed into ten generated yes/no subquestions before first-stage retrieval.",
+    "A second BM25 retrieval stage selects relevant spans from the web documents.",
+    "Claim-focused summaries compress retrieved evidence before veracity classification.",
+    "Retrieval-backed verification outperforms classification from the claim alone in the constrained setting.",
+    "Generated subquestions retrieve more useful evidence than using the original compound claim as the search query.",
+    "Few-shot prompting reduces factual errors in claim-focused summaries.",
+    "A substantial fraction of subquestions remains unanswerable from the retrieved evidence.",
+    "Most complex claims in the human-evaluation subset have at least one aspect for which sufficient evidence was not retrieved.",
+    "Commercial search results for identical queries can change substantially over a period of months.",
+    "The authors propose iterative human-in-the-loop retrieval as a future solution when the initial evidence is inadequate.",
+    "The reported system does not calibrate a probability of correctness or selectively abstain according to evidence sufficiency."
+   ],
+   "source_url": "https://arxiv.org/html/2305.11859",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2511.01101",
+   "title": "TSVer: A Benchmark for Fact Verification Against Time-Series Evidence",
+   "research_question": "How can fact-verification systems be rigorously evaluated on real-world claims that require numerical and temporal reasoning over structured time-series evidence, including whether the correct evidence and time ranges were retrieved and whether generated justifications cover the relevant facts?",
+   "methodology": "TSVer is constructed from real-world fact-checking claims and 400 curated Our World in Data time series, with a two-phase human annotation process that selects relevant series and temporal ranges and then assigns verdicts and justifications from that evidence. The current full-text version reports 304 claims from 41 fact-checking organizations, with four verdict classes and a separate 24-claim development set; 400 synthetic claims are also generated but excluded from the main experiments. A baseline first retrieves time series from textual metadata, filters them by relevant countries and time ranges, and then asks long-context LLMs to generate verdicts and explanations. Evaluation combines verdict accuracy and macro-F1 with the Time Series Coverage Score for dataset-and-time-range retrieval and an adapted Ev2R atomic-fact precision/recall/F1 measure for justification completeness and factual alignment.",
+   "key_findings": [
+    {
+     "finding": "TSVer annotates both which time series are relevant and which temporal ranges within them matter, enabling retrieval evaluation that penalizes both omitted evidence and unnecessary over-retrieval.",
+     "evidence_type": "supported",
+     "section": "3 Annotation Process and 5.1.1 Time Series Coverage Score"
+    },
+    {
+     "finding": "The Time Series Coverage Score jointly combines dataset-level F1 with temporal Jaccard overlap, explicitly measuring whether systems select the correct evidence sources and the correct time spans.",
+     "evidence_type": "supported",
+     "section": "5.1.1 Time Series Coverage Score"
+    },
+    {
+     "finding": "The adapted Ev2R justification metric decomposes predicted and reference explanations into atomic facts and measures both precision and recall, directly exposing unsupported generated facts and omitted reference facts.",
+     "evidence_type": "supported",
+     "section": "5.1.2 Ev2R Score for Justifications"
+    },
+    {
+     "finding": "On the reported test set, Gemini-2.5-Pro achieved 63.57% verdict accuracy, TSCS 27.87, and Ev2R 47.36, showing that even a strong long-context reasoning model has substantial room for improvement on temporal evidence selection and explanation.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "GPT-5.2 achieved 62.86% verdict accuracy, TSCS 25.83, and Ev2R 46.51, with performance close to Gemini but still far from complete retrieval or justification agreement.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "Smaller models often over-retrieve time series, increasing context requirements; Llama-3.1-8B exceeded its 128k-token context limit on 42.5% of test instances.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "The benchmark distinguishes a CONFLICTING EVIDENCE/CHERRY-PICKING verdict from SUPPORTS, REFUTES, and NOT ENOUGH INFO, allowing evaluation of claims whose apparent validity depends on selective temporal evidence.",
+     "evidence_type": "supported",
+     "section": "4.1 Dataset Statistics"
+    },
+    {
+     "finding": "TSVer evaluates temporally indexed evidence but does not model longitudinal work-item lifecycle states, non-stationary online streams, calibrated selective prediction, or risk-controlled abstention.",
+     "evidence_type": "unsupported",
+     "section": "Scope of benchmark and experiments"
+    }
+   ],
+   "limitations": [
+    "Claims and fact-checking articles are English-only, so the benchmark does not test multilingual temporal or numerical reasoning.",
+    "Claims inherit selection and framing biases from fact-checking organizations and from Google Fact Check Explorer coverage.",
+    "Evidence is restricted to time series from a curated Our World in Data collection rather than the full multimodal evidence environment faced by real fact-checkers.",
+    "The time-series collection is primarily restricted to annual-resolution data or data that can be meaningfully aggregated annually.",
+    "Claims that could not be pre-aligned with a semantic time-series group were excluded, introducing an additional selection effect.",
+    "Raw time-series serialization can create extremely long model inputs and context-window failures.",
+    "The experiments are static benchmark evaluations rather than online evaluations under temporal distribution shift.",
+    "The benchmark does not provide calibration-error, selective-risk, coverage-risk, or abstention metrics.",
+    "Temporal reasoning concerns evidence ranges for factual claims rather than explicit superseded/open/resolved work-item transitions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "TSVer provides temporally localized structured evidence": 0.99,
+    "TSCS jointly measures source and temporal coverage": 0.99,
+    "Ev2R measures atomic support and omission": 0.99,
+    "strong LLMs remain challenged": 0.99,
+    "over-retrieval creates context failures": 0.99,
+    "benchmark supports conflicting-evidence evaluation": 0.98,
+    "no online selective calibration": 0.97
+   },
+   "raw_claims": [
+    "The current full-text version of TSVer contains 304 real-world claims collected from 41 fact-checking organizations.",
+    "The benchmark provides a curated database of 400 time series from Our World in Data.",
+    "Human annotators identify relevant time series and the time ranges needed to verify each claim.",
+    "A second annotation phase assigns verdicts and writes evidence-grounded justifications.",
+    "Verdict annotation reaches a free-marginal multi-rater kappa of 0.77.",
+    "The benchmark uses SUPPORTS, REFUTES, NOT ENOUGH INFO, and CONFLICTING EVIDENCE/CHERRY-PICKING verdict labels.",
+    "TSCS combines retrieval F1 with temporal Jaccard overlap.",
+    "Ev2R evaluates generated justifications by decomposing predicted and reference texts into atomic facts and measuring support in both directions.",
+    "Both missing relevant time series and retrieving unnecessary time series are treated as harmful retrieval behavior.",
+    "Gemini-2.5-Pro achieves 63.57% verdict accuracy on the reported test set.",
+    "GPT-5.2 achieves 62.86% verdict accuracy on the reported test set.",
+    "Smaller baseline models retrieve many more time series and incur more context-length failures.",
+    "Llama-3.1-8B encounters context-length failures on 42.5% of evaluated test instances.",
+    "The authors identify retrieval quality and efficient representation of long time-series evidence as major bottlenecks.",
+    "The benchmark does not evaluate online calibration or selective abstention under distribution shift."
+   ],
+   "source_url": "https://arxiv.org/html/2511.01101",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

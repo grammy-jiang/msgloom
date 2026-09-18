@@ -1,0 +1,80 @@
+{
+ "paper_id": "2410.14964",
+ "title": "ChronoFact: Timeline-based Temporal Fact Verification",
+ "research_question": "Can explicitly modeling the chronological relationships among multiple claim and evidence events improve verification of complex temporal claims?",
+ "methodology": "ChronoFact retrieves relevant Wikipedia evidence, extracts events from claims and evidence, represents them at token, event, and time levels, and aligns them through multi-level attention. Separate classifiers predict individual claim-event veracity and whether the chronological ordering of claim events agrees with the evidence timeline; soft logical constraints combine these predictions into the final claim verdict. The authors construct ChronoClaims from a November 2022 Wikidata snapshot using timeline facts and GPT-based claim generation and rephrasing, yielding 40,249 training, 3,544 validation, and 3,735 test claims. ChronoFact is compared with several evidence-based and temporal verification baselines on ChronoClaims, T-FEVER, T-FEVEROUS, and T-QuanTemp using macro and micro F1, with ablations and error analysis.",
+ "key_findings": [
+  {
+   "finding": "ChronoFact achieves 85.49 macro F1 on ChronoClaims, substantially exceeding the compared baselines, whose best reported macro F1 is 63.42.",
+   "evidence_type": "supported",
+   "section": "5.2 Comparative Experiments"
+  },
+  {
+   "finding": "ChronoFact remains comparatively strong as claims contain more events and when events overlap or recur.",
+   "evidence_type": "supported",
+   "section": "5.2 Comparative Experiments"
+  },
+  {
+   "finding": "ChronoFact also reports the strongest performance among the compared systems on T-FEVER, T-FEVEROUS, and the real-world T-QuanTemp subset.",
+   "evidence_type": "supported",
+   "section": "5.2 Comparative Experiments"
+  },
+  {
+   "finding": "Removing the chronological-order classifier causes the largest macro-F1 degradation on ChronoClaims, supporting the value of explicit sequence verification.",
+   "evidence_type": "supported",
+   "section": "5.3 Ablation Studies"
+  },
+  {
+   "finding": "In a manual analysis of 50 incorrect ChronoClaims predictions, 82% of errors involve implicit temporal information and the remaining 18% involve events with multiple dates or varying temporal granularity.",
+   "evidence_type": "supported",
+   "section": "5.2 Error Analysis"
+  },
+  {
+   "finding": "Human checks of 500 generated ChronoClaims examples agree with the generated labels on 96.8% and 97% of examples for the two annotators, respectively.",
+   "evidence_type": "supported",
+   "section": "4 ChronoClaims Dataset"
+  },
+  {
+   "finding": "Timeline reasoning can reverse a verdict even when every individual event appears independently supported, because the claimed event ordering itself may contradict the evidence.",
+   "evidence_type": "supported",
+   "section": "6 Case Studies"
+  }
+ ],
+ "limitations": [
+  "ChronoClaims is synthetic, being generated from a November 2022 Wikidata snapshot using GPT transformations and rephrasing rather than naturally occurring claims.",
+  "GPT rephrasing can accidentally alter event order, and the authors report needing a second verification stage to remove such examples.",
+  "ChronoClaims includes only SUPPORT and REFUTE labels and lacks NOT ENOUGH INFO, making its classification setting simpler than T-FEVER and T-FEVEROUS.",
+  "The pipeline depends on upstream entity linking, semantic-role labeling, evidence retrieval, event extraction, and GPT-based chronological reordering, so errors in these stages can propagate to the final verdict.",
+  "Implicit temporal relations remain a major failure mode and account for 82% of the sampled errors.",
+  "Most experimental data are synthetic or derived temporal fact-verification datasets; evidence from naturally occurring real-world claims is more limited.",
+  "The full text does not provide a public code or ChronoClaims download link, so artifact availability could not be verified."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "chronoclaims_macro_f1": 0.99,
+  "complex_event_robustness": 0.97,
+  "cross_dataset_performance": 0.97,
+  "chronological_classifier_ablation": 0.99,
+  "implicit_time_errors": 0.99,
+  "dataset_human_validation": 0.99,
+  "timeline_changes_verdict": 0.98
+ },
+ "raw_claims": [
+  "ChronoFact models individual event truth and chronological consistency separately before predicting an overall claim label.",
+  "Its attention mechanism compares claim and evidence information at token, event, and time levels.",
+  "ChronoClaims is generated from a November 2022 Wikidata snapshot.",
+  "ChronoClaims contains 40,249 training claims, 3,544 validation claims, and 3,735 test claims.",
+  "The generated benchmark contains claims with three to five events and includes overlapping and recurring-event cases.",
+  "Two human annotators agree with generated ChronoClaims labels on approximately 97% of a 500-claim validation sample.",
+  "ChronoFact achieves 85.49 macro F1 and 85.45 micro F1 on ChronoClaims.",
+  "Removing the chronological-order classifier produces the largest ChronoClaims performance drop among the reported ablations.",
+  "Most sampled ChronoFact errors involve temporal relationships that are implicit rather than explicitly dated.",
+  "Correct verification sometimes requires matching a repeated event to the occurrence that fits the surrounding event timeline rather than to an earlier occurrence."
+ ],
+ "source_url": "https://arxiv.org/html/2410.14964",
+ "access": "full_text"
+}

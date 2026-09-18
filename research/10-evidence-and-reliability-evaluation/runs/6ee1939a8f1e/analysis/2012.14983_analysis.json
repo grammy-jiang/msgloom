@@ -1,0 +1,67 @@
+{
+ "paper_id": "2012.14983",
+ "title": "Reducing Conversational Agents’ Overconfidence Through Linguistic Calibration",
+ "research_question": "Can an open-domain dialogue model's verbalized confidence be aligned with its probability of being factually correct by predicting correctness from model signals and controlling generation style?",
+ "methodology": "The authors evaluate a 2.7B-parameter BlenderBot on TriviaQA and separately annotate factual correctness and linguistic confidence in generated answers. They train a correctness calibrator using 50,000 TriviaQA training questions and corresponding model responses, then train a two-stage controllable generator that conditions on desired linguistic confidence while trying to preserve answer content. Human annotations are collected for training, validation, and test subsets, with multiple annotators used for validation and final evaluation. Calibration is assessed with ECE, MCE, average negative log-likelihood, human judgments of expressed confidence, correctness conditional on expressed confidence, and statistical tests.",
+ "key_findings": [
+  {
+   "finding": "The vanilla chatbot is strongly overconfident: it has 4.8% overall factual accuracy, answers 29.45% of questions with high linguistic confidence, and only about 14% of those confident answers are correct.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "The selected correctness calibrator achieves a reported 20-bin ECE of 0.018, MCE of 0.292, and average negative log-likelihood of 0.165.",
+   "evidence_type": "supported",
+   "section": "Section 5.2"
+  },
+  {
+   "finding": "The controllable generator reliably changes expressed confidence: 96.27% of high-confidence-forced generations are judged high confidence, while 98.79% and 99.12% of the two lower-confidence settings are judged not high confidence.",
+   "evidence_type": "supported",
+   "section": "Section 5.3"
+  },
+  {
+   "finding": "Among answers judged linguistically confident, factual correctness rises from 13.7% for the vanilla chatbot to 38.9% for the calibrator-controlled chatbot, with p less than 10^-6 under a paired permutation test.",
+   "evidence_type": "supported",
+   "section": "Section 5.4"
+  },
+  {
+   "finding": "The improvement comes primarily from using confident language more selectively rather than materially improving factual accuracy; total accuracy changes from 4.8% to 5.1% and the difference is not statistically significant.",
+   "evidence_type": "supported",
+   "section": "Section 5.4"
+  }
+ ],
+ "limitations": [
+  "The base model's factual accuracy is extremely low, so even after linguistic calibration many confidently expressed answers remain wrong.",
+  "The intervention changes how uncertainty is communicated rather than fixing the underlying factual errors.",
+  "The main evaluation is centered on one English open-domain dialogue architecture and TriviaQA, so robustness under temporal or broader distribution shifts is not established.",
+  "Annotators show substantially lower exact agreement on the four-way linguistic-confidence labels than on binary correctness.",
+  "Thresholds mapping calibrator probabilities to linguistic-confidence controls are tuned using the first 1,000 test questions, which are then excluded from the final clean evaluation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "vanilla_overconfidence": 0.99,
+  "calibrator_quality": 0.99,
+  "confidence_control_effectiveness": 0.99,
+  "confident_correctness_gain": 0.99,
+  "overall_accuracy_unchanged": 0.99
+ },
+ "raw_claims": [
+  "The paper treats linguistic confidence and factual correctness as separate properties of a response.",
+  "The vanilla BlenderBot has only 4.8% factual accuracy on the test set.",
+  "The vanilla model expresses high confidence on 29.45% of questions.",
+  "Only about 14% of the vanilla model's confident answers are correct.",
+  "The correctness calibrator is trained on 50,000 TriviaQA questions and model responses.",
+  "The selected calibrator has an ECE of approximately 0.018 with 20 bins.",
+  "Control tokens can reliably induce low- or high-confidence language.",
+  "Correctness among confidently expressed answers rises from 13.7% to 38.9% after calibration.",
+  "The calibrated chatbot expresses high confidence much less frequently.",
+  "Overall factual accuracy does not improve significantly.",
+  "The paper states that its human-annotated data are released through ParlAI."
+ ],
+ "source_url": "https://arxiv.org/html/2012.14983",
+ "access": "full_text"
+}

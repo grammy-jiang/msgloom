@@ -1,0 +1,80 @@
+{
+ "paper_id": "2605.03534",
+ "title": "SURE-RAG: Sufficiency and Uncertainty-Aware Evidence Verification for Selective Retrieval-Augmented Generation",
+ "research_question": "Can answer-level aggregation of claim-evidence sufficiency and uncertainty support more accurate and calibrated selective RAG answering than passage-level pooling while remaining auditable?",
+ "methodology": "SURE-RAG uses a shared DeBERTa-v3-base cross-encoder to classify each claim-evidence pair as supporting, refuting, or neutral, then aggregates local outputs into coverage, relation-strength, uncertainty, and optional retrieval features with a logistic-regression answer-level classifier. Its selective score combines the predicted probability that an answer is safe with an uncertainty penalty, with calibration and answer thresholds selected only on development data. The main evaluation uses the controlled HotpotQA-RAG v3 multi-hop benchmark with supported, partial, hard-insufficient, irrelevant, and refuted evidence conditions, alongside shortcut baselines, no-oracle checks, counterfactual evidence swaps, GPT-4o audits, and risk-coverage evaluation. HaluBench is used as an external boundary test for natural hallucination detection.",
+ "key_findings": [
+  {
+   "finding": "Calibrated SURE-RAG achieved 0.9075 Macro-F1 on HotpotQA-RAG v3, compared with 0.8951 for raw SURE-RAG, 0.6516 for DeBERTa mean-pooling, and 0.8888 for the concat cross-encoder.",
+   "evidence_type": "supported",
+   "section": "VI-B Main HotpotQA-RAG v3 Results"
+  },
+  {
+   "finding": "At 30% coverage, SURE-RAG reduced unsafe-answer risk to 0.1642 versus 0.2588 for mean-pooling, while its advantage narrowed at higher coverage.",
+   "evidence_type": "supported",
+   "section": "VI-D Selective Answering"
+  },
+  {
+   "finding": "Post-hoc calibration reduced binary ECE from 0.0304 to 0.0198, but did not improve Risk@30 and strict fixed-risk thresholds were too conservative to provide useful coverage.",
+   "evidence_type": "supported",
+   "section": "VI-E Calibration and Fixed-Risk Diagnostics"
+  },
+  {
+   "finding": "Removing construction-derived retrieval scores still produced 0.8370 Macro-F1 and replacing them with BM25 scores produced 0.8347, both substantially above mean-pooling at 0.6516.",
+   "evidence_type": "supported",
+   "section": "VI-C Artifact and No-Oracle Checks"
+  },
+  {
+   "finding": "A GPT-4o audit judged 260 of 300 sampled refutation examples valid, and SURE-RAG obtained 0.9370 refuted-F1 on the audited subset.",
+   "evidence_type": "supported",
+   "section": "VI-C Artifact and No-Oracle Checks"
+  },
+  {
+   "finding": "External HaluBench performance reversed the HotpotQA ordering: GPT-4o reached 0.7389 unsafe-F1 while SURE-RAG reached 0.3343, indicating that controlled evidence sufficiency and natural hallucination detection are materially different tasks.",
+   "evidence_type": "supported",
+   "section": "VI-G GPT-4o Judge and External Transfer"
+  },
+  {
+   "finding": "The experiments do not establish effectiveness for naturally generated long-form multi-claim responses, because the main validation uses short-answer multi-hop sufficiency and leaves full long-form claim coverage for future work.",
+   "evidence_type": "supported",
+   "section": "VII-B Limitations"
+  }
+ ],
+ "limitations": [
+  "The main HotpotQA-RAG v3 benchmark is controlled and QA-derived, so transfer to natural RAG traffic and long-form generation is untested.",
+  "The benchmark remains susceptible to some construction artifacts despite the artifact-aware evaluation protocol.",
+  "Entity and answer perturbations used to construct refutations can introduce answer-type mismatches or noisy refutation labels.",
+  "Full multi-claim long-form coverage is formulated but not empirically validated.",
+  "The task is evidence-sufficiency verification rather than open-world hallucination detection, as demonstrated by weak HaluBench transfer.",
+  "The answer-level aggregator summarizes local claim-passage relations rather than explicitly performing end-to-end passage-passage reasoning.",
+  "The GPT-4o semantic audit covers only a sampled subset and does not replace comprehensive human annotation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "classification_gain": 0.99,
+  "low_coverage_risk_reduction": 0.99,
+  "calibration_improvement": 0.99,
+  "no_oracle_robustness": 0.98,
+  "refutation_audit": 0.98,
+  "external_transfer_boundary": 0.99,
+  "long_form_scope_limit": 0.99
+ },
+ "raw_claims": [
+  "Evidence relevance alone is insufficient to determine whether a RAG answer is justified.",
+  "SURE-RAG treats sufficiency as a property of the entire retrieved evidence set.",
+  "The system distinguishes supported, refuted, and insufficient answers before deciding whether to answer or abstain.",
+  "Its answer-level features summarize claim coverage, relation strength, uncertainty, and retrieval information.",
+  "The main HotpotQA-RAG v3 benchmark contains 4,026 examples organized into 900 question groups.",
+  "Answer-level aggregation substantially outperformed simple pooling of the same pair-level verifier.",
+  "Selective ranking produced its strongest risk improvement at relatively low answer coverage.",
+  "Probability calibration improved ECE without providing a corresponding improvement in selective risk.",
+  "No-oracle checks indicate that construction-derived retrieval metadata does not by itself explain the model's advantage.",
+  "The poor HaluBench transfer result limits extrapolation from controlled sufficiency verification to natural hallucination detection."
+ ],
+ "source_url": "https://arxiv.org/html/2605.03534",
+ "access": "full_text"
+}

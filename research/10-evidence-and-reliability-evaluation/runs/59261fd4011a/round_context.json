@@ -1,0 +1,146 @@
+{
+ "round": 3,
+ "max_rounds": 4,
+ "original_topic": "evidence attribution, factuality, completeness and reliability evaluation for workplace communication systems: what exact evidence supports each decision-relevant statement, whether it is current and correctly attributed, what was omitted, and when the system should abstain",
+ "topic": "Integrated evaluation of evidence completeness and omission for temporally evolving multi-source free-form generation, with calibrated selective prediction under non-stationary distribution shift",
+ "focus": "academic gaps of the previous round",
+ "prior_paper_ids": [
+  "1707.05555",
+  "1910.12840",
+  "2004.14974",
+  "2012.14983",
+  "2106.00170",
+  "2111.09525",
+  "2212.08037",
+  "2305.14627",
+  "2307.09254",
+  "2312.09300",
+  "2404.00474",
+  "2404.15588",
+  "2406.07967",
+  "2410.14964",
+  "2505.23912",
+  "2508.20867",
+  "2509.26184",
+  "2510.07238",
+  "2512.17776",
+  "2604.12046",
+  "2605.01749",
+  "2605.03534",
+  "2605.06635",
+  "2605.16354",
+  "2606.00093",
+  "2606.29054",
+  "2607.08700",
+  "2607.19322",
+  "2608.22483",
+  "doi-10-1017-s1351324909005051",
+  "doi-10-1109-access-2026-3679691",
+  "doi-10-1162-tacl-a-00407",
+  "doi-10-18653-v1-2025-acl-long-837",
+  "doi-10-18653-v1-w19-8642",
+  "doi-10-32604-cmc-2026-086343",
+  "manual-32d5793dca",
+  "manual-f5ce52cae2"
+ ],
+ "prior_gaps": [
+  {
+   "id": "gap-1",
+   "description": "No admitted study validates one end-to-end evaluation scheme that jointly measures claim correctness, evidence attribution correctness, citation or evidence completeness, temporal or current-state correctness, omission, calibrated uncertainty, and abstention while preserving separate denominators for those dimensions. The corpus validates individual components and smaller combinations.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "\"evaluation framework\" factuality attribution \"evidence completeness\" temporal correctness omission uncertainty abstention \"free-form generation\"",
+   "resolution_notes": "Round 2 added report-level omission, factual completeness, temporal-evidence validity, selective-generation, and judge-validation work, but no admitted paper integrates all required dimensions into one validated evaluation scheme with dimension-specific denominators. Evidence includes arXiv:2509.26184, arXiv:2512.17776, arXiv:2607.19322, arXiv:2608.22483, and DOI 10.1109/ACCESS.2026.3679691.",
+   "rounds_searched": [
+    1,
+    2
+   ]
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus contains no direct evaluation on private workplace email or Teams-style communication with realistic revisions, quoted history, conflicting updates, delayed or out-of-order arrival, versioned attachments, and permission-constrained evidence. Target-domain fixtures and gold data remain an engineering validation gap.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by constructing a target-domain benchmark or fixture suite from permission-safe synthetic, de-identified, or appropriately governed workplace communication. The suite should explicitly model revisions, quoted-history duplication, conflicting updates, delayed and out-of-order arrival, versioned attachments, access-control boundaries, supersession, and current-state gold labels. Then benchmark the evaluation pipeline against these fixtures with reproducible expected outputs and failure cases. Adjacent literature can inform fixture design, but direct target-domain validation is project-specific.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not establish a general evidence-completeness method that jointly handles compound claims, partially supportive evidence, multiple complementary sources, and temporally versioned evidence. Separate studies cover subsets of these conditions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "\"evidence completeness\" \"compound claims\" \"partial support\" multi-source temporal versioned evidence attribution evaluation",
+   "resolution_notes": "Minimal evidence groups, complex-attribution benchmarks, multi-source RAG evaluation, and temporal-evidence metrics cover important subsets, but no admitted study jointly evaluates all four required cases: compound claims, partial support, complementary multi-source support, and temporally versioned evidence. Relevant partial evidence includes arXiv:2404.15588, arXiv:2508.20867, DOI 10.1109/ACCESS.2026.3679691, and DOI 10.18653/v1/2025.acl-long.837.",
+   "rounds_searched": [
+    1,
+    2
+   ]
+  },
+  {
+   "id": "gap-5",
+   "description": "Report-level omission now has stronger benchmark coverage, but the corpus still does not establish omission detection for evolving workplace work items, due information, superseded facts, or decision-relevant state across time.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "\"omission detection\" temporal summarization evolving state superseded information \"decision-relevant\" longitudinal workplace",
+   "resolution_notes": "Round 2 materially strengthens generic report-level omission and coverage evidence through arXiv:2508.20867, arXiv:2509.26184, arXiv:2512.17776, and arXiv:2607.19322. However, none establishes an evaluation method for longitudinal omission of evolving work-item state, deadlines or due information, superseded facts, and other decision-relevant temporal state in workplace communication.",
+   "rounds_searched": [
+    1,
+    2
+   ]
+  },
+  {
+   "id": "gap-6",
+   "description": "A target-domain human-review protocol remains an engineering gap: representative or risk-stratified sampling, minimum human-review volume, multi-rater adjudication, confusion matrices, abstention treatment, coverage reporting, and validation of any LLM-assisted judge against independent human judgments remain project-specific choices.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by specifying and preregistering a project-level review protocol: define representative and risk-stratified sampling strata; set review-volume targets using desired confidence or error-detection sensitivity; use independent multi-rater annotation with an adjudication process; report per-class confusion matrices and inter-rater agreement; treat abstentions as an explicit outcome rather than silently dropping them; report selective coverage alongside conditional quality; and validate any LLM-assisted evaluator on a held-out independently human-rated sample before using it operationally. The literature supplies relevant methods, but the final protocol and thresholds require target-domain engineering validation.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-7",
+   "description": "The corpus demonstrates evaluator optimization effects and directional judge bias but does not provide a project-specific procedure for preventing acceptance criteria from being overfit to the same automatic evaluator used during development. Independent holdouts, evaluator separation, and regression checks remain an engineering validation problem.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "status": "open",
+   "resolution_notes": "Resolve by separating development and acceptance evaluators, freezing acceptance prompts and thresholds before final testing, maintaining a hidden human-verified holdout set, preventing tuning against acceptance-set outputs, periodically rotating or auditing automatic judges, tracking judge-specific regressions, and requiring independent human confirmation for material acceptance-boundary changes. Evaluator-gaming and directional-bias findings motivate these controls, but their concrete implementation is project-specific.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-8",
+   "description": "Calibration under continuing temporal or distributional change remains open for non-stationary free-form communication streams. The corpus supplies long-run adaptive coverage results, cross-domain calibration studies, benchmark-aging evidence, and structured-generation risk-control results, but not one validated selective-prediction method for continuously changing workplace communication.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "status": "open",
+   "suggested_search_query": "\"selective prediction\" non-stationary stream \"free-form generation\" temporal distribution shift calibration abstention",
+   "resolution_notes": "Adaptive conformal inference, cross-domain linguistic calibration, benchmark-aging studies, and structured-generation risk-control results address constituent pieces, but no admitted paper validates calibrated selective prediction on a continuing non-stationary workplace communication stream. Relevant partial evidence includes arXiv:2106.00170, arXiv:2404.00474, arXiv:2510.07238, arXiv:2606.29054, and DOI 10.1162/tacl_a_00407.",
+   "rounds_searched": [
+    1,
+    2
+   ]
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "run_id": "e601ba8b9b6f",
+   "topic": "evidence attribution, factuality, completeness and reliability evaluation for workplace communication systems: what exact evidence supports each decision-relevant statement, whether it is current and correctly attributed, what was omitted, and when the system should abstain",
+   "new_papers": 17,
+   "gaps_addressed": "initial shortlist",
+   "remaining": "5 academic, 3 engineering"
+  },
+  {
+   "round": 2,
+   "run_id": "6ee1939a8f1e",
+   "topic": "evaluation of calibrated abstention, evidence completeness, and omission for free-form multi-source generation under temporal and distributional change",
+   "new_papers": 20,
+   "gaps_addressed": "1 resolved",
+   "remaining": "4 academic, 3 engineering"
+  }
+ ],
+ "new_papers": 14
+}

@@ -1,0 +1,73 @@
+{
+ "paper_id": "2602.16537",
+ "title": "Optimal training-conditional regret for online conformal prediction",
+ "research_question": "How can online conformal prediction maintain strong training-conditional coverage guarantees under unknown abrupt or smooth distribution drift, including when prediction models themselves are updated online?",
+ "methodology": "The paper defines training-conditional cumulative regret as the accumulated absolute deviation of conditional prediction-set coverage from its target and studies independent observations under either change-point or smoothly drifting distributions. For independently pretrained nonconformity scores it proposes DriftOCP, which uses repeated drift detection and adaptive calibration-window resets, and proves upper bounds together with matching minimax lower bounds. For scores trained from streaming data it develops DriftOCP-full, replacing permutation-symmetry assumptions with Lipschitz and algorithmic-stability conditions and deriving non-asymptotic guarantees. Synthetic regression experiments compare the drift-aware methods with adaptive conformal inference variants under stationary, abrupt, and smoothly changing environments.",
+ "key_findings": [
+  {
+   "finding": "For pretrained scores, DriftOCP attains regret of order approximately sqrt((Ncp+1)T) under change points and sqrt(T) plus KS_T^(1/3)T^(2/3) under smooth score-distribution drift, up to logarithmic factors.",
+   "evidence_type": "supported",
+   "section": "3.2 Theoretical Guarantees"
+  },
+  {
+   "finding": "The corresponding minimax lower bounds match the pretrained-score upper-bound dependence on the horizon and drift measures up to logarithmic factors, establishing minimax optimality within the stated admissible algorithm class.",
+   "evidence_type": "supported",
+   "section": "3.3 Minimax Lower Bound"
+  },
+  {
+   "finding": "For online-trained scores under the stated Lipschitz and stability assumptions, DriftOCP-full attains regret of order approximately sqrt((Ncp+L+1)T) for change points and sqrt((L+1)T) plus TV_T^(1/3)T^(2/3) for smooth drift.",
+   "evidence_type": "supported",
+   "section": "4.2 Theoretical Guarantees under Stability Assumptions"
+  },
+  {
+   "finding": "The full-conformal analysis also yields a batch training-conditional coverage concentration result for stable data-dependent predictors without requiring permutation-invariant model fitting.",
+   "evidence_type": "supported",
+   "section": "4.2 Theoretical Guarantees under Stability Assumptions"
+  },
+  {
+   "finding": "In the pretrained-score simulations, DriftOCP remained comparatively stable in stationary segments while adapting rapidly after shifts, whereas ACI exhibited a stepsize trade-off between stable calibration and rapid reaction to drift.",
+   "evidence_type": "supported",
+   "section": "5.1 Experiments: Online Conformal Prediction with Pretrained Scores"
+  },
+  {
+   "finding": "The online-model experiments illustrate that adapting the fitted predictive model as well as recalibrating prediction sets can improve interval efficiency while keeping empirical coverage near its target under covariate shift.",
+   "evidence_type": "supported",
+   "section": "5.2 Experiments: Online Conformal Prediction with Adaptively Trained Scores"
+  }
+ ],
+ "limitations": [
+  "The theoretical guarantees rely on independence across observations and do not cover temporally dependent non-stationary processes such as general Markov or time-series environments.",
+  "The online-trained-score guarantees require stability of the fitting algorithm and Lipschitz regularity; these conditions can fail or be difficult to establish for high-dimensional, nonparametric, or deep models.",
+  "The lower-bound result for the full-conformal setting restricts prediction procedures to sets representable as a union of at most K intervals.",
+  "The numerical evaluation is synthetic rather than an evaluation on naturally occurring non-stationary data streams.",
+  "The pretrained-score experimental protocol states that experiments were repeated 40 times, while the Figure 3 caption states that its curves were averaged over 20 runs, leaving an ambiguity in the reported replication count."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "pretrained_regret_bound": 0.99,
+  "pretrained_minimax_optimality": 0.99,
+  "online_trained_regret_bound": 0.99,
+  "stability_based_coverage": 0.99,
+  "simulation_adaptation": 0.96,
+  "independence_limitation": 0.99,
+  "replication_count_ambiguity": 0.99
+ },
+ "raw_claims": [
+  "The paper evaluates online conformal prediction using training-conditional cumulative coverage regret rather than only long-run marginal coverage frequency.",
+  "The non-stationarity model covers both abrupt change points and gradually evolving distributions.",
+  "DriftOCP detects distribution changes and adapts which recent observations are used for conformal calibration.",
+  "For pretrained scores, the upper regret bounds match derived minimax lower bounds up to logarithmic factors.",
+  "DriftOCP-full is designed for settings in which the prediction model and resulting nonconformity score change with incoming observations.",
+  "The full-conformal analysis substitutes stability conditions for the permutation symmetry often used in conformal theory.",
+  "The smooth-drift bound for pretrained scores depends on drift in score distributions measured through a Kolmogorov-Smirnov quantity.",
+  "The corresponding adaptive-model smooth-drift bound uses total variation between data distributions.",
+  "The simulation horizon in the first experiment is 10,000 time steps with target miscoverage 0.1.",
+  "Extending the training-conditional theory to dependent non-stationary sequences is left as future work."
+ ],
+ "source_url": "https://arxiv.org/html/2602.16537",
+ "access": "full_text"
+}

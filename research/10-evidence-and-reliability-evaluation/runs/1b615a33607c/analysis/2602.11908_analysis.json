@@ -1,0 +1,80 @@
+{
+ "paper_id": "2602.11908",
+ "title": "When Should LLMs Be Less Specific? Selective Abstraction for Reliable Long-Form Text Generation",
+ "research_question": "Can an LLM selectively replace uncertain atomic claims with less specific statements, rather than deleting them outright, to obtain a better calibrated trade-off between factual risk and retained information in long-form generation?",
+ "methodology": "The proposed atom-wise Selective Abstraction procedure generates a response, decomposes it into atomic claims, and elicits a confidence score for each claim. For low-confidence claims the same model generates progressively less-specific abstractions, and the system selects the most specific abstraction exceeding a confidence threshold or abstains if none qualifies before reconstructing the response. Evaluation defines factual risk using an agentic Wikipedia-based fact checker and defines retained information using entity-set uncertainty reduction estimated through Wikidata, with risk-coverage curves summarized by AURC. Experiments cover six open-source LLMs on FactScore and LongFact-Objects and also evaluate a split-conformal-inspired calibration procedure for selecting thresholds to meet target risk levels.",
+ "key_findings": [
+  {
+   "finding": "Atom-wise selective abstraction reduced average AURC relative to claim redaction by 17.43% on FactScore and 13.77% on LongFact-Objects across the six evaluated models.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "The largest reported gain occurred for gpt-oss-120b, with AURC improvements of 27.73% on FactScore and 21.02% on LongFact-Objects relative to redaction.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "At matched coverage, atom-wise abstraction generally produced substantially less factual risk than the Inline Abstraction and Self-Revision baselines, with the paper describing the average advantage as about ten percentage points.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "The Wikipedia-based correctness agent was checked against human judgments on 102 sampled claims and achieved an overall F1 of 0.93.",
+   "evidence_type": "supported",
+   "section": "4.1 Risk"
+  },
+  {
+   "finding": "The calibration procedure selected thresholds whose empirical risks stayed close to specified target risks across 600 repeated runs per dataset, although variability remained because the calibration and test samples were small.",
+   "evidence_type": "supported",
+   "section": "7 Threshold Selection for Target Risk"
+  },
+  {
+   "finding": "The theoretical threshold guarantee assumes exchangeability between calibration claims and the test claim, so it is not a distribution-shift guarantee for arbitrary non-stationary claim streams.",
+   "evidence_type": "supported",
+   "section": "Appendix H Selective Threshold Algorithm"
+  },
+  {
+   "finding": "Among the confidence functions examined, verbalized confidence provided the strongest reported combination of correctness ranking and risk-coverage performance, while P(True) had near-random atom-level ranking behavior.",
+   "evidence_type": "supported",
+   "section": "Appendix E On the Importance of Choosing a Confidence Scoring Function"
+  }
+ ],
+ "limitations": [
+  "Selective abstraction depends strongly on the quality and ranking calibration of the confidence score, and the authors explicitly note that their verbalized confidence estimates are imperfect.",
+  "Atomic claims are treated independently even though dependencies between claims can affect whether an abstraction remains coherent or correct.",
+  "Systematic quantitative evaluation is restricted to two factual long-form benchmarks because defining comparable risk and information measures for subjective or non-factual generation is difficult.",
+  "The information metric assumes a uniform prior over compatible entities and uses sparse Wikidata counts as a proxy rather than true real-world entity distributions.",
+  "The factual-risk evaluator treats failure to find supporting Wikipedia evidence as unsupported, so evidence absence and factual falsity are not distinguished by the binary correctness label.",
+  "The calibrated threshold guarantee requires exchangeability and therefore does not directly ensure target-risk control after arbitrary temporal or distributional shift."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "aurc_improvement": 0.99,
+  "matched_coverage_risk": 0.98,
+  "fact_checker_validation": 0.99,
+  "target_risk_calibration": 0.97,
+  "exchangeability_requirement": 0.99,
+  "confidence_function_effect": 0.98
+ },
+ "raw_claims": [
+  "Selective Abstraction reduces the specificity of uncertain parts of a long-form answer instead of necessarily deleting them.",
+  "The atom-wise method constructs multiple increasingly general alternatives for a low-confidence claim.",
+  "It retains the most specific abstraction whose reported confidence exceeds the chosen threshold.",
+  "If no abstraction reaches the threshold, the procedure abstains on that atomic claim.",
+  "Risk is the fraction of atomic claims that the evaluation procedure does not verify as supported.",
+  "The paper's factuality agent searches Wikipedia independently for each claim or abstraction.",
+  "Coverage is defined in terms of how much estimated information remains after abstraction.",
+  "AURC summarizes factual risk across different retained-information levels, with lower values indicating a better trade-off.",
+  "The experiments use six open-source LLMs on fixed subsets of FactScore and LongFact-Objects.",
+  "A calibration-set quantile is used to choose a confidence threshold for a requested target risk.",
+  "The finite-sample threshold argument relies on exchangeability of calibration and test claims.",
+  "The authors identify improved confidence estimation and modeling dependencies among claims as future research directions."
+ ],
+ "source_url": "https://arxiv.org/html/2602.11908",
+ "access": "full_text"
+}

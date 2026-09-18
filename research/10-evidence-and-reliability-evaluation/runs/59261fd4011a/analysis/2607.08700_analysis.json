@@ -1,0 +1,82 @@
+{
+ "paper_id": "2607.08700",
+ "title": "Do You Need a Frontier Model as a Citation Verifier? Benchmarking Rubric LLMs for Deep-Research Source Attribution",
+ "research_question": "How capable and expensive must an LLM citation judge be to evaluate source relevance and factual support reliably, and what judge biases are hidden by aggregate accuracy metrics?",
+ "methodology": "The authors construct the Deep-Research Citation Benchmark from a long-form report spanning 25 topic domains, producing 624 attribution-citation pairs and 1,248 gold rubric decisions for source relevance and factual support. About 60 percent of claims are adversarially edited using 19 perturbation strategies, and a six-model labeling council is followed by human review of every decision, with intensive adjudication of 378 disagreement cases. Eight off-the-shelf LLM judges from three model families are evaluated using pass-class F1, Cohen's kappa, false-positive rate, false-negative rate, pass-rate drift, and bootstrap confidence intervals. The study also compares judge quality with API cost using June 2026 provider pricing.",
+ "key_findings": [
+  {
+   "finding": "A more expensive frontier judge was not consistently more accurate: GPT-5-mini achieved the highest reported source-relevance F1 at 0.908 despite being among the lower-cost evaluated judges.",
+   "evidence_type": "supported",
+   "section": "5.3 Cost and Quality"
+  },
+  {
+   "finding": "For factual support, the 95 percent confidence intervals of all eight judges overlap, so the benchmark does not establish a statistically distinguishable winner on that dimension.",
+   "evidence_type": "supported",
+   "section": "5 Results and Table 2"
+  },
+  {
+   "finding": "Judge cost spans a 49-fold range in the study, but cost does not track citation-verification accuracy.",
+   "evidence_type": "supported",
+   "section": "5.3 Cost and Quality"
+  },
+  {
+   "finding": "Judges with similar aggregate F1 can have materially different pass-rate drift, false-positive rates, and false-negative rates, so scalar F1 hides operationally important directional bias.",
+   "evidence_type": "supported",
+   "section": "5.1 Judge Accuracy and 5.2 Directional Bias"
+  },
+  {
+   "finding": "All eight judges are systematically stricter than the gold labels on source relevance, and factual-support errors are dominated by rejection of genuinely supported citations rather than acceptance of unsupported ones.",
+   "evidence_type": "supported",
+   "section": "5.2 Directional Bias"
+  },
+  {
+   "finding": "Judge rankings change substantially on the 378 disagreement cases, showing that full-benchmark F1 is an incomplete measure of reliability on ambiguous citation decisions.",
+   "evidence_type": "supported",
+   "section": "4 Human Adjudication and 5.4 Reward Noise from Disagreement"
+  },
+  {
+   "finding": "The paper argues that directional judge biases will shape downstream reinforcement-learning behavior, but that downstream training effect is inferred from the error profile rather than directly demonstrated by an RL training experiment in this study.",
+   "evidence_type": "unsupported",
+   "section": "5.2 Directional Bias and 6 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The reported findings are limited to a single adversarial long-form document, even though its contents span 25 topic domains.",
+  "Sensitivity to prompt design remains an open question identified by the authors.",
+  "Sensitivity to batch-scoring strategies remains an open question identified by the authors.",
+  "Two evaluated judges, GPT-5-mini and Claude Opus 4.6, also participate in the gold-label council, although the human-adjudicated subset provides a partially independent check.",
+  "The benchmark intentionally contains many adversarial edits and has a low factual-support gold pass rate, so its class distribution may differ substantially from production citation traffic.",
+  "Cost comparisons use provider API prices as of June 2026 and therefore are time-dependent.",
+  "The source-relevance rubric partly overlaps conceptually with factual support, which the authors identify as a frequent cause of inter-judge disagreement."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "cheap_judge_competitive": 0.99,
+  "no_fact_support_winner": 0.99,
+  "cost_not_accuracy": 0.99,
+  "f1_hides_directional_bias": 0.99,
+  "systematic_strictness": 0.98,
+  "hard_case_rankings_shift": 0.99,
+  "downstream_rl_effect": 0.78
+ },
+ "raw_claims": [
+  "The benchmark contains 624 attribution-citation pairs and 1,248 source-relevance and factual-support decisions.",
+  "Every gold decision receives human review, and 378 disagreement cases receive additional adjudication.",
+  "Eight LLM judges from three model families are evaluated on every benchmark pair.",
+  "GPT-5-mini obtains a source-relevance pass-class F1 of 0.908.",
+  "All reported factual-support confidence intervals overlap across the eight judges.",
+  "The evaluated judge costs span approximately a 49-fold range.",
+  "Judge price does not reliably predict citation-verification performance in this benchmark.",
+  "Judges differ substantially in false-positive rate, false-negative rate, and pass-rate drift even when their aggregate F1 scores are similar.",
+  "Factual-support judges tend to reject valid support more often than they accept invalid support.",
+  "Performance rankings shift on cases where the labeling council originally disagreed.",
+  "The authors identify full-set F1 as insufficient for characterizing reliability on the most ambiguous citations.",
+  "The conclusions are explicitly limited by use of one adversarial long-form document and unresolved sensitivity to prompting and batching."
+ ],
+ "source_url": "https://arxiv.org/html/2607.08700",
+ "access": "full_text"
+}

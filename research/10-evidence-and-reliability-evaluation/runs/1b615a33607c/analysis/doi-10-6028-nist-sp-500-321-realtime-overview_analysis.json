@@ -1,0 +1,77 @@
+{
+ "paper_id": "doi-10-6028-nist-sp-500-321-realtime-overview",
+ "title": "Overview of the TREC 2016 Real-Time Summarization Track",
+ "research_question": "How should systems that continuously monitor a live social-media stream for prospective information needs be evaluated for relevance, novelty, redundancy, and timeliness in both immediate push-notification and periodic digest settings?",
+ "methodology": "TREC 2016 evaluated systems operating on Twitter's live sample stream during a ten-day period using prospective interest profiles. Scenario A systems could send up to ten push notifications per profile per day and were evaluated through an online broker that immediately delivered submitted tweets to mobile assessors, who labeled them relevant, redundant, or not relevant; Scenario B systems produced larger daily batches resembling email digests. NIST also performed pooled offline assessment and clustering of tweets into information facets, and the track deliberately separated output-quality metrics such as Expected Gain, normalized Cumulative Gain, Gain Minus Pain, precision, and nDCG from latency measurements. Scenario A received 41 runs from 18 groups and Scenario B received 40 runs from 15 groups.",
+ "key_findings": [
+  {
+   "finding": "The track demonstrated a workable real-time evaluation architecture in which live system outputs could be routed immediately to mobile assessors and judged in the temporal context in which notifications were received.",
+   "evidence_type": "supported",
+   "section": "2.4 Online Judgments and Metrics"
+  },
+  {
+   "finding": "Treating redundant tweets separately from relevant novel tweets allowed the evaluation to explicitly penalize repeated information and measure the value of newly surfaced content.",
+   "evidence_type": "supported",
+   "section": "2.4 Online Judgments and 2.5.1 Scenario A Metrics"
+  },
+  {
+   "finding": "Across submitted runs, the authors observed no strong relationship between output-quality metrics and notification latency, contrary to the intuitive expectation that waiting longer to accumulate evidence would necessarily improve quality.",
+   "evidence_type": "contradicted",
+   "section": "3.1 Scenario A"
+  },
+  {
+   "finding": "Daily digest systems did not, as a group, outperform push-notification systems on quality metrics despite having the opportunity to accumulate evidence over an entire day.",
+   "evidence_type": "contradicted",
+   "section": "3.2 Scenario B"
+  },
+  {
+   "finding": "Metrics that reward correctly remaining silent made an empty or low-output strategy surprisingly competitive in some settings, showing the importance of evaluating whether a system knows when no valuable new update exists.",
+   "evidence_type": "supported",
+   "section": "2.5.1 Scenario A Metrics and 3.1 Scenario A"
+  },
+  {
+   "finding": "A strong 2015 baseline fell around the middle of the 2016 result set, which the authors interpreted as evidence of progress by participating systems.",
+   "evidence_type": "supported",
+   "section": "3.1 Scenario A"
+  }
+ ],
+ "limitations": [
+  "Only 13 of the 18 recruited online assessors ultimately supplied judgments, and assessor response rates were highly uneven.",
+  "Many pushed tweets remained unjudged, so online judgments were sparse relative to the total notification volume.",
+  "The mobile evaluation application had deployment and display problems that affected some assessors.",
+  "A clock-skew problem caused some broker timestamps to precede tweet publication times, and the authors applied a uniform 139-second correction after the infrastructure had already been shut down.",
+  "The evaluation did not model notification restrictions such as avoiding nighttime interruptions.",
+  "Defining digest days in UTC ignored users' local time zones and reading habits.",
+  "The first-year infrastructure did not support user-submitted interest profiles or online feedback to participating systems.",
+  "The study was limited to Twitter's sample stream, a short evaluation period, and prospective topics constructed in advance rather than longitudinal workplace work-item state.",
+  "The setup measured interest-profile relevance rather than adaptive personalization learned from an individual user's evolving priorities."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "online_evaluation_feasibility": 0.98,
+  "redundancy_evaluation": 0.99,
+  "quality_latency_nonrelationship": 0.95,
+  "digest_no_quality_advantage": 0.94,
+  "silence_reward": 0.98,
+  "baseline_progress": 0.88
+ },
+ "raw_claims": [
+  "The track evaluated systems on prospective information needs over a live Twitter stream.",
+  "Push notifications were expected to be relevant, novel, and timely.",
+  "Daily digests emphasized relevance and novelty while tolerating much greater latency.",
+  "Online assessors labeled notifications as relevant, redundant, or not relevant.",
+  "A redundant notification contained relevant information that was substantively similar to information the assessor had already seen.",
+  "Forty-one Scenario A runs from eighteen groups produced more than 160,000 pushed tweets.",
+  "Thirteen assessors supplied 12,115 online judgments.",
+  "Quality and latency were evaluated separately rather than collapsed into a single score.",
+  "The experiment did not reveal a strong empirical quality-latency trade-off.",
+  "Daily digest runs did not show the expected quality advantage over real-time push runs.",
+  "The online evaluation infrastructure was released as open-source software."
+ ],
+ "source_url": "https://trec.nist.gov/pubs/trec25/papers/Overview-RT.pdf",
+ "access": "full_text"
+}

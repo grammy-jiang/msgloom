@@ -1,0 +1,365 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2510.12839",
+   "title": "FaStfact: Faster, Stronger Long-Form Factuality Evaluations in LLMs",
+   "research_question": "Can long-form LLM factuality evaluation be made substantially more efficient while improving alignment with human judgments about claim coverage and factual correctness?",
+   "methodology": "FaStfact replaces sentence-by-sentence decomposition with configurable chunk-level atomic-claim extraction and combines extraction with confidence-based pre-verification, allowing sufficiently confident claims to bypass external evidence retrieval. Claims requiring further verification trigger web search and document-level page crawling, after which relevant evidence is selectively retrieved for claim classification. The framework introduces F1@K' using a human-annotated response-specific target claim count and a symmetric penalty for both under-extraction and over-extraction. Evaluation uses the 400-example FaStfact-Bench, aggregated from five long-form factuality benchmarks with human annotations of extraction and verification, and compares FaStfact against several existing pipelines using common underlying evaluator models.",
+   "key_findings": [
+    {
+     "finding": "FaStfact produced the closest end-to-end factuality score to human ground truth among the compared pipelines: F1@K' was 0.780 versus a ground-truth value of 0.792, an absolute gap of 0.012.",
+     "evidence_type": "supported",
+     "section": "7.1 Main Results: FaStfact vs. Baselines"
+    },
+    {
+     "finding": "Its extracted claim counts were substantially closer to human annotations than the compared baselines, with an average absolute claim-count difference of 3.35.",
+     "evidence_type": "supported",
+     "section": "7.1 Main Results: FaStfact vs. Baselines"
+    },
+    {
+     "finding": "FaStfact claim verification agreed exactly with human labels on 85.3% of annotations and agreed on the coarser supported, non-supported, or irrelevant type on 92.9%.",
+     "evidence_type": "supported",
+     "section": "4 FaStfact"
+    },
+    {
+     "finding": "Longer extraction chunks did not degrade claim-count alignment in the ablation; strides from 28 sentences through the entire response aligned most closely with human claim counts while also reducing extraction cost.",
+     "evidence_type": "supported",
+     "section": "7.2 Ablations"
+    },
+    {
+     "finding": "FaStfact used 5,615 tokens per sample in the baseline comparison, fewer than ExpertQA, VeriScore, and SAFE but more than FacTool's 4,480 tokens, so its advantage is a combined alignment-efficiency result rather than the lowest token count in isolation.",
+     "evidence_type": "supported",
+     "section": "7.1 Main Results: FaStfact vs. Baselines"
+    },
+    {
+     "finding": "The proposed F1@K' explicitly penalizes both missing expected claims and producing excessive claims, addressing a verbosity blind spot in metrics whose target claim count is derived from the evaluator's own extraction.",
+     "evidence_type": "supported",
+     "section": "4.4 FaStfact Score Metric"
+    }
+   ],
+   "limitations": [
+    "Document-level verification depends on the quality and accessibility of web evidence; scarce, paywalled, inaccessible, or low-quality sources can prevent comprehensive verification.",
+    "The empirical validation is limited to the datasets and long-form generation domains represented in FaStfact-Bench, so broader task and domain generalization remains untested."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "end_to_end_alignment": 0.99,
+    "claim_count_alignment": 0.99,
+    "human_verification_agreement": 0.99,
+    "chunk_ablation": 0.97,
+    "efficiency_comparison": 0.99,
+    "web_evidence_dependency": 0.99
+   },
+   "raw_claims": [
+    "Existing long-form factuality pipelines can extract redundant, unverifiable, or incomplete claim sets.",
+    "Short search-result snippets can provide insufficient context even when the underlying web pages contain adequate evidence.",
+    "FaStfact extracts claims from multi-sentence chunks rather than requiring one extraction call for every sentence.",
+    "Confidence-based pre-verification reduces the number of claims that require external searching and evidence-based verification.",
+    "FaStfact crawls document-level web content to build a richer evidence base for uncertain claims.",
+    "FaStfact-Bench contains 400 long-form question-answer examples drawn equally from five source benchmarks.",
+    "Human annotations cover both the claims that should be extracted and the verification labels assigned to those claims.",
+    "F1@K' uses a response-specific human target for the expected number of claims.",
+    "Increasing the extraction chunk size improved efficiency without the expected deterioration in claim-count alignment.",
+    "The framework and benchmark are released with code and an annotation interface."
+   ],
+   "source_url": "https://arxiv.org/html/2510.12839",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2511.16198",
+   "title": "SemanticCite: Citation Verification with AI-Powered Full-Text Analysis and Evidence-Based Reasoning",
+   "research_question": "Can full-text retrieval and multi-class evidence reasoning provide scalable, interpretable verification of whether scholarly citations actually support the claims attributed to them?",
+   "methodology": "SemanticCite parses full-text papers, chunks their text, and combines dense semantic retrieval with BM25 lexical retrieval before neural reranking selects the strongest evidence passages. An LLM then produces structured outputs assigning one of four evidence states—Supported, Partially Supported, Unsupported, or Uncertain—along with confidence, reasoning, and evidence. The authors construct a citation dataset spanning eight disciplines and fine-tune Qwen3 1.7B, 4B, and 8B models with QLoRA. Evaluation on a stratified 112-example test set reports ordinary and ordinally weighted classification metrics as well as output-format and text-generation metrics.",
+   "key_findings": [
+    {
+     "finding": "The 4B model achieved 66.36% standard accuracy and 83.64% weighted accuracy, while the 8B model achieved 66.07% and 83.93%, respectively, showing that many errors were close to the correct category in the ordinal four-class scheme.",
+     "evidence_type": "supported",
+     "section": "4.5.3 Classification Task Performance"
+    },
+    {
+     "finding": "All three fine-tuned models generated valid preprocessing outputs for all 112 test examples and exceeded 93% character similarity to preprocessing references.",
+     "evidence_type": "supported",
+     "section": "4.5.2 Preprocessing Task Performance"
+    },
+    {
+     "finding": "The 4B model provided the strongest reported balance of classification and generated-output behavior, with 90.01% character similarity and a mean output-length difference of minus 0.7 words while remaining close to the 8B model in weighted accuracy.",
+     "evidence_type": "supported",
+     "section": "4.5.4 Key Findings"
+    },
+    {
+     "finding": "The four-class scheme explicitly distinguishes complete support from support that omits qualifications or context and provides an Uncertain state instead of forcing ambiguous evidence into a binary decision.",
+     "evidence_type": "supported",
+     "section": "3.2 Classification Scheme"
+    },
+    {
+     "finding": "The paper reports that untuned base Qwen3 models performed substantially worse, produced poorly calibrated output lengths, and frequently failed to satisfy the required structured JSON format, supporting the value of task-specific fine-tuning.",
+     "evidence_type": "supported",
+     "section": "4.5.5 Implications"
+    }
+   ],
+   "limitations": [
+    "Ground-truth labels are generated exclusively with GPT-4.1 rather than independent human experts, creating potential systematic annotation bias and leaving inter-annotator reliability unmeasured.",
+    "The dataset is restricted to English-language, open-access publications and focuses on papers from 2019 through 2023.",
+    "Multi-reference citations are evaluated source by source rather than by jointly reasoning over the collective evidence, so complementary sources can be misclassified as only partially supportive.",
+    "When full text is unavailable the system falls back to abstracts, which can omit supporting, qualifying, or contradictory evidence.",
+    "The current verifier is text-only and does not evaluate support conveyed through figures, tables, or mathematical expressions.",
+    "Large-scale full-document processing remains computationally demanding even with the smaller fine-tuned models."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "classification_results": 0.99,
+    "preprocessing_results": 0.99,
+    "four_class_evidence_scheme": 0.99,
+    "fine_tuning_effect": 0.97,
+    "multi_reference_limitation": 0.99,
+    "annotation_bias_limitation": 0.99
+   },
+   "raw_claims": [
+    "SemanticCite verifies a citation against retrieved passages from the full referenced document when full text is available.",
+    "Dense retrieval and BM25 each contribute candidate passages before a neural reranker selects a small evidence set.",
+    "The four verification labels separate full support, partial support, unsupported claims, and unresolved cases.",
+    "Partially Supported is intended to capture claims whose main assertion is present but whose qualifications or context are incomplete.",
+    "Uncertain cases are explicitly surfaced for further human review rather than automatically forced into a positive or negative class.",
+    "The released citation corpus contains more than one thousand citations drawn from eight academic disciplines.",
+    "The evaluation test set contains 112 stratified examples.",
+    "Weighted accuracy assigns smaller penalties to mistakes between semantically adjacent support categories than to distant mistakes.",
+    "The 4B and 8B fine-tuned models have similar classification accuracy despite their different parameter counts.",
+    "The software repository and model-and-data resources are publicly linked from the paper."
+   ],
+   "source_url": "https://arxiv.org/html/2511.16198",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2408.08067",
+   "title": "RAGChecker: A Fine-grained Framework for Diagnosing Retrieval-Augmented Generation",
+   "research_question": "Can claim-level entailment metrics jointly diagnose retrieval completeness, generation correctness, evidence use, and error sources in long-form retrieval-augmented generation better than coarse response-level evaluation?",
+   "methodology": "RAGChecker decomposes both generated and reference answers into atomic claims and uses an entailment checker to relate those claims to the ground truth and retrieved chunks. It defines overall precision, recall, and F1, retriever claim recall and context precision, plus generator metrics for faithfulness, two kinds of noise sensitivity, hallucination, self-knowledge, and context utilization. The authors curate 4,162 queries across ten domains from public QA resources and evaluate eight RAG configurations formed by two retrievers and four generators. A separate 280-pair meta-evaluation compares metric score differences with two-annotator human preferences for correctness, completeness, and overall quality.",
+   "key_findings": [
+    {
+     "finding": "For overall human assessment, RAGChecker achieved Pearson and Spearman correlations of 61.93 and 60.90, compared with 48.31 and 57.23 for the strongest displayed RAGAS Answer Similarity baseline.",
+     "evidence_type": "supported",
+     "section": "4.2 Meta Evaluation"
+    },
+    {
+     "finding": "RAGChecker had the highest displayed completeness Pearson correlation at 60.67, although RAGAS Answer Similarity had a higher completeness Spearman correlation of 61.35 versus RAGChecker's 58.11, so the table does not support dominance on every individual correlation statistic.",
+     "evidence_type": "supported",
+     "section": "4.2 Meta Evaluation"
+    },
+    {
+     "finding": "Replacing BM25 with E5-Mistral improved overall RAG performance for every fixed generator in the eight-system comparison, supporting the conclusion that retrieval quality consistently affects downstream answer quality.",
+     "evidence_type": "supported",
+     "section": "4.3 Main Results"
+    },
+    {
+     "finding": "With either retriever fixed, Llama3-70B outperformed Llama3-8B in overall F1 and showed better generator diagnostics, including lower hallucination and higher faithfulness.",
+     "evidence_type": "supported",
+     "section": "4.3 Main Results"
+    },
+    {
+     "finding": "The diagnostic decomposition directly measures omission-like behavior through ground-truth claim recall and context utilization while separating unsupported generated material into retrieved-noise and hallucination categories.",
+     "evidence_type": "supported",
+     "section": "3.3 RagChecker Metrics"
+    },
+    {
+     "finding": "Ablation analyses show that retrieving more useful context can increase faithfulness and coverage but can also increase sensitivity to relevant-context noise, exposing a trade-off hidden by a single aggregate score.",
+     "evidence_type": "supported",
+     "section": "4.4 Diagnosis on RAG Settings for Improvements"
+    }
+   ],
+   "limitations": [
+    "Retriever diagnostics are comparatively coarse and do not directly measure properties such as evidence density, diversity, or coherence.",
+    "The metrics collapse RefChecker's Neutral and Contradiction outcomes when assessing generated responses even though these error types may warrant different penalties.",
+    "The benchmark is text-only and English-only and is largely repurposed from existing QA datasets rather than designed specifically around all RAG failure modes."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "human_correlation": 0.99,
+    "correlation_metric_nuance": 0.99,
+    "retriever_effect": 0.98,
+    "generator_size_effect": 0.98,
+    "omission_diagnostics": 0.99,
+    "context_noise_tradeoff": 0.96
+   },
+   "raw_claims": [
+    "RAGChecker evaluates long-form RAG outputs at the level of atomic claims rather than only whole-response similarity.",
+    "Claim recall measures how much of the reference answer's factual content appears in retrieved context.",
+    "Context precision measures the fraction of retrieved chunks that contain at least one ground-truth claim.",
+    "Faithfulness measures how much generated content is entailed by retrieved context.",
+    "Hallucination is assigned to incorrect generated claims that are not supported by any retrieved chunk.",
+    "Context utilization measures whether reference-relevant information that was successfully retrieved is actually used in the generated answer.",
+    "The benchmark includes 4,162 queries distributed across ten domains.",
+    "The experimental RAG systems combine BM25 or E5-Mistral retrieval with four different generators.",
+    "The human meta-evaluation contains 280 response pairs judged for correctness, completeness, and overall preference.",
+    "The framework is released as open-source software."
+   ],
+   "source_url": "https://arxiv.org/html/2408.08067",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2602.16537",
+   "title": "Optimal training-conditional regret for online conformal prediction",
+   "research_question": "How can online conformal prediction maintain strong training-conditional coverage guarantees under unknown abrupt or smooth distribution drift, including when prediction models themselves are updated online?",
+   "methodology": "The paper defines training-conditional cumulative regret as the accumulated absolute deviation of conditional prediction-set coverage from its target and studies independent observations under either change-point or smoothly drifting distributions. For independently pretrained nonconformity scores it proposes DriftOCP, which uses repeated drift detection and adaptive calibration-window resets, and proves upper bounds together with matching minimax lower bounds. For scores trained from streaming data it develops DriftOCP-full, replacing permutation-symmetry assumptions with Lipschitz and algorithmic-stability conditions and deriving non-asymptotic guarantees. Synthetic regression experiments compare the drift-aware methods with adaptive conformal inference variants under stationary, abrupt, and smoothly changing environments.",
+   "key_findings": [
+    {
+     "finding": "For pretrained scores, DriftOCP attains regret of order approximately sqrt((Ncp+1)T) under change points and sqrt(T) plus KS_T^(1/3)T^(2/3) under smooth score-distribution drift, up to logarithmic factors.",
+     "evidence_type": "supported",
+     "section": "3.2 Theoretical Guarantees"
+    },
+    {
+     "finding": "The corresponding minimax lower bounds match the pretrained-score upper-bound dependence on the horizon and drift measures up to logarithmic factors, establishing minimax optimality within the stated admissible algorithm class.",
+     "evidence_type": "supported",
+     "section": "3.3 Minimax Lower Bound"
+    },
+    {
+     "finding": "For online-trained scores under the stated Lipschitz and stability assumptions, DriftOCP-full attains regret of order approximately sqrt((Ncp+L+1)T) for change points and sqrt((L+1)T) plus TV_T^(1/3)T^(2/3) for smooth drift.",
+     "evidence_type": "supported",
+     "section": "4.2 Theoretical Guarantees under Stability Assumptions"
+    },
+    {
+     "finding": "The full-conformal analysis also yields a batch training-conditional coverage concentration result for stable data-dependent predictors without requiring permutation-invariant model fitting.",
+     "evidence_type": "supported",
+     "section": "4.2 Theoretical Guarantees under Stability Assumptions"
+    },
+    {
+     "finding": "In the pretrained-score simulations, DriftOCP remained comparatively stable in stationary segments while adapting rapidly after shifts, whereas ACI exhibited a stepsize trade-off between stable calibration and rapid reaction to drift.",
+     "evidence_type": "supported",
+     "section": "5.1 Experiments: Online Conformal Prediction with Pretrained Scores"
+    },
+    {
+     "finding": "The online-model experiments illustrate that adapting the fitted predictive model as well as recalibrating prediction sets can improve interval efficiency while keeping empirical coverage near its target under covariate shift.",
+     "evidence_type": "supported",
+     "section": "5.2 Experiments: Online Conformal Prediction with Adaptively Trained Scores"
+    }
+   ],
+   "limitations": [
+    "The theoretical guarantees rely on independence across observations and do not cover temporally dependent non-stationary processes such as general Markov or time-series environments.",
+    "The online-trained-score guarantees require stability of the fitting algorithm and Lipschitz regularity; these conditions can fail or be difficult to establish for high-dimensional, nonparametric, or deep models.",
+    "The lower-bound result for the full-conformal setting restricts prediction procedures to sets representable as a union of at most K intervals.",
+    "The numerical evaluation is synthetic rather than an evaluation on naturally occurring non-stationary data streams.",
+    "The pretrained-score experimental protocol states that experiments were repeated 40 times, while the Figure 3 caption states that its curves were averaged over 20 runs, leaving an ambiguity in the reported replication count."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "pretrained_regret_bound": 0.99,
+    "pretrained_minimax_optimality": 0.99,
+    "online_trained_regret_bound": 0.99,
+    "stability_based_coverage": 0.99,
+    "simulation_adaptation": 0.96,
+    "independence_limitation": 0.99,
+    "replication_count_ambiguity": 0.99
+   },
+   "raw_claims": [
+    "The paper evaluates online conformal prediction using training-conditional cumulative coverage regret rather than only long-run marginal coverage frequency.",
+    "The non-stationarity model covers both abrupt change points and gradually evolving distributions.",
+    "DriftOCP detects distribution changes and adapts which recent observations are used for conformal calibration.",
+    "For pretrained scores, the upper regret bounds match derived minimax lower bounds up to logarithmic factors.",
+    "DriftOCP-full is designed for settings in which the prediction model and resulting nonconformity score change with incoming observations.",
+    "The full-conformal analysis substitutes stability conditions for the permutation symmetry often used in conformal theory.",
+    "The smooth-drift bound for pretrained scores depends on drift in score distributions measured through a Kolmogorov-Smirnov quantity.",
+    "The corresponding adaptive-model smooth-drift bound uses total variation between data distributions.",
+    "The simulation horizon in the first experiment is 10,000 time steps with target miscoverage 0.1.",
+    "Extending the training-conditional theory to dependent non-stationary sequences is left as future work."
+   ],
+   "source_url": "https://arxiv.org/html/2602.16537",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2602.11908",
+   "title": "When Should LLMs Be Less Specific? Selective Abstraction for Reliable Long-Form Text Generation",
+   "research_question": "Can an LLM selectively replace uncertain atomic claims with less specific statements, rather than deleting them outright, to obtain a better calibrated trade-off between factual risk and retained information in long-form generation?",
+   "methodology": "The proposed atom-wise Selective Abstraction procedure generates a response, decomposes it into atomic claims, and elicits a confidence score for each claim. For low-confidence claims the same model generates progressively less-specific abstractions, and the system selects the most specific abstraction exceeding a confidence threshold or abstains if none qualifies before reconstructing the response. Evaluation defines factual risk using an agentic Wikipedia-based fact checker and defines retained information using entity-set uncertainty reduction estimated through Wikidata, with risk-coverage curves summarized by AURC. Experiments cover six open-source LLMs on FactScore and LongFact-Objects and also evaluate a split-conformal-inspired calibration procedure for selecting thresholds to meet target risk levels.",
+   "key_findings": [
+    {
+     "finding": "Atom-wise selective abstraction reduced average AURC relative to claim redaction by 17.43% on FactScore and 13.77% on LongFact-Objects across the six evaluated models.",
+     "evidence_type": "supported",
+     "section": "6 Results"
+    },
+    {
+     "finding": "The largest reported gain occurred for gpt-oss-120b, with AURC improvements of 27.73% on FactScore and 21.02% on LongFact-Objects relative to redaction.",
+     "evidence_type": "supported",
+     "section": "6 Results"
+    },
+    {
+     "finding": "At matched coverage, atom-wise abstraction generally produced substantially less factual risk than the Inline Abstraction and Self-Revision baselines, with the paper describing the average advantage as about ten percentage points.",
+     "evidence_type": "supported",
+     "section": "6 Results"
+    },
+    {
+     "finding": "The Wikipedia-based correctness agent was checked against human judgments on 102 sampled claims and achieved an overall F1 of 0.93.",
+     "evidence_type": "supported",
+     "section": "4.1 Risk"
+    },
+    {
+     "finding": "The calibration procedure selected thresholds whose empirical risks stayed close to specified target risks across 600 repeated runs per dataset, although variability remained because the calibration and test samples were small.",
+     "evidence_type": "supported",
+     "section": "7 Threshold Selection for Target Risk"
+    },
+    {
+     "finding": "The theoretical threshold guarantee assumes exchangeability between calibration claims and the test claim, so it is not a distribution-shift guarantee for arbitrary non-stationary claim streams.",
+     "evidence_type": "supported",
+     "section": "Appendix H Selective Threshold Algorithm"
+    },
+    {
+     "finding": "Among the confidence functions examined, verbalized confidence provided the strongest reported combination of correctness ranking and risk-coverage performance, while P(True) had near-random atom-level ranking behavior.",
+     "evidence_type": "supported",
+     "section": "Appendix E On the Importance of Choosing a Confidence Scoring Function"
+    }
+   ],
+   "limitations": [
+    "Selective abstraction depends strongly on the quality and ranking calibration of the confidence score, and the authors explicitly note that their verbalized confidence estimates are imperfect.",
+    "Atomic claims are treated independently even though dependencies between claims can affect whether an abstraction remains coherent or correct.",
+    "Systematic quantitative evaluation is restricted to two factual long-form benchmarks because defining comparable risk and information measures for subjective or non-factual generation is difficult.",
+    "The information metric assumes a uniform prior over compatible entities and uses sparse Wikidata counts as a proxy rather than true real-world entity distributions.",
+    "The factual-risk evaluator treats failure to find supporting Wikipedia evidence as unsupported, so evidence absence and factual falsity are not distinguished by the binary correctness label.",
+    "The calibrated threshold guarantee requires exchangeability and therefore does not directly ensure target-risk control after arbitrary temporal or distributional shift."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "aurc_improvement": 0.99,
+    "matched_coverage_risk": 0.98,
+    "fact_checker_validation": 0.99,
+    "target_risk_calibration": 0.97,
+    "exchangeability_requirement": 0.99,
+    "confidence_function_effect": 0.98
+   },
+   "raw_claims": [
+    "Selective Abstraction reduces the specificity of uncertain parts of a long-form answer instead of necessarily deleting them.",
+    "The atom-wise method constructs multiple increasingly general alternatives for a low-confidence claim.",
+    "It retains the most specific abstraction whose reported confidence exceeds the chosen threshold.",
+    "If no abstraction reaches the threshold, the procedure abstains on that atomic claim.",
+    "Risk is the fraction of atomic claims that the evaluation procedure does not verify as supported.",
+    "The paper's factuality agent searches Wikipedia independently for each claim or abstraction.",
+    "Coverage is defined in terms of how much estimated information remains after abstraction.",
+    "AURC summarizes factual risk across different retained-information levels, with lower values indicating a better trade-off.",
+    "The experiments use six open-source LLMs on fixed subsets of FactScore and LongFact-Objects.",
+    "A calibration-set quantile is used to choose a confidence threshold for a requested target risk.",
+    "The finite-sample threshold argument relies on exchangeability of calibration and test claims.",
+    "The authors identify improved confidence estimation and modeling dependencies among claims as future research directions."
+   ],
+   "source_url": "https://arxiv.org/html/2602.11908",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,373 @@
+{
+ "analyses": [
+  {
+   "paper_id": "1707.05555",
+   "title": "Runtime Verification of Temporal Properties over Out-of-order Data Streams",
+   "research_question": "How can a runtime monitor soundly and completely evaluate data-aware real-time temporal properties when observations may be delayed, lost, incomplete, or received out of order?",
+   "methodology": "The authors extend Metric Temporal Logic with freeze quantification to form MTL with data binding and define observations that explicitly represent gaps in a monitor's knowledge. They introduce a three-valued semantics with true, false, and unknown and prove properties relating semantic values to refinement of partial observations. They construct an online monitoring algorithm and prove soundness and observational completeness for this semantics. A prototype is evaluated on synthetic banking-compliance event streams under both in-order and out-of-order message delivery and is compared with MONPOLY where the specification fragments overlap.",
+   "key_findings": [
+    {
+     "finding": "The proposed three-valued semantics is monotonic under refinement of observations, so filling a knowledge gap cannot invalidate a previously established Boolean verdict.",
+     "evidence_type": "supported",
+     "section": "3.3 Properties"
+    },
+    {
+     "finding": "The monitoring algorithm is sound and observationally complete for the proposed semantics while making no assumption that event messages arrive in timestamp order.",
+     "evidence_type": "supported",
+     "section": "4 Monitoring Algorithm"
+    },
+    {
+     "finding": "The general decision problem for evaluating an MTL-with-freeze formula over an observation is PSPACE-complete.",
+     "evidence_type": "supported",
+     "section": "3.3 Properties, Theorem 3.2"
+    },
+    {
+     "finding": "The prototype can process event streams at rates of hundreds of events per second even when messages arrive out of order, but it does not scale to systems producing thousands or millions of events per second.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and 7 Conclusion"
+    },
+    {
+     "finding": "MONPOLY was up to three orders of magnitude faster on overlapping policies, but that comparison favors a mature optimized tool that requires in-order input and delays some bounded-future verdicts, whereas the proposed prototype supports out-of-order observations and prompt verdicts.",
+     "evidence_type": "supported",
+     "section": "5 Experiments, Interpretation"
+    }
+   ],
+   "limitations": [
+    "The prototype does not scale to workloads producing thousands or millions of events per second.",
+    "Memory consumption cannot in general be bounded, even in simpler settings without message loss and with in-order delivery.",
+    "The full logic has high computational complexity, and detailed time and space complexity of the monitoring implementation is left for further investigation.",
+    "The empirical evaluation uses synthetic banking-compliance streams rather than a large-scale production distributed system.",
+    "Completeness is defined relative to the paper's three-valued observational semantics; a stronger requirement based on all possible completions is not generally obtainable for the full expressive logic."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "monotonic_verdicts": 0.99,
+    "sound_complete_monitoring": 0.99,
+    "pspace_complexity": 0.99,
+    "hundreds_events_per_second": 0.99,
+    "monpoly_tradeoff": 0.98
+   },
+   "raw_claims": [
+    "The monitor represents missing information explicitly rather than assuming that all earlier events are already known.",
+    "The third truth value represents information that is still unknown to the monitor.",
+    "Observation refinement can replace unknown information with additional event knowledge.",
+    "Boolean verdicts remain stable as an observation is refined.",
+    "The monitoring algorithm accepts messages without requiring them to arrive in temporal order.",
+    "The specification language can bind data values from events through freeze quantification.",
+    "Evaluating arbitrary formulas over observations is PSPACE-complete.",
+    "The prototype sustains hundreds of events per second in the evaluated out-of-order scenarios.",
+    "MONPOLY is substantially faster for the policies it can express and monitor under its more restrictive delivery assumptions.",
+    "The presented implementation is not yet suitable for event rates in the thousands or millions per second."
+   ],
+   "source_url": "https://arxiv.org/html/1707.05555",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1910.12840",
+   "title": "Evaluating the Factual Consistency of Abstractive Text Summarization",
+   "research_question": "Can factual inconsistencies in abstractive summaries be detected and localized using weak supervision generated from synthetic transformations rather than requiring a large manually labeled training set?",
+   "methodology": "The authors create weakly supervised training examples by applying rule-based transformations such as entity, number, pronoun, date, negation, noise, and paraphrasing operations to source-derived sentences from CNN/DailyMail. A BERT-based model is trained jointly to classify a summary sentence as consistent or inconsistent, identify a supporting span in the source document, and identify the inconsistent span in the summary when applicable. Evaluation uses manually annotated development and test examples from outputs of several summarization systems and compares FactCC variants with models trained on NLI and fact-verification data. Additional human studies test whether extracted explanatory spans make manual factuality assessment faster and more consistent.",
+   "key_findings": [
+    {
+     "finding": "FactCC substantially outperformed the evaluated BERT models trained on MNLI or FEVER, reaching 74.15 class-balanced accuracy and 0.5106 F1 on the manually annotated test set.",
+     "evidence_type": "supported",
+     "section": "4 Experimental Results, Table 3"
+    },
+    {
+     "finding": "Training from synthetic perturbations can transfer to factual errors produced by multiple abstractive summarization systems despite not requiring those system outputs as the main training supervision.",
+     "evidence_type": "supported",
+     "section": "3 Method and 4 Experimental Results"
+    },
+    {
+     "finding": "Checking a summary sentence against the whole source document addresses cases for which sentence-to-sentence comparison lacks enough context.",
+     "evidence_type": "supported",
+     "section": "2 Factual Consistency and 3 Method"
+    },
+    {
+     "finding": "FactCC's source and claim span predictions provide useful evidence localization in addition to a binary consistency decision.",
+     "evidence_type": "supported",
+     "section": "5 Explainability"
+    },
+    {
+     "finding": "Providing model-generated evidence highlights reduced mean human annotation time from 224.89 seconds to 178.34 seconds and increased Fleiss' kappa from 0.1571 to 0.2526 in the reported study.",
+     "evidence_type": "supported",
+     "section": "5.1 Human Evaluation, Table 7"
+    },
+    {
+     "finding": "The approach remains weak on commonsense errors and on inconsistencies requiring dependencies across multiple summary sentences, including temporal inconsistencies and incorrect coreference.",
+     "evidence_type": "supported",
+     "section": "5.2 Limitations"
+    }
+   ],
+   "limitations": [
+    "Synthetic transformations do not adequately reproduce commonsense errors, which account for many inspected model mistakes.",
+    "The document-sentence formulation does not handle some dependencies across different summary sentences, including temporal inconsistency and incorrect coreference.",
+    "The evaluation domain is primarily CNN/DailyMail news, so reliability outside summarization and outside news is not established by this study.",
+    "The manually annotated development set contains 931 examples and the test set 503 examples, limiting the scale of direct human-grounded evaluation.",
+    "Evidence spans indicate text associated with a decision but do not establish whether the underlying source document itself is true or current."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "factcc_beats_baselines": 0.99,
+    "synthetic_supervision_transfers": 0.97,
+    "document_context_helps": 0.96,
+    "evidence_spans_useful": 0.97,
+    "human_verification_improves": 0.99,
+    "known_error_categories": 0.99
+   },
+   "raw_claims": [
+    "Common summarization metrics do not directly measure whether a generated summary is factually consistent with its source.",
+    "The method generates training supervision by modifying source-derived sentences with controlled transformations.",
+    "The training set contains 1,003,355 generated examples with approximately balanced consistent and inconsistent labels.",
+    "The model jointly predicts consistency and explanatory spans in both the source and the claim.",
+    "Each summary sentence is checked against the full source document rather than against one source sentence at a time.",
+    "The manually labeled development set contains 931 examples and the test set contains 503 examples.",
+    "FactCC achieves 74.15 class-balanced accuracy and 0.5106 F1 on the manually annotated test data.",
+    "Model-generated highlights helped annotators perform the factuality task faster in the reported human study.",
+    "Commonsense inconsistencies remain a major source of classification errors.",
+    "Cross-summary-sentence temporal and coreference inconsistencies are not covered by the document-sentence formulation."
+   ],
+   "source_url": "https://arxiv.org/html/1910.12840",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2212.08037",
+   "title": "Attributed Question Answering: Evaluation and Modeling for Attributed Large Language Models",
+   "research_question": "How should attributed question answering be evaluated, how well can automatic attribution metrics reproduce human judgments, and which modeling approaches produce answers that are supported by their cited sources?",
+   "methodology": "The paper defines Attributed Question Answering and an Attribution Information Score based on human judgments of whether an answer is interpretable and fully supported by a supplied source passage. Experiments use Natural Questions-derived prompts and a Wikipedia attribution corpus, with human evaluation based on majority judgments from five trained raters over a 1,000-question sample. The authors also construct AutoAIS, an NLI-based automatic evaluator, and compare its results with human AIS and exact-match answer scoring. Several attribution architectures are evaluated, including retrieve-then-read, post-hoc retrieval, lower-resource variants, LLM-as-retriever approaches, and attribution reranking.",
+   "key_findings": [
+    {
+     "finding": "Human AIS explicitly requires the answer's information to be interpretable and fully supported by the attributed passage, making source support a separate evaluation target from ordinary answer exact match.",
+     "evidence_type": "supported",
+     "section": "3 Evaluating Attributed QA"
+    },
+    {
+     "finding": "The strongest reported retrieve-then-read configuration reached 65.5 AIS before attribution reranking, while AutoAIS reranking raised human AIS to 71.4 in the summarized architecture comparison.",
+     "evidence_type": "supported",
+     "section": "6 Results, Table 1"
+    },
+    {
+     "finding": "Exact-match answer quality and attribution quality were only moderately aligned at the system level, with a reported Pearson correlation of 0.45 between EM and AIS.",
+     "evidence_type": "supported",
+     "section": "7 Analysis"
+    },
+    {
+     "finding": "AutoAIS correlated strongly with human AIS at the system level, with Pearson correlation 0.96, but agreement was substantially weaker and more variable at the individual-question level.",
+     "evidence_type": "supported",
+     "section": "7 Analysis, AutoAIS"
+    },
+    {
+     "finding": "Using AutoAIS itself to select attribution passages created outlier systems whose human attribution ratings were lower than their automatic scores would suggest, showing that an evaluation metric can become unreliable when directly optimized as a system component.",
+     "evidence_type": "supported",
+     "section": "7 Analysis, AutoAIS"
+    },
+    {
+     "finding": "The attribution criterion verifies support from the cited source but does not establish that the source itself is factually correct, unbiased, or current.",
+     "evidence_type": "supported",
+     "section": "8 Broader Impact and Limitations"
+    }
+   ],
+   "limitations": [
+    "The experiments primarily use Natural Questions and Wikipedia, so generalization to workplace communication, private corpora, and other QA distributions is not demonstrated.",
+    "Attributed QA is evaluated only in English.",
+    "Several of the strongest approaches are computationally and data intensive.",
+    "Instance-level AutoAIS judgments are substantially noisier than aggregate system-level scores.",
+    "Optimizing attribution selection directly against AutoAIS can exploit or amplify metric error.",
+    "The framework evaluates whether a source supports an answer but does not verify whether the source itself contains inaccurate or biased information."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "ais_defines_source_support": 0.99,
+    "retrieve_then_read_performance": 0.99,
+    "em_ais_misalignment": 0.99,
+    "autoais_system_correlation": 0.99,
+    "metric_optimization_risk": 0.98,
+    "support_not_source_truth": 0.96
+   },
+   "raw_claims": [
+    "Attributed QA requires a system to return both an answer and material that supports that answer.",
+    "Human AIS treats an attribution as valid only when the answer is interpretable and fully supported by the provided source.",
+    "The main evaluation uses a random sample of 1,000 questions and majority judgments from five trained raters.",
+    "AutoAIS uses an NLI-oriented model to estimate whether the attribution entails the answer.",
+    "The retrieve-then-read architecture achieved 65.5 human AIS in the main comparison.",
+    "AutoAIS reranking increased the reported human AIS of the retrieve-then-read system to 71.4.",
+    "System-level exact match correlates only moderately with human attribution quality.",
+    "System-level AutoAIS has a reported Pearson correlation of 0.96 with human AIS.",
+    "Per-question AutoAIS agreement is weaker than its aggregate system-level correlation.",
+    "Systems that optimize attribution selection using AutoAIS reveal that automatic evaluator scores can be exploited or become misleading.",
+    "The authors publicly release system outputs together with human and automatic ratings."
+   ],
+   "source_url": "https://arxiv.org/html/2212.08037",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2605.06635",
+   "title": "Cited but Not Verified: Parsing and Evaluating Source Attribution in LLM Deep Research Agents",
+   "research_question": "Do citations in deep-research reports actually support the claims attached to them, and how do citation reliability and factual support change across models and as research depth increases?",
+   "methodology": "The authors build an end-to-end citation-evaluation framework that parses Markdown research reports into sentence-level claim-citation relationships, retrieves the cited web sources, and evaluates each relationship separately. The evaluation distinguishes link accessibility, topical relevance, and factual support, with LLM judges used for the latter two dimensions and the factual judge calibrated through manual review. Fourteen models are tested on 130 research queries drawn from DeepResearch Bench and BrowseComp. A separate depth ablation varies allowed tool calls from 2 through 150 for GPT-5.4 and Claude Opus 4.6.",
+   "key_findings": [
+    {
+     "finding": "Working links and topically relevant sources substantially overstate citation reliability because factual support is much lower than those surface-level citation metrics.",
+     "evidence_type": "supported",
+     "section": "4.1 Overall Citation Quality"
+    },
+    {
+     "finding": "Across the evaluated models, factual-support performance spans a much wider and lower range than link accessibility, including a low of 24.4 percent Fact Check accuracy for OSS-120B.",
+     "evidence_type": "supported",
+     "section": "4.1 Overall Citation Quality, Table 1"
+    },
+    {
+     "finding": "Fewer than half of the evaluated open-source-model runs successfully generated the required cited report, with reported task-success rates of 17 to 40 percent compared with 83 to 100 percent for frontier models.",
+     "evidence_type": "supported",
+     "section": "4.1 Overall Citation Quality"
+    },
+    {
+     "finding": "Increasing search depth from 2 to 150 tool calls reduced Fact Check accuracy by approximately 42 percent on average across the two frontier models in the ablation, while link validity and topical relevance stayed comparatively stable.",
+     "evidence_type": "supported",
+     "section": "4.3 Search Depth Ablation"
+    },
+    {
+     "finding": "For GPT-5.4, the largest factual-support deterioration appeared early in the depth ablation, with Fact Check accuracy falling from about 79 percent at 2 tool calls to 46 percent at 10 calls.",
+     "evidence_type": "supported",
+     "section": "4.3 Search Depth Ablation"
+    },
+    {
+     "finding": "The paper attributes the degradation with additional retrieved information to information overload impairing factual synthesis, but the experiments establish the association rather than isolating that causal mechanism.",
+     "evidence_type": "unsupported",
+     "section": "4.3 Search Depth Ablation"
+    }
+   ],
+   "limitations": [
+    "Relevant Content and Fact Check rely on an LLM judge and may retain position bias, self-enhancement bias, or other judge-model biases despite human calibration.",
+    "Web pages and URLs are temporally unstable, so later reruns may observe changed content or unavailable sources.",
+    "The study is limited to models with web-search capabilities and does not evaluate enterprise RAG systems over private internal corpora.",
+    "Retrieved source content supplied to the relevance judge is truncated to 5,000 characters, which can exclude potentially relevant material outside that window.",
+    "The search-depth experiment uses only two frontier models, limiting how broadly its degradation pattern can be generalized.",
+    "The proposed evaluation measures support in retrieved web content but does not independently guarantee the truth or authority of every source."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "surface_metrics_hide_support_failures": 0.99,
+    "wide_fact_check_range": 0.99,
+    "open_source_task_success_gap": 0.99,
+    "depth_reduces_factual_support": 0.99,
+    "early_gpt54_decline": 0.99,
+    "information_overload_mechanism": 0.72
+   },
+   "raw_claims": [
+    "The framework separates whether a citation link works, whether its content is relevant, and whether it actually supports the attributed claim.",
+    "Citation-to-claim relationships are recovered from generated Markdown reports and evaluated at sentence-level granularity.",
+    "The study evaluates 14 models on 130 research queries.",
+    "Frontier systems generally produce accessible and relevant citations more consistently than they produce factually supporting citations.",
+    "OSS-120B receives 24.4 percent on the reported Fact Check metric.",
+    "Open-source systems have substantially lower success rates at producing the requested cited reports in the evaluated one-shot setting.",
+    "Search-depth experiments vary tool usage from 2 to 150 calls.",
+    "Average Fact Check accuracy across the two depth-ablation models falls by roughly 42 percent from the shallowest to deepest setting.",
+    "Link accessibility and topical relevance remain relatively stable while factual support deteriorates with search depth.",
+    "Web-source changes over time are identified as a reproducibility problem for citation evaluation.",
+    "The framework does not cover enterprise systems that attribute claims to private internal document collections."
+   ],
+   "source_url": "https://arxiv.org/html/2605.06635",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2607.08700",
+   "title": "Do You Need a Frontier Model as a Citation Verifier? Benchmarking Rubric LLMs for Deep-Research Source Attribution",
+   "research_question": "How capable and expensive must an LLM citation judge be to evaluate source relevance and factual support reliably, and what judge biases are hidden by aggregate accuracy metrics?",
+   "methodology": "The authors construct the Deep-Research Citation Benchmark from a long-form report spanning 25 topic domains, producing 624 attribution-citation pairs and 1,248 gold rubric decisions for source relevance and factual support. About 60 percent of claims are adversarially edited using 19 perturbation strategies, and a six-model labeling council is followed by human review of every decision, with intensive adjudication of 378 disagreement cases. Eight off-the-shelf LLM judges from three model families are evaluated using pass-class F1, Cohen's kappa, false-positive rate, false-negative rate, pass-rate drift, and bootstrap confidence intervals. The study also compares judge quality with API cost using June 2026 provider pricing.",
+   "key_findings": [
+    {
+     "finding": "A more expensive frontier judge was not consistently more accurate: GPT-5-mini achieved the highest reported source-relevance F1 at 0.908 despite being among the lower-cost evaluated judges.",
+     "evidence_type": "supported",
+     "section": "5.3 Cost and Quality"
+    },
+    {
+     "finding": "For factual support, the 95 percent confidence intervals of all eight judges overlap, so the benchmark does not establish a statistically distinguishable winner on that dimension.",
+     "evidence_type": "supported",
+     "section": "5 Results and Table 2"
+    },
+    {
+     "finding": "Judge cost spans a 49-fold range in the study, but cost does not track citation-verification accuracy.",
+     "evidence_type": "supported",
+     "section": "5.3 Cost and Quality"
+    },
+    {
+     "finding": "Judges with similar aggregate F1 can have materially different pass-rate drift, false-positive rates, and false-negative rates, so scalar F1 hides operationally important directional bias.",
+     "evidence_type": "supported",
+     "section": "5.1 Judge Accuracy and 5.2 Directional Bias"
+    },
+    {
+     "finding": "All eight judges are systematically stricter than the gold labels on source relevance, and factual-support errors are dominated by rejection of genuinely supported citations rather than acceptance of unsupported ones.",
+     "evidence_type": "supported",
+     "section": "5.2 Directional Bias"
+    },
+    {
+     "finding": "Judge rankings change substantially on the 378 disagreement cases, showing that full-benchmark F1 is an incomplete measure of reliability on ambiguous citation decisions.",
+     "evidence_type": "supported",
+     "section": "4 Human Adjudication and 5.4 Reward Noise from Disagreement"
+    },
+    {
+     "finding": "The paper argues that directional judge biases will shape downstream reinforcement-learning behavior, but that downstream training effect is inferred from the error profile rather than directly demonstrated by an RL training experiment in this study.",
+     "evidence_type": "unsupported",
+     "section": "5.2 Directional Bias and 6 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The reported findings are limited to a single adversarial long-form document, even though its contents span 25 topic domains.",
+    "Sensitivity to prompt design remains an open question identified by the authors.",
+    "Sensitivity to batch-scoring strategies remains an open question identified by the authors.",
+    "Two evaluated judges, GPT-5-mini and Claude Opus 4.6, also participate in the gold-label council, although the human-adjudicated subset provides a partially independent check.",
+    "The benchmark intentionally contains many adversarial edits and has a low factual-support gold pass rate, so its class distribution may differ substantially from production citation traffic.",
+    "Cost comparisons use provider API prices as of June 2026 and therefore are time-dependent.",
+    "The source-relevance rubric partly overlaps conceptually with factual support, which the authors identify as a frequent cause of inter-judge disagreement."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "cheap_judge_competitive": 0.99,
+    "no_fact_support_winner": 0.99,
+    "cost_not_accuracy": 0.99,
+    "f1_hides_directional_bias": 0.99,
+    "systematic_strictness": 0.98,
+    "hard_case_rankings_shift": 0.99,
+    "downstream_rl_effect": 0.78
+   },
+   "raw_claims": [
+    "The benchmark contains 624 attribution-citation pairs and 1,248 source-relevance and factual-support decisions.",
+    "Every gold decision receives human review, and 378 disagreement cases receive additional adjudication.",
+    "Eight LLM judges from three model families are evaluated on every benchmark pair.",
+    "GPT-5-mini obtains a source-relevance pass-class F1 of 0.908.",
+    "All reported factual-support confidence intervals overlap across the eight judges.",
+    "The evaluated judge costs span approximately a 49-fold range.",
+    "Judge price does not reliably predict citation-verification performance in this benchmark.",
+    "Judges differ substantially in false-positive rate, false-negative rate, and pass-rate drift even when their aggregate F1 scores are similar.",
+    "Factual-support judges tend to reject valid support more often than they accept invalid support.",
+    "Performance rankings shift on cases where the labeling council originally disagreed.",
+    "The authors identify full-set F1 as insufficient for characterizing reliability on the most ambiguous citations.",
+    "The conclusions are explicitly limited by use of one adversarial long-form document and unresolved sensitivity to prompting and batching."
+   ],
+   "source_url": "https://arxiv.org/html/2607.08700",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

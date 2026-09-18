@@ -1,0 +1,211 @@
+{
+ "streams": [
+  {
+   "id": "tf_selective_generation",
+   "description": "Selective prediction and abstention for NLP and generated answers, evaluated through retained coverage versus answer risk."
+  },
+  {
+   "id": "tf_utility_sensitive_eval",
+   "description": "Cost-sensitive and decision-focused reliability evaluation in which abstention and acceptance are assessed using explicit downstream costs or utility."
+  },
+  {
+   "id": "tf_conformal_risk_control",
+   "description": "Adaptive conformal inference and conformal risk-control methods that control application-defined error or loss beyond static exchangeable coverage."
+  },
+  {
+   "id": "tf_evidence_completeness",
+   "description": "Evidence sufficiency and completeness for compound claims, including partial support, decomposition, complementary evidence, and multi-source verification."
+  },
+  {
+   "id": "tf_online_nonstationary_calibration",
+   "description": "Sequential calibration and uncertainty control under concept drift or other changing, non-exchangeable data streams."
+  },
+  {
+   "id": "tf_longitudinal_omission",
+   "description": "Evaluation of evolving summaries for newly important information, comprehensiveness, latency, novelty, and avoidance of obsolete or redundant content."
+  },
+  {
+   "id": "tf_temporal_currentness",
+   "description": "Evaluation of whether claims and supporting evidence are valid for the relevant observation time or temporal interval."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2405.05160",
+   "decision": "REJECT",
+   "reason": "The abstract studies selective classification under several distribution shifts, but the open non-stationary-calibration gap is specifically about continuing sequential adaptation. This is another static train/test-shift study of a capability the existing corpus already covers and does not materially strengthen the remaining gap.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1038-s41598-026-40637-w",
+   "decision": "ADMIT",
+   "reason": "The abstract uniquely combines calibrated prediction, conformal uncertainty, explicit cost-aware deferral, risk-coverage evaluation, and temporally separated shifted data. That materially strengthens utility-sensitive selective-decision methodology even though the clinical domain is transfer evidence. Identity is UNCHECKED, so canonical verification should occur during acquisition.",
+   "stream_id": "tf_utility_sensitive_eval",
+   "role": "TRANSFER",
+   "confidence": 0.79
+  },
+  {
+   "paper_id": "2006.09462",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies selective question answering under domain shift, with a learned calibrator deciding whether an answer is returned and evaluation of error as coverage changes. This is direct NLP evidence for abstention and risk-coverage behavior rather than generic classification.",
+   "stream_id": "tf_selective_generation",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-acl-long-84",
+   "decision": "ADMIT",
+   "reason": "The abstract directly evaluates abstention in NLP, compares confidence estimators, and introduces error regularization specifically to improve the coverage-risk relationship. That is a substantive selective-prediction contribution rather than merely uncertainty vocabulary. Identity is UNCHECKED and should be confirmed during acquisition.",
+   "stream_id": "tf_selective_generation",
+   "role": "DIRECT",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "1705.08500",
+   "decision": "REJECT",
+   "reason": "This is an important generic selective-classification foundation, but its abstract contributes the standard deep-network reject/risk-coverage formulation rather than addressing the still-open generation, temporal, or non-stationary gaps. More task-specific selective-prediction candidates in this set provide a better use of a reading slot.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-1609-aaai-v40i40-40667",
+   "decision": "ADMIT",
+   "reason": "The abstract applies uncertainty-aware selective answering to foundation-model question answering and supplies statistical/conformal risk guarantees for answers the model elects to provide. This materially strengthens direct selective-generation evidence by joining abstention with explicit error control. Identity is UNCHECKED and should be verified before treating it as canonical.",
+   "stream_id": "tf_selective_generation",
+   "role": "DIRECT",
+   "confidence": 0.81
+  },
+  {
+   "paper_id": "manual-2be3626f9e",
+   "decision": "ADMIT",
+   "reason": "The abstract gives a unified treatment of reject-option decisions under explicit cost-based, bounded-improvement, and bounded-abstention objectives and connects achievable coverage to selective risk. That materially strengthens the decision/utility side of abstention, which benchmark-only risk-coverage papers do not provide. Identity is UNCHECKED.",
+   "stream_id": "tf_utility_sensitive_eval",
+   "role": "TRANSFER",
+   "confidence": 0.76
+  },
+  {
+   "paper_id": "doi-10-1109-tit-1970-1054406",
+   "decision": "REJECT",
+   "reason": "The paper is foundational for recognition-error versus rejection trade-offs, but the capability is subsumed for this review by newer reject-option and risk-coverage treatments that handle the same decision-theoretic role more directly. Identity is also UNCHECKED, so it does not justify a scarce reading slot over the newer candidate.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1016-j-jbi-2026-105084",
+   "decision": "REJECT",
+   "reason": "The abstract shows that aggregate risk-coverage metrics can hide class-specific failures under imbalance, but its proposed evaluation is tied to multiclass imbalance rather than generation, temporal streams, or project-relevant asymmetric decision outcomes. The general lesson about preserving separate denominators is already established in the project context. Identity is UNCHECKED.",
+   "confidence": 0.85
+  },
+  {
+   "paper_id": "2208.02814",
+   "decision": "ADMIT",
+   "reason": "The paper generalizes conformal guarantees from set coverage to expected application-defined monotone loss and explicitly considers extensions beyond the basic exchangeable setting. This is a core transfer method for controlling selective-deployment risk rather than merely calibrating token probabilities.",
+   "stream_id": "tf_conformal_risk_control",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2606.27736",
+   "decision": "ADMIT",
+   "reason": "The abstract directly targets complex claims requiring multiple sources and combines hierarchical decomposition, iterative evidence retrieval, evidence evaluation, aggregation, and final verification. It is one of the strongest candidates for gap-4 because it explicitly addresses compound claims and complementary multi-source evidence rather than single-evidence factuality.",
+   "stream_id": "tf_evidence_completeness",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1016-j-jisa-2025-104120",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies conformal prediction and online model updating in the presence of concept drift, testing recalibration and adaptation on a changing stream. This materially strengthens gap-8 because sequential non-stationarity, rather than a one-time held-out domain shift, is part of the method being evaluated. Identity is UNCHECKED.",
+   "stream_id": "tf_online_nonstationary_calibration",
+   "role": "TRANSFER",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "doi-10-64898-2025-11-28-25341233",
+   "decision": "REJECT",
+   "reason": "The abstract describes an incremental longitudinal summarization and representation method with temporal ordering and leakage prevention, but it does not show an evaluation method for omission, superseded information, redundancy, or required state updates. Topic wording overlaps gap-5, but the needed evaluation capability is not demonstrated. Identity is UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2211.07145",
+   "decision": "REJECT",
+   "reason": "The paper provides explicit omission annotations and omission detection for dialogue summaries, but gap-5 already states that report-level omission has substantial benchmark coverage. The abstract does not add the missing longitudinal dimension of evolving work-item state, due information, supersession, or observation-time correctness.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2208.08401",
+   "decision": "ADMIT",
+   "reason": "The abstract directly develops online conformal inference for sequences with arbitrarily changing distributions and uses adaptive procedures and regret-style guarantees rather than assuming a fixed exchangeable stream. This is highly aligned transfer evidence for gap-8 on continuing non-stationarity.",
+   "stream_id": "tf_online_nonstationary_calibration",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-80ff27ab7b",
+   "decision": "REJECT",
+   "reason": "The abstract describes adaptive conformal recalibration under temporal and covariate shift, but this capability substantially overlaps the verified online-conformal candidate 2208.08401, which already handles arbitrary distribution shifts. Given the reading-slot constraint and UNCHECKED identity, the verified broader paper is preferred.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2204.02007",
+   "decision": "ADMIT",
+   "reason": "The paper explicitly separates evidence sufficiency from the final veracity decision and diagnoses sufficiency by removing evidence constituents or sentences. That materially strengthens gap-4's partial/insufficient-support component, even though it does not by itself solve complementary multi-source or temporal-version completeness.",
+   "stream_id": "tf_evidence_completeness",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1155-2016-1340973",
+   "decision": "ADMIT",
+   "reason": "The abstract evaluates sequential update summarization using temporal measures that explicitly include comprehensiveness and latency-sensitive gain. This supplies transfer methodology for longitudinal coverage of evolving information, which is closer to gap-5 than static omission benchmarks, although it does not establish work-item-state or supersession evaluation. Identity is UNCHECKED.",
+   "stream_id": "tf_longitudinal_omission",
+   "role": "TRANSFER",
+   "confidence": 0.7
+  },
+  {
+   "paper_id": "2503.14797",
+   "decision": "REJECT",
+   "reason": "The abstract describes an interactive verification tool that decomposes generated text and exposes multiple retrieved evidence sources for human inspection. It does not show a general evaluation method for citation correctness, evidence completeness, partial multi-source support, or joint reliability dimensions, so the tool capability does not materially close the current gaps.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2604.20860",
+   "decision": "REJECT",
+   "reason": "This is primarily a retrieval and routing system: parallel source retrieval followed by verification and dynamic routing. Although it targets evidence completeness for multi-hop questions, the abstract does not establish an evaluation method for whether generated compound claims are completely supported. That belongs more naturally to retrieval methodology than Topic 10 evaluation.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2305.11859",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses complex-claim verification using claim decomposition, open-world retrieval, fine-grained evidence selection, evidence summarization, and final verification, while explicitly examining incompleteness in retrieved evidence. This materially strengthens gap-4's compound-claim and incomplete-evidence dimensions.",
+   "stream_id": "tf_evidence_completeness",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2411.15993",
+   "decision": "REJECT",
+   "reason": "The abstract studies atomic-claim factuality and models' self-known versus self-unknown distinctions, but it does not demonstrate evidence-conditioned support classification or empirical probability calibration against observed correctness. It therefore overlaps atomic-factuality terminology without materially advancing the open completeness or calibration gaps.",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "2511.01101",
+   "decision": "ADMIT",
+   "reason": "The benchmark requires claims to be verified against time-series evidence and annotates relevant temporal frames, verdicts, and justifications. That materially strengthens temporal-currentness evaluation by making the validity interval of evidence explicit, even though it does not cover textual revision/version conflicts.",
+   "stream_id": "tf_temporal_currentness",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-1016-j-patcog-2023-109839",
+   "decision": "REJECT",
+   "reason": "The paper proposes an incremental news-summarization method emphasizing novelty and reduced repetition, but the abstract does not provide an omission-detection or longitudinal state-evaluation framework. Its useful capability is mainly generation of updates, and the temporal summarization methodology is better represented by the candidate explicitly evaluating comprehensiveness and latency. Identity is UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-3390-math14101769",
+   "decision": "REJECT",
+   "reason": "The abstract combines atomic claim decomposition with knowledge-graph-grounded contradiction and temporal-distortion checking, but it does not address the currently open compound multi-source completeness problem or online calibration problem. Its atomic-verification contribution overlaps stronger verified candidates, and its identity is UNCHECKED.",
+   "confidence": 0.84
+  }
+ ],
+ "notes": "No candidate abstract establishes gap-1's single end-to-end multidimensional evaluation scheme. Gap-2, gap-6, and gap-7 remain engineering-validation gaps rather than literature gaps. The admitted evidence-completeness papers strengthen compound, incomplete, and multi-source verification components but do not jointly add temporally versioned evidence, so gap-4 remains open. The admitted sequential-update paper adds longitudinal comprehensiveness/latency methodology but does not establish workplace work-item omission or supersession detection, so gap-5 remains open. The online conformal and concept-drift papers materially strengthen gap-8 at the sequential non-stationarity layer, but they remain transfer evidence rather than a validated method for continuously changing free-form workplace communication."
+}

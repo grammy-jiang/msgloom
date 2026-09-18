@@ -1,0 +1,26 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/10-evidence-and-reliability-evaluation/runs/1b615a33607c/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 1 is substantively supported, but its wording says the distinction is demonstrated 'across summarization, attributed QA, report evaluation, and RAG' while the four cited records [2212.08037, 2305.14627, 2405.00982, 2408.08067] cover attributed QA, citation-backed long-form generation/report evaluation, and RAG rather than a direct summarization study. The corpus does contain summarization evidence elsewhere, so this is a citation-to-clause mismatch rather than a failure of the overall conclusion.",
+  "Finding 10 slightly overstates the oracle-evidence evidence when it says oracle or near-oracle access still leaves 'unsupported claims, and incomplete evidence use.' [2508.20867] directly establishes persistent omissions under oracle retrieval, and [2305.14627] establishes that relevant or oracle-like evidence does not guarantee successful evidence use, but the supplied reductions do not directly establish an oracle-condition result specifically for unsupported claims. The retrieval/generation bottleneck conclusion itself is well supported.",
+  "The executive-summary phrase 'Across 64 corpus records, the evidence consistently supports decomposed reliability evaluation rather than a single factuality score' is broader than the supplied evidence warrants literally. A substantial subset of the 64 records concerns conformal prediction, runtime temporal monitoring, human-evaluation methodology, or other topics that do not themselves test decomposed factuality evaluation. The intended component-level conclusion is supported, but 'consistently across 64' should be weakened.",
+  "The temporal actionable insight recommends fixtures containing 'supersession' and 'corrected completion.' Those are sensible target-domain engineering cases, but the supplied studies do not directly validate those particular workplace-state categories. They should remain explicitly framed as target-domain stress-test design choices rather than literature-established requirements.",
+  "The contradictions array is empty, but the limitations section explicitly identifies and names the principal apparent tensions—softmax confidence in in-domain classification versus shifted QA [doi-10-18653-v1-2021-acl-long-84, 2006.09462], and successful adaptive conformal behavior versus structured-generation ACI failures [2106.00170, 2606.29054]—and correctly explains why the differing tasks and assumptions prevent treating them as direct contradictions. This satisfies the substantive coherence requirement, although representing these as scoped tensions in the contradictions field would make the artifact structurally clearer."
+ ],
+ "unsupported_claims": [
+  "Finding 10's specific implication that unsupported claims persist under oracle or near-oracle evidence access is not directly established by the supplied reduced findings; the reductions directly establish oracle-setting omissions and incomplete evidence use.",
+  "The executive summary's literal claim that evidence 'across 64 corpus records' consistently supports decomposed reliability evaluation is too sweeping because several corpus records address calibration, conformal guarantees, temporal monitoring, or human-evaluation methodology rather than that proposition.",
+  "The actionable recommendation's specific workplace temporal categories 'supersession' and 'corrected completion' are engineering extrapolations from the corpus, not directly validated categories in the admitted studies."
+ ],
+ "required_fixes": [],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.98,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is fundamentally faithful to the 64 supplied analyses and correctly leaves the central research gaps open. All cited paper_ids used in findings, limitations, and gap-status evidence belong to the allowed identifier set. The strongest conclusions—separability of correctness/attribution/completeness, failure of independent atomic verification to capture aggregate errors, evidence-sufficiency problems, temporal-validity distinctions, omission-versus-repetition evaluation, selective-risk trade-offs, non-stationary calibration limitations, judge-validation concerns, and separable retrieval/generation bottlenecks—are traceable to the supplied analyses. No gap is improperly presented as closed, and the synthesis explicitly limits transfer from non-workplace and synthetic domains rather than treating those results as production validation. The identified problems are localized wording or evidence-scope overstatements and do not undermine the central synthesis or justify rejection."
+}

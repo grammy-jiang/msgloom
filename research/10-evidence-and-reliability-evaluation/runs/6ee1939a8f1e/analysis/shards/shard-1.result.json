@@ -1,0 +1,405 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2404.00474",
+   "title": "Linguistic Calibration of Long-Form Generations",
+   "research_question": "Can long-form language-model generations be trained to communicate uncertainty such that downstream users form calibrated probabilistic forecasts, including under substantial domain and task shifts?",
+   "methodology": "The paper defines linguistic calibration in terms of the calibration of probabilistic forecasts made by a downstream reader after consuming a long-form generation. It constructs synthetic supervision from question-answering datasets, first applies summary distillation to teach confidence-bearing long-form responses, and then performs decision-based reinforcement learning with a strictly proper scoring-rule objective using a surrogate reader. The authors calibrate Llama 2 7B and evaluate with simulated and human readers on in-distribution TriviaQA, out-of-distribution Jeopardy, SciQ, and BioASQ, plus a held-out person-biography generation task. Evaluation emphasizes reader expected calibration error and accuracy, with claim-level factuality evaluation for biographies.",
+   "key_findings": [
+    {
+     "finding": "Decision-based linguistic-calibration training substantially improves reader calibration relative to factuality-focused Llama 2 baselines while preserving comparable or better answer accuracy.",
+     "evidence_type": "supported",
+     "section": "Section 4.2 and Appendix A"
+    },
+    {
+     "finding": "The reinforcement-learning variant maintains improved calibration under distribution shifts to Jeopardy, scientific QA, and biomedical QA rather than only on the training-domain task.",
+     "evidence_type": "supported",
+     "section": "Section 4.2 and Appendix A.5-A.10"
+    },
+    {
+     "finding": "Calibration transfers zero-shot to a held-out biography-generation task, where claim-level evaluation shows improved calibration relative to non-confidence Llama-based methods.",
+     "evidence_type": "supported",
+     "section": "Section 4.3 and Appendix A.11"
+    },
+    {
+     "finding": "A scalable simulated-reader evaluation tracks the intended downstream forecasting behavior sufficiently well to be validated against crowdworker evaluation.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "The paper provides a decision-theoretic argument that appropriately calibrated downstream forecasts support informed decision making and connects weaker calibration notions to weaker decision guarantees.",
+     "evidence_type": "supported",
+     "section": "Section 2.2 and Appendix B"
+    },
+    {
+     "finding": "The evaluation does not measure whether the source evidence behind each generated claim is complete, nor whether important supported information was omitted from the generation.",
+     "evidence_type": "unsupported",
+     "section": "Evaluation scope in Sections 4.1-4.3"
+    },
+    {
+     "finding": "The reported distribution-shift evaluations are domain and task shifts rather than temporal-change evaluations with versioned or time-valid evidence.",
+     "evidence_type": "unsupported",
+     "section": "Section 4.2 and Section 4.3"
+    }
+   ],
+   "limitations": [
+    "Many generated uncertainty statements are relatively unambiguous numerical expressions, so the results do not establish calibration for more ambiguous natural-language uncertainty expressions across heterogeneous user populations.",
+    "Off-the-shelf QA datasets are used as proxies for questions encountered in real-world decision-making, which may limit ecological validity.",
+    "The training framework assumes white-box model access and fine-tuning, so it cannot directly calibrate completion-only API models.",
+    "The work evaluates calibration and factual accuracy rather than evidence completeness or systematic omission of relevant facts.",
+    "Its out-of-distribution experiments do not test temporally changing facts, evidence supersession, or citation validity over time."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "calibration_improvement": 0.98,
+    "distribution_shift_transfer": 0.97,
+    "biography_zero_shot_transfer": 0.96,
+    "simulated_reader_validation": 0.94,
+    "decision_theoretic_connection": 0.97,
+    "no_evidence_completeness_evaluation": 0.95,
+    "no_temporal_change_evaluation": 0.97
+   },
+   "raw_claims": [
+    "Linguistic calibration is defined through the calibration of forecasts made by a reader after seeing a long-form model response.",
+    "The training procedure first teaches the model to express confidence and then optimizes downstream forecast calibration with reinforcement learning.",
+    "The reinforcement-learning model improves expected calibration error while retaining accuracy competitive with factuality-trained baselines.",
+    "The method is evaluated with both automated surrogate readers and human crowdworkers.",
+    "Calibration improvements transfer from TriviaQA to out-of-domain Jeopardy, SciQ, and BioASQ evaluations.",
+    "The calibrated model also transfers to person-biography generation without training on that generation task.",
+    "The released codebase contains prompts, checkpoints, method implementations, and dataset-related implementations.",
+    "The paper identifies representative real-world decision data and completion-only API models as important unresolved settings."
+   ],
+   "source_url": "https://arxiv.org/html/2404.00474",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2608.22483",
+   "title": "Claim-Level Confidence Calibration for Reliable Decision Making with Large Language Models",
+   "research_question": "Can inference-time claim-level confidence estimation provide better calibrated and more decision-actionable uncertainty than assigning a single confidence value to an entire free-form LLM response?",
+   "methodology": "The approach decomposes a response into atomic claims and computes confidence for each claim from self-verification or model probability signals, optionally combined with cross-sample consistency through a tuned convex mixture. Claims can then be retained or flagged using a confidence threshold, and calibration is evaluated using ECE, smECE, Brier score, AUROC, and selective-risk metrics. Experiments cover TriviaQA and TruthfulQA, seven baseline approaches, and six contemporary open- and closed-box models including reasoning models. Additional analyses examine calibration-mixture sensitivity, claim extraction, reliability diagrams, computational cost, and failure behavior on adversarial inputs.",
+   "key_findings": [
+    {
+     "finding": "Decomposing free-form responses into atomic claims and calibrating confidence at that level produces actionable per-claim uncertainty and reduces expected calibration error in factual-question settings.",
+     "evidence_type": "supported",
+     "section": "Sections 2-4"
+    },
+    {
+     "finding": "Claim-level calibration can match or outperform response-level uncertainty baselines on mixed-correctness factual responses, although the magnitude and best method vary substantially by model and dataset.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "False-premise and other adversarial inputs remain a major failure mode because models can assign high confidence to incorrect claims; the authors therefore recommend active verification or retrieval rather than confidence alone.",
+     "evidence_type": "supported",
+     "section": "Section 3 and Conclusion"
+    },
+    {
+     "finding": "Reasoning-focused models show stronger verbalized uncertainty behavior, but extracting claims from their entire chain of thought can dilute useful final-answer confidence and final-answer-only extraction performs better.",
+     "evidence_type": "supported",
+     "section": "Section 3 and Appendix C.6"
+    },
+    {
+     "finding": "The proposed inference pipeline is materially more expensive than one-call prompting, with the paper estimating roughly six times the API-call cost per query for its full claim extraction and verification workflow.",
+     "evidence_type": "supported",
+     "section": "Appendix C.3"
+    },
+    {
+     "finding": "The experiments do not establish that calibrated claim confidence remains reliable under temporal knowledge change, source version changes, or sustained distribution drift.",
+     "evidence_type": "unsupported",
+     "section": "Experimental scope in Section 3"
+    },
+    {
+     "finding": "Although thresholding permits claims to be retained or flagged, the paper does not directly evaluate whether threshold-based omission causes loss of important evidence or incomplete multi-source answers.",
+     "evidence_type": "unsupported",
+     "section": "Sections 2-3"
+    }
+   ],
+   "limitations": [
+    "Confidence-only signals fail on adversarial false-premise inputs, requiring active verification, cross-examination, or retrieval.",
+    "Claim extraction from long reasoning traces can degrade calibration unless extraction is restricted to the final-answer span.",
+    "The complete method incurs multiple extraction and verification calls and is substantially more expensive than single-call baselines.",
+    "The evaluation is concentrated on TriviaQA and TruthfulQA rather than temporally evolving or explicitly distribution-shifted benchmarks.",
+    "Interdependent claims and hierarchical confidence are left as open research directions.",
+    "The paper does not directly measure evidence completeness or the utility loss caused by selectively suppressing claims."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "claim_level_calibration_value": 0.95,
+    "mixed_correctness_advantage": 0.88,
+    "adversarial_failure": 0.98,
+    "reasoning_model_extraction_issue": 0.96,
+    "inference_cost": 0.99,
+    "no_temporal_shift_evaluation": 0.97,
+    "omission_not_evaluated": 0.91
+   },
+   "raw_claims": [
+    "A single response-level confidence score is too coarse when one answer contains both correct and incorrect claims.",
+    "The proposed pipeline decomposes responses into atomic claims and assigns confidence to each claim.",
+    "Confidence can combine a per-claim verification signal with consistency across independently sampled responses.",
+    "The approach is designed to work in closed-box settings through verbalized confidence as well as in open-box settings using probability information.",
+    "Experiments compare the method with sequence-likelihood, verbalized-confidence, parametric-calibration, HalluMeasure, and LMvsLM baselines.",
+    "Adversarial false-premise questions expose cases where confidence remains high despite incorrect claims.",
+    "Active verification is recommended when adversarial or misleading inputs are plausible.",
+    "The full proposed pipeline requires substantially more inference calls than ordinary few-shot or chain-of-thought prompting."
+   ],
+   "source_url": "https://arxiv.org/html/2608.22483",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2605.01749",
+   "title": "Only Say What You Know: Calibration-Aware Generation for Long-Form Factuality",
+   "research_question": "Can a long-form reasoning model improve factuality without resorting to coarse whole-answer abstention by estimating the reliability of intermediate reasoning and selectively committing only to sufficiently reliable content?",
+   "methodology": "The paper proposes Calibration-Aware Generation, which decouples reasoning exploration from final-answer commitment by attaching reliability levels to intermediate reasoning steps. Reliability supervision is derived by decomposing reasoning steps into atomic claims and scoring them with VeriScore using retrieved external evidence; Calibration-Aware Structured Supervision trains models to reason and reconstruct answers using those signals, while Calibration-Aware Policy Distillation transfers the behavior to smaller models. Experiments span five LLMs and five long-form factuality benchmarks, with additional testing on PopQA, GPQA, Vicuna QA, and RAG settings. Evaluation includes VeriScore-based factuality and helpfulness, ablations, reliability-versus-correctness AUC, threshold sensitivity, decoding time, and token usage.",
+   "key_findings": [
+    {
+     "finding": "Calibration-Aware Generation improves long-form factuality across multiple models and benchmarks, with the paper reporting gains of up to 13 percent without a substantial loss of overall informativeness in the evaluated settings.",
+     "evidence_type": "supported",
+     "section": "Sections 1, 3, and 4"
+    },
+    {
+     "finding": "Both calibrated exploration and selective commitment are necessary: removing either component consistently degrades performance across tested benchmarks and model sizes.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "Selective commitment creates an explicit factuality-versus-coverage trade-off: lower reliability thresholds retain more information but admit more hallucinations, while higher thresholds improve factuality by discarding more potentially useful content.",
+     "evidence_type": "supported",
+     "section": "Appendix D and Appendix E"
+    },
+    {
+     "finding": "Reliability estimates become better aligned with factual correctness than those of the corresponding vanilla models, as measured by AUC on Biography and FAVA.",
+     "evidence_type": "supported",
+     "section": "Section 4.5"
+    },
+    {
+     "finding": "Benefits extend beyond the main long-form benchmarks to knowledge-intensive QA, chatbot evaluation, and retrieval-augmented generation.",
+     "evidence_type": "supported",
+     "section": "Sections 4.2-4.3"
+    },
+    {
+     "finding": "Suppressing unreliable answer content can reduce generation cost as well as hallucination; reported decoding-time reductions reach 37.36 percent for the evaluated Qwen models.",
+     "evidence_type": "supported",
+     "section": "Section 4.4"
+    },
+    {
+     "finding": "The work does not evaluate whether reliability-based omission preserves complete coverage of all decision-relevant facts or all available multi-source evidence.",
+     "evidence_type": "unsupported",
+     "section": "Evaluation scope in Sections 3-4"
+    },
+    {
+     "finding": "The benchmarks do not test temporally superseded evidence, version-aware provenance, or calibration degradation as facts change over time.",
+     "evidence_type": "unsupported",
+     "section": "Section 3.1"
+    }
+   ],
+   "limitations": [
+    "Prioritizing highly reliable content can bias generation toward conservative and shorter answers, creating a factuality-informativeness trade-off.",
+    "Smaller models benefit more from policy distillation, indicating that accurate reliability estimation remains capacity-sensitive.",
+    "The factuality-supervision and evaluation pipeline depends on claim extraction, external retrieval, VeriScore, and GPT-5-backed evaluation components.",
+    "At the version reviewed, the authors state that code and data are not yet openly released and are intended for release upon acceptance.",
+    "The evaluation does not directly quantify omitted-but-supported information, evidence recall, or completeness of multi-source synthesis.",
+    "No dedicated temporal-change or longitudinal distribution-drift benchmark is evaluated."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "factuality_gain": 0.97,
+    "both_components_needed": 0.96,
+    "factuality_coverage_tradeoff": 0.99,
+    "calibration_auc_improvement": 0.95,
+    "cross_setting_generalization": 0.94,
+    "decoding_efficiency": 0.99,
+    "completeness_not_measured": 0.94,
+    "no_temporal_evaluation": 0.98
+   },
+   "raw_claims": [
+    "Coarse answer-level abstention can reduce errors but also discards useful information that might have been retained safely.",
+    "Calibration-Aware Generation separates broad reasoning exploration from what the model ultimately commits to in its answer.",
+    "Intermediate reasoning steps receive reliability estimates derived from factual verification of their atomic claims.",
+    "Selective commitment uses those reliability signals to prioritize reliable reasoning when constructing the final response.",
+    "Experiments cover five model variants and five long-form factuality benchmarks.",
+    "Removing calibrated exploration or selective commitment harms performance.",
+    "Increasing the reliability threshold improves factuality but can remove useful information.",
+    "Calibration-aware models show stronger association between predicted reliability and factual correctness.",
+    "The method also improves results in knowledge-intensive QA, chatbot, and retrieval-augmented settings.",
+    "The reviewed version states that code and data will be released later rather than being currently available."
+   ],
+   "source_url": "https://arxiv.org/html/2605.01749",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1109-access-2026-3679691",
+   "title": "Program-Verifiable Evaluation for Temporal QA: Metrics for Evidence Validity",
+   "research_question": "How can temporal question-answering systems be evaluated so that answer correctness is separated from whether the cited evidence was actually valid at the query time?",
+   "methodology": "The paper defines a program-verifiable temporal-QA framework in which each question has a query time and each evidence document has an explicit validity interval. It introduces an oracle-answer diagnostic that fixes answers to gold while evaluating evidence selection, together with Recency-Aware Score, Recency-Aware Recall, Temporal Mismatch Rate, and evidence-attribution metrics. Evaluation uses the synthetic TimeFact-CEO benchmark and the semi-structured Wikidata-CEO corpus, comparing BM25, date and recency heuristics, and a lightweight lexico-temporal reranker. The paper additionally reports end-to-end evaluation, cross-corpus robustness, parameter sensitivity, and error analysis.",
+   "key_findings": [
+    {
+     "finding": "Answer correctness does not guarantee valid evidence: under oracle answers on TimeFact-CEO, 11.8 percent of selected citations are temporally invalid, with TMR 0.118 and RAS 0.903.",
+     "evidence_type": "supported",
+     "section": "Abstract and Section VI"
+    },
+    {
+     "finding": "The proposed lexico-temporal reranker raises temporal-validity recall on TimeFact-CEO from 48.2 percent for BM25 to 88.2 percent, a 40.0 percentage-point improvement under oracle-answer evaluation.",
+     "evidence_type": "supported",
+     "section": "Section VI-B"
+    },
+    {
+     "finding": "On the noisy Wikidata-CEO corpus, the temporal reranker achieves RAS 0.936, RAR 0.934, and TMR 0.066, indicating that interval-aware evaluation remains useful outside the perfectly controlled synthetic benchmark.",
+     "evidence_type": "supported",
+     "section": "Section VI-B"
+    },
+    {
+     "finding": "First-stage retrieval coverage is the dominant bottleneck: coverage is 76.3 percent at K=3 and the authors attribute 82.4 percent of analyzed errors to gold evidence being absent from the retrieved candidate set.",
+     "evidence_type": "supported",
+     "section": "Abstract, Introduction, and Section VI-D"
+    },
+    {
+     "finding": "Separating an oracle-answer diagnostic from end-to-end QA exposes evidence-timeliness failures that aggregate answer accuracy can hide.",
+     "evidence_type": "supported",
+     "section": "Section III-D"
+    },
+    {
+     "finding": "The framework does not evaluate completeness of multi-document evidence because its primary protocol intentionally enforces a single top-1 evidence citation.",
+     "evidence_type": "unsupported",
+     "section": "Section III-A and Limitations"
+    },
+    {
+     "finding": "The evaluation covers changing temporal validity but does not establish generalization to unrestricted free-form multi-source generation, because experiments are confined to CEO-tenure facts with explicit intervals.",
+     "evidence_type": "unsupported",
+     "section": "Section IV and Limitations"
+    }
+   ],
+   "limitations": [
+    "The framework assumes that evidence units have explicit validity intervals; purely implicit temporal signals require additional temporal grounding.",
+    "The minimum-citation policy evaluates one selected evidence document and therefore does not address multi-evidence synthesis or multi-hop temporal reasoning.",
+    "The main baselines are interpretable lexical, date, and recency heuristics rather than stronger neural or LLM-based temporal rerankers.",
+    "Both benchmarks use CEO-tenure facts, so cross-domain generalization remains unvalidated.",
+    "The framework evaluates evidence timeliness and attribution but not whether all decision-relevant evidence has been retrieved or summarized.",
+    "Its deterministic interval setting is substantially simpler than versioned free-form sources whose validity periods are uncertain or implicit."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "correct_answer_invalid_evidence": 0.99,
+    "temporal_reranker_gain": 0.99,
+    "wikidata_robustness": 0.98,
+    "retrieval_coverage_bottleneck": 0.99,
+    "oracle_diagnostic_value": 0.98,
+    "single_evidence_not_complete": 0.99,
+    "limited_domain_generalization": 0.99
+   },
+   "raw_claims": [
+    "A factually correct answer can still be supported by evidence that was invalid at the time referenced by the question.",
+    "The oracle-answer diagnostic fixes answer accuracy so evidence-timeliness errors can be measured independently.",
+    "RAS, RAR, and TMR quantify complementary aspects of temporal evidence validity.",
+    "TimeFact-CEO provides controlled synthetic validity intervals, whereas Wikidata-CEO contains noisier real-world interval data.",
+    "The lexico-temporal reranker substantially improves temporal evidence selection over lexical BM25 retrieval.",
+    "Retrieval coverage at K=3 is a major source of downstream evidence-selection error.",
+    "The framework uses exactly one cited evidence document in its minimum-citation evaluation protocol.",
+    "The experiments are restricted to CEO-tenure information with explicit validity intervals.",
+    "The paper references a public TimeFact-CEO code repository."
+   ],
+   "source_url": "https://www.researchgate.net/publication/403423426_Program-Verifiable_Evaluation_for_Temporal_QA_Metrics_for_Evidence_Validity",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2404.15588",
+   "title": "Minimal Evidence Group Identification for Claim Verification",
+   "research_question": "Can claim-verification systems identify the smallest non-redundant set of evidence passages that is collectively sufficient to support a claim instead of retrieving a redundant union of all relevant evidence?",
+   "methodology": "The paper formalizes a minimal evidence group as a sufficient evidence group for which no member is redundant. It converts WiCE and SciFact claim-verification data into WiCE-MEG and SciFact-MEG under explicit assumptions about full support, partial support, and non-labeled evidence. Its algorithm predicts whether candidate evidence groups fully, partially, or do not support the claim, then performs bottom-up merging of partially supporting groups while pruning redundant combinations; experiments use PaLM-2L for support prediction and redundancy checking. Intrinsic evaluation reports exact-match precision and best-soft-match precision, recall, and F0.5, while extrinsic evaluation tests evidence-budget effects in retrieval-augmented claim generation.",
+   "key_findings": [
+    {
+     "finding": "The proposed bottom-up MEG method substantially improves precision and F0.5 over direct LLM prediction and classic evidence-selection baselines on both WiCE-MEG and SciFact-MEG.",
+     "evidence_type": "supported",
+     "section": "Section 5.2"
+    },
+    {
+     "finding": "On WiCE-MEG, the proposed method reaches 0.809 soft-match precision and 0.684 F0.5, compared with 0.176 precision and 0.203 F0.5 for direct LLM prediction.",
+     "evidence_type": "supported",
+     "section": "Table 1"
+    },
+    {
+     "finding": "On SciFact-MEG, the proposed method reaches 0.612 soft-match precision and 0.533 F0.5, outperforming the reported direct and classic baselines on those precision-oriented measures.",
+     "evidence_type": "supported",
+     "section": "Table 1"
+    },
+    {
+     "finding": "The precision gains come with lower recall than several baselines, illustrating that selecting minimal sufficient evidence and exhaustively recovering all annotated evidence groups are different objectives.",
+     "evidence_type": "supported",
+     "section": "Table 1"
+    },
+    {
+     "finding": "Minimal evidence groups dramatically reduce evidence volume in the downstream claim-generation experiment while preserving performance close to much larger evidence sets under comparable computation budgets.",
+     "evidence_type": "supported",
+     "section": "Section 6 and Table 2"
+    },
+    {
+     "finding": "The available human annotations are not exhaustive enough to establish a true gold standard for all minimal sufficient evidence groups, which limits direct evaluation of evidence completeness.",
+     "evidence_type": "supported",
+     "section": "Limitations"
+    },
+    {
+     "finding": "Contradictory evidence is excluded from the task, so the framework does not establish completeness when supporting and conflicting sources coexist.",
+     "evidence_type": "supported",
+     "section": "Limitations"
+    },
+    {
+     "finding": "The experiments do not address temporal validity, evidence supersession, source versions, or performance under temporal distribution shift.",
+     "evidence_type": "unsupported",
+     "section": "Task and experimental scope"
+    }
+   ],
+   "limitations": [
+    "The task only models supporting versus non-supporting evidence and explicitly leaves contradiction handling for future work.",
+    "No purpose-built gold-standard MEG dataset exists, and the converted datasets require assumptions that annotated evidence groups are sufficient and minimal.",
+    "Human annotators generally do not enumerate every possible valid evidence group, so measured recall cannot represent exhaustive evidence completeness.",
+    "The approach requires combinatorial evidence-set reasoning and uses pruning because explicit combination checking is NP-hard.",
+    "Experiments rely on PaLM-2L prompting, so behavior may depend on the underlying support classifier and redundancy checker.",
+    "The work does not model temporal validity, changing evidence versions, or distribution drift."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "precision_f05_improvement": 0.99,
+    "wice_meg_result": 0.99,
+    "scifact_meg_result": 0.99,
+    "precision_recall_tradeoff": 0.98,
+    "budgeted_generation_value": 0.94,
+    "annotation_completeness_problem": 0.99,
+    "contradictions_excluded": 0.99,
+    "no_temporal_evaluation": 0.99
+   },
+   "raw_claims": [
+    "A minimal evidence group must collectively support the claim while containing no redundant evidence passage.",
+    "The method searches from smaller evidence combinations upward and stops after finding fully supporting groups at the smallest discovered size.",
+    "Candidate combinations predicted as already fully supporting or non-supporting are not expanded further.",
+    "WiCE-MEG and SciFact-MEG are derived from existing claim-verification datasets rather than newly exhaustively annotated MEG corpora.",
+    "The proposed approach obtains higher precision-oriented MEG scores than direct LLM prompting and classic baselines.",
+    "Its MEG predictions have lower recall than some competing approaches despite their higher precision.",
+    "Using minimal evidence can reduce the number of evidence sentences supplied to downstream generation.",
+    "Contradictory evidence is outside the evaluated task.",
+    "Human evidence annotations are not guaranteed to contain every valid minimal evidence group."
+   ],
+   "source_url": "https://arxiv.org/html/2404.15588",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

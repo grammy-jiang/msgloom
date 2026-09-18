@@ -1,0 +1,82 @@
+{
+ "paper_id": "2307.09254",
+ "title": "Selective Generation for Controllable Language Models",
+ "research_question": "Can selective generation for free-form language models obtain statistical control over semantically incorrect accepted answers by defining correctness through textual entailment and calibrating when the model should abstain?",
+ "methodology": "The authors define an entailment-based false discovery rate, FDR-E, for a generator that either returns its answer or outputs an IDK-style abstention. SGen-Sup obtains a supervised risk bound, while SGen-Semi uses PAC conformal entailment-set learning and unlabeled examples to propagate pseudo-labels while bounding false entailment errors. Neuro-selection combines candidate confidence functions, including answer likelihood and self-consistency, to improve acceptance efficiency subject to a requested FDR-E constraint. Experiments use GPT-3.5-Turbo and Alpaca-7B on Natural Questions, with manually labeled textual-entailment datasets of 4,595 and 7,374 generated examples respectively, plus up to 10,000 or 27,000 unlabeled examples.",
+ "key_findings": [
+  {
+   "finding": "The paper provides a PAC-style theoretical guarantee that the learned selective generator's entailment-based false discovery rate is upper bounded with user-specified confidence under the stated assumptions.",
+   "evidence_type": "supported",
+   "section": "4.3 FDR-E Bound for Semi-Supervised Learning"
+  },
+  {
+   "finding": "In the reported experiments, SGen-Semi generally controlled the requested FDR-E while obtaining higher average selection efficiency than the compared certified and heuristic semi-supervised alternatives.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  },
+  {
+   "finding": "With only 75% of the labeled calibration examples used by fully supervised methods, SGen-Semi achieved selection efficiencies of 0.7334 for GPT-3.5-Turbo and 0.3173 for Alpaca-7B in the reported comparison.",
+   "evidence_type": "supported",
+   "section": "5 Experiments - Why Semi-Supervised Learning"
+  },
+  {
+   "finding": "Adding more unlabeled examples increased selective-generation efficiency in the reported experiments.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  },
+  {
+   "finding": "Textual entailment provides a more suitable semantic correctness criterion for free-form answers than exact match, which can reject semantically equivalent valid responses.",
+   "evidence_type": "supported",
+   "section": "5 Experiments - Why Entailment Labels"
+  },
+  {
+   "finding": "The neuro-selection mechanism improved average efficiency by choosing among multiple scoring functions rather than relying on a single fixed confidence measure.",
+   "evidence_type": "supported",
+   "section": "4.4 Neuro-selection Functions; 5 Experiments"
+  },
+  {
+   "finding": "The empirical FDR-E bound was not especially tight in all settings, particularly for Alpaca-7B, despite the formal guarantee.",
+   "evidence_type": "supported",
+   "section": "6 Conclusion - Limitations"
+  }
+ ],
+ "limitations": [
+  "The formal correctness guarantee assumes calibration and deployment examples are i.i.d.; the authors explicitly note that this assumption may fail in practical environments.",
+  "The guarantee therefore does not directly cover temporal drift or distributional change between calibration and deployment.",
+  "Producing gold entailment labels is expensive because generated and reference answers must be compared for logical entailment.",
+  "The semi-supervised procedure reduces but does not remove dependence on labeled entailment data.",
+  "Empirical FDR-E can be substantially below or otherwise loosely related to the requested bound, especially for Alpaca-7B, indicating conservatism or looseness in the bound.",
+  "The experiments cover one open-ended QA source dataset and two generators, limiting evidence for generalization to other long-form generation tasks.",
+  "Correctness is reduced to entailment with a reference answer, so completeness, citation support, evidence freshness, and omission of additional required facts are outside the metric.",
+  "The method does not explicitly address source-version changes or temporally evolving truths."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "pac_fdr_guarantee": 0.99,
+  "semi_supervised_efficiency": 0.98,
+  "reported_efficiency_values": 0.99,
+  "unlabeled_data_helps": 0.97,
+  "entailment_over_exact_match": 0.98,
+  "neuro_selection_efficiency": 0.96,
+  "bound_not_tight": 0.99
+ },
+ "raw_claims": [
+  "Selective generation returns an answer only when a learned selection rule accepts it and otherwise abstains.",
+  "FDR-E measures the rate of accepted generated answers that are not semantically entailed by the reference answer.",
+  "SGen-Sup and SGen-Semi provide statistically controlled selective-generation procedures.",
+  "SGen-Semi uses conformalized entailment sets to control pseudo-labeling errors when exploiting unlabeled data.",
+  "The experiments evaluate GPT-3.5-Turbo and Alpaca-7B generations derived from Natural Questions.",
+  "The authors manually construct entailment labels for generated and reference answer pairs.",
+  "Semi-supervised training uses fewer labeled examples than the fully supervised comparison.",
+  "Additional unlabeled examples improve selection efficiency in the reported experiments.",
+  "Exact match is inadequate for many semantically correct free-form answers.",
+  "The authors explicitly state that the i.i.d. assumption needed by the guarantee may be violated in practice.",
+  "Code and experimental datasets are released by the authors."
+ ],
+ "source_url": "https://arxiv.org/html/2307.09254",
+ "access": "full_text"
+}

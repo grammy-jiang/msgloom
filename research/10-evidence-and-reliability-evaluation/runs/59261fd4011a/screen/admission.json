@@ -1,0 +1,226 @@
+{
+ "round": 3,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Claim-level factual consistency and faithfulness: determine whether individual factual statements in generated text are supported by source evidence."
+  },
+  {
+   "id": "F3",
+   "description": "Attribution and citation correctness: determine whether an identified or cited source genuinely supports the generated claim attached to it."
+  },
+  {
+   "id": "F4",
+   "description": "Evidence completeness, citation recall and multi-source sufficiency: evaluate whether evidence-requiring claims have sufficient support for their full semantics, including partial and compound support."
+  },
+  {
+   "id": "F5",
+   "description": "Content coverage, salience and omission evaluation: define required information units and measure omission of important source content."
+  },
+  {
+   "id": "F6",
+   "description": "Update, temporal and longitudinal summarization evaluation: evaluate evolving information streams with respect to novelty, prior-reader state, chronology and coverage."
+  },
+  {
+   "id": "F7",
+   "description": "Integrated multidimensional evaluation and meta-evaluation: preserve distinguishable evaluation dimensions such as correctness, attribution, completeness and verifiability rather than collapsing them into one score."
+  },
+  {
+   "id": "F8",
+   "description": "Selective prediction and abstention in NLP: evaluate reliability when low-confidence outputs are withheld or reduced in specificity, including risk against retained coverage."
+  },
+  {
+   "id": "F9",
+   "description": "Probability calibration and proper scoring: assess whether confidence corresponds to empirical correctness and evaluate calibration at appropriate output granularity."
+  },
+  {
+   "id": "F11",
+   "description": "Online calibration and conformal prediction under distribution shift: maintain calibration or risk coverage when the generating distribution evolves over time."
+  },
+  {
+   "id": "F12",
+   "description": "Human evaluation reliability and evaluator meta-evaluation: validate automatic evaluation against independent human judgments and expose evaluator failure modes."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2510.12839",
+   "decision": "ADMIT",
+   "reason": "The abstract directly strengthens F1: it evaluates long-form factuality with explicit claim extraction, pre-verification and document-level evidence retrieval, targets errors from inaccurate claim sets and insufficient evidence collection, and validates the evaluator against manual annotations. This is materially closer to evidence-grounded claim evaluation than aggregate hallucination scoring.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "1901.09192",
+   "decision": "REJECT",
+   "reason": "The reject-option and risk-coverage capability is relevant in principle, but the abstract concerns generic classification and regression and does not address NLP, free-form generation, temporal change or continuing distribution shift. The current corpus already contains selective-risk components; this paper does not materially close the remaining non-stationary communication gap.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2008.09371",
+   "decision": "REJECT",
+   "reason": "The paper studies NLP selective prediction and out-of-domain reliability, but the remaining gap is continuing temporal or non-stationary change in free-form communication. The project status explicitly says cross-domain calibration studies are already present, so a static in-domain versus out-of-domain study does not materially strengthen the unresolved capability.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2511.16198",
+   "decision": "ADMIT",
+   "reason": "The abstract directly strengthens F3 by evaluating claim-source support from full source text and explicitly distinguishing Supported, Partially Supported, Unsupported and Uncertain relations. The partial-support category is especially useful for preserving the distinction between citation correctness and fully sufficient evidence.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2303.08896",
+   "decision": "REJECT",
+   "reason": "The paper detects hallucination through sampling consistency without external source evidence. That can screen model uncertainty, but it does not determine whether a claim is supported by the actual evidence, whether attribution is correct, whether evidence is complete, or whether current-state information was omitted. Its topic vocabulary overlaps F1, but the required evidence-grounded capability does not.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2408.08067",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F7: RAGChecker decomposes evaluation into claim-level retrieval and generation diagnostics, separately exposing retrieval of ground-truth claims, use of retrieved evidence, answer correctness and answer completeness, and it performs meta-evaluation against human preferences. This preserves several denominators that the project explicitly must not collapse.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2602.16537",
+   "decision": "ADMIT",
+   "reason": "The abstract directly strengthens F11 and gap-8 as transfer methodology: it studies online conformal prediction under unknown abrupt or smooth distribution drift and combines drift detection with adaptation guarantees. It specifically addresses continuing non-stationarity rather than a one-time domain shift.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2607.24562",
+   "decision": "REJECT",
+   "reason": "Group-conditional selective risk in language models is relevant to heterogeneous error exposure, but the abstract does not address temporal evolution or continual adaptation. For this round it does not materially close gap-8, and subgroup conditioning is secondary to the unresolved non-stationary-stream requirement.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2307.16895",
+   "decision": "REJECT",
+   "reason": "The online adaptation mechanism is relevant transfer theory, but it is demonstrated for time-series prediction and is less directly aligned than the admitted online conformal papers that explicitly handle arbitrary or detected distribution drift. With scarce reading slots, this would add another transfer mechanism without materially strengthening the free-form communication question.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2602.11908",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F8 for free-form generation: it operates at factual-atom level, replaces uncertain content with less specific statements rather than only making a binary whole-answer reject decision, and evaluates factual risk jointly with information coverage using risk-coverage curves. This is substantially closer to bounded-risk long-form output than generic selective classification.",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1705.08500",
+   "decision": "REJECT",
+   "reason": "This is foundational selective-classification work, but the abstract is generic deep-network classification and does not address NLP, long-form generation or non-stationary streams. More directly relevant selective-generation and online-calibration candidates are available, so this paper would consume a slot without materially strengthening the unresolved gaps.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2405.01976",
+   "decision": "REJECT",
+   "reason": "The survey is useful for terminology and for identifying conformal assumptions that fail in NLP, but the abstract does not itself validate a calibration, abstention or online-shift method. The admission gate is for studies that materially strengthen an evaluation capability, not general survey coverage.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2208.02814",
+   "decision": "REJECT",
+   "reason": "Conformal risk control is relevant transfer methodology and includes NLP losses and distribution-shift extensions, but the open gap specifically concerns continuing non-stationary free-form communication. The corpus status already states that structured-generation risk-control results are present; this abstract does not establish the missing continual adaptation setting.",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "2302.07869",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F11 and gap-8 because it explicitly addresses environments whose distributions may change arbitrarily over time and supplies strongly adaptive guarantees over many subintervals rather than only long-run average behavior. That is directly useful transfer theory for continuing non-stationary streams.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-39435af3dd",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F6: the update-summarization task evaluates a later document set while assuming the reader has already consumed an earlier set, and its human evaluation explicitly measures content together with responsiveness. That prior-reader-state design is directly relevant to omission and novelty under evolving information. The identifier is UNCHECKED, so canonical identity should be confirmed during acquisition, but the abstracted capability is distinctive enough to admit.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2607.03870",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F9 for long-form generation by providing deterministic ground truth for fine-grained correctness, calibration and confidence-ranking evaluation and by examining uncertainty at atomic resolution. This directly addresses the project's requirement that confidence be evaluated against empirical correctness rather than treated as evidence by itself.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-6028-nist-sp-500-321-realtime-overview",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F6 by evaluating continuous monitoring of document streams for persistent interests, where timely delivery, novelty, prior information and useful coverage all matter. This adds a genuinely streaming evaluation setting beyond static or two-batch summarization. The identifier is UNCHECKED, so canonical identity should be verified during acquisition.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "2405.00982",
+   "decision": "ADMIT",
+   "reason": "The abstract directly strengthens F7 and gap-1's smaller-component foundation: it evaluates machine-generated reports along separately named completeness, accuracy and verifiability dimensions, uses required information nuggets for coverage, and maps report claims to sources for citation-based verification. It therefore preserves multiple report-level denominators instead of collapsing them into one faithfulness score.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-ipm-2015-06-002",
+   "decision": "REJECT",
+   "reason": "The paper concerns generating summaries of changes in evolving collections, but the abstract describes a summarization method rather than an evaluation framework for omission, current-state correctness, evidence support or calibrated abstention. Temporal vocabulary matches F6, but the required evaluation capability is not demonstrated. Its identifier is also UNCHECKED, making it less attractive than the admitted temporal-evaluation candidates.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2604.03141",
+   "decision": "ADMIT",
+   "reason": "The abstract directly strengthens F5 by adding factual recall to supported-claim precision, constructing reference facts that generated text ought to cover, and weighting missing facts by relevance and salience. This is directly about detecting factual incompleteness and important omissions in long-form generation rather than only checking the correctness of what was said.",
+   "stream_id": "F5",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1109-tit-1970-1054406",
+   "decision": "REJECT",
+   "reason": "The error-reject tradeoff is foundational to F10, but the abstracted description is generic pattern-recognition theory with no NLP, free-form generation or non-stationary component. More directly applicable verified selective-prediction papers are available, so this unchecked record does not justify a reading slot in the current gap-focused round.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2105.00071",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F12: BEGIN supplies human-annotated attribution judgments, meta-evaluates multiple automatic metrics, and identifies metric failures for abstractive responses and when source documents become longer. This directly supports validating automatic or LLM-assisted evaluators against independent human judgments rather than assuming judge agreement is ground truth.",
+   "stream_id": "F12",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2402.05629",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F4 and gap-4: it shows that individually factual atomic subclaims can compose into a false aggregate claim, demonstrates failures of atomic-fact metrics and citation recall under that condition, and proposes an evaluation intended to capture the resulting contradiction. This directly addresses the project's concern that compound-claim semantics cannot be certified by independent subclaim support alone.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2608.11238",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F7 by decomposing both information needs and generated answers, then separately measuring coverage, completeness, conciseness and claim verifiability and meta-evaluating those measures on a human-annotated benchmark. The explicit separation of coverage from verifiability is directly aligned with the project's multidimensional evaluation requirement.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1175-1520-0493-1950-078-0001-vofeit-2-0-co-2",
+   "decision": "PENDING",
+   "reason": "No abstract is supplied, so the admission gate cannot establish from the provided evidence whether this paper develops or empirically evaluates probability calibration or a proper scoring rule in a way that materially strengthens F9. Admission would require an abstract or equivalent bibliographic summary showing the exact calibration or scoring contribution and evaluation setting; the UNCHECKED identifier further favors verification before consuming a reading slot.",
+   "confidence": 0.99
+  }
+ ],
+ "notes": "Admission was deliberately gap-focused. Generic reject-option and calibration foundations were rejected where the project status already says their broad capabilities are present and the abstract did not add continuing non-stationarity, free-form generation, temporal omission, or evidence-completeness machinery. UNCHECKED identity was not treated as proof of invalidity; two distinctive temporal-evaluation records were admitted provisionally because their described benchmark settings materially strengthen F6, while canonical identity should be confirmed during acquisition."
+}

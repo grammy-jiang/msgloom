@@ -1,0 +1,350 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-32d5793dca",
+   "title": "Validating LLM-as-a-Judge Systems under Rating Indeterminacy",
+   "research_question": "How should LLM-as-a-judge systems be validated when a rating item can legitimately admit multiple ratings, and how much error can standard forced-choice gold labels introduce?",
+   "methodology": "The paper formalizes rating indeterminacy by distinguishing ordinary forced-choice ratings from multi-label response sets that let a rater mark every option they regard as reasonable. It derives relationships among elicitation schemes, aggregation rules, human-judge agreement metrics, and downstream task performance, including a probabilistic model of how raters translate response sets into forced choices. The empirical study evaluates nine commercial LLM judges on 11 real-world rating tasks, sampling 200 items per task and repeatedly sampling model ratings to estimate rating distributions. It compares categorical, distributional, and response-set-based agreement metrics against downstream evaluation objectives and performs sensitivity and robustness analyses.",
+   "key_findings": [
+    {
+     "finding": "Forced-choice validation can select a substantially worse judge because humans and LLM judges may resolve the same underlying rating indeterminacy differently.",
+     "evidence_type": "supported",
+     "section": "Sections 3-4"
+    },
+    {
+     "finding": "Across the evaluated tasks, response-set-based MSE selects more performant judges than the compared forced-choice metrics once modeled human rating indeterminacy reaches beta_H of at least 0.2.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "In the Civil Comments toxicity example, Claude Sonnet 3.5 is top-ranked by the standard forced-choice approach but is reported to be 31% less consistent with human downstream decisions than GPT o3-Mini when rating indeterminacy is accounted for.",
+     "evidence_type": "supported",
+     "section": "Introduction, Figure 2"
+    },
+    {
+     "finding": "A response-set metric whose forced-choice translation matrix is estimated from only 100 paired forced-choice and response-set ratings performs almost as well as the corresponding oracle version.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "When only forced-choice ratings are available, the paper recommends distributional metrics and reports that KL divergence in the human-to-judge direction often performs best among the examined forced-choice alternatives.",
+     "evidence_type": "supported",
+     "section": "Section 5"
+    }
+   ],
+   "limitations": [
+    "The framework is designed for closed-form rating tasks with discrete categorical or ordinal options and does not directly cover continuous rating scales or open-form feedback.",
+    "The forced-choice translation model places a homogeneity assumption on the human rating process that may be violated in practice.",
+    "Response-set elicitation can increase per-item cognitive burden and annotation cost when rating scales contain many options.",
+    "Very small numbers of ratings per item can fail to capture enough information about rating indeterminacy for reliable judge selection."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "forced_choice_bias": 0.99,
+    "response_set_advantage": 0.98,
+    "toxicity_31_percent_gap": 0.99,
+    "small_paired_set_effective": 0.98,
+    "discrete_scope_limit": 0.99
+   },
+   "raw_claims": [
+    "Rating indeterminacy means that more than one rating can reasonably apply to the same item.",
+    "Forced-choice elicitation suppresses intra-rater uncertainty by requiring a single option.",
+    "Response-set elicitation asks a rater to select every option that could reasonably apply.",
+    "The experiments cover 11 real-world rating tasks and nine commercial LLM judges.",
+    "The real-data experiments sample 200 items from each rating task.",
+    "Forced-choice human-judge agreement can mis-rank judge systems under rating indeterminacy.",
+    "Response-set-based MSE becomes more effective for judge selection as indeterminacy increases.",
+    "A small paired forced-choice and response-set corpus can be used to estimate the translation between elicitation formats.",
+    "The paper publicly releases the code and data used in its experiments.",
+    "The framework does not directly handle continuous rating scales."
+   ],
+   "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/file/a309239c11a28c597d050bd4a1752d32-Paper-Conference.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2012.14983",
+   "title": "Reducing Conversational Agents’ Overconfidence Through Linguistic Calibration",
+   "research_question": "Can an open-domain dialogue model's verbalized confidence be aligned with its probability of being factually correct by predicting correctness from model signals and controlling generation style?",
+   "methodology": "The authors evaluate a 2.7B-parameter BlenderBot on TriviaQA and separately annotate factual correctness and linguistic confidence in generated answers. They train a correctness calibrator using 50,000 TriviaQA training questions and corresponding model responses, then train a two-stage controllable generator that conditions on desired linguistic confidence while trying to preserve answer content. Human annotations are collected for training, validation, and test subsets, with multiple annotators used for validation and final evaluation. Calibration is assessed with ECE, MCE, average negative log-likelihood, human judgments of expressed confidence, correctness conditional on expressed confidence, and statistical tests.",
+   "key_findings": [
+    {
+     "finding": "The vanilla chatbot is strongly overconfident: it has 4.8% overall factual accuracy, answers 29.45% of questions with high linguistic confidence, and only about 14% of those confident answers are correct.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "The selected correctness calibrator achieves a reported 20-bin ECE of 0.018, MCE of 0.292, and average negative log-likelihood of 0.165.",
+     "evidence_type": "supported",
+     "section": "Section 5.2"
+    },
+    {
+     "finding": "The controllable generator reliably changes expressed confidence: 96.27% of high-confidence-forced generations are judged high confidence, while 98.79% and 99.12% of the two lower-confidence settings are judged not high confidence.",
+     "evidence_type": "supported",
+     "section": "Section 5.3"
+    },
+    {
+     "finding": "Among answers judged linguistically confident, factual correctness rises from 13.7% for the vanilla chatbot to 38.9% for the calibrator-controlled chatbot, with p less than 10^-6 under a paired permutation test.",
+     "evidence_type": "supported",
+     "section": "Section 5.4"
+    },
+    {
+     "finding": "The improvement comes primarily from using confident language more selectively rather than materially improving factual accuracy; total accuracy changes from 4.8% to 5.1% and the difference is not statistically significant.",
+     "evidence_type": "supported",
+     "section": "Section 5.4"
+    }
+   ],
+   "limitations": [
+    "The base model's factual accuracy is extremely low, so even after linguistic calibration many confidently expressed answers remain wrong.",
+    "The intervention changes how uncertainty is communicated rather than fixing the underlying factual errors.",
+    "The main evaluation is centered on one English open-domain dialogue architecture and TriviaQA, so robustness under temporal or broader distribution shifts is not established.",
+    "Annotators show substantially lower exact agreement on the four-way linguistic-confidence labels than on binary correctness.",
+    "Thresholds mapping calibrator probabilities to linguistic-confidence controls are tuned using the first 1,000 test questions, which are then excluded from the final clean evaluation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "vanilla_overconfidence": 0.99,
+    "calibrator_quality": 0.99,
+    "confidence_control_effectiveness": 0.99,
+    "confident_correctness_gain": 0.99,
+    "overall_accuracy_unchanged": 0.99
+   },
+   "raw_claims": [
+    "The paper treats linguistic confidence and factual correctness as separate properties of a response.",
+    "The vanilla BlenderBot has only 4.8% factual accuracy on the test set.",
+    "The vanilla model expresses high confidence on 29.45% of questions.",
+    "Only about 14% of the vanilla model's confident answers are correct.",
+    "The correctness calibrator is trained on 50,000 TriviaQA questions and model responses.",
+    "The selected calibrator has an ECE of approximately 0.018 with 20 bins.",
+    "Control tokens can reliably induce low- or high-confidence language.",
+    "Correctness among confidently expressed answers rises from 13.7% to 38.9% after calibration.",
+    "The calibrated chatbot expresses high confidence much less frequently.",
+    "Overall factual accuracy does not improve significantly.",
+    "The paper states that its human-annotated data are released through ParlAI."
+   ],
+   "source_url": "https://arxiv.org/html/2012.14983",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2604.12046",
+   "title": "Think Through Uncertainty: Improving Long-Form Generation Factuality via Reasoning Calibration",
+   "research_question": "Can modeling and calibrating uncertainty at the atomic-claim level improve long-form factuality while preserving factual recall and enabling selective abstention?",
+   "methodology": "The paper proposes CURE, a structured generation protocol in which a model reasons about a response, decomposes it into atomic claims, and assigns each claim an explicit confidence score. Training is split into feasibility induction, DPO-based calibration optimization, and a separate factuality-optimization stage using claim-level masked rewards instead of optimizing calibration and factuality jointly. Experiments use Llama3.1-8B-Instruct as the main base model, with additional generalization tests on Qwen3-4B, and evaluate on FactBench, LongFact, Biography, and FactRBench. Factual accuracy is measured with VeriScore, calibration with ECE, Brier score, and AUROC, and FactRBench is used to measure factual recall and accuracy-recall trade-offs under confidence-based selective prediction.",
+   "key_findings": [
+    {
+     "finding": "CURE achieves the highest reported claim-level factual accuracy among the compared methods on FactBench, LongFact, and Biography, reaching 84.4, 90.2, and 65.9 respectively.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Relative to the L2RF reinforcement-learning baseline, CURE improves factual accuracy by 9.4% on FactBench, 13.6% on LongFact, and 39.9% on Biography.",
+     "evidence_type": "supported",
+     "section": "Sections 1 and 4.2"
+    },
+    {
+     "finding": "CURE reports strong discriminative calibration, including AUROC values of 0.667 on FactBench and 0.669 on LongFact.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Confidence-thresholded selective prediction provides an adjustable accuracy-recall trade-off, and the reported Pareto analysis shows viable CURE configurations dominating the base LLM and L2RF in accuracy versus factual recall.",
+     "evidence_type": "supported",
+     "section": "Section 4.4"
+    },
+    {
+     "finding": "Joint GRPO optimization of factuality and calibration collapses toward overconfidence, with approximately 95% of predicted claim-confidence scores exceeding 0.9 during training.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "Replacing GRPO-based calibration with a separate DPO calibration stage substantially improves AUROC, and applying the staged framework to Qwen3-4B also improves factuality and calibration.",
+     "evidence_type": "supported",
+     "section": "Sections 4.3 and 4.5"
+    }
+   ],
+   "limitations": [
+    "The evaluation uses four static factuality benchmarks and two model families, so robustness to temporal change or broader distribution shifts is not directly tested.",
+    "Factual correctness and recall rely on automatic evaluators, including VeriScore and an LLM-based recall judge, so measured performance depends partly on evaluator reliability.",
+    "Selective prediction filters low-confidence claims and therefore manages an accuracy-versus-recall trade-off rather than guaranteeing evidence completeness.",
+    "The study does not directly measure omission of required evidence in free-form multi-source synthesis.",
+    "No explicit public code or processed experimental-data release was verified in the accessed paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "accuracy_gains": 0.99,
+    "calibration_gains": 0.99,
+    "selective_prediction_tradeoff": 0.98,
+    "joint_grpo_overconfidence": 0.99,
+    "decoupled_training_advantage": 0.98,
+    "qwen_generalization": 0.97
+   },
+   "raw_claims": [
+    "CURE models uncertainty at the level of individual atomic claims.",
+    "The claim-aware reasoning protocol pairs decomposed claims with explicit confidence estimates.",
+    "Calibration optimization is separated from factuality optimization.",
+    "The experiments evaluate FactBench, LongFact, Biography, and FactRBench.",
+    "CURE reaches 84.4 accuracy on FactBench, 90.2 on LongFact, and 65.9 on Biography.",
+    "CURE reaches AUROC 0.667 on FactBench and 0.669 on LongFact.",
+    "FactRBench supplies reference claims for evaluating factual recall.",
+    "At inference time, a confidence threshold can filter uncertain claims.",
+    "Approximately 95% of confidence predictions exceed 0.9 under the failed joint GRPO setup.",
+    "DPO produces stronger calibration than the tested GRPO-based calibration variants.",
+    "The staged method is also evaluated on Qwen3-4B."
+   ],
+   "source_url": "https://arxiv.org/html/2604.12046",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w19-8642",
+   "title": "Agreement is overrated: A plea for correlation to assess human evaluation reliability",
+   "research_question": "Is inter-annotator agreement alone an adequate reliability criterion for human evaluation of NLG, or should correlation be used alongside agreement to capture systematic rater consistency?",
+   "methodology": "The authors survey 135 papers from NLG-specialist conferences published from 2008 through 2018 that included qualifying human evaluation studies, recording how inter-annotator agreement was used and reported. They then analyze three evaluation case studies: a 10-item automatic-question-generation pilot, QG-STEC, and Flickr-8k. For the case studies they compare Fleiss' kappa, which measures agreement, with Goodman and Kruskal's Gamma, which measures ordinal covariation. Their analysis tests whether correlation can reveal systematic relative consistency among raters even when exact agreement is low.",
+   "key_findings": [
+    {
+     "finding": "Only 24 of the 135 surveyed papers, or 18%, report information about inter-annotator agreement.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "The survey identifies three recurring problems: reliability studies are infrequent, agreement reporting lacks a common practice, and reported agreement values are generally low under conventional interpretation scales.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "In the pilot case study, low Fleiss' kappa can coexist with very strong correlation; for native-English judges on fluency, the reported kappa is below 0.4 while Goodman and Kruskal's Gamma is perfect.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "For Flickr-8k, Fleiss' kappa is 0.52 while average Gamma is 0.98, showing that judges can differ in rating magnitude while covarying systematically.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "The authors recommend reporting correlation and agreement together because exact agreement and relative consistency measure different aspects of human-evaluation reliability.",
+     "evidence_type": "supported",
+     "section": "Section 5"
+    }
+   ],
+   "limitations": [
+    "The survey is restricted to NLG-specific conference papers from 2008-2018, so it does not establish that the same reporting patterns hold in later or broader NLP evaluation practice.",
+    "The illustrative pilot contains only 10 items and seven judges and is used mainly to expose the conceptual issue before examining larger datasets.",
+    "The authors state that details of how the Flickr-8k evaluation data were collected are unavailable, constraining interpretation of that case study.",
+    "Correlation captures covariation rather than exact agreement and therefore cannot by itself establish that annotators make interchangeable judgments; the paper advocates using correlation alongside agreement."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "low_iaa_reporting_rate": 0.99,
+    "reporting_shortcomings": 0.99,
+    "low_agreement_can_hide_consistency": 0.99,
+    "flickr_agreement_correlation_gap": 0.99,
+    "combine_correlation_and_agreement": 0.99
+   },
+   "raw_claims": [
+    "The survey covers 135 NLG human-evaluation papers published between 2008 and 2018.",
+    "Only 18% of the surveyed papers report inter-annotator agreement.",
+    "The surveyed literature shows inconsistent practices for reporting human-evaluation reliability.",
+    "The paper argues that subjective language judgments can differ while still following stable rater-specific patterns.",
+    "Fleiss' kappa is used to measure agreement.",
+    "Goodman and Kruskal's Gamma is used to measure ordinal correlation.",
+    "The pilot dataset contains 10 items evaluated by seven judges.",
+    "Native-English judges show perfect Gamma correlation on the pilot fluency criterion despite kappa below 0.4.",
+    "Flickr-8k has Fleiss' kappa of 0.52 and Gamma of 0.98 in the reported analysis.",
+    "The authors recommend using agreement and correlation coefficients together."
+   ],
+   "source_url": "https://aclanthology.org/W19-8642.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-acl-long-837",
+   "title": "Can LLMs Evaluate Complex Attribution in QA? Automatic Benchmarking using Knowledge Graphs",
+   "research_question": "Can a knowledge-graph-generated benchmark with fine-grained attribution categories and compositional evidence requirements reliably evaluate and improve automatic attribution evaluators, including under out-of-domain testing?",
+   "methodology": "The paper constructs CAQA automatically from Freebase and two KGQA datasets by extending logical queries, extracting knowledge-graph subgraphs, editing those subgraphs, and verbalizing the resulting facts as answers and citations. CAQA contains 161,174 examples spanning supportive, partially supportive, contradictory, and irrelevant attribution labels, with reasoning complexity organized into single, union, intersection, and concatenation cases. The authors benchmark 25 automatic evaluators, comprising two existing attribution evaluators and 23 LLM evaluators under zero-shot, few-shot, and fine-tuned settings. Evaluation uses per-class F1 and micro-F1, comparison with human labels, FACTSCORES for partially supportive cases, human checks of KG-to-text conversion quality, and out-of-domain testing on ALCE-FineGrained.",
+   "key_findings": [
+    {
+     "finding": "Zero-shot and few-shot evaluators struggle with fine-grained negative attribution categories, especially partially supportive evidence, whereas after CAQA fine-tuning all evaluated models except Mistral-v0.2 exceed 90% performance in the reported fine-grained evaluation.",
+     "evidence_type": "supported",
+     "section": "Section 6.1"
+    },
+    {
+     "finding": "Evaluator errors increase on attribution cases requiring multi-piece logical reasoning, and the paper documents failures caused by keyword co-occurrence rather than correct reasoning over evidence relationships.",
+     "evidence_type": "supported",
+     "section": "Section 6.1"
+    },
+    {
+     "finding": "Evaluator micro-F1 scores computed using CAQA's automatically generated labels closely align with scores computed using separately collected human labels, with Pearson correlation 0.97.",
+     "evidence_type": "supported",
+     "section": "Section 6.2"
+    },
+    {
+     "finding": "On 200 partially supportive examples, CAQA's automatically computed FACTSCORE is 0.62 versus 0.58 from human annotations, a gap of 0.04 that is smaller than the gaps of the evaluated attribution models.",
+     "evidence_type": "supported",
+     "section": "Section 6.3"
+    },
+    {
+     "finding": "On out-of-domain ALCE-FineGrained, the CAQA-fine-tuned T5-11B reaches overall F1 of 0.63 versus 0.54 for AutoIS, while CAQA-fine-tuned Vicuna-13B reaches 0.38 versus 0.36 for AttrScore.",
+     "evidence_type": "supported",
+     "section": "Section 6.4"
+    },
+    {
+     "finding": "Further fine-tuning the CAQA-trained Vicuna-13B with a small amount of ALCE-FineGrained target-domain data raises its overall score to 0.52, showing additional benefit from target-domain adaptation.",
+     "evidence_type": "supported",
+     "section": "Section 6.4"
+    }
+   ],
+   "limitations": [
+    "The benchmark does not cover lengthy answers and long citations.",
+    "Mathematical reasoning is outside the benchmark's current scope.",
+    "Temporal and spatial reasoning are explicitly identified as missing cases.",
+    "Reasoning requiring domain-specific knowledge is not fully represented.",
+    "The benchmark is generated from knowledge graphs and structured KGQA queries, so real-world free-form multi-source evidence can contain phenomena not represented by the current construction."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "fine_tuning_over_90_percent": 0.99,
+    "complex_reasoning_weakness": 0.99,
+    "human_alignment_pearson": 0.99,
+    "partial_support_gap": 0.99,
+    "ood_transfer": 0.99,
+    "temporal_reasoning_absent": 0.99
+   },
+   "raw_claims": [
+    "CAQA automatically creates fine-grained attribution examples from knowledge graphs.",
+    "The benchmark contains 161,174 examples.",
+    "Its attribution labels include supportive, partially supportive, contradictory, and irrelevant.",
+    "Its complexity categories include single, union, intersection, and concatenation.",
+    "The study evaluates 25 automatic attribution evaluators.",
+    "The evaluator set includes two existing attribution systems and 23 LLM evaluators.",
+    "Partially supportive evidence is particularly difficult for zero-shot and few-shot evaluators.",
+    "Fine-tuning on CAQA substantially improves fine-grained attribution classification.",
+    "CAQA automatic labels and human labels produce evaluator scores with Pearson correlation 0.97.",
+    "CAQA's automatic partial-support FACTSCORE differs from the human score by 0.04.",
+    "CAQA-trained evaluators show out-of-domain gains on ALCE-FineGrained.",
+    "The current benchmark does not cover temporal reasoning.",
+    "The authors publicly release CAQA code and data."
+   ],
+   "source_url": "https://aclanthology.org/2025.acl-long.837.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

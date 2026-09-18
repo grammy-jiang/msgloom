@@ -1,0 +1,85 @@
+{
+ "paper_id": "2405.00982",
+ "title": "On the Evaluation of Machine-Generated Reports",
+ "research_question": "How can long-form machine-generated reports for complex information needs be evaluated jointly for completeness, factual support, citation correctness, responsiveness, and reuse across future systems?",
+ "methodology": "This is a perspective and framework paper rather than a comparative system experiment. The authors synthesize ideas from information retrieval, summarization, question answering, and RAG evaluation into ARGUE, where a system receives a document collection and a detailed report request and must produce a cited report. Human assessors define question-answer information nuggets and bind acceptable nugget answers to supporting source elements; completeness is measured primarily as nugget recall, while accuracy and verifiability are measured through report-segment precision and citation support. The paper supplies an illustrative manually scored example and discusses pooling, interactive search, active learning, and eventual automation of assessment decisions.",
+ "key_findings": [
+  {
+   "finding": "ARGUE operationalizes report completeness as recall over assessor-defined information nuggets, with a nugget counted as covered only when the report states it with the required supporting citation evidence.",
+   "evidence_type": "supported",
+   "section": "4.5 Metrics"
+  },
+  {
+   "finding": "The framework separately evaluates segment-level precision, allowing unsupported citations, missing required citations, and unattested claims to be penalized while avoiding conflation with missing-content errors.",
+   "evidence_type": "supported",
+   "section": "4.5 Metrics"
+  },
+  {
+   "finding": "Repeated support for the same information nugget counts only once toward recall, giving the framework an explicit mechanism for separating coverage from repetition.",
+   "evidence_type": "supported",
+   "section": "4.5 Metrics"
+  },
+  {
+   "finding": "Report requests can encode user background, required content, known background information, length constraints, and temporal source windows, making the intended information need substantially richer than a conventional short retrieval query.",
+   "evidence_type": "supported",
+   "section": "2 Requirements"
+  },
+  {
+   "finding": "The framework explicitly permits a nugget representing a requested fact that is absent from the collection, allowing evaluation of whether the report correctly states that requested evidence is unavailable.",
+   "evidence_type": "supported",
+   "section": "4.5 Metrics"
+  },
+  {
+   "finding": "The claim that most assessment decisions can be automated reasonably well with current technology is proposed but is not validated by an empirical automation study in this paper.",
+   "evidence_type": "unsupported",
+   "section": "4.5 Metrics"
+  },
+  {
+   "finding": "The worked example demonstrates the accounting rules for precision and recall, but it does not establish empirical reliability, discriminative power, or system-ranking validity for ARGUE at benchmark scale.",
+   "evidence_type": "unsupported",
+   "section": "5 Example Assessment"
+  }
+ ],
+ "limitations": [
+  "The paper proposes a conceptual evaluation framework and illustrative example rather than reporting a large-scale validation study.",
+  "ARGUE restricts citations to a predefined document collection and cannot directly evaluate information whose evidence lies outside that collection.",
+  "The framework assumes source documents are truthful; validating source truthfulness is explicitly outside its scope.",
+  "Creating report requests, nuggets, acceptable answers, and document-to-nugget mappings requires substantial expert assessment effort.",
+  "Full collection annotation is impractical, so incomplete discovery of supporting documents or acceptable nugget answers can threaten reusability.",
+  "Determining what information is essential enough to become a nugget remains an assessor judgment and therefore embeds subjectivity.",
+  "Simple question-answer nuggets are less natural for information that must be expressed across multiple sentences or synthesized from multiple documents.",
+  "The framework is better suited to evidence-grounded informative reporting than to reports whose purpose is to produce novel analysis.",
+  "Although temporal-window constraints can be included in report requests, the framework does not itself model evolving evidence state, supersession, or longitudinal versions across repeated report cycles.",
+  "The paper does not address calibrated abstention or formal selective-risk guarantees under distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "nugget_recall_completeness": 0.99,
+  "segment_precision_grounding": 0.99,
+  "repetition_handling": 0.99,
+  "rich_report_requests": 0.98,
+  "explicit_absence_nuggets": 0.97,
+  "automation_feasibility_unvalidated": 0.96,
+  "benchmark_validity_unvalidated": 0.98
+ },
+ "raw_claims": [
+  "ARGUE treats a report as a response to an explicitly specified information need supported by a bounded source collection.",
+  "A report request may include a user story, problem statement, background information, and constraints such as a source time window.",
+  "Human-created evaluation data is intended to reduce circularity between generative systems and their evaluators.",
+  "Required report content is represented through question-answer information nuggets.",
+  "Nugget answers are linked to source documents that attest the information.",
+  "Recall measures the proportion of required nuggets correctly represented with supporting citations.",
+  "Precision is computed over report segments and reflects whether their cited evidence supports their claims.",
+  "A repeated nugget contributes only once to recall.",
+  "Claims lacking required citations are penalized under the proposed scoring rules.",
+  "The framework can represent an explicitly requested but unattested fact as an absence nugget.",
+  "The illustrative example obtains full precision while missing two of five nuggets, showing why precision and completeness must be scored separately.",
+  "The authors regard responsiveness, grounding, verifiability, completeness, and reusability as core requirements for evaluating generated reports."
+ ],
+ "source_url": "https://arxiv.org/html/2405.00982",
+ "access": "full_text"
+}

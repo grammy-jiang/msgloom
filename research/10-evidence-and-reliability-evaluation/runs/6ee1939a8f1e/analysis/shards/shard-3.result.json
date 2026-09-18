@@ -1,0 +1,404 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2509.26184",
+   "title": "Auto-ARGUE: LLM-Based Report Generation Evaluation",
+   "research_question": "Can the ARGUE framework for evaluating long-form citation-backed reports be automated with an LLM judge while retaining useful agreement with human judgments of coverage and citation support?",
+   "methodology": "Auto-ARGUE implements ARGUE as a sequence of sentence-level binary judgments, using few-shot LLM judging for non-trivial decisions and deterministic lookup where possible. It evaluates report content through question-answer nuggets, including AND and OR structures, and separately assesses citation relevance, citation support, repeated information, and assertions of ignorance. Report-level metrics include sentence precision, nugget recall, weighted variants, F1, and finer-grained citation measures. The authors validate the implementation on 51 TREC 2024 NeuCLIR runs across Chinese, Russian, and Farsi collections and on assessor-judged TREC 2024 RAG AG and RAG runs.",
+   "key_findings": [
+    {
+     "finding": "Auto-ARGUE produced system-level rankings that agreed well with human ARGUE judgments on the TREC NeuCLIR report-generation pilot, with especially strong agreement for sentence precision.",
+     "evidence_type": "supported",
+     "section": "4.1 TREC NeuCLIR 2024"
+    },
+    {
+     "finding": "On TREC RAG 2024, Auto-ARGUE nugget recall correlated moderately to strongly with AutoNuggetizer's human-grounded nugget-support evaluation, with Spearman correlations of 0.81-0.86 and Kendall correlations of 0.65-0.72.",
+     "evidence_type": "supported",
+     "section": "4.2 TREC RAG 2024"
+    },
+    {
+     "finding": "The framework directly operationalizes evidence completeness as nugget recall rather than treating factual correctness alone as sufficient report quality.",
+     "evidence_type": "supported",
+     "section": "2 ARGUE; 3 Auto-ARGUE"
+    },
+    {
+     "finding": "ARGUE explicitly represents justified abstention-like behavior through negative assertions, rewarding claims of unavailable information only when the corresponding nugget truly has no answer.",
+     "evidence_type": "supported",
+     "section": "2 ARGUE - Edge Cases"
+    },
+    {
+     "finding": "The paper's NeuCLIR validation did not test negative-assertion judgments because every NeuCLIR nugget was answerable.",
+     "evidence_type": "supported",
+     "section": "4.1 TREC NeuCLIR 2024"
+    },
+    {
+     "finding": "Fine-grained inspection with ARGUE-viz revealed that the authors' own NeuCLIR systems repeatedly struggled with AND nuggets requiring multiple answers.",
+     "evidence_type": "supported",
+     "section": "5 ARGUE-viz"
+    },
+    {
+     "finding": "Citation scoring requires each cited document to support the entire sentence that cites it, which creates a structural preference for simpler sentences.",
+     "evidence_type": "supported",
+     "section": "3 Auto-ARGUE - Citation Support"
+    }
+   ],
+   "limitations": [
+    "The main validation is system-level ranking agreement, so the reported results do not establish equally strong reliability for every individual sentence, nugget, or report.",
+    "The NeuCLIR experiments cannot validate the negative-assertion or justified-ignorance branch because all evaluated nuggets were answerable.",
+    "The requirement that every cited document support an entire citing sentence can disadvantage complex sentences whose claims are jointly supported by multiple sources.",
+    "Evaluation quality depends on the chosen LLM judge, prompts, nugget construction, relevance labels, and document-to-nugget mappings.",
+    "The empirical study is restricted to TREC 2024 tasks and does not directly test temporal drift, stale evidence, changing source versions, or distribution shift over time.",
+    "The RAG comparison converts AutoNuggetizer claims into question-answer nuggets with an LLM, adding an additional transformation step to the comparison."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "human_agreement": 0.96,
+    "rag_rank_correlation": 0.99,
+    "completeness_via_nuggets": 0.99,
+    "negative_assertions": 0.99,
+    "negative_assertions_not_validated": 0.99,
+    "and_nugget_difficulty": 0.94,
+    "complex_sentence_bias": 0.99
+   },
+   "raw_claims": [
+    "Auto-ARGUE automates the binary sentence-level decisions required by the ARGUE report-evaluation framework.",
+    "Nugget recall measures how much of the expected information a report correctly covers.",
+    "Sentence precision measures whether sentences requiring evidence are fully supported by their citations.",
+    "Negative assertions are rewarded only when the relevant information is genuinely absent from the reference nuggets.",
+    "NeuCLIR evaluation covered 51 runs over 21 topics for each of three source languages.",
+    "All NeuCLIR nuggets in the experiment were answerable, so negative-assertion judgments were not exercised.",
+    "The TREC RAG comparison produced Spearman correlations between 0.81 and 0.86 and Kendall correlations between 0.65 and 0.72.",
+    "Auto-ARGUE and ARGUE-viz are released as open-source tools."
+   ],
+   "source_url": "https://arxiv.org/html/2509.26184",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2312.09300",
+   "title": "Self-Evaluation Improves Selective Generation in Large Language Models",
+   "research_question": "Can an LLM's token-level self-evaluation of its own free-form answers provide better confidence signals for selective generation and abstention than ordinary sequence likelihood?",
+   "methodology": "The authors transform free-form generation into token-level evaluation tasks using Sample and Select, which presents sampled responses as multiple-choice alternatives, and Sample and Eval, which asks whether an individual answer is correct. A hybrid method first selects an answer comparatively and then estimates its pointwise correctness, optionally subtracting confidence assigned to a 'None of the above' option. Confidence methods are evaluated with accuracy, Calibration-AUC, and Selective-AUC, where low-confidence outputs are increasingly abstained. Experiments use PaLM-2 Large and, where API log-probabilities permit, GPT-3 on TruthfulQA and a 1,000-example sample of TL;DR.",
+   "key_findings": [
+    {
+     "finding": "Raw sequence likelihood was a poor confidence signal for free-form generation and was negatively correlated with correctness on TruthfulQA in several settings.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Recasting answer assessment as token-level self-evaluation substantially improved confidence-quality ranking compared with sequence likelihood.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "On PaLM-2 TruthfulQA, the hybrid method with a 'None of the above' option achieved a Calibration-AUC of 75.34 compared with 39.80 for raw sequence likelihood.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Allowing 'None of the above' gave the model an explicit signal for cases in which none of the sampled answers appeared correct and generally improved calibration without a large accuracy penalty.",
+     "evidence_type": "supported",
+     "section": "2.1 Sample and Select; 4.2 Results"
+    },
+    {
+     "finding": "The advantage of self-evaluation over sequence-level confidence also appeared on TL;DR summarization, although the improvements were smaller than on TruthfulQA.",
+     "evidence_type": "supported",
+     "section": "4.3 Self-evaluation improves calibration on TL;DR summarization"
+    },
+    {
+     "finding": "Self-evaluation remained useful after a self-critique-and-revision stage, indicating that confidence estimation and answer revision supplied complementary benefits.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Self-evaluation increases inference cost because the model must perform one or two additional evaluation passes after generation.",
+     "evidence_type": "supported",
+     "section": "6 Discussion"
+    }
+   ],
+   "limitations": [
+    "The principal experiments rely on PaLM-2 Large, while GPT-3 results are incomplete because its API exposed only limited token log-probabilities.",
+    "GPT-3.5 and GPT-4 could not be evaluated because their APIs did not expose the required output log-probabilities at the time of the study.",
+    "TruthfulQA correctness is approximated by GPT-judge rather than newly collected human labels, and TL;DR quality is approximated by a reward model whose reported human-rating prediction accuracy is 71.34%.",
+    "Only 1,000 examples from the 15,240-example TL;DR test split were evaluated to reduce inference cost.",
+    "The method increases inference time by roughly one additional evaluation pass, or two for the hybrid procedure.",
+    "The confidence scores are evaluated primarily as ranking signals through AUC rather than as numerically calibrated probabilities.",
+    "The study does not directly evaluate robustness under temporal change, explicit out-of-distribution shifts, or changing evidence sources.",
+    "No paper-specific source-code release is identified in the full text."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "sequence_likelihood_poor": 0.99,
+    "self_evaluation_improves_ranking": 0.99,
+    "truthfulqa_calibration_gain": 0.99,
+    "none_of_above_helps": 0.97,
+    "tldr_transfer": 0.98,
+    "revision_complementarity": 0.96,
+    "inference_cost": 0.99
+   },
+   "raw_claims": [
+    "The method converts free-form generation into token-level self-evaluation tasks.",
+    "Sample and Select asks the model to choose among several independently sampled answers.",
+    "Sample and Eval asks the model to judge whether a particular candidate answer is correct.",
+    "A 'None of the above' choice is used to expose uncertainty when all sampled answers may be wrong.",
+    "Sequence likelihood performed poorly as a predictor of free-form answer quality.",
+    "Self-evaluation confidence was more predictive of answer quality than sequence likelihood on TruthfulQA.",
+    "The same general calibration pattern was observed on TL;DR summarization.",
+    "Selective-AUC measures answer quality as increasingly low-confidence outputs are abstained.",
+    "The hybrid self-evaluation procedure requires additional model inference."
+   ],
+   "source_url": "https://arxiv.org/html/2312.09300",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2505.23912",
+   "title": "LoVeC: Reinforcement Learning for Better Verbalized Confidence in Long-Form Generation",
+   "research_question": "Can reinforcement learning teach language models to emit sentence-level numerical confidence during long-form generation that is better calibrated to factual correctness and more efficient than post-hoc sampling methods?",
+   "methodology": "LoVeC trains Llama-3-8B-Instruct and Gemma-2-9B-It to associate generated factual statements with numerical sentence-level confidence scores. The authors formulate confidence generation as a sequential decision problem and compare SFT with on-policy GRPO and off-policy preference training through DPO, using evidence-based fact checking to construct rewards or preference pairs. Evaluation uses free-form and iterative tagging on WildHallu, Bios, and long-form PopQA, with Brier Score, soft-label ECE-M, and Spearman correlation between confidence and factuality. GPT-4o with retrieved evidence supplies the principal factuality labels, with an additional human reliability study, and the paper also measures runtime, cross-domain transfer, short-form QA transfer, and reward-hacking diagnostics.",
+   "key_findings": [
+    {
+     "finding": "RL-trained LoVeC models consistently improved sentence-level confidence calibration over prompting, SFT, self-consistency, and the LUQ baseline across the reported long-form datasets.",
+     "evidence_type": "supported",
+     "section": "5.2 Experimental Results"
+    },
+    {
+     "finding": "For Llama-3 iterative tagging on WildHallu, LoVeC-GRPO reached a Brier Score of 5.7, ECE-M of 2.5, and Spearman correlation of 57.0, improving substantially over the SFT initialization.",
+     "evidence_type": "supported",
+     "section": "5.2 Experimental Results; Appendix C.4"
+    },
+    {
+     "finding": "Calibration improvements transferred from WildHallu training to the out-of-domain Bios and PopQA evaluations.",
+     "evidence_type": "supported",
+     "section": "5.2 Experimental Results"
+    },
+    {
+     "finding": "Inline confidence prediction was reported to process the WildHallu test set about 20 times faster than the sampling-based LUQ method in the stated Gemma-2-9B single-A100 comparison.",
+     "evidence_type": "supported",
+     "section": "5.2 Experimental Results"
+    },
+    {
+     "finding": "The RL objective can improve calibration without requiring the model to avoid every hallucination, because hallucinated statements are acceptable to the objective if they receive appropriately low confidence.",
+     "evidence_type": "supported",
+     "section": "4.1 Task Formulation"
+    },
+    {
+     "finding": "Human checking of a 312-sentence sample showed high inter-annotator agreement, supporting the use of evidence-conditioned GPT-4o as the main factuality estimator, although it does not make that estimator error-free.",
+     "evidence_type": "supported",
+     "section": "Appendix D Human Annotation"
+    },
+    {
+     "finding": "The authors found no evidence of obvious reward hacking under their diagnostics for output length, factuality, semantic diversity, vocabulary richness, repetition, prompt copying, or template collapse.",
+     "evidence_type": "supported",
+     "section": "Appendix H Does Our Training Induce Reward Hacking?"
+    }
+   ],
+   "limitations": [
+    "The training method requires access to white-box model parameters and therefore does not directly apply to closed black-box models.",
+    "The experiments focus specifically on factuality confidence rather than completeness, citation support, relevance, usefulness, or other dimensions of long-form quality.",
+    "The main factuality target is supplied by an LLM fact-checker conditioned on retrieved evidence, so training and evaluation inherit errors from that verifier and its evidence.",
+    "The reported out-of-domain generalization covers Bios and PopQA but does not establish robustness to arbitrary distribution shifts.",
+    "The study does not explicitly evaluate temporal drift, evidence version changes, or confidence calibration after the underlying facts change.",
+    "High-stakes domains such as law, healthcare, and finance are proposed as future work rather than evaluated settings.",
+    "Sentence-level confidence can hide mixed correctness among multiple atomic claims contained in one sentence."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "rl_calibration_gain": 0.99,
+    "wildhallu_grpo_metrics": 0.99,
+    "cross_domain_transfer": 0.96,
+    "runtime_advantage": 0.98,
+    "low_confidence_for_hallucinations": 0.99,
+    "fact_checker_validation": 0.94,
+    "no_observed_reward_hacking": 0.92
+   },
+   "raw_claims": [
+    "LoVeC attaches numerical confidence scores to factual statements in long-form generation.",
+    "The method trains confidence behavior with reinforcement-learning objectives rather than relying only on supervised fine-tuning.",
+    "WildHallu is used for training and evaluation while Bios and PopQA are used as out-of-domain test sets.",
+    "Brier Score, ECE-M, and Spearman correlation are the main confidence-calibration metrics.",
+    "GRPO and DPO generally outperform SFT and the evaluated confidence baselines.",
+    "The WildHallu runtime comparison reports roughly a twenty-fold speed advantage over LUQ.",
+    "GPT-4o with retrieved evidence is used as the primary factuality verifier.",
+    "A human study checks the reliability of the automated factuality annotations.",
+    "The released implementation links to public code and the external datasets used by the experiments."
+   ],
+   "source_url": "https://arxiv.org/html/2505.23912",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2607.19322",
+   "title": "Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT, a Benchmark for Factual Completeness",
+   "research_question": "How can factual completeness of open-ended long-form generation be evaluated with rubrics rich enough to represent structured answer requirements yet simple enough for reliable automated judging?",
+   "methodology": "The paper introduces a two-level representation in which a structured meta-rubric captures simple facts, strict and flexible lists, ordered processes, relationships, meta-insights, and three importance tiers, after which deterministic rules compile it into flat checks for LLM judging. Gamut contains 1,813 human-verified everyday deep-research questions grounded in wearable imagery, with rubrics constructed through LLM-assisted web research, self-refinement, multiple rounds of expert revision, and supporting evidence snippets. Each check receives one of four verdicts—meets, partially meets, missing, or contradicts—and tier scores penalize contradictions more strongly than omissions before combining Answer-Critical, Valuable, and Context tiers. Fourteen proprietary and open-weight models are evaluated with three different LLM judges, and a 1,806-question text-only variant tests how much of the benchmark difficulty comes from visual identification rather than answer completeness.",
+   "key_findings": [
+    {
+     "finding": "Gamut exposes substantial factual incompleteness in current systems: the strongest evaluated model scored 58.7% on the multimodal benchmark.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "Omission was the dominant failure mode, with missing rubric elements accounting for more than a quarter of checks even for the strongest systems and roughly two-thirds for some weak systems.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "The structured meta-rubric was empirically necessary for nearly all questions: 98% contained answer structure that a flat list of independently required facts would misrepresent.",
+     "evidence_type": "supported",
+     "section": "6.3 The Structure Behind the Rubrics; 7 Conclusion"
+    },
+    {
+     "finding": "Model ordering was highly stable across Gemini 3.1 Pro and Claude Opus 4.8 judges, while Qwen3-VL 235B was more lenient but preserved the broad ordering.",
+     "evidence_type": "supported",
+     "section": "5 Evaluating Models on Gamut - Judge agreement"
+    },
+    {
+     "finding": "Removing the visual-identification requirement improved every evaluated model by roughly 10 to 20 Gamut points while broadly preserving model ordering.",
+     "evidence_type": "supported",
+     "section": "5.2 A Text-Only Variant"
+    },
+    {
+     "finding": "The scoring rule explicitly distinguishes omission from contradiction and imposes a larger penalty for a confident falsehood than for missing information.",
+     "evidence_type": "supported",
+     "section": "3.3 Scoring"
+    },
+    {
+     "finding": "The claim that the two-level framework generalizes broadly beyond long-form factuality is proposed conceptually but is not empirically tested on other open-ended generation tasks in this paper.",
+     "evidence_type": "unsupported",
+     "section": "7 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The paper has no dedicated limitations section, so limitations here are inferred from the reported benchmark design.",
+    "The benchmark focuses on everyday deep-research factuality grounded mainly in wearable imagery and does not establish validity for every form of open-ended generation.",
+    "Question and rubric construction depend heavily on Gemini 3.1 Pro before expert review, which may imprint model-specific search and decomposition patterns on the benchmark.",
+    "Final scoring still depends on LLM judges; cross-judge experiments show ranking robustness but do not prove every individual rubric verdict is correct.",
+    "The tier weights, partial-credit value, and contradiction penalty are design choices rather than parameters learned from user utility or downstream risk.",
+    "Web evidence can become stale or change after benchmark construction, but the paper does not evaluate temporal validity, source-version drift, or periodic rubric refresh.",
+    "The benchmark measures whether expected facts are present but is not a calibrated abstention benchmark and does not estimate the probability that a model should decline an answer.",
+    "Evidence-backed rubrics define reference completeness at construction time, so facts absent from the rubric cannot receive completeness credit even if they later become relevant."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "benchmark_challenging": 0.99,
+    "omission_dominant": 0.99,
+    "structured_rubrics_needed": 0.99,
+    "judge_robustness": 0.98,
+    "text_only_gain": 0.99,
+    "contradiction_penalty": 0.99,
+    "generalization_beyond_factuality": 0.88
+   },
+   "raw_claims": [
+    "Gamut evaluates factual completeness rather than only factual precision.",
+    "Each question is represented first by a structured meta-rubric and then by mechanically generated grading checks.",
+    "The benchmark contains 1,813 multimodal questions across ten everyday domains.",
+    "Rubric checks distinguish fully met, partially met, missing, and contradictory content.",
+    "Contradictions are penalized more strongly than omissions in the scoring formula.",
+    "The strongest evaluated multimodal model obtains a Gamut score of 58.7%.",
+    "Missing information is more common than contradiction for the strongest models.",
+    "Ninety-eight percent of questions contain structure that an ordinary flat fact checklist would fail to represent faithfully.",
+    "The text-only variant contains 1,806 questions and broadly preserves the multimodal model ordering.",
+    "The authors release the dataset and evaluation code."
+   ],
+   "source_url": "https://arxiv.org/html/2607.19322",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2307.09254",
+   "title": "Selective Generation for Controllable Language Models",
+   "research_question": "Can selective generation for free-form language models obtain statistical control over semantically incorrect accepted answers by defining correctness through textual entailment and calibrating when the model should abstain?",
+   "methodology": "The authors define an entailment-based false discovery rate, FDR-E, for a generator that either returns its answer or outputs an IDK-style abstention. SGen-Sup obtains a supervised risk bound, while SGen-Semi uses PAC conformal entailment-set learning and unlabeled examples to propagate pseudo-labels while bounding false entailment errors. Neuro-selection combines candidate confidence functions, including answer likelihood and self-consistency, to improve acceptance efficiency subject to a requested FDR-E constraint. Experiments use GPT-3.5-Turbo and Alpaca-7B on Natural Questions, with manually labeled textual-entailment datasets of 4,595 and 7,374 generated examples respectively, plus up to 10,000 or 27,000 unlabeled examples.",
+   "key_findings": [
+    {
+     "finding": "The paper provides a PAC-style theoretical guarantee that the learned selective generator's entailment-based false discovery rate is upper bounded with user-specified confidence under the stated assumptions.",
+     "evidence_type": "supported",
+     "section": "4.3 FDR-E Bound for Semi-Supervised Learning"
+    },
+    {
+     "finding": "In the reported experiments, SGen-Semi generally controlled the requested FDR-E while obtaining higher average selection efficiency than the compared certified and heuristic semi-supervised alternatives.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    },
+    {
+     "finding": "With only 75% of the labeled calibration examples used by fully supervised methods, SGen-Semi achieved selection efficiencies of 0.7334 for GPT-3.5-Turbo and 0.3173 for Alpaca-7B in the reported comparison.",
+     "evidence_type": "supported",
+     "section": "5 Experiments - Why Semi-Supervised Learning"
+    },
+    {
+     "finding": "Adding more unlabeled examples increased selective-generation efficiency in the reported experiments.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    },
+    {
+     "finding": "Textual entailment provides a more suitable semantic correctness criterion for free-form answers than exact match, which can reject semantically equivalent valid responses.",
+     "evidence_type": "supported",
+     "section": "5 Experiments - Why Entailment Labels"
+    },
+    {
+     "finding": "The neuro-selection mechanism improved average efficiency by choosing among multiple scoring functions rather than relying on a single fixed confidence measure.",
+     "evidence_type": "supported",
+     "section": "4.4 Neuro-selection Functions; 5 Experiments"
+    },
+    {
+     "finding": "The empirical FDR-E bound was not especially tight in all settings, particularly for Alpaca-7B, despite the formal guarantee.",
+     "evidence_type": "supported",
+     "section": "6 Conclusion - Limitations"
+    }
+   ],
+   "limitations": [
+    "The formal correctness guarantee assumes calibration and deployment examples are i.i.d.; the authors explicitly note that this assumption may fail in practical environments.",
+    "The guarantee therefore does not directly cover temporal drift or distributional change between calibration and deployment.",
+    "Producing gold entailment labels is expensive because generated and reference answers must be compared for logical entailment.",
+    "The semi-supervised procedure reduces but does not remove dependence on labeled entailment data.",
+    "Empirical FDR-E can be substantially below or otherwise loosely related to the requested bound, especially for Alpaca-7B, indicating conservatism or looseness in the bound.",
+    "The experiments cover one open-ended QA source dataset and two generators, limiting evidence for generalization to other long-form generation tasks.",
+    "Correctness is reduced to entailment with a reference answer, so completeness, citation support, evidence freshness, and omission of additional required facts are outside the metric.",
+    "The method does not explicitly address source-version changes or temporally evolving truths."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "pac_fdr_guarantee": 0.99,
+    "semi_supervised_efficiency": 0.98,
+    "reported_efficiency_values": 0.99,
+    "unlabeled_data_helps": 0.97,
+    "entailment_over_exact_match": 0.98,
+    "neuro_selection_efficiency": 0.96,
+    "bound_not_tight": 0.99
+   },
+   "raw_claims": [
+    "Selective generation returns an answer only when a learned selection rule accepts it and otherwise abstains.",
+    "FDR-E measures the rate of accepted generated answers that are not semantically entailed by the reference answer.",
+    "SGen-Sup and SGen-Semi provide statistically controlled selective-generation procedures.",
+    "SGen-Semi uses conformalized entailment sets to control pseudo-labeling errors when exploiting unlabeled data.",
+    "The experiments evaluate GPT-3.5-Turbo and Alpaca-7B generations derived from Natural Questions.",
+    "The authors manually construct entailment labels for generated and reference answer pairs.",
+    "Semi-supervised training uses fewer labeled examples than the fully supervised comparison.",
+    "Additional unlabeled examples improve selection efficiency in the reported experiments.",
+    "Exact match is inadequate for many semantically correct free-form answers.",
+    "The authors explicitly state that the i.i.d. assumption needed by the guarantee may be violated in practice.",
+    "Code and experimental datasets are released by the authors."
+   ],
+   "source_url": "https://arxiv.org/html/2307.09254",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

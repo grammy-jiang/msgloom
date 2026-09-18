@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1155-2016-1340973",
+ "title": "Mining Sequential Update Summarization with Hierarchical Text Analysis",
+ "research_question": "Can a hierarchical combination of time-sensitive retrieval, topic-level keyword mining, and sentence-level scoring produce novel, timely, and comprehensive updates for rapidly developing news events?",
+ "methodology": "The authors build a sequential update summarization pipeline with preprocessing and Indri retrieval, hierarchical LDA keyword extraction, and three sentence-scoring methods called KLP, SKD, and KS, followed by duplicate removal that keeps the earliest occurrence. For each event and hour, the system retrieves the 500 most relevant documents and mines hierarchical topic keywords. It is evaluated on the ten events of the TREC 2013 Temporal Summarization sequential-update task, assessing the top 60 updates per topic against human-created gold nuggets. Evaluation uses expected gain, expected latency gain, comprehensiveness, and latency comprehensiveness, which jointly reflect relevance/precision, coverage, novelty, verbosity, and timeliness.",
+ "key_findings": [
+  {
+   "finding": "The keyword-diversity-only KS method achieved expected gain 0.149 and expected latency gain 0.136, equal to the best reported values used for comparison in the paper.",
+   "evidence_type": "supported",
+   "section": "6.2 Experimental Results"
+  },
+  {
+   "finding": "The more coverage-oriented KLP method attained substantially higher comprehensiveness than KS; its best reported configuration reached 0.224 comprehensiveness and 0.292 latency comprehensiveness versus 0.099 and 0.126 for KS.",
+   "evidence_type": "supported",
+   "section": "6.2 Experimental Results"
+  },
+  {
+   "finding": "The experiments expose a precision-coverage trade-off: KS performs better on gain-oriented metrics while KLP covers more distinct gold nuggets but is more prone to selecting long sentences.",
+   "evidence_type": "supported",
+   "section": "6.2 Experimental Results"
+  },
+  {
+   "finding": "Changing KLP's sentence-length and sentence-position weights had little effect relative to the importance of keyword diversity.",
+   "evidence_type": "supported",
+   "section": "6.2 Experimental Results"
+  },
+  {
+   "finding": "The evaluation explicitly penalizes delayed updates and verbose updates while measuring coverage of atomic gold nuggets, providing a joint treatment of novelty, timeliness, and omission-like coverage failure.",
+   "evidence_type": "supported",
+   "section": "5 Evaluation Method"
+  },
+  {
+   "finding": "The paper does not evaluate explicit work-item state transitions such as open, resolved, or superseded states, nor selective prediction or online calibration under distribution shift.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the reported methodology and experiments"
+  }
+ ],
+ "limitations": [
+  "Evaluation is limited to ten unexpected-news events from the TREC 2013 Temporal Summarization task.",
+  "The approach is extractive and sentence-based, so it does not model structured longitudinal state transitions or dependencies as first-class state.",
+  "Novelty is primarily handled through update scoring, gold-nugget matching, and duplicate removal rather than explicit semantic tracking of supersession.",
+  "The evaluation uses fixed historical data rather than online adaptation or non-stationary calibration.",
+  "No selective-prediction, confidence-calibration, or abstention mechanism is evaluated.",
+  "The paper does not report a released implementation of the proposed system."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "KS leads gain metrics": 0.99,
+  "KLP improves nugget coverage": 0.99,
+  "precision coverage tradeoff": 0.98,
+  "keyword diversity dominates KLP weighting": 0.96,
+  "joint temporal and coverage evaluation": 0.98,
+  "no calibration or state-transition evaluation": 0.96
+ },
+ "raw_claims": [
+  "The system observes a temporally ordered stream and emits sentence-length updates about developing events.",
+  "For each event and hour, the method retrieves the 500 highest-ranked relevant documents.",
+  "Hierarchical LDA is used to extract event-relevant keywords at each time interval.",
+  "Three sentence-scoring approaches, KLP, SKD, and KS, are evaluated.",
+  "Duplicate removal retains the earliest occurrence when identical update sentences appear multiple times.",
+  "Gold nuggets represent atomic pieces of novel event information and receive importance grades from assessors.",
+  "Expected gain is used as a precision-like measure and comprehensiveness as a recall-like measure.",
+  "Latency-adjusted versions of both gain and comprehensiveness reward earlier delivery of useful information.",
+  "KS obtains the strongest expected-gain and latency-gain results among the proposed scoring methods.",
+  "KLP obtains higher comprehensiveness than KS but suffers lower gain because it tends to select longer sentences.",
+  "The experiments use ten TREC 2013 temporal-summarization events.",
+  "The evaluation does not test adaptive confidence calibration or explicit longitudinal work-item states."
+ ],
+ "source_url": "https://onlinelibrary.wiley.com/doi/10.1155/2016/1340973",
+ "access": "full_text"
+}

@@ -1,0 +1,89 @@
+{
+ "paper_id": "2305.11859",
+ "title": "Complex Claim Verification with Evidence Retrieved in the Wild",
+ "research_question": "How effectively can a fully automated system verify complex real-world claims using only web evidence that was available when the claim was made, rather than curated or future fact-checking evidence?",
+ "methodology": "The pipeline decomposes each complex claim into multiple yes/no subquestions, searches the web for each subquestion subject to temporal and fact-checking-site constraints, retrieves fine-grained spans with BM25, generates claim-focused summaries, and predicts a six-way veracity label with a fine-tuned DeBERTa model. Experiments use ClaimDecomp, containing 1,200 complex political claims split into 800 training, 200 development, and 200 test examples. End-to-end classification is evaluated with accuracy, soft accuracy, macro-F1, and mean absolute error, while human studies separately evaluate summary faithfulness and comprehensiveness. The authors also repeat first-stage retrieval over time to study instability of commercial web-search results.",
+ "key_findings": [
+  {
+   "finding": "Under the realistic before-claim and non-fact-checking-site constraints, retrieval plus summarization improved test accuracy from 25.5% for the claim-only baseline to 33.0%, with corresponding improvements on several other veracity metrics.",
+   "evidence_type": "supported",
+   "section": "5.1 Constrained vs. Unconstrained Search"
+  },
+  {
+   "finding": "Removing temporal or site constraints substantially improves apparent fact-checking performance, indicating that unconstrained search often benefits from later fact-check articles rather than contemporaneous raw evidence.",
+   "evidence_type": "supported",
+   "section": "5.1 Constrained vs. Unconstrained Search"
+  },
+  {
+   "finding": "Searching with generated subquestions performs markedly better than searching with the original compound claim, showing that decomposition helps retrieve evidence for multiple aspects of a complex claim.",
+   "evidence_type": "supported",
+   "section": "5.2 Stage Ablations"
+  },
+  {
+   "finding": "Few-shot claim-focused summaries were rated fully faithful in 82.5% of 200 evaluated document-summary pairs, compared with 66.0% for the zero-shot text-davinci-003 summaries.",
+   "evidence_type": "supported",
+   "section": "6.1 Faithfulness Evaluation"
+  },
+  {
+   "finding": "Evidence completeness remains a major bottleneck: for few-shot summaries, 42.9% of evaluated subquestions were answerable, 21.1% partially answerable, and 36.0% unanswerable.",
+   "evidence_type": "supported",
+   "section": "6.2 Comprehensiveness Evaluation"
+  },
+  {
+   "finding": "At the compound-claim level, 36 of 50 claims contained at least one unanswerable gold subquestion, showing that evidence sufficient for only part of a claim is common.",
+   "evidence_type": "supported",
+   "section": "6.3 Combined Evaluation"
+  },
+  {
+   "finding": "First-stage web retrieval is non-stationary: the authors report that only about 30% of retrieved URLs overlapped when the same queries were issued two months apart, although veracity-classification performance changed relatively little.",
+   "evidence_type": "supported",
+   "section": "5.3 Stability of First-stage Retrieval"
+  },
+  {
+   "finding": "The system does not implement calibrated selective prediction or an automatic abstention policy that converts evidence incompleteness or retrieval instability into a controlled decision to withhold a verdict.",
+   "evidence_type": "unsupported",
+   "section": "Limitations and Future Directions"
+  }
+ ],
+ "limitations": [
+  "First-stage retrieval is the main bottleneck, and some required evidence is unavailable on the public web.",
+  "Generated subquestions may omit relevant aspects or may not be sufficiently decontextualized.",
+  "Commercial-search results change over time, making exact retrieval experiments difficult to reproduce.",
+  "The study covers English-language political claims and does not establish generalization to other languages, domains, or multimodal claims.",
+  "Human evaluations of faithfulness and comprehensiveness have relatively low Fleiss kappa values, reflecting annotation subjectivity.",
+  "The system may generate summarization errors even when retrieval succeeds.",
+  "The paper advocates human-in-the-loop iterative retrieval but does not implement or evaluate the proposed interactive stopping process.",
+  "No calibrated abstention, selective-risk guarantee, or online recalibration procedure is evaluated."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieved evidence improves constrained verification": 0.99,
+  "temporal constraints expose harder realistic retrieval": 0.99,
+  "claim decomposition improves first-stage retrieval": 0.98,
+  "few-shot summaries are more faithful": 0.99,
+  "compound claims frequently remain partially unsupported": 0.99,
+  "retrieval results drift over time": 0.99,
+  "no calibrated selective prediction": 0.97
+ },
+ "raw_claims": [
+  "The pipeline restricts web evidence to material published before the claim was made.",
+  "Fact-checking websites are filtered from the realistic retrieval condition.",
+  "Each claim is decomposed into ten generated yes/no subquestions before first-stage retrieval.",
+  "A second BM25 retrieval stage selects relevant spans from the web documents.",
+  "Claim-focused summaries compress retrieved evidence before veracity classification.",
+  "Retrieval-backed verification outperforms classification from the claim alone in the constrained setting.",
+  "Generated subquestions retrieve more useful evidence than using the original compound claim as the search query.",
+  "Few-shot prompting reduces factual errors in claim-focused summaries.",
+  "A substantial fraction of subquestions remains unanswerable from the retrieved evidence.",
+  "Most complex claims in the human-evaluation subset have at least one aspect for which sufficient evidence was not retrieved.",
+  "Commercial search results for identical queries can change substantially over a period of months.",
+  "The authors propose iterative human-in-the-loop retrieval as a future solution when the initial evidence is inadequate.",
+  "The reported system does not calibrate a probability of correctness or selectively abstain according to evidence sufficiency."
+ ],
+ "source_url": "https://arxiv.org/html/2305.11859",
+ "access": "full_text"
+}

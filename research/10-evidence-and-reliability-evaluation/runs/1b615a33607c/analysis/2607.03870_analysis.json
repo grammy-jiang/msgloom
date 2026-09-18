@@ -1,0 +1,75 @@
+{
+ "paper_id": "2607.03870",
+ "title": "Evaluating LLM Uncertainty in Long-Form Generation Using Deterministic Ground Truth",
+ "research_question": "How can uncertainty in long-form LLM generation be evaluated at fine-grained resolution without noisy external judges, and what does such evaluation reveal about correctness propagation, calibration, confidence ranking, and reasoning?",
+ "methodology": "The paper introduces SALT, a procedurally generated benchmark in which long outputs have deterministic reference answers that can be decomposed into task-aligned atomic and line units. Six tasks with complete model coverage provide 54,797 evaluated atoms across mathematics, logic, code, DNA translation, and multi-needle retrieval, with additional ARC-AGI and maze experiments reported separately; more than 50 LLMs are evaluated. Unit correctness is determined against deterministic ground truth, while uncertainty is measured using precision, expected calibration error, Macro- and Micro-AUROC, PRR, multiple logit- and verbalization-based confidence functions, post-hoc calibration schemes, paired statistical tests, and controlled prefix interventions.",
+ "key_findings": [
+  {
+   "finding": "Fine-grained confidence ranking deteriorates sharply at atomic resolution: many models' atomic Micro-AUROC values lie only modestly above chance, while line-level units exhibit substantially clearer ranking signal.",
+   "evidence_type": "supported",
+   "section": "5.2 Uncertainty Estimation"
+  },
+  {
+   "finding": "Long-form correctness is path-dependent: errors in the generated prefix strongly reduce future correctness, while answer-context length contributes a separate but bounded degradation that saturates relatively early.",
+   "evidence_type": "supported",
+   "section": "5.1 Correctness Dynamics in Long-Form Generation"
+  },
+  {
+   "finding": "Reasoning interventions improved answer precision but reduced the model's ability to rank its own correct and incorrect units by confidence; the reported paired analysis found a 23.3 percent relative AUROC degradation alongside accuracy gains.",
+   "evidence_type": "supported",
+   "section": "5.2 The Reasoning Trade-off"
+  },
+  {
+   "finding": "Logit-derived confidence functions significantly outperformed verbalized confidence across both calibration and ranking comparisons, but the best confidence function depended on which uncertainty property was being measured.",
+   "evidence_type": "supported",
+   "section": "5.2 Confidence Functions"
+  },
+  {
+   "finding": "Post-hoc binned calibration minimized ECE but harmed ranking, demonstrating that calibration quality and error-ranking quality can move in opposite directions.",
+   "evidence_type": "supported",
+   "section": "5.2 Calibration Methods"
+  },
+  {
+   "finding": "Uncertainty-estimation rankings transferred only conditionally to conventional benchmarks: line-level agreement was stronger for AIME, while agreement with MMLU-Pro was weak and depended on the calibration regime.",
+   "evidence_type": "supported",
+   "section": "5.2 Uncertainty Estimation Transferability"
+  }
+ ],
+ "limitations": [
+  "SALT's deterministic tasks are deliberately structured and synthetic, so they do not reproduce the ambiguity, conflicting evidence, source attribution, and open-ended semantics of real-world free-form reports.",
+  "Strict deterministic unit matching is much easier to define than factual correctness for naturally written multi-source claims.",
+  "The benchmark studies uncertainty on generated answer units but does not directly evaluate evidence completeness or whether decision-relevant source facts were omitted.",
+  "It does not directly model temporal evidence evolution, version supersession, or non-stationary source distributions.",
+  "ARC-AGI and Maze had incomplete model coverage because of compute constraints and were excluded from aggregate main-body results.",
+  "Transfer to external benchmarks was conditional, with weak agreement in some benchmark and granularity combinations.",
+  "The work evaluates uncertainty metrics rather than providing formal selective-prediction or risk-control guarantees under distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "atomic_ranking_gap": 0.99,
+  "prefix_error_propagation": 0.97,
+  "reasoning_ranking_tradeoff": 0.98,
+  "logit_confidence_advantage": 0.97,
+  "calibration_ranking_tradeoff": 0.98,
+  "conditional_transferability": 0.96
+ },
+ "raw_claims": [
+  "SALT uses deterministic long-form targets so correctness labels do not depend on human or LLM judges.",
+  "The six tasks used for the aggregate evaluation contain 54,797 atomic units.",
+  "The study evaluates more than 50 language models.",
+  "Correctness tends to decrease as a generated response progresses.",
+  "The correctness of earlier generated units is strongly associated with the correctness of later units.",
+  "Controlled interventions separate error propagation from the effect of answer-context length.",
+  "Atomic-level confidence ranking is substantially weaker than line-level ranking.",
+  "Reasoning improves answer accuracy while degrading confidence-based discrimination between correct and incorrect units.",
+  "Logit-based uncertainty signals outperform verbalized confidence signals in the reported comparisons.",
+  "Optimizing post-hoc calibration for low ECE can reduce AUROC ranking quality.",
+  "The released repository includes reproduction datasets and procedural dataset generators."
+ ],
+ "source_url": "https://arxiv.org/html/2607.03870",
+ "access": "full_text"
+}

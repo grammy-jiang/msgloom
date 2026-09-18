@@ -1,0 +1,79 @@
+{
+ "paper_id": "2505.23912",
+ "title": "LoVeC: Reinforcement Learning for Better Verbalized Confidence in Long-Form Generation",
+ "research_question": "Can reinforcement learning teach language models to emit sentence-level numerical confidence during long-form generation that is better calibrated to factual correctness and more efficient than post-hoc sampling methods?",
+ "methodology": "LoVeC trains Llama-3-8B-Instruct and Gemma-2-9B-It to associate generated factual statements with numerical sentence-level confidence scores. The authors formulate confidence generation as a sequential decision problem and compare SFT with on-policy GRPO and off-policy preference training through DPO, using evidence-based fact checking to construct rewards or preference pairs. Evaluation uses free-form and iterative tagging on WildHallu, Bios, and long-form PopQA, with Brier Score, soft-label ECE-M, and Spearman correlation between confidence and factuality. GPT-4o with retrieved evidence supplies the principal factuality labels, with an additional human reliability study, and the paper also measures runtime, cross-domain transfer, short-form QA transfer, and reward-hacking diagnostics.",
+ "key_findings": [
+  {
+   "finding": "RL-trained LoVeC models consistently improved sentence-level confidence calibration over prompting, SFT, self-consistency, and the LUQ baseline across the reported long-form datasets.",
+   "evidence_type": "supported",
+   "section": "5.2 Experimental Results"
+  },
+  {
+   "finding": "For Llama-3 iterative tagging on WildHallu, LoVeC-GRPO reached a Brier Score of 5.7, ECE-M of 2.5, and Spearman correlation of 57.0, improving substantially over the SFT initialization.",
+   "evidence_type": "supported",
+   "section": "5.2 Experimental Results; Appendix C.4"
+  },
+  {
+   "finding": "Calibration improvements transferred from WildHallu training to the out-of-domain Bios and PopQA evaluations.",
+   "evidence_type": "supported",
+   "section": "5.2 Experimental Results"
+  },
+  {
+   "finding": "Inline confidence prediction was reported to process the WildHallu test set about 20 times faster than the sampling-based LUQ method in the stated Gemma-2-9B single-A100 comparison.",
+   "evidence_type": "supported",
+   "section": "5.2 Experimental Results"
+  },
+  {
+   "finding": "The RL objective can improve calibration without requiring the model to avoid every hallucination, because hallucinated statements are acceptable to the objective if they receive appropriately low confidence.",
+   "evidence_type": "supported",
+   "section": "4.1 Task Formulation"
+  },
+  {
+   "finding": "Human checking of a 312-sentence sample showed high inter-annotator agreement, supporting the use of evidence-conditioned GPT-4o as the main factuality estimator, although it does not make that estimator error-free.",
+   "evidence_type": "supported",
+   "section": "Appendix D Human Annotation"
+  },
+  {
+   "finding": "The authors found no evidence of obvious reward hacking under their diagnostics for output length, factuality, semantic diversity, vocabulary richness, repetition, prompt copying, or template collapse.",
+   "evidence_type": "supported",
+   "section": "Appendix H Does Our Training Induce Reward Hacking?"
+  }
+ ],
+ "limitations": [
+  "The training method requires access to white-box model parameters and therefore does not directly apply to closed black-box models.",
+  "The experiments focus specifically on factuality confidence rather than completeness, citation support, relevance, usefulness, or other dimensions of long-form quality.",
+  "The main factuality target is supplied by an LLM fact-checker conditioned on retrieved evidence, so training and evaluation inherit errors from that verifier and its evidence.",
+  "The reported out-of-domain generalization covers Bios and PopQA but does not establish robustness to arbitrary distribution shifts.",
+  "The study does not explicitly evaluate temporal drift, evidence version changes, or confidence calibration after the underlying facts change.",
+  "High-stakes domains such as law, healthcare, and finance are proposed as future work rather than evaluated settings.",
+  "Sentence-level confidence can hide mixed correctness among multiple atomic claims contained in one sentence."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rl_calibration_gain": 0.99,
+  "wildhallu_grpo_metrics": 0.99,
+  "cross_domain_transfer": 0.96,
+  "runtime_advantage": 0.98,
+  "low_confidence_for_hallucinations": 0.99,
+  "fact_checker_validation": 0.94,
+  "no_observed_reward_hacking": 0.92
+ },
+ "raw_claims": [
+  "LoVeC attaches numerical confidence scores to factual statements in long-form generation.",
+  "The method trains confidence behavior with reinforcement-learning objectives rather than relying only on supervised fine-tuning.",
+  "WildHallu is used for training and evaluation while Bios and PopQA are used as out-of-domain test sets.",
+  "Brier Score, ECE-M, and Spearman correlation are the main confidence-calibration metrics.",
+  "GRPO and DPO generally outperform SFT and the evaluated confidence baselines.",
+  "The WildHallu runtime comparison reports roughly a twenty-fold speed advantage over LUQ.",
+  "GPT-4o with retrieved evidence is used as the primary factuality verifier.",
+  "A human study checks the reliability of the automated factuality annotations.",
+  "The released implementation links to public code and the external datasets used by the experiments."
+ ],
+ "source_url": "https://arxiv.org/html/2505.23912",
+ "access": "full_text"
+}

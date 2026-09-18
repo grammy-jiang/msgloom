@@ -1,0 +1,72 @@
+{
+ "paper_id": "2508.20867",
+ "title": "MSRS: Evaluating Multi-Source Retrieval-Augmented Generation",
+ "research_question": "How should RAG systems be evaluated when answering a query requires retrieving complementary information from multiple documents and synthesizing it into a long-form response, and where do retrieval and generation failures arise?",
+ "methodology": "The authors construct MSRS-Story and MSRS-Meet from SQuALITY and QMSum, creating queries whose answers require information distributed over multiple source documents and validating benchmark properties with expert annotation. They evaluate sparse and dense retrieval systems using retrieval metrics such as NDCG, MAP, precision, and recall, then evaluate multiple LLM summarizers with G-EVAL and lexical or semantic generation metrics. Oracle-document, no-document, long-context, and retrieval variants separate retrieval failures from synthesis failures. Human error analysis of oracle-condition outputs examines omissions and other generation defects even after retrieval errors have been removed.",
+ "key_findings": [
+  {
+   "finding": "Generation quality tracked retrieval quality closely; on MSRS-Story, mean G-EVAL across models increased from 40.53 with BM25 to 53.34 with gemini-embedding, compared with an oracle average of 60.90.",
+   "evidence_type": "supported",
+   "section": "5.2 Final Generation Results"
+  },
+  {
+   "finding": "Providing the full set of relevant documents outperformed weaker evidence conditions, supporting the benchmark's intended requirement for multi-document evidence aggregation.",
+   "evidence_type": "supported",
+   "section": "5.2 Final Generation Results"
+  },
+  {
+   "finding": "Even with oracle retrieval, top non-reasoning systems omitted multiple minor details in 40% of evaluated MSRS-Story summaries and 60% of MSRS-Meet summaries, while MSRS-Meet summaries missed multiple major details 35% of the time.",
+   "evidence_type": "supported",
+   "section": "5.3 Oracle Error Analysis"
+  },
+  {
+   "finding": "Reasoning models improved oracle-setting G-EVAL over the strongest non-reasoning baselines by as much as 11.22 points on MSRS-Story and 7.11 points on MSRS-Meet; GPT-5 reached G-EVAL 81.07 and 60.78 respectively.",
+   "evidence_type": "supported",
+   "section": "5.4 Reasoning Model Generation Results"
+  },
+  {
+   "finding": "For Gemini 2.5 Pro, feeding a very long document context did not eliminate the value of retrieval: on MSRS-Story, G-EVAL was 61.30 for long context, 70.63 with the strong retriever, and 76.66 with oracle evidence.",
+   "evidence_type": "supported",
+   "section": "5.2 Final Generation Results and Appendix long-context evaluation"
+  },
+  {
+   "finding": "The experiments evaluate standard single-call RAG rather than iterative or agentic retrieval, so they do not establish how query decomposition, retrieval planning, or multi-stage synthesis would perform on MSRS.",
+   "evidence_type": "supported",
+   "section": "Limitations and Future Work"
+  }
+ ],
+ "limitations": [
+  "Automated query construction can introduce minor inaccuracies.",
+  "The deliberately large source collections introduce noise that complicates multi-source RAG evaluation.",
+  "The evaluated pipelines are primarily standard single-call RAG systems rather than iterative or agentic retrieval systems.",
+  "Query decomposition, retrieval planning, and multi-stage synthesis are not directly evaluated.",
+  "The two benchmark families derive from story and meeting data, limiting evidence about transfer to other multi-source domains."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieval_generation_link": 0.99,
+  "multi_document_necessity": 0.96,
+  "oracle_omission_rate": 0.99,
+  "reasoning_model_gain": 0.99,
+  "long_context_not_sufficient": 0.99,
+  "agentic_scope_limit": 0.99
+ },
+ "raw_claims": [
+  "MSRS evaluates retrieval and synthesis when useful information is spread across multiple complementary documents.",
+  "The benchmark contains separate story-based and meeting-based variants.",
+  "Stronger retrieval generally produces stronger downstream generation scores.",
+  "Oracle evidence does not eliminate synthesis errors.",
+  "Omission of minor details remains frequent even among the strongest oracle-condition non-reasoning models.",
+  "Major-detail omissions are particularly visible in the meeting benchmark.",
+  "Reasoning-oriented models improve multi-source synthesis substantially in the oracle setting.",
+  "A large context window does not substitute fully for identifying and supplying high-quality relevant evidence.",
+  "No-document evaluation is used to probe whether systems can answer from memorized knowledge rather than supplied evidence.",
+  "The reported evaluation does not cover more complex iterative or agentic retrieval workflows."
+ ],
+ "source_url": "https://arxiv.org/html/2508.20867",
+ "access": "full_text"
+}
