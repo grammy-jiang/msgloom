@@ -1,0 +1,79 @@
+{
+ "paper_id": "manual-50ed5dc808",
+ "title": "The Learning Behind Gmail Priority Inbox",
+ "research_question": "How can Gmail learn a scalable, continuously updated, user-specific ranking of email importance from noisy behavioral feedback and explicit corrections?",
+ "methodology": "The system models email importance primarily as the probability that a user will act on a message within a defined time window, using hundreds of social, content, thread, and label-related features. It combines a global logistic model with per-user model adjustments and updates models online using a passive-aggressive learning procedure, while a separately personalized decision threshold controls which messages are presented as important. The production architecture logs message features and subsequent user actions and performs distributed model updates over Gmail infrastructure. Evaluation includes implicit-feedback accuracy, approximately 160,000 explicit user importance markings, and a time-use comparison involving about 2,000 Google employees with similar email volume.",
+ "key_findings": [
+  {
+   "finding": "Email importance is strongly personalized, motivating a model that combines globally learned patterns with per-user parameter adjustments and per-user thresholds.",
+   "evidence_type": "supported",
+   "section": "Introduction; Learning Models; Ranking and Thresholds"
+  },
+  {
+   "finding": "On approximately 160,000 explicit user importance markings, the reported error rate falls from 45% for a global model to 38% with user-specific models and to 31% when personalized thresholds are also used.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "Implicit-feedback evaluation yields accuracy of about 80% with roughly five percentage points of variation, while the authors identify presentation bias of about two to three percentage points among active Priority Inbox users.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "False-negative importance errors occur approximately three to four times as often as false positives under the implicit-label evaluation, illustrating asymmetric behavior and the importance of threshold selection.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "In a comparison of roughly 2,000 Google employees with similar mail volume, Priority Inbox users spent about 6% less time reading email overall and about 13% less time reading messages classified as unimportant.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "Manual importance corrections are used as higher-confidence feedback and can adjust an individual user's importance threshold in real time.",
+   "evidence_type": "supported",
+   "section": "Learning Models; Ranking and Thresholds"
+  },
+  {
+   "finding": "The batch-oriented production implementation is reported to process model updates at approximately 35 users per second per core, avoiding the cost of keeping a continuously active learner for every user.",
+   "evidence_type": "supported",
+   "section": "Production System"
+  }
+ ],
+ "limitations": [
+  "Implicit interaction labels are noisy because opening or replying to a message is not identical to judging it important.",
+  "Presentation of Priority Inbox itself affects user behavior, creating measurable presentation bias in implicit evaluation.",
+  "Explicit user corrections are informative but are biased toward cases where the system previously made an error.",
+  "The employee time-use comparison is not presented as a randomized controlled experiment, so the observed time differences do not by themselves establish causation.",
+  "Actions occurring after the configured maximum observation window do not become positive training examples.",
+  "The target is personalized importance or action likelihood rather than an explicit distinction between obligation, preference, commitment, and discretionary interest.",
+  "The paper relies on proprietary Gmail interaction data and does not provide a public evaluation dataset."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "personalization_reduces_error": 0.99,
+  "implicit_accuracy": 0.96,
+  "presentation_bias": 0.96,
+  "time_use_reduction": 0.95,
+  "threshold_personalization": 0.98,
+  "production_scalability": 0.97
+ },
+ "raw_claims": [
+  "The system treats importance as user-specific rather than assigning the same priority to a message for every recipient.",
+  "Training labels are derived largely from actions users take after messages arrive.",
+  "The learner uses hundreds of message, social, thread, content, and label features.",
+  "A global model supplies transferable information while each user's model learns deviations from that global behavior.",
+  "Online passive-aggressive updates allow models to adapt as new behavioral evidence arrives.",
+  "Users differ in the relative cost they place on false positives and false negatives.",
+  "Personalized thresholds substantially reduce disagreement with users' explicit importance markings.",
+  "Implicit feedback is useful but contains presentation and interpretation biases.",
+  "Priority Inbox users in the reported employee comparison spent less time on email, especially on messages considered unimportant.",
+  "The production design batches model updating to make millions of personalized models operationally feasible."
+ ],
+ "source_url": "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36955.pdf",
+ "access": "full_text"
+}

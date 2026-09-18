@@ -1,0 +1,73 @@
+{
+ "paper_id": "2202.07088",
+ "title": "Scaling up Ranking under Constraints for Live Recommendations by Replacing Optimization with Prediction",
+ "research_question": "Can constrained personalized ranking be made fast enough for live recommendation by predicting per-user optimization shadow prices instead of solving the full constrained optimization problem online?",
+ "methodology": "The authors reformulate constrained ranking through the dual of a weighted bipartite matching problem and solve for optimal constraint shadow prices offline on sampled users. They train a k-nearest-neighbor model to predict those shadow prices from user covariates at serving time, then recover rankings using the adjusted utility scores. Experiments use MovieLens 25M and YOW News with five and eight constraints respectively, comparing no optimization, per-user optimal optimization, mean shadow prices, and personalized predicted shadow prices. Evaluation measures constraint compliance, achieved utility, and computation time for ranking 50, 500, or 1,000 items.",
+ "key_findings": [
+  {
+   "finding": "Predicting personalized shadow prices substantially reduces online computation while retaining constraint compliance close to the per-user optimization solution.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "The KNeighbors shadow-price approach stays within the paper's 50 millisecond serving-time requirement even when ranking 1,000 items subject to at least five constraints.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "A single mean shadow-price vector performs worse than personalized shadow-price prediction on MovieLens, providing evidence that modeling user heterogeneity can improve constraint compliance.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "On YOW News, personalized and mean shadow-price prediction have similar constraint-compliance performance, so the benefit of personalization is dataset-dependent.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "Ignoring optimization produces the worst constraint compliance, whereas utility differences among constrained methods are generally small.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "The framework explicitly separates a primary utility objective from auxiliary requirements expressed as hard ranking constraints, making it relevant to obligation-versus-preference prioritization even though it does not model workplace obligations.",
+   "evidence_type": "supported",
+   "section": "2.2 Adding constraints and 4.2 Evaluation"
+  }
+ ],
+ "limitations": [
+  "The empirical evaluation covers only two recommendation datasets and does not test workplace briefing or cross-thread work-item tracking.",
+  "The YOW News holdout set contains only six users, limiting evidence about personalization across heterogeneous populations.",
+  "The constraints are manually specified and selected to maintain feasibility rather than learned from evolving obligations or user behavior.",
+  "Reported online runtimes exclude data generation, reading, preprocessing, and offline computation, so they are serving-stage rather than end-to-end latency measurements.",
+  "The prediction approach assumes useful user covariates are available and that offline shadow-price relationships generalize to future users.",
+  "The evaluation is static train/holdout experimentation and does not test concept drift, longitudinal state transitions, supersession, omission, or repeated briefing cycles."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "prediction_reduces_online_cost": 0.99,
+  "sub_50ms_large_rankings": 0.98,
+  "personalization_helps_movielens": 0.97,
+  "personalization_dataset_dependent": 0.96,
+  "constraints_vs_primary_utility": 0.98
+ },
+ "raw_claims": [
+  "Constrained ranking can be formulated as a weighted bipartite matching problem.",
+  "The proposed deployment strategy predicts constraint shadow prices rather than solving a full linear program for every user.",
+  "Per-user shadow-price targets are generated offline using optimization.",
+  "User covariates are used to personalize predicted shadow prices.",
+  "Experiments use the MovieLens 25M and YOW News recommendation datasets.",
+  "The evaluation considers rankings of 50, 500, and 1,000 items.",
+  "The personalized prediction method meets the stated 50 millisecond latency target in the evaluated large-ranking settings.",
+  "Personalized prediction improves constraint compliance over mean shadow prices on MovieLens.",
+  "Utility losses from imposing the evaluated constraints are generally small.",
+  "The authors provide code intended to reproduce their results."
+ ],
+ "source_url": "https://arxiv.org/html/2202.07088v1",
+ "access": "full_text",
+ "source_citation": "citeturn767479view5turn808341view0turn850185view0"
+}

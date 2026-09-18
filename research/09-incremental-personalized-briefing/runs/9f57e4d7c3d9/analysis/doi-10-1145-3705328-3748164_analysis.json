@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-1145-3705328-3748164",
+ "title": "Time to Split: Exploring Data Splitting Strategies for Offline Evaluation of Sequential Recommenders",
+ "research_question": "How do leave-one-out and alternative global temporal splitting, target-selection, and validation strategies affect realism, metric consistency, model ranking, and model selection in offline evaluation of sequential recommender systems?",
+ "methodology": "The authors formalized leave-one-out (LOO) and several global temporal split (GTS) variants, including All, First, Last, Random, and Successive target selection, together with global-temporal, last-training-item, and user-based validation schemes. They evaluated the protocols on eight real-world sequential recommendation datasets using established sequential recommender baselines and, for ranking analysis, a non-neural sequential kNN baseline. Evaluation used unsampled HR@K, MRR@K, and NDCG@K at several K values, subset and temporal-gap statistics, Kendall and Spearman correlations, model-rank comparisons, and experiments with retraining on combined training and validation data.",
+ "key_findings": [
+  {
+   "finding": "LOO can violate the global interaction timeline and was less aligned with the temporally separated Successive evaluation than several GTS alternatives, while changes in split and target definition could materially change model rankings.",
+   "evidence_type": "supported",
+   "section": "Sections 3.0.3, 4.3, 4.4, and 5"
+  },
+  {
+   "finding": "GTS Random had the strongest average agreement with GTS Successive, while GTS Last also showed high agreement and offered a deterministic, lower-cost alternative to Successive evaluation.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "GTS All showed especially poor agreement with Successive evaluation because its set-valued target does not match standard next-item prediction, and GTS First was weakened by atypical time gaps around the first post-cutoff interaction.",
+   "evidence_type": "supported",
+   "section": "Sections 4.2, 4.3, and 5"
+  },
+  {
+   "finding": "The choice of splitting protocol created unstable rankings across models on most evaluated datasets, demonstrating that evaluation protocol can affect conclusions about which system performs best.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  },
+  {
+   "finding": "Validation constructed with a matching global temporal split generally aligned most strongly with GTS test performance; for GTS Last, GT Last validation had the highest correlations on five of eight datasets.",
+   "evidence_type": "supported",
+   "section": "Section 4.5"
+  },
+  {
+   "finding": "At the q0.9 temporal cutoff, GTS retained a realistic future test interval but covered substantially fewer test users than LOO, illustrating a trade-off among recency, test duration, training volume, and statistical sample size.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Retraining selected models on combined training and validation data was particularly beneficial for global-temporal and user-based validation configurations and usually preserved the relative model-selection conclusions.",
+   "evidence_type": "supported",
+   "section": "Section 4.6"
+  }
+ ],
+ "limitations": [
+  "The experiments are offline evaluations and do not directly validate which split best predicts actual online production performance.",
+  "Only eight datasets and a limited collection of recommender architectures were experimentally compared, so ranking behavior can differ for other domains and model families.",
+  "Selecting a GTS cutoff remains dataset-dependent because user count, holdout duration, sequence length, and available training data trade off against one another.",
+  "Successive evaluation is computationally expensive for long holdout sequences, whereas Random targeting introduces stochasticity unless sampled targets or seeds are preserved.",
+  "The work studies temporal evaluation of recommender interactions rather than longitudinal workplace work-item states, cross-thread briefing, resolved or superseded state transitions, or omission/repetition of generated briefings."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "LOO temporal misalignment": 0.98,
+  "GTS Random and Last agreement": 0.98,
+  "All and First target weaknesses": 0.97,
+  "ranking instability": 0.96,
+  "global-temporal validation reliability": 0.95,
+  "cutoff trade-offs": 0.96,
+  "retraining effect": 0.93
+ },
+ "raw_claims": [
+  "Leave-one-out preserves each user's local ordering but can train on interactions that occur after another user's test interaction.",
+  "Global temporal splitting separates training from a later evaluation period and therefore avoids this form of future leakage.",
+  "The experiments used eight publicly available real-world recommendation datasets.",
+  "The paper evaluated HR, MRR, and NDCG without sampled negative-item evaluation.",
+  "GTS Random correlated most strongly with the Successive target across the aggregated comparisons.",
+  "GTS Last was also substantially more consistent with Successive evaluation than LOO in the aggregated results.",
+  "The All target had the weakest aggregate correlation with the Successive next-item evaluation.",
+  "Changing the split or GTS target could reorder recommender models.",
+  "Global-temporal validation generally produced the most reliable correspondence between validation and GTS test performance.",
+  "The Successive scheme most closely represents repeated next-item prediction after a temporal cutoff but costs more inference computation.",
+  "Random targeting requires control of random seeds or preservation of sampled targets for reproducibility."
+ ],
+ "source_url": "https://arxiv.org/html/2507.16289",
+ "access": "full_text"
+}

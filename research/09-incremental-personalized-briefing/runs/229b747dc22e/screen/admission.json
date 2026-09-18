@@ -1,0 +1,214 @@
+{
+ "round": 4,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Update, temporal, and stream summarization: summarize an evolving information stream relative to information already seen, emphasizing changes and controlling repetition across time."
+  },
+  {
+   "id": "F3",
+   "description": "Temporal event structure, event threading, and timeline construction: represent evolving topics as ordered events, dependencies, or timelines rather than flat document collections."
+  },
+  {
+   "id": "F6",
+   "description": "Attention-sensitive alerting and notification utility: balance urgency or delayed-review cost against interruption and false-alert cost."
+  },
+  {
+   "id": "F7",
+   "description": "Task reminders, prospective memory, and forgetting-sensitive support: determine when reminders help intended actions and when reliance, staleness, mistiming, or absence can cause failures."
+  },
+  {
+   "id": "F8",
+   "description": "Personalized summarization and user-model-conditioned selection: select or present information according to user-specific state, interests, feedback, or information needs."
+  },
+  {
+   "id": "F9",
+   "description": "Adaptive user modeling, online personalization, and preference drift: maintain user models as preferences or behavior change over time."
+  },
+  {
+   "id": "F11",
+   "description": "Cross-thread, activity-centric, and work-item-centric workplace aggregation: organize workplace information around tasks, activities, or work matters rather than individual messages."
+  },
+  {
+   "id": "F12",
+   "description": "Hard-constraint versus soft-preference ranking and selection: distinguish mandatory requirements from defeasible preferences or learned utility."
+  },
+  {
+   "id": "F13",
+   "description": "Uncertainty, staleness, conflict, and incomplete-information presentation: communicate conflicting, provisional, stale, uncertain, or incomplete state to decision makers."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-1145-1242572-1242586",
+   "decision": "REJECT",
+   "reason": "The abstract evaluates summarization inside a single email conversation using quotation structure and sentence importance. It does not perform cross-thread or work-item aggregation, cycle-relative updating, or new/open/resolved/superseded carry-forward. This is exactly the thread-level email summarization evidence that gap-6 says is already insufficient.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-3758-s13423-026-02985-6",
+   "decision": "ADMIT",
+   "reason": "F7: The experiment directly manipulates reminder reliability and subsequent availability, measures ongoing intention maintenance, and shows that reliance on trusted reminders changes internal maintenance and creates vulnerability when support disappears. Although the population is non-workplace, this is unusually direct empirical evidence for the forgetting/reliance side of gap-5 and for deciding when unresolved intended actions cannot safely be omitted merely because an external reminder exists.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-acl-main-122",
+   "decision": "ADMIT",
+   "reason": "F3: The abstract evaluates complete news-timeline summarization rather than only isolated subtasks, compares timeline strategies, and introduces a benchmark spanning longer time periods. This materially strengthens transfer evidence for constructing and evaluating temporally ordered evolving-topic representations with temporal coverage and redundancy concerns.",
+   "stream_id": "F3",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2201.01534",
+   "decision": "REJECT",
+   "reason": "The paper continuously updates a ranker from interaction feedback and corrects position bias, but the abstract does not evaluate preference drift, changing user goals or roles, or longitudinal briefing selection. Candidate doi-10-1109-access-2022-3182390 explicitly models personalized preference drift and therefore provides the stronger evidence for F9.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-1145-564376-564393",
+   "decision": "REJECT",
+   "reason": "The abstract provides useful generic relevance-versus-redundancy filtering, but it is pure novelty/redundancy control: it does not preserve unchanged-but-open important state or distinguish resolved and superseded work. Under the project boundary, novelty alone is a false friend rather than sufficient evidence for longitudinal briefing selection.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2609.02465",
+   "decision": "ADMIT",
+   "reason": "F6: The paper treats alerting as continuous prioritization and evaluates alternatives across multiple datasets and thresholds corresponding to different review capacities. The abstract explicitly studies the trade-off between reducing false alerts and retaining important incidents, giving strong transfer evidence for attention-budget-sensitive selection and for part of the omission-versus-false-alert problem in gap-4.",
+   "stream_id": "F6",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1145-62266-62293",
+   "decision": "REJECT",
+   "reason": "The professional-email interviews establish heterogeneous work-management practices, including prioritization and delegation, but the abstract does not evaluate a briefing-selection mechanism, adaptive personalization, preference drift, or longitudinal task-state carry-forward. It is useful background for F5 but does not materially close the current high-value gaps.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "manual-7069f4e108",
+   "decision": "REJECT",
+   "reason": "The TREC analysis studies sentence-level novelty in ordered topical streams, but the capability remains novelty detection rather than longitudinal briefing with persistence of unchanged unresolved work. Its contribution overlaps the generic novelty-transfer evidence and does not address the project's central carry-forward requirement.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-2196-43977",
+   "decision": "ADMIT",
+   "reason": "F8: The randomized crossover study repeatedly compares general reminders with reminders personalized using each participant's prior progress and measures subsequent timeliness. It is not workplace briefing evidence and does not model preference drift, but it provides direct experimental transfer evidence that individualized prior-state information in repeated email reminders can change user outcomes.",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2302.06648",
+   "decision": "REJECT",
+   "reason": "The real-world actionability results are relevant to false-alert suppression, but the capability substantially overlaps the broader threshold-spanning alert-prioritization evidence in verified candidate 2609.02465. Given scarce reading slots, the latter more directly supports review-capacity-sensitive evaluation across multiple datasets.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2106.00829",
+   "decision": "REJECT",
+   "reason": "The abstract benchmarks conversation summarization and argument structure, including email threads, but it remains conversation-level summarization. It does not maintain a work item across conversations or successive report cycles and therefore does not resolve gap-6 or the new/open/resolved/superseded requirement.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-57f93e2aef",
+   "decision": "REJECT",
+   "reason": "This track evaluates relevant-and-novel sentence selection in ordered documents, but the abstract shows no mechanism for preserving important unchanged open state, resolving work-item lifecycle, or evaluating longitudinal briefing omissions. It is redundant with the generic novelty-detection transfer capability and is not sufficient for this round.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-1080-17470218-2011-651091",
+   "decision": "REJECT",
+   "reason": "The experiments establish effects of reminder presence and initiation source on prospective-memory performance, but they do not study reminder reliability, staleness, individualized priority, or integration with importance and urgency. The 2026 reminder-reliability candidate provides a more distinctive contribution to F7 and gap-5.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2403.19795",
+   "decision": "ADMIT",
+   "reason": "F12: The paper explicitly separates required behavior from desired behavior instead of collapsing both into one utility score, represents preferences as soft constraints, and empirically tests inference under noisy choices. Although the domain is robotics, this is direct transfer evidence for the architectural distinction demanded by gap-2 between non-negotiable rules or obligations and softer personalized preferences.",
+   "stream_id": "F12",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1016-j-ipm-2007-03-012",
+   "decision": "REJECT",
+   "reason": "Despite the word 'incremental', the abstract studies increasing the length of a summary for a document and whether novel sentences need added context. It does not summarize an evolving stream across report cycles, track persistent open state, or perform longitudinal update selection. The terminology matches but the required capability does not.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1301.6707",
+   "decision": "ADMIT",
+   "reason": "F6: The email-focused system explicitly balances the expected cost of delayed review against the cost of interrupting the user, using message content and user context to control notifications. This is direct evidence for utility-sensitive workplace-email prioritization and establishes a principled distinction between message importance and whether attention should be demanded now.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-bdce973227",
+   "decision": "ADMIT",
+   "reason": "F11: RADAR identifies tasks across incoming email, exposes them through a task-centric Action List rather than a message-centric view, coordinates task ordering, and evaluates the integrated system in a controlled email-overload setting using task-performance outcomes and errors. It is the closest candidate to direct workplace evidence for organizing multiple communications around actionable work rather than individual messages, even though the abstract does not establish full cross-thread lifecycle tracking.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1007-s10601-009-9069-0",
+   "decision": "REJECT",
+   "reason": "The formalism cleanly distinguishes hard feasibility constraints from preferences, but the abstract is algorithmic/formal rather than an empirical evaluation of user-conditioned selection. The verified soft-planning-constraint candidate 2403.19795 supplies the same key distinction with an empirical preference-learning evaluation and is therefore the better F12 reading slot.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2208.03828",
+   "decision": "ADMIT",
+   "reason": "F13: Four controlled experiments measure how people integrate sequential and sometimes conflicting evidence, including contextualized and text-accompanied presentations. This does not directly evaluate workplace briefings, but it materially strengthens gap-7 with experimental evidence about how presentation of conflicting evolving information changes synthesis by decision makers.",
+   "stream_id": "F13",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1111-coin-12208",
+   "decision": "REJECT",
+   "reason": "The paper evaluates protocols for measuring predictive performance under concept drift, not a user model that adapts to changing preferences, roles, goals, or feedback. Distributional drift terminology matches F9, but the personalization capability required by the stream is absent.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-fde6beef40",
+   "decision": "REJECT",
+   "reason": "The abstract primarily evaluates classification of email action-item speech acts and assisted annotation. Determining what an action or workflow item is belongs to the upstream action/commitment problem; it does not evaluate longitudinal selection, prioritization, cross-thread aggregation, or briefing persistence once those action items are available.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1109-access-2022-3182390",
+   "decision": "ADMIT",
+   "reason": "F9: The model explicitly detects personalized preference drift, identifies which historical interactions remain relevant to the current preference state, and empirically compares adaptation against baselines. Although recommendation is a transfer domain rather than workplace communication, it directly addresses the otherwise open mechanism in gap-3: user-specific models must change rather than treating all historical preferences as stationary.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1145-383952-383954",
+   "decision": "ADMIT",
+   "reason": "F1: The paper defines temporal summaries for monitoring changes as stories arrive sequentially, requires each story's sentences to be ranked before future stories are available, and empirically evaluates methods on a purpose-built corpus. That online temporal constraint closely matches cycle-by-cycle briefing generation where future evidence cannot be used and only developments relative to prior material should be surfaced.",
+   "stream_id": "F1",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-d19b0f6f1e",
+   "decision": "REJECT",
+   "reason": "The paper gives empirically informed definitions of requests and commitments as obligations in email, which is valuable upstream evidence for detecting responsibility. It does not evaluate how those obligations interact with softer personalized priority or reminder signals during content selection, so it does not close gap-2 and belongs primarily to the action/request extraction boundary owned upstream.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1145-1076034-1076140",
+   "decision": "REJECT",
+   "reason": "The abstract detects emails requiring action or response and localizes request text. That establishes an upstream action-item signal but does not evaluate triage utility, hard-versus-soft selection, cross-thread work-item state, personalization, or longitudinal briefing behavior. Treating action detection itself as briefing prioritization would violate the project's response-obligation versus priority distinction.",
+   "confidence": 0.97
+  }
+ ],
+ "notes": "The admitted set targets distinctive mechanisms rather than paper count. It materially strengthens transfer or direct evidence for temporal updating, reminder reliance, personalized repeated presentation, preference drift, hard-versus-soft selection, task-centric workplace organization, conflicting-evidence presentation, and attention-cost-aware alerting. No candidate abstract directly closes gap-1, gap-4, or gap-6 end to end: none evaluates successive workplace briefing cycles with independently labeled new/open/resolved/superseded work items while jointly measuring decision-essential omission, repetition, false alerts, and preservation of unresolved state. Gap-2, gap-3, gap-5, and gap-7 receive useful partial evidence but remain open in the target workplace-briefing domain."
+}

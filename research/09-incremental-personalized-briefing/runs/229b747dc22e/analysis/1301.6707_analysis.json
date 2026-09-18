@@ -1,0 +1,67 @@
+{
+ "paper_id": "1301.6707",
+ "title": "Attention-Sensitive Alerting",
+ "research_question": "How can a notification system decide when and how to alert users about incoming email by balancing the expected value of timely information against context-sensitive interruption costs?",
+ "methodology": "The paper develops Bayesian models of user attentional state and a decision-theoretic net expected value of alerting (NEVA) framework that compares the cost of delayed information with the cost of interruption. It extends the framework to compound alerts containing multiple messages and implements email criticality prediction with a linear support-vector-machine classifier. The classifier was trained on approximately 1,500 labeled messages and evaluated on 250 high-priority and 250 low-priority messages selected from a user's inbox. A separate validation compared automated expected criticality with one author's 1-to-100 judgments on 200 messages received over three days, and the resulting classifier was incorporated into the PRIORITIES prototypes for real-time use.",
+ "key_findings": [
+  {
+   "finding": "A linear SVM trained on approximately 1,500 labeled messages discriminated between high- and low-criticality email on a held-out set of 500 hand-selected messages, with performance reported as an ROC tradeoff rather than a single accuracy value.",
+   "evidence_type": "supported",
+   "section": "5 Assigning Criticality to Messages"
+  },
+  {
+   "finding": "Automated expected-criticality scores correlated 0.9 with one author's manual criticality ratings for 200 messages received over three days.",
+   "evidence_type": "supported",
+   "section": "5 Assigning Criticality to Messages"
+  },
+  {
+   "finding": "The PRIORITIES prototypes personalized criticality prediction using examples from a user's own email and applied the learned classifier to incoming messages in real time while also observing activity, acoustics, and calendar information.",
+   "evidence_type": "supported",
+   "section": "6 PRIORITIES Prototypes"
+  },
+  {
+   "finding": "The compound-alert formulation explicitly models grouping several newly arrived messages into one interruption and increases interruption cost with informational complexity, but it assumes message values are independent and the authors warn that this can overestimate value when messages concern related content.",
+   "evidence_type": "supported",
+   "section": "4.3 Chunking Messages and the Value of Alerting"
+  },
+  {
+   "finding": "The proposed NEVA rule says an alert should be sent when its expected informational value exceeds its expected interruption cost, but this paper does not report a controlled user-outcome experiment comparing that alerting policy with alternatives.",
+   "evidence_type": "unsupported",
+   "section": "4.2-4.3 and 6-7"
+  }
+ ],
+ "limitations": [
+  "The primary classifier test messages were selected by one user, limiting evidence about cross-user generalization.",
+  "The 200-message criticality validation used ratings from one of the authors rather than independent or multiple assessors.",
+  "The paper reports prototype deployment for real-world testing but does not report a controlled longitudinal evaluation of whether NEVA-based alert decisions improve user productivity or reduce interruption cost.",
+  "The compound-alert model assumes independence among message values even though related messages can violate that assumption.",
+  "The work prioritizes individual incoming messages rather than tracking persistent work items through new, open, resolved, or superseded states.",
+  "It does not jointly evaluate omission, repeated-alert, and false-alert errors over repeated briefing cycles."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "criticality_classifier_evaluated": 0.97,
+  "criticality_correlation_0_9": 0.99,
+  "personalized_realtime_prototype": 0.96,
+  "compound_alert_model": 0.98,
+  "no_controlled_alert_policy_outcome_test": 0.94
+ },
+ "raw_claims": [
+  "The alerting framework weighs delayed-information costs against interruption costs.",
+  "User attention is inferred from evidence such as calendar state, application activity, keyboard and mouse behavior, and room acoustics.",
+  "An alert is favored when its net expected value is positive.",
+  "The model can combine information from several new messages into one compound alert.",
+  "The authors note that correlated email content can invalidate the independence assumption used for compound alerts.",
+  "The implemented email criticality classifier uses a linear support vector machine.",
+  "Approximately 1,500 messages were used to train the criticality classifier.",
+  "The held-out criticality test contained 250 high-priority and 250 low-priority messages.",
+  "One author rated 200 messages over three days, yielding a 0.9 correlation with automated expected criticality.",
+  "PRIORITIES can use a custom classifier learned from a user's own email and apply it to new mail in real time."
+ ],
+ "source_url": "https://arxiv.org/pdf/1301.6707",
+ "access": "full_text"
+}

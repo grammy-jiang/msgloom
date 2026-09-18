@@ -1,0 +1,67 @@
+{
+ "paper_id": "doi-10-1145-1557019-1557124",
+ "title": "Mining social networks for personalized email prioritization",
+ "research_question": "Can features derived from each user's personal email social network, including semi-supervised propagation of importance, improve personalized email-priority prediction when only limited labeled email is available?",
+ "methodology": "The authors recruited 25 participants to label non-spam personal email on a five-level importance scale over approximately one month, with the final experiments using the seven participants who supplied more than 200 labeled messages. Each user's model was trained independently, using standard message and header features augmented with social-network clustering, social-importance features, and a semi-supervised importance-propagation method operating over message and person nodes. SVM classifiers predicted the five importance levels, with 150 labeled messages used for training per user and remaining messages used for testing. Performance was evaluated mainly with micro- and macro-averaged mean absolute error and repeated training experiments.",
+ "key_findings": [
+  {
+   "finding": "Adding induced social-network information to conventional email features reduced priority-prediction error for personalized models.",
+   "evidence_type": "supported",
+   "section": "Section 5.6: Evaluation Results"
+  },
+  {
+   "finding": "The complete combination of basic, clustering, social-importance, and importance-propagation features reduced average macro MAE from about 0.8510 to 0.7449, corresponding to roughly a 14% relative error reduction.",
+   "evidence_type": "supported",
+   "section": "Section 5.6: Evaluation Results"
+  },
+  {
+   "finding": "The complete social-feature combination reduced micro-averaged MAE from about 0.7759 to 0.5909, reported as approximately a 31% relative error reduction.",
+   "evidence_type": "supported",
+   "section": "Section 5.6: Evaluation Results"
+  },
+  {
+   "finding": "Social-network-derived information was particularly useful when only a limited number of explicit priority judgments were available, although the best feature combination varied with training-set size.",
+   "evidence_type": "supported",
+   "section": "Section 5.6: Evaluation Results"
+  },
+  {
+   "finding": "The design permits each person's prioritizer to be learned from that person's own email and judgments without pooling private email across users.",
+   "evidence_type": "supported",
+   "section": "Introduction and Problem Setting"
+  }
+ ],
+ "limitations": [
+  "Although 25 people were recruited, only seven participants supplied enough labels to be included in the reported experiments.",
+  "Participants were drawn primarily from a Carnegie Mellon University research environment, limiting organizational and occupational diversity.",
+  "Priority labels were subjective self-assessments and may differ substantially in meaning between users.",
+  "The labeling period was approximately one month, providing little evidence about long-term preference drift.",
+  "The personal email collection was not released as a public benchmark because of privacy constraints.",
+  "The model predicts message importance but does not explicitly represent whether information is new, still open, resolved, stale, or superseded.",
+  "Evaluation was offline rather than a longitudinal deployment measuring whether learned priority actually improved users' work."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "social_features_improve_priority_prediction": 0.99,
+  "macro_mae_reduction": 0.99,
+  "micro_mae_reduction": 0.99,
+  "social_features_help_with_few_labels": 0.94,
+  "personal_models_preserve_data_separation": 0.96
+ },
+ "raw_claims": [
+  "The paper treats email importance as a personalized five-level prediction problem rather than a universal ranking problem.",
+  "Each user's social network is constructed from that user's own email relationships.",
+  "The social representation includes clustering and measures intended to capture the importance of correspondents from the user's perspective.",
+  "The semi-supervised method propagates importance information through connected message and person nodes.",
+  "Seven participants with sufficient labeled mail were retained for the final experiments.",
+  "Each retained user contributed 150 labeled messages for model training.",
+  "Combining social and conventional email features produced lower prediction error than using conventional features alone.",
+  "The reported relative MAE reduction was larger under micro-averaging than under macro-averaging.",
+  "The authors identify scarcity of labeled personal email as an important constraint on practical personalized prioritization."
+ ],
+ "source_url": "https://www.researchgate.net/publication/221654545_Mining_social_networks_for_personalized_email_prioritization",
+ "access": "full_text"
+}

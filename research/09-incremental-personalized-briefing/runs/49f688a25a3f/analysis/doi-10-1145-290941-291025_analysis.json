@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1145-290941-291025",
+ "title": "The Use of MMR, Diversity-Based Reranking for Reordering Documents and Producing Summaries",
+ "research_question": "Can retrieval and summarization improve usefulness by explicitly balancing query relevance against novelty so that selected documents or passages remain relevant while avoiding redundant information?",
+ "methodology": "The paper introduces Maximal Marginal Relevance (MMR), a reranking criterion that linearly trades off similarity to the query against similarity to already-selected items. It evaluates document reranking in a small pilot study with five undergraduate users, applies MMR to query-focused single-document summarization, reports results from the SUMMAC evaluation, and compares passage-selection settings on manually assessed TIPSTER/TREC documents. It also reports preliminary observations for query-focused multi-document summarization, where redundancy across sources is especially pronounced.",
+ "key_findings": [
+  {
+   "finding": "MMR provides an explicit tunable mechanism for balancing query relevance with information novelty relative to items already selected, directly targeting redundant retrieval and summary content.",
+   "evidence_type": "supported",
+   "section": "2 Maximal Marginal Relevance"
+  },
+  {
+   "finding": "In the five-user document-reranking pilot, most users preferred the broader and more diverse MMR presentation, and 80% selected MMR when subsequently choosing a search method.",
+   "evidence_type": "supported",
+   "section": "3 Document Reordering"
+  },
+  {
+   "finding": "The MMR-based single-document summarizer obtained an F-score of 0.73 for query-relevant summaries and 70% accuracy on informative summaries in the reported SUMMAC evaluation, although the authors caution that differing system parameters limit direct comparison.",
+   "evidence_type": "supported",
+   "section": "4 Summarization"
+  },
+  {
+   "finding": "For the reported single-document sentence-selection experiment, relevance precision did not differ significantly among lambda values of 1.0, 0.7, and 0.3, suggesting some diversity can be introduced without a statistically significant relevance loss in that experiment.",
+   "evidence_type": "supported",
+   "section": "4 Summarization"
+  },
+  {
+   "finding": "The authors report that redundancy becomes particularly important for longer documents and multi-document collections, and their preliminary multi-document observations indicate that MMR reduces or eliminates duplicate and near-duplicate passages.",
+   "evidence_type": "supported",
+   "section": "4 Summarization"
+  },
+  {
+   "finding": "The paper does not provide a detailed quantitative multi-document experiment sufficient to substantiate the strongest comparative claim that MMR is clearly superior to non-MMR passage selection across multi-document summarization settings.",
+   "evidence_type": "unsupported",
+   "section": "Abstract; 4 Summarization; 5 Concluding Remarks"
+  }
+ ],
+ "limitations": [
+  "The document-reranking user study contains only five undergraduate participants.",
+  "The paper is only two pages and provides limited methodological detail for several reported experiments.",
+  "The multi-document summarization result is described as preliminary and is not accompanied by a detailed quantitative evaluation in the paper.",
+  "The SUMMAC comparison used systems with differing parameters, including summary length, which the authors explicitly state makes the comparative result indicative rather than definitive.",
+  "The single-document relevance experiment uses only 50 manually assessed articles from one TIPSTER topic.",
+  "The approach measures novelty primarily through pairwise similarity to previously selected items and does not explicitly model whether information has become outdated, superseded, resolved, or newly actionable over time.",
+  "Personalization is represented only indirectly through a query or user profile; the paper does not study learned user-specific priorities or longitudinal briefing behavior."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "mmr_relevance_novelty_tradeoff": 0.99,
+  "user_preference_for_mmr": 0.98,
+  "summac_results": 0.98,
+  "single_document_relevance_preservation": 0.96,
+  "multi_document_redundancy_reduction": 0.86,
+  "limited_multidocument_quantitative_support": 0.96
+ },
+ "raw_claims": [
+  "MMR selects each next item using both its relevance to the query and its dissimilarity from already-selected items.",
+  "The relevance-versus-novelty tradeoff is controlled by a lambda parameter.",
+  "A pilot comparison of standard relevance ranking and MMR involved five undergraduate users.",
+  "Four of the five users selected MMR when later choosing a search method.",
+  "The authors used MMR with cosine similarity to rerank sentences for query-focused single-document summaries.",
+  "The reported SUMMAC evaluation gave the MMR system an F-score of 0.73 for query-relevant summarization.",
+  "The same evaluation reported 70% accuracy for informative summaries.",
+  "The authors warn that differing evaluation parameters across SUMMAC systems prevent the reported scores from being definitive comparative measures.",
+  "The single-document experiment found no significant precision difference among the tested lambda settings of 1.0, 0.7, and 0.3.",
+  "The paper reports that MMR is particularly useful where multiple documents repeat the same background information.",
+  "The multi-document experiments described in the paper are preliminary."
+ ],
+ "source_url": "https://www.cs.cmu.edu/afs/cs/Web/People/jgc/publication/MMR_DiversityBased_Reranking_SIGIR_1998.pdf",
+ "access": "full_text"
+}

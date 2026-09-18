@@ -1,0 +1,81 @@
+{
+ "paper_id": "2403.19795",
+ "title": "Learning Human Preferences Over Robot Behavior as Soft Planning Constraints",
+ "research_question": "Can preferences over robot behavior be represented as soft planning constraints and inferred from noisy pairwise trajectory choices while keeping task requirements as hard constraints?",
+ "methodology": "The study represents user preferences as soft PDDL planning constraints while retaining task objectives as hard constraints, and evaluates the formulation in Habitat 2.0 rearrangement tasks using the OPTIC planner. Simulated users answer binary comparisons between possible robot trajectories under a bounded-rationality choice model with several noise levels. Neural preference predictors based on sequence representations are trained with either single-target, preference-distribution, or noisy-distribution supervision on a generated dataset of 2,627,664 examples split 60/20/20 into training, validation, and test sets. Models receive ten preference queries and are evaluated with True Positive Rate (TPR) and Accepted Output Rate (AOR).",
+ "key_findings": [
+  {
+   "finding": "The framework explicitly separates mandatory task goals from nonmandatory behavioral preferences by representing the latter as soft PDDL constraints with costs.",
+   "evidence_type": "supported",
+   "section": "III Problem Formulation; VII Conclusion"
+  },
+  {
+   "finding": "The learned models could infer the three simulated preference types under noisy user choices, although increasing choice noise reduced absolute prediction performance.",
+   "evidence_type": "supported",
+   "section": "V Results; VI Discussion"
+  },
+  {
+   "finding": "When both training and evaluation were noise-free, the learned approach underperformed the perfectly rational baseline, whereas models trained and tested with noisy choices performed similarly to or better than that baseline at the corresponding noise levels.",
+   "evidence_type": "supported",
+   "section": "V Results — RQ1"
+  },
+  {
+   "finding": "Training with a small amount of choice noise generalized better to noisy evaluation data than training without noise, while increasing training noise further did not produce additional gains.",
+   "evidence_type": "supported",
+   "section": "V Results — RQ2"
+  },
+  {
+   "finding": "Distribution-based supervision was often similar to or better than single-target supervision under low or no training noise, but this advantage was not universal at higher noise levels.",
+   "evidence_type": "supported",
+   "section": "V Results — RQ3"
+  },
+  {
+   "finding": "The experiments assume that a user's preferences and the task objective remain constant over time, so adaptive preference learning under preference drift is not evaluated.",
+   "evidence_type": "supported",
+   "section": "III Problem Formulation"
+  },
+  {
+   "finding": "All evaluated user choices were simulated rather than collected from real people, and real-time adaptation with human users is left for future work.",
+   "evidence_type": "supported",
+   "section": "IV Evaluation Setup; VI-A Limitations & Future Work"
+  }
+ ],
+ "limitations": [
+  "The paper explicitly assumes that human preferences and task objectives do not change over time.",
+  "Only a small subset of preferences expressible in PDDL is evaluated.",
+  "Preference queries are predefined rather than selected adaptively according to current uncertainty.",
+  "The experiments use simulated bounded-rational user choices instead of feedback from real people.",
+  "Evaluation centers on a simulated household rearrangement setting rather than workplace communication.",
+  "The study does not track longitudinal cross-thread work-item states or evaluate omission, repetition, and false-alert briefing errors.",
+  "No public code or generated dataset release is identified in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "soft_vs_hard_constraint_formulation": 0.99,
+  "preference_inference_under_noise": 0.97,
+  "noise_relative_to_rational_baseline": 0.98,
+  "small_training_noise_improves_generalization": 0.99,
+  "supervision_effect_depends_on_noise": 0.98,
+  "preferences_assumed_stationary": 1.0,
+  "no_real_user_evaluation": 1.0
+ },
+ "raw_claims": [
+  "The approach expresses desired but nonmandatory robot behavior as soft planning constraints.",
+  "The evaluation considers three kinds of simulated human preference.",
+  "User choices are generated with a bounded-rationality model at multiple noise levels.",
+  "The generated dataset contains 2,627,664 examples.",
+  "Training, validation, and test partitions use a 60/20/20 split without repeating trajectory pairs and preferences across partitions.",
+  "TPR requires every component of a predicted preference to be correct.",
+  "AOR measures whether a predicted preference is consistent with the supplied non-noisy queries.",
+  "Performance declines as simulated user choices become noisier.",
+  "Training on a small amount of noise improves generalization to other noisy conditions relative to noise-free training.",
+  "The formulation assumes preferences do not change over time or because of interaction.",
+  "The authors identify adaptive query selection and real-world human evaluation as future work."
+ ],
+ "source_url": "https://arxiv.org/html/2403.19795",
+ "access": "full_text"
+}

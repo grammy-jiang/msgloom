@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-6028-nist-sp-500-302-tempsumm-overview",
+ "title": "TREC 2013 Temporal Summarization",
+ "research_question": "How should systems that continuously monitor developing events be evaluated for timely, novel and comprehensive updates and for accurate tracking of changing event attributes?",
+ "methodology": "The TREC track defines two online tasks: Sequential Update Summarization, in which systems emit sentence-length relevant and novel updates from a time-ordered corpus, and Value Tracking, in which systems update estimates of event attributes and identify supporting sentences. Events are retrospectively annotated into timestamped information nuggets, and submitted updates are manually matched to those nuggets. Evaluation separates precision-like expected gain, recall-like comprehensiveness, latency and verbosity, while value tracking uses expected estimation error. For judging, the organizers depth-pool the top 60 updates per query and run according to participant-provided confidence scores and augment coverage using near-duplicate detection.",
+ "key_findings": [
+  {
+   "finding": "The evaluation framework explicitly separates update usefulness from coverage by measuring expected gain and comprehensiveness, while also discounting latency and unnecessary verbosity.",
+   "evidence_type": "supported",
+   "section": "Section 3.1 Temporal Summarization"
+  },
+  {
+   "finding": "Gain-based performance tended to be anti-correlated with comprehensiveness, analogous to the precision-recall tradeoff.",
+   "evidence_type": "supported",
+   "section": "Section 5.1 Sequential Update Summarization"
+  },
+  {
+   "finding": "Runs with higher gain generally emitted fewer updates, whereas runs with greater comprehensiveness emitted more, leading the authors to suggest reconciling or prioritizing the two objectives according to user intent.",
+   "evidence_type": "supported",
+   "section": "Section 5.1 Sequential Update Summarization"
+  },
+  {
+   "finding": "Performance varied substantially across event queries even when aggregate averages remained useful for overall run comparison.",
+   "evidence_type": "supported",
+   "section": "Section 5.1 Sequential Update Summarization"
+  },
+  {
+   "finding": "No Value Tracking system performed consistently well across all attributes, and some runs omitted entire attributes.",
+   "evidence_type": "supported",
+   "section": "Section 5.2 Value Tracking"
+  },
+  {
+   "finding": "The expected-error measure for Value Tracking was highly sensitive to occasional extreme extraction errors, so a few outliers could dominate an otherwise reasonable run.",
+   "evidence_type": "supported",
+   "section": "Section 5.2 Value Tracking"
+  }
+ ],
+ "limitations": [
+  "Gold nuggets and their timestamps are created retrospectively, and the authors note that timestamp precision can be imperfect.",
+  "Only the top 60 updates per query and run, ordered by submitted confidence, were depth-pooled, so valid lower-ranked material could be absent from manual matching.",
+  "Participant confidence scores were used primarily for pooling order rather than evaluated as calibrated user-facing uncertainty estimates.",
+  "There was substantial performance variance across individual event queries.",
+  "The Value Tracking expected-error measure is vulnerable to domination by extreme extraction mistakes.",
+  "The framework discusses prioritization according to user intent but does not model adaptive user-specific preferences over repeated interactions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multi_objective_temporal_metrics": 0.99,
+  "gain_comprehensiveness_tradeoff": 0.99,
+  "update_volume_tradeoff": 0.98,
+  "query_variance": 0.97,
+  "value_tracking_omissions": 0.99,
+  "outlier_sensitive_error": 0.99
+ },
+ "raw_claims": [
+  "The track targets systems that monitor information about a developing event over time.",
+  "Sequential systems emit short relevant and novel updates as documents arrive in temporal order.",
+  "Value Tracking systems return a new attribute estimate and supporting sentence when their estimate changes.",
+  "Temporal summarization is evaluated for precision-like gain, recall-like coverage, latency and novelty-related redundancy.",
+  "The latency function uses a six-hour scale parameter.",
+  "Assessors retrospectively construct timestamped gold information nuggets.",
+  "The judging pool uses the highest-confidence submitted updates and near-duplicate detection.",
+  "Gain-oriented and comprehensiveness-oriented performance tend to trade off against each other.",
+  "Several Value Tracking runs omit predictions for some attributes.",
+  "Large extraction mistakes can disproportionately affect expected-error scores."
+ ],
+ "source_url": "https://trec.nist.gov/pubs/trec22/papers/TS.OVERVIEW.pdf",
+ "access": "full_text"
+}

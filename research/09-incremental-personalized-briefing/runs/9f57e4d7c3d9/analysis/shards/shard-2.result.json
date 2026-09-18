@@ -1,0 +1,381 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2202.07088",
+   "title": "Scaling up Ranking under Constraints for Live Recommendations by Replacing Optimization with Prediction",
+   "research_question": "Can constrained personalized ranking be made fast enough for live recommendation by predicting per-user optimization shadow prices instead of solving the full constrained optimization problem online?",
+   "methodology": "The authors reformulate constrained ranking through the dual of a weighted bipartite matching problem and solve for optimal constraint shadow prices offline on sampled users. They train a k-nearest-neighbor model to predict those shadow prices from user covariates at serving time, then recover rankings using the adjusted utility scores. Experiments use MovieLens 25M and YOW News with five and eight constraints respectively, comparing no optimization, per-user optimal optimization, mean shadow prices, and personalized predicted shadow prices. Evaluation measures constraint compliance, achieved utility, and computation time for ranking 50, 500, or 1,000 items.",
+   "key_findings": [
+    {
+     "finding": "Predicting personalized shadow prices substantially reduces online computation while retaining constraint compliance close to the per-user optimization solution.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "The KNeighbors shadow-price approach stays within the paper's 50 millisecond serving-time requirement even when ranking 1,000 items subject to at least five constraints.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "A single mean shadow-price vector performs worse than personalized shadow-price prediction on MovieLens, providing evidence that modeling user heterogeneity can improve constraint compliance.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "On YOW News, personalized and mean shadow-price prediction have similar constraint-compliance performance, so the benefit of personalization is dataset-dependent.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "Ignoring optimization produces the worst constraint compliance, whereas utility differences among constrained methods are generally small.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "The framework explicitly separates a primary utility objective from auxiliary requirements expressed as hard ranking constraints, making it relevant to obligation-versus-preference prioritization even though it does not model workplace obligations.",
+     "evidence_type": "supported",
+     "section": "2.2 Adding constraints and 4.2 Evaluation"
+    }
+   ],
+   "limitations": [
+    "The empirical evaluation covers only two recommendation datasets and does not test workplace briefing or cross-thread work-item tracking.",
+    "The YOW News holdout set contains only six users, limiting evidence about personalization across heterogeneous populations.",
+    "The constraints are manually specified and selected to maintain feasibility rather than learned from evolving obligations or user behavior.",
+    "Reported online runtimes exclude data generation, reading, preprocessing, and offline computation, so they are serving-stage rather than end-to-end latency measurements.",
+    "The prediction approach assumes useful user covariates are available and that offline shadow-price relationships generalize to future users.",
+    "The evaluation is static train/holdout experimentation and does not test concept drift, longitudinal state transitions, supersession, omission, or repeated briefing cycles."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "prediction_reduces_online_cost": 0.99,
+    "sub_50ms_large_rankings": 0.98,
+    "personalization_helps_movielens": 0.97,
+    "personalization_dataset_dependent": 0.96,
+    "constraints_vs_primary_utility": 0.98
+   },
+   "raw_claims": [
+    "Constrained ranking can be formulated as a weighted bipartite matching problem.",
+    "The proposed deployment strategy predicts constraint shadow prices rather than solving a full linear program for every user.",
+    "Per-user shadow-price targets are generated offline using optimization.",
+    "User covariates are used to personalize predicted shadow prices.",
+    "Experiments use the MovieLens 25M and YOW News recommendation datasets.",
+    "The evaluation considers rankings of 50, 500, and 1,000 items.",
+    "The personalized prediction method meets the stated 50 millisecond latency target in the evaluated large-ranking settings.",
+    "Personalized prediction improves constraint compliance over mean shadow prices on MovieLens.",
+    "Utility losses from imposing the evaluated constraints are generally small.",
+    "The authors provide code intended to reproduce their results."
+   ],
+   "source_url": "https://arxiv.org/html/2202.07088v1",
+   "access": "full_text",
+   "source_citation": "citeturn767479view5turn808341view0turn850185view0"
+  },
+  {
+   "paper_id": "doi-10-1016-j-cag-2014-02-006",
+   "title": "Effects of visualizing uncertainty on decision-making in a target identification scenario",
+   "research_question": "How does explicitly visualizing uncertainty in spatio-temporal sensor information affect expert target-identification and prioritization decisions under time pressure?",
+   "methodology": "The study uses a prototype for interactive analysis of multivariate spatio-temporal sensor data in an air-defense-style target-identification scenario. Uncertainty is encoded through graphical features including line thickness, semi-transparent positional circles, and a track-quality value. Twenty-two experienced air-traffic operators are divided into groups with and without uncertainty visualization and perform identification and prioritization tasks under high time pressure and cognitive load. Outcomes include decision attempts, selected identity and priority, workload, time, classification performance, and expressed confidence.",
+   "key_findings": [
+    {
+     "finding": "Participants shown uncertainty information required significantly fewer attempts before making their final target identification.",
+     "evidence_type": "supported",
+     "section": "Abstract and Highlights"
+    },
+    {
+     "finding": "The uncertainty-visualization group assigned significantly higher priority values and chose more hostile or suspect target identities.",
+     "evidence_type": "supported",
+     "section": "Abstract and Highlights"
+    },
+    {
+     "finding": "Displaying uncertainty did not significantly increase expressed workload or average decision time.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Uncertainty visualization did not produce a significant improvement in classification performance measured through true positives, false negatives, and false positives.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Participants' expressed confidence was not significantly changed by the uncertainty visualization.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The authors interpret the more conservative identity and priority assignments as possible evidence that experts adopt a worst-case stance when uncertainty is visible in a safety-critical setting.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "Only 22 participants were studied, limiting statistical power and generalizability.",
+    "The participants were experienced air-traffic operators working in an air-defense-style experimental scenario rather than necessarily operators performing their normal operational task.",
+    "The experiment concerns one safety-critical identification domain and does not establish that the same behavioral response occurs in workplace briefing or task prioritization.",
+    "The accessible abstract does not expose detailed randomization procedures, exact effect sizes, statistical tests, or experimental materials.",
+    "The study evaluates uncertainty presentation at a decision point rather than longitudinal state tracking, adaptation over repeated cycles, or omission and repetition."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "fewer_identification_attempts": 0.99,
+    "higher_priority_and_threat_assignments": 0.98,
+    "no_workload_or_time_penalty": 0.98,
+    "no_classification_performance_gain": 0.98,
+    "no_confidence_change": 0.98,
+    "worst_case_interpretation": 0.84
+   },
+   "raw_claims": [
+    "The experiment studies decision making when uncertain sensor information must be interpreted quickly.",
+    "Twenty-two experienced air-traffic operators participated.",
+    "One experimental condition explicitly visualized uncertainty and the comparison condition did not.",
+    "Uncertainty was represented through visual properties of sensor values and target position as well as a track-quality indicator.",
+    "The uncertainty group reached final identifications in fewer attempts.",
+    "Visible uncertainty changed the identities and priorities assigned to targets.",
+    "The uncertainty group tended toward higher priorities and more hostile or suspect classifications.",
+    "Uncertainty presentation did not significantly increase workload.",
+    "Uncertainty presentation did not significantly increase average decision time.",
+    "Objective classification performance and expressed confidence did not significantly improve."
+   ],
+   "source_url": "https://www.sciencedirect.com/science/article/pii/S0097849314000302",
+   "access": "abstract_only",
+   "source_citation": "citeturn287562search0"
+  },
+  {
+   "paper_id": "doi-10-1145-2523813",
+   "title": "A Survey on Concept Drift Adaptation",
+   "research_question": "How can online supervised learning systems characterize, detect, adapt to, and evaluate changes in the relationship between inputs and targets over evolving data streams?",
+   "methodology": "This is a comprehensive survey rather than a new controlled experiment. It organizes concept-drift research into an adaptive-learning framework containing memory, change detection, learning, and loss-estimation components, and reviews representative algorithms within those categories. It also analyzes forgetting strategies, fixed and variable windows, explicit drift detectors, adaptation mechanisms, and evaluation procedures for time-ordered data. The survey discusses application examples and proposes evaluation criteria for both predictive performance and change-detection quality.",
+   "key_findings": [
+    {
+     "finding": "Concept drift includes changes in the target distribution conditional on observed inputs, and changing user interests in a news stream are presented as a canonical example.",
+     "evidence_type": "supported",
+     "section": "2.1 Setting and definitions"
+    },
+    {
+     "finding": "Adaptive learning can be decomposed into memory, change detection, learning, and loss-estimation modules, allowing different adaptation strategies to be combined modularly.",
+     "evidence_type": "supported",
+     "section": "2.4 and 3 Taxonomy"
+    },
+    {
+     "finding": "Shorter recent-data windows react faster to changes but can be less stable, whereas larger windows improve stability in stationary periods while adapting more slowly.",
+     "evidence_type": "supported",
+     "section": "3.1 Memory"
+    },
+    {
+     "finding": "Recency alone is not a reliable proxy for relevance when data are noisy or concepts recur, so simple window-based forgetting can discard useful older information.",
+     "evidence_type": "supported",
+     "section": "3.1 Memory"
+    },
+    {
+     "finding": "Explicit change detection provides information about when and how a process changes beyond the implicit adaptation obtained from continuously updating an online model.",
+     "evidence_type": "supported",
+     "section": "3.2 Change Detection"
+    },
+    {
+     "finding": "Drift detectors should be evaluated not only by downstream predictive accuracy but also by true-change detection, false alarms, detection delay, and change-point localization accuracy.",
+     "evidence_type": "supported",
+     "section": "4.1 Performance evaluation metrics"
+    },
+    {
+     "finding": "Ordinary randomized cross-validation is inappropriate for evolving streams because it destroys temporal order; holdout and prequential test-then-train procedures are presented as alternatives.",
+     "evidence_type": "supported",
+     "section": "4.2 Experimental design"
+    }
+   ],
+   "limitations": [
+    "The survey focuses primarily on online supervised learning where labels or delayed feedback are available, not on unsupervised semantic state tracking in workplace communication.",
+    "As a 2014 survey, it cannot cover later developments in drift detection, continual learning, modern recommender systems, or language-model-based personalization.",
+    "The work synthesizes heterogeneous prior algorithms rather than conducting a uniform empirical benchmark across all reviewed methods.",
+    "Many drift-handling techniques assume a stream of labeled instances and do not directly specify symbolic work-item transitions such as new, open, resolved, or superseded.",
+    "The survey does not address briefing-specific omission, repetition, evidence attribution, or obligation-versus-preference ranking."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "user_interest_as_concept_drift": 0.99,
+    "four_module_adaptation_framework": 0.99,
+    "window_reactivity_stability_tradeoff": 0.99,
+    "recency_not_always_relevance": 0.99,
+    "explicit_change_detection_value": 0.98,
+    "drift_detection_metrics": 0.99,
+    "time_ordered_evaluation_required": 0.99
+   },
+   "raw_claims": [
+    "Concept drift occurs when the data-generating relationship changes over time.",
+    "A user's evolving interest in incoming news is an example of real concept drift.",
+    "Adaptive models may update continuously or retrain on recent batches.",
+    "Adaptive-learning systems can be understood through memory, change detection, learning, and loss-estimation components.",
+    "Fixed and variable sliding windows are common ways to emphasize recent data.",
+    "Small windows favor reactivity while large windows favor stability.",
+    "Recency-based forgetting can fail when concepts recur or observations are noisy.",
+    "Explicit drift detectors can identify change points or intervals of change.",
+    "Change detection should be assessed for missed changes, false alarms, delay, and localization error.",
+    "Temporal ordering must be preserved when evaluating adaptive stream learners.",
+    "Prequential evaluation tests each new observation before using it for learning."
+   ],
+   "source_url": "https://eprints.bournemouth.ac.uk/22491/1/ACM%20computing%20surveys.pdf",
+   "access": "full_text",
+   "source_citation": "citeturn186187view0turn939709view3turn532115view0"
+  },
+  {
+   "paper_id": "doi-10-1155-2016-1340973",
+   "title": "Mining Sequential Update Summarization with Hierarchical Text Analysis",
+   "research_question": "Can a hierarchical combination of time-sensitive retrieval, topic-level keyword mining, and sentence scoring produce useful, novel, timely, and sufficiently comprehensive updates for rapidly developing events?",
+   "methodology": "The system processes a time-ordered document stream using three stages: event-relevant retrieval with Indri, hierarchical LDA for time-dependent keyword extraction, and one of three sentence-scoring methods called KLP, SKD, and KS. Exact duplicate sentences are removed, with the earliest occurrence retained. The authors evaluate on ten TREC 2013 Temporal Summarization events drawn from a timestamped corpus of more than one billion documents, selecting the top 60 updates per topic. Updates are matched to human-created gold nuggets and scored using expected gain, expected latency gain, comprehensiveness, and latency comprehensiveness.",
+   "key_findings": [
+    {
+     "finding": "The system explicitly treats novelty and timeliness as first-class properties of sequential updates and suppresses duplicate sentences before submission.",
+     "evidence_type": "supported",
+     "section": "4.3 Sentence Scoring Module"
+    },
+    {
+     "finding": "Evaluation separates a precision-like notion of useful nonredundant information from a recall-like notion of nugget coverage, with latency-sensitive variants of both.",
+     "evidence_type": "supported",
+     "section": "5 Evaluation Method"
+    },
+    {
+     "finding": "The KS scorer reaches expected gain 0.149 and expected latency gain 0.136, equal to the best reported values shown in the paper's TREC comparison table.",
+     "evidence_type": "supported",
+     "section": "6.2 Results"
+    },
+    {
+     "finding": "KLP provides substantially higher comprehensiveness than KS, while KS provides substantially higher expected gain, demonstrating a direct accuracy-versus-coverage tradeoff.",
+     "evidence_type": "supported",
+     "section": "6.2 Results"
+    },
+    {
+     "finding": "Within KLP variants, changing sentence-length and position weights has little effect compared with keyword diversity, which the authors identify as the more influential feature.",
+     "evidence_type": "supported",
+     "section": "6.2 Results"
+    },
+    {
+     "finding": "The paper's prose claims that all three investigated methods are above the reported midvalue for comprehensiveness, but Table 3 shows SKD at 0.131 and KS at 0.099 versus a midvalue of 0.204, while one KLP variant merely equals 0.204.",
+     "evidence_type": "contradicted",
+     "section": "6.2 Results, Table 3 versus accompanying text"
+    },
+    {
+     "finding": "The evaluation jointly exposes omission and repetition-related concerns through nugget coverage, expected gain, latency penalties, verbosity penalties, and duplicate removal, but it does not combine them into an explicit longitudinal work-item state-transition metric.",
+     "evidence_type": "supported",
+     "section": "4.3, 5, and 6"
+    }
+   ],
+   "limitations": [
+    "Evaluation uses only ten unexpected-news events from the TREC 2013 Temporal Summarization task.",
+    "The system outputs extracted sentences rather than explicit entities or work items with new, open, resolved, and superseded states.",
+    "Duplicate handling is sentence-level exact duplicate removal and does not detect semantic repetition, correction, contradiction, or supersession.",
+    "Gold nuggets are derived from Wikipedia edits and therefore reflect event-summary information rather than workplace obligations or conversational commitments.",
+    "The system is not personalized to individual recipients and does not distinguish mandatory obligations from preferences.",
+    "Only the top 60 candidate updates per topic are assessed, so behavior deeper in the ranked stream is not evaluated.",
+    "The paper contains an internal inconsistency between the prose interpretation and the numerical comprehensiveness results in Table 3."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "novel_timely_updates": 0.99,
+    "precision_recall_like_evaluation": 0.99,
+    "ks_best_gain": 0.99,
+    "gain_coverage_tradeoff": 0.99,
+    "keyword_diversity_importance": 0.96,
+    "table3_text_contradiction": 1.0,
+    "relevance_to_omission_repetition": 0.95
+   },
+   "raw_claims": [
+    "The task is to emit sentence-length updates from a temporally ordered document stream as an event develops.",
+    "The system combines time-sensitive retrieval, hierarchical topic analysis, and sentence scoring.",
+    "Hierarchical LDA is used to obtain event-relevant keywords.",
+    "Three update scorers named KLP, SKD, and KS are evaluated.",
+    "Duplicate sentences are removed and the earliest occurrence is retained.",
+    "The evaluation corpus contains ten TREC 2013 temporal-summarization events.",
+    "Gold nuggets represent atomic relevant and novel pieces of event information.",
+    "Expected gain is used as a precision-like measure.",
+    "Comprehensiveness measures coverage in a recall-like manner.",
+    "Latency-sensitive forms of both gain and comprehensiveness are reported.",
+    "KS favors accuracy-like gain while KLP favors broader coverage.",
+    "The numerical results reveal a tradeoff between high expected gain and high comprehensiveness."
+   ],
+   "source_url": "https://onlinelibrary.wiley.com/doi/10.1155/2016/1340973",
+   "access": "full_text",
+   "source_citation": "citeturn366749view2turn335599view0turn335599view1"
+  },
+  {
+   "paper_id": "doi-10-1109-fuzz-ieee-2016-7737835",
+   "title": "Fuzzy user-interest drift detection based recommender systems",
+   "research_question": "Can fuzzy modeling of individual user-interest consistency combined with concept-drift detection improve recommendation accuracy when user interests evolve and item-interest information is incomplete or vague?",
+   "methodology": "The authors construct a fuzzy user-interest consistency model using fuzzy-set theory and develop a user-interest drift-detection mechanism based on concept-drift techniques. Detected drift is used to guide recommendation generation so the recommender can adapt as individual interests change. The approach is evaluated empirically on synthetic data and a real-world MovieLens dataset. The accessible abstract reports recommendation performance using mean absolute error.",
+   "key_findings": [
+    {
+     "finding": "The paper treats user interests as time-varying rather than stationary and argues that ignoring such drift degrades recommendation accuracy.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Interest drift is modeled separately for individual users because users may change preferences in different directions.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Fuzzy-set modeling is used to address incomplete and vague representations of item features and user interests.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "A drift-detection mechanism based on concept-drift methods is integrated with recommendation generation rather than relying on a static interest model.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Experiments on synthetic and MovieLens data report improved recommendation performance for the proposed approach according to mean absolute error.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "Only the abstract was accessible, so the numerical MAE improvements, baselines, statistical significance, parameter settings, and detailed experimental protocol could not be verified.",
+    "The accessible abstract does not identify the exact MovieLens version or provide enough information to reconstruct the synthetic-data generator.",
+    "The work addresses preference drift in recommendation rather than explicit work-item lifecycle states such as resolved or superseded.",
+    "No evidence available in the accessible abstract addresses obligation-versus-preference prioritization.",
+    "No evidence available in the accessible abstract addresses omission, repetition, semantic supersession, or multi-thread workplace briefing."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "user_interest_drift_matters": 0.96,
+    "per_user_drift_modeling": 0.95,
+    "fuzzy_model_handles_vagueness": 0.97,
+    "drift_detection_guides_recommendation": 0.97,
+    "mae_improvement": 0.94
+   },
+   "raw_claims": [
+    "The recommender models user interests as quantities that can drift over time.",
+    "Different users may experience interest drift in different directions.",
+    "Incomplete and vague item or interest information makes adaptation more difficult.",
+    "The proposed method builds a fuzzy user-interest consistency model.",
+    "Concept-drift techniques are used to detect changes in user interests.",
+    "Detected interest changes influence subsequent recommendation generation.",
+    "The approach is tested on both synthetic and real-world data.",
+    "MovieLens is used as the real-world recommendation dataset.",
+    "Mean absolute error is the reported prediction-quality metric.",
+    "The abstract reports that the proposed method improves recommendation performance in MAE."
+   ],
+   "source_url": "https://opus.lib.uts.edu.au/handle/10453/121832",
+   "access": "abstract_only",
+   "source_citation": "citeturn265264view0"
+  }
+ ],
+ "skipped": []
+}

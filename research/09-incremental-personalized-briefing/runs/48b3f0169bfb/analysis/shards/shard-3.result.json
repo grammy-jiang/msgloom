@@ -1,0 +1,253 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1145-290941-291025",
+   "title": "The Use of MMR, Diversity-Based Reranking for Reordering Documents and Producing Summaries",
+   "research_question": "Can retrieval and summarization improve usefulness by explicitly balancing query relevance against novelty so that selected documents or passages remain relevant while avoiding redundant information?",
+   "methodology": "The paper introduces Maximal Marginal Relevance (MMR), a reranking criterion that linearly trades off similarity to the query against similarity to already-selected items. It evaluates document reranking in a small pilot study with five undergraduate users, applies MMR to query-focused single-document summarization, reports results from the SUMMAC evaluation, and compares passage-selection settings on manually assessed TIPSTER/TREC documents. It also reports preliminary observations for query-focused multi-document summarization, where redundancy across sources is especially pronounced.",
+   "key_findings": [
+    {
+     "finding": "MMR provides an explicit tunable mechanism for balancing query relevance with information novelty relative to items already selected, directly targeting redundant retrieval and summary content.",
+     "evidence_type": "supported",
+     "section": "2 Maximal Marginal Relevance"
+    },
+    {
+     "finding": "In the five-user document-reranking pilot, most users preferred the broader and more diverse MMR presentation, and 80% selected MMR when subsequently choosing a search method.",
+     "evidence_type": "supported",
+     "section": "3 Document Reordering"
+    },
+    {
+     "finding": "The MMR-based single-document summarizer obtained an F-score of 0.73 for query-relevant summaries and 70% accuracy on informative summaries in the reported SUMMAC evaluation, although the authors caution that differing system parameters limit direct comparison.",
+     "evidence_type": "supported",
+     "section": "4 Summarization"
+    },
+    {
+     "finding": "For the reported single-document sentence-selection experiment, relevance precision did not differ significantly among lambda values of 1.0, 0.7, and 0.3, suggesting some diversity can be introduced without a statistically significant relevance loss in that experiment.",
+     "evidence_type": "supported",
+     "section": "4 Summarization"
+    },
+    {
+     "finding": "The authors report that redundancy becomes particularly important for longer documents and multi-document collections, and their preliminary multi-document observations indicate that MMR reduces or eliminates duplicate and near-duplicate passages.",
+     "evidence_type": "supported",
+     "section": "4 Summarization"
+    },
+    {
+     "finding": "The paper does not provide a detailed quantitative multi-document experiment sufficient to substantiate the strongest comparative claim that MMR is clearly superior to non-MMR passage selection across multi-document summarization settings.",
+     "evidence_type": "unsupported",
+     "section": "Abstract; 4 Summarization; 5 Concluding Remarks"
+    }
+   ],
+   "limitations": [
+    "The document-reranking user study contains only five undergraduate participants.",
+    "The paper is only two pages and provides limited methodological detail for several reported experiments.",
+    "The multi-document summarization result is described as preliminary and is not accompanied by a detailed quantitative evaluation in the paper.",
+    "The SUMMAC comparison used systems with differing parameters, including summary length, which the authors explicitly state makes the comparative result indicative rather than definitive.",
+    "The single-document relevance experiment uses only 50 manually assessed articles from one TIPSTER topic.",
+    "The approach measures novelty primarily through pairwise similarity to previously selected items and does not explicitly model whether information has become outdated, superseded, resolved, or newly actionable over time.",
+    "Personalization is represented only indirectly through a query or user profile; the paper does not study learned user-specific priorities or longitudinal briefing behavior."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "mmr_relevance_novelty_tradeoff": 0.99,
+    "user_preference_for_mmr": 0.98,
+    "summac_results": 0.98,
+    "single_document_relevance_preservation": 0.96,
+    "multi_document_redundancy_reduction": 0.86,
+    "limited_multidocument_quantitative_support": 0.96
+   },
+   "raw_claims": [
+    "MMR selects each next item using both its relevance to the query and its dissimilarity from already-selected items.",
+    "The relevance-versus-novelty tradeoff is controlled by a lambda parameter.",
+    "A pilot comparison of standard relevance ranking and MMR involved five undergraduate users.",
+    "Four of the five users selected MMR when later choosing a search method.",
+    "The authors used MMR with cosine similarity to rerank sentences for query-focused single-document summaries.",
+    "The reported SUMMAC evaluation gave the MMR system an F-score of 0.73 for query-relevant summarization.",
+    "The same evaluation reported 70% accuracy for informative summaries.",
+    "The authors warn that differing evaluation parameters across SUMMAC systems prevent the reported scores from being definitive comparative measures.",
+    "The single-document experiment found no significant precision difference among the tested lambda settings of 1.0, 0.7, and 0.3.",
+    "The paper reports that MMR is particularly useful where multiple documents repeat the same background information.",
+    "The multi-document experiments described in the paper are preliminary."
+   ],
+   "source_url": "https://www.cs.cmu.edu/afs/cs/Web/People/jgc/publication/MMR_DiversityBased_Reranking_SIGIR_1998.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2403.01365",
+   "title": "AI-Powered Reminders for Collaborative Tasks: Experiences and Futures",
+   "research_question": "How do knowledge workers use and value AI-generated reminders for collaborative email tasks, what information should such systems surface, how does workstyle affect perceived value, and how should users interact with future reminder systems?",
+   "methodology": "The authors study Microsoft Viva Daily Briefing Email using mixed methods among Microsoft information workers. They analyze 11 semi-structured interviews, 11 pre-interview surveys, and a separate validating survey with 45 participants. Open-ended responses are analyzed with thematic coding, while self-reported workstyle, interaction, and perceived-value measures are analyzed using linear regression models. Retrospective interview discussion is also used to characterize desired interactions with surfaced tasks.",
+   "key_findings": [
+    {
+     "finding": "The most common positive theme was the value of receiving an extra reminder or being reminded about a forgotten task: 16 of 45 validating-survey respondents mentioned this theme, with most of those respondents rating the briefing as valuable.",
+     "evidence_type": "supported",
+     "section": "4.1 RQ1: Incorporating AI-Powered Reminders into Workflows"
+    },
+    {
+     "finding": "Staleness and incorrect state are material problems for briefing systems: 12 of 45 validating-survey participants described the system as not presenting accurate or sufficiently up-to-date information.",
+     "evidence_type": "supported",
+     "section": "4.1 RQ1: Incorporating AI-Powered Reminders into Workflows"
+    },
+    {
+     "finding": "Participants most commonly reported forgetting low-importance or non-urgent tasks, ad hoc tasks or meetings, and small low-effort tasks, implying that prioritizing only high-urgency items can miss tasks for which reminders have high marginal value.",
+     "evidence_type": "supported",
+     "section": "4.2 RQ2: Characterizing Information that AI-Powered Reminders Should Show"
+    },
+    {
+     "finding": "The authors explicitly argue that future reminder systems should reconsider prioritizing only urgent or high-importance tasks and should account for the likelihood that a task will otherwise be forgotten.",
+     "evidence_type": "supported",
+     "section": "5 Discussion"
+    },
+    {
+     "finding": "Positive interaction with the briefing is strongly associated with perceived value, while reported workstyle variables associated with greater interaction include communicating about tasks via email, creating tasks from emails, having fewer scheduled meetings, and delegating less.",
+     "evidence_type": "supported",
+     "section": "4.3 RQ3: Impact of Workstyle on the Value of AI-Powered Reminders"
+    },
+    {
+     "finding": "Participants wanted reminder actions to reflect task state and response mode, including immediate replies, scheduling time for extended work, saving tasks whose timing is not yet determined, and acknowledging items requiring no response.",
+     "evidence_type": "supported",
+     "section": "4.4 RQ4: The Future of Interacting with AI-Powered Reminders"
+    },
+    {
+     "finding": "The study motivates personalized and adaptive reminder behavior because different workstyles benefit differently and users' projects, roles, teams, goals, and communication patterns can change over time.",
+     "evidence_type": "supported",
+     "section": "5 Discussion"
+    }
+   ],
+   "limitations": [
+    "The study evaluates a single Microsoft email-based reminder product, so findings may not generalize to other reminder formats or systems.",
+    "Participants are Microsoft employees, limiting organizational and demographic generalizability.",
+    "The analysis relies heavily on self-reported behavior and perceived value rather than objective measurements of completed tasks or collaboration outcomes.",
+    "Only 11 participants were interviewed and the validating survey contains 45 responses.",
+    "The sample contains very few managers and no interview participant with an administrative assistant, which the authors identify as an important missing population.",
+    "The regression analyses are observational and based on self-assessment, so associations should not be interpreted as causal effects.",
+    "The study is not longitudinal; the authors explicitly identify longitudinal investigation as necessary for understanding how sustained reminder use affects collaboration.",
+    "The system is centered on email even though participants' collaborative tasks can originate in other channels such as meetings, GitHub, project-management systems, and in-person communication.",
+    "The work studies reminder selection and interaction rather than a complete incremental briefing model that explicitly tracks new, unresolved, completed, and superseded information states."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "forgotten_task_reminders_are_valued": 0.99,
+    "stale_or_inaccurate_reminders_are_common": 0.99,
+    "low_priority_tasks_are_frequently_forgotten": 0.99,
+    "urgency_only_prioritization_is_insufficient": 0.97,
+    "interaction_associated_with_value": 0.98,
+    "task_specific_interaction_modes": 0.98,
+    "need_for_personalization_and_adaptation": 0.96
+   },
+   "raw_claims": [
+    "The study examines Microsoft Viva's automatically inferred reminders for commitments and requests in email.",
+    "Eleven Microsoft employees participated in semi-structured interviews and pre-interview surveys.",
+    "A separate validating survey received 45 responses.",
+    "The most frequently coded positive use of the briefing was as an extra reminder for tasks or meetings that might otherwise be forgotten.",
+    "Twelve validating-survey respondents reported problems with inaccurate or out-of-date surfaced information.",
+    "Low-importance or non-urgent tasks were the most frequently reported category of forgotten work in the corresponding thematic analysis.",
+    "Ad hoc tasks and small low-effort tasks were also frequently reported as easy to forget.",
+    "The current system was designed to prioritize tasks that appeared more likely to be urgent.",
+    "The authors argue that reminder systems should consider likelihood of forgetting rather than relying only on importance or urgency.",
+    "Users requested interactions such as replying directly, scheduling calendar time, saving a task for later, and acknowledging tasks requiring no action.",
+    "Workstyle variables were associated with how participants interacted with the reminder system.",
+    "The authors argue that reminder systems should adapt as users' projects, roles, teams, and goals change.",
+    "The study relies on self-assessment and evaluates only one email-based reminder system."
+   ],
+   "source_url": "https://arxiv.org/html/2403.01365",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2107.14691",
+   "title": "EmailSum: Abstractive Email Thread Summarization",
+   "research_question": "How well do extractive, abstractive, transfer, semi-supervised, and hierarchical models summarize multi-message email threads, and what dataset and evaluation challenges distinguish email-thread summarization from conventional document summarization?",
+   "methodology": "The authors construct EmailSum from Avocado and W3C email collections by reconstructing threads, filtering and anonymizing them, manually checking thread quality, and collecting short and long abstractive summaries with Amazon Mechanical Turk. The resulting dataset contains 2,549 threads, with 1,800 training, 249 development, and 500 test examples in the reported split. They compare extractive heuristics, TextRank, BertSumExt, Fast Abs RL, T5 variants, cross-domain transfer, semi-supervised learning, and a hierarchical T5 model using ROUGE and BERTScore. A human evaluation on 100 examples with three ratings per example measures salience, faithfulness, pairwise preference, and correlation between automatic metrics and human judgments.",
+   "key_findings": [
+    {
+     "finding": "EmailSum provides 2,549 email threads with both short and long human-written abstractive summaries, supplying a substantially larger benchmark than the earlier 40-thread BC3 email summarization corpus discussed by the authors.",
+     "evidence_type": "supported",
+     "section": "2 EmailSum Dataset"
+    },
+    {
+     "finding": "Treating an entire email thread as one document and fine-tuning T5 provides a strong baseline; transferring from existing news or dialogue summarization datasets yields little benefit, and the proposed hierarchical T5 provides only marginal gains.",
+     "evidence_type": "supported",
+     "section": "4.2 Results; 6 Conclusion"
+    },
+    {
+     "finding": "Semi-supervised training on unlabeled email threads improves several automatic ROUGE results, but those improvements do not translate into superior human preference over the base T5 model.",
+     "evidence_type": "supported",
+     "section": "4.2 Results; 5.2 Generated Summary's Quality Analysis"
+    },
+    {
+     "finding": "Current models frequently fail on discourse-critical information such as the sender's main intention and the correct roles or attribution of senders and receivers, creating both salience and faithfulness errors.",
+     "evidence_type": "supported",
+     "section": "5.2 Generated Summary's Quality Analysis; 6 Conclusion"
+    },
+    {
+     "finding": "Model performance decreases as the number of emails in a thread increases, indicating that longer conversational context remains harder to summarize.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "ROUGE and BERTScore correlate poorly with human judgments in this task; the best reported correlation for the examined rankings is only 0.14 and is not statistically significant, while long-summary correlations are little or negative.",
+     "evidence_type": "supported",
+     "section": "5.3 Correlation with Human Judgement"
+    },
+    {
+     "finding": "Although model-generated summaries receive relatively high average salience and faithfulness ratings, inter-rater agreement is low on the original five-point scale, showing substantial subjectivity in judging email summaries.",
+     "evidence_type": "supported",
+     "section": "5.1 Human Rating Collection; 5.2 Generated Summary's Quality Analysis"
+    }
+   ],
+   "limitations": [
+    "Threads are restricted to 3-10 emails, individual emails to 5-200 words, total thread length to 30-1000 words, and English-language content, limiting applicability to long or multilingual workplace threads.",
+    "The dataset is built primarily from Avocado and W3C collections rather than contemporary live enterprise communication environments.",
+    "Avocado's original email content is license-restricted by the Linguistic Data Consortium, so the authors can release collected summaries and reconstruction scripts but not freely redistribute all underlying source emails.",
+    "The reported paper results use one human reference per test example even though a second reference was subsequently collected for the released test set.",
+    "Human salience and faithfulness ratings show only slight-to-fair agreement on the original five-point scale, indicating substantial annotator subjectivity.",
+    "Thread reconstruction relies partly on normalized subjects, timestamps, and participant continuity rather than native reply-graph metadata, although the authors perform manual quality checking.",
+    "The summarization setup produces a summary of a completed thread and does not model incremental updates, state transitions, resolved versus still-open tasks, or suppression of superseded facts across successive briefings.",
+    "The models are not personalized to an individual recipient's role, priorities, prior knowledge, or information needs.",
+    "Automatic metrics used in the experiments are themselves shown to be weak proxies for human-perceived summary quality."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "emailsum_dataset_contribution": 0.99,
+    "t5_strong_baseline": 0.99,
+    "limited_transfer_and_hierarchical_gain": 0.98,
+    "semisupervised_metric_human_mismatch": 0.99,
+    "sender_intent_and_role_errors": 0.99,
+    "performance_declines_with_thread_length": 0.98,
+    "automatic_metrics_weakly_correlate_with_humans": 0.99,
+    "human_rating_subjectivity": 0.98
+   },
+   "raw_claims": [
+    "EmailSum contains 2,549 email threads with a short and a long human-written summary for each thread.",
+    "The reported split contains 1,800 training threads, 249 development threads, and 500 test threads.",
+    "The authors reconstruct threads from Avocado and W3C email collections and manually inspect the resulting threads for quality and anonymization.",
+    "Summary annotations were collected with Amazon Mechanical Turk using explicit worker-quality controls.",
+    "The authors evaluate both extractive and abstractive summarization systems.",
+    "Fine-tuned T5 is a strong baseline for both short and long email-thread summaries.",
+    "Cross-domain transfer from existing summarization datasets provides little improvement.",
+    "Hierarchical T5 only marginally improves long-summary performance over the ordinary T5 baseline.",
+    "Semi-supervised learning improves several ROUGE measurements but does not consistently improve human preference.",
+    "Generated summaries become harder to produce accurately as the number of emails in a thread increases.",
+    "The human evaluation identifies failures to capture sender intent and failures to attribute statements to the correct sender or receiver.",
+    "Human evaluators generally rate generated summaries more highly for faithfulness than for salience.",
+    "Inter-rater agreement is low on the original five-point human rating scales.",
+    "ROUGE and BERTScore are poorly correlated with human judgments on EmailSum.",
+    "The authors release their code and summary data, while access to underlying Avocado emails remains subject to licensing restrictions."
+   ],
+   "source_url": "https://arxiv.org/html/2107.14691",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

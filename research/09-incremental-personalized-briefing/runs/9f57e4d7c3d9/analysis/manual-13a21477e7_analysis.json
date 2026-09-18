@@ -1,0 +1,66 @@
+{
+ "paper_id": "manual-13a21477e7",
+ "title": "Summarize What You Are Interested In: An Optimization Framework for Interactive Personalized Summarization",
+ "research_question": "Can interactive user feedback be incorporated into an optimization framework so that successive extractive summaries increasingly reflect an individual user's interests while retaining conventional summary quality?",
+ "methodology": "The paper formulates interactive personalized summarization as an optimization problem combining conventional summary utility, including coverage and diversity, with user-specific utility inferred from sentence clicks and examination of nearby context. The summary is iteratively revised between interaction sessions by substitutions that increase the combined utility objective. The authors evaluated the approach on four news-event collections containing 5,197 documents in total and compared it with several non-personalized and personalized baselines. Three evaluators supplied interactive feedback and rated summaries, while ROUGE-1 was used as an automatic content-overlap metric.",
+ "key_findings": [
+  {
+   "finding": "Sparse click and examination feedback can be propagated to related sentence content and used to update the summary toward the user's expressed interests over successive interactions.",
+   "evidence_type": "supported",
+   "section": "Section 3: Interactive Personalized Summarization"
+  },
+  {
+   "finding": "The interactive personalized method received substantially higher personalized human ratings than the non-interactive baselines across the four evaluated news collections.",
+   "evidence_type": "supported",
+   "section": "Section 4.5: Experimental Results"
+  },
+  {
+   "finding": "The personalized summaries did not consistently achieve the highest ROUGE-1 scores; generic summarization could score better when a user's interests diverged from the generic reference summaries.",
+   "evidence_type": "supported",
+   "section": "Section 4.5: Experimental Results"
+  },
+  {
+   "finding": "Summaries preferred by different evaluators exhibited relatively low content consistency, which the authors interpret as evidence that the interaction mechanism was capturing individual rather than generic preferences.",
+   "evidence_type": "supported",
+   "section": "Section 4.6: Personalized Summarization Analysis"
+  },
+  {
+   "finding": "Increasing the weight on user-specific utility strengthens personalization, but excessive weighting causes generic ROUGE quality to decline, demonstrating a trade-off between personal relevance and corpus-level representativeness.",
+   "evidence_type": "supported",
+   "section": "Section 4.7: Parameter Analysis"
+  }
+ ],
+ "limitations": [
+  "Only three evaluators supplied the personalized judgments, so evidence about variation across users is based on a very small participant pool.",
+  "The four collections are news-event corpora rather than workplace email, chat, or other organizational communication.",
+  "The approach depends on explicit interaction through clicks and examination behavior before it can adapt to a particular user.",
+  "The method is extractive and operates primarily at sentence level rather than maintaining structured propositions, decisions, tasks, or open-state records.",
+  "It does not explicitly model temporal validity, superseded facts, completed versus still-open items, or incremental briefing state.",
+  "Generic reference summaries can be intrinsically misaligned with personalized interests, limiting the interpretability of ROUGE as an evaluation metric for personalization."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "interactive_feedback_updates_summary": 0.99,
+  "higher_personalized_human_ratings": 0.98,
+  "rouge_can_diverge_from_preference": 0.98,
+  "users_prefer_different_content": 0.95,
+  "personalization_weight_tradeoff": 0.97
+ },
+ "raw_claims": [
+  "The framework combines traditional summary quality with a utility term representing inferred user interest.",
+  "Clicks on summary sentences and examination of surrounding material are treated as implicit evidence of user interest.",
+  "The system regenerates a summary after interaction rather than treating personalization as a one-shot ranking problem.",
+  "The evaluation used four news-event collections containing 5,197 source documents in total.",
+  "Three evaluators rated the personalized importance of generated summaries.",
+  "Interactive personalized summaries received high subjective ratings across all four collections.",
+  "A personalized summary can be preferred by a user even when its ROUGE score is below that of a generic baseline.",
+  "Different evaluators often preferred summaries containing different information.",
+  "Giving excessive weight to user-interest utility can reduce overlap with generic reference summaries."
+ ],
+ "source_url": "https://aclanthology.org/D/D11/D11-1124.pdf",
+ "access": "full_text"
+}

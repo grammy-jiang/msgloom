@@ -1,0 +1,75 @@
+{
+ "paper_id": "2609.02465",
+ "title": "Can Risk-Based Alerting Mitigate Cybersecurity Alert Fatigue?",
+ "research_question": "Can combinations of interpretable risk-based alerting hypotheses reliably prioritize true cybersecurity alerts over false alerts across heterogeneous environments strongly enough to reduce analyst workload?",
+ "methodology": "The authors formulate risk-based alerting as continuous prioritization and implement five risk modules—Rule Level, Accumulation, Variety, Rarity, and Aperiodicity—in the CATS experimentation framework. They evaluate these modules and weighted combinations on eight alert datasets covering Falco, Sigma, Suricata, and Wazuh data from one enterprise environment and four testbeds. AUROC is the primary metric, with parameter studies and leave-one-dataset-out weight selection used to examine robustness on unseen datasets. Additional evaluation uses average precision, an inverse balanced Brier-score measure of calibration, type-adjusted variants, and a composite skill score.",
+ "key_findings": [
+  {
+   "finding": "The optimized leave-one-out weighted pipeline achieved mean AUROC 0.92 with standard deviation 0.09 across eight datasets, compared with 0.72 and standard deviation 0.21 for straightforward rule-severity prioritization.",
+   "evidence_type": "supported",
+   "section": "7.2 Combining Modules Works Even Better"
+  },
+  {
+   "finding": "Rule Level, Accumulation, and Variety each distinguished true from false alerts significantly above chance across datasets, whereas Rarity and Aperiodicity did not show significant above-chance aggregate performance.",
+   "evidence_type": "supported",
+   "section": "8 Discussion and Limitations"
+  },
+  {
+   "finding": "Weights obtained from the other datasets generalized well in leave-one-out evaluation, suggesting that the combined prioritization strategy was relatively robust to changes in environment, alert source, and attack.",
+   "evidence_type": "supported",
+   "section": "7.2 Combining Modules Works Even Better"
+  },
+  {
+   "finding": "The broader multi-metric evaluation was mostly above corresponding no-skill levels, although individual datasets exposed weaknesses that AUROC alone did not capture.",
+   "evidence_type": "supported",
+   "section": "7.3 Digging Deeper with Multiple Metrics"
+  },
+  {
+   "finding": "Using trailing rather than centered temporal windows reduced mean AUROC for the reference pipeline by about 17%, exposing a trade-off between immediate alerting and using future neighboring alerts for stronger prioritization.",
+   "evidence_type": "supported",
+   "section": "7.2; 8 Discussion and Limitations"
+  },
+  {
+   "finding": "The study does not directly establish a reduction in human alert fatigue because analysts were not experimentally studied; the fatigue benefit is inferred from reduced false-alert workload and the authors call for SOC-analyst user studies.",
+   "evidence_type": "supported",
+   "section": "8 Discussion and Limitations"
+  }
+ ],
+ "limitations": [
+  "Only the ERPCorp Falco dataset contains benign activity captured from a real corporate network; the other evaluated environments rely on testbeds and simulated users.",
+  "Some SOCBED- and APT29S2-based datasets are short, which limits conclusions for long temporal windows.",
+  "The real enterprise ERPCorp dataset cannot be published because of security and privacy restrictions.",
+  "Centered windows improve some prioritization results but necessarily delay prioritization until future alerts within half of the window are available.",
+  "Human alert fatigue, analyst trust, usability, and behavioral response to prioritization were not directly measured.",
+  "The study evaluates security alerts rather than cross-thread workplace briefing or explicit work-item lifecycle states.",
+  "It does not jointly evaluate briefing-style omissions, repetitions, and false alerts."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "combined_pipeline_auroc": 0.99,
+  "three_effective_risk_modules": 0.99,
+  "leave_one_out_robustness": 0.98,
+  "multi_metric_support": 0.96,
+  "temporal_window_latency_tradeoff": 0.99,
+  "human_fatigue_not_directly_tested": 1.0
+ },
+ "raw_claims": [
+  "The evaluation contains eight alert datasets drawn from five environments.",
+  "Five independently parameterized risk hypotheses are implemented as alert-scoring modules.",
+  "The leave-one-out combined pipeline reaches a mean AUROC of 0.92 across the datasets.",
+  "Straightforward rule-level prioritization has a mean AUROC of 0.72.",
+  "Rule Level, Accumulation, and Variety perform significantly above chance in the aggregate tests.",
+  "Rarity and Aperiodicity do not show significant aggregate improvement over chance.",
+  "Average precision and a balanced Brier-derived calibration metric complement AUROC in the practical evaluation.",
+  "Centered temporal windows provide better performance for some modules but prevent instantaneous prioritization.",
+  "Most evaluated datasets are testbed based rather than recordings of normal corporate activity.",
+  "Future user studies with SOC analysts are needed to measure alert-fatigue effects directly.",
+  "CATS code and most evaluated datasets are publicly provided, while the corporate ERPCorp dataset is withheld."
+ ],
+ "source_url": "https://arxiv.org/pdf/2609.02465",
+ "access": "full_text"
+}

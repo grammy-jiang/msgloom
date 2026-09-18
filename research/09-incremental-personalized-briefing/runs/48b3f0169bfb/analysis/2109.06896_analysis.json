@@ -1,0 +1,87 @@
+{
+ "paper_id": "2109.06896",
+ "title": "Decision-Focused Summarization",
+ "research_question": "Can summaries be selected specifically to support a downstream decision by optimizing both faithfulness to a predictive model's full-text decision and representativeness of the decision evidence in the input?",
+ "methodology": "The authors formulate extractive decision-focused summarization and propose DecSum, which uses a supervised prediction model as a virtual decision maker while optimizing decision faithfulness, decision representativeness, and textual non-redundancy during sentence selection. They test the approach on 18,112 Yelp restaurants, using each restaurant's first ten reviews to select a summary intended to support prediction of its average rating after fifty reviews, with a Longformer regression model providing decision signals. DecSum is compared with random extraction, PreSumm, BART, integrated gradients, and attention using automatic decision and text-quality metrics, followed by a Mechanical Turk study on 200 restaurant pairs.",
+ "key_findings": [
+  {
+   "finding": "DecSum achieved much closer agreement with the full-text model prediction than text-only summarization and attribution baselines, with MSE-to-full of 0.0005 for the all-components variant versus roughly 0.34 to 0.54 for the main baselines.",
+   "evidence_type": "supported",
+   "section": "4.1.1 Decision Faithfulness"
+  },
+  {
+   "finding": "Explicitly optimizing representativeness significantly improved how well selected sentences covered the distribution of sentence-level decision evidence, measured by Wasserstein distance.",
+   "evidence_type": "supported",
+   "section": "4.1.2 Decision Representativeness"
+  },
+  {
+   "finding": "DecSum selected a broader mix of positive, neutral, and negative evidence than the tested text-only systems, while PreSumm and BART tended toward positive sentences and attribution methods tended to omit neutral evidence.",
+   "evidence_type": "supported",
+   "section": "4.1.2 Decision Representativeness"
+  },
+  {
+   "finding": "DecSum produced strong textual non-redundancy but scored worse on grammaticality and coherence than conventional text-focused summarizers.",
+   "evidence_type": "supported",
+   "section": "4.1.3 Text-only Summary Evaluation"
+  },
+  {
+   "finding": "On the simplified model decision task, DecSum summaries preserved 76.1 percent model accuracy, essentially matching the 76.0 percent result from full text and exceeding the tested summarization baselines.",
+   "evidence_type": "supported",
+   "section": "4.2 Human Evaluation"
+  },
+  {
+   "finding": "In the human study, DecSum was the only tested summary condition under which aggregate participant accuracy was statistically above chance, reaching 54.7 percent with p=0.017.",
+   "evidence_type": "supported",
+   "section": "4.2 Human Evaluation"
+  },
+  {
+   "finding": "The approach operationalizes priority relative to an explicit decision objective rather than generic textual salience, but it does not maintain evolving state or distinguish newly changed information from previously accepted open information over time.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the proposed formulation"
+  }
+ ],
+ "limitations": [
+  "The main testbed is Yelp future-rating prediction, not workplace communication or an operational decision workflow.",
+  "Summary relevance is defined through a supervised predictive model, so weaknesses, biases, or distribution shifts in that model can directly influence selected evidence.",
+  "The regression model is trained on ten-review inputs but is also applied to individual sentences; the authors report that simpler candidate models behaved poorly under this input-length shift.",
+  "DecSum is extractive and static rather than a longitudinal mechanism for updating an existing briefing.",
+  "The method does not explicitly model fact supersession, resolved versus still-open state, or whether an item was already communicated to a user.",
+  "Human decision accuracy remained low in absolute terms even in the strongest condition.",
+  "Decision-oriented selection trades off against grammaticality and coherence.",
+  "The beam-search implementation with the faithfulness component is computationally expensive on the reported test set.",
+  "Fairness-related properties of decision-focused summaries are identified as future work."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "decision_faithfulness_improves": 0.99,
+  "representativeness_objective_works": 0.99,
+  "captures_diverse_decision_evidence": 0.98,
+  "nonredundancy_coherence_tradeoff": 0.99,
+  "preserves_model_decision": 0.99,
+  "human_accuracy_above_chance": 0.99,
+  "no_longitudinal_state_management": 0.96
+ },
+ "raw_claims": [
+  "Decision-focused summarization selects a subset of sentences intended to support a specified decision.",
+  "DecSum uses a predictive model trained on the full input to provide signals about decision relevance.",
+  "Its objective combines decision faithfulness, decision representativeness, and textual non-redundancy.",
+  "Decision faithfulness measures whether the summary produces a model decision similar to the full input.",
+  "Decision representativeness measures whether summary sentences cover the distribution of decision signals across the input.",
+  "The Yelp experiment uses the first ten restaurant reviews to support prediction of the rating after fifty reviews.",
+  "The dataset contains 18,112 restaurants split into training, validation, and test partitions.",
+  "Longformer is used as the decision model because simpler tested models did not behave appropriately at sentence-level input lengths.",
+  "DecSum's all-components version obtains MSE-to-full of 0.0005.",
+  "Text-only summarizers have MSE-to-full values around 0.34 to 0.37 in the reported experiment.",
+  "DecSum is significantly more representative of the decision-score distribution than the compared baselines.",
+  "DecSum has strong non-redundancy but lower grammaticality and coherence.",
+  "The human evaluation uses 200 restaurant pairs with three judgments collected per pair.",
+  "Human accuracy with DecSum reaches 54.7 percent and is statistically above random chance.",
+  "The paper releases its code and data."
+ ],
+ "source_url": "https://arxiv.org/html/2109.06896",
+ "access": "full_text"
+}

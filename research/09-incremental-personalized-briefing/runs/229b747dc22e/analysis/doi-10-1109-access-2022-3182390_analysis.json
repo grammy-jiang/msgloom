@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1109-access-2022-3182390",
+ "title": "An End-to-End Personalized Preference Drift Aware Sequential Recommender System With Optimal Item Utilization",
+ "research_question": "Can a sequential recommender improve next-item prediction by detecting personalized preference drift, soft-clustering item characteristics, and selecting only historical interactions relevant to the user's current preference?",
+ "methodology": "The proposed PPD+ model soft-clusters latent item representations with Fuzzy c-Means, detects personalized drift from changes in consecutive soft-label distributions, divides user histories into subsequences, and retrieves past subsequences similar to the latest preference segment. Experiments used three public datasets: MovieLens 1M, Goodreads Spoiler, and Taobao UserBehavior, with users and items having fewer than ten interactions removed and maximum sequence lengths set to 200, 100, and 100 respectively. The first 70% of interactions were used for training, the next 10% for validation, and the remainder for testing, with next-item prediction evaluated by holding out the last interaction as ground truth. PPD+ was compared with multiple sequential and efficient-Transformer baselines using MRR, NDCG@K, and HR@K, plus equal-item-utilization, noise, threshold, and illustrative case analyses.",
+ "key_findings": [
+  {
+   "finding": "PPD+ consistently outperformed most evaluated baselines across the three benchmark datasets on NDCG, hit rate, and mean reciprocal rank.",
+   "evidence_type": "supported",
+   "section": "IV.E.3 Evaluation Results"
+  },
+  {
+   "finding": "When competing models were constrained to use equal percentages of historical items, PPD+ still outperformed the baselines on most metrics across all three datasets, supporting the value of its history-selection and grouping mechanism rather than merely the amount of history consumed.",
+   "evidence_type": "supported",
+   "section": "V.A Equal Item Utilization Experiment"
+  },
+  {
+   "finding": "Using more historical interactions was not uniformly beneficial: the highest NDCG@10 usually did not occur at the largest utilization percentage, and PPD+ showed negative, flat, or positive utilization trends depending on the dataset.",
+   "evidence_type": "supported",
+   "section": "V.A.3 Impact of Noises"
+  },
+  {
+   "finding": "A zero cosine-similarity threshold for retaining past subsequences outperformed variants based on the mean similarity or mean plus standard deviation on most validation metrics across the datasets.",
+   "evidence_type": "supported",
+   "section": "V Threshold Experiment"
+  },
+  {
+   "finding": "The experiments demonstrate better offline next-item prediction from a mechanism intended to respond to changing preferences, but they do not directly validate detected drift points against independently labeled ground-truth preference changes.",
+   "evidence_type": "unsupported",
+   "section": "IV-VI"
+  },
+  {
+   "finding": "The system adapts selection to behavioral preference history, but the paper does not evaluate workplace obligations, preference-versus-obligation tradeoffs, repeated briefings, or omission/repetition/false-alert errors.",
+   "evidence_type": "unsupported",
+   "section": "Problem formulation and evaluation scope"
+  }
+ ],
+ "limitations": [
+  "Evaluation is entirely offline on recommender-system interaction datasets rather than a human-in-the-loop longitudinal deployment.",
+  "Preference drift is inferred from changes in item representations rather than evaluated against explicit human annotations of when a user's preference actually changed.",
+  "Users and items with fewer than ten interactions were removed, so cold-start behavior is outside the evaluated population.",
+  "Historical sequences were truncated to fixed maximum lengths determined from approximate average sequence lengths.",
+  "Next-item ranking metrics assess recommendation accuracy but do not directly measure user satisfaction with adaptation under real preference drift.",
+  "The model treats behavioral preference as the selection objective and does not represent mandatory obligations separately from optional preferences.",
+  "There is no workplace communication, work-item lifecycle, briefing-cycle, omission, repetition, or false-alert evaluation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "ppd_plus_outperforms_most_baselines": 0.97,
+  "equal_utilization_advantage": 0.96,
+  "more_history_not_always_better": 0.99,
+  "zero_threshold_variant_result": 0.97,
+  "no_ground_truth_drift_validation": 0.93,
+  "outside_workplace_briefing_scope": 0.99
+ },
+ "raw_claims": [
+  "PPD+ is designed to model personalized changes in sequential user preference.",
+  "The model uses Fuzzy c-Means to give items soft cluster memberships.",
+  "Changes between consecutive soft-label distributions are used to identify preference-drift points.",
+  "Detected drift points partition a user's history into preference subsequences.",
+  "Past subsequences are selected according to similarity with the latest subsequence.",
+  "The evaluation uses MovieLens, Goodreads, and UserBehavior datasets.",
+  "The next-item task ranks candidate items with the user's final interaction serving as ground truth.",
+  "Performance is reported with MRR, NDCG, and hit-rate metrics.",
+  "PPD+ outperforms most baselines across the reported benchmark results.",
+  "Experiments show that retaining the largest possible fraction of history does not consistently produce the best NDCG.",
+  "The paper does not provide independently annotated ground-truth preference-drift events."
+ ],
+ "source_url": "https://www.researchgate.net/publication/361279980_An_End-to-End_Personalized_Preference_Drift_Aware_Sequential_Recommender_System_With_Optimal_Item_Utilization",
+ "access": "full_text"
+}

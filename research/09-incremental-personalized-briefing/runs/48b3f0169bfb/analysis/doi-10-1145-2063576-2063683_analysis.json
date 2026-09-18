@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-1145-2063576-2063683",
+ "title": "Modeling Personalized Email Prioritization: Classification-based and Regression-based Approaches",
+ "research_question": "For personalized five-level email priority prediction, do ordinal-regression models or classification-based models better capture users' judgments, and under what data assumptions does each modeling strategy work best?",
+ "methodology": "The study extends an earlier personalized email collection to 19 experimental subjects and assigns each message one of five importance levels using the user's own judgments. For each user, the first 150 messages by timestamp were reserved for training and later messages for testing, with learning curves constructed from training subsets of 30 through 150 messages. Header and body tokens were represented as weighted document features, and several SVM classification schemes, proposed order-based classifier cascades, and support-vector ordinal regression were evaluated with micro- and macro-averaged MAE and significance tests. The authors also tested the approaches on seven UCI-derived ordinal benchmark datasets and synthetic data to investigate why email and conventional ordinal datasets behaved differently.",
+ "key_findings": [
+  {
+   "finding": "On personalized email data, the order-based majority-voting classification approach significantly outperformed support-vector ordinal regression, despite the apparently ordinal nature of the five priority labels.",
+   "evidence_type": "supported",
+   "section": "Section 4.1.4: Results and Analysis"
+  },
+  {
+   "finding": "With 150 training messages, the reported macro MAE was approximately 0.8689 for the order-based majority-voting method versus 1.0480 for SVOR and 1.1560 for the constant baseline.",
+   "evidence_type": "supported",
+   "section": "Section 4.1.4: Results and Analysis"
+  },
+  {
+   "finding": "With 150 training messages, micro MAE was approximately 0.7907 for the order-based majority-voting method, compared with 1.0259 for SVOR and 1.0887 for the baseline.",
+   "evidence_type": "supported",
+   "section": "Section 4.1.4: Results and Analysis"
+  },
+  {
+   "finding": "On the seven UCI-derived ordinal benchmarks, the result reversed: SVOR performed best across the evaluated training sizes, showing that the email result was not a general failure of ordinal regression.",
+   "evidence_type": "supported",
+   "section": "Section 4.2.2: Results and Analysis"
+  },
+  {
+   "finding": "The authors attribute the email result to violations of the restrictive single-model or parallel-boundary assumptions underlying ordinal regression, while flexible classifiers can model different boundaries between priority regions.",
+   "evidence_type": "supported",
+   "section": "Sections 2 and 4.1.4"
+  },
+  {
+   "finding": "Chronological separation of training and test messages was deliberately used so that priority prediction would not exploit labels from future email.",
+   "evidence_type": "supported",
+   "section": "Section 4.1.1: Dataset and Preprocessing"
+  }
+ ],
+ "limitations": [
+  "The personalized evaluation contains only 19 subjects and a relatively small labeled training set per person.",
+  "The five-level labels are subjective personal judgments, so boundaries between levels need not have consistent spacing or semantics across users.",
+  "Private email data prevent straightforward public replication on the original personalized collection.",
+  "The representation relies primarily on tokenized message headers and text and does not model richer task, conversation, calendar, or organizational state.",
+  "The experiments evaluate static per-user models rather than continuing preference adaptation as a user's priorities change.",
+  "The system ranks individual messages but does not explicitly track which facts or tasks remain open, have been resolved, or have been superseded.",
+  "The UCI benchmark tasks are converted into ordinal targets and therefore provide diagnostic evidence about modeling assumptions rather than direct evidence about workplace email use."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "classification_beats_svor_on_email": 0.99,
+  "macro_mae_at_150": 0.99,
+  "micro_mae_at_150": 0.99,
+  "svor_wins_on_uci_benchmarks": 0.99,
+  "ordinal_model_assumption_mismatch": 0.96,
+  "chronological_split_avoids_future_leakage": 0.99
+ },
+ "raw_claims": [
+  "The personalized email dataset was expanded from seven to nineteen experimental subjects.",
+  "Users assigned their own messages to five ordered importance levels.",
+  "The experiments reserve the first 150 messages in time for training and later messages for testing.",
+  "The message representation uses tokens from sender, recipient, carbon-copy, subject, and body fields.",
+  "Mean absolute error is the principal metric because prediction mistakes can differ by more than one priority level.",
+  "The order-based classification method performs better than SVOR on the personalized email collection.",
+  "SVOR performs better than the classification methods on the UCI-derived ordinal benchmarks.",
+  "The contrast between email and benchmark results indicates that merely having ordered labels does not guarantee that a single ordinal-regression model is appropriate.",
+  "The proposed order-based classifiers seek to combine flexible decision boundaries with partial use of priority ordering.",
+  "Limited per-user labeled data is treated as a central practical constraint for personalized email prioritization."
+ ],
+ "source_url": "https://digital.library.unt.edu/ark:/67531/metadc835677/",
+ "access": "full_text"
+}

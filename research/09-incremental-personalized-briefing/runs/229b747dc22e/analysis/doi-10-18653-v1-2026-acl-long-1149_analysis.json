@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-18653-v1-2026-acl-long-1149",
+ "title": "Agent Newsroom: Efficient Chronological Report Generation via Dynamic Multi-Agent Collaboration",
+ "research_question": "Can chronological report generation be organized as dynamically scheduled, budget-aware multi-agent collaboration that improves semantic coverage, temporal grounding, and narrative balance while reducing inference cost?",
+ "methodology": "The paper introduces MAS-TLS, a multi-agent timeline-summarization system organized around a master editor and specialized reporter agents in a star topology. Its collaborative cycle includes editorial assignment, time-anchored evidence-grounded investigation and drafting, cross-agent scrutiny and adjudication, and adaptive orchestration; allocation and scheduling mechanisms are designed to promote coverage and diversity while respecting token and time budgets. The system is evaluated on the Crisis, Entities, and T17 timeline-summarization benchmarks against traditional and LLM-based baselines, using AR-1, AR-2, Date-F1, token use, inference time, temporal-balance, and topical-balance measures. The authors also conduct component ablations and transfer studies across model backbones and languages.",
+ "key_findings": [
+  {
+   "finding": "MAS-TLS improves most reported semantic-coverage and temporal-grounding measurements across the three benchmarks, although it does not dominate every individual metric; on T17 its AR-2 result is 2.8% below the strongest compared baseline.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Overall Performance"
+  },
+  {
+   "finding": "On the Entities benchmark MAS-TLS uses 13.8 million tokens and 37,078 seconds, compared with 20.2 million tokens and 39,009 seconds for the strongest efficiency-oriented baseline CHRONOS, while also obtaining higher AR-1.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Efficiency Analysis"
+  },
+  {
+   "finding": "The reported temporal and topical distribution measures indicate that MAS-TLS produces more balanced timelines, including lower inter-event temporal variation and topic distributions closer to the reference timelines.",
+   "evidence_type": "supported",
+   "section": "Section 4.4, Balance Analysis"
+  },
+  {
+   "finding": "Ablation experiments show that removing distinctiveness or the LLM-based ranking/adjudication component causes substantial quality losses, while disabling adaptive scheduling increases token consumption by about 34%.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Ablation Study"
+  },
+  {
+   "finding": "Across tested model backbones the paper reports less than 8% relative variation in AR-1, and its cross-lingual experiments retain a semantic-coverage advantage over the strongest compared baseline.",
+   "evidence_type": "supported",
+   "section": "Section 5.3, Transferability"
+  },
+  {
+   "finding": "Evidence grounding remains imperfect: the authors report unsupported-event rates of roughly 5.3% to 7.9% across the evaluated benchmarks.",
+   "evidence_type": "supported",
+   "section": "Section 5.4, Evidence Support"
+  }
+ ],
+ "limitations": [
+  "The experiments are retrospective news-style timeline summarization rather than real-time workplace communication streams.",
+  "The authors state that substantially different domains and broader multilingual settings may require new retrieval and budget configurations.",
+  "Agent roles, prompts, and major interaction patterns are predefined rather than learned or freely adaptive.",
+  "The method depends on the quality of available evidence and temporal cues and does not eliminate unsupported inferences.",
+  "The paper identifies human-centered faithfulness and usability evaluation as additional work still needed.",
+  "The system does not explicitly model workplace lifecycle labels such as new, open, resolved, and superseded work items."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "quality_gains": 0.97,
+  "efficiency_gain": 0.99,
+  "balance_gain": 0.95,
+  "ablation_scheduler": 0.98,
+  "cross_backbone_transfer": 0.94,
+  "unsupported_event_rate": 0.98
+ },
+ "raw_claims": [
+  "MAS-TLS decomposes chronological report generation among a master editor and specialized reporter agents.",
+  "The master editor allocates reporting work while attempting to preserve coverage and diversity.",
+  "Reporter agents investigate temporally anchored evidence before producing candidate timeline content.",
+  "Candidate material is subjected to cross-agent scrutiny and consolidation to reduce duplication and weak evidence.",
+  "Adaptive orchestration changes agent staffing and work allocation under resource constraints.",
+  "The system is evaluated on three established timeline-summarization benchmarks.",
+  "MAS-TLS improves most semantic-coverage and temporal-grounding results but is not best on every individual metric.",
+  "Adaptive scheduling materially reduces token use relative to an ablated system.",
+  "The method produces more balanced temporal and topical coverage than the compared systems on the reported balance measures.",
+  "A small but nonzero proportion of generated events remains unsupported by the available evidence."
+ ],
+ "source_url": "https://aclanthology.org/2026.acl-long.1149.pdf",
+ "access": "full_text"
+}
