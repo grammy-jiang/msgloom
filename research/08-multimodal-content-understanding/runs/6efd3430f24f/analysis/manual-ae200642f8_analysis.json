@@ -1,0 +1,70 @@
+{
+ "paper_id": "manual-ae200642f8",
+ "title": "Change-Centric Management of Versions in an XML Warehouse",
+ "research_question": "How can an XML warehouse represent and store document version histories so that node identity persists across snapshots, changes can be composed or reversed, and new versions can be installed efficiently?",
+ "methodology": "The paper treats a document history as a sequence of XML snapshots and applies an XML diff algorithm between consecutive snapshots to identify corresponding nodes and assign persistent XML identifiers, or XIDs. Rather than retaining only lossy simple deltas, it introduces completed deltas containing sufficient information to support both forward and backward application as well as delta composition. The proposed physical organization stores the current version, an XID mapping, and a history of completed deltas, emphasizing append-oriented installation of new versions. The authors implemented the techniques in the Xyleme/Natix environment and evaluated storage behavior using simulated XML changes at varying modification rates.",
+ "key_findings": [
+  {
+   "finding": "Persistent XIDs give corresponding XML nodes a continuing logical identity across document snapshots, directly addressing the problem of referring to the same element through multiple versions.",
+   "evidence_type": "supported",
+   "section": "§3 Identifying Nodes Across Versions"
+  },
+  {
+   "finding": "Completed deltas retain information omitted by simple deltas and can therefore be inverted and composed, allowing navigation and transformation across a version history.",
+   "evidence_type": "supported",
+   "section": "§2 Version Management and completed-delta definitions"
+  },
+  {
+   "finding": "A document history can be represented by the latest materialized version together with a sequence of completed deltas, from which earlier states can be reconstructed by applying changes backward.",
+   "evidence_type": "supported",
+   "section": "§2 Version Management and storage representation"
+  },
+  {
+   "finding": "The proposed physical layout makes installation of a newly acquired version largely append-oriented, reducing updates to previously stored objects at the cost of redundant information in completed deltas.",
+   "evidence_type": "supported",
+   "section": "Storage policy and implementation discussion"
+  },
+  {
+   "finding": "Simulation experiments show that delta-storage cost grows with the amount of modification and that richer completed deltas consume more space than simpler change representations, motivating compression and storage-policy optimization.",
+   "evidence_type": "supported",
+   "section": "Experimental Results and Conclusion"
+  }
+ ],
+ "limitations": [
+  "The storage experiments rely on simulated document changes rather than a released corpus of naturally evolving web documents.",
+  "The authors state that the influence of XML document structure on storage behavior was not fully studied.",
+  "Warehouse acquisition snapshots may miss intervening real-world edits, and the recorded version time is acquisition time rather than necessarily the true update time.",
+  "Persistent identity depends on the diff algorithm correctly deciding which nodes in different snapshots correspond to one another.",
+  "The model addresses logical XML-tree nodes, not multimodal page regions, rendered bounding boxes, spreadsheet cells, or visual elements.",
+  "The paper predates modern document QA and does not connect node lineage to answer-span evidence identifiers or natural-language referring expressions.",
+  "Some formal proofs and detailed algorithms are omitted from the paper for space reasons.",
+  "The implementation is described but no public source-code release or experimental dataset is provided."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "persistent_xid_lineage": 1.0,
+  "completed_delta_inversion_composition": 0.99,
+  "latest_snapshot_plus_deltas": 0.99,
+  "append_oriented_storage": 0.97,
+  "storage_experiment_trend": 0.95,
+  "xml_only_scope": 0.99
+ },
+ "raw_claims": [
+  "The system assigns persistent XIDs so that matching XML nodes can retain the same identity in different snapshots.",
+  "The XML diff process determines correspondences between nodes in consecutive document versions.",
+  "Simple deltas discard information that is needed to reconstruct the previous version.",
+  "Completed deltas preserve enough information to support both forward and backward transformation.",
+  "Completed deltas can be composed to summarize changes spanning more than one version transition.",
+  "The storage architecture can keep the newest XML document together with a sequence of completed deltas for its history.",
+  "Installing a new version is designed to require little modification of already stored version objects.",
+  "The experiments use simulated changes to study how different version representations affect storage size.",
+  "The authors identify compression, temporal querying, and identifier allocation as areas for further work.",
+  "Persistent XIDs provide cross-version logical-element lineage, but the paper does not address visual page-region or spreadsheet-cell lineage."
+ ],
+ "source_url": "https://www.vldb.org/conf/2001/P581.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,76 @@
+{
+ "paper_id": "2510.08109",
+ "title": "VersionRAG: Version-Aware Retrieval-Augmented Generation for Evolving Documents",
+ "research_question": "Can retrieval-augmented generation explicitly represent document versions and changes so that questions about historical content, version identity, and inter-version differences are answered more accurately and efficiently than version-agnostic RAG?",
+ "methodology": "VersionRAG represents evolving documentation as a five-level graph containing category, document, version, content, and change nodes, with temporal links between versions and explicit or automatically derived change information. A query classifier routes content, version, and change questions to specialized retrieval procedures over Neo4j and Milvus Lite, while DeepDiff is used to derive implicit line-level changes when changelogs are unavailable. The authors construct VersionQA with 100 manually curated questions over 34 technical-documentation files and compare VersionRAG against naive vector RAG and Neo4j GraphRAG using Llama 3 8B, GPT-4o Mini, and DeepSeek-R1 70B. GPT-4.1 grades answers against gold references, and the complete set of 100 answers is also manually reviewed.",
+ "key_findings": [
+  {
+   "finding": "With DeepSeek-R1 70B, VersionRAG achieved 90% overall accuracy on VersionQA, compared with 58% for naive RAG and 64% for the evaluated GraphRAG baseline.",
+   "evidence_type": "supported",
+   "section": "Evaluation Results; Table 5"
+  },
+  {
+   "finding": "VersionRAG achieved 100% accuracy on the evaluated version-specific content retrieval and version-listing categories with the strongest evaluated model, showing a large advantage on questions that require explicit version identity.",
+   "evidence_type": "supported",
+   "section": "Evaluation Results"
+  },
+  {
+   "finding": "Change-oriented questions remained substantially harder than ordinary content or version questions; the strongest configuration reached 70% change-query accuracy, with implicit changes particularly difficult.",
+   "evidence_type": "supported",
+   "section": "Change Retrieval Evaluation"
+  },
+  {
+   "finding": "For DeepSeek-R1 70B, VersionRAG used about 186K input tokens and 38K output tokens compared with roughly 2.97M input and 5.92M output tokens for GraphRAG, corresponding to the paper's reported 97% token reduction and substantially lower cost and runtime.",
+   "evidence_type": "supported",
+   "section": "Efficiency Evaluation; Table 9"
+  },
+  {
+   "finding": "The reported VersionRAG failures were attributed mainly to query misclassification and incomplete change extraction, demonstrating error propagation across the modular pipeline.",
+   "evidence_type": "supported",
+   "section": "Failure Analysis"
+  },
+  {
+   "finding": "The evaluation does not establish that VersionRAG's gains generalize from the small technical-documentation benchmark to domains such as legal, medical, financial, or heterogeneous workplace documents.",
+   "evidence_type": "unsupported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "VersionQA contains only 100 questions over 34 technical-documentation files, limiting evidence for cross-domain generalization.",
+  "Implicit semantic changes remain difficult: the strongest reported configuration obtains only 60% accuracy on implicit-change questions.",
+  "Line-level DeepDiff can miss semantically important changes that are not well represented by textual diffs.",
+  "The system assumes that version information can be extracted reliably and that document versions have sufficiently consistent structure; irregular filenames, date-based schemes, or missing metadata can cause failures.",
+  "The graph models versions primarily as a sequential history and does not directly represent arbitrary branching, merging, or non-adjacent version dependencies.",
+  "Accuracy depends strongly on the underlying LLM; smaller models create fewer useful change nodes and misclassify more queries.",
+  "The architecture requires both graph and vector infrastructure and still incurs nontrivial indexing cost.",
+  "The pipeline has no end-to-end mechanism that corrects errors introduced by version extraction, change extraction, or query routing."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overall_accuracy_gain": 0.99,
+  "version_specific_retrieval": 0.98,
+  "change_queries_remain_hard": 0.98,
+  "token_efficiency": 0.99,
+  "pipeline_error_propagation": 0.96,
+  "cross_domain_generalization_unestablished": 0.99
+ },
+ "raw_claims": [
+  "VersionRAG explicitly stores individual document versions rather than flattening all versions into a common retrieval collection.",
+  "Its hierarchy separates documents, versions, version content, and changes between versions.",
+  "Queries are classified into content, version, or change-oriented retrieval paths.",
+  "VersionQA contains 100 manually curated questions drawn from versioned technical documentation.",
+  "Sixty percent of the benchmark questions are version-sensitive.",
+  "Naive RAG and the evaluated GraphRAG baseline perform substantially worse than VersionRAG on the complete benchmark with the strongest tested model.",
+  "Questions asking about implicit changes are harder than questions supported by explicit changelogs.",
+  "The version-aware graph allows retrieved information to retain provenance to a particular version.",
+  "VersionRAG requires far fewer indexing-generation tokens than the evaluated GraphRAG pipeline.",
+  "Misclassification and incomplete change extraction account for the reported VersionRAG failures.",
+  "The authors publicly provide the VersionRAG code and VersionQA dataset."
+ ],
+ "source_url": "https://arxiv.org/html/2510.08109",
+ "access": "full_text"
+}

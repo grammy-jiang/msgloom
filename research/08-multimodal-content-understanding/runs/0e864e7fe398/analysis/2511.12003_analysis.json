@@ -1,0 +1,73 @@
+{
+ "paper_id": "2511.12003",
+ "title": "Look as You Think: Unifying Reasoning and Visual Evidence Attribution for Verifiable Document RAG via Reinforcement Learning",
+ "research_question": "Can a vision-language model be trained to produce accurate document-RAG answers while grounding intermediate reasoning steps and final answers to verifiable page-level visual regions with limited stepwise supervision?",
+ "methodology": "The paper introduces Chain-of-Evidence, in which textual reasoning steps are paired with page indices and bounding boxes for their supporting evidence, followed by a final answer with its own supporting region. LAT uses two training stages: a cold-start stage creates CoE traces with Gemini 2.5 Pro from 1,000 sampled instances per training dataset, filters them for answer quality, manually corrects bounding-box drift, and performs LoRA supervised fine-tuning; a second stage applies GRPO reinforcement learning. The RL objective combines answer-accuracy, stepwise attribution, final grounding, and format rewards, including semantic comparison between reasoning steps and cropped evidence regions using ColQwen2. Experiments use Qwen2.5-VL-7B-Instruct on Paper-VISA and Wiki-VISA under single-image, multi-image, in-domain, and cross-domain settings.",
+ "key_findings": [
+  {
+   "finding": "Across the reported single- and multi-image evaluations, LAT improves the vanilla model by an average of 8.23% in soft exact match and 47.0% in IoU@0.5.",
+   "evidence_type": "supported",
+   "section": "Abstract; 5.1 Main Results"
+  },
+  {
+   "finding": "In the in-domain comparison, LAT reports gains of 7.95% in answer exact match and 44.6% in IoU@0.5 over the vanilla model.",
+   "evidence_type": "supported",
+   "section": "5.1 Attribution-aware performance under in-domain and cross-domain settings"
+  },
+  {
+   "finding": "LAT substantially improves stepwise Chain-of-Evidence attribution quality, with a reported 37.5% gain in stepwise attribution compared with only a 4.0% gain from adding an in-context CoE demonstration.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "For unanswerable multi-image cases, LAT reports average precision of 65% when producing a no-answer response.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "LAT outperforms the direct supervised answer-plus-attribution baseline and shows stronger cross-domain generalization in the reported experiments.",
+   "evidence_type": "supported",
+   "section": "Abstract; 5 Results and Analysis"
+  },
+  {
+   "finding": "The Chain-of-Evidence representation records evidence at reasoning-step granularity as a page index plus a bounding box and separately grounds the final answer.",
+   "evidence_type": "supported",
+   "section": "3.1 CoE Formalization and Notations"
+  }
+ ],
+ "limitations": [
+  "Thresholds used by the stepwise attribution rewards are manually selected from annotated examples rather than learned adaptively.",
+  "Training is currently limited to VISA data, whose evidence annotations are predominantly single-hop.",
+  "Generalization to multi-hop and cross-source evidence reasoning has not been fully evaluated or supervised.",
+  "The cold-start procedure depends on a proprietary Gemini 2.5 Pro model and subsequent manual bounding-box correction, which makes exact independent reproduction of the data-generation stage more involved."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "average_em_iou_gains": 0.99,
+  "in_domain_improvement": 0.99,
+  "stepwise_attribution_gain": 0.97,
+  "no_answer_precision": 0.97,
+  "cross_domain_generalization": 0.96,
+  "step_level_bbox_provenance": 0.99
+ },
+ "raw_claims": [
+  "Chain-of-Evidence associates reasoning steps with document page indices and visual bounding boxes.",
+  "The final answer is also paired with a page and supporting evidence box.",
+  "The cold-start stage samples 1,000 instances from each training dataset for CoE generation.",
+  "Gemini 2.5 Pro generates initial stepwise reasoning and evidence annotations.",
+  "The authors manually verify and correct bounding-box drift before cold-start supervised training.",
+  "The reinforcement-learning stage uses GRPO.",
+  "LAT optimizes answer accuracy, stepwise evidence attribution, final grounding, and output-format objectives.",
+  "Stepwise evidence consistency is measured using representations of the reasoning text and the cropped document region.",
+  "Experiments cover both single-image and multi-image document inputs.",
+  "LAT reports average improvements of 8.23% in soft exact match and 47.0% in IoU@0.5 relative to the vanilla model.",
+  "The released implementation is linked to the PolarisLiu1/LAT GitHub repository.",
+  "The authors identify multi-hop and cross-source evidence reasoning as an unresolved direction."
+ ],
+ "source_url": "https://arxiv.org/html/2511.12003",
+ "access": "full_text"
+}

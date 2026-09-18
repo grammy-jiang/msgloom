@@ -1,0 +1,73 @@
+{
+ "paper_id": "manual-d896e242a6",
+ "title": "J-CRe3: A Japanese Conversation Dataset for Real-world Reference Resolution",
+ "research_question": "How can real-world Japanese conversational reference resolution be studied with a multimodal dataset that links linguistic references, including omitted arguments, to concrete objects and regions observed in egocentric video?",
+ "methodology": "The authors construct J-CRe3 from Japanese task-oriented conversations accompanied by egocentric video and audio, then annotate utterances, textual reference relations, object bounding boxes, persistent object-instance identities, and text-to-object links. Object tracks are initialized with Detic and StrongSORT and manually corrected, while textual annotations cover predicate-argument structures, bridging references, coreference, and zero references. They evaluate separate baselines for textual reference resolution and visual phrase grounding, including a Japanese-adapted MDETR model fine-tuned with external and J-CRe3 data.",
+ "key_findings": [
+  {
+   "finding": "J-CRe3 provides jointly aligned dialogue, video, textual-reference annotations, object boxes, persistent object-instance identifiers, and cross-modal reference links, including indirect and omitted references.",
+   "evidence_type": "supported",
+   "section": "Sections 3.2-3.4"
+  },
+  {
+   "finding": "The annotation scheme can ground deictic expressions to spatial regions rather than requiring every reference target to be a discrete object.",
+   "evidence_type": "supported",
+   "section": "Section 3.3.3"
+  },
+  {
+   "finding": "Zero references are substantially more frequent than explicitly direct text-to-object references in the released annotations, making omitted arguments a central part of the benchmark.",
+   "evidence_type": "supported",
+   "section": "Section 3.4"
+  },
+  {
+   "finding": "The textual reference-resolution baseline reaches approximately 0.8 F-score and is reported as comparable to performance on established Japanese reference-resolution corpora.",
+   "evidence_type": "supported",
+   "section": "Section 4.1.3"
+  },
+  {
+   "finding": "Visual phrase grounding remains difficult: the strongest reported fine-tuned configuration reaches Recall@1 of 0.410 on J-CRe3, while pretrained-only configurations perform poorly.",
+   "evidence_type": "supported",
+   "section": "Section 4.2 and Table 4"
+  },
+  {
+   "finding": "Persistent object instance IDs maintain identity across video frames and therefore provide temporal object continuity, although they do not model lineage across revised document versions.",
+   "evidence_type": "supported",
+   "section": "Sections 3.3.2-3.3.3"
+  }
+ ],
+ "limitations": [
+  "The dataset is relatively small because multimodal collection and annotation are expensive, and the authors state that it is insufficient for training the full task independently without external data.",
+  "The interaction domain is centered on a master and a domestic-assistant robot, so generalization to outdoor, multi-party, or multi-robot settings is not established.",
+  "The experimental pipeline resolves textual references and text-to-object references separately rather than with a single joint model.",
+  "The phrase-grounding experiment simplifies temporal grounding by considering frames in a restricted interval associated with each utterance.",
+  "Persistent identity is defined within a video sequence, not across revisions of a workbook, page, or other versioned artifact.",
+  "The dataset does not provide document-hierarchy provenance such as workbook-sheet-cell or document-page-region lineage."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multimodal_annotation": 0.99,
+  "region_grounding": 0.98,
+  "zero_reference_prevalence": 0.99,
+  "textual_resolution_performance": 0.96,
+  "phrase_grounding_performance": 0.99,
+  "temporal_instance_identity": 0.98
+ },
+ "raw_claims": [
+  "J-CRe3 contains 93 recorded dialogues and 2,131 utterances aligned with egocentric video.",
+  "The video collection totals about 11,024 seconds and includes more than eleven thousand annotated frames.",
+  "Object annotations include class labels and instance identifiers that are kept consistent while an object is tracked through the video.",
+  "The dataset contains 79,694 bounding boxes associated with 1,741 object instances.",
+  "The annotation inventory covers 166 unique object classes.",
+  "Textual relations include predicate-argument structures, bridging references, and coreference.",
+  "The corpus contains 7,177 zero-reference annotations, substantially more than the explicitly direct reference annotations.",
+  "Text-to-object annotation can connect language either to object instances or to annotated spatial regions.",
+  "The best reported fine-tuned phrase-grounding configuration obtains Recall@1 of 0.410, Recall@5 of 0.494, and Recall@10 of 0.504.",
+  "The authors make the dataset and associated model resources publicly available."
+ ],
+ "source_url": "https://arxiv.org/html/2403.19259",
+ "access": "full_text"
+}

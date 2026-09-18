@@ -1,0 +1,71 @@
+{
+ "paper_id": "2607.14117",
+ "title": "Heterogeneous Element-Aware Cross-Version Differencing of Scientific Documents via Layout-Aware Alignment and Structure-Aware Reasoning",
+ "research_question": "How can two revised scientific PDF versions be aligned and differenced at the element level while preserving layout and internal structure across text, tables, formulas, and figures?",
+ "methodology": "The framework first parses each document into typed heterogeneous elements with page-layout coordinates and type-specific representations for text, tables, formulas, and figures. It then performs same-type cross-version alignment using a candidate page window, similarity retrieval, and weighted location, content, and structural signals, treating unmatched elements as insertions or deletions. A structure-aware reasoning stage characterizes localized content, formatting, and structural differences. The system is evaluated on scientific-document version pairs drawn from real journal-production proofreading workflows, using detection, localization, structural-consistency, alignment, and matching metrics.",
+ "key_findings": [
+  {
+   "finding": "The proposed method achieved detection F1 scores of 0.903 for text, 0.855 for tables, 0.862 for formulas, and 0.845 for figures on the evaluation corpus.",
+   "evidence_type": "supported",
+   "section": "§5.2 Main Results"
+  },
+  {
+   "finding": "Cross-version alignment was a critical component: removing it reduced detection F1 from 0.866 to 0.779, localization F1 from 0.833 to 0.706, alignment accuracy from 0.856 to 0.681, and matching F1 from 0.859 to 0.692.",
+   "evidence_type": "supported",
+   "section": "§5.3 Ablation Study"
+  },
+  {
+   "finding": "Type-specific alignment weights outperformed uniform shared weights, supporting the use of different mixtures of spatial, content, and structural evidence for heterogeneous element types.",
+   "evidence_type": "supported",
+   "section": "§5.4 Sensitivity Analysis"
+  },
+  {
+   "finding": "Structural modeling produced particularly large gains for table-topology and formula-hierarchy changes, while content signals were comparatively more important for text and figures.",
+   "evidence_type": "supported",
+   "section": "§5.2-§5.4 Results and Analysis"
+  },
+  {
+   "finding": "A soft candidate window of plus or minus two pages produced the strongest reported overall alignment results, outperforming same-page-only matching and a wider plus or minus three-page window.",
+   "evidence_type": "supported",
+   "section": "§5.4 Sensitivity Analysis"
+  },
+  {
+   "finding": "The method supports element-level lineage across document revisions by explicitly matching corresponding typed elements before reasoning about content, formatting, and structural changes.",
+   "evidence_type": "supported",
+   "section": "§4 Methodology"
+  }
+ ],
+ "limitations": [
+  "The alignment formulation primarily assumes one-to-one element correspondence and is less suitable for paragraph splits or merges, multi-page table decomposition, and major document restructuring.",
+  "Errors in upstream layout parsing, table-cell reconstruction, formula recognition, or figure extraction can propagate into alignment and differencing.",
+  "Figure comparison is mainly region-level because large-scale component-level structural annotations are unavailable.",
+  "The evaluation is concentrated on scientific PDFs from production proofreading workflows, so broader generalization to other document genres remains unverified."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "element_detection_results": 0.99,
+  "alignment_ablation": 0.99,
+  "type_specific_weights": 0.98,
+  "structure_sensitive_types": 0.97,
+  "page_window": 0.98,
+  "cross_version_element_lineage": 0.98
+ },
+ "raw_claims": [
+  "The system decomposes each document version into typed elements with explicit page-layout coordinates.",
+  "Text, tables, formulas, and figures receive different structured representations.",
+  "Cross-version candidates are restricted to matching semantic element types.",
+  "Alignment combines spatial position, content similarity, and structural similarity with type-specific weights.",
+  "Unmatched elements are interpreted as insertions or deletions.",
+  "The evaluation corpus originates from real scientific-publishing proofreading workflows involving successive document versions.",
+  "Cross-version alignment contributes substantially to final detection and localization quality.",
+  "Tables and formulas benefit strongly from structure-aware comparison.",
+  "A two-page alignment window balances robustness to pagination shifts against spurious candidates.",
+  "The current one-to-one alignment model does not fully represent split, merged, or extensively reorganized elements."
+ ],
+ "source_url": "https://arxiv.org/html/2607.14117",
+ "access": "full_text"
+}

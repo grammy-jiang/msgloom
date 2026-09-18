@@ -1,0 +1,73 @@
+{
+ "paper_id": "2506.21055",
+ "title": "Class-Agnostic Region-of-Interest Matching in Document Images",
+ "research_question": "Can a visual prompt marking an arbitrary region in one document be used to identify semantically corresponding regions in another document without predefined classes or fixed granularity?",
+ "methodology": "The authors construct RoI-Matching-Bench from six existing document datasets and organize it into three difficulty levels ranging from visually and positionally similar forms to document pairs differing substantially in appearance and position; Level II includes manual semantic annotation. RoI-Matcher uses a Siamese network to extract multi-level features from reference and target images and cross-attention to integrate and align semantically corresponding features, with an efficient FPNC/grid-sampling design, pre-masking, and PAN-style optimization. It is evaluated using pixel-level mIoU and instance-level F-measure against cross-domain few-shot segmentation and multimodal-language-model baselines, with extensive component ablations.",
+ "key_findings": [
+  {
+   "finding": "RoI-Matcher achieved 87.3% overall mIoU and 83.9% overall F-measure on RoI-Matching-Bench.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Table 5.1"
+  },
+  {
+   "finding": "Performance remained strongest across all three benchmark levels, with 92.1% mIoU and 92.2% F-measure at Level I and 85.0% mIoU and 72.3% F-measure at the more difficult Level III.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Table 5.1"
+  },
+  {
+   "finding": "The reported overall results exceeded the multimodal-model baselines Qwen2-VL-7B at 57.3% mIoU and 55.3% F-measure and InternVL2.5-8B at 53.2% and 50.5%.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Table 5.1"
+  },
+  {
+   "finding": "The paper reports inference time of 0.056 seconds per image for RoI-Matcher versus 3.121 seconds per image for Qwen2-VL-7B.",
+   "evidence_type": "supported",
+   "section": "Section 5.2"
+  },
+  {
+   "finding": "Replacing cross-entropy plus Dice loss with PANLoss raised F-measure from 66.8% to 83.0% in the loss ablation while mIoU changed from 85.4% to 85.9%.",
+   "evidence_type": "supported",
+   "section": "Section 5.3, Table 5.4"
+  },
+  {
+   "finding": "Applying the reference mask before feature-pyramid processing produced 87.3% mIoU and 83.9% F-measure versus 87.1% and 68.4% when masking afterward.",
+   "evidence_type": "supported",
+   "section": "Section 5.3, Table 5.6"
+  }
+ ],
+ "limitations": [
+  "The current model is one-shot and cannot refine a match through multiple successive visual prompts.",
+  "The model is visual-only and incorporates no linguistic information.",
+  "Repeated inference over multiple RoIs was not experimentally explored.",
+  "The method establishes pairwise visual region correspondence but does not model temporal revision identity, document-version lineage, or a page-region-cell provenance hierarchy."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overall_roi_matching": 0.99,
+  "difficulty_level_results": 0.99,
+  "mllm_comparison": 0.99,
+  "inference_speed": 0.99,
+  "panloss_ablation": 0.99,
+  "premask_ablation": 0.99
+ },
+ "raw_claims": [
+  "RoI-Matching takes a reference document, a visual mask identifying the desired region, and a target document as input.",
+  "The output is the corresponding target-region mask or bounding region without requiring a predefined semantic class.",
+  "The benchmark is assembled from six existing document datasets and divided into three difficulty levels.",
+  "The hardest level includes document pairs that differ substantially in both visual appearance and position.",
+  "Evaluation includes both pixel-level mIoU and instance-oriented F-measure.",
+  "RoI-Matcher extracts reference and target features with a Siamese architecture and aligns them through cross-attention.",
+  "RoI-Matcher reached 87.3% overall mIoU and 83.9% overall F-measure.",
+  "Its reported localization scores substantially exceed the two evaluated multimodal language-model baselines.",
+  "The paper reports much lower per-image inference time for RoI-Matcher than for Qwen2-VL-7B.",
+  "Pre-masking preserves substantially more instance-level matching performance than post-masking in the reported ablation.",
+  "The authors release implementation code and provide a downloadable RoI-Matching-Bench dataset.",
+  "The principal stated limitations are one-shot interaction, lack of linguistic input, and absence of repeated multi-RoI inference."
+ ],
+ "source_url": "https://arxiv.org/html/2506.21055",
+ "access": "full_text"
+}

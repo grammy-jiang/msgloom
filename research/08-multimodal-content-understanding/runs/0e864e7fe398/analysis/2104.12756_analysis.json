@@ -1,0 +1,85 @@
+{
+ "paper_id": "2104.12756",
+ "title": "InfographicVQA",
+ "research_question": "How effectively can visual-question-answering systems understand infographics that require joint reasoning over embedded text, document layout, graphics, tables, visualizations, and elementary numerical operations?",
+ "methodology": "The authors construct InfographicVQA with 30,035 questions over 5,485 infographic images collected from 2,594 web domains. Questions and answers are manually annotated, with an additional answer collected for validation and test questions, and the dataset emphasizes evidence from text, tables, figures, and visualizations as well as elementary operations such as counting, sorting, and arithmetic. The paper adapts M4C and LayoutLM-based baselines using OCR and different visual-region representations and evaluates them with ANLS and exact accuracy. Human performance, heuristic baselines, answer-source upper bounds, detector behavior, and multiple model ablations are also reported.",
+ "key_findings": [
+  {
+   "finding": "InfographicVQA exposes a large gap between humans and contemporary VQA/document models, with human test performance of 0.980 ANLS and 95.70% accuracy while the evaluated learned baselines are much lower.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "More than three quarters of questions have an answer available either in the common-answer vocabulary or as an OCR span, but locating and reasoning over the relevant content remains difficult for the evaluated models.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "In-domain pre-training substantially improves the LayoutLM-based baseline.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "Generic natural-image and document-layout object detectors produce relatively few useful detections on infographic images.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "For the M4C experiments, using no detected objects or one full-image feature performs better than using bottom-up object regions.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "Adding visual features for OCR tokens does not improve the LayoutLM-based model in the reported experiments.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "The authors attribute weak visual-feature gains partly to a mismatch between available object detectors and the unusual graphical structure of infographics.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "The benchmark requires reasoning over complex visual-layout relationships, but it does not annotate precise provenance locations such as table cells or bounding regions for answers.",
+   "evidence_type": "supported",
+   "section": "3 InfographicVQA; 5 Experiments and Results"
+  }
+ ],
+ "limitations": [
+  "InfographicVQA contains single infographic images rather than long or multi-page workplace documents.",
+  "Questions that annotators judged unanswerable from the image were removed, so the benchmark does not directly test abstention or hallucination when supporting evidence is absent.",
+  "The benchmark does not provide a standardized cell-, region-, or coordinate-level evidence annotation for each answer, limiting its usefulness for precise provenance reconstruction.",
+  "The baseline visual detectors were designed for natural images or conventional document layouts and are poorly matched to infographic structure.",
+  "The dataset does not model attachments, document revisions, or evidence relative to a particular attachment version.",
+  "Although the paper states that dataset, code, and leaderboard would be made available through DocVQA, the accessible dataset page confirms the dataset release but an official implementation code release was not verified."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "large_human_model_gap": 0.99,
+  "answers_often_exist_in_ocr_or_vocab": 0.98,
+  "in_domain_pretraining_helps": 0.98,
+  "generic_detectors_are_poor_fit": 0.98,
+  "object_features_do_not_help": 0.97,
+  "no_precise_answer_provenance_annotations": 0.91
+ },
+ "raw_claims": [
+  "InfographicVQA contains 30,035 questions over 5,485 infographic images.",
+  "The images originate from 2,594 distinct web domains.",
+  "Questions can depend on text, tables, figures, visualizations, and combinations of multiple cues.",
+  "The dataset includes questions requiring counting, sorting, and arithmetic.",
+  "Validation and test questions receive an additional independently collected answer.",
+  "Human test performance is reported as 0.980 ANLS and 95.70% exact accuracy.",
+  "More than 75% of questions have an answer available in the common-answer vocabulary or in serialized OCR tokens.",
+  "The evaluated object detectors identify relatively few useful objects in infographic images.",
+  "M4C variants using no object features or a full-image feature outperform variants using detected object regions.",
+  "The LayoutLM experiments show a strong benefit from in-domain pre-training.",
+  "Adding visual features to OCR tokens does not improve the reported LayoutLM results.",
+  "Questions judged impossible to answer from the image are removed from the dataset."
+ ],
+ "source_url": "https://arxiv.org/html/2104.12756",
+ "access": "full_text"
+}

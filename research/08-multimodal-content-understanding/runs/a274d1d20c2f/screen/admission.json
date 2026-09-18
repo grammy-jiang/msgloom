@@ -1,0 +1,223 @@
+{
+ "streams": [
+  {
+   "id": "TF1",
+   "description": "Cross-version document alignment, differencing, and element lineage."
+  },
+  {
+   "id": "TF2",
+   "description": "Version-aware question answering and retrieval over evolving documents."
+  },
+  {
+   "id": "TF4",
+   "description": "Multimodal coreference, situated reference resolution, and referring expression comprehension."
+  },
+  {
+   "id": "TF5",
+   "description": "Evidence-grounded DocVQA, answer localization, and spatial attribution."
+  },
+  {
+   "id": "TF6",
+   "description": "Multi-page and long-context multimodal document understanding."
+  },
+  {
+   "id": "TF7",
+   "description": "Workbook-level spreadsheet understanding and formula-aware reasoning."
+  },
+  {
+   "id": "TF8",
+   "description": "Table structure recognition, semantic table understanding, and table QA."
+  },
+  {
+   "id": "TF9",
+   "description": "Document layout analysis, reading order, and structure-preserving extraction."
+  },
+  {
+   "id": "TF12",
+   "description": "Scene-text, screenshot, figure, and text-rich-image grounding."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2607.24651",
+   "decision": "ADMIT",
+   "reason": "TF5. The abstract explicitly couples answer evidence to precise document source regions: supporting quotations are generated and then mapped back to page regions by a multimodal retriever. This materially strengthens gap-4 because it provides a concrete, coordinate-free route from answer evidence to spatial provenance rather than merely producing citations or answers.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2510.08109",
+   "decision": "ADMIT",
+   "reason": "TF2. The abstract directly models document evolution through version sequences, content boundaries, and tracked changes, then uses those structures to route version-sensitive retrieval. This is one of the clearest candidates for gap-1 because revision identity and change tracking are part of the retrieval model rather than incidental metadata.",
+   "stream_id": "TF2",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2608.03292",
+   "decision": "ADMIT",
+   "reason": "TF5. The abstract describes evidence localization plus explicit graph construction with node-level provenance across long, multi-page documents. That directly strengthens hierarchical evidence tracing and gap-4, while also providing useful evidence for multi-page composition.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1162-089120100561665",
+   "decision": "REJECT",
+   "reason": "The abstract is relevant transfer work on linguistic references whose antecedents may be graphical objects, but the capability is substantially more general and older than the closer multimodal-dialogue and text-rich-image grounding candidates in this round. It does not specifically address document attachments, scene text, regions, cells, or revised artifacts. Identity is also UNCHECKED, so it does not justify a reading slot over stronger candidates.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-acl-long-547",
+   "decision": "ADMIT",
+   "reason": "TF4. The abstract jointly models textual reference structure and grounding to visual objects in dialogue, including ambiguous pronouns and ellipses. This is useful transfer evidence for gap-2 because the central capability is resolving communication-language references into associated visual entities, not merely generic VQA. Identity is UNCHECKED, so bibliographic verification should accompany acquisition.",
+   "stream_id": "TF4",
+   "role": "TRANSFER",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-0661fc0cba",
+   "decision": "ADMIT",
+   "reason": "TF5. The abstract links individual generated answer spans to pixel-level evidence masks and represents evidence at nested phrase, line, and block granularities. That is unusually close to the missing answer-span-to-region portion of gap-4 and materially strengthens fine-grained provenance beyond answer-level localization alone. Identity is UNCHECKED and should be verified before relying on bibliographic details.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2505.16470",
+   "decision": "ADMIT",
+   "reason": "TF6. The benchmark explicitly targets long multimodal documents containing text, images, and tables, with multi-page cross-modal evidence chains and evaluation of evidence selection and integration. This directly strengthens the long-document evidence-composition stream rather than merely sharing DocVQA vocabulary.",
+   "stream_id": "TF6",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2412.00151",
+   "decision": "REJECT",
+   "reason": "The answer-localization capability is directly relevant to TF5, but within this candidate set it is dominated by papers that expose richer provenance structures: quotation-to-region attribution, answer-span-to-mask grounding, node-level evidence graphs, and page-index-plus-bounding-box chains. Reading it is unlikely to close a gap that those stronger candidates leave open.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-1109-tip-2019-2930176",
+   "decision": "REJECT",
+   "reason": "The capability is scene-text referring-expression segmentation, so the vocabulary is relevant to gap-2, but it is narrower than the later scene-text grounding candidate that explicitly aligns referring expressions, text semantics, and visual regions. It would mostly duplicate the transfer evidence while offering less direct analogy to document or screenshot interpretation. Identity is UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1016-j-patrec-2025-11-011",
+   "decision": "REJECT",
+   "reason": "The paper improves cell bounding-box refinement within table structure recognition, but the abstract does not show semantic table understanding, provenance preservation across downstream reasoning, merged-structure handling, or workbook-level reasoning. It is a narrow extraction component and does not materially close the stated gaps. Identity is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "manual-bc798b0eed",
+   "decision": "REJECT",
+   "reason": "The abstract is relevant transfer work on cross-modal coreference in dialogue, but its contribution substantially overlaps the stronger ACL 2025 candidate admitted for TF4. It does not add a document-, screenshot-, cell-, or scene-text-specific capability sufficient to justify an additional reading slot. Identity is UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "manual-e0e3e2d835",
+   "decision": "REJECT",
+   "reason": "The abstract is too general to establish a capability that materially strengthens the target streams. It states that cross-modal references are assessed at fine granularity but does not show document grounding, text-rich visual grounding, spatial localization, or a distinct mechanism beyond other admitted transfer papers. Identity is UNCHECKED.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2606.29955",
+   "decision": "ADMIT",
+   "reason": "TF7. The benchmark evaluates professional spreadsheet workflows over complex workbooks with many worksheets and cross-sheet dependencies. This directly addresses a central part of gap-3 by moving beyond isolated normalized tables to workbook-level structure and coordinated multi-sheet operations.",
+   "stream_id": "TF7",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2503.12345",
+   "decision": "REJECT",
+   "reason": "The paper provides formula-based logical reasoning for table QA, but the abstract explicitly remains at table level and does not establish workbook structure, cross-sheet references, hidden regions, formatting semantics, named ranges, or other workbook-level relationships required by gap-3. The topic words match only a subset of the required capability.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1109-tmm-2022-3219642",
+   "decision": "ADMIT",
+   "reason": "TF12. The task explicitly resolves linguistic referring expressions to regions where visible scene text is itself part of the identifying evidence, jointly aligning text semantics, visual regions, and language. This is a close transfer analogue for gap-2 references to labels or textual content inside screenshots and other text-rich attachments. Identity is UNCHECKED and should be verified during acquisition.",
+   "stream_id": "TF12",
+   "role": "TRANSFER",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2607.14117",
+   "decision": "ADMIT",
+   "reason": "TF1. The abstract directly decomposes successive document revisions into heterogeneous typed elements, aligns corresponding elements using layout/content/structure, and localizes semantic changes. This is the strongest direct candidate for gap-1 because it addresses cross-version correspondence and semantic change at element level rather than merely storing document versions.",
+   "stream_id": "TF1",
+   "role": "DIRECT",
+   "confidence": 1.0
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-emnlp-main-682",
+   "decision": "REJECT",
+   "reason": "Image-narration coreference is useful adjacent-domain evidence, but the abstract is less analogous to workplace attachment references than the admitted visually grounded dialogue and scene-text grounding papers. It does not add document structure, textual visual identifiers, cells, or attachment-specific grounding. Identity is UNCHECKED.",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "2609.08364",
+   "decision": "ADMIT",
+   "reason": "TF2. The abstract combines evidence-grounded QA with temporal verification, inline citations, and drift information when living documents change across versions. This adds a distinct version-aware QA dimension beyond VersionRAG's retrieval architecture and directly informs version validity, supersession, and change-aware evidence presentation.",
+   "stream_id": "TF2",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2604.12282",
+   "decision": "ADMIT",
+   "reason": "TF7. The abstract describes reasoning over spreadsheets through code-visible values, rendered images, and structured table representations, while first constructing structural sketches and row/column summaries and later verifying relevant regions. This materially strengthens gap-3 by treating real spreadsheets as spatial, multimodal, semi-structured artifacts rather than flattened tables.",
+   "stream_id": "TF7",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2406.14991",
+   "decision": "REJECT",
+   "reason": "The benchmark uses heterogeneous real spreadsheets with multiple tables and non-textual elements, so it is relevant, but SpreadsheetBench 2 in this round more directly exercises complex multi-worksheet workflows and cross-sheet dependencies. The older benchmark does not, from the abstract, add enough evidence on formulas or workbook-level relationships to justify a separate reading slot for gap-3.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-findings-naacl-295",
+   "decision": "ADMIT",
+   "reason": "TF5. The paper evaluates Document VQA using both semantic correctness and multimodal placement of the answer in its source document, with human validation of the grounded scoring. This directly strengthens the evaluation side of gap-8 and helps distinguish textually correct but poorly grounded predictions. Identity is UNCHECKED and should be verified during acquisition.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2604.13579",
+   "decision": "REJECT",
+   "reason": "The paper is directly relevant to long-document visual QA, but its stated contribution is agent training for iterative evidence discovery. The candidate set already contains a benchmark with explicit multi-page cross-modal evidence chains and a traceable evidence-graph method. The abstract does not add a new provenance hierarchy, failure contract, or scaling evaluation sufficient to strengthen the open gaps.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "manual-7fdf40b3c6",
+   "decision": "ADMIT",
+   "reason": "TF8. The abstract explicitly reconstructs business-table images while preserving merged cells and parent-child header relationships before table QA. That directly addresses structure-preservation failures highlighted in gap-6 and is stronger than generic TSR because hierarchical relationships are carried into semantic reasoning. Identity is UNCHECKED and should be verified before relying on publication metadata.",
+   "stream_id": "TF8",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2511.12003",
+   "decision": "ADMIT",
+   "reason": "TF5. The Chain-of-Evidence representation explicitly attaches reasoning references to page indexes and document-region bounding boxes while generating answers. This is highly relevant to gap-4 because it jointly binds answer reasoning to page-level and region-level provenance rather than evaluating localization as a separate post-processing task.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2401.00908",
+   "decision": "ADMIT",
+   "reason": "TF9. The abstract explicitly represents enterprise-document text together with bounding-box layout and models semantic-spatial cross-alignment across irregular, heterogeneous business-document layouts. It materially strengthens the document-structure stream and is directly relevant to preserving spatial relationships in workplace-style forms, invoices, reports, and contracts, although it does not itself close the provenance or versioning gaps.",
+   "stream_id": "TF9",
+   "role": "DIRECT",
+   "confidence": 0.93
+  }
+ ],
+ "notes": "Admission is deliberately concentrated on candidates whose abstracts expose an actual mechanism or evaluation for the stated gaps. Gap-1 is materially strengthened by cross-version element alignment plus version-aware retrieval/QA; gap-2 gains transfer evidence but still lacks a direct email-to-attachment grounding benchmark; gap-3 gains direct workbook-level evidence; gap-4 gains several complementary provenance mechanisms spanning answer spans, pages, regions, masks, quotations, and evidence graphs, but no abstract establishes the complete attachment-version-to-page-to-element-to-region-or-cell-to-answer-span hierarchy in one representation. No candidate abstract closes gap-5's explicit failure-state contract for distinguishing successful absence from parser/OCR/layout/grounding failure. Gap-8 is only partially strengthened by grounded DocVQA evaluation because no candidate simultaneously covers semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and structure preservation."
+}

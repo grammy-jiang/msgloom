@@ -1,0 +1,71 @@
+{
+ "paper_id": "manual-0661fc0cba",
+ "title": "M3Grounder: Mask-Based Multi-Span and Multi-Granular Grounding for Document QA",
+ "research_question": "Can document question answering jointly generate accurate answers and associate individual answer spans with precise, potentially disjoint and hierarchically scoped pixel-level evidence regions instead of coarse bounding boxes?",
+ "methodology": "M3Grounder combines a vision-language answer generator with a promptable segmentation module. The language model emits special [GROUND] tokens after answer spans, and each corresponding hidden state is projected through separate phrase-, line-, and block-level heads to prompt segmentation masks for that span. Training combines language-modeling loss, Dice/BCE segmentation supervision, a bleed-suppression objective that penalizes masks extending into irrelevant background, and a hierarchy loss enforcing phrase-within-line-within-block containment. The accompanying GroundingDocQA resource is described as containing 200K documents and 2M QA pairs, while the human-verified GroundingDocQA-Bench contains 2.5K documents and 5K QA pairs.",
+ "key_findings": [
+  {
+   "finding": "Interleaving answer spans with [GROUND] tokens creates an explicit one-to-one link from each generated span to its own segmentation evidence region, including answers requiring multiple spatially separated regions.",
+   "evidence_type": "supported",
+   "section": "Abstract and Method"
+  },
+  {
+   "finding": "The method predicts evidence at phrase, line, and block levels and constrains those masks hierarchically rather than exposing only one fixed grounding granularity.",
+   "evidence_type": "supported",
+   "section": "Abstract and Method"
+  },
+  {
+   "finding": "GroundingDocQA is described as providing 200K documents and 2M multi-span, multi-granular QA pairs with pixel-level evidence masks, and GroundingDocQA-Bench as providing 2.5K documents and 5K human-verified QA pairs.",
+   "evidence_type": "supported",
+   "section": "Abstract and official project dataset description"
+  },
+  {
+   "finding": "The official benchmark table reports M3Grounder-Q scores of 81.4 F1g on BD-Test, 73.3 F1g on DOGR-Bench, 68.2 IoU on MMDocBench, and 79.0 F1g on GroundingDocQA-Bench, exceeding the compared systems in that table.",
+   "evidence_type": "supported",
+   "section": "Official project Benchmark Results"
+  },
+  {
+   "finding": "For M3Grounder-Q, the official multi-granularity results report 80.1 phrase F1, 84.3 line F1, and 87.5 block F1.",
+   "evidence_type": "supported",
+   "section": "Official project Multi-Granularity Results"
+  },
+  {
+   "finding": "The paper presents segmentation masks as an alternative to rectangular grounding because masks can follow curved or irregular text and avoid including unrelated background inside a box.",
+   "evidence_type": "supported",
+   "section": "Abstract and Introduction"
+  }
+ ],
+ "limitations": [
+  "The accessible CVF HTML record exposed the abstract rather than the complete paper, and direct full-PDF retrieval returned HTTP 403, so detailed paper-stated limitations and all ablations could not be independently checked from the full manuscript.",
+  "At access time, the official project page still labeled the dataset and models as 'Soon', while its Code link resolved to the project-page repository rather than a training or inference implementation.",
+  "The provenance target is a pixel region within a document image; attachment identity, attachment revision history, and cross-version evidence lineage are not modeled.",
+  "The evaluation centers on grounded document QA rather than email threads or longitudinal workplace communication in which the same attachment may be revised."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "span_to_mask_linking": 0.99,
+  "hierarchical_grounding": 0.99,
+  "groundingdocqa_scale": 0.99,
+  "benchmark_results": 0.95,
+  "multigranularity_results": 0.95,
+  "mask_advantage_for_irregular_text": 0.98
+ },
+ "raw_claims": [
+  "M3Grounder formulates document evidence grounding as pixel-level segmentation rather than bounding-box generation.",
+  "Generated answers contain [GROUND] tokens linking individual answer spans to evidence masks.",
+  "A single answer can contain multiple independently grounded evidence spans.",
+  "The system predicts phrase-, line-, and block-level evidence masks.",
+  "A hierarchy objective encourages phrase masks to be enclosed by line masks and line masks by block masks.",
+  "A bleed-suppression loss penalizes masks that spill into irrelevant regions.",
+  "GroundingDocQA is described as containing 200K documents and 2M grounded QA pairs.",
+  "GroundingDocQA-Bench is described as human verified and explicitly evaluates multi-span and multi-granular grounding.",
+  "The official results page reports stronger grounding scores for M3Grounder than the compared baselines across the displayed grounding benchmarks.",
+  "The current official artifact page does not yet expose the announced dataset and model releases."
+ ],
+ "source_url": "https://openaccess.thecvf.com/content/CVPR2026/html/Venna_M3Grounder_Mask-Based_Multi-Span_and_Multi-Granular_Grounding_for_Document_QA_CVPR_2026_paper.html",
+ "access": "abstract_only"
+}

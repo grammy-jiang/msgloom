@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-1007-s00521-022-06948-5",
+ "title": "Reading order detection on handwritten documents",
+ "research_question": "Can document reading order be recovered robustly by learning pairwise ordering relations among previously detected layout elements and then decoding those relations into a global sequence?",
+ "methodology": "The method represents already detected layout elements using geometric and typological features and trains a three-layer multilayer perceptron to estimate the probability that one element precedes another; textual content is deliberately excluded. The resulting pairwise probabilities are converted into a global order using brute-force optimization for small cases and two approximate decoders, Greedy and FDTD, for practical cases. The authors evaluate flat page-level ordering and hierarchical ordering of regions followed by lines on the OHG, FCR, and ABP handwritten-document datasets using normalized Spearman footrule distance and Kendall-Tau-style swap distance, averaging results over ten model initializations.",
+ "key_findings": [
+  {
+   "finding": "FDTD was substantially faster than the Greedy decoder, with Greedy typically taking about an order of magnitude more computation time, while their ordering accuracy remained very similar.",
+   "evidence_type": "supported",
+   "section": "5.1 Analysis of the decoding algorithms"
+  },
+  {
+   "finding": "On OHG, the learned decoders achieved normalized Spearman footrule error below 0.7% and required fewer than four swaps per page on average, a 74% reduction in swaps relative to top-bottom-left-right ordering.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Text lines at page level"
+  },
+  {
+   "finding": "On FCR, normalized Spearman footrule error was below 1%, and the average 16.1 swaps needed to repair the sequence were 97% fewer than for the top-bottom-left-right baseline.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Text lines at page level"
+  },
+  {
+   "finding": "Performance on the heterogeneous ABP collection remained inadequate for practical full reading-order recovery despite being around 47% better than the simple geometric baseline on normalized Spearman footrule distance.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Text lines at page level"
+  },
+  {
+   "finding": "Hierarchical processing substantially improved ordering, reducing OHG from 3.4 to 0.07 swaps per page, FCR from more than 16 to about 4, and ABP from more than 2935 to 864.",
+   "evidence_type": "supported",
+   "section": "5.2.5 Hierarchical consolidation"
+  },
+  {
+   "finding": "Hierarchical gains depend on having an upstream layout-analysis system that accurately identifies regions, so layout-detection errors can directly propagate into reading-order errors.",
+   "evidence_type": "supported",
+   "section": "5.2.5 Hierarchical consolidation and 6 Conclusions"
+  }
+ ],
+ "limitations": [
+  "Experiments largely assume that the layout elements to be ordered are already available and correctly identified; merged, mislabeled, or otherwise erroneous detected elements can degrade ordering.",
+  "The pairwise classifier depends on reliable estimation of ordering probabilities, which is difficult for highly heterogeneous layouts such as ABP.",
+  "Textual content is not used even though the authors identify content features as a potentially useful extension for ambiguous heterogeneous documents.",
+  "Documents with very large numbers of elements can still impose significant computational cost.",
+  "The hierarchical approach requires richer document-layout analysis, including accurate segmentation into regions.",
+  "Results on ABP remain too poor for useful information recovery despite improvements over the geometric baseline."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "FDTD efficiency": 0.99,
+  "OHG ordering accuracy": 0.99,
+  "FCR ordering accuracy": 0.99,
+  "ABP difficulty": 0.99,
+  "hierarchical improvement": 0.99,
+  "upstream layout dependency": 0.98
+ },
+ "raw_claims": [
+  "Reading order is modeled through learned pairwise precedence probabilities between document layout elements.",
+  "The classifier uses geometric and element-type features rather than transcribed textual content.",
+  "FDTD is faster than Greedy and becomes slightly more accurate for larger tested element sets.",
+  "Both proposed decoders substantially outperform simple top-bottom-left-right ordering on most experiments.",
+  "OHG results require fewer than four corrective swaps per page on average.",
+  "FCR results require 16.1 corrective swaps per page on average and are far better than the geometric baseline.",
+  "The heterogeneous ABP collection remains difficult enough that the resulting orders are not practically useful.",
+  "Ordering regions first and lines second greatly improves page-level reading order.",
+  "The authors release experiment source code, data splits, images, and ground-truth files.",
+  "Errors produced by upstream layout analysis can directly affect the reading-order method."
+ ],
+ "source_url": "https://link.springer.com/article/10.1007/s00521-022-06948-5",
+ "access": "full_text"
+}

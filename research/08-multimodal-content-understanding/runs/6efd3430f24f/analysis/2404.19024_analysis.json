@@ -1,0 +1,75 @@
+{
+ "paper_id": "2404.19024",
+ "title": "Multi-Page Document Visual Question Answering using Self-Attention Scoring Mechanism",
+ "research_question": "Can an OCR-free visual question-answering system select the page containing answer evidence from a long multi-page document using a lightweight self-attention scoring module while retaining competitive answer accuracy?",
+ "methodology": "The system uses a Pix2Struct-based single-page DocVQA model and adds a self-attention scoring module that predicts how well each question-page pair matches. During scorer training, the underlying document model is frozen and each positive question-page example is paired with a randomly selected negative page, with the scorer trained using a smoothed regression target. At inference time every page is scored independently, the highest-scoring page is selected, and the existing encoder-decoder generates the answer from that page. Evaluation uses MP-DocVQA in its original form and an extended setting containing complete documents with hundreds of pages.",
+ "key_findings": [
+  {
+   "finding": "The proposed scorer achieves 81.55% page-selection accuracy on the original MP-DocVQA test set while remaining OCR-free.",
+   "evidence_type": "supported",
+   "section": "Section 4 and Table 2"
+  },
+  {
+   "finding": "The system reaches ANLS 0.6199 on the original test set, essentially matching the strongest reported competing multi-page result while using a smaller OCR-free architecture.",
+   "evidence_type": "supported",
+   "section": "Section 4 and Table 2"
+  },
+  {
+   "finding": "Selecting the first output vector from the self-attention scorer performs slightly better than the alternative aggregation strategies evaluated in the ablation study.",
+   "evidence_type": "supported",
+   "section": "Section 4.1 and Table 1"
+  },
+  {
+   "finding": "When evaluation expands from truncated documents to complete documents of up to 793 pages, test page-selection accuracy falls from 81.55% to 60.45% and ANLS falls from 0.6199 to 0.5394.",
+   "evidence_type": "supported",
+   "section": "Section 4.2 and Table 3"
+  },
+  {
+   "finding": "Some questions remain answerable even when the model selects a page different from the annotated evidence page; this occurs more often in the extended-document setting and reveals ambiguity in single-positive-page ground truth.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "The approach provides explicit page-level provenance through its selected page, but it does not localize the supporting region, line, table cell, or element within that page.",
+   "evidence_type": "supported",
+   "section": "Sections 3-4"
+  }
+ ],
+ "limitations": [
+  "The method assumes a single highest-scoring evidence page even though the authors' error analysis shows that multiple pages can sometimes support the same answer.",
+  "Inference processes every page separately, so total computation grows roughly linearly with document length even though per-page memory requirements stay bounded.",
+  "Page-selection accuracy degrades substantially when complete long documents replace the original truncated documents.",
+  "Correctly selecting a page does not guarantee a correct answer because the decoder can still fail to localize or reason over the relevant content within the page.",
+  "Ground-truth answers for the test set are not publicly available, so detailed error analysis is concentrated on the validation split while final test metrics rely on the evaluation server.",
+  "Negative training pages are randomly sampled rather than explicitly chosen as hard semantic or visual distractors.",
+  "The provenance granularity stops at the page level; it does not identify precise regions, table cells, or hierarchical document elements.",
+  "The method compares pages within one document instance and does not establish lineage between corresponding elements across document revisions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "original_page_accuracy": 0.99,
+  "original_anls": 0.99,
+  "aggregation_ablation": 0.98,
+  "long_document_degradation": 0.99,
+  "multiple_valid_pages": 0.98,
+  "page_level_only_provenance": 0.96
+ },
+ "raw_claims": [
+  "The model is OCR-free and uses Pix2Struct as its visual document backbone.",
+  "Each question is rendered visually and concatenated with a document page before encoding.",
+  "A separate self-attention module scores whether each page matches the question.",
+  "Scorer training uses an annotated positive page and a randomly chosen negative page for each question.",
+  "At inference time the model scores all pages and sends the top-ranked page to the answer generator.",
+  "The proposed model obtains 81.55% page-prediction accuracy and 0.6199 ANLS on the original MP-DocVQA test set.",
+  "The extended test documents average 38.5 pages and include documents as long as 793 pages.",
+  "On the extended test set, page-prediction accuracy is 60.45% and ANLS is 0.5394.",
+  "On extended validation data, 6.88% of examples with a page-prediction mismatch nevertheless achieve a perfect answer-similarity score.",
+  "The paper provides public implementation code and uses the publicly available MP-DocVQA benchmark."
+ ],
+ "source_url": "https://arxiv.org/html/2404.19024",
+ "access": "full_text"
+}

@@ -1,0 +1,75 @@
+{
+ "paper_id": "2503.23131",
+ "title": "RefChartQA: Grounding Visual Answer on Chart Images through Instruction Tuning",
+ "research_question": "Can chart question-answering models be instruction-tuned to return both an answer and the precise chart elements supporting that answer, and does this explicit spatial grounding improve answer reliability?",
+ "methodology": "RefChartQA extends ChartQA and a subset of TinyChart's ChartQA-PoT data with explicit bounding-box evidence annotations generated through three stages: heuristic single-element matching, Program-of-Thought-based extraction, and GPT-4o-mini-based annotation for harder cases, with answer validation used to reject inconsistent annotations. The resulting benchmark contains 73,702 image-question-grounding pairs split into 55,789 training, 6,223 validation, and 11,690 test examples. Models are instruction-tuned to generate one or more ordered bounding boxes, with coordinates normalized and quantized to the range [0,1000), followed by the textual answer. Evaluation separates answer correctness from grounding quality using relaxed ChartQA accuracy, AP@0.5, and P@FI, the latter requiring all evidence boxes for a sample to be correct.",
+ "key_findings": [
+  {
+   "finding": "Manual checking of 50 samples from each split by two annotators yielded 93.45% agreement on grounding correctness, while also revealing cases with multiple defensible grounding regions.",
+   "evidence_type": "supported",
+   "section": "3.2 Data Statistics"
+  },
+  {
+   "finding": "Grounding instruction tuning produced large answer-accuracy gains for some models: TinyChart improved by 17.42 points on the human split and 15.36 on the PoT split, while Qwen-VL-Chat improved by 22.94 points on the PoT split.",
+   "evidence_type": "supported",
+   "section": "5.4 Quantitative Analysis and Table 2"
+  },
+  {
+   "finding": "A universal claim that grounding always improves answer accuracy is contradicted by Table 2: UniChart loses accuracy on all three splits, ChartGemma loses substantially on the human and PoT splits, and Qwen2.5-VL declines on the human and machine-generated splits.",
+   "evidence_type": "contradicted",
+   "section": "5.4 Quantitative Analysis and Table 2"
+  },
+  {
+   "finding": "Grounding becomes substantially harder as reasoning complexity increases: reported P@FI is roughly 70-84% on mostly simple machine-generated questions, about 40-70% on PoT questions, and about 22-50% on human-authored questions.",
+   "evidence_type": "supported",
+   "section": "5.4 Quantitative Analysis"
+  },
+  {
+   "finding": "Correct visual localization does not guarantee a correct answer because models sometimes identify the right chart elements but fail at the subsequent mathematical reasoning.",
+   "evidence_type": "supported",
+   "section": "5.5 Qualitative Analysis"
+  },
+  {
+   "finding": "The suggestion that architecture is more important than pretraining corpus for grounding is explicitly tentative; the authors state that controlled experimentation is still required to validate it.",
+   "evidence_type": "unsupported",
+   "section": "5.4 Quantitative Analysis"
+  }
+ ],
+ "limitations": [
+  "The authors identify limited data diversity and uncertain generalization to noisier and more varied real-world chart designs.",
+  "Grounding labels can be inconsistent because standardized annotation guidelines are lacking and some questions admit multiple valid evidence regions.",
+  "The role of architecture in benefiting from visual answer grounding remains underexplored and requires controlled experiments.",
+  "Bounding boxes provide region-level provenance inside a chart image but do not identify a stable document page, attachment, or attachment version.",
+  "The annotation pipeline can inherit errors from ChartQA and ChartQA-PoT and can introduce additional mistakes during automated grounding annotation.",
+  "Complex multi-element numerical reasoning remains considerably more difficult than simple single-element grounding."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "annotation_quality": 0.99,
+  "model_dependent_accuracy_gain": 0.99,
+  "nonuniversal_grounding_benefit": 0.99,
+  "complexity_grounding_gap": 0.99,
+  "grounding_reasoning_separation": 0.98,
+  "architecture_hypothesis_unproven": 0.99
+ },
+ "raw_claims": [
+  "RefChartQA augments chart question answering with explicit visual evidence grounding.",
+  "Its annotation pipeline combines heuristic matching, program-derived evidence extraction, and LLM-assisted annotation.",
+  "Candidate annotations are validated against the expected answer before being retained.",
+  "The benchmark contains 73,702 annotated image-question-grounding examples.",
+  "Grounding boxes are serialized together with the generated answer so existing autoregressive VLMs can be instruction-tuned without a separate detection head.",
+  "P@FI treats a sample as correct only when all required evidence regions are correctly grounded.",
+  "Some models gain more than fifteen accuracy points after grounding training.",
+  "Other evaluated models lose answer accuracy after grounding training, so the benefit is not universal.",
+  "Human-authored and multi-element reasoning questions are much harder to ground than simple machine-generated questions.",
+  "A model can localize the correct evidence but still calculate the wrong answer.",
+  "Some questions permit several reasonable grounding regions even though the benchmark annotation selects a particular reference.",
+  "The authors regard architectural explanations for grounding performance as a hypothesis needing further controlled study."
+ ],
+ "source_url": "https://arxiv.org/html/2503.23131",
+ "access": "full_text"
+}

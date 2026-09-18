@@ -1,0 +1,23 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/08-multimodal-content-understanding/runs/a274d1d20c2f/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Theme 'Evidence localization is increasingly evaluated separately from answer correctness...' slightly overstates what is established for TAPAS [doi-10-18653-v1-2020-acl-main-398] and SentryLine [2609.08364]. The supplied analyses establish explicit supporting-cell selection for TAPAS and structured passage-level citation records for SentryLine, but do not establish that cell- or passage-localization quality was separately evaluated from answer correctness in those two studies. Separate localization evaluation is directly supported by studies such as Hi-VT5, RefChartQA, LAT, CiteVQA attribution, and M3Grounder.",
+  "Finding on multi-page and multi-image difficulty [2505.16470] should be worded more precisely. The supplied MMDocRAG analysis states that performance is lower on interpretative, multi-page, and multi-image questions than on descriptive or single-page questions; it does not explicitly establish a controlled multi-image-versus-single-image comparison. The synthesis phrase 'than on corresponding simpler cases' is therefore slightly stronger than the supplied analysis.",
+  "Finding on adjacent-domain referring expressions should avoid implying that the Scene-Text Oriented Referring Expression Comprehension analysis [doi-10-1109-tmm-2022-3219642] independently demonstrates a controlled benefit from adding textual cues. That record is abstract-only and establishes the task, architecture, use of scene-text cues, and reported effectiveness, but not an inspectable numerical ablation against a no-scene-text variant. The controlled improvement claim is directly supported by the visually grounded dialogue study [doi-10-18653-v1-2025-acl-long-547]."
+ ],
+ "unsupported_claims": [
+  "The theme-level formulation that evidence localization is 'evaluated separately from answer correctness' at passage and table-cell levels is not fully supported for SentryLine and TAPAS by the supplied analyses; those analyses establish provenance representation or evidence selection, not a distinct localization-quality evaluation.",
+  "The MMDocRAG wording 'multi-image questions than on corresponding simpler cases' is more specific than the supplied analysis, which reports lower performance across interpretative, multi-page, and multi-image categories relative to descriptive or single-page questions without an explicit isolated multi-image-versus-single-image comparison."
+ ],
+ "required_fixes": [],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.96,
+  "coherence": 0.98,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the 28 supplied analyses representing 27 distinct papers. All cited paper_ids are in the permitted set, the duplicate Scene-Text Oriented Referring Expression Comprehension records are correctly identified rather than counted as independent corroboration, transfer-domain evidence is explicitly labeled as such, and no production-readiness claim is based on adjacent or synthetic evidence. The major conclusions on structure preservation, page/region grounding, workbook-level reasoning, explicit version modeling, cross-version element alignment, propagation of upstream extraction errors, and the absence of a jointly validated workplace-attachment provenance hierarchy are supported. The contradiction section preserves meaningful model-, interface-, and domain-dependent differences instead of averaging them away. All eight gaps remain genuinely open under the supplied evidence. The identified problems are wording-level overstatements that should be tightened before the final report but do not invalidate the synthesis."
+}

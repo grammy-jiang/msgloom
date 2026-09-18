@@ -1,0 +1,25 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/08-multimodal-content-understanding/runs/b251df112d0c/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 1 slightly overstates the TURL evidence. The supplied analysis establishes that TURL encodes row-column structure and performs strongly on multiple table-understanding tasks, but it does not provide an ablation showing that explicit row-column structure itself caused an improvement. TUTA, DocFormer, and LongDocURL do provide more direct ablation evidence for structural information. The finding remains broadly correct if the TURL contribution is phrased descriptively rather than causally.",
+  "Finding 5 is somewhat broader than its LongDocURL evidence. Hi-VT5 directly supports greater difficulty for later evidence, and MMLongBench-Doc directly supports worse performance on cross-page and later-evidence questions. LongDocURL establishes that multi-page evidence is common and that a substantial model-human gap remains, but the supplied analysis does not establish that its gap is specifically caused by multi-page evidence. The word 'consistently' therefore slightly overstates what the three cited analyses jointly isolate.",
+  "Finding 4 is assigned HIGH confidence even though its pixel-mask component relies on M3Grounder evidence available only through the abstract and official project material. The later confidence_summary correctly assigns MEDIUM confidence to fine-grained pixel-mask grounding, so the finding-level confidence should be reconciled with that qualification.",
+  "Theme 1 states that preserving reading order carries information that plain-text serialization can lose. The corpus clearly supports the importance of reading-order recovery and separately supports losses from flattened document representations, but the supplied reading-order study does not directly test downstream information loss caused by text serialization. This portion should be phrased as a synthesis inference rather than a directly demonstrated result."
+ ],
+ "unsupported_claims": [
+  "The causal implication in Finding 1 that TURL itself demonstrates improved measured performance specifically because of explicit row-column structural information is not established by the supplied TURL analysis.",
+  "The portion of Finding 5 implying that LongDocURL independently demonstrates degradation specifically from distributed multi-page evidence is not established by the supplied LongDocURL analysis; it demonstrates substantial multi-page evidence coverage and a large overall model-human gap.",
+  "Theme 1's linkage between reading-order preservation and information lost through plain-text serialization is not directly evaluated by the cited reading-order analysis, although it is a plausible cross-paper synthesis inference."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.98,
+  "gap_completeness": 0.97,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_ids belong to the permitted set. The synthesis correctly distinguishes structured-table semantics from image-based structure recovery, separates answer correctness from evidence-location correctness, preserves the non-universal visual-feature and grounding-training results instead of averaging them away, and explicitly treats attachment-version lineage, direct email-to-attachment reference grounding, workbook-level semantics, and unified provenance as open problems. Transfer-domain evidence from natural-scene referring expressions is clearly labeled adjacent-domain evidence, and the limitations explicitly state that the corpus does not support production-email accuracy claims or a validated unified architecture. The identified issues are localized wording and confidence-calibration problems rather than failures of the central synthesis."
+}

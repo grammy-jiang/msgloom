@@ -1,0 +1,214 @@
+{
+ "round": 4,
+ "streams": [
+  {
+   "id": "TF1",
+   "description": "Cross-version document alignment and element correspondence: empirical methods for matching document pages, paragraphs, regions, or other components across revisions or corresponding document images and detecting changed content."
+  },
+  {
+   "id": "TF2",
+   "description": "Document evolution, semantic differencing, and persistent element identity: methods that preserve component identity across revisions and classify structural changes such as insertion, deletion, update, and movement."
+  },
+  {
+   "id": "TF4",
+   "description": "Spreadsheet formula dependency, auditing, and cell-level provenance: analysis of dependencies among worksheet components, including cross-sheet relationships and workbook-level structural dependencies."
+  },
+  {
+   "id": "TF5",
+   "description": "Versioned spreadsheet and workbook lineage: methods for identifying evolving spreadsheet artifacts and corresponding spreadsheet structures across versions or independently evolving copies."
+  },
+  {
+   "id": "TF8",
+   "description": "Multi-page document visual question answering and evidence routing: question-conditioned selection and accumulation of evidence across long, multi-page documents."
+  },
+  {
+   "id": "TF10",
+   "description": "Table structure recognition and semantic table understanding: recovery of cells, row/column spanning structure, sparse-table topology, and other nontrivial table organization."
+  },
+  {
+   "id": "TF11",
+   "description": "Fine-grained data provenance and lineage: transfer methods that trace derived results back to contributing source data through transformations."
+  },
+  {
+   "id": "TF13",
+   "description": "Multimodal coreference and grounded reference resolution: transfer evidence for resolving linguistic referring expressions across conversational context to visually represented entities."
+  },
+  {
+   "id": "TF18",
+   "description": "Screenshot, GUI, and visual-region grounding: transfer methods that localize natural-language references to concrete regions or elements on structured rendered screens."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "manual-d896e242a6",
+   "decision": "ADMIT",
+   "reason": "TF13. The abstract describes conversational referring expressions explicitly linked to real-world visual objects by bounding boxes, including both direct and indirect references. That supplies empirical transfer evidence for gap-2's language-to-concrete-region grounding problem rather than merely sharing reference-resolution terminology. Identity is UNCHECKED, but the capability is sufficiently distinct from pure GUI grounding to justify reading.",
+   "stream_id": "TF13",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2404.05719",
+   "decision": "ADMIT",
+   "reason": "TF18. Ferret-UI empirically evaluates referring and grounding over structured mobile screenshots with region annotations. This is close transfer evidence for expressions that must be mapped to a concrete rendered region, directly strengthening the mechanism needed for gap-2. Its VERIFIED identity also makes it preferable to otherwise similar unchecked GUI-grounding candidates.",
+   "stream_id": "TF18",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1109-icde-2002-994696",
+   "decision": "ADMIT",
+   "reason": "TF2. The abstract explicitly tracks XML components across versions using persistent node identifiers and represents insertions, deletions, updates, and subtree moves. That is direct evidence for persistent element identity and structured document evolution, materially strengthening the element-lineage component of gap-1 even though the documents are XML rather than workplace attachments.",
+   "stream_id": "TF2",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2404.19024",
+   "decision": "ADMIT",
+   "reason": "TF8. The abstract directly addresses multi-page DocVQA by assigning question-conditioned page relevance and selecting pertinent pages before answer generation, with experiments on documents containing many pages. It contributes empirical evidence for page routing and scaling, relevant to TF8 and gap-7, while clearly not claiming exact region or cell provenance.",
+   "stream_id": "TF8",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1145-1265530-1265535",
+   "decision": "REJECT",
+   "reason": "The paper is foundational provenance theory, but the supplied abstract describes an algebraic annotation framework rather than an empirical method for versioned multimodal documents or an evaluated workplace-like provenance task. For this round's direct empirical focus, the more concrete lineage-tracing candidate materially strengthens TF11 with less transfer distance."
+  },
+  {
+   "paper_id": "manual-bc798b0eed",
+   "decision": "ADMIT",
+   "reason": "TF13. The abstract describes an empirically evaluated model that jointly represents dialogue, visual objects, and their relations and resolves language mentions to visual entities across conversational context. That is materially relevant to gap-2 because it adds discourse-sensitive multimodal coreference rather than only one-shot screenshot localization. Identity is UNCHECKED, so conclusions should remain transfer evidence.",
+   "stream_id": "TF13",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "manual-8444bbc95c",
+   "decision": "ADMIT",
+   "reason": "TF13. Unlike candidates that only report successful grounding, this abstract explicitly evaluates a multimodal reference-resolution system and analyzes errors arising from combining linguistic and nonlinguistic input. That adds distinct failure-mode evidence useful to gap-5 as well as transfer evidence for grounded reference resolution. Identity is UNCHECKED and the domain is conversational rather than documentary.",
+   "stream_id": "TF13",
+   "role": "TRANSFER",
+   "confidence": 0.82
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d19-1209",
+   "decision": "REJECT",
+   "reason": "The abstract shows visual reference resolution in visual dialogue, but this capability substantially overlaps the admitted GRAVL-BERT and J-CRe3 candidates. It does not add a more document-like target, attachment/version grounding, or a distinctive failure/evaluation dimension that justifies another reading slot."
+  },
+  {
+   "paper_id": "1704.08476",
+   "decision": "ADMIT",
+   "reason": "TF5. SpreadCluster is directly about identifying spreadsheets that are versions of the same evolving artifact, using worksheet names and table-header features and evaluating the method on Enron and other spreadsheet corpora. It does not solve cell-level lineage, but it materially strengthens the stable-workbook/version-identity prerequisite in gaps 1 and 3.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1109-icse-2012-6227171",
+   "decision": "ADMIT",
+   "reason": "TF4. The abstract explicitly analyzes dependencies between worksheets and evaluates inter-worksheet structural smells and visualizations on spreadsheet corpora and industrial cases. This is direct empirical evidence for cross-sheet dependency structure, a specifically named missing capability in gap-3.",
+   "stream_id": "TF4",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1145-357775-357777",
+   "decision": "ADMIT",
+   "reason": "TF11. The abstract defines and implements lineage tracing from derived warehouse view data back to contributing source items and includes transformations such as aggregation. This is concrete, fine-grained provenance machinery with direct empirical/implemented relevance to how derived evidence can retain source lineage, although transfer to document regions and cells remains unvalidated.",
+   "stream_id": "TF11",
+   "role": "TRANSFER",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2024-naacl-industry-9",
+   "decision": "REJECT",
+   "reason": "The abstract shows free-form expression grounding to GUI elements and is relevant to TF18, but its contribution is substantially duplicated by VERIFIED candidates Ferret-UI and Universal Visual Grounding for GUI Agents. Because its identity is UNCHECKED and the supplied abstract does not establish a uniquely stronger document-like capability, it does not merit an additional reading slot."
+  },
+  {
+   "paper_id": "doi-10-1007-3-540-48172-9-21",
+   "decision": "ADMIT",
+   "reason": "TF10. The abstract directly claims recovery of row- and column-spanning cells and sparse-table structure from mixed-mode documents under low-quality OCR. Those capabilities directly address gap-6's sparse, merged/spanning, OCR-degraded table-preservation problem. Identity is UNCHECKED, but no VERIFIED candidate here supplies the same table-topology and OCR robustness evidence.",
+   "stream_id": "TF10",
+   "role": "DIRECT",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2410.05243",
+   "decision": "ADMIT",
+   "reason": "TF18. The paper studies natural-language-to-GUI-element grounding at broad scale and evaluates across multiple GUI grounding benchmarks. This provides VERIFIED transfer evidence for robust expression-to-region localization on structured visual surfaces, complementing Ferret-UI with broader cross-benchmark grounding evidence relevant to gap-2.",
+   "stream_id": "TF18",
+   "role": "TRANSFER",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1080-00140139108964845",
+   "decision": "REJECT",
+   "reason": "The abstract establishes that spreadsheet calculations can exhibit higher-level implicit structure, but it does not show workbook-level semantic reconstruction, explicit formula dependency provenance, cross-sheet relationships, version lineage, or the structural features named in gap-3. The topic is adjacent but the demonstrated capability is too limited."
+  },
+  {
+   "paper_id": "2209.02215",
+   "decision": "REJECT",
+   "reason": "The abstract provides relevant multimodal reference-resolution evidence over data visualizations and gestures, but that transfer mechanism is already covered more directly by the admitted conversational/coreference and GUI-grounding candidates. It does not add attachment identity, page/cell localization, or version grounding."
+  },
+  {
+   "paper_id": "2604.13731",
+   "decision": "ADMIT",
+   "reason": "TF8. Doc-V* explicitly evaluates coarse-to-fine reasoning over long multi-page documents using iterative page retrieval, evidence accumulation, and structured working memory. This materially strengthens multi-page evidence routing and long-document robustness for TF8 and gap-7 beyond a single-pass page-scoring method, while remaining version-independent and mostly page-level.",
+   "stream_id": "TF8",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1145-2950290-2950359",
+   "decision": "ADMIT",
+   "reason": "TF5. TableCheck matches spreadsheet tables using header information and detects inconsistent corresponding cells among copied and independently evolving table regions. Although these are clones rather than formally ordered workbook revisions, the empirical correspondence of evolving spreadsheet regions and their cells is close enough to materially strengthen the region/cell-lineage mechanisms needed by TF5 and gap-3.",
+   "stream_id": "TF5",
+   "role": "DIRECT",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "manual-2e524ca7bc",
+   "decision": "REJECT",
+   "reason": "The abstract demonstrates multimodal reference resolution by combining linguistic and visual clues, but this mechanism is substantially duplicated by the admitted J-CRe3 and GRAVL-BERT candidates. It does not add a more document-specific target, explicit attachment/version identity, or a distinctive localization granularity."
+  },
+  {
+   "paper_id": "doi-10-3390-app152312430",
+   "decision": "ADMIT",
+   "reason": "TF1. The abstract directly compares a document image with a corresponding reference, aligns paragraphs using structural features, and detects subtle content changes under print-scan distortion. This is unusually close empirical evidence for cross-version/corresponding-document element alignment plus change detection, directly strengthening gap-1 even though its units are paragraphs rather than the complete provenance hierarchy.",
+   "stream_id": "TF1",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2506.21055",
+   "decision": "ADMIT",
+   "reason": "TF1. The task explicitly requires matching a selected reference region to its corresponding region in another document image, and the benchmark evaluates semantic region correspondence at multiple granularities. This directly strengthens the unresolved older-region-to-later-counterpart component of gap-1 and is more targeted than generic document-image registration.",
+   "stream_id": "TF1",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2401.10935",
+   "decision": "REJECT",
+   "reason": "SeeClick directly grounds instructions to GUI screenshot locations, but this capability is already represented by the admitted VERIFIED Ferret-UI and Universal Visual Grounding candidates. The supplied abstract does not show a distinctive discourse, version, or document-structure contribution that warrants another transfer reading slot."
+  },
+  {
+   "paper_id": "manual-ae3d9ddaf8",
+   "decision": "REJECT",
+   "reason": "The paper aligns scanned document images with electronic ground-truth representations so annotations can be associated with image positions. That is useful historical document-image registration, but it is not successive-version element correspondence or semantic change detection, and the newer admitted TF1 candidates address the target capability more directly."
+  },
+  {
+   "paper_id": "doi-10-1117-12-2003911",
+   "decision": "REJECT",
+   "reason": "The abstract concerns matching and localizing semi-structured document images under layout variability, but it does not establish revision lineage, persistent element identity, or explicit change classification. Its correspondence capability is weaker and less directly version-oriented than the admitted paragraph-alignment and region-matching papers."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1679",
+   "decision": "REJECT",
+   "reason": "FUMA evaluates page-level evidence localization and answer generation, but its primary localized unit is the page. The admitted VERIFIED multi-page DocVQA candidates already cover page routing and long-document evidence selection, and this unchecked candidate does not close the page-region-cell hierarchy required by gap-4."
+  }
+ ],
+ "notes": "Admission is deliberately selective. The strongest additions are the document-region correspondence/change-detection papers for gap-1, spreadsheet version/dependency/correspondence papers for gap-3, and conversational/GUI grounding transfer papers for gap-2. None of the candidates establishes the complete end-to-end hierarchy required by gap-4: stable attachment identity plus version, page, document element, exact region or spreadsheet cell, and answer span. Likewise, none closes gaps 5-8 as a complete workplace-style engineering evaluation; the admitted error-analysis, OCR/table, and long-document papers only strengthen components of those gaps."
+}

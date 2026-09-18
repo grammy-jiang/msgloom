@@ -1,0 +1,92 @@
+{
+ "paper_id": "doi-10-1007-3-540-44503-x-20",
+ "title": "Why and Where: A Characterization of Data Provenance",
+ "research_question": "How can data provenance be formally separated into explanations of why an output exists and locations showing where an output value originated, and under what query restrictions are those notions preserved by query rewriting?",
+ "methodology": "The paper develops a formal provenance framework over a deterministic semistructured data model in which every source location can be identified by a path from the root. It defines a deterministic query language, a rewrite system with a strongly normalizing normal form, and syntactic constructions for computing why-provenance through witness bases and where-provenance through derivation bases. The authors prove soundness, completeness, and rewriting-invariance results for selected query classes, including stronger invariance of minimal witness bases for equality-based queries and preservation of where-provenance for the restricted class of traceable queries. The work is theoretical and uses formal definitions, examples, lemmas, propositions, and proofs rather than an empirical dataset or implementation benchmark.",
+ "key_findings": [
+  {
+   "finding": "Why-provenance and where-provenance capture different questions: the former identifies source information sufficient to justify an output's existence, while the latter identifies source locations from which particular output values originate.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 4, Two Meanings of Provenance"
+  },
+  {
+   "finding": "The deterministic semistructured model gives every data item a location describable by a unique path, providing an explicit foundation for where-provenance.",
+   "evidence_type": "supported",
+   "section": "Section 2, A Deterministic Model"
+  },
+  {
+   "finding": "The paper's query rewrite system is strongly normalizing, so every well-formed query can be transformed to the specified normal form after finitely many rewrite steps.",
+   "evidence_type": "supported",
+   "section": "Section 3, Theorem 1"
+  },
+  {
+   "finding": "The Why procedure is proved sound and complete for computing the witness basis of a singular output value from a normal-form query.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Theorem 2"
+  },
+  {
+   "finding": "For well-formed queries containing only equality conditions, the minimal witness basis is invariant across equivalent queries, with an extension indicated for certain inequality subclasses.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Theorem 3"
+  },
+  {
+   "finding": "Where-provenance is not generally invariant under arbitrary equivalent query formulations, so the authors restrict their positive preservation result to traceable queries and their rewrite system.",
+   "evidence_type": "supported",
+   "section": "Section 6, Where-Provenance"
+  },
+  {
+   "finding": "For traceable queries, the derivation basis used as where-provenance is preserved when a query is rewritten by the paper's rewrite system.",
+   "evidence_type": "supported",
+   "section": "Section 6, Proposition 2"
+  },
+  {
+   "finding": "The framework does not itself solve cross-version document-element identity; it traces query outputs to source locations within a database instance rather than matching evolving locations across revised source versions.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the provenance model"
+  }
+ ],
+ "limitations": [
+  "The query language and formal results require well-formed and well-defined queries and impose restrictions on variable bindings and query structure.",
+  "The deterministic query language is less expressive than general XML-QL, excluding features such as Kleene-star path patterns and supporting only hierarchical structures.",
+  "Where-provenance is not invariant for unrestricted equivalent queries.",
+  "The positive where-provenance rewriting result applies only to the restricted traceable-query class.",
+  "The authors leave a semantic characterization of where-provenance unresolved.",
+  "Necessary and sufficient conditions for the relevant well-defined query class remain future work.",
+  "The analysis is theoretical and supplies neither executable code nor an empirical provenance benchmark.",
+  "The framework identifies provenance locations inside source data but does not specify stable identities for locations as the underlying document or workbook changes across versions.",
+  "It does not model page regions, visual objects, spreadsheet-specific coordinates, external referring expressions, or hierarchical version-to-answer evidence identifiers."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "why_where_distinction": 0.99,
+  "path_based_locations": 0.99,
+  "strong_normalization": 0.99,
+  "why_soundness_completeness": 0.99,
+  "minimal_witness_invariance": 0.99,
+  "where_not_generally_invariant": 0.99,
+  "traceable_query_preservation": 0.99,
+  "no_cross_version_identity_model": 0.97
+ },
+ "raw_claims": [
+  "The paper separates provenance into the question of why a result exists and the question of where a returned value came from.",
+  "Where-provenance requires an explicit way to identify source locations.",
+  "In the deterministic data model, a node is uniquely located by the path of edge labels from the root.",
+  "The proposed query language can express positive relational SPJU queries and positive nested relational algebra but is intentionally restricted.",
+  "Every well-formed query can be transformed into the paper's normal form by its strongly normalizing rewrite system.",
+  "A witness basis records source structures that validate the existence of an output value.",
+  "The paper gives an algorithm that computes witness bases and proves it sound and complete for normal-form queries.",
+  "Minimal witness bases are invariant across the specified class of equivalent equality-based queries.",
+  "Witnesses can be propagated through materialized views by composing provenance through nested queries.",
+  "Where-provenance is represented through a derivation basis that follows output variables back to source paths.",
+  "Equivalent general queries can have problematic or ambiguous where-provenance under a purely syntactic interpretation.",
+  "Restricting attention to traceable queries allows the derivation basis to be preserved under the paper's rewrite rules.",
+  "The provenance framework does not define persistent identities for source locations across independently revised versions."
+ ],
+ "source_url": "https://www.pure.ed.ac.uk/ws/files/16509989/Why_and_Where_A_Characterization_of_Data_Provenance.pdf",
+ "access": "full_text",
+ "source_citation": "citeturn311740view0turn311740view2turn687216view2turn687216view3"
+}

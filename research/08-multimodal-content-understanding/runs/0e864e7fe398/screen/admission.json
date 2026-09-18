@@ -1,0 +1,190 @@
+{
+ "streams": [
+  {
+   "id": "F2",
+   "description": "Versioned artifact provenance and revision lineage: stable entity identity, derivation, revision history, change lineage, and mappings between earlier and later artifact states."
+  },
+  {
+   "id": "F6",
+   "description": "Evidence-grounded document visual question answering: answer questions over document pages while localizing supporting page elements, regions, bounding boxes, or other source evidence."
+  },
+  {
+   "id": "F7",
+   "description": "Workbook-level spreadsheet understanding: interpret spreadsheets as structured, multi-sheet artifacts rather than isolated tables."
+  },
+  {
+   "id": "F9",
+   "description": "Table structure recognition and semantic table understanding: recover cell topology and logical row, column, header, and spanning-cell structure needed for downstream interpretation."
+  },
+  {
+   "id": "F10",
+   "description": "Document layout analysis, reading-order reconstruction, and scanned-document structure: recover element relationships and global reading order from visually structured pages."
+  },
+  {
+   "id": "F12",
+   "description": "Hierarchical evidence provenance and fine-grained source attribution: represent where a result came from and distinguish exact source location from broader derivational justification."
+  },
+  {
+   "id": "F14",
+   "description": "Long and multi-page multimodal document reasoning: select and route evidence across many pages while preserving localized supporting regions."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2606.15906",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F6 by representing long documents as an evidence graph with page- and element-level nodes plus containment, reading-order, adjacency, and hierarchy relations. This is directly useful for fine-grained evidence selection and supplies part of the page-to-element provenance hierarchy needed by gap-4, even though it does not solve cross-version lineage.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2605.12882",
+   "decision": "ADMIT",
+   "reason": "The abstract directly evaluates document QA systems on both answer production and element-level bounding-box citations. That is a direct empirical contribution to F6 and materially strengthens exact source attribution for gap-4 and the provenance-scoring portion of gap-8.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2203.06947",
+   "decision": "REJECT",
+   "reason": "The paper is relevant to document layout and reading order, but its abstract does not add a capability needed strongly enough in this round beyond the more targeted global reading-order relation modeling candidate. It does not address cross-version lineage, grounding, workbook provenance, or the joint robustness gaps."
+  },
+  {
+   "paper_id": "doi-10-1016-j-datak-2007-08-002",
+   "decision": "REJECT",
+   "reason": "The topic vocabulary matches version management, but the abstract emphasizes storage and temporal querying over XML histories rather than stable cross-version element correspondence, semantic change mapping, or fine-grained lineage. Stronger XML candidates in this gate address those capabilities more directly. Identity is also UNCHECKED."
+  },
+  {
+   "paper_id": "2601.08741",
+   "decision": "ADMIT",
+   "reason": "The abstract directly targets enterprise spreadsheets with multiple linked sheets and embedded multimodal content and constructs retrieval units at multiple spreadsheet granularities. This materially strengthens F7 and gap-3 by moving beyond isolated-table understanding toward workbook-level, multi-sheet interpretation, although formula lineage and revision provenance remain open.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2607.29638",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses long-document visual QA through hierarchical page-to-region evidence routing, with region representations containing crops, OCR text, and table content. This materially strengthens F14 and also contributes a concrete page-to-region provenance stage relevant to gaps 4 and 7.",
+   "stream_id": "F14",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-ae200642f8",
+   "decision": "ADMIT",
+   "reason": "The abstract provides transferable revision-lineage evidence by representing evolving XML snapshots through deltas and persistent identifiers rather than treating versions as unrelated documents. Persistent entity identity plus explicit changes between successive states materially strengthens F2 and the stable-version-lineage portion of gap-1. Identity is UNCHECKED, so confidence is reduced.",
+   "stream_id": "F2",
+   "role": "TRANSFER",
+   "confidence": 0.84
+  },
+  {
+   "paper_id": "manual-b754b96b86",
+   "decision": "REJECT",
+   "reason": "Its element-level answer-grounding benchmark is highly relevant, but the capability substantially overlaps the VERIFIED CiteVQA candidate, which already evaluates answer correctness together with localized element-level evidence. With identity UNCHECKED and no distinct cross-version or hierarchical-provenance capability stated in the abstract, it does not justify an additional reading slot."
+  },
+  {
+   "paper_id": "doi-10-1109-2-144436",
+   "decision": "REJECT",
+   "reason": "The abstract shows page segmentation and structural parsing, but this is foundational layout-analysis evidence rather than a distinctive contribution to the unresolved version-lineage, grounding, provenance, spreadsheet, or joint-robustness gaps. More targeted modern layout and table candidates are available. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2605.06058",
+   "decision": "REJECT",
+   "reason": "Localizing relevant evidence and an answer region is on-topic for F6, but that capability is already represented more directly by the admitted CiteVQA benchmark and HierDoc's hierarchical page-to-region routing. The abstract does not add cross-version lineage or a stronger provenance hierarchy."
+  },
+  {
+   "paper_id": "doi-10-1109-icde-2002-994696",
+   "decision": "REJECT",
+   "reason": "Matching nodes across XML versions and detecting moves is relevant transfer evidence, but direct cross-version element alignment is already present in the existing corpus and this candidate does not add the stronger persistent-identity or higher-level semantic-change contribution supplied by other XML candidates in this gate. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2501.03403",
+   "decision": "REJECT",
+   "reason": "Bounding-box annotations for document QA are relevant to F6, but the evidence capability is substantially covered by the admitted CiteVQA candidate, which explicitly benchmarks answer attribution with element-level bounding-box citations. This candidate does not extend into version lineage, workbook cells, or a fuller provenance hierarchy."
+  },
+  {
+   "paper_id": "2511.18192",
+   "decision": "REJECT",
+   "reason": "Precise answer localization is directly relevant to F6, but the abstract describes essentially the same answer-plus-region capability already covered by stronger admitted document-attribution and hierarchical-routing candidates. It does not materially extend the corpus toward cross-version lineage or end-to-end version-page-element-region-span provenance."
+  },
+  {
+   "paper_id": "2310.14495",
+   "decision": "REJECT",
+   "reason": "The benchmark demonstrates natural-language-driven Excel editing over real spreadsheets, but the abstract does not establish the workbook semantics required by gap-3: formula dependency, hidden content, named ranges, merged-region semantics, cross-sheet provenance, or revised-workbook lineage. Spreadsheet topic overlap alone is insufficient."
+  },
+  {
+   "paper_id": "2010.11915",
+   "decision": "REJECT",
+   "reason": "The work is transferable to unanswerable QA and evidence retrieval, but the project context already states that the corpus contains unanswerable-question evaluation. The abstract does not distinguish document-specific parser, OCR, layout, localization, and grounding failures, so it does not close the missing engineering contract in gap-5."
+  },
+  {
+   "paper_id": "manual-25eb96fafa",
+   "decision": "REJECT",
+   "reason": "Insertion, deletion, update, copy, and move detection across XML versions is relevant to revision differencing, but this operation-level capability overlaps the existing direct cross-version alignment evidence and the stronger persistent-identity and semantic-change XML candidates selected here. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1002-spe-2305",
+   "decision": "ADMIT",
+   "reason": "The abstract goes beyond low-level differencing by connecting explicit change tracking with post-hoc detection so that higher-level document changes can be represented. That is a distinct transfer contribution to F2 and materially strengthens the semantic-change component of gap-1, which is not satisfied by element correspondence alone. Identity is UNCHECKED.",
+   "stream_id": "F2",
+   "role": "TRANSFER",
+   "confidence": 0.82
+  },
+  {
+   "paper_id": "doi-10-1007-978-3-540-30480-7-29",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses the difficult lineage problem of associating elements across successive versions without a schema and preserving identifiers through substantial structural change. This is strong transfer evidence for F2 and the stable-entity-identity portion of gap-1. Identity is UNCHECKED, which lowers confidence but does not negate the distinctive capability.",
+   "stream_id": "F2",
+   "role": "TRANSFER",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-eacl-long-192",
+   "decision": "ADMIT",
+   "reason": "The abstract materially strengthens F10 by explicitly modeling global reading order and inter-element layout relationships rather than treating OCR blocks independently. That relation-based reconstruction is directly relevant to preserving structure before downstream evidence grounding and to the reading-order failure modes in gap-6. Identity is UNCHECKED.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.84
+  },
+  {
+   "paper_id": "manual-904c7a1052",
+   "decision": "REJECT",
+   "reason": "The paper is relevant foundational layout-analysis work, but the abstract only establishes page segmentation through geometric and statistical methods. It does not add a distinctive capability beyond stronger candidates for reading-order relations and heterogeneous table topology, and it does not address the unresolved provenance or grounding gaps. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1145-357775-357777",
+   "decision": "REJECT",
+   "reason": "Tracing a derived warehouse item back to contributing source items is relevant provenance transfer, but it is generic data lineage and does not add version mapping, spatial hierarchy, or document-region identity. The admitted why/where provenance candidate provides a more directly useful distinction for exact source attribution. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2507.12490",
+   "decision": "REJECT",
+   "reason": "Spatially grounding explanatory rationales is directly relevant to document VQA, but the abstract does not provide a capability materially different from the admitted answer-attribution and page-to-region evidence-routing papers. It does not extend into cross-version lineage or a complete hierarchical provenance representation."
+  },
+  {
+   "paper_id": "2203.09056",
+   "decision": "ADMIT",
+   "reason": "The abstract directly reconstructs table structure on heterogeneous document images and explicitly handles difficult spanning cells and blank areas. This materially strengthens F9 and addresses structural-preservation failure modes central to gap-6, where retaining cell topology is necessary before downstream semantic grounding.",
+   "stream_id": "F9",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-future-2010-07-005",
+   "decision": "REJECT",
+   "reason": "The graph-based provenance model is broadly relevant to lineage, but the abstract remains at a generic causal-history exchange level and does not establish hierarchical document source identifiers, version-relative locations, or source-to-answer localization. More specific lineage and source-attribution candidates provide greater value for this round. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1007-3-540-44503-x-20",
+   "decision": "ADMIT",
+   "reason": "The abstract formalizes two distinct provenance questions: why a result is present and where its contributing source value came from. That distinction materially strengthens F12 because the project must preserve both evidential justification and exact source location rather than treating generic provenance as sufficient. It does not by itself provide the required version-page-region-cell-span hierarchy, so gap-4 remains open. Identity is UNCHECKED.",
+   "stream_id": "F12",
+   "role": "TRANSFER",
+   "confidence": 0.85
+  }
+ ],
+ "notes": "The gate deliberately does not admit every document-grounding or localization paper. CiteVQA, MAGE-RAG, and HierDoc cover complementary attribution, evidence-graph, and page-to-region capabilities; several additional DocVQA localization candidates would mostly duplicate those reading slots. The admitted XML papers are limited to three distinct transfer contributions needed by gap-1: persistent version identity and deltas, higher-level change semantics, and schema-less identity preservation through structural change. No candidate abstract directly validates workplace-message expressions such as \"this screenshot\", \"the highlighted row\", or \"numbers below\" against attachments, cells, or regions, so gap-2 remains open. No candidate establishes comprehensive spreadsheet formula dependency, hidden content, named ranges, merged-region semantics, and cross-version cell lineage, so gap-3 remains open despite admitting the multi-sheet workbook paper. No paper provides the complete attachment-version -> page/sheet -> element -> region/cell -> answer-span provenance chain, so gap-4 remains open. The engineering gaps 5-8 are only partially informed by these papers and are not closed by this admission round."
+}

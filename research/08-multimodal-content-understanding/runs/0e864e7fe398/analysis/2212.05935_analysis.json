@@ -1,0 +1,74 @@
+{
+ "paper_id": "2212.05935",
+ "title": "Hierarchical multimodal transformers for Multi-Page DocVQA",
+ "research_question": "Can a hierarchical multimodal transformer answer questions over entire multi-page documents while preserving enough page structure to identify the page containing the supporting evidence?",
+ "methodology": "The authors create MP-DocVQA, containing 46,176 questions over 5,928 documents and 47,952 page images, with documents represented using OCR text, two-dimensional layout information, and visual features. Hi-VT5 processes every page separately with a T5-based encoder and compresses question-conditioned page information into learnable [PAGE] tokens; summaries from all pages are concatenated for answer generation and for an auxiliary answer-page classifier. A hierarchical layout-aware denoising objective pretrains the [PAGE] representations, followed by MP-DocVQA training on shortened two-page documents and a final full-document fine-tuning phase. Evaluation reports answer accuracy, ANLS, and answer-page identification accuracy.",
+ "key_findings": [
+  {
+   "finding": "MP-DocVQA contains 46,176 questions over 5,928 documents and 47,952 page images, creating a substantially longer-input document-QA setting than single-page DocVQA.",
+   "evidence_type": "supported",
+   "section": "3 MP-DocVQA Dataset"
+  },
+  {
+   "finding": "In the realistic multi-page setting, Hi-VT5 achieved 48.28 answer accuracy, 0.6201 ANLS, and 79.23% answer-page accuracy, outperforming the evaluated multi-page baseline configurations.",
+   "evidence_type": "supported",
+   "section": "5.3 Hi-VT5 Results and Table 2"
+  },
+  {
+   "finding": "Conventional concatenation baselines suffer increasingly when the answer occurs late in a document, whereas the performance gap in favor of Hi-VT5 becomes larger for later answer-page positions.",
+   "evidence_type": "supported",
+   "section": "5.2 Baseline Results and 5.3 Hi-VT5 Results"
+  },
+  {
+   "finding": "Hierarchical denoising pretraining provides the largest answering boost in the ablation study: removing it drops accuracy from 48.28 to 42.10 and ANLS from 0.6201 to 0.5864.",
+   "evidence_type": "supported",
+   "section": "6 Ablation Studies"
+  },
+  {
+   "finding": "Joint page identification provides provenance useful for diagnosing unsupported answers: the authors observe cases where an answer is correct but the predicted evidence page is wrong, indicating reliance on learned prior bias rather than the actual source page.",
+   "evidence_type": "supported",
+   "section": "5.3 Hi-VT5 Results"
+  },
+  {
+   "finding": "Compression into [PAGE] summaries loses some information: in the oracle single-answer-page setting Hi-VT5 scores 50.01 accuracy and 0.6572 ANLS versus 59.00 and 0.6814 for T5 with access to the full page representation.",
+   "evidence_type": "supported",
+   "section": "5.3 Hi-VT5 Results and Table 2"
+  }
+ ],
+ "limitations": [
+  "Evidence provenance is only page-level; the system does not identify the precise supporting cell, text span, bounding box, or image region inside the predicted page.",
+  "The benchmark and final classifier are designed for documents of up to 20 pages, so behavior on substantially longer documents is not established.",
+  "Although inference can accept long inputs, training memory grows with the number of pages because each page is encoded separately, motivating two-page training followed by full-length fine-tuning.",
+  "Compressing a page into a small set of [PAGE] tokens discards information, as shown by the lower oracle performance relative to T5 using the full answer page.",
+  "The approach depends on OCR-derived textual and layout features in addition to document-image features.",
+  "Page identification does not represent attachment identity or attachment-version lineage, so it cannot by itself distinguish evidence from successive revisions of the same workplace document."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dataset_scale": 0.99,
+  "multipage_performance": 0.99,
+  "late_page_advantage": 0.98,
+  "pretraining_ablation": 0.99,
+  "page_grounding_bias_detection": 0.98,
+  "summary_information_loss": 0.99
+ },
+ "raw_claims": [
+  "MP-DocVQA extends document visual question answering from isolated pages to complete multi-page documents.",
+  "The dataset contains 46,176 questions associated with 5,928 documents and 47,952 page images.",
+  "Hi-VT5 independently encodes each page and summarizes question-relevant information into learned [PAGE] tokens.",
+  "The decoder generates an answer from the concatenated page summaries.",
+  "A separate prediction head identifies the page expected to contain the answer evidence.",
+  "The architecture can accept up to 20,480 input tokens without increasing its parameter count with document length.",
+  "Hierarchical layout-aware denoising pretraining substantially improves answer performance.",
+  "Long-sequence baselines remain vulnerable when the relevant answer appears near the end of the document.",
+  "The compact page representation performs worse than full-page T5 when an oracle supplies the correct page.",
+  "Correct answers paired with incorrect page predictions expose cases that may derive from learned priors rather than grounded document evidence.",
+  "The authors publicly released the dataset, baselines, model code, and weights."
+ ],
+ "source_url": "https://arxiv.org/html/2212.05935",
+ "access": "full_text"
+}

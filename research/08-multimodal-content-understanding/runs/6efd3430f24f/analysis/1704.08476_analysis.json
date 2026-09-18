@@ -1,0 +1,82 @@
+{
+ "paper_id": "1704.08476",
+ "title": "SpreadCluster: Recovering Versioned Spreadsheets through Similarity-Based Clustering",
+ "research_question": "Can spreadsheet versions whose explicit version history has been lost be recovered reliably by clustering spreadsheets according to structural and textual similarities in their worksheets and table headers?",
+ "methodology": "The authors first inspect known spreadsheet evolution groups and identify table headers and worksheet names as useful version-related features. SpreadCluster extracts and cleans these features, computes worksheet similarity using textual representations of header contents together with worksheet-name information, derives spreadsheet-level similarities, and applies an adapted single-linkage clustering procedure. Similarity thresholds are learned by sweeping candidate threshold values against a manually curated training set derived from VEnron. The approach is then evaluated on Enron, EUSES, and FUSE spreadsheet corpora and compared with a filename-based version-recovery method.",
+ "key_findings": [
+  {
+   "finding": "On the Enron evaluation, SpreadCluster produced 1,561 candidate evolution groups, of which 1,226 were manually validated as correct, corresponding to 78.5% precision.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ2: Accuracy"
+  },
+  {
+   "finding": "Against the constructed Enron ground truth of 1,609 evolution groups, SpreadCluster achieved 70.7% recall and a 74.4% F-measure.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ2: Accuracy"
+  },
+  {
+   "finding": "The filename-based comparison method achieved 59.8% precision, 48.7% recall, and 53.7% F-measure on the same evaluation, substantially below the reported SpreadCluster metrics.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ2: Accuracy"
+  },
+  {
+   "finding": "The learned worksheet- and spreadsheet-level similarity thresholds were 0.60 and 0.33 respectively after threshold search on the curated training data.",
+   "evidence_type": "supported",
+   "section": "4.3 Parameter Learning"
+  },
+  {
+   "finding": "On EUSES the method reported 170 correct groups among 213 detected groups, or 79.8% precision, while a manually inspected sample of 200 FUSE groups produced 91.0% precision.",
+   "evidence_type": "supported",
+   "section": "5.3 RQ3: Generalizability"
+  },
+  {
+   "finding": "The recovered VEnron2 collection contains substantially more spreadsheet evolution groups and spreadsheets than the earlier VEnron collection, demonstrating that content-based recovery can expose additional version relationships missed by the earlier construction.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ2: Accuracy"
+  },
+  {
+   "finding": "SpreadCluster clusters spreadsheets into evolution groups but does not automatically recover the chronological or parent-child ordering of versions; the paper states that version order was recovered manually and leaves automatic ordering for future work.",
+   "evidence_type": "supported",
+   "section": "7 Conclusion and Future Work"
+  }
+ ],
+ "limitations": [
+  "The method recovers membership in version/evolution groups rather than a directed lineage graph or automatic chronological ordering among individual spreadsheet versions.",
+  "Parallel evolution or branching versions are placed in the same evolution group rather than explicitly represented as forks in a provenance graph.",
+  "Header extraction is heuristic and can fail for spreadsheets containing primarily numerical or date-like headers, charts, data without recognizable headers, or other atypical layouts.",
+  "Worksheets with little meaningful content or generic worksheet names provide weak discriminative evidence.",
+  "The Enron ground truth was constructed using manual validation and the union of candidates found by SpreadCluster and a filename-based method, so evolution groups missed by both methods could remain absent.",
+  "Manual validation can introduce judgment errors despite cross-checking by multiple authors.",
+  "The authors identify representativeness of the evaluated spreadsheet corpora as a threat to external validity.",
+  "No public implementation of SpreadCluster was reported in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "enron_precision": 0.99,
+  "enron_recall_and_f_measure": 0.99,
+  "filename_baseline_comparison": 0.99,
+  "learned_similarity_thresholds": 0.98,
+  "cross_corpus_precision": 0.98,
+  "expanded_version_groups": 0.96,
+  "no_automatic_version_order": 0.99
+ },
+ "raw_claims": [
+  "Spreadsheet files frequently lose explicit version information when they are copied, renamed, emailed, or moved.",
+  "Versions belonging to the same evolution group often retain similar worksheet names and table headers.",
+  "SpreadCluster uses worksheet names and table-header contents as its principal similarity features.",
+  "Formula text is not used as a principal version feature because ordinary spreadsheet evolution can change formulas even when versions remain closely related.",
+  "Spreadsheet similarity is derived from similarities among worksheets and then used by a clustering procedure.",
+  "Threshold parameters are learned from a manually curated set of known spreadsheet evolution groups.",
+  "SpreadCluster reports higher precision, recall, and F-measure than the filename-based comparison on the Enron evaluation.",
+  "The method was evaluated on spreadsheet collections from Enron, EUSES, and FUSE.",
+  "The resulting VEnron2 dataset expands the set of known evolution groups beyond the earlier VEnron dataset.",
+  "The reported method does not itself infer version ordering inside an evolution group.",
+  "Automatic recovery of version order is identified as future work."
+ ],
+ "source_url": "https://arxiv.org/pdf/1704.08476",
+ "access": "full_text"
+}

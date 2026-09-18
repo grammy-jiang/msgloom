@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-1109-icse-2012-6227171",
+ "title": "Detecting and visualizing inter-worksheet smells in spreadsheets",
+ "research_question": "Which inter-worksheet dependency smells occur in spreadsheets, how can they expose potential spreadsheet-quality problems, and can enriched data-flow diagrams effectively communicate those smells to spreadsheet developers?",
+ "methodology": "The authors define four spreadsheet smells derived from software-engineering code-smell concepts: Inappropriate Intimacy, Feature Envy, Middle Man, and Shotgun Surgery. They compute dependency metrics over formulas that reference other worksheets and derive medium, high, and very-high risk thresholds from the 70th, 80th, and 90th percentiles of metric distributions in a large spreadsheet corpus. The smells are visualized by enriching worksheet-level data-flow diagrams with dependency information and smell indications. Evaluation combines a quantitative study over the EUSES corpus with a qualitative study involving ten professional spreadsheet developers examining industrial spreadsheets.",
+ "key_findings": [
+  {
+   "finding": "Feature Envy was the most prevalent of the reported inter-worksheet smells in the corpus study, with 12.4% of spreadsheets exceeding the 70th-percentile threshold.",
+   "evidence_type": "supported",
+   "section": "5.1 Quantitative Evaluation"
+  },
+  {
+   "finding": "Inappropriate Intimacy was also common, with 9.6% of spreadsheets exceeding the corresponding 70th-percentile threshold.",
+   "evidence_type": "supported",
+   "section": "5.1 Quantitative Evaluation"
+  },
+  {
+   "finding": "In the industrial study, participants distinguished benign and problematic instances of Inappropriate Intimacy, showing that a high metric value is an indicator requiring interpretation rather than direct proof of a defect.",
+   "evidence_type": "supported",
+   "section": "5.2 Qualitative Evaluation"
+  },
+  {
+   "finding": "For observed Feature Envy cases, participants agreed that refactoring could improve the spreadsheet, although understanding the exact cause often required inspecting formulas in addition to the visualization.",
+   "evidence_type": "supported",
+   "section": "5.2 Qualitative Evaluation"
+  },
+  {
+   "finding": "Shotgun Surgery instances were regarded by the participating spreadsheet developers as design shortcomings and prompted discussion of structural adaptations.",
+   "evidence_type": "supported",
+   "section": "5.2 Qualitative Evaluation"
+  },
+  {
+   "finding": "Participants generally found smell-enriched data-flow diagrams useful for understanding inter-worksheet dependencies, but some smells required lower-level formula inspection for diagnosis.",
+   "evidence_type": "supported",
+   "section": "5.2 Qualitative Evaluation"
+  },
+  {
+   "finding": "The paper explicitly notes that its dependency visualization represents the current spreadsheet structure rather than explaining why it evolved that way, and it proposes retaining spreadsheet history and changes as future work.",
+   "evidence_type": "supported",
+   "section": "6 Discussion and Future Work"
+  }
+ ],
+ "limitations": [
+  "The analysis focuses on formula dependencies and does not model other spreadsheet mechanisms such as pivot tables, charts, or VBA code.",
+  "The smell metrics identify unusual coupling patterns but do not by themselves establish that a calculation error or user-visible defect exists.",
+  "The visualization represents worksheet dependencies in a current workbook snapshot and does not provide cross-version cell or worksheet lineage.",
+  "The authors explicitly identify spreadsheet-history storage and change documentation as future work rather than functionality evaluated in this study.",
+  "The ten-spreadsheet industrial study is small and drawn from one organizational setting.",
+  "The professional participants had taken part in an earlier evaluation of spreadsheet data-flow diagrams, which may affect responses to the visualization.",
+  "The industrial spreadsheets used in the qualitative evaluation are not reported as a public dataset.",
+  "The paper describes the implementation technology for the Breviz tool but does not report a public source-code release."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "feature_envy_prevalence": 0.99,
+  "inappropriate_intimacy_prevalence": 0.99,
+  "smells_require_contextual_interpretation": 0.96,
+  "feature_envy_refactoring_feedback": 0.95,
+  "shotgun_surgery_feedback": 0.95,
+  "visualization_usefulness": 0.94,
+  "history_not_modeled": 0.99
+ },
+ "raw_claims": [
+  "The paper adapts software code-smell concepts to dependencies between spreadsheet worksheets.",
+  "Four inter-worksheet smells are defined: Inappropriate Intimacy, Feature Envy, Middle Man, and Shotgun Surgery.",
+  "Risk levels are based on percentile thresholds calculated from dependency metrics over a large spreadsheet corpus.",
+  "Data-flow diagrams represent worksheets as nodes and inter-worksheet formula references as directed dependencies.",
+  "The quantitative evaluation uses spreadsheets from the EUSES corpus.",
+  "Feature Envy occurs more frequently than the other reported smells at the medium-risk threshold.",
+  "Inappropriate Intimacy is the second prominent smell reported in the corpus results.",
+  "Ten professional spreadsheet developers participated in the qualitative industrial evaluation.",
+  "Participants found the visualization useful for locating problematic dependency structures but sometimes needed to inspect formulas for detailed diagnosis.",
+  "A dependency smell is not necessarily an error because some high-coupling structures have legitimate purposes.",
+  "The evaluated tool describes a workbook's current dependency structure rather than its historical evolution.",
+  "The authors propose storing workbook history and documenting changes as a direction for future work."
+ ],
+ "source_url": "https://pinzger.github.io/papers/Hermans2012-worksheetsmells.pdf",
+ "access": "full_text"
+}

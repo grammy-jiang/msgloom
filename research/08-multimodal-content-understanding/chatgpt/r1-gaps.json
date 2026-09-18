@@ -1,0 +1,82 @@
+{
+ "run_id": "b251df112d0c",
+ "round": 1,
+ "topic": "email, image, table and attachment understanding in workplace communication: preserving multimodal and document structure, and grounding evidence back to precise source locations such as a cell, region, page or attachment version",
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "The corpus does not establish methods for maintaining evidence provenance across successive attachment revisions, including stable attachment identity, version-relative source locations, semantic changes between versions, and lineage from an older cited region to its later counterpart.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"document version comparison\" multimodal provenance semantic change region grounding attachment revision"
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct grounding of language such as \"this screenshot\", \"the highlighted row\", or \"numbers below\" from email or workplace-message text into an attachment, cell, or document region is not evaluated by this corpus. Scene-text referring-expression work provides adjacent-domain evidence only.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"multimodal coreference\" document attachment visual grounding referring expression email table screenshot"
+  },
+  {
+   "id": "gap-3",
+   "description": "Spreadsheet understanding beyond isolated tables remains open in this corpus, including formulas, hidden rows or sheets, cross-sheet references, merged regions, formatting semantics, units, named ranges, and workbook-level relationships.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"spreadsheet understanding\" formulas merged cells multi-sheet semantic workbook grounding"
+  },
+  {
+   "id": "gap-4",
+   "description": "No admitted paper validates an end-to-end provenance representation that jointly identifies attachment version, page, document element, exact region or cell, and answer span. Existing papers validate different subsets of this hierarchy separately.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"document evidence grounding\" provenance page region cell span multimodal citation localization"
+  },
+  {
+   "id": "gap-5",
+   "description": "End-to-end behavior when extraction or grounding is unsupported, incomplete, or wrong remains insufficiently exercised. The corpus includes unanswerable-document evaluation and several upstream-error analyses, but does not provide a complete contract for distinguishing successful absence from parser, OCR, layout, or grounding failure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Define an explicit failure and confidence contract across ingestion, OCR, parsing, layout recovery, candidate extraction, grounding, and answering. Create distinguishable statuses for valid absence, unsupported modality, extraction failure, ambiguous grounding, partial evidence, and downstream answer failure. Validate the contract with fault-injection tests that independently corrupt OCR, parsing, layout, candidate generation, and provenance resolution, then measure whether the system reports the correct failure class instead of silently producing unsupported evidence."
+  },
+  {
+   "id": "gap-6",
+   "description": "Robustness of candidate extraction and structural-preservation pipelines on heterogeneous workplace documents can be tested further with engineering benchmarks covering sparse tables, merged structures, OCR corruption, irregular reading order, embedded images, and scanned pages.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Build a controlled benchmark suite containing representative PDFs, office documents, screenshots, scans, tables, and spreadsheets with annotated expected text, element boundaries, reading order, table structure, image regions, and provenance locations. Add perturbation variants for OCR noise, skew, sparse tables, merged cells, irregular layouts, embedded images, and scan quality. Compare candidate extractors and parsers using extraction completeness, structural fidelity, localization accuracy, and failure-detection metrics."
+  },
+  {
+   "id": "gap-7",
+   "description": "Operational scaling remains open for long documents and large tables: reported methods expose quadratic table-relation inference, memory pressure with increasing page count, information loss under page compression, and input truncation or merging under model limits.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "resolution_notes": "Benchmark the intended implementation over increasing document page counts, table dimensions, attachment counts, image resolutions, and extracted-token volumes. Record latency, peak memory, model-context consumption, retrieval recall, provenance accuracy, and semantic-answer degradation. Evaluate hierarchical retrieval, page or region preselection, table-aware chunking, progressive rendering, caching, and bounded candidate generation against full-document processing to identify practical operating limits and acceptable degradation."
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus lacks one evaluation that simultaneously scores semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and preservation of tables, images, and reading order on workplace-style attachments. Such an evaluation can be constructed and measured without claiming production-mailbox representativeness.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Construct an end-to-end benchmark with workplace-style but non-production attachments and gold annotations for content, structure, evidence locations, and answerability. Score semantic answer correctness, extraction recall and precision, table and reading-order preservation, image retention, exact page or region or cell provenance, attachment/version identity, and correct rejection of unsupported evidence. Maintain separate component-level and end-to-end metrics so failures can be attributed to extraction, structural reconstruction, retrieval, grounding, or generation."
+  },
+  {
+   "id": "gap-9",
+   "description": "Determining which textual proposition a grounded table, screenshot, cell, page, or attachment reference semantically scopes over is outside this topic's project boundary after the object itself has been grounded.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM",
+   "resolution_notes": "This concerns discourse-level proposition alignment and semantic scope after the evidence object has already been localized. The present topic is limited to preserving multimodal/document structure and grounding references to precise source locations, so proposition-to-evidence scope should be handled by a separate dialogue or discourse-alignment research topic."
+  },
+  {
+   "id": "gap-10",
+   "description": "Determining the action, request, commitment, or decision expressed by already grounded attachment content is outside this topic's project boundary; this topic concerns preserving and grounding the evidence object.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM",
+   "resolution_notes": "This is an intent, dialogue-act, work-item, commitment, or decision-understanding problem rather than an evidence-preservation or localization problem. Once attachment content and its provenance have been grounded, interpretation of the resulting action or commitment belongs to a separate operational-communication semantics topic."
+  }
+ ],
+ "convergence": {
+  "should_continue": true,
+  "reason": "open_gaps_remain",
+  "next_round_topic": "version-aware multimodal evidence provenance and reference grounding across revised workplace attachments, including cross-version region lineage, email-to-attachment referring expressions, workbook-level spreadsheet structure, and hierarchical provenance from attachment version through page, element, region or cell to answer span"
+ }
+}

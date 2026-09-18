@@ -1,0 +1,70 @@
+{
+ "paper_id": "2606.29955",
+ "title": "SpreadsheetBench 2: Evaluating Agents on End-to-End Business Spreadsheet Workflows",
+ "research_question": "How accurately can current spreadsheet agents complete realistic end-to-end business workflows over large, multi-sheet workbooks, and what failure modes limit reliable completion?",
+ "methodology": "The authors construct SpreadsheetBench 2 from authentic business spreadsheet sources and create 321 tasks spanning financial modeling, template completion, debugging, and visualization. Gold workbooks are transformed into tasks by removing target regions, injecting controlled errors, or specifying visualization requirements, followed by validation by two independent experts and iterative reconciliation. Eight LLMs are evaluated through a common SWE-agent-derived scaffold with spreadsheet inspection and editing tools, while several commercial spreadsheet assistants are assessed on a representative subset. Cell-oriented tasks are evaluated with modification accuracy and exact task accuracy, and visualization tasks use rubric-based judging of data correctness and formatting.",
+ "key_findings": [
+  {
+   "finding": "SpreadsheetBench 2 contains 321 workflow-level tasks averaging 11.8 worksheets and 593.5 required cell modifications per task, substantially exercising workbook-level structure rather than isolated tables.",
+   "evidence_type": "supported",
+   "section": "§2.2-§2.3 Benchmark Construction and Statistics"
+  },
+  {
+   "finding": "The strongest evaluated model, Claude Opus 4.6, achieved only 34.89% overall task accuracy, while six of the eight evaluated models remained below 25%.",
+   "evidence_type": "supported",
+   "section": "§3.2 Main Results"
+  },
+  {
+   "finding": "High cell-level modification scores did not translate into complete-workbook correctness: Claude Opus 4.6 reached 89.69% modification accuracy but 34.00% task accuracy on financial modeling, and 50.38% versus 12.00% on debugging.",
+   "evidence_type": "supported",
+   "section": "§3.2 Main Results"
+  },
+  {
+   "finding": "Insufficient workbook inspection and selection of the wrong target cells were identified as dominant failure categories among unsuccessful tasks.",
+   "evidence_type": "supported",
+   "section": "§3.3 Analysis and Discussions"
+  },
+  {
+   "finding": "The agent scaffold materially affected end-to-end performance: with GLM-5 on a 50-task subset, the benchmark scaffold reached 15.45% task accuracy compared with 14.20% for Claude Code and 8.66% for both Cline and Kilo.",
+   "evidence_type": "supported",
+   "section": "§3.3 Analysis and Discussions"
+  },
+  {
+   "finding": "Commercial spreadsheet products showed no clear performance advantage over the benchmarked agent setup on the authors' 30-example comparison subset.",
+   "evidence_type": "supported",
+   "section": "§3.2-§3.3 Results and Analysis"
+  }
+ ],
+ "limitations": [
+  "The benchmark concentrates on financial and business spreadsheet workflows, so results may not generalize to scientific, engineering, or other spreadsheet domains.",
+  "The experiments do not report confidence intervals or error bars because repeated API inference was considered too costly.",
+  "Visualization scoring depends on a vision-language-model judge and can therefore contain judging noise.",
+  "Exact-match task accuracy can penalize semantically equivalent spreadsheet solutions that differ syntactically from the reference workbook."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "benchmark_scale": 0.99,
+  "low_end_to_end_accuracy": 0.99,
+  "cell_vs_task_gap": 0.99,
+  "inspection_failure_modes": 0.96,
+  "scaffold_effect": 0.98,
+  "commercial_product_comparison": 0.93
+ },
+ "raw_claims": [
+  "SpreadsheetBench 2 evaluates spreadsheet agents on complete business workflows rather than isolated cell questions.",
+  "The benchmark contains 321 tasks across financial modeling, debugging, template completion, and visualization.",
+  "Its workbooks average 11.8 worksheets per task and require hundreds of cell modifications on average.",
+  "Two independent experts validate constructed tasks and reconcile disagreements.",
+  "Evaluation distinguishes target-cell modification success from exact correctness of the completed workbook.",
+  "The best evaluated model completes only about one third of tasks exactly.",
+  "Workbook inspection and target selection remain major sources of agent failure.",
+  "Agent-scaffold design changes measured task accuracy even when the underlying model is held fixed.",
+  "The released benchmark includes data and evaluation code under stated open licenses."
+ ],
+ "source_url": "https://arxiv.org/html/2606.29955",
+ "access": "full_text"
+}

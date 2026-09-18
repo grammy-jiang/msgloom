@@ -1,0 +1,408 @@
+{
+ "topic": "version-aware multimodal evidence provenance and reference grounding across revised workplace attachments, including cross-version region lineage, email-to-attachment referring expressions, workbook-level spreadsheet structure, and hierarchical provenance from attachment version through page, element, region or cell to answer span",
+ "paper_count": 27,
+ "analysis_count": 28,
+ "executive_summary": "Across 27 distinct papers represented by 28 analyses, the strongest evidence concerns structure-preserving document understanding, page and region evidence localization, table and spreadsheet structure, and version-aware retrieval or differencing in adjacent domains. Controlled ablations show benefits from spatial, hierarchical, and explicitly structured representations on several document and spreadsheet benchmarks. Fine-grained provenance has been demonstrated separately at page, bounding-box, mask, quotation-to-region, table-cell, passage, and answer-span levels. Version-aware retrieval and cross-version element alignment also improve their respective technical-documentation and scientific-PDF tasks. However, these components have not been jointly validated for revised workplace attachments. Multi-page questions remain harder than single-page questions in MMLongBench-Doc, while MMDocRAG reports lower performance on multi-page and multi-image questions. All eight prior gaps therefore remain open.",
+ "themes": [
+  "Controlled ablations in several document and spreadsheet benchmarks show benefits from preserving spatial, hierarchical, or explicit structural information, while TAPAS preserves row-column structure without the supplied analysis establishing a direct row-column-structure ablation effect [2106.11539, 2010.12537, 2412.18424, 2604.12282, 2608.03292, doi-10-18653-v1-2020-acl-main-398].",
+  "Evidence localization is increasingly evaluated separately from answer correctness, at page, bounding-box, quotation-to-region, mask, cell, and passage levels [2212.05935, 2503.23131, 2511.12003, 2607.24651, manual-0661fc0cba, doi-10-18653-v1-2020-acl-main-398, 2609.08364].",
+  "Multi-page evidence remains difficult: MMLongBench-Doc reports worse performance on cross-page than single-page questions, and MMDocRAG reports lower performance on multi-page and multi-image questions than on simpler corresponding cases; the supplied analyses do not establish a general cross-modal-versus-single-modality difficulty result [2407.01523, 2505.16470].",
+  "Workbook-level spreadsheet reasoning benefits from explicit structure extraction and verification in SpreadsheetAgent, while SpreadsheetBench 2 shows a large gap between cell-level modification success and exact workflow completion [2604.12282, 2606.29955].",
+  "Version awareness is directly useful in version-sensitive technical-documentation retrieval, and explicit cross-version alignment improves scientific-PDF differencing; neither study validates the complete workplace-attachment provenance problem [2510.08109, 2607.14117].",
+  "Grounding interfaces are task- and model-dependent: direct coordinates, textual evidence quotations, bounding boxes, and masks show different behavior across different benchmarks and training regimes [2503.23131, 2511.12003, 2607.24651, manual-0661fc0cba].",
+  "The corpus contains complementary but fragmented provenance levels rather than one experimentally validated hierarchy spanning attachment version, page, element, region or cell, and answer span [2607.14117, 2511.12003, manual-0661fc0cba, doi-10-18653-v1-2020-acl-main-398, 2609.08364].",
+  "Upstream parsing, OCR, table detection, page localization, and retrieval errors repeatedly propagate into downstream grounding or answering performance [2111.07129, 2212.05935, 2505.16470, 2510.08109, 2607.24651, 2608.03292, doi-10-1007-s00521-022-06948-5]."
+ ],
+ "findings": [
+  {
+   "statement": "Across several controlled ablations, preserving spatial, hierarchical, or explicit structural information improves downstream performance relative to less structured variants: DocFormer benefits from spatial features and multimodal attention, TUTA from tree-aware attention and tree positions, LongDocURL from structure-preserving parsed text, SpreadsheetAgent from explicit structural sketches, and DocTrace from structured parsing. TAPAS separately preserves row-column structure, but the supplied TAPAS analysis does not demonstrate a direct ablation isolating row-column structure itself.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2106.11539",
+     "section": "4.4 More Experiments"
+    },
+    {
+     "paper_id": "2010.12537",
+     "section": "4.3 Ablation studies"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "4.4 Ablation of Input Paradigms"
+    },
+    {
+     "paper_id": "2604.12282",
+     "section": "§4.3.1 Ablation Study"
+    },
+    {
+     "paper_id": "2608.03292",
+     "section": "Ablation Studies"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "2 Model; 5.3 Model Ablations"
+    }
+   ]
+  },
+  {
+   "statement": "Table-focused studies demonstrate different forms of structure and evidence preservation: complex-table recognition can retain explicit cell boxes and rectilinear relationships, TAPAS explicitly selects supporting cells for table QA, while the PubTabNet version described in its original paper lacked per-cell coordinates despite strong structural-recognition results.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2111.07129",
+     "section": "3.2 Structure Recognition; 3.3 Post-processing"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "2 Model and 4 Fine-tuning"
+    },
+    {
+     "paper_id": "1911.10683",
+     "section": "VI-B Quantitative analysis; VII Conclusion"
+    }
+   ]
+  },
+  {
+   "statement": "Page-level evidence localization is measurable and is linked to long-document QA behavior in the evaluated benchmarks: Hi-VT5 jointly predicts answer pages, MMLongBench-Doc records evidence pages and reports degradation when evidence occurs later, and DocTrace identifies page localization as a major bottleneck, especially for multi-page questions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.05935",
+     "section": "5.2 Baseline Results; 5.3 Hi-VT5 Results"
+    },
+    {
+     "paper_id": "2407.01523",
+     "section": "3.4 Dataset Overview and Analysis; 4.4 Fine-grained Results"
+    },
+    {
+     "paper_id": "2608.03292",
+     "section": "Error Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Fine-grained evidence grounding has been demonstrated through several distinct interfaces: chart-element bounding boxes, reasoning-step page-plus-box annotations, textual quotations subsequently aligned to regions, and answer-span-linked segmentation masks. These experiments validate their respective interfaces on different datasets, not a single combined grounding scheme.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2503.23131",
+     "section": "3.2 Data Statistics; 5.4 Quantitative Analysis"
+    },
+    {
+     "paper_id": "2511.12003",
+     "section": "3.1 CoE Formalization and Notations; 5.1 Main Results"
+    },
+    {
+     "paper_id": "2607.24651",
+     "section": "Results; Discussion and Error Analysis"
+    },
+    {
+     "paper_id": "manual-0661fc0cba",
+     "section": "Abstract and Method"
+    }
+   ]
+  },
+  {
+   "statement": "Correct evidence localization and correct answers are empirically separable: RefChartQA reports cases with correct visual localization but incorrect mathematical reasoning, Hi-VT5 reports correct answers paired with incorrect answer-page predictions, and DocTrace shows behavioral dependence on cited evidence while explicitly cautioning that its evidence graph is not proven to mirror hidden causal computation.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2503.23131",
+     "section": "5.5 Qualitative Analysis"
+    },
+    {
+     "paper_id": "2212.05935",
+     "section": "5.3 Hi-VT5 Results"
+    },
+    {
+     "paper_id": "2608.03292",
+     "section": "Traceability Evaluation; Limitations of Traceability Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "The supplied analyses directly establish increased difficulty for multi-page and multi-image cases in specific benchmarks: MMLongBench-Doc reports worse model performance on cross-page than single-page questions, while MMDocRAG reports lower performance on multi-page and multi-image questions than on corresponding simpler cases. They do not establish a general cross-modal-versus-single-modality difficulty result.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2407.01523",
+     "section": "3.4 Dataset Overview and Analysis; 4.4 Fine-grained Results"
+    },
+    {
+     "paper_id": "2505.16470",
+     "section": "Main Results"
+    }
+   ]
+  },
+  {
+   "statement": "Workbook-level inspection and structural reconstruction affect spreadsheet performance in the evaluated business benchmarks: SpreadsheetAgent improves when explicit structure and verification are retained, while SpreadsheetBench 2 shows that high cell-level modification accuracy can coexist with much lower exact task accuracy and identifies insufficient workbook inspection and wrong target-cell selection as major failure modes.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2604.12282",
+     "section": "§4.2 Evaluation Results; §4.3.1-§4.3.2"
+    },
+    {
+     "paper_id": "2606.29955",
+     "section": "§3.2 Main Results; §3.3 Analysis and Discussions"
+    }
+   ]
+  },
+  {
+   "statement": "Explicit version modeling and explicit cross-version alignment improve version-sensitive tasks in two distinct domains: VersionRAG substantially outperforms version-agnostic retrieval baselines on its technical-documentation benchmark, while removing cross-version alignment from the scientific-document differencing system substantially reduces detection, localization, alignment, and matching scores.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2510.08109",
+     "section": "Evaluation Results; Change Retrieval Evaluation"
+    },
+    {
+     "paper_id": "2607.14117",
+     "section": "§5.3 Ablation Study"
+    }
+   ]
+  },
+  {
+   "statement": "Different studies validate different provenance levels but do not jointly validate one end-to-end hierarchy: SentryLine retains document, page, passage, and update status; LAT associates reasoning steps and final answers with page-plus-box evidence; TAPAS selects supporting cells; M3Grounder links answer spans to masks; and the cross-version differencing study aligns typed elements between document versions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2609.08364",
+     "section": "§3.3 Evidence Grounding"
+    },
+    {
+     "paper_id": "2511.12003",
+     "section": "3.1 CoE Formalization and Notations"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "2 Model and 4 Fine-tuning"
+    },
+    {
+     "paper_id": "manual-0661fc0cba",
+     "section": "Abstract and Method"
+    },
+    {
+     "paper_id": "2607.14117",
+     "section": "§4 Methodology"
+    }
+   ]
+  },
+  {
+   "statement": "Adjacent-domain referring-expression studies show that textual cues can improve visual grounding: scene-text-oriented referring-expression comprehension explicitly aligns language with scene text and visual regions, and joint textual-reference modeling improves pronoun grounding in Japanese visually grounded dialogue. Neither experiment evaluates references from workplace email text into an attachment, spreadsheet cell, screenshot, or revised document region.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-tmm-2022-3219642",
+     "section": "Abstract"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2025-acl-long-547",
+     "section": "Phrase Grounding Results; Textual Relation Ablation"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Whether visual features reliably improve document understanding",
+   "papers": [
+    "2106.11539",
+    "2104.12756"
+   ],
+   "note": "DocFormer reports gains from combining image, text, and spatial features on document entity-extraction benchmarks, whereas InfographicVQA reports that adding OCR-token visual features did not improve its LayoutLM baseline and that detected object regions could underperform no-object or full-image variants. The results come from different architectures and document domains, so the corpus does not support a universal visual-feature effect."
+  },
+  {
+   "topic": "Whether grounding-oriented training improves answer accuracy",
+   "papers": [
+    "2503.23131"
+   ],
+   "note": "RefChartQA contains both outcomes in the same controlled study: grounding instruction tuning substantially improves answer accuracy for some backbones, but UniChart, ChartGemma, and Qwen2.5-VL lose accuracy on one or more splits. The analysis therefore directly contradicts a universal claim that grounding training always improves answers."
+  },
+  {
+   "topic": "Direct coordinate output versus alternative evidence-grounding interfaces",
+   "papers": [
+    "2607.24651",
+    "2511.12003",
+    "manual-0661fc0cba"
+   ],
+   "note": "The CiteVQA attribution study finds direct coordinate generation weak for six evaluated open VLMs and substantially better recall from textual quotations aligned downstream, whereas LAT and M3Grounder report strong page-plus-box or mask grounding after dedicated grounding training on other benchmarks. These are different datasets and training regimes, so they should be treated as interface- and setup-dependent results rather than evidence for one universal grounding representation."
+  },
+  {
+   "topic": "OCR/text representations versus direct visual processing",
+   "papers": [
+    "2407.01523",
+    "2505.16470"
+   ],
+   "note": "MMLongBench-Doc reports that most evaluated LVLMs underperform LLM counterparts using OCR-derived text, although OCR pipelines are comparatively weak on chart- and image-dependent questions. MMDocRAG separately finds detailed VLM-generated visual descriptions more useful than OCR-only text for visual evidence. The relative advantage depends on evidence type, representation, and model rather than one modality dominating across tasks."
+  },
+  {
+   "topic": "Compression benefits versus information loss in long-document processing",
+   "papers": [
+    "2212.05935"
+   ],
+   "note": "Hi-VT5's hierarchical page summaries outperform evaluated realistic multi-page baselines and are more robust to late evidence, but the same paper shows lower oracle-page performance than a T5 model receiving the full answer-page representation. The study therefore demonstrates both scalability benefits and measurable information loss from compression."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "The corpus still does not establish a complete method for maintaining evidence provenance across successive workplace attachment revisions, including stable attachment identity, version-relative source locations, semantic changes between versions, and lineage from an older cited region to its later counterpart. VersionRAG covers explicit version-aware retrieval in technical documentation, and 2607.14117 covers cross-version element alignment in scientific PDFs, but neither validates the complete attachment-revision provenance problem.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"document version comparison\" multimodal provenance semantic change region grounding attachment revision"
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct grounding of workplace-message language such as \"this screenshot\", \"the highlighted row\", or \"numbers below\" into an attachment, cell, page element, or document region remains unvalidated. Scene-text referring-expression comprehension and visually grounded dialogue provide adjacent-domain mechanisms but not email-to-attachment evaluation.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"multimodal coreference\" document attachment visual grounding referring expression email table screenshot"
+  },
+  {
+   "id": "gap-3",
+   "description": "Spreadsheet understanding beyond isolated tables remains open. The newer spreadsheet papers cover workbook-level inspection, structure extraction, verification, multi-sheet business workflows, and target-cell modification, but the corpus still does not establish comprehensive treatment of formulas, hidden rows or sheets, cross-sheet references, merged regions, formatting semantics, units, named ranges, and provenance across revised workbook versions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"spreadsheet understanding\" formulas merged cells multi-sheet semantic workbook grounding"
+  },
+  {
+   "id": "gap-4",
+   "description": "No admitted paper validates an end-to-end provenance representation that jointly identifies attachment version, page, document element, exact region or cell, and answer span. Individual studies validate different subsets of this hierarchy, but their combination remains untested.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"document evidence grounding\" provenance page region cell span multimodal citation localization"
+  },
+  {
+   "id": "gap-5",
+   "description": "End-to-end behavior when extraction or grounding is unsupported, incomplete, or wrong remains insufficiently exercised. The corpus contains unanswerable-question evaluation and analyses of parser, localization, retrieval, OCR, and grounding failures, but no complete engineering contract distinguishing successful absence from parser, OCR, layout, or grounding failure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-6",
+   "description": "Robustness of candidate extraction and structural-preservation pipelines on heterogeneous workplace documents remains an engineering gap. Existing studies expose failures involving sparse tables, heterogeneous reading order, OCR dependence, parser coverage, and layout errors, but do not jointly benchmark sparse tables, merged structures, OCR corruption, irregular reading order, embedded images, and scanned pages under one workplace-style test suite.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-7",
+   "description": "Operational scaling remains open for long documents, large tables, and spreadsheet workbooks. Reported methods expose quadratic table-relation inference, page-count memory pressure, information loss under page compression, model input cut-offs or merging, and substantial multi-agent extraction latency.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus lacks one evaluation that simultaneously scores semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and preservation of tables, images, and reading order on workplace-style attachments. Existing benchmarks and metrics cover subsets of these properties rather than the complete combination.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent provenance as explicit composable layers rather than one opaque citation string, so attachment identity/version, page, parsed element, region or cell, and answer span can be retained independently even when some layers are unavailable.",
+  "Synthesis-derived recommendation: preserve extraction and grounding status separately from semantic absence, with explicit states for unsupported content, parser failure, OCR failure, layout failure, unresolved reference, and successful no-evidence results rather than collapsing them into an empty extraction.",
+  "Synthesis-derived recommendation: build cross-version lineage as a distinct artifact from ordinary text diffing, allowing unchanged, modified, inserted, deleted, split, merged, and unresolved correspondences to remain explicit instead of assuming one-to-one continuity.",
+  "Synthesis-derived recommendation: treat workbook understanding as a workbook-level problem rather than serializing only visible cell values; engineering evaluation should include formulas, hidden sheets or rows, merged regions, named ranges, formatting-derived semantics, units, and cross-sheet dependencies.",
+  "Synthesis-derived recommendation: evaluate email-to-attachment referring expressions with dedicated workplace-style fixtures containing ambiguous phrases such as \"this screenshot\", \"highlighted row\", \"numbers below\", and explicit attachment-version references, including no-valid-referent cases.",
+  "Synthesis-derived recommendation: benchmark alternative grounding interfaces separately—direct coordinates, answer-linked boxes or masks, textual quotations plus downstream localization, and stable parser element IDs—because the literature does not establish a universally superior interface.",
+  "Synthesis-derived recommendation: evaluate end-to-end correctness with both semantic-answer metrics and provenance metrics, and count failures caused by missing pages, wrong attachment versions, wrong table structure, wrong regions, and unsupported evidence separately.",
+  "Synthesis-derived recommendation: include adversarial scaling cases such as late-page evidence, multi-page evidence, large or sparse tables, long workbooks, and structurally revised versions so that compression, truncation, retrieval, and alignment failures are visible before production deployment."
+ ],
+ "confidence_summary": "The corpus provides well-supported design principles for preserving document structure, evaluating page or region grounding separately from answer correctness, retaining workbook-level structure, and modeling version identity or cross-version alignment in specific technical and scientific domains. Evidence is strongest where controlled ablations directly isolate structural parsing, page localization, verification, or cross-version alignment. Confidence is lower for transfer to natural workplace email and Teams attachments because most evaluations use document-QA, chart, scientific-publication, technical-documentation, clinical-guideline, or synthetic/curated spreadsheet settings. The 28 analyses correspond to 27 distinct papers because doi-10-1109-tmm-2022-3219642 and manual-1048d6caf2 are duplicate analyses of the same Scene-Text Oriented Referring Expression Comprehension publication. No supplied study validates the full combined provenance hierarchy across attachment revisions.",
+ "limitations": [
+  "The corpus is dominated by document-QA, table, chart, spreadsheet, scientific-publication, technical-documentation, clinical-guideline, and visually grounded dialogue benchmarks rather than naturally occurring workplace email with repeatedly revised attachments.",
+  "There are 28 supplied analyses but 27 distinct papers: doi-10-1109-tmm-2022-3219642 and manual-1048d6caf2 describe the same underlying Scene-Text Oriented Referring Expression Comprehension study and were not treated as independent corroboration.",
+  "Several records are available only at abstract or project-page level, including doi-10-1109-tmm-2022-3219642/manual-1048d6caf2, manual-0661fc0cba, and manual-7fdf40b3c6; detailed numerical results or limitations therefore cannot always be independently inspected from full manuscripts.",
+  "Cross-version evidence is limited mainly to technical-documentation retrieval [2510.08109] and scientific-PDF differencing [2607.14117], so transfer to heterogeneous workplace attachments is unestablished.",
+  "Referring-expression evidence comes from natural-scene text grounding and visually grounded dialogue rather than email-to-attachment references; it is transfer evidence only [doi-10-1109-tmm-2022-3219642, doi-10-18653-v1-2025-acl-long-547].",
+  "Fine-grained provenance levels are validated separately across different tasks and datasets; combining attachment version, page, element, region or cell, and answer span into one scheme has not been experimentally validated by this corpus.",
+  "Several newer evaluations use model-generated supervision, model-based answer extraction, or LLM judges, which introduces evaluator or teacher-model dependence [2407.01523, 2412.18424, 2505.16470, 2510.08109, 2511.12003, 2608.03292].",
+  "Inherited handoffs from earlier project Topics were treated only as project context and were not used as evidence for findings or gap closure."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "VersionRAG establishes explicit version-aware retrieval in technical documentation and 2607.14117 establishes element-level cross-version alignment in scientific PDFs, but stable workplace attachment identity plus version-relative page/region lineage and answer provenance are not jointly addressed.",
+   "evidence": [
+    "2510.08109",
+    "2607.14117"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "Scene-text referring-expression comprehension and visually grounded dialogue provide adjacent-domain evidence for language-to-visual grounding, but no admitted paper evaluates email or workplace-message references into attachment pages, cells, screenshots, or revised document regions.",
+   "evidence": [
+    "doi-10-1109-tmm-2022-3219642",
+    "doi-10-18653-v1-2025-acl-long-547"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "SpreadsheetAgent and SpreadsheetBench 2 substantially expand coverage to workbook-level structure and workflows, but the supplied analyses do not close comprehensive formula, hidden-sheet, named-range, formatting, merged-region, unit, cross-sheet, and revised-workbook provenance requirements.",
+   "evidence": [
+    "2604.12282",
+    "2606.29955"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "The corpus now contains version-level, page-level, region-level, cell-level, passage-level, and answer-span-level mechanisms in separate studies, but no paper evaluates the complete hierarchy in one end-to-end system.",
+   "evidence": [
+    "2607.14117",
+    "2511.12003",
+    "manual-0661fc0cba",
+    "doi-10-18653-v1-2020-acl-main-398",
+    "2609.08364"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "Unanswerable evaluation and upstream-failure analyses exist, but no admitted study supplies a complete end-to-end contract distinguishing evidence absence from parser, OCR, layout, retrieval, or grounding failure.",
+   "evidence": [
+    "2407.01523",
+    "2607.24651",
+    "2608.03292",
+    "2111.07129"
+   ]
+  },
+  {
+   "id": "gap-6",
+   "status": "open",
+   "note": "The corpus documents sparse-table, heterogeneous-reading-order, OCR, parser, and layout failure modes, but does not provide the requested combined workplace-style robustness benchmark.",
+   "evidence": [
+    "2111.07129",
+    "doi-10-1007-s00521-022-06948-5",
+    "1911.10683",
+    "2607.24651"
+   ]
+  },
+  {
+   "id": "gap-7",
+   "status": "open",
+   "note": "Quadratic table inference, document-length memory pressure, page-compression loss, input cut-offs or merging, and multi-agent spreadsheet latency remain reported constraints rather than a closed scaling problem.",
+   "evidence": [
+    "2111.07129",
+    "2212.05935",
+    "2412.18424",
+    "2604.12282"
+   ]
+  },
+  {
+   "id": "gap-8",
+   "status": "open",
+   "note": "Groundedness, unanswerable handling, page evidence, workflow exactness, table structure, and reading order are evaluated in separate benchmarks or metrics, but no admitted evaluation jointly scores the complete requested set.",
+   "evidence": [
+    "doi-10-18653-v1-2025-findings-naacl-295",
+    "2407.01523",
+    "2606.29955",
+    "2111.07129",
+    "doi-10-1007-s00521-022-06948-5"
+   ]
+  }
+ ]
+}

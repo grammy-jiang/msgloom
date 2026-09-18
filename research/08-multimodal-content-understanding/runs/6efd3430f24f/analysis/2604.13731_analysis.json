@@ -1,0 +1,73 @@
+{
+ "paper_id": "2604.13731",
+ "title": "Doc-V*: Coarse-to-Fine Interactive Visual Reasoning for Multi-Page Document VQA",
+ "research_question": "Can an OCR-free document agent improve long multi-page visual question answering by actively navigating from coarse document overviews to selectively retrieved high-resolution evidence rather than consuming all pages or a fixed retrieval set?",
+ "methodology": "Doc-V* formulates multi-page document VQA as a sequential decision process in which a Qwen2.5-VL-based agent first observes global page thumbnails and then chooses among semantic page retrieval, direct page fetching, and final-answer actions while maintaining structured working memory. High-resolution page tokens are cached and injected only when requested, and returned pages retain explicit absolute page identifiers. Training uses supervised fine-tuning on closed-loop expert trajectories followed by GRPO, and evaluation covers five in-domain and out-of-domain document benchmarks using ANLS, F1, and accuracy.",
+ "key_findings": [
+  {
+   "finding": "The GRPO-trained Doc-V* scored 64.5 on DUDE, 86.2 on MPDocVQA, 77.2 on SlideVQA, 42.1 on MMLongBench-Doc, and 56.3 on LongDocURL, exceeding the corresponding Qwen2.5-VL baseline on every benchmark.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Table 1"
+  },
+  {
+   "finding": "The paper reports an out-of-domain improvement of up to 47.9% over its static RAG baseline.",
+   "evidence_type": "supported",
+   "section": "Abstract and Section 4.2"
+  },
+  {
+   "finding": "On MMLongBench-Doc, the full SFT agent achieved 39.8 accuracy while examining 6.4 pages on average; removing retrieval reduced accuracy to 34.9 and increased exploration to 14.2 pages, while removing direct fetching reduced accuracy to 35.2.",
+   "evidence_type": "supported",
+   "section": "Section 4.5, Table 4"
+  },
+  {
+   "finding": "Page-level analysis shows complementary behavior: semantic retrieval has higher recall and generally lower precision, while direct page fetching supplies more targeted evidence.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Table 5"
+  },
+  {
+   "finding": "Returned high-resolution page observations are explicitly prefixed with absolute page identifiers, preserving an unambiguous page-to-evidence mapping even when pages are fetched out of order.",
+   "evidence_type": "supported",
+   "section": "Environment Response Semantics"
+  },
+  {
+   "finding": "Ablating the global thumbnail overview, page-by-page analysis, or working memory degraded performance on all three reported ablation benchmarks.",
+   "evidence_type": "supported",
+   "section": "Section 4.5, Table 3"
+  }
+ ],
+ "limitations": [
+  "All experiments use a single vision-language backbone, Qwen2.5-VL, so backbone generality is not experimentally established.",
+  "Evaluation is restricted to single-document scenarios rather than evidence aggregation across multiple heterogeneous documents.",
+  "The framework may produce incorrect or incomplete answers because of hallucination or imperfect evidence aggregation.",
+  "Evidence provenance is principally page-level: retrieval and fetch actions identify pages, but the framework does not provide evaluated grounding to precise within-page regions or spreadsheet cells.",
+  "The study does not model temporal document versions or cross-version element lineage."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "five_benchmark_improvement": 0.99,
+  "ood_rag_gain": 0.99,
+  "retrieval_fetch_ablation": 0.99,
+  "tool_complementarity": 0.99,
+  "absolute_page_mapping": 0.99,
+  "cognitive_module_ablation": 0.99
+ },
+ "raw_claims": [
+  "Doc-V* treats multi-page document question answering as sequential visual evidence acquisition.",
+  "The initial observation contains page thumbnails annotated with absolute page numbers.",
+  "The agent can search semantically for pages, fetch pages by absolute index, or terminate with an answer.",
+  "High-resolution visual tokens are cached and supplied selectively rather than all at once.",
+  "Each returned page is associated with an explicit absolute page identifier.",
+  "Training begins with supervised imitation of closed-loop expert trajectories and continues with GRPO.",
+  "The raw training data comes from MP-DocVQA and DUDE.",
+  "Evaluation uses two in-domain and three out-of-domain document benchmarks.",
+  "The GRPO model improved over the direct Qwen2.5-VL baseline on all five reported benchmark columns.",
+  "Retrieval and direct fetching are empirically complementary rather than interchangeable.",
+  "The authors restrict evaluation to single-document reasoning and one backbone."
+ ],
+ "source_url": "https://arxiv.org/html/2604.13731",
+ "access": "full_text"
+}

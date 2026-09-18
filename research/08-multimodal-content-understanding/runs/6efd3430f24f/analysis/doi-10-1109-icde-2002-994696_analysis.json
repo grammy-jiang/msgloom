@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1109-icde-2002-994696",
+ "title": "Detecting Changes in XML Documents",
+ "research_question": "How can two versions of a large XML document be compared efficiently to recover node correspondence and a compact edit description that includes subtree moves as well as insertions, deletions, and updates?",
+ "methodology": "The paper develops an XML-tree differencing algorithm, BULD, that first establishes node correspondences and then constructs a delta between the old and new documents. It exploits XML ID attributes when available, computes signatures and weights for subtrees, matches large identical subtrees, and propagates matches bottom-up and lazily downward to find additional correspondences. The approach is evaluated with synthetically modified XML documents and a smaller collection of real web XML examples, measuring execution cost and the size or quality of generated deltas.",
+ "key_findings": [
+  {
+   "finding": "The algorithm explicitly models node correspondence between two document versions and can represent subtree moves in addition to insertions, deletions, and value updates.",
+   "evidence_type": "supported",
+   "section": "Sections 2-3"
+  },
+  {
+   "finding": "XML ID attributes and subtree signatures provide strong anchors for preserving identity across versions, after which hierarchical propagation expands matches to related ancestors and descendants.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "The implementation uses linear memory and exhibits approximately linear running-time behavior in the reported experiments, contrasting with earlier approaches characterized by the authors as quadratic.",
+   "evidence_type": "supported",
+   "section": "Sections 3.6 and 4.1"
+  },
+  {
+   "finding": "On synthetically edited documents, the produced deltas are reported to remain reasonably close in size to the known edit scripts used to generate the modified versions.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "On a small real-web sample, the XML-aware deltas have sizes comparable to conventional textual diff output while also encoding structural tree operations such as moves.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "The method deliberately trades guaranteed global optimality for efficiency because optimal tree matching under the desired edit model is computationally difficult.",
+   "evidence_type": "supported",
+   "section": "Sections 2 and 3"
+  }
+ ],
+ "limitations": [
+  "The heuristic matching algorithm does not guarantee a globally minimal or otherwise uniquely optimal delta.",
+  "Much of the empirical quality analysis uses synthetic mutations, whose distribution may not reproduce real editing behavior.",
+  "Only a small amount of real web XML data is presented because of space constraints.",
+  "The authors state that a fair comprehensive comparison with competing XML-diff systems would require substantially more experimentation because implementations, parsers, languages, and change distributions differ.",
+  "Delta byte size is only one possible quality criterion; the most useful correspondence can depend on downstream application semantics.",
+  "The method operates on XML tree structure and textual/attribute values rather than visual or multimodal document evidence.",
+  "There is no workbook-aware model of sheets, formulas, merged cells, row/column moves, or visual page regions, so applying it to revised spreadsheet provenance would require an additional domain-specific structural model."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "cross_version_node_matching": 0.99,
+  "id_and_signature_anchors": 0.97,
+  "near_linear_performance": 0.95,
+  "synthetic_delta_quality": 0.91,
+  "real_sample_delta_size": 0.88,
+  "heuristic_nonoptimality": 0.98
+ },
+ "raw_claims": [
+  "The system compares two XML trees by identifying which nodes in the new tree correspond to nodes in the old tree.",
+  "Its delta language can express insertion, deletion, update, and movement of subtrees.",
+  "XML ID attributes are used as high-confidence correspondence anchors when the same identifiers occur in both versions.",
+  "The algorithm hashes subtree content so that identical subtrees can be recognized efficiently.",
+  "Large unchanged subtrees are matched before additional correspondences are propagated through the hierarchy.",
+  "The authors call the matching strategy Bottom-Up, Lazy-Down propagation.",
+  "The stated memory complexity is linear in document size.",
+  "Reported running cost grows almost linearly in the performance experiments.",
+  "Synthetic experiments apply controlled insertion, deletion, update, and move operations before attempting to recover a delta.",
+  "The authors note that producing an optimal change description is computationally hard and therefore use heuristic matching.",
+  "The real-document experiment is limited in scale and is not presented as a comprehensive benchmark against every XML differencing system."
+ ],
+ "source_url": "https://www.researchgate.net/publication/3943331_Detecting_changes_in_XML_documents",
+ "access": "full_text"
+}

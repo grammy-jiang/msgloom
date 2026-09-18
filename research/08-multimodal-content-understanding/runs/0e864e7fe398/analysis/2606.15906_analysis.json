@@ -1,0 +1,67 @@
+{
+ "paper_id": "2606.15906",
+ "title": "MAGE-RAG: Multigranular Adaptive Graph Evidence for Agentic Multimodal RAG in Long-Document QA",
+ "research_question": "Can long-document multimodal question answering improve evidence coverage and control irrelevant context by dynamically constructing a query-specific page-and-element evidence subgraph under explicit budgets instead of relying on fixed top-k retrieval?",
+ "methodology": "MAGE-RAG first converts each static document into a heterogeneous evidence graph containing page nodes and fine-grained element nodes such as paragraphs, tables, figures, charts, formulas, and code, connected by containment, reading-order, layout, section, and semantic-neighbor relations. At query time, an agentic controller retrieves initial pages and iteratively opens, searches, expands, and prunes graph evidence under resource budgets. A structured renderer then supplies selected page images, local element images or crops, text, and node references to a multimodal reader. The framework is evaluated on LongDocURL and MMLongBench-Doc, with ablations of page retrieval, node rendering, graph expansion, and controller behavior.",
+ "key_findings": [
+  {
+   "finding": "MAGE-RAG reports 52.75 overall accuracy on LongDocURL and 53.26 accuracy with 51.19 F1 on MMLongBench-Doc, showing that dynamically assembled graph evidence can be competitive with strong long-document multimodal QA baselines.",
+   "evidence_type": "supported",
+   "section": "§4 Experiments, main results"
+  },
+  {
+   "finding": "The framework shows particularly large gains on cross-page questions in MMLongBench-Doc, where its reported cross-page score is 34.70 compared with 24.87 for M3DocRAG and 24.51 for EVisRAG.",
+   "evidence_type": "supported",
+   "section": "§4 Experiments, main results"
+  },
+  {
+   "finding": "Ablations show that fine-grained node rendering and graph-neighbor expansion improve performance over page-only retrieval; graph-neighbor expansion raises the reported MMLongBench-Doc accuracy/F1 to 53.88/50.20 from 48.75/45.71 for the top-k page-only configuration.",
+   "evidence_type": "supported",
+   "section": "§4 Ablation Study"
+  },
+  {
+   "finding": "The evidence representation preserves within-document provenance through page identifiers, element nodes, bounding boxes, image references, and page-node alignment, allowing the final reader input and controller trajectory to be inspected at multiple granularities.",
+   "evidence_type": "supported",
+   "section": "§3 Method and §4 Analysis"
+  },
+  {
+   "finding": "The paper explicitly identifies offline parsing and evidence-graph quality as an upper bound on the system and notes that the controller adds evaluator calls and state-management cost, making the approach less compelling for short or simple single-hop documents.",
+   "evidence_type": "supported",
+   "section": "§5 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The method operates on a single static document representation and does not define persistent element or region identities across successive revisions of the same attachment.",
+  "Page, node, bounding-box, and image references are useful within one parsed document but are not revision-stable lineage identifiers.",
+  "The quality ceiling depends on the offline parser, element segmentation, captions, OCR, and graph construction.",
+  "The online controller requires additional model calls and state management compared with fixed retrieval.",
+  "The authors note that the approach may not be cost-effective for short or simple single-hop documents.",
+  "Performance gains are not uniform across every benchmark slice or comparison, so the reported aggregate gains should not be interpreted as universal superiority."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overall_benchmark_performance": 0.99,
+  "cross_page_gain": 0.99,
+  "graph_ablation_gain": 0.99,
+  "within_document_provenance": 0.97,
+  "static_document_only": 0.96,
+  "parser_and_controller_limits": 0.99
+ },
+ "raw_claims": [
+  "MAGE-RAG represents long multimodal documents as graphs containing both page-level and element-level evidence.",
+  "Element nodes can carry textual content, structured content, bounding boxes, semantic types, and optional image references.",
+  "Edges encode structural and semantic relationships including containment, reading order, layout adjacency, section hierarchy, and semantic neighborhood.",
+  "The query-time controller can open, search, expand, and prune evidence rather than consuming a fixed retrieval set.",
+  "The renderer aligns selected textual evidence and visual crops with page and node references before answer generation.",
+  "Graph-neighbor expansion improves the reported QA results relative to page-only retrieval in the ablation study.",
+  "The controller trajectory records actions and retained evidence, providing an auditable retrieval trace.",
+  "The framework's performance depends on the quality of the document parser and the evidence graph constructed before querying.",
+  "The paper does not introduce a mechanism for matching the same visual region or logical element across revised versions of a document."
+ ],
+ "source_url": "https://arxiv.org/html/2606.15906",
+ "access": "full_text"
+}

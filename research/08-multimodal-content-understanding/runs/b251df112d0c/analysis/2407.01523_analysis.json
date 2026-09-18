@@ -1,0 +1,77 @@
+{
+ "paper_id": "2407.01523",
+ "title": "MMLongBench-Doc: Benchmarking Long-context Document Understanding with Visualizations",
+ "research_question": "How well can current vision-language and language models understand long multimodal documents when answering questions that require evidence localization, cross-page reasoning, multiple document modalities, and resistance to hallucination?",
+ "methodology": "The authors construct MMLongBench-Doc from 135 PDF documents spanning seven document types and annotate 1,082 question-answer pairs with reference answers, evidence pages, evidence-source modalities, and answer formats. Questions cover text, layout, tables, charts, and images, and include single-page, cross-page, and deliberately unanswerable cases. Fourteen LVLMs are evaluated from page screenshots and ten LLMs from OCR-parsed text, using response generation followed by GPT-4o answer extraction and rule-based scoring with generalized accuracy and F1. A subset is also evaluated by humans for comparison.",
+ "key_findings": [
+  {
+   "finding": "The benchmark explicitly preserves page-level provenance and evidence-source type for answers, covering text, layout, tables, charts, and images.",
+   "evidence_type": "supported",
+   "section": "3.2 Question and Answer Collection; 3.4 Dataset Overview and Analysis"
+  },
+  {
+   "finding": "Long-document understanding remains difficult: the best evaluated LVLM, GPT-4o, achieves 44.9% overall F1, compared with a 66.0% human F1 baseline.",
+   "evidence_type": "supported",
+   "section": "4.3 Main Results"
+  },
+  {
+   "finding": "Cross-page questions are substantially represented and models generally perform worse on cross-page than single-page questions, demonstrating difficulty gathering and reasoning over evidence distributed across pages.",
+   "evidence_type": "supported",
+   "section": "3.4 Dataset Overview and Analysis; 4.4 Fine-grained Results"
+  },
+  {
+   "finding": "Most evaluated LVLMs perform worse than LLM counterparts supplied with lossy OCR text, although GPT-4o and GPT-4V are exceptions.",
+   "evidence_type": "supported",
+   "section": "4.3 Main Results"
+  },
+  {
+   "finding": "OCR-based LLM pipelines are competitive on text and table questions but comparatively weak on chart- and image-dependent questions, showing that flattening documents to text can discard important multimodal evidence.",
+   "evidence_type": "supported",
+   "section": "4.4 Fine-grained Results"
+  },
+  {
+   "finding": "Model performance generally declines as answer evidence occurs later in a document, indicating that evidence location within a long context materially affects retrieval and answering performance.",
+   "evidence_type": "supported",
+   "section": "4.4 Fine-grained Results"
+  },
+  {
+   "finding": "The inclusion of unanswerable questions allows the benchmark to evaluate whether models produce unsupported answers when no evidence exists in the document.",
+   "evidence_type": "supported",
+   "section": "3.4 Dataset Overview and Analysis"
+  }
+ ],
+ "limitations": [
+  "The benchmark is relatively small, containing 135 documents and 1,082 questions, because expert annotation of long documents is expensive.",
+  "The benchmark uses only a coarse single-page, cross-page, and unanswerable taxonomy rather than a detailed taxonomy of perception and reasoning capabilities.",
+  "Evidence localization is primarily represented at page level plus evidence-source category; it does not generally provide cell-, bounding-region-, or object-level provenance suitable for precise source reconstruction.",
+  "The automatic evaluation pipeline depends on GPT-4o to extract short answers from model responses before rule-based scoring, introducing an additional model-dependent evaluation stage.",
+  "The benchmark evaluates documents as a static collection and does not model attachment revisions or version-relative provenance."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "page_level_evidence_metadata": 0.99,
+  "long_document_models_remain_weak": 0.99,
+  "cross_page_reasoning_is_harder": 0.98,
+  "ocr_can_lose_multimodal_information": 0.97,
+  "later_evidence_is_harder": 0.97,
+  "unanswerable_questions_test_hallucination": 0.99
+ },
+ "raw_claims": [
+  "MMLongBench-Doc contains 135 lengthy PDF documents and 1,082 annotated questions.",
+  "The documents average about 47.5 pages and roughly 21,214 textual tokens.",
+  "Answer evidence is annotated across text, layout, table, chart, and image sources.",
+  "There are 365 cross-page questions and 223 unanswerable questions in the reported benchmark version.",
+  "Each answerable question is associated with one or more evidence pages.",
+  "GPT-4o obtains 44.9% overall F1 in the reported evaluation.",
+  "The human evaluation produces an overall F1 of 66.0%.",
+  "Most LVLMs evaluated on document images perform worse than LLM counterparts using OCR text.",
+  "Models tend to perform better when evidence appears near the beginning of a document.",
+  "Cross-page questions are consistently more difficult than single-page questions for the evaluated models."
+ ],
+ "source_url": "https://arxiv.org/html/2407.01523",
+ "access": "full_text"
+}

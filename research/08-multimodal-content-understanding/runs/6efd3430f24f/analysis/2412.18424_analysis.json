@@ -1,0 +1,84 @@
+{
+ "paper_id": "2412.18424",
+ "title": "LongDocURL: a Comprehensive Multimodal Long Document Benchmark Integrating Understanding, Reasoning, and Locating",
+ "research_question": "Can a long-document benchmark jointly evaluate multimodal understanding, numerical reasoning, and cross-element evidence locating across structurally complex documents and long contexts?",
+ "methodology": "LongDocURL organizes evaluation into three primary tasks—understanding, reasoning, and locating—and twenty sub-tasks based on evidence type and evidence distribution. Its semi-automated construction pipeline uses extraction and filtering, QA generation, automated verification, and human verification to produce 2,325 QA samples from 396 documents covering more than 33,000 pages. Evidence is categorized as text, layout, figure, or table, while samples are additionally classified by single- versus multi-page and single- versus cross-element evidence. The authors evaluate open and proprietary models in 26 configurations using image and OCR/text input paradigms and generalized accuracy, with additional input-format ablations and human evaluation.",
+ "key_findings": [
+  {
+   "finding": "LongDocURL explicitly evaluates locating relationships among document elements in addition to conventional understanding and numerical reasoning.",
+   "evidence_type": "supported",
+   "section": "3.1 Overview"
+  },
+  {
+   "finding": "The benchmark contains substantial distributed evidence: 52.9% of questions use multiple evidence pages and 37.1% use more than one document-element type.",
+   "evidence_type": "supported",
+   "section": "3.4 Dataset Statistics"
+  },
+  {
+   "finding": "Current models remain well below the human baseline, with GPT-4o scoring 64.5 generalized accuracy overall versus 84.8 for human experts on the sampled human evaluation.",
+   "evidence_type": "supported",
+   "section": "4.3 Main Results"
+  },
+  {
+   "finding": "Table questions are particularly difficult, which the authors identify as evidence of deficiencies in document-structure parsing.",
+   "evidence_type": "supported",
+   "section": "4.3.1 Fine-Grained Analysis"
+  },
+  {
+   "finding": "Preserving table structure during document parsing has a large effect on downstream QA performance: text parsed with the structure-preserving Docmind representation substantially outperforms PyMuPDF text for both proprietary and open-source models.",
+   "evidence_type": "supported",
+   "section": "4.4 Ablation of Input Paradigms"
+  },
+  {
+   "finding": "In the reported input ablation, proprietary models gain at least 25 points and open-source models about 15 points when using the more structure-preserving text representation instead of PyMuPDF output.",
+   "evidence_type": "supported",
+   "section": "4.4 Ablation of Input Paradigms"
+  },
+  {
+   "finding": "Perceptual errors are the largest category in the GPT-4o error sample, including failures to recognize or associate tables, figures, formulas, headings, and related text correctly.",
+   "evidence_type": "supported",
+   "section": "5 Error Analysis and Model Insights"
+  },
+  {
+   "finding": "Models perform relatively poorly on document types such as meeting minutes and work summaries, although the authors note that these categories also have less data.",
+   "evidence_type": "supported",
+   "section": "4.3.1 Fine-Grained Analysis"
+  }
+ ],
+ "limitations": [
+  "The authors explicitly state that the range of document sources remains limited and should be broadened to cover more layouts and document elements.",
+  "Many evaluated models cannot process the full 50-150 page inputs because of GPU-memory or API limitations, so the evaluation uses cut-off or merge input strategies rather than always presenting the original document intact.",
+  "The scoring pipeline uses GPT-4o for answer extraction before rule-based scoring.",
+  "The authors' error analysis shows that formatting differences can be scored as wrong even when the semantic value is essentially correct, demonstrating limitations of the rule-based evaluation stage.",
+  "Although the benchmark models cross-element locating, its annotations are oriented toward QA evidence relationships rather than a universal provenance representation containing exact cells, regions, coordinates, or attachment-version identifiers."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "integrates_understanding_reasoning_locating": 0.99,
+  "multi_page_and_cross_element_coverage": 0.99,
+  "models_below_human_baseline": 0.98,
+  "table_structure_preservation_matters": 0.99,
+  "table_questions_are_difficult": 0.97,
+  "perceptual_errors_are_major": 0.98,
+  "workplace_document_types_are_challenging": 0.94
+ },
+ "raw_claims": [
+  "LongDocURL defines understanding, reasoning, and locating as its three primary task categories.",
+  "The benchmark contains 20 sub-tasks based on task and evidence characteristics.",
+  "It contains 396 documents and 2,325 question-answer samples.",
+  "The documents collectively cover more than 33,000 pages.",
+  "Evidence elements are categorized as text, layout, figure, and table.",
+  "More than half of the questions use evidence from multiple pages.",
+  "About 37.1% of the questions require evidence from more than one element type.",
+  "GPT-4o has the highest reported model score at 64.5 generalized accuracy.",
+  "The reported human baseline has an overall score of 84.8.",
+  "Preserving table structure in parsed text substantially improves model performance.",
+  "Perceptual failures involving complex document elements are the most frequent error category in the sampled GPT-4o errors."
+ ],
+ "source_url": "https://arxiv.org/html/2412.18424",
+ "access": "full_text"
+}

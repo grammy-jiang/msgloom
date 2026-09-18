@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-1007-3-540-48172-9-21",
+ "title": "The T-Recs Table Recognition and Analysis System",
+ "research_question": "Can table structure and page layout be recovered from word-level document segments through bottom-up spatial clustering rather than relying on explicit ruling lines or large whitespace separators?",
+ "methodology": "T-Recs starts from word segments and performs bottom-up spatial clustering to construct larger layout elements instead of recursively splitting pages at detected separators. The recognized layout is then analyzed geometrically by constructing row and column structures and a regular tile representation from which table cells can be represented. The approach is designed to work without depending on textual semantics, allowing the same structural process to be applied to mixed-mode documents and OCR-derived input. The accessible author-uploaded full-text material illustrates sparse, irregular, and non-Manhattan layouts and discusses reconstruction of rows, columns, and cells, but it does not expose a modern benchmark-style quantitative evaluation.",
+ "key_findings": [
+  {
+   "finding": "T-Recs reverses the dominant separator-first strategy of its time by clustering word segments bottom-up into layout structures.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The subsequent table analysis constructs a tile structure representing the intersections of inferred row and column structure.",
+   "evidence_type": "supported",
+   "section": "Abstract and table-layout analysis"
+  },
+  {
+   "finding": "The system is designed to recognize structures containing row-spanning or column-spanning cells and sparse tables rather than requiring every table position to contain data.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The recognition procedure can operate without relying on textual content, making its layout logic language-independent in principle.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The approach is intended for mixed-mode pages and for noisy OCR-derived documents such as facsimiles rather than only clean, explicitly ruled tables.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The accessible full-text examples show that some initially clustered structures require heuristic post-processing to separate columns that have been incorrectly glued together.",
+   "evidence_type": "supported",
+   "section": "Table reconstruction examples"
+  }
+ ],
+ "limitations": [
+  "The method recognizes table structure within a document snapshot but does not establish lineage between table cells or regions in different document versions.",
+  "Its input abstraction assumes that word segments and their bounding geometry have already been obtained, so upstream OCR and segmentation quality can affect later structure recovery.",
+  "Heuristic post-processing is required for cases in which initial spatial clustering incorrectly joins columns or other structures.",
+  "The accessible full-text presentation emphasizes illustrative layouts and structural behavior rather than a clearly specified large annotated benchmark with precision, recall, or comparable modern evaluation metrics.",
+  "No public source-code release was identified in the material read.",
+  "No reusable annotated evaluation dataset was identified in the material read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "bottom_up_word_clustering": 0.99,
+  "tile_based_table_structure": 0.99,
+  "spanning_and_sparse_cells": 0.98,
+  "text_independent_layout_analysis": 0.98,
+  "mixed_mode_and_ocr_applicability": 0.98,
+  "heuristic_postprocessing_needed": 0.92
+ },
+ "raw_claims": [
+  "T-Recs begins with word-level segments rather than first searching for explicit table separators.",
+  "Spatially related word segments are clustered bottom-up into larger layout blocks.",
+  "Recognized blocks are analyzed to locate table environments and recover row and column structure.",
+  "Row and column separators define a two-dimensional grid whose areas are called table tiles.",
+  "The tile representation provides a basis for representing reconstructed table structure.",
+  "The method is intended to handle empty cells and cells spanning multiple rows or columns.",
+  "Sparse tables are part of the targeted layout class.",
+  "Textual content can be ignored during structural analysis.",
+  "The authors therefore describe the method as domain- and language-independent at the structural level.",
+  "The approach is intended to tolerate low-quality OCR documents.",
+  "Some segmentation errors require targeted heuristic restructuring before the table structure is reconstructed."
+ ],
+ "source_url": "https://www.researchgate.net/publication/220933063_The_T-Recs_Table_Recognition_and_Analysis_System",
+ "access": "full_text"
+}

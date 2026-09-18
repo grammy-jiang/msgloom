@@ -1,0 +1,437 @@
+{
+ "topic": "Cross-version multimodal document grounding: stable region and element lineage across revised attachments, message-to-attachment referring expressions, revised-workbook provenance, and end-to-end hierarchical evidence identifiers from version through page, region or cell to answer span.",
+ "paper_count": 37,
+ "executive_summary": "The corpus provides substantial evidence for several components of multimodal document grounding but not for their full cross-version combination. Layout-aware and structure-aware representations improve document and table understanding; hierarchical page, region, cell, and answer evidence can be localized; and explicit attribution exposes failures hidden by answer-only metrics. Long, cross-page, cross-modal documents and realistic workbooks remain difficult. Separate literatures demonstrate version-aware retrieval, cross-version PDF element alignment, persistent XML node identity, and fine-grained spreadsheet provenance, but none jointly validates stable attachment identity, semantic revision lineage, and answer-level evidence across workplace attachment versions. Referring-expression work establishes useful adjacent-domain mechanisms, not direct email-to-attachment grounding. All eight prior gaps therefore remain open: four require additional direct academic evidence and four require engineering evaluation or contracts.",
+ "themes": [
+  "Layout, spatial structure, and explicit document hierarchy materially affect document understanding, table reconstruction, and downstream question answering.",
+  "Evidence localization is increasingly modeled hierarchically, from document and page selection to regions, table cells, quotations, masks, and answer spans.",
+  "Answer correctness and evidence correctness are separable: models can answer correctly from the wrong page or cite regions that do not fully support the answer.",
+  "Cross-page and cross-modal evidence composition remains substantially harder than single-page or single-modality document QA.",
+  "Table semantics depend on recovered structure, including rows, columns, spanning cells, hierarchical headers, and explicit cell locations rather than OCR text alone.",
+  "Workbook-scale spreadsheet understanding benefits from structural reconstruction, multi-granular retrieval, and verification, but full-workbook task completion remains difficult.",
+  "Version-aware retrieval, cross-version element matching, XML node identity, and change tracking address complementary parts of version lineage without validating one unified multimodal provenance scheme.",
+  "Visual referring-expression and multimodal-reference research demonstrates mechanisms for linking language to image regions, but the evaluated domains are scenes or visually grounded dialogue rather than workplace messages referring to attachments.",
+  "Reading order is both a reconstruction problem and a task-dependent structural prior; agreement with one reading-order annotation convention does not guarantee downstream utility.",
+  "Benchmark design increasingly evaluates grounding, evidence selection, provenance, and traceability in addition to answer accuracy."
+ ],
+ "findings": [
+  {
+   "statement": "Across document- and table-understanding benchmarks, adding spatial, layout, hierarchical, or explicitly structured representations improves evaluated downstream performance relative to weaker text-only or less-structured variants.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2106.11539",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2010.12537",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2401.00908",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Document-QA systems and benchmarks can preserve provenance at multiple within-document levels, including document, page, region or bounding box, element, quotation, table cell, and answer-span associations, although each study covers only a subset of this hierarchy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2605.12882",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2607.29638",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2608.03292",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "manual-0661fc0cba",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Answer correctness and evidence attribution are empirically distinct: evaluated systems sometimes produce correct answers with incorrect evidence, correct localization with incorrect reasoning, or materially lower strict attributed accuracy than answer-only accuracy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.05935",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2503.23131",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2605.12882",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2608.03292",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Cross-page, multi-image, and cross-modal evidence composition remains harder than simpler document-QA settings in the evaluated long-document benchmarks.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2407.01523",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2505.16470",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2606.15906",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Table-oriented studies show that explicit recovery or modeling of rows, columns, spanning relationships, hierarchical structure, and cell locations improves structure recognition or table reasoning on their evaluated datasets, while OCR or flat textual representations can omit relationships relevant to downstream QA.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1911.10683",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2111.07129",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2203.09056",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "manual-7fdf40b3c6",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Workbook-scale spreadsheet studies report gains from multi-granular evidence retrieval, explicit structural representations, and verification, while realistic end-to-end workbook tasks still show substantially lower task-level success than cell-level modification accuracy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2601.08741",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2604.12282",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2606.29955",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Several versioning studies demonstrate complementary capabilities in non-workplace-attachment domains: explicit version identity improves version-aware retrieval, cross-version alignment improves scientific-PDF change localization, semantic identifiers can match reorganized XML elements, and persistent XML identifiers can maintain logical node identity across snapshots.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2510.08109",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2607.14117",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "doi-10-1007-978-3-540-30480-7-29",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "manual-ae200642f8",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "The evaluated versioning methods do not jointly demonstrate stable multimodal attachment identity, persistent region or cell lineage, semantic change interpretation, and answer-level provenance across successive workplace attachment revisions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2510.08109",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2607.14117",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2601.08741",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "2605.12882",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Scene-text referring-expression comprehension and visually grounded dialogue studies show that textual-reference structure and visible text cues can improve language-to-region grounding in their respective image and dialogue domains, but these experiments do not evaluate workplace messages referring to attached documents, screenshots, rows, or cells.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-tmm-2022-3219642",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2025-acl-long-547",
+     "section": "analysis summary"
+    }
+   ]
+  },
+  {
+   "statement": "Reading-order research shows that hierarchical or learned relation modeling can improve ordering or downstream document tasks, while performance and even the definition of useful reading-order relations vary across heterogeneous documents and evaluation conventions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s00521-022-06948-5",
+     "section": "analysis summary"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2026-eacl-long-192",
+     "section": "analysis summary"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Whether explicit visual grounding training improves answer accuracy",
+   "papers": [
+    "2503.23131"
+   ],
+   "note": "RefChartQA reports large answer-accuracy gains from grounding instruction tuning for some backbones, but the same intervention lowers accuracy for UniChart on all three reported splits, for ChartGemma on the human and PoT splits, and for Qwen2.5-VL on two splits. The evidence therefore does not support a model-independent claim that adding grounding supervision improves answer accuracy."
+  },
+  {
+   "topic": "OCR-centric representations versus richer visual representations",
+   "papers": [
+    "2407.01523",
+    "2412.18424",
+    "2505.16470"
+   ],
+   "note": "MMLongBench-Doc reports that most evaluated LVLMs underperform LLM pipelines supplied with OCR text, while MMDocRAG reports an advantage for detailed VLM-generated visual descriptions over OCR alone and LongDocURL reports large benefits from structure-preserving parsing over plain PyMuPDF text. These results arise from different models and benchmarks and show that the relative value of OCR-only, structured-text, and visual representations is task- and system-dependent."
+  },
+  {
+   "topic": "Reading-order annotation fidelity versus downstream usefulness",
+   "papers": [
+    "doi-10-1007-s00521-022-06948-5",
+    "doi-10-18653-v1-2026-eacl-long-192"
+   ],
+   "note": "The handwritten-document study treats close recovery of a target reading sequence as the objective and reports degradation on heterogeneous material. The EACL study reports LLM-derived relations that agree poorly with adjacency-oriented human labels yet improve several downstream tasks. The studies therefore use different notions of successful reading-order modeling rather than supporting one interchangeable metric."
+  },
+  {
+   "topic": "Spreadsheet retrieval architecture versus full-context spreadsheet modeling",
+   "papers": [
+    "2601.08741"
+   ],
+   "note": "FRTR substantially outperforms the paper's SpreadsheetLLM adaptation on FRTR-Bench, but on the SpreadsheetLLM benchmark the strongest reported SpreadsheetLLM result remains slightly higher than FRTR. The comparison is benchmark- and adaptation-dependent and does not establish universal superiority for either strategy."
+  },
+  {
+   "topic": "Grounding output interfaces",
+   "papers": [
+    "2607.24651",
+    "manual-0661fc0cba"
+   ],
+   "note": "The language-attribution study finds direct coordinate generation highly unreliable for six general open VLMs and obtains better evidence recall from textual quotations, whereas M3Grounder reports strong pixel-level mask grounding with a dedicated architecture and region-supervised benchmark. These results are not directly incompatible because the output interfaces, supervision, architectures, and datasets differ; they contradict only a broad claim that coordinate-like spatial output is inherently either ineffective or sufficient."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "The corpus still does not establish a complete method for maintaining evidence provenance across successive workplace attachment revisions, including stable attachment identity, version-relative source locations, semantic changes between versions, and lineage from an older cited region to its later counterpart. Version-aware retrieval, scientific-PDF alignment, and XML persistent identity cover separate components, but the full multimodal attachment-revision provenance problem remains unvalidated.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"document version alignment\" multimodal provenance region lineage semantic change revised documents workplace attachments"
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct grounding of workplace-message referring expressions such as \"this screenshot\", \"the highlighted row\", \"numbers below\", or \"use attachment v2\" into attachment objects, pages, cells, or regions remains unvalidated. Existing scene-text and visually grounded dialogue studies provide adjacent-domain evidence only.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"referring expression grounding\" document multimodal email attachment table cell screenshot coreference workplace"
+  },
+  {
+   "id": "gap-3",
+   "description": "Comprehensive spreadsheet understanding remains open for formulas, hidden rows and sheets, cross-sheet references, merged regions, formatting semantics, units, named ranges, and provenance across revised workbook versions. Current workbook studies address retrieval, structure reconstruction, verification, workflow completion, and within-state cell provenance but not this complete set.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"spreadsheet understanding\" workbook formulas hidden sheets named ranges merged cells cross-sheet provenance version revisions"
+  },
+  {
+   "id": "gap-4",
+   "description": "No admitted paper validates one end-to-end provenance representation that jointly identifies attachment version, page, document element, exact region or spreadsheet cell, and answer span. Different studies validate subsets of this hierarchy, and their combination remains untested.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"evidence provenance\" document question answering version page region cell answer span hierarchical multimodal grounding"
+  },
+  {
+   "id": "gap-5",
+   "description": "End-to-end behavior when extraction or grounding is unsupported, incomplete, or wrong remains insufficiently exercised. The corpus contains unanswerable-question evaluation and parser, retrieval, OCR, localization, and grounding failure analyses, but not a complete engineering contract distinguishing genuine evidence absence from parser, OCR, layout, retrieval, or grounding failure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-6",
+   "description": "Robustness of candidate extraction and structural-preservation pipelines on heterogeneous workplace-style documents remains an engineering gap. No admitted benchmark jointly exercises sparse tables, merged and hierarchical structures, OCR corruption, irregular reading order, embedded visual objects, scanned pages, and explicit extraction-completeness accounting.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-7",
+   "description": "Operational scaling remains open for long documents, large tables, and realistic workbooks. The corpus reports page-routing costs, evidence-graph overhead, parsing limits, workbook inspection failures, and trade-offs in change detection, but does not close the system-level latency, memory, and throughput question for the target workload.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus lacks one evaluation that simultaneously measures semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and preservation of tables, images, document hierarchy, and reading order on workplace-style attachments. Existing benchmarks and metrics evaluate overlapping subsets rather than the complete combination.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent document evidence with composable identifiers whose levels can include attachment identity, version, page or sheet, structural element, exact region or cell, and answer span, while keeping each level optional when a source format does not supply it.",
+  "Synthesis-derived recommendation: keep persistent cross-version identity separate from version-relative coordinates or cell addresses, because a logical element may move while its physical location changes.",
+  "Synthesis-derived recommendation: record cross-version correspondence as an explicit relation with confidence and change metadata rather than overwriting an older evidence locator with a newer one.",
+  "Synthesis-derived recommendation: evaluate answer correctness and evidence correctness separately, then add a joint strict score so correct answers supported by incorrect locations remain visible as failures.",
+  "Synthesis-derived recommendation: preserve structured table and workbook representations alongside OCR or rendered text instead of treating flattened text as the only canonical semantic representation.",
+  "Synthesis-derived recommendation: distinguish successful no-evidence results from parser failure, OCR failure, unsupported embedded content, retrieval failure, and grounding failure using explicit failure states.",
+  "Synthesis-derived recommendation: construct an engineering fixture suite containing versioned PDFs, spreadsheets, screenshots, scanned pages, merged tables, hidden workbook structures, relocated elements, duplicated labels, and ambiguous referring expressions before treating the open engineering gaps as closed.",
+  "Synthesis-derived recommendation: test message-to-attachment referring expressions as their own evaluation problem rather than assuming performance transfers from scene-text referring-expression comprehension or visually grounded dialogue.",
+  "Synthesis-derived recommendation: include both local evidence and surrounding structural context in evaluation fixtures so region-level localization can be tested without discarding page-, sheet-, or table-level context.",
+  "Synthesis-derived recommendation: treat the integration of version lineage, multimodal grounding, spreadsheet provenance, and answer-span attribution as an unvalidated composition until an end-to-end benchmark directly exercises the combined scheme."
+ ],
+ "confidence_summary": "Confidence is high in the recurring design principles supported within the evaluated research domains: spatial and structural representations matter, evidence attribution is distinct from answer accuracy, hierarchical localization can expose provenance, multi-page and cross-modal reasoning remains difficult, and explicit version or alignment representations improve version-sensitive tasks in their respective benchmarks. Confidence is medium for transfer from these results to workplace attachments because much of the evidence comes from scientific PDFs, web tables, infographics, visual scenes, clinical guidelines, synthetic or benchmark workbooks, and document-QA corpora rather than longitudinal workplace communication. The corpus does not directly validate the combined cross-version workplace scheme posed by this topic.",
+ "limitations": [
+  "The supplied material consists of per-paper analysis summaries rather than full-paper text, so this synthesis is constrained to the reported research questions and key findings.",
+  "The two records manual-1048d6caf2 and doi-10-1109-tmm-2022-3219642 describe the same study, \"Scene-Text Oriented Referring Expression Comprehension\"; they are treated as one distinct paper, yielding 37 distinct papers from 38 analyses.",
+  "Evidence comes from heterogeneous domains including web tables, scientific PDFs, infographics, document QA, visual scenes, clinical guidelines, XML histories, and spreadsheet benchmarks. These transfer results do not establish production performance for workplace email attachments.",
+  "Several studies validate individual provenance levels or versioning mechanisms, but no paper in the corpus experimentally validates their combined use as one version-to-page-to-region-or-cell-to-answer-span lineage scheme.",
+  "The inherited Topic 04 and Topic 05 handoffs are project context only. They are not used as evidence for any finding or gap-status decision in this synthesis.",
+  "The corpus contains recent methods and benchmarks with different model backbones, evaluation protocols, metrics, and input representations, limiting direct numerical comparison across papers.",
+  "Some apparent disagreements are conditional rather than direct replications, especially for OCR versus visual representations, grounding interfaces, reading-order relations, and spreadsheet retrieval architectures.",
+  "The academic corpus does not provide authorized production-mailbox evidence, so production representativeness and target-workload accuracy remain outside the demonstrated evidence."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "VersionRAG demonstrates version-aware retrieval, the scientific-PDF differencing study demonstrates cross-version multimodal element alignment, and XML work demonstrates semantic or persistent node identities. No admitted study combines stable attachment identity, version-relative localization, semantic change, and region lineage for revised workplace attachments.",
+   "evidence": [
+    "2510.08109",
+    "2607.14117",
+    "doi-10-1007-978-3-540-30480-7-29",
+    "manual-ae200642f8"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "Scene-text referring-expression comprehension and visually grounded dialogue provide direct evidence for language-to-region grounding in adjacent image and dialogue domains, but no admitted paper evaluates workplace-message references into attachment pages, cells, screenshots, or regions.",
+   "evidence": [
+    "doi-10-1109-tmm-2022-3219642",
+    "doi-10-18653-v1-2025-acl-long-547"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "Recent spreadsheet work covers multi-sheet retrieval, structural extraction, verification, realistic workflows, formulas and cell locations in particular settings, but the supplied analyses do not demonstrate comprehensive handling of the full requested workbook semantics and cross-version provenance set.",
+   "evidence": [
+    "2601.08741",
+    "2604.12282",
+    "2606.29955"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "CiteVQA, HierDoc, DocTrace, M3Grounder, TAPAS, and spreadsheet retrieval each cover different levels of provenance, but no admitted paper validates the entire attachment-version through answer-span hierarchy as one end-to-end representation.",
+   "evidence": [
+    "2605.12882",
+    "2607.29638",
+    "2608.03292",
+    "manual-0661fc0cba",
+    "doi-10-18653-v1-2020-acl-main-398",
+    "2601.08741"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "The corpus evaluates unanswerable cases, attribution hallucinations, parser limitations, retrieval failures, and localization failures, but does not specify or validate one complete failure-state contract separating genuine absence from each extraction and grounding failure mode.",
+   "evidence": [
+    "2511.12003",
+    "2607.24651",
+    "2606.15906",
+    "2605.12882"
+   ]
+  },
+  {
+   "id": "gap-6",
+   "status": "open",
+   "note": "Table, reading-order, long-document, and spreadsheet studies expose individual robustness problems, but no admitted engineering benchmark jointly covers the requested heterogeneous workplace-document failure surface.",
+   "evidence": [
+    "2111.07129",
+    "2203.09056",
+    "doi-10-1007-s00521-022-06948-5",
+    "2407.01523",
+    "2606.29955"
+   ]
+  },
+  {
+   "id": "gap-7",
+   "status": "open",
+   "note": "Several papers report efficiency trade-offs or system overhead, but the corpus does not establish target-workload system scaling across long attachments, large tables, and large multi-sheet workbooks.",
+   "evidence": [
+    "2510.08109",
+    "2606.15906",
+    "2606.29955",
+    "doi-10-1002-spe-2305"
+   ]
+  },
+  {
+   "id": "gap-8",
+   "status": "open",
+   "note": "CiteVQA and SMuDGE evaluate grounding and answer correctness, long-document benchmarks evaluate multimodal localization and reasoning, table benchmarks evaluate structural fidelity, and spreadsheet benchmarks evaluate workflow completion. No one admitted evaluation jointly measures the full requested set.",
+   "evidence": [
+    "2605.12882",
+    "doi-10-18653-v1-2025-findings-naacl-295",
+    "2407.01523",
+    "2412.18424",
+    "1911.10683",
+    "2606.29955"
+   ]
+  }
+ ]
+}

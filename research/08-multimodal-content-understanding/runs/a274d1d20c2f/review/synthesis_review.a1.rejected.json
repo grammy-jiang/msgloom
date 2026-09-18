@@ -1,0 +1,34 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/08-multimodal-content-understanding/runs/a274d1d20c2f/analysis/synthesis.json",
+ "status": "rejected",
+ "issues": [
+  "Finding 6 and the corresponding theme overstate the supplied evidence by claiming that cross-modal evidence composition is consistently harder than single-modality answering. The supplied analysis for 2407.01523 directly supports cross-page difficulty, and 2505.16470 directly supports lower performance on multi-page and multi-image questions, but its analysis does not report a stratified result showing cross-modal questions are harder than single-modality questions. The 2412.18424 analysis establishes substantial multi-page and cross-element coverage but likewise does not state that those strata perform worse.",
+  "Finding 1 attributes demonstrated performance improvement to 'row-column structure' alongside tree structure, bounding boxes, and structure-preserving parsing. The supplied TAPAS analysis states that row/column embeddings preserve table structure, but its reported ablation evidence concerns table-specific pretraining rather than a direct row/column-structure ablation. TUTA directly supports tree-attention/tree-position benefits, DocFormer supports spatial-feature benefits, and LongDocURL supports structure-preserving parsing, so the broad finding is supported, but the row-column improvement subclaim is not established by the cited analysis as written.",
+  "The synthesis reports paper_count = 28 even though doi-10-1109-tmm-2022-3219642 and manual-1048d6caf2 are two analyses of the same underlying paper, 'Scene-Text Oriented Referring Expression Comprehension'. Thus 28 is the number of supplied analysis records, not the number of distinct papers. Finding 10 also cites both records, which can misleadingly appear to provide two independent studies for the scene-text claim.",
+  "The theme stating that 'cross-page and cross-modal evidence composition remains substantially harder than single-page or single-modality answering' inherits the unsupported cross-modal comparison from Finding 6 and should be narrowed to the difficulty dimensions actually stratified in the supplied analyses.",
+  "The remaining contradictions are appropriately named rather than averaged away. In particular, the synthesis correctly distinguishes DocFormer from InfographicVQA on visual-feature utility, task-trained region grounding from direct coordinate generation, model-dependent effects of grounding supervision on answer accuracy, and the non-commensurate OCR-versus-visual findings in MMLongBench-Doc and MMDocRAG.",
+  "All eight reported gaps are appropriately left open. The supplied analyses provide partial evidence for version identity, cross-version element alignment, temporal verification, workbook-scale reasoning, page/quote/cell/box/mask grounding, and several failure modes, but none closes the requested integrated workplace attachment-version-to-answer-span provenance problem."
+ ],
+ "unsupported_claims": [
+  "Finding 6: 'Questions requiring evidence across multiple pages, images, or modalities are consistently harder than simpler localized questions...' is too broad because the supplied analyses directly establish harder multi-page and multi-image cases, but do not establish a general harder cross-modal-versus-single-modality comparison.",
+  "Theme: 'Cross-page and cross-modal evidence composition remains substantially harder than single-page or single-modality answering.' The cross-modal half is not demonstrated by the supplied per-paper analyses.",
+  "Finding 1's inclusion of 'row-column structure' among structural features demonstrated by ablation to improve downstream performance is not directly supported by the supplied TAPAS analysis; it establishes use of row/column structure and benefits of table-specific pretraining, not a row/column-structure ablation.",
+  "paper_count = 28 is inaccurate if interpreted as distinct papers because doi-10-1109-tmm-2022-3219642 and manual-1048d6caf2 describe the same underlying publication."
+ ],
+ "required_fixes": [
+  "Narrow Finding 6 to the evidence actually demonstrated in the analyses, for example: multi-page questions are harder than single-page questions in MMLongBench-Doc, and MMDocRAG reports lower performance on multi-page and multi-image questions. Remove the general cross-modal-versus-single-modality claim unless a supplied analysis directly reports that comparison.",
+  "Make the same narrowing in the corresponding theme and anywhere else the synthesis states that cross-modal composition is empirically harder than single-modality answering.",
+  "Revise Finding 1 so that only directly demonstrated ablation effects are named. Either remove 'row-column structure' from the list of structures shown to improve performance, or restate TAPAS more cautiously as preserving row-column structure without claiming that the supplied analysis demonstrates a direct row-column ablation benefit.",
+  "Deduplicate doi-10-1109-tmm-2022-3219642 and manual-1048d6caf2 as one underlying study for evidence-counting purposes. Change paper_count to the number of distinct papers, or explicitly rename/count the field as analysis_count = 28. Do not present the DOI and manual records as independent corroborating studies in Finding 10.",
+  "After these corrections, retain the eight gaps as open; the current gap-status decisions are supported by the supplied corpus."
+ ],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.88,
+  "coherence": 0.98,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "Citation integrity passes under the requested identifier-membership test: every cited paper_id belongs to the allowed set. The rejection is driven by scope overreach in a HIGH-confidence finding/theme and by duplicate-paper counting, not by the gap analysis. Most of the synthesis is well supported, and the required corrections are localized rather than architectural."
+}

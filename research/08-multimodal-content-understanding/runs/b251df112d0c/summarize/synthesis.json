@@ -1,0 +1,311 @@
+{
+ "topic": "email, image, table and attachment understanding in workplace communication: preserving multimodal and document structure, and grounding evidence back to precise source locations such as a cell, region, page or attachment version",
+ "paper_count": 14,
+ "executive_summary": "Across 14 papers, the evidence separates document understanding into complementary layers rather than a single solved task. Structure-aware representations improve table and document tasks on web tables, forms, receipts, and long PDFs, while image-based table systems address recovery of spatial cells from page images. Multi-page benchmarks show persistent degradation for later, cross-page, and multimodal evidence. Provenance is demonstrated at several granularities—selected cells, pages, bounding boxes, and segmentation masks—but no paper in this corpus validates a unified chain from attachment version to page to precise region or cell. Grounding and answering are also distinct: correct localization can coexist with incorrect reasoning, and correct answers can be paired with wrong evidence pages. Visual features are not uniformly beneficial; observed gains depend on task, representation, and model. Direct evidence for email-linked attachments and longitudinal version identity remains limited.",
+ "themes": [
+  "Preservation of row, column, hierarchy, layout, and reading order carries information that plain text serialization can lose.",
+  "Recovering table structure from document images and semantically interpreting already structured tables are distinct problems addressed by different parts of the literature.",
+  "Evidence provenance is represented at multiple granularities, including selected table cells, pages, bounding boxes, and pixel masks.",
+  "Long-document and multi-page understanding becomes harder when evidence occurs late, spans pages, or crosses document-element modalities.",
+  "Answer correctness and evidence-grounding correctness are distinct evaluation dimensions.",
+  "Reading order and table structure depend on upstream layout or detection quality, allowing structural errors to propagate.",
+  "The utility of visual features depends on task, representation, detector quality, and model architecture rather than being uniformly positive.",
+  "Attachment revision identity and cross-version provenance are largely absent from the evaluated systems."
+ ],
+ "findings": [
+  {
+   "statement": "Across independent tasks, explicit structural information improved measured performance: row-column or tree structure supported table understanding, shared two-dimensional layout improved document entity extraction, and structure-preserving parsed text improved long-document QA relative to less structured text extraction. These experiments validate their respective representations and tasks, not a single combined architecture.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2006.14806",
+     "section": "4 TURL; 6 Experiments"
+    },
+    {
+     "paper_id": "2010.12537",
+     "section": "4.3 Ablation studies"
+    },
+    {
+     "paper_id": "2106.11539",
+     "section": "4.4 More Experiments"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "4.4 Ablation of Input Paradigms"
+    }
+   ]
+  },
+  {
+   "statement": "Image-based table recognition can recover table structure and, in some systems, explicit spatial cell geometry and row or column spans, but spatial provenance is not inherent to table recognition: the PubTabNet version used by EDD lacked cell coordinates, whereas the rectilinear-relation framework retained cell boxes while reconstructing spans.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1911.10683",
+     "section": "VII Conclusion"
+    },
+    {
+     "paper_id": "2111.07129",
+     "section": "3.2 Structure Recognition and 3.3 Post-processing"
+    }
+   ]
+  },
+  {
+   "statement": "TURL, TUTA, and TAPAS preserve useful structural relations inside already parsed tables, but their evaluated representations do not locate those table cells in an originating document page or identify an attachment or attachment version.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2006.14806",
+     "section": "4 TURL and 5 Pre-training TURL"
+    },
+    {
+     "paper_id": "2010.12537",
+     "section": "3 Model and 3.5 Pre-training details"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "2 Model and 4 Fine-tuning"
+    }
+   ]
+  },
+  {
+   "statement": "Precise evidence grounding has been demonstrated at different granularities in separate experiments: TAPAS selects supporting table cells, Hi-VT5 predicts an answer page, RefChartQA predicts chart-element bounding boxes, and M3Grounder describes phrase-, line-, and block-level pixel masks. This corpus does not experimentally validate a unified hierarchy combining those granularities.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+     "section": "2 Model and 4 Fine-tuning"
+    },
+    {
+     "paper_id": "2212.05935",
+     "section": "5.3 Hi-VT5 Results"
+    },
+    {
+     "paper_id": "2503.23131",
+     "section": "3.2 Data Statistics and 5.4 Quantitative Analysis"
+    },
+    {
+     "paper_id": "manual-0661fc0cba",
+     "section": "Abstract and Method"
+    }
+   ]
+  },
+  {
+   "statement": "Long and multi-page document benchmarks consistently show difficulty when evidence is distributed across pages or appears late in the document: Hi-VT5 gains relative to concatenation baselines increase for later answer pages, MMLongBench-Doc reports weaker performance on cross-page questions and later evidence, and LongDocURL contains substantial multi-page evidence while reporting large remaining model-human gaps.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.05935",
+     "section": "5.2 Baseline Results and 5.3 Hi-VT5 Results"
+    },
+    {
+     "paper_id": "2407.01523",
+     "section": "4.4 Fine-grained Results"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "3.4 Dataset Statistics and 4.3 Main Results"
+    }
+   ]
+  },
+  {
+   "statement": "Evidence localization and answer correctness are empirically separable. Hi-VT5 reports cases where an answer is correct but the predicted supporting page is wrong, while RefChartQA reports cases where the correct chart regions are localized but subsequent mathematical reasoning produces an incorrect answer.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.05935",
+     "section": "5.3 Hi-VT5 Results"
+    },
+    {
+     "paper_id": "2503.23131",
+     "section": "5.5 Qualitative Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Explicit grounding instruction tuning does not uniformly improve answer accuracy. In RefChartQA, TinyChart and some Qwen configurations gain substantially after grounding training, while UniChart, ChartGemma, and some Qwen2.5-VL configurations lose answer accuracy on reported splits.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2503.23131",
+     "section": "5.4 Quantitative Analysis and Table 2"
+    }
+   ]
+  },
+  {
+   "statement": "Reading-order recovery can improve substantially when layout is processed hierarchically, but this result is sensitive to document heterogeneity and upstream segmentation quality: the handwritten-document study reports large hierarchical gains on OHG and FCR while the heterogeneous ABP collection remains inadequate for practical full reading-order recovery.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s00521-022-06948-5",
+     "section": "5.2.1 Text lines at page level; 5.2.5 Hierarchical consolidation"
+    }
+   ]
+  },
+  {
+   "statement": "Flattened OCR-derived text can remain competitive for text and table questions, but it can discard information needed for chart- and image-dependent questions; separately, LongDocURL shows that retaining table structure in parsed text can materially improve downstream QA over plain PyMuPDF extraction.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2407.01523",
+     "section": "4.3 Main Results and 4.4 Fine-grained Results"
+    },
+    {
+     "paper_id": "2412.18424",
+     "section": "4.4 Ablation of Input Paradigms"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Whether adding visual features reliably improves document understanding",
+   "papers": [
+    "2106.11539",
+    "2104.12756",
+    "2407.01523"
+   ],
+   "note": "DocFormer reports gains from combining image, text, and spatial features on form and receipt/entity-extraction benchmarks. InfographicVQA reports that generic detected-object regions and OCR-token visual features did not improve its evaluated baselines, and MMLongBench-Doc reports that most evaluated LVLMs underperformed OCR-text LLM counterparts, although GPT-4o and GPT-4V were exceptions. These results come from different domains, tasks, architectures, and visual representations, so they contradict a universal claim that extra visual features necessarily help, not each other's task-specific measurements."
+  },
+  {
+   "topic": "Whether explicit visual grounding training improves answer accuracy",
+   "papers": [
+    "2503.23131"
+   ],
+   "note": "RefChartQA contains both sides of this result: grounding instruction tuning produces large accuracy gains for some evaluated models but accuracy declines for others. The paper therefore directly rejects a model-independent claim that grounding supervision always improves answering."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G1",
+   "description": "The corpus does not establish methods for maintaining evidence provenance across successive attachment revisions, including stable attachment identity, version-relative source locations, semantic changes between versions, and lineage from an older cited region to its later counterpart.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"document version comparison\" multimodal provenance semantic change region grounding attachment revision",
+   "evidence": [
+    "2212.05935",
+    "2407.01523",
+    "2503.23131",
+    "manual-0661fc0cba"
+   ]
+  },
+  {
+   "id": "G2",
+   "description": "Direct grounding of language such as \"this screenshot\", \"the highlighted row\", or \"numbers below\" from email or workplace-message text into an attachment, cell, or document region is not evaluated by this corpus. Scene-text referring-expression work provides adjacent-domain evidence only.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"multimodal coreference\" document attachment visual grounding referring expression email table screenshot",
+   "evidence": [
+    "manual-1048d6caf2",
+    "2503.23131",
+    "manual-0661fc0cba"
+   ]
+  },
+  {
+   "id": "G3",
+   "description": "Spreadsheet understanding beyond isolated tables remains open in this corpus, including formulas, hidden rows or sheets, cross-sheet references, merged regions, formatting semantics, units, named ranges, and workbook-level relationships.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"spreadsheet understanding\" formulas merged cells multi-sheet semantic workbook grounding",
+   "evidence": [
+    "2006.14806",
+    "2010.12537",
+    "doi-10-18653-v1-2020-acl-main-398"
+   ]
+  },
+  {
+   "id": "G4",
+   "description": "No admitted paper validates an end-to-end provenance representation that jointly identifies attachment version, page, document element, exact region or cell, and answer span. Existing papers validate different subsets of this hierarchy separately.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"document evidence grounding\" provenance page region cell span multimodal citation localization",
+   "evidence": [
+    "2212.05935",
+    "2503.23131",
+    "manual-0661fc0cba",
+    "doi-10-18653-v1-2020-acl-main-398"
+   ]
+  },
+  {
+   "id": "G5",
+   "description": "End-to-end behavior when extraction or grounding is unsupported, incomplete, or wrong remains insufficiently exercised. The corpus includes unanswerable-document evaluation and several upstream-error analyses, but does not provide a complete contract for distinguishing successful absence from parser, OCR, layout, or grounding failure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "2407.01523",
+    "2106.11539",
+    "2111.07129",
+    "doi-10-1007-s00521-022-06948-5"
+   ]
+  },
+  {
+   "id": "G6",
+   "description": "Robustness of candidate extraction and structural-preservation pipelines on heterogeneous workplace documents can be tested further with engineering benchmarks covering sparse tables, merged structures, OCR corruption, irregular reading order, embedded images, and scanned pages.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "2111.07129",
+    "doi-10-1007-s00521-022-06948-5",
+    "2106.11539",
+    "2412.18424"
+   ]
+  },
+  {
+   "id": "G7",
+   "description": "Operational scaling remains open for long documents and large tables: reported methods expose quadratic table-relation inference, memory pressure with increasing page count, information loss under page compression, and input truncation or merging under model limits.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "evidence": [
+    "2111.07129",
+    "2212.05935",
+    "2412.18424"
+   ]
+  },
+  {
+   "id": "G8",
+   "description": "The corpus lacks one evaluation that simultaneously scores semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and preservation of tables, images, and reading order on workplace-style attachments. Such an evaluation can be constructed and measured without claiming production-mailbox representativeness.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "2407.01523",
+    "2412.18424",
+    "2503.23131",
+    "2111.07129"
+   ]
+  },
+  {
+   "id": "G9",
+   "description": "Determining which textual proposition a grounded table, screenshot, cell, page, or attachment reference semantically scopes over is outside this topic's project boundary after the object itself has been grounded.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "G10",
+   "description": "Determining the action, request, commitment, or decision expressed by already grounded attachment content is outside this topic's project boundary; this topic concerns preserving and grounding the evidence object.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: preserve native structural outputs alongside extracted text, including page identity, cell grids, bounding boxes or masks, reading-order relations, headers, units, and span relationships, instead of allowing text serialization to become the only retained representation.",
+  "Synthesis-derived recommendation: represent evidence location as a typed hierarchy capable of expressing attachment identity, attachment version, page, document element, region, table cell, and text span while permitting some levels to be unavailable when a source format cannot supply them.",
+  "Synthesis-derived recommendation: keep extraction, structural interpretation, evidence grounding, and downstream semantic judgement as distinguishable stages so that a correct answer cannot conceal a wrong source location and a correct source location cannot conceal failed reasoning.",
+  "Synthesis-derived recommendation: evaluate answer or semantic correctness separately from provenance correctness, and include cases where the requested evidence is absent, unsupported, or only partially parsed.",
+  "Synthesis-derived recommendation: benchmark structured-text and image-based pathways by document type rather than assuming either OCR-text flattening or full visual processing is uniformly superior.",
+  "Synthesis-derived recommendation: construct adversarial engineering fixtures for merged cells, sparse tables, ambiguous headers, units, late pages, cross-page evidence, charts, scanned pages, OCR corruption, wrong attachment versions, and unsupported embedded objects.",
+  "Synthesis-derived recommendation: preserve parser and grounding failures as explicit states with lineage to the affected source object rather than representing failed or unsupported regions as empty successful extraction.",
+  "Synthesis-derived recommendation: assign stable attachment and version identities outside model-generated descriptions so that later grounding records can reference immutable source artifacts even when semantic interpretation is recomputed."
+ ],
+ "confidence_summary": "Confidence is HIGH for the broad evidence that document structure, layout, table organization, and evidence location affect measured understanding performance, because multiple full-text papers provide datasets, ablations, and task-specific results. Confidence is also HIGH that multi-page and cross-page evidence remains difficult and that answer correctness should not be treated as evidence-location correctness. Confidence is MEDIUM for fine-grained pixel-mask grounding because M3Grounder was available only at abstract/project-page level, and MEDIUM for transfer from scene-text referring expressions because that evidence comes from natural images rather than workplace documents. Confidence is LOW for production-email attachment versioning and cross-message visual references because this corpus contains little or no direct target-domain evaluation. The corpus supports well-supported design principles and candidate evaluation dimensions, not production accuracy claims or a validated unified architecture.",
+ "limitations": [
+  "The corpus is heterogeneous: it includes Wikipedia and web tables, scientific PDF tables, annual-report tables, forms, receipts, contracts, infographics, charts, handwritten documents, long PDFs, and natural-scene referring expressions. Results from these domains are transfer evidence unless the target document type matches.",
+  "No admitted study directly evaluates complete email threads in which message text refers to cells, screenshots, pages, or successively revised workplace attachments.",
+  "Attachment identity and longitudinal attachment-version lineage are not modeled in the evaluated systems, so the corpus cannot close that problem.",
+  "No single benchmark in the corpus jointly evaluates extraction completeness, reading order, table semantics, multimodal reference resolution, multi-page reasoning, exact sub-page provenance, and attachment versions.",
+  "Several systems depend on OCR, table detection, or layout analysis performed upstream; their downstream results do not imply robustness to failures in those upstream stages.",
+  "The M3Grounder analysis is based on abstract and official project material rather than independently verified full text, and the Scene-Text Oriented Referring Expression Comprehension analysis is also abstract-level.",
+  "Evidence from RefText is adjacent-domain transfer evidence from natural scenes, not direct evidence for document attachments or workplace communication.",
+  "The inherited Topic 04 and Topic 05 handoffs were used only to define project scope and ownership boundaries; none of their claims were used as evidence for findings or corpus-derived gaps.",
+  "No prior-gap list for this synthesis round was supplied with the task, so gap_status contains no entries."
+ ],
+ "gap_status": []
+}

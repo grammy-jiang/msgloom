@@ -1,0 +1,75 @@
+{
+ "paper_id": "2111.07129",
+ "title": "Visual Understanding of Complex Table Structures from Document Images",
+ "research_question": "How can a document-image system recover complex table cells, including empty cells and spanning relationships, while remaining robust to strict spatial-overlap requirements?",
+ "methodology": "The framework first detects table objects and cells with TOD-Net, extending an object-detection architecture with alignment, continuity, overlap, attention, and dynamically weighted loss components. It then models pairwise left, right, top, and bottom rectilinear adjacencies between detected cells with graph convolutional networks and converts those relations into row and column spans. Post-processing combines detected structure with OCR word boxes to generate structured table output, and the method is evaluated on several existing table datasets plus the new 4,500-image TUCD business-document dataset using cell-detection and structure-recognition metrics over multiple IoU thresholds.",
+ "key_findings": [
+  {
+   "finding": "Across the benchmark datasets considered by the authors, the proposed framework improved previous state-of-the-art performance by an average of 2.7 percentage points in F1.",
+   "evidence_type": "supported",
+   "section": "Abstract and 4 Results"
+  },
+  {
+   "finding": "TUCD contributes 4,500 manually annotated business-table images from annual reports, including multiple languages, empty cells, and cell boxes designed to preserve alignment constraints.",
+   "evidence_type": "supported",
+   "section": "3.4 Datasets"
+  },
+  {
+   "finding": "On UNLV and ICDAR-2013, where empty cells averaged 12.3% of cells, the proposed method outperformed TabStruct-Net by 4.2 percentage points in F1.",
+   "evidence_type": "supported",
+   "section": "4 Comparative Analysis"
+  },
+  {
+   "finding": "The proposed detector retained a much larger advantage over TabStruct-Net as the IoU threshold became stricter; at IoU 0.7 its structure-recognition F1 values were 0.868, 0.852, 0.823, and 0.839 on FinTabNet, ICDAR-13, SciTSR, and TUCD respectively, compared with 0.704, 0.720, 0.682, and 0.722 for the baseline.",
+   "evidence_type": "supported",
+   "section": "4 F1 variation with IoU threshold"
+  },
+  {
+   "finding": "Representing structure with rectilinear relationships enables the system to derive row and column spanning information while retaining explicit spatial cell boxes, making the representation more suitable for grounding extracted table structure back to image regions.",
+   "evidence_type": "supported",
+   "section": "3.2 Structure Recognition and 3.3 Post-processing"
+  },
+  {
+   "finding": "The method fails on very sparse tables and has quadratic pairwise inference cost, with reported inference time rising from about 10 seconds for 20 cells to about 50 seconds for 200 cells.",
+   "evidence_type": "supported",
+   "section": "4 Comparative Analysis"
+  }
+ ],
+ "limitations": [
+  "The authors report failure on very sparse tables in which most cells are empty.",
+  "Rectilinear adjacency is predicted for every pair of cells, giving approximately quadratic inference complexity in the number of detected cells.",
+  "Reported inference time is about 10 seconds for a 20-cell table and about 50 seconds for a 200-cell table.",
+  "Errors in the initial cell detector can propagate into subsequent graph-based structure reconstruction.",
+  "Text extraction in post-processing relies on OCR, so recognition quality remains dependent on an external OCR stage.",
+  "TUCD is positioned as an evaluation dataset and is modest in size at 4,500 table images.",
+  "Existing benchmark datasets use differing annotation conventions, requiring normalization or adapted evaluation procedures for cross-dataset comparison.",
+  "The paper provides the TUCD dataset but does not identify a public release of the proposed model's implementation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "average F1 improvement": 0.99,
+  "TUCD dataset": 0.99,
+  "empty cell performance": 0.99,
+  "high IoU robustness": 0.99,
+  "spatial cell grounding": 0.96,
+  "sparse table and runtime limitation": 0.99
+ },
+ "raw_claims": [
+  "The method detects table cells from document images before reconstructing their structural relations.",
+  "Structure is represented using rectilinear left, right, top, and bottom relationships among cells.",
+  "TUCD contains 4,500 manually annotated table images collected from business annual reports.",
+  "TUCD includes annotations for empty cells and cell boundaries that preserve table alignment.",
+  "The proposed framework reports a 2.7-point average F1 improvement over previous state-of-the-art results on its benchmark comparisons.",
+  "Empty cells constitute an average of 12.3% of cells in the UNLV and ICDAR-2013 datasets used in the analysis.",
+  "The proposed system outperforms TabStruct-Net by 4.2 F1 points on those empty-cell-containing datasets.",
+  "The method remains stronger than the baseline as stricter cell-overlap thresholds are applied.",
+  "The approach can recover row and column spans from rectilinear cell relationships.",
+  "Very sparse tables remain a failure case, and pairwise structure inference scales quadratically with the number of cells."
+ ],
+ "source_url": "https://arxiv.org/html/2111.07129",
+ "access": "full_text"
+}

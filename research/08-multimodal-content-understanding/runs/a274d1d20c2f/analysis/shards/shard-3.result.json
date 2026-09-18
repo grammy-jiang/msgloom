@@ -1,0 +1,289 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-18653-v1-2025-findings-naacl-295",
+   "title": "Where is this coming from? Making groundedness count in the evaluation of Document VQA models",
+   "research_question": "Can Document VQA evaluation better reflect semantic correctness, spatial grounding, calibration, and robustness by scoring where an answer comes from in the document rather than relying mainly on surface-string similarity?",
+   "methodology": "The paper proposes SMuDGE, a configurable composite evaluation metric combining multimodal groundedness with type-aware answer similarity. Groundedness is estimated from the spatial relationship between answer evidence in OCR-derived document regions, while textual, numeric, and hybrid answers receive different surface-matching treatments; an alpha parameter controls the trade-off between grounding and answer similarity. The authors re-score outputs on DocVQA, MP-DocVQA, InfographicVQA, and DUDE, then analyze leaderboard changes, calibration through Expected Calibration Error, ranking robustness, and pairwise human preferences.",
+   "key_findings": [
+    {
+     "finding": "Adding groundedness and answer-type awareness changes Document VQA leaderboard orderings, with numeric and hybrid answers causing larger ranking changes than purely textual answers.",
+     "evidence_type": "supported",
+     "section": "5.1 Leaderboard analysis"
+    },
+    {
+     "finding": "When SMuDGE gives relatively greater weight to groundedness, higher evaluation scores are associated with lower Expected Calibration Error; the paper selects approximately alpha=0.25 as a useful operating point from the DUDE calibration analysis.",
+     "evidence_type": "supported",
+     "section": "5.3 Association with calibration"
+    },
+    {
+     "finding": "SMuDGE scores show a stronger relationship between score stability and ranking stability than ANLS, with reported regression coefficients of 0.58 for SMuDGE and 0.33 for ANLS.",
+     "evidence_type": "supported",
+     "section": "5.4 Association with robustness"
+    },
+    {
+     "finding": "In the human preference experiment, annotators preferred SMuDGE's pairwise ordering in the majority of disagreement cases across DocVQA, MP-DocVQA, and InfographicVQA.",
+     "evidence_type": "supported",
+     "section": "5.5 Human evaluation"
+    },
+    {
+     "finding": "The human study achieved mean Cohen's kappa of 0.82, indicating high annotator agreement before majority-agreement filtering.",
+     "evidence_type": "supported",
+     "section": "5.5 Human evaluation"
+    },
+    {
+     "finding": "The proposed score is intentionally parameterized so downstream users can alter the relative importance of grounding and surface similarity.",
+     "evidence_type": "supported",
+     "section": "3 Proposed methodology"
+    }
+   ],
+   "limitations": [
+    "The experiments are restricted to single-span extractive answers.",
+    "Handling multi-span answers would require a grounding matcher capable of dealing with an arbitrary number of answer partitions unless the benchmark supplies span-level annotations.",
+    "Grounding abstractive answers is outside the scope of the study.",
+    "The semantic-type treatment is limited mainly to textual, numeric, and hybrid answers and does not explicitly model categories such as currencies, dates, or timestamps.",
+    "Alpha is tuned using DUDE, while the remaining major analyses rely on three related benchmarks, creating a potential benchmark-family bias.",
+    "The primary grounding procedure depends on OCR reading order, which can be noisy or misleading; the more general beta-skeleton alternative is slower."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "leaderboard_changes": 0.99,
+    "calibration_association": 0.98,
+    "robustness_association": 0.98,
+    "human_alignment": 0.99,
+    "configurable_grounding_weight": 0.99
+   },
+   "raw_claims": [
+    "SMuDGE combines spatial groundedness with answer-type-aware surface similarity.",
+    "The evaluation framework exposes a tunable parameter controlling the weighting of groundedness versus answer similarity.",
+    "The authors re-evaluate models on four Document VQA benchmarks.",
+    "Numeric and hybrid answers produce larger leaderboard changes than textual answers.",
+    "Greater emphasis on groundedness is associated with lower model calibration error in the DUDE analysis.",
+    "SMuDGE has a stronger reported relationship between score volatility and rank volatility than ANLS.",
+    "Three researchers performed the human pairwise preference study.",
+    "Mean Cohen's kappa in the human annotations is reported as 0.82.",
+    "Human annotators agree with SMuDGE in the majority of evaluated ANLS-versus-SMuDGE disagreement cases.",
+    "The grounding experiments exclude abstractive and general multi-span answers."
+   ],
+   "source_url": "https://arxiv.org/html/2503.19120",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-7fdf40b3c6",
+   "title": "TRH2TQA: Table Recognition with Hierarchical Relationships to Table Question-Answering on Business Table Images",
+   "research_question": "Can explicit recovery of hierarchical relationships in visually complex business tables improve question answering over table images?",
+   "methodology": "TRH2TQA is a three-stage pipeline operating on business table images and natural-language questions. A table-recognition module first converts the image into structured HTML containing table structure and recognized text; a post-structure stage then derives headers and hierarchical relationships using predicted column spans and bounding boxes. The recovered table representation and hierarchy are supplied with the question to a table question-answering decoder, and the system is evaluated on the VQAonBD 2023 benchmark.",
+   "key_findings": [
+    {
+     "finding": "The proposed architecture explicitly separates visual table recognition, hierarchical relationship recovery, and table question answering.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Hierarchical relations are inferred after table recognition using information including predicted column spans and bounding boxes.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The intermediate representation is HTML containing recognized table structure and textual content rather than an unstructured visual embedding alone.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The authors report that TRH2TQA improves question-answering performance on the VQAonBD 2023 business-document benchmark.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The method is specifically motivated by hierarchical tables whose merged cells and indentation make ordinary flat table recognition insufficient.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "The accessible HTML source contains the abstract rather than the complete paper, so detailed architectural and ablation claims could not be independently extracted from full text.",
+    "The accessible source describes the method specifically for business table images.",
+    "The accessible source names VQAonBD 2023 as the evaluation benchmark and does not establish generalization to other table-image domains.",
+    "The abstract does not provide sufficient evidence to characterize performance on non-hierarchical documents, spreadsheets with workbook-level semantics, or cross-document provenance tasks."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "three_stage_pipeline": 0.99,
+    "hierarchy_from_colspan_bbox": 0.99,
+    "html_intermediate_representation": 0.98,
+    "vq aonbd_improvement": 0.94,
+    "hierarchical_table_focus": 0.99
+   },
+   "raw_claims": [
+    "TRH2TQA targets question answering on business table images.",
+    "Its table-recognition stage converts a table image into HTML structure and text.",
+    "A post-processing stage identifies headers and hierarchical relationships.",
+    "Predicted column spans and bounding boxes are used during hierarchical relationship extraction.",
+    "The recovered table information is combined with a natural-language question before answer generation.",
+    "The paper reports improved question-answering performance on VQAonBD 2023.",
+    "Merged cells and indentation are identified as important difficulties in hierarchical tables."
+   ],
+   "source_url": "https://openaccess.thecvf.com/content/WACV2025/html/Jirachanchaisiri_TRH2TQA_Table_Recognition_with_Hierarchical_Relationships_to_Table_Question-Answering_on_WACV_2025_paper.html",
+   "access": "abstract_only"
+  },
+  {
+   "paper_id": "2511.12003",
+   "title": "Look as You Think: Unifying Reasoning and Visual Evidence Attribution for Verifiable Document RAG via Reinforcement Learning",
+   "research_question": "Can a vision-language model be trained to produce accurate document-RAG answers while grounding intermediate reasoning steps and final answers to verifiable page-level visual regions with limited stepwise supervision?",
+   "methodology": "The paper introduces Chain-of-Evidence, in which textual reasoning steps are paired with page indices and bounding boxes for their supporting evidence, followed by a final answer with its own supporting region. LAT uses two training stages: a cold-start stage creates CoE traces with Gemini 2.5 Pro from 1,000 sampled instances per training dataset, filters them for answer quality, manually corrects bounding-box drift, and performs LoRA supervised fine-tuning; a second stage applies GRPO reinforcement learning. The RL objective combines answer-accuracy, stepwise attribution, final grounding, and format rewards, including semantic comparison between reasoning steps and cropped evidence regions using ColQwen2. Experiments use Qwen2.5-VL-7B-Instruct on Paper-VISA and Wiki-VISA under single-image, multi-image, in-domain, and cross-domain settings.",
+   "key_findings": [
+    {
+     "finding": "Across the reported single- and multi-image evaluations, LAT improves the vanilla model by an average of 8.23% in soft exact match and 47.0% in IoU@0.5.",
+     "evidence_type": "supported",
+     "section": "Abstract; 5.1 Main Results"
+    },
+    {
+     "finding": "In the in-domain comparison, LAT reports gains of 7.95% in answer exact match and 44.6% in IoU@0.5 over the vanilla model.",
+     "evidence_type": "supported",
+     "section": "5.1 Attribution-aware performance under in-domain and cross-domain settings"
+    },
+    {
+     "finding": "LAT substantially improves stepwise Chain-of-Evidence attribution quality, with a reported 37.5% gain in stepwise attribution compared with only a 4.0% gain from adding an in-context CoE demonstration.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "For unanswerable multi-image cases, LAT reports average precision of 65% when producing a no-answer response.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "LAT outperforms the direct supervised answer-plus-attribution baseline and shows stronger cross-domain generalization in the reported experiments.",
+     "evidence_type": "supported",
+     "section": "Abstract; 5 Results and Analysis"
+    },
+    {
+     "finding": "The Chain-of-Evidence representation records evidence at reasoning-step granularity as a page index plus a bounding box and separately grounds the final answer.",
+     "evidence_type": "supported",
+     "section": "3.1 CoE Formalization and Notations"
+    }
+   ],
+   "limitations": [
+    "Thresholds used by the stepwise attribution rewards are manually selected from annotated examples rather than learned adaptively.",
+    "Training is currently limited to VISA data, whose evidence annotations are predominantly single-hop.",
+    "Generalization to multi-hop and cross-source evidence reasoning has not been fully evaluated or supervised.",
+    "The cold-start procedure depends on a proprietary Gemini 2.5 Pro model and subsequent manual bounding-box correction, which makes exact independent reproduction of the data-generation stage more involved."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "average_em_iou_gains": 0.99,
+    "in_domain_improvement": 0.99,
+    "stepwise_attribution_gain": 0.97,
+    "no_answer_precision": 0.97,
+    "cross_domain_generalization": 0.96,
+    "step_level_bbox_provenance": 0.99
+   },
+   "raw_claims": [
+    "Chain-of-Evidence associates reasoning steps with document page indices and visual bounding boxes.",
+    "The final answer is also paired with a page and supporting evidence box.",
+    "The cold-start stage samples 1,000 instances from each training dataset for CoE generation.",
+    "Gemini 2.5 Pro generates initial stepwise reasoning and evidence annotations.",
+    "The authors manually verify and correct bounding-box drift before cold-start supervised training.",
+    "The reinforcement-learning stage uses GRPO.",
+    "LAT optimizes answer accuracy, stepwise evidence attribution, final grounding, and output-format objectives.",
+    "Stepwise evidence consistency is measured using representations of the reasoning text and the cropped document region.",
+    "Experiments cover both single-image and multi-image document inputs.",
+    "LAT reports average improvements of 8.23% in soft exact match and 47.0% in IoU@0.5 relative to the vanilla model.",
+    "The released implementation is linked to the PolarisLiu1/LAT GitHub repository.",
+    "The authors identify multi-hop and cross-source evidence reasoning as an unresolved direction."
+   ],
+   "source_url": "https://arxiv.org/html/2511.12003",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2401.00908",
+   "title": "DocLLM: A layout-aware generative language model for multimodal document understanding",
+   "research_question": "Can a causal language model gain strong visually rich document understanding by incorporating OCR-derived spatial layout directly into attention, without relying on a heavyweight image encoder?",
+   "methodology": "DocLLM extends autoregressive language models such as Falcon-1B and Llama2-7B by representing text tokens together with their bounding boxes and introducing disentangled attention over textual and spatial relationships. Pre-training uses autoregressive block infilling over semantically cohesive document text regions instead of relying solely on ordinary next-token prediction. The models are subsequently instruction-tuned on 16 datasets spanning visual question answering, natural-language inference, key-information extraction, and document classification, including both single-page and multi-page documents. Evaluation includes same-dataset/different-split and same-task/different-dataset settings plus ablations of spatial attention, infilling, and decoder masking.",
+   "key_findings": [
+    {
+     "finding": "DocLLM-7B outperforms the compared state-of-the-art LLM baselines on 14 of the 16 datasets in the same-dataset evaluation setting.",
+     "evidence_type": "supported",
+     "section": "4.3 Downstream Evaluation; 6 Discussion and Findings"
+    },
+    {
+     "finding": "The model generalizes successfully on four of five previously unseen dataset settings, with reported improvements of roughly 15% to 61% for the Llama2-7B-based model on four of those five datasets.",
+     "evidence_type": "supported",
+     "section": "1 Introduction; 4.3 Downstream Evaluation"
+    },
+    {
+     "finding": "Ablation results show that text-only self-attention has the lowest pre-training next-token-prediction accuracy, while adding spatial interactions improves it; the best reported spatial-attention configuration reaches 39.12 versus 35.43 for text-only attention.",
+     "evidence_type": "supported",
+     "section": "5 Ablation Studies"
+    },
+    {
+     "finding": "Block infilling with spatial information reaches 39.1 next-token-prediction accuracy in the ablation, compared with 36.2 for causal learning with spatial information and 32.6 for plain causal learning.",
+     "evidence_type": "supported",
+     "section": "5 Ablation Studies"
+    },
+    {
+     "finding": "A causal decoder performs comparably to, and slightly better than, the tested prefix decoder configurations, so the authors retain the causal architecture.",
+     "evidence_type": "supported",
+     "section": "5 Ablation Studies"
+    },
+    {
+     "finding": "DocLLM obtains document-layout information from token bounding boxes and deliberately avoids a conventional vision encoder, reducing architectural complexity while retaining spatial structure.",
+     "evidence_type": "supported",
+     "section": "1 Introduction; 3 DocLLM Framework"
+    }
+   ],
+   "limitations": [
+    "DocLLM does not directly encode document pixels or visual appearance; the authors identify lightweight visual integration as future work.",
+    "The model depends on OCR-derived text and bounding boxes, while the effect of alternative OCR engines and layout parsers is left for future investigation.",
+    "The instruction-tuning data is constructed from templated existing datasets rather than crowdsourced natural instructions and preferences.",
+    "The ablation experiments are resource-constrained to a sampled subset of 100,000 pre-training chunks and evaluation on 1,000 unseen documents.",
+    "The paper's official public repository contains the paper description and results but does not expose the full training implementation required to reproduce the reported models.",
+    "Not all data used to create the complete instruction-tuning mixture is released as a single reproducible dataset."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "fourteen_of_sixteen": 0.99,
+    "unseen_dataset_generalization": 0.99,
+    "spatial_attention_ablation": 0.99,
+    "block_infilling_ablation": 0.99,
+    "causal_vs_prefix_decoder": 0.97,
+    "no_vision_encoder": 0.99
+   },
+   "raw_claims": [
+    "DocLLM models document text together with token bounding boxes.",
+    "It extends causal language-model attention with disentangled spatial attention.",
+    "The architecture does not require a conventional image encoder.",
+    "Pre-training uses an autoregressive block-infilling objective over document text.",
+    "Instruction tuning spans VQA, NLI, key-information extraction, and document classification.",
+    "The instruction-tuning mixture contains 16 datasets.",
+    "The reported instruction-tuning data contains 635,883 training instances and 96,919 testing instances.",
+    "DocLLM-7B is based on Llama2-7B and DocLLM-1B is based on Falcon-1B.",
+    "DocLLM is evaluated on both familiar dataset splits and held-out datasets with the same task types.",
+    "DocLLM-7B outperforms the compared LLM baselines on 14 of 16 datasets in the main same-dataset setting.",
+    "Spatial information improves the pre-training ablation over text-only attention.",
+    "Block infilling with spatial information achieves the best reported objective-level ablation result.",
+    "The authors leave comparisons across OCR engines and layout parsers to future work.",
+    "The authors propose adding visual information to DocLLM in a lightweight manner in future work."
+   ],
+   "source_url": "https://arxiv.org/html/2401.00908",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}
