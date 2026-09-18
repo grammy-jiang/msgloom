@@ -1,0 +1,85 @@
+{
+ "paper_id": "2607.06507",
+ "title": "DynaKRAG: A Unified Framework for Learnable Evidence Control in Multi-Hop Retrieval-Augmented Generation",
+ "research_question": "Can multi-hop RAG jointly learn when to continue retrieving, which evidence-acquisition action to take, and when to stop so as to improve answer quality while controlling retrieval and generation cost?",
+ "methodology": "DynaKRAG formulates iterative RAG as evidence-action control over a state containing retrieved documents, retrieval frontier, current query, optional missing-information description, sufficiency result, action history, and accumulated cost. A deterministic validity layer removes actions whose prerequisites are unmet or whose budgets are exhausted, a learned continuation gate chooses between stopping and continuing, and a learned advantage model selects among valid nonterminal actions using training-time estimates of evidence gain and execution cost. The framework is evaluated on HotpotQA, 2WikiMultiHopQA, and MuSiQue with Qwen2.5-7B, GPT-4o-mini, and Llama-3.1-8B under fixed document and step budgets, with accuracy and resource-use measurements.",
+ "key_findings": [
+  {
+   "finding": "The framework unifies frontier retrieval, gap-directed retrieval, query rewriting, bridge expansion, sufficiency checking, stopping, and terminal compression within one explicit evidence-control policy.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "A deterministic validity layer prevents actions when prerequisites are absent and prevents further retrieval when the configured retrieval budget is exhausted.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "The learned continuation gate explicitly decides whether the current state should stop or continue, while a separate advantage scorer chooses the next valid evidence-acquisition action.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "Across the reported nine dataset-backbone combinations, DynaKRAG obtained the highest reported EM/F1 among the compared systems and used 10.1% to 34.3% fewer tokens and 15.1% to 43.4% fewer retrieval calls than the matched S2G-RAG baseline.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Removing the learned advantage scorer, sufficiency check, learned continuation mechanism, or terminal compression reduced F1 in the reported ablations, with the effect size depending on the dataset.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Controller models trained from Qwen trajectories were also evaluated with GPT-4o-mini and Llama-3.1-8B, providing evidence of some cross-backbone transfer but not a formal distribution-shift guarantee.",
+   "evidence_type": "supported",
+   "section": "Experimental Setup and Results"
+  },
+  {
+   "finding": "The paper uses a calibration split for learned controller components, but it does not present conformal prediction or a finite-sample risk guarantee on premature stopping.",
+   "evidence_type": "unsupported",
+   "section": "Training and Calibration"
+  },
+  {
+   "finding": "No temporal/version-aware provenance representation or permission-aware evidence-access mechanism is described in the evidence-control state or action set.",
+   "evidence_type": "unsupported",
+   "section": "Method"
+  }
+ ],
+ "limitations": [
+  "The learned action and continuation controllers are dataset-specific and are trained from trajectories using supervision unavailable at ordinary inference time.",
+  "The main control horizon is capped at four acquisition/control steps and the final context is capped in size, so behavior beyond these bounds is not evaluated.",
+  "Calibration of the learned controller does not provide a conformal or other explicit finite-sample bound on premature-stop risk.",
+  "The evaluation uses static English multi-hop QA benchmarks rather than temporally evolving or versioned corpora.",
+  "Cross-backbone transfer is evaluated, but explicit non-stationary data-distribution shift is not controlled with a statistical risk guarantee.",
+  "No temporal validity, document-version lineage, or permission-aware retrieval constraints are represented.",
+  "Terminal compression is model-generated and the paper does not establish a formal guarantee that all decision-relevant evidence is retained."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "unified_learned_evidence_control": 0.99,
+  "explicit_budget_control": 0.99,
+  "accuracy_efficiency_improvement": 0.98,
+  "cross_backbone_transfer": 0.97,
+  "calibration_without_conformal_risk_control": 0.96,
+  "no_temporal_version_provenance": 0.96,
+  "no_permission_aware_access": 0.96
+ },
+ "raw_claims": [
+  "DynaKRAG represents iterative RAG as a sequence of explicit evidence-control actions.",
+  "Its state records retrieved evidence, the current query, sufficiency information, action history, and accumulated cost.",
+  "A validity layer removes actions whose prerequisites are unmet or whose remaining budget is insufficient.",
+  "A learned continuation model decides whether to answer immediately or acquire more evidence.",
+  "A learned advantage scorer ranks valid nonterminal actions by expected benefit relative to answering at the current state.",
+  "Training constructs counterfactual action examples by executing valid actions from logged trajectory prefixes.",
+  "The reported experiments use HotpotQA, 2WikiMultiHopQA, and MuSiQue.",
+  "The main experiments cap acquisition and control at four steps and cap final-context document count.",
+  "The learned controller reduced retrieval calls and token use relative to the matched iterative baseline while improving reported answer quality.",
+  "Controller models trained from one backbone's trajectories were transferred to two additional language-model backbones."
+ ],
+ "source_url": "https://arxiv.org/html/2607.06507",
+ "access": "full_text"
+}

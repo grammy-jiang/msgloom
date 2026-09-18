@@ -1,0 +1,90 @@
+{
+ "paper_id": "doi-10-1016-0306-4379-96-00017-8",
+ "title": "Semantics of Time-Varying Information",
+ "research_question": "How can the underlying semantics of time-varying database facts be characterized independently of particular temporal representations, especially with respect to valid time, transaction time, and equivalence of different temporal data models?",
+ "methodology": "The paper is a conceptual and formal synthesis of the authors' 1991-1995 research on temporal database semantics rather than an empirical experiment. It analyzes existing temporal models, develops taxonomies for relationships between valid and transaction time, introduces the Bitemporal Conceptual Data Model (BCDM), and defines algebraic and equivalence concepts for relating it to representational models. Worked examples and previously established formal results are used to explain temporal specialization, temporal generalization, snapshot equivalence, and treatment of current-time-dependent information.",
+ "key_findings": [
+  {
+   "finding": "Valid time describes when a fact holds in the modeled reality, whereas transaction time describes when the fact is current in the database; the two dimensions have distinct semantics and can be recorded independently.",
+   "evidence_type": "supported",
+   "section": "2 Associating Time with Facts"
+  },
+  {
+   "finding": "Although valid time and transaction time are semantically orthogonal, applications can impose systematic relationships between them, motivating a taxonomy of specialized temporal relations such as retroactive, predictive, delayed, and degenerate relations.",
+   "evidence_type": "supported",
+   "section": "3 Temporal Specialization"
+  },
+  {
+   "finding": "A single fact can legitimately accumulate multiple transaction times as it is copied or transferred through different relations or databases, preserving when each system stored that fact and enabling queries about earlier database states through later copies.",
+   "evidence_type": "supported",
+   "section": "4 Temporal Generalization"
+  },
+  {
+   "finding": "The Bitemporal Conceptual Data Model separates the semantics of temporal information from representation and performance concerns by associating facts with regions in valid-time and transaction-time space.",
+   "evidence_type": "supported",
+   "section": "6 The Bitemporal Conceptual Data Model"
+  },
+  {
+   "finding": "Snapshot equivalence provides a representation-independent criterion for saying that structurally different temporal relations contain the same information, and the authors describe mappings between the BCDM and six existing bitemporal relational models that preserve this equivalence.",
+   "evidence_type": "supported",
+   "section": "8 Representational Models"
+  },
+  {
+   "finding": "Many differences among temporal relational models, including timestamp structure and grouping, can therefore be treated as representation or efficiency choices rather than differences in temporal information content.",
+   "evidence_type": "supported",
+   "section": "8 Representational Models; 9 Implications of the BCDM"
+  },
+  {
+   "finding": "Current-time-dependent information is more accurately represented with NOW-relative variables and a separate reference-time notion than by treating an unknown valid-time endpoint as literal infinity.",
+   "evidence_type": "supported",
+   "section": "11 Now and Forever"
+  },
+  {
+   "finding": "The paper provides temporal and version-history semantics relevant to provenance modeling, but it does not provide iterative retrieval control, evidence-sufficiency stopping, calibrated or conformal risk guarantees, permission-aware access control, bounded retrieval budgets, or mechanisms for handling distribution shift in RAG systems.",
+   "evidence_type": "unsupported",
+   "section": "Entire paper / scope relative to the review topic"
+  }
+ ],
+ "limitations": [
+  "The work is primarily conceptual and formal; it does not report an empirical evaluation, benchmark dataset, or quantitative performance metrics.",
+  "The BCDM deliberately focuses on temporal semantics while leaving physical representation, implementation efficiency, and presentation concerns to other models.",
+  "Its core formalization assumes time represented as a finite sequence of discrete chronons, which is an abstraction from continuous or more complex real-world temporal structures.",
+  "The paper addresses temporal relational databases rather than modern retrieval-augmented generation, so it contains no iterative evidence-acquisition or evidence-sufficiency controller.",
+  "It does not study calibrated selective prediction, conformal methods, statistical risk control, or robustness under distribution shift.",
+  "It does not integrate authorization or permission-aware retrieval, retrieval-cost budgets, or stopping policies based on bounded resource consumption.",
+  "Multiple transaction times capture storage and transfer history, but the paper does not define the richer document/version/source-level provenance policies typically required by contemporary RAG systems."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "valid_vs_transaction_time_semantics": 0.99,
+  "temporal_specialization_taxonomy": 0.97,
+  "multiple_transaction_times_as_lineage": 0.98,
+  "BCDM_semantic_separation": 0.98,
+  "snapshot_equivalence_across_models": 0.98,
+  "representation_vs_information_content": 0.96,
+  "now_reference_time_semantics": 0.95,
+  "no_RAG_risk_control_controller": 0.99
+ },
+ "raw_claims": [
+  "Valid time records when a fact is true in the modeled reality, while transaction time records when that fact is current in the database.",
+  "Valid time and transaction time are semantically orthogonal, although an application's update process may constrain their relationship.",
+  "Temporal specialization characterizes systematic constraints between valid-time and transaction-time values.",
+  "Facts copied between databases may accumulate multiple transaction timestamps that record successive storage events.",
+  "Retaining inherited transaction times can make historical information about an earlier relation accessible through a later relation.",
+  "The BCDM represents each fact with a bitemporal element spanning valid-time and transaction-time dimensions.",
+  "Snapshot equivalence treats two temporal relations as carrying the same information when every corresponding valid-time and transaction-time snapshot is identical.",
+  "Mappings between the BCDM and multiple existing bitemporal models can preserve snapshot-equivalent information.",
+  "Differences among several temporal models can reflect representation and storage choices rather than differences in semantic information content.",
+  "Coalescing can reduce the number of tuples needed to represent the same bitemporal information without changing snapshot semantics.",
+  "An unknown future valid-time endpoint should not necessarily be interpreted as a fact literally remaining true forever.",
+  "NOW-relative variables allow stored temporal information to depend explicitly on the changing current time.",
+  "Reference time denotes the temporal viewpoint from which a database is observed and can differ from the time when a query is executed.",
+  "The paper does not define retrieval stopping, calibrated risk, conformal guarantees, permission controls, or retrieval-budget management."
+ ],
+ "source_url": "https://people.cs.aau.dk/~csj/Thesis/pdf/chapter2.pdf",
+ "access": "full_text"
+}

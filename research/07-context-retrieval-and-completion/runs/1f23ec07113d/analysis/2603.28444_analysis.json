@@ -1,0 +1,75 @@
+{
+ "paper_id": "2603.28444",
+ "title": "Entropic Claim Resolution: Uncertainty-Driven Evidence Selection for RAG",
+ "research_question": "Can a RAG system select evidence adaptively according to its expected reduction of uncertainty over competing answer hypotheses and stop once the remaining epistemic uncertainty is sufficiently small?",
+ "methodology": "The paper introduces Entropic Claim Resolution (ECR), an inference-time controller that operates over a finite set of atomic evidence claims produced by an upstream high-recall retrieval stage. It maintains a probability distribution over competing answer hypotheses, ranks unevaluated claims by an approximation to expected entropy reduction augmented with contradiction-aware coherence signals, updates the hypothesis posterior after claim evaluation, and stops when entropy falls below a specified threshold or a maximum evaluation budget is reached. The method is integrated into a broader CSGR++/HyRAG-style system containing structured provenance, temporal normalization, multi-strategy retrieval, verification, and abstention components. Evaluation includes a controlled six-table business-data harness, HotpotQA-style end-to-end experiments, random-noise corruption, and explicit contradiction-injection experiments.",
+ "key_findings": [
+  {
+   "finding": "In the controlled three-hypothesis experiment, ECR reduced final entropy from about 1.585 bits to 0.2129 bits using five evaluated claims, whereas fixed retrieval-only selection left entropy unchanged after fifteen claims and random five-claim selection left substantially higher entropy.",
+   "evidence_type": "supported",
+   "section": "Controlled Evaluation / Main Results"
+  },
+  {
+   "finding": "Across multiple random seeds in the controlled setting, ECR consistently reached the same low final entropy and five-claim collapse point, while random selection retained much larger residual uncertainty.",
+   "evidence_type": "supported",
+   "section": "Multi-Seed Robustness"
+  },
+  {
+   "finding": "On the 300-question HotpotQA-style evaluation, ECR used slightly fewer claims than relevance-ranked RAG and achieved comparable but slightly lower exact-match, F1, and faithfulness scores, while clearly outperforming random evidence selection.",
+   "evidence_type": "supported",
+   "section": "End-to-End Evaluation"
+  },
+  {
+   "finding": "Under explicit contradiction injection, ECR exposed ambiguity rather than collapsing to an overconfident answer, with the reported contradiction conditions producing zero overconfident-error rate and full ambiguity exposure.",
+   "evidence_type": "supported",
+   "section": "Contradiction Injection Evaluation"
+  },
+  {
+   "finding": "The surrounding system records structural support and contradiction links for claims and includes explicit normalization of temporal expressions such as years, quarters, halves, LTM, and TTM, providing structured provenance signals beyond ordinary similarity retrieval.",
+   "evidence_type": "supported",
+   "section": "System Integration / Topological Provenance"
+  },
+  {
+   "finding": "The paper motivates applications in high-stakes domains such as medicine, law, and finance, but it does not provide domain-specific empirical evaluations in those settings.",
+   "evidence_type": "unsupported",
+   "section": "Introduction and Conclusion"
+  }
+ ],
+ "limitations": [
+  "ECR assumes that upstream retrieval has already produced a high-recall candidate set, so evidence absent from that set cannot be recovered by the evidence-selection controller.",
+  "Expected entropy reduction is implemented through a computational proxy rather than exact marginalization over all possible evidence outcomes.",
+  "The principal controlled experiment uses only 80 templated queries over six business CSV tables and a fixed three-hypothesis setup.",
+  "HotpotQA primarily contains singular factual answers and therefore does not strongly exercise the contradiction and genuine-ambiguity cases that motivate ECR.",
+  "ECR is slightly below the relevance-ranked RAG baseline on exact match, F1, and faithfulness in the reported HotpotQA-style evaluation.",
+  "The 40% corruption experiment can remove useful or gold evidence, so it combines distractor robustness with partial evidence loss rather than isolating distractor accumulation.",
+  "Contradiction handling depends on the quality of explicit contradiction relations, claim extraction, and verification signals.",
+  "The paper does not state a public release location for the implementation or for the controlled business-data harness."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "entropy_based_controller": 0.99,
+  "controlled_entropy_reduction": 0.99,
+  "hotpotqa_comparison": 0.98,
+  "contradiction_ambiguity_exposure": 0.99,
+  "temporal_and_structural_provenance": 0.94,
+  "high_stakes_generalization_not_tested": 0.98
+ },
+ "raw_claims": [
+  "ECR chooses the next evidence claim according to its estimated ability to reduce uncertainty over competing hypotheses.",
+  "The controller can terminate when hypothesis entropy falls below a configured epistemic-sufficiency threshold.",
+  "A contradiction-aware term gives additional priority to claims that complete an explicit contradiction pair.",
+  "The controlled experiments start with three competing answer hypotheses and an initial entropy of approximately 1.585 bits.",
+  "ECR reaches approximately 0.2129 bits of final entropy after evaluating five claims in the controlled experiment.",
+  "The end-to-end HotpotQA-style experiment holds the retriever, language model, candidate evidence, and decoding setup constant while changing the selection policy.",
+  "The paper reports that HotpotQA does not strongly test the contradiction and ambiguity behavior for which ECR was designed.",
+  "The integrated system stores structural support and contradiction information for claims and normalizes several common temporal expressions.",
+  "The finite-candidate formulation guarantees termination after at most the candidate-set size or the configured evaluation budget.",
+  "No bespoke model fine-tuning is required for ECR itself."
+ ],
+ "source_url": "https://arxiv.org/html/2603.28444",
+ "access": "full_text"
+}

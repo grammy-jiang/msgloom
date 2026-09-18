@@ -1,0 +1,218 @@
+{
+ "round": 4,
+ "streams": [
+  {
+   "id": "F4",
+   "description": "Evidence-coverage and verification-aware stopping: retrieval terminates based on assessed information sufficiency or verification of required evidence rather than fixed depth alone."
+  },
+  {
+   "id": "F5",
+   "description": "Selective QA and abstention under distribution shift: transferable methods for maintaining controlled answer risk or deciding when to abstain as deployment distributions change."
+  },
+  {
+   "id": "F6",
+   "description": "Conformal and risk-controlled retrieval-augmented prediction: conformal methods applied directly to RAG retrieval, QA outputs, or factuality so reliability claims have statistical grounding."
+  },
+  {
+   "id": "F8",
+   "description": "Valid-time, transaction-time, and bitemporal data semantics: transferable foundations for separating when evidence is true from when an information system recorded or observed it."
+  },
+  {
+   "id": "F9",
+   "description": "Version-aware retrieval and versioned document QA: explicit reasoning about evolving document versions, supersession, historical validity, and version-sensitive questions."
+  },
+  {
+   "id": "F12",
+   "description": "Budgeted and cost-aware evidence acquisition: evidence selection or iterative retrieval under explicit token, context, latency, or other resource constraints."
+  },
+  {
+   "id": "F14",
+   "description": "Integrated retrieval-controller architectures: controllers combining structured evidence state or gap tracking with iterative acquisition, sufficiency reassessment, and stopping."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2603.08819",
+   "decision": "REJECT",
+   "reason": "The abstract studies correlation between retrieval metrics and downstream information coverage, but does not implement a structured evidence-gap controller, verification-aware stopping rule, provenance mechanism, or calibrated stopping policy. Its vocabulary is relevant to F4, but the required control capability is absent.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2608.02195",
+   "decision": "ADMIT",
+   "stream_id": "F14",
+   "role": "DIRECT",
+   "reason": "The abstract describes a single iterative controller built around a multi-granular evidence graph: it represents accumulated evidence structurally, diagnoses explicit missing information when unresolved, generates focused follow-up queries, reassesses resolution after each stage, and stops when the query is resolved. This materially strengthens the integrated structured-gap plus iterative-retrieval plus semantic-stopping stream and is especially relevant to gap-1 and the structured-control portion of gap-8.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2607.06507",
+   "decision": "ADMIT",
+   "stream_id": "F14",
+   "role": "DIRECT",
+   "reason": "The abstract exposes an explicit shared evidence state containing retrieved documents, frontier information, query/action history, bridge candidates, and diagnostic feedback, with a learned controller choosing among rewriting, bridge expansion, gap-directed retrieval, sufficiency checking, and stopping. Controlled ablations of sufficiency feedback and operation selection make this substantially stronger than a generic iterative-RAG paper.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-2bb76a9136",
+   "decision": "ADMIT",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "reason": "The abstract directly couples evidence selection to conformal uncertainty, preserves distribution-free coverage, and uses marginal information gain to decide whether an uncertain retrieval step warrants additional lookahead. That is a materially different risk-controlled retrieval mechanism from ordinary relevance retrieval and directly strengthens F6, although it does not itself solve iterative free-form RAG stopping under shift. Identity is UNCHECKED, so canonical identifier verification should occur before corpus freeze.",
+   "confidence": 0.85
+  },
+  {
+   "paper_id": "2510.22344",
+   "decision": "ADMIT",
+   "stream_id": "F14",
+   "role": "DIRECT",
+   "reason": "The Structured Evidence Assessment described in the abstract decomposes a question into required findings, audits accumulated evidence against that structure, records both confirmed facts and unresolved gaps, converts gaps into follow-up queries, and repeats until evidence is sufficient. This directly strengthens structured sufficiency-driven iterative retrieval and addresses a central part of gap-1 and gap-8.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-80ff27ab7b",
+   "decision": "REJECT",
+   "reason": "The paper is generic adaptive conformal inference under temporal or covariate shift rather than retrieval, RAG, QA abstention, or evidence stopping. Its transfer value is substantially duplicated by VERIFIED conformal-shift candidates in this set, especially 2208.08401, so the UNCHECKED candidate does not justify a reading slot.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2505.02811",
+   "decision": "ADMIT",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "reason": "The abstract directly targets the continue-versus-stop decision in multi-round RAG using an information-sufficiency critic evaluated after every retrieval round. It therefore supplies direct empirical evidence for semantic sufficiency stopping rather than fixed-hop retrieval and is relevant to the non-calibrated baseline side of gap-3.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2307.04642",
+   "decision": "ADMIT",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "reason": "TRAQ applies conformal prediction end-to-end to retrieval-augmented open-domain QA and provides a statistical coverage guarantee for prediction sets containing a semantically correct answer. It does not govern retrieval depth, but it is direct RAG evidence for statistically grounded reliability and therefore materially strengthens the conformal component needed by gap-3 and gap-8.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2602.20735",
+   "decision": "REJECT",
+   "reason": "The abstract contains adaptive retrieval, query-subpart coverage checks, gap-targeted follow-up, a token threshold, and an iteration cap, but these capabilities substantially overlap the more explicit and experimentally stronger integrated controllers represented by MEGRAG, DynaKRAG, FAIR-RAG, and AdaGATE. Nothing in the abstract adds calibrated risk control, temporal/version provenance, permissions, or a distinctive cost model that would close the remaining high-priority gaps.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1609-aaai-v39i12-33353",
+   "decision": "REJECT",
+   "reason": "The abstract concerns conformal uncertainty allocation across knowledge-graph and language-model reasoning components, not document retrieval, RAG evidence acquisition, retrieval stopping, or provenance-aware investigation. The risk-budget idea is transferable in principle, but the capability is too indirect for this constrained round and the identifier is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2506.05167",
+   "decision": "ADMIT",
+   "stream_id": "F12",
+   "role": "DIRECT",
+   "reason": "The abstract explicitly combines evidence-oriented compression, post-compression sufficiency assessment, additional retrieval when evidence remains insufficient, and empirical evaluation of latency and token savings. This directly strengthens the resource-aware side of iterative evidence acquisition and supplies concrete cost measurements relevant to gap-6.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2405.05160",
+   "decision": "REJECT",
+   "reason": "This is general selective classification under mixed distribution shifts rather than QA or retrieval. F5 already has a more task-aligned VERIFIED selective-QA candidate, and the broader classification formulation does not materially strengthen evidence-gap retrieval or stopping beyond that transfer evidence.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2609.08364",
+   "decision": "ADMIT",
+   "stream_id": "F9",
+   "role": "DIRECT",
+   "reason": "The abstract directly evaluates QA over evolving, versioned documents and returns inline evidence citations together with temporal verification and drift reports identifying guideline updates. Although it is not an iterative evidence-gap controller, it materially strengthens version-sensitive provenance and freshness handling relevant to gap-2 by exercising evolving authoritative evidence rather than treating documents as timeless.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2506.20978",
+   "decision": "ADMIT",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "reason": "The abstract applies conformal prediction directly to RAG response subclaims and provides group-conditional coverage across multiple subdomains while filtering claims at a specified reliability target. It controls output quality rather than retrieval depth, but the conditional reliability result materially strengthens the calibrated-risk component needed for a future stopping controller.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2106.00170",
+   "decision": "REJECT",
+   "reason": "Adaptive conformal inference under evolving distributions is relevant transfer theory, but this round already contains a more directly task-aligned selective-QA-under-shift paper and a later VERIFIED online conformal paper explicitly handling arbitrary distribution shifts. Reading this additional generic foundation is unlikely to change the project decision or close gap-3.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2402.03181",
+   "decision": "ADMIT",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "reason": "The abstract develops conformal risk bounds specifically for retrieval-augmented language models and explicitly analyzes test-distribution shift. Although retrieval depth is fixed, the combination of RAG-specific risk certification and distribution-shift analysis is unusually close to the statistical component missing in gap-3 and therefore warrants reading.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2006.09462",
+   "decision": "ADMIT",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "reason": "The paper directly formalizes selective QA under domain shift, optimizes the accuracy-coverage decision of whether to answer, demonstrates failure of raw model probabilities under shift, and learns a separate abstention calibrator using source and out-of-domain behavior. This is strong task-level transfer evidence for the abstention and shifted-risk side of gap-3.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2603.19281",
+   "decision": "REJECT",
+   "reason": "URAG evaluates uncertainty methods under changes in retrieval depth and retrieval noise, which is useful benchmarking context, but the abstract does not describe a retrieval controller, calibrated stopping rule, selective-answer policy under domain shift, or risk guarantee. It measures signals that a controller could use rather than providing the missing capability itself.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-db92af7586",
+   "decision": "REJECT",
+   "reason": "The method provides generic finite-sample risk control under covariate shift and is tested outside retrieval or QA. Its possible transfer to RAG stopping is indirect, it is UNCHECKED, and VERIFIED candidates in this set provide either RAG-specific conformal risk analysis or QA-specific selective prediction under shift.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2604.19899",
+   "decision": "ADMIT",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "reason": "This is not another proposal of a semantic stopping mechanism but a reproducibility study that re-evaluates metacognitive sufficiency stopping and compares it with SIM-RAG, reporting lower absolute replication results and sensitivity to reranking and sufficiency judgments. That materially strengthens the evidence base on robustness of F4 stopping signals and is important because gap-3 concerns reliability, not merely headline accuracy.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2605.05245",
+   "decision": "ADMIT",
+   "stream_id": "F12",
+   "role": "DIRECT",
+   "reason": "The abstract formulates evidence acquisition as an explicit token-constrained repair problem, tracks entity-centric gaps, issues targeted micro-queries, evaluates candidate evidence for coverage and corroboration, and replaces low-utility evidence while maintaining a fixed token budget. This materially strengthens both structured gap repair and bounded evidence acquisition, with particularly direct value for gap-6 and the budget dimension of gap-8.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2208.08401",
+   "decision": "ADMIT",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "reason": "The abstract gives online conformal inference procedures designed for arbitrary distribution shifts and adapts to both shift magnitude and type while controlling local regret. It is not a RAG system, but it materially strengthens the statistical transfer foundation for gap-3 because the unresolved requirement specifically concerns calibrated stopping under non-stationary deployment distributions.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2608.08512",
+   "decision": "ADMIT",
+   "stream_id": "F9",
+   "role": "DIRECT",
+   "reason": "TIDE directly evaluates version resolution over documents that are amended, replaced, or reverted, requiring the system to identify which official version was valid at the queried date and to reject versions that did not govern then. Explicit validity intervals and a hard temporal-correctness gate make this unusually strong evidence for the version-lineage and effective-time component of gap-2.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1016-0306-4379-96-00017-8",
+   "decision": "ADMIT",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "reason": "The abstract explicitly distinguishes valid time from transaction time and combines them in bitemporal relations, including complications introduced when facts are replicated or transferred between systems. Those semantics directly address the project's need not to conflate factual effective time with observation or storage history and therefore materially strengthen the conceptual foundation for gap-2. Identity is UNCHECKED and should be canonically verified before corpus freeze.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-1145-2619088",
+   "decision": "REJECT",
+   "reason": "This is a survey organizing temporal information-retrieval terminology and prior methods rather than a candidate controller or empirical study that closes the current gaps. It may be useful as background vocabulary, but it does not itself validate structured temporal gaps, version-aware iterative retrieval, or temporally grounded stopping, and the identifier is UNCHECKED.",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "Admission is intentionally selective. The strongest direct additions are integrated structured-gap controllers (MEGRAG, DynaKRAG, FAIR-RAG), semantic stopping and its reproducibility evidence (SIM-RAG and the MetaRAG reproducibility study), conformal or risk-controlled RAG methods (IDCR, TRAQ, Conformal-RAG, C-RAG), budget-aware evidence acquisition (ECoRAG and AdaGATE), and explicit version/effective-time reasoning (SentryLine and TIDE). Selective QA under domain shift and online conformal inference are admitted only as transfer evidence for gap-3; neither is evidence that bounded-risk iterative RAG stopping has been solved. No candidate abstract jointly demonstrates structured evidence gaps, native permission enforcement, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting, so gap-8 remains open. No candidate implements the permission-filtered replenishment loop or the complete terminal-condition taxonomy described in gaps 4 and 5, and no candidate supplies the requested workplace multi-source evaluation for gap-7."
+}

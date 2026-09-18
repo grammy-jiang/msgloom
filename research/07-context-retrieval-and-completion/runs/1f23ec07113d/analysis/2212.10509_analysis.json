@@ -1,0 +1,73 @@
+{
+ "paper_id": "2212.10509",
+ "title": "Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions",
+ "research_question": "Does repeatedly alternating chain-of-thought reasoning with retrieval, so that each reasoning step can determine what evidence to retrieve next, improve evidence recall and answer quality on knowledge-intensive multi-step questions?",
+ "methodology": "IRCoT starts with passages retrieved for the original question, generates one chain-of-thought sentence from the question, accumulated evidence, and prior reasoning, then uses that new reasoning sentence as the query for another retrieval step. This reason-retrieve cycle terminates when the generated reasoning contains an answer marker or after a maximum of eight iterations, while limiting the accumulated evidence set to 15 paragraphs. The authors evaluate GPT-3 and multiple Flan-T5 sizes with BM25 retrieval on HotpotQA, 2WikiMultihopQA, MuSiQue, and IIRC, measuring fixed-budget retrieval recall and downstream QA F1 and exact match, with additional out-of-domain, model-scale, and factuality analyses.",
+ "key_findings": [
+  {
+   "finding": "With GPT-3 as the reasoning model, IRCoT increased fixed-budget retrieval recall over one-step retrieval by 11.3, 22.6, 12.5, and 21.2 points on HotpotQA, 2WikiMultihopQA, MuSiQue, and IIRC respectively.",
+   "evidence_type": "supported",
+   "section": "Retrieval Results"
+  },
+  {
+   "finding": "Interleaved retrieval also improved downstream QA F1 on most evaluated settings, including gains of 7.1, 13.2, and 7.1 points with GPT-3 on the first three datasets, although the large IIRC retrieval gain did not yield a corresponding QA improvement.",
+   "evidence_type": "supported",
+   "section": "Question Answering Results"
+  },
+  {
+   "finding": "IRCoT retained retrieval and QA advantages under cross-dataset demonstrations in the reported out-of-domain experiments, except that IIRC was excluded from this comparison because of its different structure.",
+   "evidence_type": "supported",
+   "section": "Out-of-Domain Analysis"
+  },
+  {
+   "finding": "Manual factuality analysis found fewer factual errors in IRCoT reasoning than in the one-retrieval baseline, including reported reductions of 50% on HotpotQA and 40% on 2WikiMultihopQA.",
+   "evidence_type": "supported",
+   "section": "Factuality Analysis"
+  },
+  {
+   "finding": "Retrieval improvements appeared across all tested language-model sizes, including small Flan-T5 models, whereas downstream QA gains were less reliable at the smallest scale.",
+   "evidence_type": "supported",
+   "section": "Model Scale Analysis"
+  },
+  {
+   "finding": "The method's stopping mechanism is a generated answer-marker heuristic plus a hard iteration cap rather than an independently calibrated assessment that the accumulated evidence is sufficient.",
+   "evidence_type": "supported",
+   "section": "Method"
+  }
+ ],
+ "limitations": [
+  "The method relies on a language model being able to generate useful zero-shot or few-shot chain-of-thought reasoning, which the authors report as more difficult for smaller models.",
+  "Interleaving many retrieved paragraphs with demonstrations and prior reasoning requires a relatively long model context window.",
+  "The GPT-3 code-davinci-002 model used in the experiments was deprecated after submission, making exact reproduction of those results difficult.",
+  "Stopping is based on the model producing an answer marker or reaching an eight-step cap rather than on calibrated evidence completeness, uncertainty, or retrieval value.",
+  "The system does not explicitly enforce permissions, source versions, provenance freshness, or temporal validity.",
+  "The evaluation bounds retrieval by paragraph count but does not optimize a comprehensive end-to-end cost function covering reasoning-model inference and retrieval."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieval_recall_improvement": 0.99,
+  "qa_improvement": 0.98,
+  "out_of_domain_robustness": 0.94,
+  "factual_error_reduction": 0.96,
+  "model_scale_effect": 0.96,
+  "heuristic_stopping": 0.99
+ },
+ "raw_claims": [
+  "IRCoT alternates one reasoning step with one retrieval step instead of retrieving all supporting evidence before reasoning.",
+  "Each newly generated chain-of-thought sentence becomes the basis for the next retrieval query.",
+  "Retrieved paragraphs accumulate so later reasoning has access to evidence obtained in earlier iterations.",
+  "The loop stops when the generated reasoning expresses an answer or when the maximum number of iterations is reached.",
+  "The evaluation covers four knowledge-intensive multi-step question-answering datasets.",
+  "Interleaving reasoning and retrieval substantially improves fixed-budget evidence recall over one-step retrieval.",
+  "Higher retrieval recall usually translates into improved question-answering performance but not in every dataset.",
+  "The authors observe fewer factual errors in reasoning when retrieval is interleaved with the chain of thought.",
+  "Retrieval gains remain visible with smaller language models even when their final QA gains are weaker.",
+  "The authors released code, data-related resources, and prompting materials for the experiments."
+ ],
+ "source_url": "https://arxiv.org/html/2212.10509",
+ "access": "full_text"
+}

@@ -1,0 +1,81 @@
+{
+ "paper_id": "2208.08401",
+ "title": "Conformal Inference for Online Prediction with Arbitrary Distribution Shifts",
+ "research_question": "Can online conformal prediction maintain locally accurate coverage under changing distribution shifts without knowing the rate or magnitude of distribution change in advance?",
+ "methodology": "The paper introduces DtACI, which extends adaptive conformal inference by running multiple ACI step-size choices and dynamically weighting them according to their recent online performance. The authors analyze the method through online convex optimization and establish dynamic-regret bounds over local time intervals, then connect these bounds to local coverage under additional regularity conditions and derive an exact long-run coverage result for decaying hyperparameters. DtACI is compared with AgACI and MVP in stationary, smoothly shifting, and abruptly shifting simulations. The method is also evaluated on online stock-volatility prediction and one-week-ahead US county COVID-19 case forecasting.",
+ "key_findings": [
+  {
+   "finding": "DtACI adaptively tunes ACI's step size rather than requiring prior knowledge of how rapidly the data-generating distribution changes.",
+   "evidence_type": "supported",
+   "section": "2 Dynamically-tuned Adaptive Conformal Inference"
+  },
+  {
+   "finding": "Theorem 3.1 provides a local dynamic-regret guarantee whose bound adapts to variation in the time-varying optimal miscoverage parameter over the evaluated interval.",
+   "evidence_type": "supported",
+   "section": "3.1 Dynamic regret of DtACI"
+  },
+  {
+   "finding": "The local-regret result can be translated into a local-coverage bound when the conformity-score distribution has a suitable density lower bound and the coverage map is sufficiently smooth.",
+   "evidence_type": "supported",
+   "section": "3.2 Bounds on the local coverage"
+  },
+  {
+   "finding": "A modified DtACI with eta and sigma tending to zero obtains exact long-run average coverage at the target level.",
+   "evidence_type": "supported",
+   "section": "3.3 Bounds on the long-term coverage"
+  },
+  {
+   "finding": "In simulations, DtACI suffers a small disadvantage under stationarity but adapts better than the comparison methods when the magnitude of distribution shifts changes sharply.",
+   "evidence_type": "supported",
+   "section": "4.1 Simulated data"
+  },
+  {
+   "finding": "The stock-volatility and COVID-19 experiments show DtACI adapting its prediction sets to real nonstationary sequences while maintaining coverage close to the target.",
+   "evidence_type": "supported",
+   "section": "4.2 Real data examples and 4.3 Predicting Covid-19 case counts"
+  },
+  {
+   "finding": "Bootstrap error bars shown for empirical conditional coverage under distribution shift are explicitly diagnostic rather than guaranteed confidence intervals.",
+   "evidence_type": "supported",
+   "section": "4.2.2 Conditional coverage"
+  }
+ ],
+ "limitations": [
+  "DtACI controls prediction-set coverage rather than retrieval, evidence sufficiency, answer generation, or a RAG stopping loop.",
+  "The interpretation of dynamic regret as local coverage requires additional density and smoothness conditions; arbitrary distribution shift does not imply assumption-free exact local conditional coverage.",
+  "The exact long-run coverage statement uses a modified regime in which eta and sigma decay toward zero.",
+  "The empirical conditional-coverage bootstrap intervals shown under nonstationarity do not themselves have formal coverage guarantees.",
+  "There is a tradeoff between reacting quickly to local changes and stabilizing prediction-set behavior under stationary data.",
+  "The method contains no evidence provenance, temporal document versioning, permissions, or retrieval-cost budget.",
+  "Applying DtACI to a RAG stopping decision would require defining an appropriate conformity score and loss event and then validating that the resulting online feedback is available and meaningful."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "adaptive_step_size_handles_unknown_shift_rate": 0.99,
+  "dynamic_regret_theory": 0.99,
+  "local_coverage_requires_regularities": 0.99,
+  "exact_long_run_coverage_under_decay": 0.99,
+  "better_adaptation_to_sharp_shift": 0.98,
+  "conditional_bootstrap_not_formally_guaranteed": 0.99,
+  "not_a_rag_controller": 1.0
+ },
+ "raw_claims": [
+  "DtACI dynamically adjusts the step-size behavior of adaptive conformal inference.",
+  "Its design does not require advance knowledge of the rate of distribution change.",
+  "The theoretical analysis controls dynamic regret over local time intervals.",
+  "Additional density and Lipschitz assumptions connect the regret result to local coverage error.",
+  "When eta and sigma decay to zero, the modified procedure attains exact long-run average coverage.",
+  "DtACI is slightly less precise than some competitors in the stationary simulation.",
+  "DtACI adapts more effectively when the magnitude of distribution shift changes abruptly.",
+  "The real-data experiments cover stock-market volatility and COVID-19 case forecasting.",
+  "The COVID-19 experiment uses data from a public Carnegie Mellon DELPHI repository.",
+  "The conditional-coverage bootstrap plots under shift are visual diagnostics rather than guaranteed intervals.",
+  "The method supplies a potential risk-control primitive but does not itself implement retrieval stopping or provenance control."
+ ],
+ "source_url": "https://arxiv.org/html/2208.08401",
+ "access": "full_text"
+}

@@ -1,0 +1,80 @@
+{
+ "paper_id": "2506.05167",
+ "title": "ECoRAG: Evidentiality-guided Compression for Long Context RAG",
+ "research_question": "Can a RAG system compress long retrieved contexts by explicitly estimating evidence sufficiency and adaptively stop adding evidence once enough information is present to support a correct answer?",
+ "methodology": "ECoRAG trains an evidentiality-guided compressor to rank sentences as strong evidence, weak evidence, or distractors according to whether they enable correct answer generation and whether they interfere with useful evidence. A lightweight Flan-T5-large evaluator classifies the currently accumulated evidence as sufficient or insufficient; inference begins with the highest-ranked sentence and adds the next ranked sentence until the evaluator emits the evidential state or a token limit is reached. Experiments use 100 pre-retrieved DPR documents on Natural Questions, TriviaQA, and WebQuestions with EM, F1, token count, evidence-ranking, evaluator-quality, ablation, and latency measurements.",
+ "key_findings": [
+  {
+   "finding": "ECoRAG implements an explicit iterative evidence-sufficiency stopping rule: evidence is added in ranked order until the evaluator judges the accumulated context evidential.",
+   "evidence_type": "supported",
+   "section": "3.2 Evidentiality Reflection for Adaptive Compression"
+  },
+  {
+   "finding": "The evidence-accumulation loop has a hard token limit, preventing indefinite iteration when the initially retrieved corpus contains no sufficient evidence.",
+   "evidence_type": "supported",
+   "section": "3.2.2 Adaptive Compression"
+  },
+  {
+   "finding": "The loop operates over an already retrieved and ranked pool rather than repeatedly issuing new document-retrieval requests, so it is bounded context accumulation rather than open-ended adaptive retrieval.",
+   "evidence_type": "supported",
+   "section": "3.2.2 Adaptive Compression; 4.1 Datasets"
+  },
+  {
+   "finding": "ECoRAG achieved EM scores of 36.48 on NQ, 65.34 on TQA, and 30.17 on WQ while using hundreds rather than roughly fourteen thousand input tokens used by uncompressed 100-document RAG.",
+   "evidence_type": "supported",
+   "section": "4.2 Results, Table 1"
+  },
+  {
+   "finding": "The evidentiality evaluator exceeded the CompAct evaluator by 13.96 percentage points in F1 and performed within 0.08 percentage points of the much larger Flan-UL2 reader on the reported evidentiality test.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ2"
+  },
+  {
+   "finding": "Removing adaptive evidentiality evaluation reduced EM by 0.77 percentage points on NQ and 1.80 percentage points on TQA, supporting the value of evidence-dependent stopping.",
+   "evidence_type": "supported",
+   "section": "5.3 RQ3"
+  },
+  {
+   "finding": "The stopping decision is learned but not statistically calibrated; the paper provides neither conformal risk guarantees nor explicit robustness guarantees under distribution shift.",
+   "evidence_type": "supported",
+   "section": "3 Proposed Method; 7 Limitation"
+  }
+ ],
+ "limitations": [
+  "Mining evidentiality labels requires multiple LLM inferences per question and is computationally expensive.",
+  "The experiments assume that 100 retrieved documents are already provided, so retrieval quality and adaptive acquisition of new documents are outside the main method.",
+  "A token cap prevents infinite accumulation but does not guarantee that the final context is sufficient when gold evidence is absent.",
+  "Evidentiality is defined through the behavior of a particular reader LLM, making the supervision partly model-dependent.",
+  "The sufficiency evaluator is not conformally calibrated and no risk level is attached to the stopping event.",
+  "The study does not test non-stationary or distribution-shifted retrieval conditions.",
+  "No temporal/version-aware provenance or document-supersession mechanism is included.",
+  "No permission-aware or role-based access-control mechanism is included."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "iterative_evidence_sufficiency_stopping": 0.99,
+  "hard_token_budget": 0.99,
+  "fixed_retrieved_pool": 0.98,
+  "evidentiality_improves_accuracy": 0.97,
+  "no_conformal_calibration": 0.99,
+  "no_temporal_provenance": 0.96
+ },
+ "raw_claims": [
+  "ECoRAG ranks retrieved sentences according to LLM-defined evidentiality.",
+  "Its labels distinguish strong evidence, weak evidence, and distractors.",
+  "A lightweight evaluator predicts whether the current compressed context is sufficient evidence for correct answer generation.",
+  "The system begins with the top-ranked evidence and adds further evidence when the evaluator predicts insufficiency.",
+  "The iterative process stops either when evidence is judged sufficient or when a token limit is reached.",
+  "Experiments use Natural Questions, TriviaQA, and WebQuestions with 100 DPR-retrieved documents per query.",
+  "The paper reports EM, word-level F1, compressed token count, and latency.",
+  "The evaluator ablation lowers answer accuracy on both NQ and TQA.",
+  "ECoRAG's NQ total latency is reported as 4.96 hours versus 12.28 hours for uncompressed standard RAG in the latency experiment.",
+  "The implementation is released on GitHub."
+ ],
+ "source_url": "https://arxiv.org/html/2506.05167",
+ "access": "full_text"
+}

@@ -1,0 +1,75 @@
+{
+ "paper_id": "2607.27726",
+ "title": "Baikal: Structured Search for Deep Research over Data Lakes",
+ "research_question": "Can deep research over large heterogeneous data lakes be improved by partitioning evidence into semantic regions and adaptively allocating a limited search budget across those regions instead of repeatedly following locally promising retrieval results?",
+ "methodology": "Baikal embeds tables and passages and clusters them into semantic regions, retaining regions activated by query-conditioned retrieval hits. During research, a controller chooses a region, generates region-answerable subquestions, and invokes a region-restricted agent that searches structured tables with SQL and associated passages while returning source identifiers. Findings are graded for groundedness, relevance, distinctness, and utility, and those rewards update region-selection policies including random, LLM-based, Bayesian epsilon-greedy, and Bayesian-UCB policies. Experiments use HybridQA and TAT-QA data lakes with a fixed finding budget, GPT-5-mini as the main backbone, comparisons against deep-research baselines, component ablations, longer-budget experiments, model scaling tests, and cross-LLM evaluation of the finding-scoring rubric.",
+ "key_findings": [
+  {
+   "finding": "The strongest reported Baikal configurations reach report scores of 0.46 on HybridQA and 0.45 on TAT-QA, corresponding to improvements of 28% and 36% over the strongest compared baselines according to the paper.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Three of the four Baikal region-selection policies outperform every reported baseline on both data lakes, while the LLM-only region policy underperforms on HybridQA because it concentrates too heavily on apparently safe regions and loses evidence coverage.",
+   "evidence_type": "supported",
+   "section": "Main Results / Policy Comparison"
+  },
+  {
+   "finding": "Baikal recovers substantially more gold evidence than the compared OpenCode and DeepSearcher baselines, including approximately 0.32 to 0.35 gold-table recall on HybridQA versus lower values for those baselines.",
+   "evidence_type": "supported",
+   "section": "Evidence Coverage Analysis"
+  },
+  {
+   "finding": "At the default budget of 50 findings, policy differences are difficult to separate because the available budget is close to the number of candidate semantic regions; in a 200-finding experiment on three HybridQA queries, Bayesian-UCB gains 5.61 cumulative finding-score points, or 8.8%, over random search.",
+   "evidence_type": "supported",
+   "section": "Long-Budget Policy Analysis"
+  },
+  {
+   "finding": "Ablations show that both the region-restricted research agent and semantic region expansion materially contribute to report quality, while LLM subquestion selection adds a smaller further gain.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Cross-model agreement for the automatic finding rubric is high for distinctness but much weaker for utility, with reported Gwet agreement coefficients of 0.91 and 0.33 respectively, indicating substantial evaluator subjectivity for the utility dimension.",
+   "evidence_type": "supported",
+   "section": "Evaluation Reliability"
+  }
+ ],
+ "limitations": [
+  "The principal evaluation contains only 15 deep-research queries per data lake.",
+  "Each main configuration is run once per query with a fixed seed, so reported confidence intervals represent variation across queries rather than repeated stochastic executions.",
+  "Report and finding quality depend heavily on automatic LLM judging, and the low inter-model agreement on utility indicates that this component is subjective.",
+  "Evidence that is not reachable through the initial query-conditioned region activation cannot be recovered by subsequent policy decisions.",
+  "The default 50-finding budget is too small to cleanly distinguish the adaptive region-selection policies, while the stronger 200-finding comparison uses only three HybridQA queries.",
+  "The approach requires sufficiently capable instruction following and coding behavior; at least one smaller evaluated model fails to produce valid outputs.",
+  "Baikal uses source identifiers for evidence grounding, but it does not introduce explicit temporal-validity or document-version semantics.",
+  "The search process uses a fixed finding budget rather than a calibrated uncertainty or risk-controlled stopping guarantee."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "report_score_improvement": 0.99,
+  "gold_evidence_recovery": 0.98,
+  "long_budget_bayesian_ucb_gain": 0.97,
+  "component_ablation": 0.99,
+  "evaluation_rubric_subjectivity": 0.98,
+  "fixed_budget_not_calibrated_stopping": 0.98
+ },
+ "raw_claims": [
+  "Baikal organizes a heterogeneous data lake into semantic regions before allocating research effort.",
+  "A query activates every semantic region that contains at least one of its top retrieved items.",
+  "Subquestions are answered by an agent restricted to the selected region's tables and passages.",
+  "The research agent is required to cite table or passage identifiers in its findings.",
+  "Finding rewards combine groundedness, relevance, distinctness, and utility.",
+  "The principal experiments use HybridQA and TAT-QA data lakes.",
+  "The default search budget is 50 findings.",
+  "Bayesian-UCB becomes more clearly advantageous over random region selection when the search budget is expanded in the reported longer-budget experiment.",
+  "Automatic evaluator agreement is markedly weaker for utility than for distinctness.",
+  "The authors publish an implementation repository for Baikal."
+ ],
+ "source_url": "https://arxiv.org/html/2607.27726",
+ "access": "full_text"
+}

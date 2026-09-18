@@ -1,0 +1,83 @@
+{
+ "paper_id": "2010.11915",
+ "title": "Challenges in Information-Seeking QA: Unanswerable Questions and Paragraph Retrieval",
+ "research_question": "Why do naturally occurring information-seeking questions remain unanswerable for strong QA systems, and how much of the difficulty comes from paragraph selection, answerability prediction, missing evidence, invalid questions, or restrictive task design?",
+ "methodology": "The paper analyzes Natural Questions and TyDi QA, contrasting their naturally occurring information-seeking queries with SQuAD 2.0's artificially constructed unanswerable questions. It performs controlled oracle experiments that provide models with gold answer type and/or gold evidence paragraphs, then evaluates answerability classification using question-only and full QA models. The authors manually classify 800 unanimously unanswerable examples from NQ and five TyDi languages, search alternative Wikipedia and non-Wikipedia sources, and categorize failures into retrieval misses, non-factoid or multi-evidence needs, invalid questions, false premises, and annotation errors. Performance is reported with QA F1/precision/recall, answer-type classification accuracy, category-level error rates, and annotation agreement.",
+ "key_findings": [
+  {
+   "finding": "Oracle experiments show that paragraph selection and answerability prediction account for substantial remaining error; once models receive gold evidence and answer-type information, their answer extraction becomes much stronger.",
+   "evidence_type": "supported",
+   "section": "3 QA performances with Gold Answer Type and Gold Paragraph"
+  },
+  {
+   "finding": "Answerability prediction remains difficult on naturally occurring information-seeking questions: for binary classification, the reported QA model reaches 82.5% on NQ and 79.4% on TyDi QA, compared with aggregate human agreement of 85.6% and 94.0%.",
+   "evidence_type": "supported",
+   "section": "4 Answerability Prediction"
+  },
+  {
+   "finding": "Question-only models exceed 70% binary answerability accuracy on NQ and TyDi QA, showing that surface-form artifacts provide substantial cues even though the questions were collected independently of evidence documents.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "The causes of unanswerability vary strongly by dataset and language: 38% of the analyzed NQ unanswerable subset consists of invalid or ill-defined questions, whereas retrieval misses account for roughly 50-74% of annotated TyDi examples across the five studied languages.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Many questions labeled unanswerable relative to their supplied document become answerable when annotators search another Wikipedia page or a non-Wikipedia source, demonstrating that evidence-source coverage is a major determinant of apparent answerability.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Single-paragraph extractive task definitions themselves create unanswerability for questions that require multiple pieces of evidence or descriptive, non-factoid answers.",
+   "evidence_type": "supported",
+   "section": "5.5 Discussion"
+  },
+  {
+   "finding": "Lexically related but incorrect evidence can induce confident wrong answers, so evidence relevance alone is insufficient for reliable abstention.",
+   "evidence_type": "supported",
+   "section": "5.4 Per-category Performance"
+  }
+ ],
+ "limitations": [
+  "The primary modeling experiments use a reading-comprehension setting with a supplied reference document rather than a fully adaptive open-domain retrieval controller.",
+  "The manual study contains 800 examples and covers NQ plus five TyDi languages, so it is not a comprehensive sample of all information-seeking domains or languages.",
+  "The categorization boundaries can overlap, particularly between retrieval failure and inherently multi-evidence or non-factoid questions.",
+  "Searching heterogeneous non-Wikipedia sources improves coverage but introduces untested domain-adaptation and format-generalization problems.",
+  "The paper identifies abstention and evidence-coverage problems but does not implement a calibrated risk-bounded stopping policy.",
+  "It does not model temporal validity, document versions, or permission-aware retrieval.",
+  "The authors note that moving from extractive to free-form answers creates a harder evaluation problem that the study does not solve."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "paragraph_and_answerability_are_major_headrooms": 0.99,
+  "natural_answerability_prediction_is_hard": 0.99,
+  "question_only_artifacts_exist": 0.99,
+  "unanswerability_causes_vary_by_dataset": 0.99,
+  "broader_sources_increase_answer_coverage": 0.98,
+  "single_paragraph_design_limits_coverage": 0.98,
+  "lexical_overlap_can_cause_false_answers": 0.97
+ },
+ "raw_claims": [
+  "Naturally occurring information-seeking QA remains harder than reading-comprehension benchmarks whose questions are written from the evidence.",
+  "Providing gold evidence paragraphs and gold answer types removes a large fraction of model errors.",
+  "Predicting whether a question is answerable remains a major source of error.",
+  "Question-only classifiers can exploit cues in the wording of NQ and TyDi questions.",
+  "The reasons questions are unanswerable differ substantially across datasets and languages.",
+  "Ill-defined questions form a large part of the unanswerable Natural Questions sample.",
+  "Document-retrieval failures dominate several of the analyzed TyDi language subsets.",
+  "Some apparently unanswerable factoid questions have answers on different Wikipedia pages or non-Wikipedia websites.",
+  "Some questions require information distributed across multiple paragraphs or documents.",
+  "A single-paragraph extractive formulation can incorrectly convert a valid information need into an unanswerable example.",
+  "Models can give high-confidence wrong answers when an irrelevant paragraph has misleading lexical overlap with the query.",
+  "The authors recommend broader knowledge sources, clarification of ambiguous questions, multi-document access, and abstractive answering.",
+  "The paper's code and annotated data are publicly available."
+ ],
+ "source_url": "https://arxiv.org/html/2010.11915",
+ "access": "full_text"
+}

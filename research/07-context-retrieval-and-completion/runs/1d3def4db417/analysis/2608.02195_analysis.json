@@ -1,0 +1,87 @@
+{
+ "paper_id": "2608.02195",
+ "title": "MEGRAG: Multi-Granular Evidence Graphs for Answer-Aware Multi-Hop RAG",
+ "research_question": "Can multi-hop RAG improve answer quality and efficiency by representing evidence at multiple granularities and explicitly deciding, after each reasoning step, whether the original question is sufficiently resolved or further retrieval is needed?",
+ "methodology": "MEGRAG builds an offline cross-granularity evidence graph linking passages, sentences, and extracted triples, then performs online fine-to-coarse evidence selection. Each reasoning state records the current query, selected evidence, intermediate answer, resolved reasoning path, remaining information need, an answer to the initial query, and a stop flag; unresolved states generate a focused follow-up query, while resolved states terminate. The system imposes a hard maximum number of reasoning steps and evaluates the approach on 2WikiMultiHopQA, HotpotQA, and MuSiQue with Qwen3-8B and Qwen3-Max, reporting answer quality, ablations, robustness, and retrieval/generation efficiency.",
+ "key_findings": [
+  {
+   "finding": "The controller explicitly represents remaining information need and stops only when it judges the initial query resolved; otherwise it formulates a focused query for the missing information.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "Adaptive fine-to-coarse evidence selection outperformed the best fixed-granularity variant by 1.45, 3.49, and 6.23 F1 points on the three evaluated datasets.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Structured reasoning history materially contributed to performance, with its removal reducing F1 by 1.49, 2.83, and 5.81 points across the evaluated datasets.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Answer-aware early stopping substantially reduced LLM calls and token use relative to forcing four retrieval-reasoning steps, although the accuracy trade-off varied by dataset.",
+   "evidence_type": "supported",
+   "section": "Efficiency Analysis"
+  },
+  {
+   "finding": "The system has an explicit bounded-search mechanism: it uses a hard step budget, and trajectories that remain unresolved when the budget is exhausted are handled by a final resolver and marked as budget exhausted.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "The reasoning trace preserves links among queries, selected evidence, intermediate answers, remaining needs, and source-linked evidence units, providing traceability but not temporal or version-aware provenance control.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "No calibrated or conformal risk guarantee for the stop decision is described; stopping is based on the model's evidence-sufficiency reasoning rather than a statistically controlled error criterion.",
+   "evidence_type": "unsupported",
+   "section": "Method"
+  },
+  {
+   "finding": "No permission-aware evidence access policy or mechanism for validating source versions and temporal validity is described.",
+   "evidence_type": "unsupported",
+   "section": "Method and Limitations"
+  }
+ ],
+ "limitations": [
+  "The method cannot recover required evidence that falls outside the initially retrievable passage corpus.",
+  "Automatically extracted triples can contain errors or omit qualifiers present in the source text.",
+  "The online trajectory is a single directed path and cannot backtrack after an incorrect intermediate decision.",
+  "The smaller Qwen3-8B controller depends on task-specific teacher trajectories for training.",
+  "Evaluation is limited to English multi-hop factoid QA benchmarks with benchmark-specific corpora.",
+  "Reported online latency excludes one-time OpenIE extraction, embedding, and indexing costs.",
+  "The evaluated controller uses a fixed triple-first fine-to-coarse ordering rather than learning the granularity order.",
+  "The bootstrap uncertainty analysis is based on a fixed evaluation subset rather than independently sampled evaluation sets.",
+  "No temporal/version-aware provenance, permission-aware access control, or conformal risk-controlled stopping mechanism is evaluated."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_evidence_sufficiency": 0.99,
+  "adaptive_stopping_efficiency": 0.99,
+  "bounded_step_budget": 0.99,
+  "source_traceability_without_version_control": 0.96,
+  "adaptive_granularity_gain": 0.98,
+  "no_conformal_stopping_guarantee": 0.97,
+  "no_permission_or_version_control": 0.96
+ },
+ "raw_claims": [
+  "MEGRAG represents evidence at passage, sentence, and triple granularities and links finer-grained units back to source passages.",
+  "Online reasoning begins with fine-grained evidence and adds coarser evidence only when needed.",
+  "Each reasoning state includes an explicit representation of the information that remains unresolved.",
+  "A resolved initial query terminates the trajectory rather than forcing additional retrieval rounds.",
+  "An unresolved state produces a focused next query targeted at the identified information gap.",
+  "The system records a trace containing selected evidence, intermediate answers, resolved reasoning, and remaining information needs.",
+  "A hard maximum number of reasoning steps bounds retrieval and reasoning cost.",
+  "Increasing the allowed step budget on MuSiQue reduced the fraction of budget-exhausted trajectories.",
+  "Adaptive granularity and structured history both improved answer quality in the reported ablations.",
+  "The paper evaluates answer quality and efficiency on 2WikiMultiHopQA, HotpotQA, and MuSiQue."
+ ],
+ "source_url": "https://arxiv.org/html/2608.02195",
+ "access": "full_text"
+}

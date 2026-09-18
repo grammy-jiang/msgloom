@@ -1,0 +1,26 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/runs/9af0d6417416/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 1 over-attributes a causal retrieval gain specifically to feedback-conditioned query formulation in doi-10-18653-v1-2026-findings-acl-2090. The ToolQP analysis shows that the overall iterative query-planning system improves retrieval and that later queries condition on earlier retrieval feedback, but it does not report a controlled ablation isolating retrieval-feedback conditioning against an otherwise equivalent less-contextual query baseline.",
+  "The executive-summary statement that 'structured gap queries' improve retrieval or QA is slightly stronger than the S2G-RAG analysis establishes. 2604.23783 demonstrates strong performance for the full structured sufficiency-and-gap controller and a large loss when S2G-Judge is removed, but that ablation jointly removes sufficiency judging and structured gap generation rather than isolating the effect of the structured gap query representation itself.",
+  "The empty contradictions list is acceptable because the supplied analyses do not establish a direct contradiction requiring reconciliation. There are important cross-paper tensions—for example, conservative over-retrieval in 2604.23783 versus unsafe early stopping in 2608.13237—but these arise from different systems and evaluations and should not be misrepresented as contradictory empirical results."
+ ],
+ "unsupported_claims": [
+  "doi-10-18653-v1-2026-findings-acl-2090 does not by itself support the stronger claim that retrieval-feedback-conditioned query formulation, as an isolated mechanism, outperforms a specified less-contextual formulation baseline.",
+  "2604.23783 does not isolate the independent causal contribution of structured gap queries from the broader S2G-Judge sufficiency-and-gap controller."
+ ],
+ "required_fixes": [
+  "In Finding 1, either remove doi-10-18653-v1-2026-findings-acl-2090 from the evidence for the specific query-formulation comparison or revise the sentence so ToolQP is described only as an iterative query-planning system that conditions subsequent queries on retrieval feedback and improves retrieval overall.",
+  "Revise the executive summary from saying that 'structured gap queries' themselves improve retrieval or QA to saying that S2G-RAG's structured sufficiency-and-gap-driven iterative retrieval system improves QA in its evaluated settings, while the independent contribution of the gap representation is not isolated."
+ ],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.96,
+  "coherence": 0.98,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_ids belong to the allowed set. The major findings about iterative retrieval, over-retrieval risk, sufficiency versus answer correctness, adaptive stopping, permission filtering, temporal intent, cost accounting, and reader/retriever dependence are traceable to the supplied analyses. The synthesis also correctly preserves the distinction between transfer-domain evidence and direct workplace evidence: its limitations and confidence summary explicitly state that most evidence comes from QA, conversational search, Wikipedia, or tool retrieval, and that no admitted study validates the complete workplace loop. The open gaps concerning version lineage, temporal validity, IAM-constrained replenishment, stopping risk, total cost, terminal-condition semantics, and integrated workplace evaluation are not falsely presented as solved. The two issues above are localized attribution/causal-strength problems rather than failures of the overall synthesis."
+}

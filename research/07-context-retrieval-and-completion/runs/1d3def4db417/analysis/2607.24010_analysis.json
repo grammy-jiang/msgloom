@@ -1,0 +1,91 @@
+{
+ "paper_id": "2607.24010",
+ "title": "When Should Active RAG Retrieve? A Budget-Aware Evaluation of Utility, Calibration, and Cost",
+ "research_question": "How should an Active RAG controller decide when retrieval is worth its cost while respecting a future evidence-usage budget, accounting for retrieval benefit, retrieval harm, threshold calibration error, and trigger-side computation?",
+ "methodology": "The paper formulates the retrieval decision as per-example marginal utility, assigning +1 when retrieval fixes an answer, -1 when it harms a previously correct answer, and 0 when correctness is unchanged. It separates score-ranking quality from deployable operating-point calibration through exact top-k frontiers, calibration-split threshold frontiers, and conservative DKW-style budget frontiers, while separately accounting for trigger computation and retrieved-answer costs. Experiments use HotpotQA, 2WikiMultiHopQA, and MuSiQue, with the primary Qwen2.5-1.5B setting evaluating 2,000 examples per dataset and comparing adaptive, uncertainty-based, retrieval-score, linear utility, gradient-boosted utility, and cascade-style routers. The study also performs multiple calibration/held-out splits, model-family checks, retrieval-harm analyses, cost simulations, and a 733-row LLM-judge audit of automatically derived utility labels.",
+ "key_findings": [
+  {
+   "finding": "Retrieval utility is heterogeneous rather than monotonic: with Qwen2.5-1.5B, retrieval harms 8.8% of 2Wiki examples, 4.0% of HotpotQA examples, and 1.5% of MuSiQue examples even though always-retrieve accuracy improves overall.",
+   "evidence_type": "supported",
+   "section": "5 RQ1: Is retrieval utility heterogeneous?"
+  },
+  {
+   "finding": "A nominal evidence-usage target does not guarantee the same held-out usage: at the 50% target, several routers exceed the budget on substantial fractions of random calibration/test splits.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Router rankings change across datasets, budgets, and model families, so a single adaptive-accuracy number does not provide a stable characterization of retrieval-policy quality.",
+   "evidence_type": "supported",
+   "section": "5 Results; 6 Discussion"
+  },
+  {
+   "finding": "Simple uncertainty and retrieval-score baselines often rival learned budgeted-utility routers, so additional router complexity does not consistently translate into superior budgeted retrieval decisions.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Exact top-k frontiers and deployable threshold frontiers measure different properties: the first isolates ranking quality at matched usage, whereas the second measures whether a threshold calibrated on historical data transfers to future inputs.",
+   "evidence_type": "supported",
+   "section": "3 Budgeted Utility Frontiers"
+  },
+  {
+   "finding": "Evidence-usage rate is an incomplete proxy for deployment cost because some trigger architectures perform no-RAG generation or probe retrieval before deciding whether to invoke the final retrieved-context generation.",
+   "evidence_type": "supported",
+   "section": "5 Cost Analysis; 6 Discussion"
+  },
+  {
+   "finding": "An audit of 733 sampled decisions finds that an LLM judge validates 93.3% of automatically labeled retrieval benefits and 83.8% of harms, while borderline EM/F1 cases are substantially noisier at 40.0% validity.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "The paper advocates conservative calibration when budget violations are costly, trading some accuracy or retrieval opportunity for better held-out budget control.",
+   "evidence_type": "supported",
+   "section": "3 Budget-safe calibration"
+  }
+ ],
+ "limitations": [
+  "The main experiments use candidate evidence paragraphs supplied by each dataset rather than a true full-corpus open-domain index.",
+  "The primary evaluation centers on small open instruction models; non-Qwen model-family checks are more limited.",
+  "Automatic correctness metrics can under-credit valid paraphrases despite the paper's manual and LLM-judge audits.",
+  "Long-form generation, multi-step retrieval, memory-augmented agents, and API-scale models are not evaluated.",
+  "Official Self-RAG and FLARE implementations are not reproduced within the same frontier protocol, so results characterize router families rather than comprehensively ranking named Active RAG systems.",
+  "The cost model separates trigger computation from retrieved-context answering but omits real deployment latency, monetary, and energy costs.",
+  "The study addresses whether to retrieve under a budget but not structured multi-field evidence gaps, version-aware provenance, or permission-aware access.",
+  "The conservative budget argument assumes exchangeability for its DKW-style interpretation, which may be weakened under temporal or distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieval_can_help_or_harm": 0.99,
+  "nominal_thresholds_can_violate_budget": 0.99,
+  "router_rankings_are_context_dependent": 0.98,
+  "simple_routers_rival_learned_routers": 0.97,
+  "ranking_and_threshold_calibration_are_distinct": 0.99,
+  "usage_is_not_full_cost": 0.99,
+  "utility_label_audit_results": 0.99,
+  "conservative_calibration_reduces_budget_risk": 0.96
+ },
+ "raw_claims": [
+  "The paper treats retrieval as an action whose value is the change in answer correctness relative to not retrieving.",
+  "Retrieval can be beneficial, neutral, or harmful on individual examples.",
+  "Always retrieving improves average accuracy on all three main datasets but still damages some previously correct answers.",
+  "A router score and a deployable threshold are different objects and should be evaluated separately.",
+  "Exact top-k frontiers compare ranking quality while holding evidence usage fixed.",
+  "Deployable frontiers calibrate a threshold on one split and measure realized usage on another.",
+  "Conservative calibration deliberately targets usage below the nominal budget to reduce the probability of overspending.",
+  "Thresholds calibrated to nominal budgets can exceed those budgets on held-out samples.",
+  "The relative quality of retrieval routers varies by dataset and model family.",
+  "Simple uncertainty-based policies can perform competitively with learned utility routers.",
+  "Probe-based routers can incur significant computation even on requests that ultimately do not use retrieved evidence.",
+  "Retrieval-rate budgets therefore do not uniquely determine real deployment cost.",
+  "Automatic benefit and harm labels are mostly supported by the paper's LLM-judge audit, but borderline metric cases are less reliable.",
+  "The authors recommend reporting exact frontiers, deployable frontiers, realized usage, threshold-transfer error, harm rates, and cost decompositions."
+ ],
+ "source_url": "https://arxiv.org/html/2607.24010",
+ "access": "full_text"
+}

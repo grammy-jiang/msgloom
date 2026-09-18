@@ -1,0 +1,412 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2307.04642",
+   "title": "TRAQ: Trustworthy Retrieval Augmented Question Answering via Conformal Prediction",
+   "research_question": "Can conformal prediction provide an end-to-end statistical correctness guarantee for open-domain RAG while keeping the resulting semantic answer sets reasonably small?",
+   "methodology": "TRAQ applies conformal prediction separately to retrieval and generation: the retriever constructs a set intended to contain the most relevant passage, while the generator constructs semantic answer sets using repeated LLM sampling and clustering of equivalent responses. The component error budgets are combined through a union-bound/Bonferroni-style construction, and Bayesian optimization allocates the total error budget between retrieval and generation to reduce prediction-set size. The authors evaluate GPT-3.5-Turbo and Llama-2-7B on Natural Questions, TriviaQA, SQuAD-1, and BioASQ, using separate calibration, optimization, and test splits.",
+   "key_findings": [
+    {
+     "finding": "TRAQ provides an end-to-end coverage guarantee that the aggregated answer set contains a semantically correct answer with probability at least the requested coverage level, subject to its conformal and model-capability assumptions.",
+     "evidence_type": "supported",
+     "section": "3.2 Aggregated Set; Theorem 3"
+    },
+    {
+     "finding": "Empirical retriever, generator, and end-to-end coverage generally matched or exceeded the requested conformal coverage levels, while PAC variants were usually more conservative.",
+     "evidence_type": "supported",
+     "section": "4 Experiments, Q1-Q2"
+    },
+    {
+     "finding": "Bayesian optimization reduced average prediction-set size by 16.2% relative to the corresponding non-optimized Bonferroni ablations while preserving the target coverage.",
+     "evidence_type": "supported",
+     "section": "4 Experiments, Q3"
+    },
+    {
+     "finding": "The semantic-level conformal construction can operate with black-box generators because its uncertainty score is based on frequencies of sampled semantic clusters rather than token probabilities.",
+     "evidence_type": "supported",
+     "section": "1 Introduction; 3.2 LLM Set"
+    },
+    {
+     "finding": "The guarantees assume i.i.d. or approximately exchangeable calibration and test data and therefore do not provide explicit protection against test-time distribution shift.",
+     "evidence_type": "supported",
+     "section": "3.1 Assumptions; 7 Limitations"
+    },
+    {
+     "finding": "TRAQ calibrates retrieval and answer-set coverage but does not implement an iterative evidence-sufficiency stopping controller, temporal/version-aware provenance, or permission-aware retrieval.",
+     "evidence_type": "supported",
+     "section": "3 The TRAQ Framework"
+    }
+   ],
+   "limitations": [
+    "The formal guarantee assumes i.i.d. data, with only exchangeability mentioned as a possible relaxation, so non-stationary distribution shift is outside the demonstrated guarantee.",
+    "The retriever must contain the most relevant passage within its top-K candidates and the LLM must generate a semantically correct answer within its sampled top-M responses.",
+    "Increasing K or M can alleviate capability assumptions but increases computational and API cost.",
+    "Incorrect semantic clustering can merge semantically unrelated responses and reduce the interpretability or efficiency of prediction sets.",
+    "TRAQ is post-hoc, so weak underlying retrievers or generators can force unnecessarily large prediction sets.",
+    "The framework does not track document versions, temporal validity, source-page provenance, or access permissions.",
+    "Its conformal decision is a prediction-set construction mechanism rather than a runtime retrieve-more-until-sufficient stopping rule."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "end_to_end_conformal_coverage": 0.99,
+    "bayesian_optimization_reduces_set_size": 0.99,
+    "semantic_black_box_calibration": 0.97,
+    "iid_dependency": 0.99,
+    "no_temporal_or_permission_control": 0.94,
+    "not_iterative_sufficiency_stopping": 0.94
+   },
+   "raw_claims": [
+    "TRAQ conformalizes retrieval and generation separately and unions the resulting answer sets.",
+    "The retriever nonconformity score is derived from the negative similarity between a question and its relevant passage.",
+    "The generator samples multiple responses and clusters semantically equivalent answers before calibration.",
+    "The overall error budget is split between retrieval and generation.",
+    "Bayesian optimization searches for an error-budget split that minimizes prediction-set size.",
+    "The reported experiments use Natural Questions, TriviaQA, SQuAD-1, and BioASQ.",
+    "The paper reports a 16.2% average reduction in prediction-set size from Bayesian optimization relative to its ablation.",
+    "The formal analysis assumes i.i.d. examples as well as adequate retriever and generator capability.",
+    "The paper publishes an implementation on GitHub."
+   ],
+   "source_url": "https://arxiv.org/html/2307.04642",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2506.05167",
+   "title": "ECoRAG: Evidentiality-guided Compression for Long Context RAG",
+   "research_question": "Can a RAG system compress long retrieved contexts by explicitly estimating evidence sufficiency and adaptively stop adding evidence once enough information is present to support a correct answer?",
+   "methodology": "ECoRAG trains an evidentiality-guided compressor to rank sentences as strong evidence, weak evidence, or distractors according to whether they enable correct answer generation and whether they interfere with useful evidence. A lightweight Flan-T5-large evaluator classifies the currently accumulated evidence as sufficient or insufficient; inference begins with the highest-ranked sentence and adds the next ranked sentence until the evaluator emits the evidential state or a token limit is reached. Experiments use 100 pre-retrieved DPR documents on Natural Questions, TriviaQA, and WebQuestions with EM, F1, token count, evidence-ranking, evaluator-quality, ablation, and latency measurements.",
+   "key_findings": [
+    {
+     "finding": "ECoRAG implements an explicit iterative evidence-sufficiency stopping rule: evidence is added in ranked order until the evaluator judges the accumulated context evidential.",
+     "evidence_type": "supported",
+     "section": "3.2 Evidentiality Reflection for Adaptive Compression"
+    },
+    {
+     "finding": "The evidence-accumulation loop has a hard token limit, preventing indefinite iteration when the initially retrieved corpus contains no sufficient evidence.",
+     "evidence_type": "supported",
+     "section": "3.2.2 Adaptive Compression"
+    },
+    {
+     "finding": "The loop operates over an already retrieved and ranked pool rather than repeatedly issuing new document-retrieval requests, so it is bounded context accumulation rather than open-ended adaptive retrieval.",
+     "evidence_type": "supported",
+     "section": "3.2.2 Adaptive Compression; 4.1 Datasets"
+    },
+    {
+     "finding": "ECoRAG achieved EM scores of 36.48 on NQ, 65.34 on TQA, and 30.17 on WQ while using hundreds rather than roughly fourteen thousand input tokens used by uncompressed 100-document RAG.",
+     "evidence_type": "supported",
+     "section": "4.2 Results, Table 1"
+    },
+    {
+     "finding": "The evidentiality evaluator exceeded the CompAct evaluator by 13.96 percentage points in F1 and performed within 0.08 percentage points of the much larger Flan-UL2 reader on the reported evidentiality test.",
+     "evidence_type": "supported",
+     "section": "5.2 RQ2"
+    },
+    {
+     "finding": "Removing adaptive evidentiality evaluation reduced EM by 0.77 percentage points on NQ and 1.80 percentage points on TQA, supporting the value of evidence-dependent stopping.",
+     "evidence_type": "supported",
+     "section": "5.3 RQ3"
+    },
+    {
+     "finding": "The stopping decision is learned but not statistically calibrated; the paper provides neither conformal risk guarantees nor explicit robustness guarantees under distribution shift.",
+     "evidence_type": "supported",
+     "section": "3 Proposed Method; 7 Limitation"
+    }
+   ],
+   "limitations": [
+    "Mining evidentiality labels requires multiple LLM inferences per question and is computationally expensive.",
+    "The experiments assume that 100 retrieved documents are already provided, so retrieval quality and adaptive acquisition of new documents are outside the main method.",
+    "A token cap prevents infinite accumulation but does not guarantee that the final context is sufficient when gold evidence is absent.",
+    "Evidentiality is defined through the behavior of a particular reader LLM, making the supervision partly model-dependent.",
+    "The sufficiency evaluator is not conformally calibrated and no risk level is attached to the stopping event.",
+    "The study does not test non-stationary or distribution-shifted retrieval conditions.",
+    "No temporal/version-aware provenance or document-supersession mechanism is included.",
+    "No permission-aware or role-based access-control mechanism is included."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "iterative_evidence_sufficiency_stopping": 0.99,
+    "hard_token_budget": 0.99,
+    "fixed_retrieved_pool": 0.98,
+    "evidentiality_improves_accuracy": 0.97,
+    "no_conformal_calibration": 0.99,
+    "no_temporal_provenance": 0.96
+   },
+   "raw_claims": [
+    "ECoRAG ranks retrieved sentences according to LLM-defined evidentiality.",
+    "Its labels distinguish strong evidence, weak evidence, and distractors.",
+    "A lightweight evaluator predicts whether the current compressed context is sufficient evidence for correct answer generation.",
+    "The system begins with the top-ranked evidence and adds further evidence when the evaluator predicts insufficiency.",
+    "The iterative process stops either when evidence is judged sufficient or when a token limit is reached.",
+    "Experiments use Natural Questions, TriviaQA, and WebQuestions with 100 DPR-retrieved documents per query.",
+    "The paper reports EM, word-level F1, compressed token count, and latency.",
+    "The evaluator ablation lowers answer accuracy on both NQ and TQA.",
+    "ECoRAG's NQ total latency is reported as 4.96 hours versus 12.28 hours for uncompressed standard RAG in the latency experiment.",
+    "The implementation is released on GitHub."
+   ],
+   "source_url": "https://arxiv.org/html/2506.05167",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2609.08364",
+   "title": "SentryLine: Evidence-Grounded Question Answering over Evolving Documents in Oncology Care",
+   "research_question": "Can a clinical RAG system reliably answer questions from evolving oncology guidelines while preserving exact source provenance, detecting superseded recommendations, and presenting evidence appropriately to clinicians and patients?",
+   "methodology": "SentryLine extracts structured clinical entities and uses PageIndex, a hierarchical vectorless retrieval mechanism, to retrieve passages from versioned ASCO guideline PDFs while preserving document and page information. It merges retrieved evidence with bounded conversation context, routes generation by declared user role, and applies factual, page-level, temporal, and citation-grounding checks before presenting the answer and a persistent evidence panel. The system is evaluated on ASCOBench, containing 405 three-turn conversations, with a 105-conversation/315-question clinician-annotated test set, three generation backbones, several RAG baselines, ablations, and an LLM judge calibrated against clinical expert ratings.",
+   "key_findings": [
+    {
+     "finding": "SentryLine explicitly incorporates temporal/version-aware provenance by identifying guideline years, confirmed updates, superseding passages, and stale recommendations.",
+     "evidence_type": "supported",
+     "section": "3.1 Architecture; 3.2 Verification-First Workflow"
+    },
+    {
+     "finding": "Each generated citation is converted into a structured evidence item containing document, page, passage text, citation key, and update status, enabling paragraph-level navigation back to the source.",
+     "evidence_type": "supported",
+     "section": "3.3 Evidence Grounding and Interactive PDF Highlighting"
+    },
+    {
+     "finding": "The temporal verifier only accepts a stale-guidance flag when it is backed by an explicit superseding passage, reducing reliance on the model's parametric knowledge of guideline history.",
+     "evidence_type": "supported",
+     "section": "3.2 Verification-First Workflow"
+    },
+    {
+     "finding": "On Gemini, SentryLine reached 59.3% fully correct on contrasting questions containing outdated recommendations, compared with 43.5% to 50.9% for the reported RAG baselines.",
+     "evidence_type": "supported",
+     "section": "6 Results and Analysis, RQ1-RQ2"
+    },
+    {
+     "finding": "Removing the temporal verifier raised the DeepSeek role-specific incorrect rate from 5.6% to 26.4%, indicating a substantial contribution from temporal checking in that setting.",
+     "evidence_type": "supported",
+     "section": "Appendix C Ablation Results"
+    },
+    {
+     "finding": "The system achieved the lowest incorrect rate in 11 of 12 backbone-by-category cells, with verification tending to convert some failures into partially correct rather than fully incorrect answers.",
+     "evidence_type": "supported",
+     "section": "6 Results and Analysis, RQ6"
+    },
+    {
+     "finding": "SentryLine does not calibrate its factual or temporal verifier with conformal prediction and does not use a calibrated risk threshold as an evidence-retrieval stopping criterion.",
+     "evidence_type": "supported",
+     "section": "3 SentryLine: System Architecture and Workflow"
+    },
+    {
+     "finding": "The declared clinician/patient role controls response framing, not authorization to different evidence sources, so the role router is not a permission-aware access-control mechanism.",
+     "evidence_type": "supported",
+     "section": "3.1 Architecture"
+    }
+   ],
+   "limitations": [
+    "Answer quality remains dependent on the generation backbone; Dense RAG exceeded SentryLine's fully-correct factual rate under the DeepSeek backbone.",
+    "Drift detection depends on guideline PDFs explicitly indicating that an update occurred and can miss implicit supersession.",
+    "Evaluation covers only ASCO breast and prostate cancer guidelines rather than broader oncology or other medical societies.",
+    "ASCOBench conversations are model-generated and clinician-reviewed rather than sampled from actual clinician or patient sessions.",
+    "The evaluation relies in part on an LLM judge, although the paper calibrates it against expert ratings.",
+    "The verification outputs are categorical rather than conformally calibrated risk estimates.",
+    "There is no runtime retrieve-more-until-sufficient controller driven by a statistically calibrated evidence-completeness criterion.",
+    "User role changes generation style rather than enforcing source-level permissions or authorization boundaries.",
+    "No explicit retrieval-token or document-count budget is used as the central stopping mechanism, although conversation history beyond three turns is summarized."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "temporal_version_provenance": 0.99,
+    "page_level_evidence_grounding": 0.99,
+    "temporal_verifier_effect": 0.98,
+    "structured_retrieval_improves_results": 0.96,
+    "no_conformal_risk_stopping": 0.97,
+    "role_router_not_access_control": 0.97
+   },
+   "raw_claims": [
+    "SentryLine retrieves from hierarchically indexed ASCO guideline PDFs rather than fixed-size embedding chunks.",
+    "Retrieved passages retain verbatim document and page citations through generation.",
+    "Clinician context includes available guideline years and documents known to be updates.",
+    "The factual verifier independently checks generated claims against retrieved passages.",
+    "The temporal verifier requires evidence from a superseding passage before marking a recommendation outdated.",
+    "The citation guardrail distinguishes corpus-grounded citations from unsupported model-recognized references.",
+    "Evidence items preserve document, page, passage text, citation key, and update status.",
+    "ASCOBench contains 405 three-turn conversations and a clinician-annotated 315-question test set.",
+    "The study evaluates Llama 3.3 70B, DeepSeek-R1, and Gemini 3.1 Pro backbones.",
+    "The code and ASCOBench evaluation assets are described as released for reproducible evaluation."
+   ],
+   "source_url": "https://arxiv.org/html/2609.08364",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2506.20978",
+   "title": "Response Quality Assessment for Retrieval-Augmented Generation via Conditional Conformal Factuality",
+   "research_question": "Can conformal prediction filter unreliable sub-claims from RAG answers while retaining substantially more useful content and providing marginal or group-conditional factuality guarantees?",
+   "methodology": "Conformal-RAG decomposes each generated answer into sub-claims and assigns each claim a relevance score based on query-document and claim-document cosine similarities. During calibration, GPT-4o labels claim factuality using the query, ground-truth answer, and retrieved documents, after which conformal prediction selects a relevance threshold; inference removes claims below that threshold and merges the retained claims back into a coherent response. A Mondrian conditional variant partitions calibration examples into known groups and learns a separate threshold for each group, and experiments cover FActScore, PopQA, HotpotQA, and MedLFQA using a FAISS retriever and GPT-4o generator.",
+   "key_findings": [
+    {
+     "finding": "Conformal-RAG provides a probabilistic factuality guarantee for the retained sub-claims under the conformal assumptions and the assumption that calibration annotations are correct.",
+     "evidence_type": "supported",
+     "section": "3.1-3.2 Methodology"
+    },
+    {
+     "finding": "The conditional variant uses Mondrian conformal prediction to provide separately calibrated thresholds for pre-specified query groups such as dataset or medical sub-domain.",
+     "evidence_type": "supported",
+     "section": "3.3 Conditional Conformal Factuality with RAG"
+    },
+    {
+     "finding": "The authors report that Conformal-RAG retains up to 60% more high-quality sub-claims than direct conformal factuality applied to the LLM while targeting the same reliability level.",
+     "evidence_type": "supported",
+     "section": "Abstract; 4.1 Results"
+    },
+    {
+     "finding": "At an 85% target factuality level on FActScore, Conformal-RAG removed 8.9% of claims while the Conformal-LLM baseline removed 86.8%.",
+     "evidence_type": "supported",
+     "section": "4.1 Marginal Conformal Factuality"
+    },
+    {
+     "finding": "Empirical factuality was generally at or above target for the marginal experiments, and conditional Conformal-RAG approximately achieved target factuality across the tested groups with less fluctuation than the Conformal-LLM baseline.",
+     "evidence_type": "supported",
+     "section": "4.1 Results"
+    },
+    {
+     "finding": "The conditional method assumes that group identity is known at inference and does not itself address arbitrary or continuously changing distribution shift.",
+     "evidence_type": "supported",
+     "section": "3.3; 4 Dataset"
+    },
+    {
+     "finding": "Conformal-RAG is a post-generation claim-filtering mechanism rather than an iterative evidence-sufficiency or retrieval-budget stopping controller, and it does not track temporal document versions or source permissions.",
+     "evidence_type": "supported",
+     "section": "3 Methodology"
+    }
+   ],
+   "limitations": [
+    "The basic conformal guarantee relies on calibration and test examples satisfying the usual i.i.d./exchangeability condition.",
+    "The factuality guarantee assumes that the automatic calibration annotation function correctly labels factual and non-factual claims.",
+    "Conditional calibration requires the relevant group label to be available at inference time.",
+    "The experimental grouping captures known sub-domains rather than arbitrary unseen or non-stationary distribution shifts.",
+    "GPT-4o is used for calibration annotation, answer decomposition, and answer re-merging, introducing dependence on an external LLM at several stages.",
+    "Filtering low-scoring claims controls factuality but does not guarantee completeness of the remaining answer or quantify important omitted claims.",
+    "The framework does not iteratively retrieve additional evidence when a response is insufficient.",
+    "It does not represent temporal/version provenance, source supersession, or permission-aware evidence access."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "conformal_subclaim_factuality": 0.99,
+    "group_conditional_calibration": 0.99,
+    "higher_claim_retention": 0.99,
+    "factuality_targets_empirically_met": 0.97,
+    "known_group_requirement": 0.99,
+    "not_iterative_retrieval_stopping": 0.97
+   },
+   "raw_claims": [
+    "Conformal-RAG scores each generated sub-claim using its similarity to retrieved documents weighted by query-document similarity.",
+    "Calibration uses ground-truth answers and retrieved documents to automatically label sub-claim factuality.",
+    "Inference does not require a ground-truth answer.",
+    "Claims scoring below the conformally calibrated threshold are removed.",
+    "The conditional method calibrates separate thresholds for pre-defined groups.",
+    "The experimental conditional groups are known at inference time.",
+    "The evaluation uses FActScore, PopQA, HotpotQA, and MedLFQA.",
+    "The authors test target error levels from 0.05 through 0.40.",
+    "Conformal-RAG retains substantially more claims than the Conformal-LLM baseline at matched factuality targets.",
+    "The implementation is linked through a public GitHub repository."
+   ],
+   "source_url": "https://arxiv.org/html/2506.20978",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2402.03181",
+   "title": "C-RAG: Certified Generation Risks for Retrieval-Augmented Language Models",
+   "research_question": "Can a conformal risk controller certify generation risk for configurable RAG systems, identify configurations satisfying a desired risk level, and maintain valid risk bounds under bounded test-time distribution shift?",
+   "methodology": "C-RAG defines a constrained generation protocol parameterized by the number of retrieved examples, the number of candidate generations, and a similarity threshold controlling generation diversity. Calibration statistics are used to compute a high-probability upper bound on generation risk for each configuration and, using family-wise error control, a set of configurations certified below a user-specified risk threshold. The theoretical analysis is extended to test distributions within a bounded Hellinger distance of the calibration distribution, and experiments evaluate the guarantees on AESLC, CommonGen, DART, and E2E with BM25, BGE, OpenAI ada, and a supervised bi-encoder retriever.",
+   "key_findings": [
+    {
+     "finding": "For a fixed RAG configuration, C-RAG computes a high-confidence upper bound on a bounded generation-risk function from calibration data.",
+     "evidence_type": "supported",
+     "section": "4.3 Risk Guarantees for RAG Models"
+    },
+    {
+     "finding": "Given a desired risk level, C-RAG can certify a set of configurations whose generation risks are jointly controlled below that level using family-wise error-rate control.",
+     "evidence_type": "supported",
+     "section": "4.3 Proposition 2; 7.5"
+    },
+    {
+     "finding": "The configuration explicitly includes the number of retrieved examples, so retrieval quantity is a controllable and certifiable resource dimension, although it is selected as a configuration rather than by a per-query evidence-sufficiency stopping loop.",
+     "evidence_type": "supported",
+     "section": "4.1-4.2 Constrained Generation Protocol"
+    },
+    {
+     "finding": "The paper derives a conformal generation-risk bound for general bounded risk functions when the shifted test distribution lies within a specified Hellinger-distance radius of the calibration distribution.",
+     "evidence_type": "supported",
+     "section": "6.2 Theorem 2"
+    },
+    {
+     "finding": "In the simulated shift experiments, the certified risk bounds remained above empirical risk and rose approximately linearly with Hellinger distance, remaining non-trivial through a reported distance of 0.2.",
+     "evidence_type": "supported",
+     "section": "7.3; Appendix J.3"
+    },
+    {
+     "finding": "Across the experiments, increasing the number of retrieved examples generally reduced conformal generation risk more strongly than increasing the number of candidate generations.",
+     "evidence_type": "supported",
+     "section": "7.2; 7.4"
+    },
+    {
+     "finding": "For the tested valid configuration sets, empirical risks stayed below the requested conformal risk threshold.",
+     "evidence_type": "supported",
+     "section": "7.5 Valid Configurations"
+    },
+    {
+     "finding": "C-RAG supplies calibrated risk control under bounded shift but does not incorporate structured evidence-sufficiency judgments, temporal/version-aware provenance, or permission-aware retrieval.",
+     "evidence_type": "supported",
+     "section": "4 Conformal Generation Risks of RAG Models; 6 C-RAG under Distribution Shifts"
+    }
+   ],
+   "limitations": [
+    "Practical deployment may require continuously obtaining sufficiently current in-distribution calibration queries, which the authors identify as a latency and computational challenge.",
+    "The guarantee is high-confidence rather than absolute, so high-risk outlier generations can still occur.",
+    "Higher confidence can require more calibration samples.",
+    "Large external knowledge bases improve parts of the theoretical risk analysis but increase nearest-neighbor search time and storage cost.",
+    "The theoretical comparison between RAG and non-retrieval generation relies on a simplified one-layer self-attention model and additional assumptions about retrieval and transformer quality.",
+    "The theorem handles distributions within a bounded Hellinger radius, but the empirical shift experiments instantiate covariate shift through sample reweighting rather than a broad set of natural temporal or semantic shifts.",
+    "Adaptive conformal calibration for sequential time-series query streams is explicitly left for future work.",
+    "The number of retrieved examples is a configurable bounded resource but not a runtime stop decision based on whether structured evidence has become sufficient.",
+    "The framework contains no temporal/version provenance or permission-aware access mechanism."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "configuration_level_risk_certification": 0.99,
+    "valid_risk_bounded_configuration_sets": 0.99,
+    "distribution_shift_risk_bound": 0.99,
+    "retrieval_count_as_control_parameter": 0.99,
+    "empirical_shift_bound_soundness": 0.98,
+    "no_evidence_sufficiency_or_provenance_control": 0.96
+   },
+   "raw_claims": [
+    "C-RAG controls a generation protocol using retrieval count, generation-set size, and a diversity threshold.",
+    "A bounded risk function maps generated outputs and references to a value between zero and one.",
+    "The controller computes a high-probability generation-risk upper bound for a fixed configuration.",
+    "It can also identify a set of configurations certified below a requested risk level.",
+    "The distribution-shift extension assumes the test distribution lies within a bounded Hellinger distance of the calibration distribution.",
+    "The experiments use AESLC, CommonGen, DART, and E2E.",
+    "The external knowledge base is assembled from 30 public datasets and contains more than six million documents.",
+    "The experiments use one minus ROUGE-L as the principal generation-risk function.",
+    "Empirical conformal risk generally decreases as more in-context examples are retrieved.",
+    "The simulated shift experiments report usable risk bounds through Hellinger distance 0.2.",
+    "The authors identify real-time calibration for time-varying query streams as an unresolved practical issue.",
+    "The code is publicly available on GitHub."
+   ],
+   "source_url": "https://arxiv.org/html/2402.03181",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

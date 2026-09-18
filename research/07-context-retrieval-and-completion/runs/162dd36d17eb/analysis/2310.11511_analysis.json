@@ -1,0 +1,85 @@
+{
+ "paper_id": "2310.11511",
+ "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+ "research_question": "Can a language model learn to decide when retrieval is needed, assess retrieved evidence and its own generations, and thereby improve factuality, attribution, and task performance without indiscriminately retrieving documents?",
+ "methodology": "Self-RAG trains a critic model from GPT-4-generated supervision for reflection decisions covering retrieval necessity, passage relevance, evidential support, and response utility, then uses that critic offline to annotate training examples with special reflection tokens. A generator based on Llama 2 is trained with a standard next-token objective over both ordinary text and those reflection tokens, allowing the generator itself to make retrieval and critique decisions at inference time. During inference, retrieval can be triggered adaptively, multiple retrieved passages are evaluated in parallel, and segment-level candidates are ranked using configurable combinations of reflection-token probabilities. The authors evaluate 7B and 13B models on six tasks spanning open-domain QA, fact verification, scientific reasoning, biography generation, and long-form QA, with ablations, retrieval-frequency analysis, and a small human evaluation.",
+ "key_findings": [
+  {
+   "finding": "Self-RAG substantially outperforms comparable non-proprietary language-model and conventional RAG baselines across the evaluated task suite, including strong gains on factual and knowledge-intensive tasks.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Adaptive retrieval is preferable to always using the top retrieved passage: the retrieve-top-1 ablation produces substantial degradation on PopQA and ASQA relative to the full system.",
+   "evidence_type": "supported",
+   "section": "5.2 Analysis — Ablation studies"
+  },
+  {
+   "finding": "Training with both retrieval-aware data and critique/reflection supervision contributes materially to performance, because removing either the retriever-oriented training or critic-oriented training reduces results on the ablation tasks.",
+   "evidence_type": "supported",
+   "section": "5.2 Analysis — Ablation studies"
+  },
+  {
+   "finding": "Inference-time reflection weights expose a controllable trade-off between evidence support and other generation properties: increasing the support weight improves citation precision but reduces MAUVE in the ASQA analysis.",
+   "evidence_type": "supported",
+   "section": "5.2 Analysis — Effects of inference-time customization"
+  },
+  {
+   "finding": "The retrieval threshold provides an explicit efficiency-versus-accuracy control because increasing the threshold sharply changes retrieval frequency, with the performance cost of reduced retrieval depending on the task.",
+   "evidence_type": "supported",
+   "section": "5.2 Analysis — Efficiency and accuracy trade-off"
+  },
+  {
+   "finding": "Self-RAG attains much higher citation precision and recall than ordinary retrieval-augmented Llama/Alpaca baselines on ASQA, although citation support is still imperfect.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results and Ethical Concerns"
+  },
+  {
+   "finding": "Small-scale human evaluation indicates that generated reflection judgments about evidence relevance and support are usually aligned with human assessments.",
+   "evidence_type": "supported",
+   "section": "5.2 Analysis — Human evaluations"
+  }
+ ],
+ "limitations": [
+  "The retrieval controller represents retrieval need using learned categorical reflection tokens and a tunable probability threshold, but it does not formulate calibrated bounded-risk stopping or provide statistical guarantees on when retrieval should terminate.",
+  "The framework evaluates relevance and support but does not maintain an explicit structured evidence-gap object describing which claims or information needs remain unresolved.",
+  "Retrieved passages are not modeled with temporal validity, document-version lineage, supersession relationships, or version-aware provenance.",
+  "The retrieval mechanism does not include permission-aware or user-authorization-aware access control.",
+  "The support and relevance judgments are learned from synthetic GPT-4 supervision; the paper notes that dependence on a proprietary model introduces cost and reproducibility concerns.",
+  "The manual validation of GPT-4 reflection labels uses only 20 randomly sampled instances per reflection aspect, and the later human evaluation uses 50 samples each from PopQA and biography outputs.",
+  "Self-RAG can still produce claims that are not fully supported by its citations, which the authors explicitly acknowledge.",
+  "Inference-time preference weights and retrieval thresholds are customizable hyperparameters rather than calibrated risk quantities, so their values do not directly translate into an interpretable probability of error.",
+  "The experiments primarily use Wikipedia-style or benchmark retrieval settings rather than changing enterprise corpora with access policies, document revisions, and temporal validity constraints."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "adaptive_retrieval_improves_over_fixed_top1": 0.98,
+  "reflection_training_materially_contributes": 0.97,
+  "support_weight_trades_citation_precision_for_fluency": 0.96,
+  "retrieval_threshold_controls_cost_accuracy_tradeoff": 0.97,
+  "strong_task_and_citation_results": 0.98,
+  "human_reflection_alignment": 0.9,
+  "no_calibrated_bounded_risk_stopping": 0.96,
+  "no_temporal_version_permission_provenance": 0.97
+ },
+ "raw_claims": [
+  "Self-RAG learns whether external retrieval is useful before generating a retrieval-augmented segment.",
+  "The model uses reflection tokens to judge retrieval necessity, passage relevance, evidential support, and overall response utility.",
+  "The critic is trained from GPT-4-generated reflection supervision and is used offline to construct generator training data.",
+  "The final generator produces its own reflection tokens and therefore does not require the critic model at inference time.",
+  "The inference procedure can process several retrieved passages and use reflection scores to select among candidate generations.",
+  "Inference-time weights can emphasize evidential support without retraining the model.",
+  "Always retrieving a top passage performs worse than the complete adaptive Self-RAG system on important ablation settings.",
+  "Changing the adaptive retrieval threshold changes retrieval frequency and produces task-dependent accuracy effects.",
+  "Self-RAG 7B and 13B achieve strong results across the six reported evaluation tasks.",
+  "The ASQA experiments report substantially stronger citation metrics for Self-RAG than standard retrieval-augmented Llama and Alpaca baselines.",
+  "The authors report that larger training sets generally improve Self-RAG performance on the evaluated tasks.",
+  "The framework can still generate statements that are not completely supported by cited passages."
+ ],
+ "source_url": "https://arxiv.org/html/2310.11511",
+ "access": "full_text"
+}

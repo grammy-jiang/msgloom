@@ -1,0 +1,74 @@
+{
+ "paper_id": "2510.14337",
+ "title": "Stop-RAG: Value-Based Retrieval Control for Iterative RAG",
+ "research_question": "Can a learned value function over iterative RAG trajectories determine whether the expected benefit of another retrieval step justifies continuing rather than stopping?",
+ "methodology": "Stop-RAG casts iterative RAG as a finite-horizon Markov decision process with STOP and CONTINUE actions and constructs an offline training set from every prefix of fully executed retrieval trajectories. For each state, the authors estimate stopping rewards using eight independent answer generations scored by F1 and train a DeBERTa-v3-large value network with full-width forward-view Q(lambda) targets for both actions. At inference time, the controller compares estimated STOP and CONTINUE values and applies a validation-tuned stopping threshold. Evaluation covers MuSiQue, HotpotQA, and 2WikiMultihopQA in both the authors' RAG pipeline and a CoRAG integration.",
+ "key_findings": [
+  {
+   "finding": "Within the authors' own iterative RAG pipeline, Stop-RAG improves EM, F1, and reported accuracy over both the unmodified fixed-iteration pipeline and LLM-prompted stopping on all three evaluated benchmarks.",
+   "evidence_type": "supported",
+   "section": "6.1 Main Results"
+  },
+  {
+   "finding": "The abstract-level statement that Stop-RAG consistently outperforms both baselines across benchmark settings is contradicted by the CoRAG HotpotQA result, where Stop-RAG is slightly below the unmodified CoRAG baseline and does not dominate LLM-Stop.",
+   "evidence_type": "contradicted",
+   "section": "6.1 Main Results"
+  },
+  {
+   "finding": "Stop-RAG is portable enough to be attached to a separately developed CoRAG pipeline, where it improves MuSiQue and 2WikiMultihopQA results despite the HotpotQA exception.",
+   "evidence_type": "supported",
+   "section": "6.1 Main Results"
+  },
+  {
+   "finding": "The learned controller generally retains more useful retrieval evidence than prompting-based LLM stopping, although it can use slightly more retrieval steps than the prompted stopper.",
+   "evidence_type": "supported",
+   "section": "6.2 Analysis: Retrieval Results"
+  },
+  {
+   "finding": "The full-width forward-view Q(lambda) objective performs better on the reported MuSiQue ablation than binary classification, Monte Carlo targets, and the Q(0) variant.",
+   "evidence_type": "supported",
+   "section": "6.2 Analysis: Ablation Study"
+  },
+  {
+   "finding": "Training is offline: complete trajectories are collected first, every prefix becomes a candidate state, and no online environment interaction is required while fitting the controller.",
+   "evidence_type": "supported",
+   "section": "4 Stop-RAG"
+  }
+ ],
+ "limitations": [
+  "The learned controller requires pipeline-specific trajectory generation and supervised value-function training rather than being training-free.",
+  "Generating training targets is computationally expensive because complete retrieval trajectories are executed and stopping rewards are estimated with eight answer-generation trials per state.",
+  "Evaluation is restricted to three multi-hop QA datasets and two RAG pipeline configurations.",
+  "The CoRAG HotpotQA result demonstrates that plug-and-play transfer does not guarantee an improvement in every pipeline-dataset combination.",
+  "The stopping threshold is selected on validation data.",
+  "The controller state used in the implementation does not explicitly model structured evidence gaps, document versions, temporal validity, or permissions.",
+  "The objective predicts downstream answer value but does not provide a calibrated statistical bound on the risk of stopping incorrectly."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "own_pipeline_consistent_gain": 0.99,
+  "abstract_consistency_claim_has_exception": 0.99,
+  "cross_pipeline_portability": 0.96,
+  "retrieval_quality_tradeoff": 0.94,
+  "q_lambda_ablation_advantage": 0.98,
+  "offline_training": 0.99
+ },
+ "raw_claims": [
+  "Stop-RAG models each retrieval decision as a choice between stopping and continuing in a finite-horizon MDP.",
+  "Its offline dataset includes every nonterminal prefix of complete iterative RAG trajectories.",
+  "Stopping reward estimates use multiple answer generations from a state and F1 against the gold answer.",
+  "The experiments use eight answer-generation trials when estimating state rewards.",
+  "The value model learns estimates for both STOP and CONTINUE actions using Q(lambda) targets.",
+  "The evaluation uses MuSiQue, HotpotQA, and 2WikiMultihopQA.",
+  "Stop-RAG improves all three datasets in the authors' own pipeline.",
+  "On CoRAG with HotpotQA, Stop-RAG does not outperform the original CoRAG configuration.",
+  "The method is designed as a separate controller and does not require modifying the generator model itself.",
+  "The reported ablation favors the Q(lambda) training formulation over the tested alternative objectives."
+ ],
+ "source_url": "https://arxiv.org/html/2510.14337",
+ "access": "full_text"
+}

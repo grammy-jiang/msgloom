@@ -1,0 +1,421 @@
+{
+ "topic": "Unified iterative RAG stopping and provenance control under distribution shift: controllers combining structured evidence sufficiency with temporal/version-aware provenance and calibrated or conformal risk-controlled stopping, including permission-aware access and bounded retrieval budgets",
+ "paper_count": 61,
+ "executive_summary": "The 61-paper corpus supports a modular picture rather than a validated unified controller. Structured sufficiency and gap representations can drive iterative retrieval and early stopping on multi-hop QA, while adaptive retrieval studies show that additional retrieval can be beneficial, neutral, or harmful depending on the query and evidence state. Separate conformal and selective-prediction work provides calibrated risk or coverage control, including several forms of distribution-shift adaptation. Temporal and version-aware systems improve retrieval over evolving documents, and separate permission-aware RAG systems enforce access constraints. Budget-aware controllers reduce calls, tokens, or latency in several benchmark settings. However, no admitted study combines structured evidence gaps, temporal/version lineage, permission-aware replenishment, calibrated stopping under shift, abstention, and total-cost control in one evaluated iterative retrieval loop. All eight prior gaps therefore remain open.",
+ "themes": [
+  "Structured evidence sufficiency, explicit gap representations, and gap-directed next-query generation",
+  "Adaptive retrieval and stopping under heterogeneous retrieval benefit and retrieval harm",
+  "Conformal risk control, selective prediction, calibration, and adaptation under distribution shift",
+  "Temporal validity, evolving-document retrieval, version lineage, and source provenance",
+  "Permission-aware retrieval and authorization-preserving candidate filtering",
+  "Bounded retrieval, token budgets, retrieval-call budgets, and quality-cost trade-offs",
+  "Separation between evidence sufficiency, answer confidence, retrieval coverage, and downstream reasoning quality"
+ ],
+ "findings": [
+  {
+   "statement": "On multi-hop QA benchmarks, several controllers explicitly represent unresolved evidence requirements and use them to determine subsequent retrieval; S2G-RAG, FAIR-RAG, AdaGATE, DynaKRAG, and MEGRAG report improvements in evidence or answer metrics relative to their evaluated baselines, while retaining explicit stopping or hard search bounds.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2604.23783"
+    },
+    {
+     "paper_id": "2510.22344"
+    },
+    {
+     "paper_id": "2605.05245"
+    },
+    {
+     "paper_id": "2607.06507"
+    },
+    {
+     "paper_id": "2608.02195"
+    }
+   ]
+  },
+  {
+   "statement": "The evaluated adaptive-RAG studies do not show monotonic benefit from additional retrieval: excessive, mistimed, irrelevant, or otherwise low-utility retrieval can reduce answer quality, and query-specific retrieval benefit varies substantially.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2305.06983"
+    },
+    {
+     "paper_id": "2403.10081"
+    },
+    {
+     "paper_id": "2406.19215"
+    },
+    {
+     "paper_id": "2607.24010"
+    },
+    {
+     "paper_id": "2609.16301"
+    }
+   ]
+  },
+  {
+   "statement": "Adaptive stopping can reduce retrieval calls, reasoning turns, tokens, or modeled cost in multiple QA settings, but stopping errors remain material in some evaluations; in the Search-R1 stopping study, 27 of 69 executed confirmatory early stops were classified as unsafe under its probe-based criterion.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2606.13814"
+    },
+    {
+     "paper_id": "2608.13237"
+    },
+    {
+     "paper_id": "2606.29090"
+    },
+    {
+     "paper_id": "2606.29959"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2026-acl-long-1562"
+    }
+   ]
+  },
+  {
+   "statement": "Conformal and risk-control studies provide finite-sample, expected-risk, or empirical coverage control under their stated assumptions, and separate work extends calibration to covariate, online, prompt, domain, or temporal/severity shifts; these results are demonstrated in separate formulations rather than as one provenance-aware iterative-RAG stopping system.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1904.06019"
+    },
+    {
+     "paper_id": "2208.02814"
+    },
+    {
+     "paper_id": "2208.08401"
+    },
+    {
+     "paper_id": "2307.04642"
+    },
+    {
+     "paper_id": "2402.03181"
+    },
+    {
+     "paper_id": "2406.10490"
+    },
+    {
+     "paper_id": "2604.01413"
+    },
+    {
+     "paper_id": "2606.15964"
+    },
+    {
+     "paper_id": "2606.29054"
+    }
+   ]
+  },
+  {
+   "statement": "Static confidence or calibration can degrade under distribution shift: selective QA reports overconfidence on unseen domains, ordinary split conformal loses coverage under covariate shift, and later drift-aware conformal studies report large differences between static and adaptive calibration under their evaluated shifts.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2006.09462"
+    },
+    {
+     "paper_id": "1904.06019"
+    },
+    {
+     "paper_id": "2606.15964"
+    },
+    {
+     "paper_id": "2606.29054"
+    }
+   ]
+  },
+  {
+   "statement": "Temporal and version-aware retrieval methods improve evidence selection on evolving-document and time-sensitive benchmarks, while ordinary semantic retrieval can retrieve semantically relevant but temporally invalid or incomplete evidence.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2412.15540"
+    },
+    {
+     "paper_id": "2510.08109"
+    },
+    {
+     "paper_id": "2510.13590"
+    },
+    {
+     "paper_id": "2608.08512"
+    },
+    {
+     "paper_id": "2609.08364"
+    },
+    {
+     "paper_id": "2609.11572"
+    }
+   ]
+  },
+  {
+   "statement": "The temporal literature distinguishes real-world validity from database-record time, and evaluated recent systems additionally represent version transitions, update status, superseding passages, or temporally conditioned retrieval; these mechanisms provide different forms of temporal provenance rather than one common end-to-end provenance model.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-0306-4379-96-00017-8"
+    },
+    {
+     "paper_id": "doi-10-1145-181550-181560"
+    },
+    {
+     "paper_id": "2510.08109"
+    },
+    {
+     "paper_id": "2609.08364"
+    }
+   ]
+  },
+  {
+   "statement": "Permission-aware retrieval has been evaluated through native-IAM authorization, pre-ranking access gates, user-isolated secure retrieval, and RBAC-aware vector indexing; these studies demonstrate access-control mechanisms but do not evaluate iterative sufficiency reassessment followed by permission-constrained replenishment.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-access-2025-3628960"
+    },
+    {
+     "paper_id": "doi-10-1038-s41598-026-71936-x"
+    },
+    {
+     "paper_id": "2508.01084"
+    },
+    {
+     "paper_id": "doi-10-1145-3786625"
+    }
+   ]
+  },
+  {
+   "statement": "Evidence sufficiency and answer confidence are empirically distinct signals: retrieved context can be insufficient despite confident answering, sufficiency-aware verification improves selective behavior in several settings, and different sufficiency judges can disagree substantially on the same retrieved evidence.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2411.06037"
+    },
+    {
+     "paper_id": "2605.03534"
+    },
+    {
+     "paper_id": "2604.19899"
+    },
+    {
+     "paper_id": "doi-10-32604-cmc-2026-086343"
+    }
+   ]
+  },
+  {
+   "statement": "Retrieval cost is multidimensional: passage count, token count, retrieval-call count, planner or critic computation, and wall-clock latency can yield different policy rankings, and calibration of a retrieval-usage threshold does not necessarily transfer its nominal budget to held-out inputs.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2606.29959"
+    },
+    {
+     "paper_id": "2607.24010"
+    },
+    {
+     "paper_id": "2606.05658"
+    },
+    {
+     "paper_id": "2403.10081"
+    },
+    {
+     "paper_id": "doi-10-1145-3786625"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Does Stop-RAG consistently outperform the unmodified iterative-RAG baseline across the reported benchmark settings?",
+   "papers": [
+    "2510.14337"
+   ],
+   "note": "The paper's broad claim of consistent outperformance is not supported by every reported result: on CoRAG HotpotQA, Stop-RAG is slightly below the unmodified CoRAG baseline and does not dominate LLM-Stop. This is an internal claim-versus-result contradiction within the same study."
+  },
+  {
+   "topic": "Does MiCP consistently reduce prediction-set size relative to the no-early-stopping baseline?",
+   "papers": [
+    "2604.01413"
+   ],
+   "note": "The paper's statement of consistent prediction-set-size improvement is contradicted by several reported Table 1 rows, including GPT-4o-mini settings on HotpotQA and HotpotQA-ReAct where the proposed objective yields larger sets. This is an internal claim-versus-result contradiction within the same study."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; the corpus contains structured-gap, temporal-retrieval, and query-planning methods, but no admitted study evaluates these capabilities together.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"structured evidence gap\" temporal constraints multi-entity joins compositional retrieval iterative RAG"
+  },
+  {
+   "id": "gap-2",
+   "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness effective-time sufficiency"
+  },
+  {
+   "id": "gap-3",
+   "description": "Stopping reliability under domain shift remains open: sufficiency, confidence, conformal, stability, and drift-adaptive calibration signals are evaluated in separate studies, but no admitted study provides a general bounded-risk iterative-RAG stopping guarantee under distribution shift.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"iterative RAG\" calibrated stopping domain shift conformal risk control selective prediction adaptive retrieval"
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-5",
+   "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-6",
+   "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency remains absent from the admitted corpus.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "gap-7",
+   "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-8",
+   "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the reported successes remain component-level or cover smaller subsets of these functions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"adaptive RAG controller\" permission-aware provenance temporal version calibrated stopping abstention budget"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent each investigation state with explicit required findings, confirmed findings, unresolved gaps, and the evidence identifiers supporting each confirmation; include temporal constraints, entity or field targets, and source-scope constraints as structured fields rather than only free-text prompts.",
+  "Synthesis-derived recommendation: keep the evidence-sufficiency decision separate from answer confidence and from the retrieval-policy decision, so each signal can be measured, calibrated, replaced, and audited independently.",
+  "Synthesis-derived recommendation: use an explicit terminal-state taxonomy that separates answered, budget exhausted, authorization denied, source unavailable, empty search, extraction unsupported, conflicting evidence, and unresolved insufficiency instead of mapping these outcomes to a common no-answer state.",
+  "Synthesis-derived recommendation: maintain document identity, version identity, effective or valid time, collection or transaction time, and exact evidence location through every retrieval round so later evidence cannot silently overwrite the provenance of earlier evidence.",
+  "Synthesis-derived recommendation: enforce permission checks before evidence enters the reasoning context and exercise a bounded authorized-evidence replenishment path when filtered results leave an explicit gap unresolved.",
+  "Synthesis-derived recommendation: combine a conservative hard retrieval budget with an adaptive stopping layer; treat the hard bound as a safety and cost limit rather than evidence that the remaining gap has been resolved.",
+  "Synthesis-derived recommendation: evaluate stopping under controlled distribution shifts and recalibration scenarios rather than selecting a sufficiency or confidence threshold only on an in-distribution development set.",
+  "Synthesis-derived recommendation: account separately for retrieval calls, documents or passages read, context tokens, planner and judge inference, reranking, authorization checks, and end-to-end latency because optimization on one resource measure can hide movement in another.",
+  "Synthesis-derived recommendation: construct an engineering benchmark containing multi-hop evidence gaps, evolving versions, stale and conflicting evidence, permission denial, empty retrieval, unavailable sources, extraction failure, and budget exhaustion, with gold outcomes independent of the controller under test."
+ ],
+ "confidence_summary": "Confidence is HIGH for the component-level evidence: structured sufficiency control, adaptive retrieval, temporal/version-aware retrieval, permission enforcement, budget-aware retrieval, and conformal or selective risk control each have direct empirical support in their respective evaluated settings. Confidence is MEDIUM for transfer of these principles across domains because most experiments use QA, medical, tool-retrieval, evolving-document, or synthetic settings rather than workplace communication. Confidence is LOW that the corpus establishes an integrated controller: no admitted paper jointly evaluates structured gap reasoning, permission-aware access, temporal/version provenance, distribution-shift-aware calibrated stopping, abstention, and complete cost accounting. The corpus therefore supports well-supported component-level design principles but not an experimentally validated unified architecture.",
+ "limitations": [
+  "This synthesis uses the supplied per-paper analyses as its evidence base and does not independently re-read or re-verify the full text of all 61 papers.",
+  "The inherited Topic 03, 04, 05, 06, and 08 handoffs are project context only and are not used as evidence for findings or gap closure.",
+  "Most direct controller evaluations are on multi-hop or open-domain QA rather than Outlook email, Teams messages, workplace attachments, or cross-thread work-item investigation, so production-workplace claims are not supported by this corpus.",
+  "Temporal/version studies, permission studies, structured-gap controllers, and conformal-risk studies generally evaluate different datasets, metrics, and system boundaries; success of those components separately does not validate their combination.",
+  "Several evaluations rely on synthetic perturbations, controlled conflict injection, constructed enterprise permission settings, or benchmark-specific evidence proxies; these establish behavior in those test conditions rather than production representativeness.",
+  "Cost reporting is heterogeneous across papers: some report retrieval calls, some tokens, some latency, some model cost, and some indexing or memory overhead, limiting direct cross-paper efficiency comparison.",
+  "Apparent differences across retrieval, decomposition, reranking, and stopping methods were not labeled contradictions when the studies answer different questions, use different controller definitions, or operate under non-comparable datasets and conditions.",
+  "No duplicate title was evident among the 61 supplied records; the manual IDCR record was treated as a distinct work because no supplied DOI record has the same title."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "Structured-gap controllers now provide strong direct evidence for typed or enumerated missing findings, while temporal and query-planning papers cover temporal constraints or compositional retrieval separately. No admitted study evaluates structured gaps together with temporal constraints, multi-entity joins, and complex compositional requirements.",
+   "evidence": [
+    "2604.23783",
+    "2510.22344",
+    "2605.05245",
+    "2607.06507",
+    "2412.15540",
+    "doi-10-18653-v1-2026-findings-acl-2090"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "VersionRAG, temporal retrieval, Temporal GraphRAG, SentryLine, and TimelyRAG provide evidence for temporal or version-aware retrieval and provenance, while S2G-RAG and FAIR-RAG provide iterative structured sufficiency control. Their combination in one evaluated evidence-gap loop remains absent.",
+   "evidence": [
+    "2510.08109",
+    "2510.13590",
+    "2609.08364",
+    "2609.11572",
+    "2604.23783",
+    "2510.22344"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "MiCP provides conformally calibrated multi-turn stopping, and several conformal studies address covariate, online, prompt, domain, or temporal/severity shift. The corpus does not demonstrate a general iterative-RAG stopping controller whose bounded stopping risk remains controlled under distribution shift.",
+   "evidence": [
+    "2604.01413",
+    "1904.06019",
+    "2208.08401",
+    "2606.15964",
+    "2606.29054",
+    "2402.03181"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "Permission-aware RAG studies enforce native IAM, access gates, encrypted user isolation, or RBAC-safe retrieval, but none couples authorization filtering to repeated structured sufficiency reassessment and bounded permission-constrained replenishment.",
+   "evidence": [
+    "doi-10-1109-access-2025-3628960",
+    "doi-10-1038-s41598-026-71936-x",
+    "2508.01084",
+    "doi-10-1145-3786625"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "Several papers distinguish insufficiency, conflicts, budget exhaustion, or authorization, but no admitted system evaluates the full terminal-condition set of empty retrieval, denial, unavailable source, extraction failure, budget exhaustion, and true negative evidence.",
+   "evidence": [
+    "2608.02195",
+    "doi-10-32604-cmc-2026-086343",
+    "doi-10-1109-access-2025-3628960",
+    "2506.05167"
+   ]
+  },
+  {
+   "id": "gap-6",
+   "status": "open",
+   "note": "The corpus contains separate measurements of retrieval calls, tokens, inference or routing overhead, latency, indexing cost, and permission-aware vector-search trade-offs, but no study measures all requested cost components end to end.",
+   "evidence": [
+    "2606.29959",
+    "2607.24010",
+    "2606.05658",
+    "doi-10-18653-v1-2026-acl-long-1562",
+    "doi-10-1145-3786625"
+   ]
+  },
+  {
+   "id": "gap-7",
+   "status": "open",
+   "note": "The admitted studies cover QA, evolving documents, medicine, tool retrieval, data lakes, and synthetic or constructed enterprise settings. No admitted evaluation covers the specified workplace-communication combination.",
+   "evidence": [
+    "2604.23783",
+    "2609.08364",
+    "doi-10-1109-access-2025-3628960",
+    "2608.08512"
+   ]
+  },
+  {
+   "id": "gap-8",
+   "status": "open",
+   "note": "DynaKRAG and related controllers integrate multiple retrieval actions, sufficiency checks, stopping, and budgets, while separate papers provide temporal/version provenance, permissions, or conformal risk control. No admitted controller integrates the complete set in this gap.",
+   "evidence": [
+    "2607.06507",
+    "2604.23783",
+    "2510.08109",
+    "2609.08364",
+    "doi-10-1109-access-2025-3628960",
+    "2604.01413",
+    "2606.15964"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,74 @@
+{
+ "paper_id": "2006.09462",
+ "title": "Selective Question Answering under Domain Shift",
+ "research_question": "Can a question-answering system learn an abstention policy that maintains high accuracy on answered questions when deployment data mixes in-domain examples with previously unseen out-of-domain examples?",
+ "methodology": "The authors train an extractive BERT QA model on SQuAD and evaluate selective prediction on mixtures of SQuAD and five out-of-domain QA datasets, rotating which OOD dataset is known during calibration and which is unseen at test time. They compare maximum softmax probability, test-time dropout, and a random-forest calibrator trained to predict whether the base QA model will answer correctly using source and known-OOD examples. Performance is measured with risk-coverage curves, area under those curves, and maximum coverage at specified accuracy levels. Results are averaged across all 20 ordered choices of known and unknown OOD datasets, with repeated random calibration splits.",
+ "key_findings": [
+  {
+   "finding": "A calibrator trained on both source and known-OOD examples reached 56.1% coverage while maintaining 80% accuracy, compared with 48.2% coverage for MaxProb using the same source-trained QA model.",
+   "evidence_type": "supported",
+   "section": "5.2 Main results"
+  },
+  {
+   "finding": "Training the calibrator with known-OOD data improved coverage at 80% accuracy by 2.4 percentage points relative to training the calibrator only on source-domain examples.",
+   "evidence_type": "supported",
+   "section": "5.2 Main results"
+  },
+  {
+   "finding": "The base QA model is systematically overconfident on OOD examples relative to in-domain examples, which makes raw softmax confidence a weak abstention signal under mixed-domain deployment.",
+   "evidence_type": "supported",
+   "section": "5.3 Overconfidence of MaxProb"
+  },
+  {
+   "finding": "OOD inputs should not simply be rejected wholesale because the source-trained QA model still obtains roughly 40% to 50% exact-match accuracy on most evaluated OOD datasets.",
+   "evidence_type": "supported",
+   "section": "5.2 Main results"
+  },
+  {
+   "finding": "Test-time dropout can improve selective prediction further, but the experiment uses 30 stochastic forward passes and therefore introduces approximately 30-fold inference overhead.",
+   "evidence_type": "supported",
+   "section": "5.2 Main results"
+  },
+  {
+   "finding": "Selective prediction under domain shift is distinct from detecting intrinsically unanswerable questions: the controller is intended to abstain when its particular model is likely to be wrong, not merely when no valid answer exists.",
+   "evidence_type": "supported",
+   "section": "2.3 Related goals and tasks"
+  }
+ ],
+ "limitations": [
+  "The experiments concern extractive QA rather than iterative retrieval-augmented generation, so there is no retrieval-loop stopping policy or evidence-assembly controller.",
+  "The method requires labeled examples from at least one known OOD distribution, and transfer to an arbitrary unseen shift depends on how useful that known OOD behavior is.",
+  "The paper evaluates relative confidence through risk-coverage behavior but does not provide conformal or other finite-sample risk guarantees under arbitrary distribution shift.",
+  "The calibrator does not represent structured evidence sufficiency, temporal validity, document versions, or provenance.",
+  "There is no permission-aware retrieval or access-control mechanism and no explicit retrieval-token or retrieval-call budget.",
+  "The dropout-enhanced variant has substantial inference cost because it requires many forward passes.",
+  "Some measured QA errors are caused by exact-match annotation or span-matching artifacts rather than genuinely incorrect answers."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "calibrator_improves_selective_coverage": 0.99,
+  "known_ood_data_improves_abstention": 0.99,
+  "maxprob_is_overconfident_under_shift": 0.99,
+  "ood_examples_remain_partly_answerable": 0.98,
+  "dropout_has_accuracy_cost_tradeoff": 0.98,
+  "no_formal_conformal_risk_control": 0.97
+ },
+ "raw_claims": [
+  "Selective QA answers a question only when its confidence exceeds an abstention threshold.",
+  "The test distribution contains a mixture of source-domain and unseen OOD examples.",
+  "Maximum softmax probability is relatively overconfident on OOD inputs.",
+  "The proposed random-forest calibrator predicts whether the underlying QA model is likely to answer correctly.",
+  "Known-OOD calibration examples improve selective prediction on a different unseen OOD domain.",
+  "The source-plus-known-OOD calibrator reaches 56.1% coverage at 80% answered-question accuracy.",
+  "OOD questions remain sufficiently answerable that treating OOD detection as an automatic rejection rule would be overly conservative.",
+  "Test-time dropout improves confidence estimation in some configurations but requires repeated model inference.",
+  "The study evaluates abstention through risk-coverage behavior rather than a formal conformal coverage guarantee.",
+  "The system does not perform iterative evidence retrieval or provenance-aware stopping."
+ ],
+ "source_url": "https://arxiv.org/html/2006.09462",
+ "access": "full_text"
+}

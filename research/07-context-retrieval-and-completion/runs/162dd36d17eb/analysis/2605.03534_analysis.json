@@ -1,0 +1,85 @@
+{
+ "paper_id": "2605.03534",
+ "title": "SURE-RAG: Sufficiency and Uncertainty-Aware Evidence Verification for Selective Retrieval-Augmented Generation",
+ "research_question": "Can a structured set-level verifier determine whether retrieved evidence is sufficient to support a candidate answer and use uncertainty-aware selective prediction to abstain when that support is inadequate?",
+ "methodology": "SURE-RAG uses a shared DeBERTa-v3-base cross-encoder to produce support, refutation, and neutral relation distributions for claim-evidence pairs, then aggregates those local outputs into answer-level coverage, relation-strength, uncertainty, and retrieval feature blocks. A logistic-regression aggregator predicts Supported, Refuted, or Insufficient, and an uncertainty-penalized selective score determines whether the system answers or abstains; calibration parameters and thresholds are selected only from development data. The main HotpotQA-RAG v3 benchmark contains 4,026 examples in 900 question groups with full, partial, hard-insufficient, irrelevant, and refuting evidence conditions and group-disjoint splits. Evaluation includes classification F1, selective risk at fixed coverage, calibration error, shortcut diagnostics, counterfactual evidence swaps, a GPT-4o audit, no-oracle variants, HaluBench transfer, and ablations.",
+ "key_findings": [
+  {
+   "finding": "On controlled HotpotQA-RAG v3, calibrated SURE-RAG reaches 0.9075 Macro-F1 and raw SURE-RAG reaches 0.8951, substantially above DeBERTa mean-pooling at 0.6516 and comparable to the strong concat cross-encoder at 0.8888.",
+   "evidence_type": "supported",
+   "section": "VI-B Main HotpotQA-RAG v3 Results"
+  },
+  {
+   "finding": "Set-level answer aggregation materially improves over pooling-only verification, supporting the paper's argument that evidence sufficiency cannot be reduced to selecting the individually most supportive passage.",
+   "evidence_type": "supported",
+   "section": "VI-H Ablation and VII-A Interpretation"
+  },
+  {
+   "finding": "SURE-RAG provides a strong low-coverage selective-ranking benefit, but this advantage does not constitute a strict high-coverage or anytime-valid risk guarantee.",
+   "evidence_type": "supported",
+   "section": "VI-D Selective Answering and VII-A Interpretation"
+  },
+  {
+   "finding": "Post-hoc calibration improves binary expected calibration error from 0.0304 to 0.0198 but does not improve Risk@30, which changes from 0.1642 to 0.1670.",
+   "evidence_type": "supported",
+   "section": "VI-E Calibration and Fixed-Risk Diagnostics"
+  },
+  {
+   "finding": "Counterfactual swaps show near-perfect sensitivity to degradation of the evidence set on the controlled benchmark, including perfect reported success for partial, hard-insufficient, and irrelevant evidence substitutions.",
+   "evidence_type": "supported",
+   "section": "VI-F Counterfactual Evidence Swap"
+  },
+  {
+   "finding": "External transfer exposes a sharp task boundary: SURE-RAG outperforms GPT-4o on the controlled HotpotQA-RAG v3 comparison, while GPT-4o strongly outperforms SURE-RAG for unsafe-answer detection on natural HaluBench.",
+   "evidence_type": "supported",
+   "section": "VI-G GPT-4o Judge and External Transfer"
+  },
+  {
+   "finding": "Removing retrieval-uncertainty features reduces Macro-F1 from 0.8951 for raw SURE-RAG to 0.8370, indicating that the retrieval-information block is important in this constructed benchmark.",
+   "evidence_type": "supported",
+   "section": "VI-H Ablation"
+  }
+ ],
+ "limitations": [
+  "The principal benchmark is a controlled QA-derived construction rather than naturally occurring RAG logs or free-form long-form generation.",
+  "The maximum shortcut-baseline artifact ratio is 0.6816, so the constructed benchmark retains moderate artifact risk.",
+  "Entity-swap refutation generation can introduce answer-type mismatches and label noise.",
+  "Experiments validate short-answer sufficiency rather than long-form multi-claim evidence completeness.",
+  "The method targets controlled evidence sufficiency and does not generalize well to open-world hallucination detection in the reported HaluBench transfer.",
+  "GPT-4o auditing supplements but does not replace large-scale human annotation.",
+  "The aggregator combines local claim-passage signals rather than performing end-to-end reasoning jointly across passages.",
+  "The selective score is empirically calibrated but does not furnish an anytime-valid or formal bounded-risk stopping guarantee.",
+  "Temporal validity, evidence-version identity, permission-aware access, and adaptive decisions about what evidence to retrieve next are outside the evaluated method.",
+  "The processed HotpotQA-RAG v3 files and evaluation artifacts are described as planned releases rather than already available artifacts in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "controlled_benchmark_macro_f1_gain": 0.99,
+  "set_level_aggregation_advantage": 0.98,
+  "low_coverage_selective_benefit": 0.98,
+  "calibration_ece_but_not_risk_improvement": 0.99,
+  "counterfactual_evidence_sensitivity": 0.99,
+  "poor_natural_hallucination_transfer": 0.99,
+  "retrieval_uncertainty_ablation_effect": 0.98
+ },
+ "raw_claims": [
+  "SURE-RAG distinguishes supported, refuted, and insufficient evidence rather than treating retrieval relevance as sufficient grounding.",
+  "A shared cross-encoder scores each claim-evidence pair before answer-level aggregation.",
+  "The aggregator includes coverage, relation, uncertainty, and retrieval-derived feature blocks.",
+  "The system abstains unless its predicted class is Supported and its uncertainty-adjusted score clears a development-selected threshold.",
+  "HotpotQA-RAG v3 contains multiple evidence conditions derived from the same underlying questions and uses question-group-disjoint splits.",
+  "Calibrated SURE-RAG has the highest reported Macro-F1 among the main controlled-benchmark configurations.",
+  "Calibration lowers binary ECE but does not improve the reported Risk@30 value.",
+  "The counterfactual evidence experiment shows that supported probability falls reliably when full evidence is replaced by degraded evidence.",
+  "SURE-RAG transfers poorly to natural HaluBench unsafe-answer detection compared with GPT-4o.",
+  "Pooling-only and the variant without retrieval uncertainty both perform materially below the full raw system.",
+  "The authors characterize the current evidence as controlled-benchmark validation rather than a complete solution to open-world hallucination.",
+  "Release of processed benchmark files, split identifiers, predictions, configurations, and evaluation scripts is described as planned."
+ ],
+ "source_url": "https://arxiv.org/html/2605.03534",
+ "access": "full_text"
+}

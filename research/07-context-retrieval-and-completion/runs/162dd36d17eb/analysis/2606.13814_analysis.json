@@ -1,0 +1,74 @@
+{
+ "paper_id": "2606.13814",
+ "title": "TASR: Training-Free Adaptive Stopping for Iterative Retrieval",
+ "research_question": "Can iterative RAG stop adaptively without a learned stopping controller by combining answer stability with calibrated model confidence while preserving answer quality and reducing retrieval calls?",
+ "methodology": "TASR evaluates an iterative RAG loop in which one additional passage from a fixed pre-ranked list is revealed per round, up to five rounds. Its stopping predicate fires when the normalized answer is unchanged from the previous round and a per-round isotonic calibration of the first answer-token logit margin exceeds 0.25; the calibrator is fitted on a 100-question tune split but no classifier, value head, or trajectory-trained policy is learned. The rule was selected from an exhaustive enumeration of 381 candidate stopping rules and evaluated across distractor, open-domain BM25, dense-retrieval, multiple-model, and large-model configurations using F1, LLM-call count, and paired bootstrap confidence intervals.",
+ "key_findings": [
+  {
+   "finding": "Across the primary three-model by two-dataset distractor grid, TASR reached 57.40 macro F1 at 3.13 calls, compared with 53.98 F1 at 3.00 calls for fixed-k=3, while retaining 94.8% of fixed-k=5 F1 with 62.6% of its calls.",
+   "evidence_type": "supported",
+   "section": "5.1 Headline"
+  },
+  {
+   "finding": "Three primary cells showed statistically significant F1 improvements over fixed-k=3 and the remaining three were statistical ties, with no significant regression in the primary grid.",
+   "evidence_type": "supported",
+   "section": "5.2 Per-Cell Breakdown"
+  },
+  {
+   "finding": "The fixed stopping rule transferred to open-domain BM25, dense retrieval, and a Nemotron-3-Ultra-550B scale stress test without significant regressions in the reported extension experiments.",
+   "evidence_type": "supported",
+   "section": "5.6-5.8 External Validity, Retriever Robustness, and Scale Robustness"
+  },
+  {
+   "finding": "Verbalized confidence was highly collapsed on the studied RLHF-tuned models, while first-answer-token logit margins provided much stronger separation between correct and incorrect answers.",
+   "evidence_type": "supported",
+   "section": "5.4 Negative Results on Alternative Signals and 5.9 Cross-Model Analysis"
+  },
+  {
+   "finding": "The margin threshold protects against some premature stops caused by an answer becoming stable before the required evidence has entered the context.",
+   "evidence_type": "supported",
+   "section": "3.4 The TASR Predicate"
+  },
+  {
+   "finding": "Among the 381 enumerated candidate rules used in rule selection, the chosen answer-stability plus calibrated-margin rule was not Pareto-dominated by an alternative under the paper's search procedure.",
+   "evidence_type": "supported",
+   "section": "5.3 The Exhaustive Search Behind AS_m25"
+  }
+ ],
+ "limitations": [
+  "The stopping signal depends on access to token log probabilities and a structured short-answer generation format, which limits direct transfer to APIs that hide logits or to substantially different response formats.",
+  "Each per-round isotonic calibrator is estimated from only 100 tuning examples, so calibration reliability under larger distribution changes is uncertain.",
+  "The experiments primarily concern short-answer factoid and multi-hop QA; long-form generation, semantic answer equivalence, and claim-level evidence completeness are not validated.",
+  "Retrieval is from a fixed pre-ranked list with no query reformulation, so the method does not decide what evidence should be fetched next.",
+  "The method reports LLM-call count as its principal cost measure rather than measured end-to-end latency or monetary cost.",
+  "The rule provides an empirical quality-cost tradeoff but no formal bounded-risk or anytime-valid stopping guarantee.",
+  "Temporal validity, document-version provenance, and permission-aware access control are outside the evaluated controller state."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "primary_quality_cost_gain": 0.99,
+  "no_significant_primary_regressions": 0.99,
+  "cross_retriever_and_scale_transfer": 0.96,
+  "logit_margin_beats_verbalized_confidence": 0.99,
+  "margin_reduces_premature_stopping": 0.97,
+  "enumerated_rule_pareto_result": 0.97
+ },
+ "raw_claims": [
+  "TASR stops only after the current normalized answer matches the previous answer and calibrated margin exceeds the fixed threshold.",
+  "The only fitted TASR component is a per-round one-dimensional isotonic calibrator rather than a learned stopping policy.",
+  "The primary evaluation uses HotpotQA and 2WikiMultiHopQA distractor settings with separate tuning and evaluation questions.",
+  "The rule cannot stop after the first retrieval round because answer stability requires two consecutive answers.",
+  "TASR improves macro F1 over the fixed three-round baseline at nearly the same average number of calls in the primary grid.",
+  "No primary evaluation cell shows a statistically significant regression relative to fixed-k=3.",
+  "Open-domain and dense-retrieval extensions reuse the locked stopping design rather than retuning a new stopping policy for each cell.",
+  "Verbalized confidence often saturates at its maximum value and is less discriminative than the answer-token logit margin.",
+  "Pure answer stability can stop on a repeated wrong answer before useful evidence arrives.",
+  "The experiments leave query reformulation and coarser retrieval-step granularity for future work."
+ ],
+ "source_url": "https://arxiv.org/html/2606.13814",
+ "access": "full_text"
+}

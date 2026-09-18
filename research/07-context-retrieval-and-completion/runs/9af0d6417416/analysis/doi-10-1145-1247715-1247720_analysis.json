@@ -1,0 +1,77 @@
+{
+ "paper_id": "doi-10-1145-1247715-1247720",
+ "title": "Temporal profiles of queries",
+ "research_question": "Can temporal profiles derived from the timestamps of retrieved documents characterize a query's temporal dependence, classify temporal query types, and improve prediction of retrieval effectiveness?",
+ "methodology": "The authors construct a probability distribution over dates for each query from the timestamps and retrieval scores of its top-ranked documents, then derive features including temporal KL divergence, autocorrelation, kurtosis, and burst-model statistics. They evaluate these features on TREC news collections and an ISP web-search log, manually defining atemporal, temporally unambiguous, and temporally ambiguous query classes. Decision trees with stratified cross-validation are used for temporal classification, while Spearman correlation, linear/ridge regression, and neural networks are used to predict average precision from temporal features alone or combined with content clarity.",
+ "key_findings": [
+  {
+   "finding": "Temporal-profile features distinguish temporal query classes substantially better than majority-class baselines on several evaluated collections.",
+   "evidence_type": "supported",
+   "section": "7. Automatic Classification of Queries into Temporal Types"
+  },
+  {
+   "finding": "On the TREC Novelty queries, classification accuracy was 0.56 for the majority baseline, 0.62 with content clarity, 0.68 with temporal features, and 0.70 when temporal features and content clarity were combined.",
+   "evidence_type": "supported",
+   "section": "7.1 Results Automatically Classifying Novelty Queries"
+  },
+  {
+   "finding": "For distinguishing temporally ambiguous from atemporal ad-hoc queries, combining temporal and content features achieved 0.73 accuracy on both the AP and WSJ collections, compared with majority baselines of 0.54 and 0.66 respectively.",
+   "evidence_type": "supported",
+   "section": "7.2 Ad hoc Queries: Temporally Ambiguous and Atemporal"
+  },
+  {
+   "finding": "In three-way classification, temporal features reached 0.75 accuracy on the search-log data versus a 0.27 majority baseline, while results were weaker on WSJ, showing that effectiveness varies substantially by collection.",
+   "evidence_type": "supported",
+   "section": "7.3 Temporally Unambiguous, Temporally Ambiguous, and Atemporal Queries"
+  },
+  {
+   "finding": "Temporal features used alone were generally weak predictors of average precision, but combining them with content clarity produced substantially stronger held-out correlations than either feature family alone.",
+   "evidence_type": "supported",
+   "section": "8.4-8.5 Precision Prediction Results"
+  },
+  {
+   "finding": "For linear regression, held-out correlation with average precision rose to 0.52 on AP and 0.60 on WSJ when temporal and content features were combined, versus 0.21 and 0.36 respectively for content clarity alone.",
+   "evidence_type": "supported",
+   "section": "8.5 Results of Linear Regression of Features against Average Precision"
+  },
+  {
+   "finding": "The study explicitly cautions that its temporal-profile estimator was evaluated on collections with approximately uniform document distributions over time and may not transfer directly to temporally nonuniform collections.",
+   "evidence_type": "supported",
+   "section": "11. Discussion"
+  }
+ ],
+ "limitations": [
+  "The temporal-profile estimator was developed and evaluated primarily on collections with approximately uniform temporal document distributions, while adapting it to nonuniform collections was left open.",
+  "The temporal classes were motivated partly by the authors' intuition about useful forms of disambiguation rather than by a user-centered taxonomy validated through deployment.",
+  "No user study or deployed search experiment evaluated whether the proposed temporal feedback and visualization actually improve user satisfaction or task completion.",
+  "Some three-class experiments relied on manually constructed temporally unambiguous queries because the natural TREC ad-hoc query sets did not contain all three classes.",
+  "The ISP search-log corpus itself was not released, although a manually constructed query set for the log experiments was made public.",
+  "The temporal model primarily uses document timestamps and does not exploit temporal expressions contained inside document text."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "temporal_features_improve_query_classification": 0.98,
+  "combined_features_improve_precision_prediction": 0.97,
+  "three_temporal_query_classes_are_operationally_distinguishable": 0.94,
+  "performance_varies_by_collection": 0.98,
+  "uniform_temporal_distribution_is_a_transfer_limit": 0.99
+ },
+ "raw_claims": [
+  "A query's retrieved-document timeline can be represented as a probability distribution over dates.",
+  "The paper distinguishes atemporal, temporally unambiguous, and temporally ambiguous queries.",
+  "Temporal KL divergence measures how much a query's time distribution differs from the collection-wide temporal distribution.",
+  "Burst features are used to characterize event-like structure in retrieved-document timelines.",
+  "Decision-tree classifiers use temporal features to assign queries to temporal classes.",
+  "Temporal features outperform the majority baseline in the reported classification experiments.",
+  "Most temporal features are weak predictors of average precision when considered individually.",
+  "Combining temporal and content features improves average-precision prediction relative to using either group alone.",
+  "Queries predicted to have poor retrieval quality are proposed as candidates for additional feedback or temporal disambiguation.",
+  "The authors identify nonuniform temporal document distributions and the absence of user studies as unresolved issues."
+ ],
+ "source_url": "https://841.io/doc/temporal-profiles-journal.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,71 @@
+{
+ "paper_id": "2105.04166",
+ "title": "Few-Shot Conversational Dense Retrieval",
+ "research_question": "Can a conversational dense retriever learn robust contextual query embeddings from very little conversational relevance supervision by distilling an ad-hoc dense retriever, and thereby outperform query-rewriting retrieval pipelines?",
+ "methodology": "The paper introduces ConvDR, a dual-encoder conversational dense retriever whose query encoder consumes the current utterance together with conversation history. In the few-shot setting, it distills embeddings from an ANCE teacher applied to manually reformulated oracle queries, using a mean-squared-error knowledge-distillation objective and optionally a ranking loss. The authors evaluate on TREC CAsT 2019 and 2020 and on the more fully supervised OR-QuAC benchmark, and additionally analyze conversational-context sensitivity and retrieval latency.",
+ "key_findings": [
+  {
+   "finding": "ConvDR substantially improves first-stage retrieval over sparse retrieval and automatic query-rewriting baselines on the CAsT conversational-search benchmarks, while approaching retrieval based on manually rewritten queries in the strongest reported setting.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  },
+  {
+   "finding": "Under the highly limited CAsT supervision regime, knowledge distillation from the ad-hoc retriever is the training signal that successfully adapts ConvDR, whereas sparse conversational ranking supervision alone can perform worse than the zero-shot alternatives.",
+   "evidence_type": "supported",
+   "section": "Section 5.2"
+  },
+  {
+   "finding": "With substantially more supervision on OR-QuAC, ranking supervision becomes effective and combining ranking with knowledge distillation gives the strongest ConvDR training result reported there.",
+   "evidence_type": "supported",
+   "section": "Section 5.2"
+  },
+  {
+   "finding": "Turn-by-turn and context-intrusion analyses indicate that ConvDR retains useful earlier conversational information and is more sensitive to removal of relevant history than to removal of relatively unimportant history.",
+   "evidence_type": "supported",
+   "section": "Section 5.4"
+  },
+  {
+   "finding": "Direct contextual query encoding avoids the separate query-rewriting stage and reduces measured query-processing latency relative to the evaluated rewrite-then-retrieve pipelines.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Table 3"
+  },
+  {
+   "finding": "The very large supervised gains on OR-QuAC should be interpreted cautiously because the authors identify structural artifacts in that synthetic conversational benchmark, including concentration of a dialogue's relevant passages on the same Wikipedia page.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  }
+ ],
+ "limitations": [
+  "The method retrieves for a conversational query but does not explicitly represent an evidence gap that must be closed before answering.",
+  "It does not implement an iterative within-turn retrieve-judge-retrieve loop or an evidence-sufficiency stopping criterion.",
+  "The OR-QuAC benchmark contains synthetic structural artifacts that can make conversational retrieval easier than realistic settings.",
+  "The experiments do not model workplace access permissions or authorization-aware retrieval.",
+  "Document versions, temporal validity, freshness, and source-version lineage are not represented.",
+  "The efficiency analysis primarily measures latency rather than monetary cost, retrieval budget, or calibrated uncertainty."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieval_quality": 0.98,
+  "few_shot_distillation": 0.99,
+  "context_robustness": 0.96,
+  "latency_reduction": 0.98,
+  "benchmark_artifact_caveat": 0.98
+ },
+ "raw_claims": [
+  "ConvDR encodes the current conversational query jointly with previous conversational turns into a dense retrieval representation.",
+  "The few-shot training method asks ConvDR to imitate representations produced by an ANCE teacher from manually reformulated queries.",
+  "Knowledge distillation is markedly more effective than limited ranking supervision for the few-shot CAsT experiments.",
+  "ConvDR outperforms the evaluated automatic query-rewriting retrieval systems on the CAsT first-stage retrieval task.",
+  "The model remains comparatively robust as conversations progress to later turns.",
+  "Removing a context turn that carries more useful retrieval information changes ConvDR's representation more strongly than removing a less useful turn.",
+  "ConvDR eliminates the latency of running a separate neural query rewriter before retrieval.",
+  "The authors caution that OR-QuAC contains synthetic properties that simplify the retrieval problem.",
+  "The paper evaluates conversational context utilization but does not perform explicit evidence-completeness judging."
+ ],
+ "source_url": "https://arxiv.org/html/2105.04166",
+ "access": "full_text"
+}

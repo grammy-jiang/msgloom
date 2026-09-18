@@ -1,0 +1,542 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "TerminologyAnalysis",
+ "description": "Academic terminology refinement performed before bulk discovery: each seed keyword is audited, the product problem is translated into academic task families, and query families are built with an explicit DIRECT or TRANSFER role.",
+ "topic": "evidence-gap-driven context retrieval and completion for workplace communication: turning an explicit evidence gap into bounded retrieval, deciding what to fetch next, and knowing when to stop, while preserving permissions, versions, temporal validity, cost and uncertainty",
+ "seed_audit": [
+  {
+   "seed": "conversational query rewriting",
+   "academic_meaning": "Rewrites a context-dependent conversational query into a stand-alone search query by resolving omitted or context-dependent content from prior turns.",
+   "fit": "STRONG",
+   "main_risk": "It solves query expression after an information need is known; it usually does not decide whether retrieval is warranted, whether the evidence gap has been closed, or when investigation should stop.",
+   "false_positive_literature": "Conversational QA papers evaluated only on rewrite similarity or retrieval ranking, with no evidence-sufficiency, bounded-search, provenance, permission, or stopping behavior."
+  },
+  {
+   "seed": "query reformulation",
+   "academic_meaning": "A broad IR family covering query rewriting, expansion, reduction, substitution, relevance-feedback reformulation, and iterative modification of search expressions.",
+   "fit": "MODERATE",
+   "main_risk": "The term is substantially broader than evidence-gap completion and often optimizes retrieval effectiveness without representing why evidence is missing.",
+   "false_positive_literature": "Pseudo-relevance feedback, query expansion, spelling correction, synonym expansion, search-engine optimization, and generic ranking-improvement studies."
+  },
+  {
+   "seed": "query resolution",
+   "academic_meaning": "In conversational IR, resolves ambiguous, elliptical, or context-dependent user queries against conversation history so the underlying information need can be searched.",
+   "fit": "STRONG",
+   "main_risk": "The phrase is overloaded outside conversational IR and may mean entity resolution, database query processing, query answering, or ambiguity resolution unrelated to evidence acquisition.",
+   "false_positive_literature": "Database query resolution, entity resolution, DNS resolution, SQL processing, and generic ambiguity-resolution papers without conversational retrieval."
+  },
+  {
+   "seed": "conversational search",
+   "academic_meaning": "Interactive information seeking through multiple conversational turns, including query understanding, clarification, retrieval, response generation, and session context.",
+   "fit": "MODERATE",
+   "main_risk": "The field is much broader than explicit evidence-gap investigation and often studies user interaction quality rather than bounded evidence acquisition.",
+   "false_positive_literature": "Chatbot usability, recommendation dialogue, conversational recommendation, response-generation quality, and search-session engagement studies."
+  },
+  {
+   "seed": "context-aware search",
+   "academic_meaning": "Search methods that condition retrieval or ranking on contextual variables such as prior queries, location, device, task, user history, or surrounding text.",
+   "fit": "WEAK",
+   "main_risk": "Context is usually treated as a ranking feature rather than as an explicit unresolved evidence requirement.",
+   "false_positive_literature": "Personalized search, mobile/location-aware search, social-context ranking, context-aware recommendation, and generic context embeddings."
+  },
+  {
+   "seed": "question decontextualization",
+   "academic_meaning": "Transforms a question or utterance that depends on preceding discourse into a stand-alone form that preserves its intended meaning.",
+   "fit": "MODERATE",
+   "main_risk": "Decontextualization may manufacture an explicit formulation but normally assumes the relevant antecedent context is already available; it does not solve missing-context acquisition.",
+   "false_positive_literature": "Sentence rewriting, pronoun substitution, stand-alone QA preprocessing, and discourse rewriting evaluated without retrieval."
+  },
+  {
+   "seed": "retrieval-augmented generation",
+   "academic_meaning": "Generation conditioned on information retrieved from an external corpus or knowledge source.",
+   "fit": "WEAK",
+   "main_risk": "Generic RAG assumes retrieval is desirable and is dominated by answer-quality and retrieval-quality work rather than explicit gap detection, bounded acquisition, stopping, permissions, or temporal validity.",
+   "false_positive_literature": "Vector-store RAG benchmarking, embedding comparisons, chunking studies, generic RAG architectures, and generation-quality papers with fixed top-k retrieval."
+  },
+  {
+   "seed": "adaptive retrieval augmented generation",
+   "academic_meaning": "RAG systems that adapt whether, when, how often, or with what strategy retrieval is performed according to the question or model state.",
+   "fit": "STRONG",
+   "main_risk": "Adaptation is often learned for benchmark accuracy and may not expose a durable evidence-gap object or enforce enterprise constraints.",
+   "false_positive_literature": "Model-routing work that merely chooses between parametric and retrieved answers, adaptive top-k tuning, or benchmark-specific retrieval classifiers with no explicit sufficiency semantics."
+  },
+  {
+   "seed": "active retrieval augmented generation",
+   "academic_meaning": "Generation procedures that actively trigger retrieval during inference when the model determines additional external information is useful.",
+   "fit": "STRONG",
+   "main_risk": "Active retrieval is commonly token- or generation-driven rather than driven by a structured missing-evidence requirement, and may continue browsing without product-style bounds.",
+   "false_positive_literature": "Open-ended web browsing agents, retrieval during long-form generation, or token-level retrieval work without scope, permission, provenance, or stopping guarantees."
+  },
+  {
+   "seed": "iterative retrieval",
+   "academic_meaning": "Repeated retrieval in which results from one step influence later queries, evidence selection, or reasoning.",
+   "fit": "STRONG",
+   "main_risk": "Iteration alone does not imply that each step addresses an explicit residual evidence gap or that there is a principled stopping rule.",
+   "false_positive_literature": "Iterative pseudo-relevance feedback, repeated nearest-neighbor retrieval, recursive search, and fixed-number retrieval loops."
+  },
+  {
+   "seed": "self-directed retrieval",
+   "academic_meaning": "An emerging and non-uniform label for models that autonomously decide when to retrieve, critique retrieved material, or choose subsequent retrieval actions.",
+   "fit": "MODERATE",
+   "main_risk": "The terminology is not standardized and is easily conflated with Self-RAG, autonomous agents, or unrestricted self-directed browsing.",
+   "false_positive_literature": "Autonomous agents, self-reflection methods with no retrieval, self-supervised retrieval training, and unrestricted browsing agents."
+  },
+  {
+   "seed": "multi-hop retrieval",
+   "academic_meaning": "Retrieval where answering requires obtaining multiple pieces of evidence, often with later retrieval conditioned on evidence found in earlier hops.",
+   "fit": "STRONG",
+   "main_risk": "Benchmark multi-hop tasks usually assume that an answer exists and often use a fixed hop structure, whereas msgloom must permit failure, denial, partial evidence, and early stopping.",
+   "false_positive_literature": "Knowledge-graph path finding, fixed two-hop QA, graph traversal, and multi-hop reasoning with an oracle evidence corpus."
+  },
+  {
+   "seed": "iterative multi-hop question answering",
+   "academic_meaning": "Question-answering systems that alternate retrieval and reasoning across multiple evidence hops until an answer can be produced.",
+   "fit": "MODERATE",
+   "main_risk": "It transfers well as a mechanism but the benchmark objective is answer production, not permission-preserving investigation with explicit unresolved outcomes.",
+   "false_positive_literature": "Hotpot-style QA systems whose only objective is exact-match answer accuracy or supporting-fact retrieval under a closed corpus."
+  },
+  {
+   "seed": "retrieval planning",
+   "academic_meaning": "Planning the sequence, decomposition, source selection, query generation, or retrieval actions needed to collect information for a task.",
+   "fit": "STRONG",
+   "main_risk": "The phrase is emerging rather than fully standardized, and modern agent literature may use it for unrestricted tool plans rather than bounded read-only evidence acquisition.",
+   "false_positive_literature": "General agent planning, web-navigation planning, task execution plans, or search plans containing write/actions unrelated to evidence retrieval."
+  },
+  {
+   "seed": "evidence acquisition",
+   "academic_meaning": "A broad phrase for obtaining observations, documents, measurements, or supporting information needed to resolve a hypothesis or decision.",
+   "fit": "MODERATE",
+   "main_risk": "It is highly interdisciplinary and not a stable IR task name; much of the literature concerns scientific experimentation, law, medicine, sensing, or active learning.",
+   "false_positive_literature": "Clinical evidence acquisition, legal discovery, sensor placement, active learning, scientific experimental design, and forensic evidence collection."
+  },
+  {
+   "seed": "tool-use planning",
+   "academic_meaning": "Planning which external tools or APIs to invoke, in what order, and with what arguments to accomplish a task.",
+   "fit": "MODERATE",
+   "main_risk": "The majority of tool-use literature permits arbitrary actions and optimizes task completion rather than constrained read-only evidence collection.",
+   "false_positive_literature": "Robotic control, code execution, transactional agents, API orchestration, browser automation, and action-taking agents without retrieval-specific safeguards."
+  },
+  {
+   "seed": "query-focused evidence retrieval",
+   "academic_meaning": "Retrieval or evidence selection aimed specifically at material relevant to a given question or claim rather than generic document relevance.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is descriptive rather than a consistently named research task and can collapse into generic QA passage retrieval.",
+   "false_positive_literature": "Passage ranking, extractive QA, evidence sentence selection, fact-checking retrieval, and document summarization without iterative gap handling."
+  },
+  {
+   "seed": "temporal information retrieval",
+   "academic_meaning": "Information retrieval that models temporal intent, document time, query time, event time, temporal expressions, or time-dependent relevance.",
+   "fit": "STRONG",
+   "main_risk": "Many methods model publication recency rather than the distinct clocks msgloom needs, such as message time, effective time, deadline time, and version/collection time.",
+   "false_positive_literature": "Simple recency boosting, temporal web trends, archive search, news ranking, and temporal diversification without semantic validity-time reasoning."
+  },
+  {
+   "seed": "time-aware retrieval",
+   "academic_meaning": "Retrieval that explicitly incorporates temporal information into query interpretation, filtering, ranking, or evidence selection.",
+   "fit": "STRONG",
+   "main_risk": "The term is broad and may merely add timestamps as ranking features without reasoning about which version was valid at the question's target time.",
+   "false_positive_literature": "Timestamp features, chronological recommendation, time-aware collaborative filtering, and recency-based ranking."
+  },
+  {
+   "seed": "recency-aware retrieval",
+   "academic_meaning": "Retrieval or ranking that increases or otherwise models the relevance of recently created or updated information.",
+   "fit": "MODERATE",
+   "main_risk": "Recency is not temporal validity: the newest evidence may be wrong for a historical question or may supersede the state being investigated.",
+   "false_positive_literature": "Freshness ranking, trending-content retrieval, latest-news search, and decay-function ranking."
+  },
+  {
+   "seed": "version-aware retrieval",
+   "academic_meaning": "Retrieval that distinguishes, indexes, selects, or reasons over multiple versions or revisions of a document, artifact, dataset, or knowledge source.",
+   "fit": "STRONG",
+   "main_risk": "The terminology is not uniformly standardized and often refers to software, dataset, or web-archive versions rather than workplace document revisions.",
+   "false_positive_literature": "Software package version resolution, version control search, dataset versioning infrastructure, API version selection, and duplicate-document detection."
+  },
+  {
+   "seed": "provenance-aware retrieval",
+   "academic_meaning": "Retrieval that preserves or exploits information about source origin, derivation, lineage, custody, or evidence attribution.",
+   "fit": "STRONG",
+   "main_risk": "Provenance literature frequently concerns database lineage or trust scoring rather than preserving a precise retrievable workplace source/version address.",
+   "false_positive_literature": "Database provenance algebra, blockchain provenance, generic source credibility scoring, citation recommendation, and metadata-only lineage."
+  },
+  {
+   "seed": "unanswerability detection",
+   "academic_meaning": "Determining that a question cannot be answered from the available context, corpus, or evidence rather than forcing an answer.",
+   "fit": "STRONG",
+   "main_risk": "Closed-context QA often treats missing answer spans as unanswerable without distinguishing missing evidence, inaccessible evidence, failed retrieval, or genuinely nonexistent facts.",
+   "false_positive_literature": "Reading-comprehension no-answer classification where the model cannot request more evidence."
+  },
+  {
+   "seed": "answerability prediction",
+   "academic_meaning": "Predicting whether the currently available information supports answering a question.",
+   "fit": "STRONG",
+   "main_risk": "Prediction may be calibrated only to benchmark answer presence and may not identify what evidence is missing or whether another retrieval step is worthwhile.",
+   "false_positive_literature": "Dataset answerability classifiers, question-quality scoring, and answerability prediction over a single fixed passage."
+  },
+  {
+   "seed": "selective question answering",
+   "academic_meaning": "Question answering in which the system may answer only when sufficiently confident and abstain otherwise, often optimizing risk versus coverage.",
+   "fit": "STRONG",
+   "main_risk": "Selective QA determines whether to answer but generally does not specify an evidence-acquisition policy after abstention.",
+   "false_positive_literature": "Confidence calibration and selective prediction papers that contain no retrieval or follow-up information acquisition."
+  },
+  {
+   "seed": "answer abstention",
+   "academic_meaning": "The ability of a QA or language system to decline to produce an answer when evidence or confidence is insufficient.",
+   "fit": "STRONG",
+   "main_risk": "Abstention is only one terminal state; msgloom also needs to distinguish denied access, exhausted budget, unavailable artifacts, failed extraction, and residual unresolved gaps.",
+   "false_positive_literature": "Safety refusals, generic LLM refusal behavior, uncertainty verbalization, and alignment-related abstention unrelated to evidence sufficiency."
+  },
+  {
+   "seed": "retrieval stopping criterion",
+   "academic_meaning": "A rule for terminating a retrieval or search process once additional retrieval is predicted to have insufficient value, the information need is satisfied, or a resource limit is reached.",
+   "fit": "STRONG",
+   "main_risk": "The exact phrase is not consistently standardized and may retrieve stopping work from web crawling, ranked-list truncation, optimization, or database execution.",
+   "false_positive_literature": "Crawler stopping, top-k truncation, early termination of ranking algorithms, branch-and-bound search, and database query optimization."
+  },
+  {
+   "seed": "budgeted retrieval",
+   "academic_meaning": "Retrieval under an explicit resource constraint such as number of queries, documents, hops, tokens, latency, computation, or monetary cost.",
+   "fit": "STRONG",
+   "main_risk": "Budgeted methods may optimize aggregate effectiveness without preserving unresolved evidence needs or differentiating budget exhaustion from negative evidence.",
+   "false_positive_literature": "Approximate nearest-neighbor compute budgets, indexing-memory tradeoffs, latency-only optimization, and fixed token-budget RAG."
+  },
+  {
+   "seed": "cost-aware retrieval",
+   "academic_meaning": "Retrieval or information acquisition that explicitly models the cost of queries, sources, documents, computation, latency, or downstream processing.",
+   "fit": "STRONG",
+   "main_risk": "Cost can refer only to computational efficiency and omit semantic investigation costs or the expected value of additional evidence.",
+   "false_positive_literature": "Hardware efficiency, ANN cost reduction, cloud serving optimization, and ranking latency work without sequential evidence decisions."
+  },
+  {
+   "seed": "enterprise search",
+   "academic_meaning": "Search over organizational information repositories, commonly involving heterogeneous sources, access restrictions, enterprise metadata, and organization-specific relevance.",
+   "fit": "MODERATE",
+   "main_risk": "It gives the correct operational domain but much of the literature concerns ranking, deployment, knowledge management, or intranet navigation rather than evidence-gap-driven investigation.",
+   "false_positive_literature": "Commercial enterprise-search architecture, intranet ranking, employee expertise search, knowledge management, and product marketing."
+  },
+  {
+   "seed": "access-controlled retrieval",
+   "academic_meaning": "Retrieval in which the set of searchable or returnable information is constrained by authorization, access-control policy, security labels, or user permissions.",
+   "fit": "STRONG",
+   "main_risk": "Security literature may study confidentiality enforcement without considering answerability, evidence sufficiency, or the semantics of denied evidence.",
+   "false_positive_literature": "Cryptographic searchable encryption, access-control policy languages, authorization engines, secure databases, and privacy mechanisms without evidence investigation."
+  },
+  {
+   "seed": "evidence sufficiency estimation",
+   "academic_meaning": "Estimating whether the evidence currently available is sufficient to support an answer, inference, claim, or decision, and therefore whether further evidence is needed.",
+   "fit": "STRONG",
+   "main_risk": "The terminology is diffuse across QA, fact verification, RAG, decision theory, and information seeking; papers may use different names such as sufficiency, completeness, support, confidence, or adequacy.",
+   "false_positive_literature": "Fact-verification evidence scoring that assumes a fixed evidence set, generic confidence estimation, and entailment classification without a retrieval decision."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "F1",
+   "name": "Explicit information-need resolution and conversational query resolution",
+   "description": "Methods that convert an underspecified or context-dependent information need into an explicit, searchable representation, including conversational query resolution, clarification, and missing-context formulation.",
+   "role": "DIRECT",
+   "why_it_matters": "Topic 07 begins with an explicit unresolved field or evidence gap. This family provides terminology for expressing exactly what is missing before any search is issued, especially for unresolved antecedents, entities, owners, objects, and historical context.",
+   "seed_papers": [
+    "Can You Unpack That? Learning to Rewrite Questions-in-Context",
+    "Query Resolution for Conversational Search with Limited Supervision"
+   ]
+  },
+  {
+   "id": "F2",
+   "name": "Conversational query rewriting and question decontextualization",
+   "description": "Rewrites context-dependent questions or search utterances into stand-alone forms suitable for downstream retrieval.",
+   "role": "TRANSFER",
+   "why_it_matters": "Useful once Topic 07 has already decided that retrieval is necessary. It can transform an unresolved reference or context-bound question into a bounded search query, but does not itself decide whether to retrieve or when to stop.",
+   "seed_papers": [
+    "Can You Unpack That? Learning to Rewrite Questions-in-Context"
+   ]
+  },
+  {
+   "id": "F3",
+   "name": "Adaptive, active, and iterative retrieval-augmented generation",
+   "description": "Systems that dynamically decide whether and when to retrieve, issue additional retrieval calls during reasoning or generation, and condition later retrieval on the current model state.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest modern literature to Topic 07's retrieve-reassess-retrieve loop. The critical admission test is whether retrieval is conditional on an identified information deficit and whether the method can terminate without pretending that failed retrieval proves absence.",
+   "seed_papers": [
+    "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "Active Retrieval Augmented Generation",
+    "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+    "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity"
+   ]
+  },
+  {
+   "id": "F4",
+   "name": "Multi-hop retrieval and iterative evidence chaining",
+   "description": "Sequential retrieval in which one piece of evidence exposes a dependency, entity, or subquestion needed for the next retrieval step.",
+   "role": "TRANSFER",
+   "why_it_matters": "Many msgloom gaps will require a dependency chain: a message references an approval, that approval references an attachment, and the relevant attachment version must then be obtained. Multi-hop QA provides mechanisms for this pattern, but its closed benchmark assumptions must not be inherited uncritically.",
+   "seed_papers": [
+    "HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering",
+    "Multi-hop Dense Retrieval for Open-domain Question Answering",
+    "Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions"
+   ]
+  },
+  {
+   "id": "F5",
+   "name": "Retrieval planning and read-only tool-use planning",
+   "description": "Planning which search, lookup, read, or source-selection action should be performed next, including decomposition of a larger information need into bounded information-acquisition actions.",
+   "role": "TRANSFER",
+   "why_it_matters": "Topic 07 needs a policy for choosing the next allowed evidence action, but generic agent planning is broader and frequently includes unsafe or irrelevant write actions. Only retrieval-oriented, bounded, inspectable planning transfers cleanly.",
+   "seed_papers": [
+    "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "Toolformer: Language Models Can Teach Themselves to Use Tools"
+   ]
+  },
+  {
+   "id": "F6",
+   "name": "Answerability, unanswerability, selective QA, abstention, and evidence sufficiency",
+   "description": "Methods that assess whether currently available evidence is enough to answer, predict unanswerability, abstain when support is inadequate, or estimate evidence completeness and support.",
+   "role": "DIRECT",
+   "why_it_matters": "This family supplies the semantic half of a stopping rule. Retrieval success is not equivalent to gap closure; Topic 07 must explicitly re-evaluate whether the evidence answers the question and preserve an unresolved state when it does not.",
+   "seed_papers": [
+    "Know What You Don't Know: Unanswerable Questions for SQuAD",
+    "Selective Question Answering under Domain Shift"
+   ]
+  },
+  {
+   "id": "F7",
+   "name": "Budgeted, cost-aware, and value-of-information retrieval",
+   "description": "Sequential information acquisition under limits on queries, documents, hops, latency, computation, tokens, money, or expected benefit from further evidence.",
+   "role": "DIRECT",
+   "why_it_matters": "Topic 07 explicitly requires bounded investigation and a distinct budget-exhausted terminal state. Search should include both IR terminology and decision-theoretic value-of-information terminology because useful stopping work may not call itself RAG."
+  },
+  {
+   "id": "F8",
+   "name": "Temporal information retrieval and temporal validity",
+   "description": "Retrieval that interprets temporal intent and selects evidence with respect to event time, publication time, document time, effective time, or other temporal relevance dimensions.",
+   "role": "DIRECT",
+   "why_it_matters": "Msgloom cannot equate latest with valid. This family is needed to retrieve evidence appropriate to the time about which a Topic question is asked and to distinguish multiple clocks inherited from Topic 06.",
+   "seed_papers": [
+    "Time-Based Language Models"
+   ]
+  },
+  {
+   "id": "F9",
+   "name": "Version-aware and provenance-aware retrieval",
+   "description": "Methods that retrieve from evolving information while preserving document revision, source origin, lineage, and the identity of the evidence version used.",
+   "role": "DIRECT",
+   "why_it_matters": "A retrieved attachment or message is insufficient unless Topic 07 can identify which version was searched or read and pass that identity to Topic 08 for precise grounding. The search must cover document evolution, temporal archives, data provenance, and versioned corpora without assuming they form one mature literature."
+  },
+  {
+   "id": "F10",
+   "name": "Enterprise retrieval with authorization and access constraints",
+   "description": "Organizational search and retrieval where available evidence depends on user permissions, source access, security policy, repository boundaries, or heterogeneous enterprise collections.",
+   "role": "DIRECT",
+   "why_it_matters": "Permissions are a fixed product constraint. A denied read is neither an empty result nor evidence of absence, so access status must remain part of the retrieval outcome and subsequent stopping decision."
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "F1",
+   "role": "DIRECT",
+   "queries": [
+    "\"conversational query resolution\" information need retrieval",
+    "\"query resolution\" conversational search context dependent",
+    "\"conversational search\" clarification information need retrieval",
+    "\"clarification question\" conversational search missing information",
+    "\"underspecified query\" conversational search clarification",
+    "\"information need\" missing context conversational retrieval"
+   ]
+  },
+  {
+   "family_id": "F2",
+   "role": "TRANSFER",
+   "queries": [
+    "\"conversational query rewriting\" retrieval",
+    "\"question rewriting\" conversational search retrieval",
+    "\"question decontextualization\" conversational search",
+    "\"context dependent query\" rewrite conversational retrieval",
+    "\"standalone question\" rewriting conversational QA retrieval"
+   ]
+  },
+  {
+   "family_id": "F3",
+   "role": "DIRECT",
+   "queries": [
+    "\"adaptive retrieval\" retrieval augmented generation",
+    "\"adaptive RAG\" retrieval decision",
+    "\"active retrieval augmented generation\"",
+    "\"active retrieval\" language model evidence",
+    "\"iterative retrieval\" RAG evidence",
+    "\"dynamic retrieval\" RAG when to retrieve",
+    "\"retrieval gating\" retrieval augmented generation",
+    "\"Self-RAG\" retrieve critique",
+    "\"retrieval augmented generation\" evidence sufficiency retrieve again"
+   ]
+  },
+  {
+   "family_id": "F4",
+   "role": "TRANSFER",
+   "queries": [
+    "\"multi-hop retrieval\" iterative evidence",
+    "\"iterative multi-hop\" question answering retrieval",
+    "\"multi-hop question answering\" adaptive retrieval",
+    "\"multi-hop retrieval\" stopping",
+    "\"iterative retrieval\" multi-step question answering",
+    "\"interleaving retrieval\" reasoning multi-step"
+   ]
+  },
+  {
+   "family_id": "F5",
+   "role": "TRANSFER",
+   "queries": [
+    "\"retrieval planning\" information retrieval language model",
+    "\"retrieval plan\" question answering evidence",
+    "\"search planning\" question answering retrieval",
+    "\"tool use planning\" information retrieval language model",
+    "\"tool-use\" retrieval planning evidence",
+    "\"query planning\" multi-step retrieval",
+    "\"source selection\" multi-source question answering retrieval"
+   ]
+  },
+  {
+   "family_id": "F6",
+   "role": "DIRECT",
+   "queries": [
+    "\"unanswerability detection\" retrieval",
+    "\"unanswerable question\" retrieval augmented generation",
+    "\"answerability prediction\" retrieval question answering",
+    "\"selective question answering\" retrieval",
+    "\"answer abstention\" retrieval evidence",
+    "\"evidence sufficiency\" question answering",
+    "\"evidence sufficiency\" retrieval augmented generation",
+    "\"context sufficiency\" RAG answerability",
+    "\"insufficient evidence\" retrieval question answering",
+    "\"knowledge insufficiency\" retrieval augmented generation"
+   ]
+  },
+  {
+   "family_id": "F7",
+   "role": "DIRECT",
+   "queries": [
+    "\"budgeted retrieval\" information retrieval",
+    "\"cost-aware retrieval\" information retrieval",
+    "\"resource-constrained retrieval\" information seeking",
+    "\"retrieval stopping\" question answering",
+    "\"stopping criterion\" iterative retrieval",
+    "\"when to stop retrieving\" retrieval augmented generation",
+    "\"retrieval budget\" RAG",
+    "\"value of information\" information retrieval search",
+    "\"value of information\" sequential information acquisition",
+    "\"expected value\" additional evidence retrieval"
+   ]
+  },
+  {
+   "family_id": "F8",
+   "role": "DIRECT",
+   "queries": [
+    "\"temporal information retrieval\"",
+    "\"time-aware retrieval\" information retrieval",
+    "\"temporal query\" document retrieval",
+    "\"temporal relevance\" information retrieval",
+    "\"historical query\" temporal retrieval document",
+    "\"point-in-time\" information retrieval",
+    "\"valid time\" document retrieval",
+    "\"effective time\" information retrieval",
+    "\"freshness-aware retrieval\" temporal relevance",
+    "\"recency-aware retrieval\" temporal"
+   ]
+  },
+  {
+   "family_id": "F9",
+   "role": "DIRECT",
+   "queries": [
+    "\"version-aware retrieval\" document",
+    "\"document version\" information retrieval provenance",
+    "\"versioned document\" retrieval",
+    "\"document evolution\" information retrieval",
+    "\"version-aware\" search document",
+    "\"provenance-aware retrieval\"",
+    "\"data provenance\" information retrieval evidence",
+    "\"source provenance\" retrieval question answering",
+    "\"evidence provenance\" retrieval augmented generation",
+    "\"temporal archive\" version retrieval document"
+   ]
+  },
+  {
+   "family_id": "F10",
+   "role": "DIRECT",
+   "queries": [
+    "\"enterprise search\" access control retrieval",
+    "\"enterprise search\" permissions information retrieval",
+    "\"access-controlled retrieval\" search",
+    "\"authorization-aware\" information retrieval",
+    "\"permission-aware search\" enterprise",
+    "\"security-aware retrieval\" enterprise search",
+    "\"document retrieval\" access control enterprise",
+    "\"federated enterprise search\" permissions",
+    "\"multi-source enterprise search\" authorization"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "conversational query resolution",
+  "clarification question generation",
+  "underspecified information need",
+  "retrieval gating",
+  "dynamic retrieval",
+  "context sufficiency",
+  "knowledge insufficiency detection",
+  "evidence sufficiency",
+  "selective question answering",
+  "sequential information acquisition",
+  "value of information",
+  "resource-constrained retrieval",
+  "retrieval stopping rule",
+  "temporal relevance",
+  "temporal query intent",
+  "valid-time retrieval",
+  "point-in-time retrieval",
+  "document evolution retrieval",
+  "evidence provenance",
+  "authorization-aware retrieval",
+  "permission-aware search"
+ ],
+ "demoted_terms": [
+  "retrieval-augmented generation",
+  "context-aware search",
+  "query reformulation",
+  "conversational search",
+  "evidence acquisition",
+  "self-directed retrieval",
+  "tool-use planning",
+  "recency-aware retrieval",
+  "enterprise search"
+ ],
+ "downgrade_rules": [
+  "Downgrade generic RAG papers if retrieval is unconditional or fixed top-k and the system never represents whether evidence is missing or sufficient.",
+  "Downgrade query-rewriting or decontextualization papers if they only improve the wording of a query and do not address retrieval need, evidence acquisition, or the consequences of missing context.",
+  "Downgrade generic query expansion, pseudo-relevance feedback, synonym expansion, and search-engine ranking work unless it is explicitly part of a sequential attempt to close a known evidence gap.",
+  "Downgrade conversational-search work focused only on dialogue naturalness, engagement, recommendation, or response generation.",
+  "Downgrade multi-hop QA if the number of hops is fixed, answer existence is guaranteed, or oracle access removes the possibility of denied, missing, stale, or inaccessible evidence, unless the paper contributes a clearly transferable retrieval mechanism.",
+  "Downgrade autonomous web agents and browsing agents that have no bounded source scope, no explicit read-only constraint, or no inspectable stopping condition.",
+  "Downgrade tool-use papers whose principal contribution is action execution rather than deciding which evidence to read next.",
+  "Downgrade answer-confidence and calibration papers that cannot abstain or distinguish unsupported answers from sufficient evidence.",
+  "Downgrade abstention papers concerned primarily with safety refusal, policy refusal, toxicity, or alignment rather than evidential insufficiency.",
+  "Downgrade unanswerability work if 'unanswerable' only means that an answer span is absent from a supplied passage and the method cannot distinguish retrieval failure from genuine lack of evidence.",
+  "Downgrade retrieval-efficiency papers where 'cost' means only ANN computation, hardware throughput, indexing memory, or serving latency and no sequential evidence-acquisition decision is modeled.",
+  "Downgrade recency or freshness ranking if it assumes the newest document is the desired document and does not model historical or effective-time validity.",
+  "Downgrade temporal retrieval if it uses a single publication timestamp when the contribution cannot distinguish event/effective time from document or retrieval time.",
+  "Downgrade version-aware work that is actually software dependency resolution, API version selection, source-code search, or dataset package management unless it offers a transferable representation for document revision identity.",
+  "Downgrade provenance work that records generic source trust or citation metadata but cannot identify the concrete retrieved evidence object or its derivation/version.",
+  "Downgrade document parsing, OCR, table extraction, image understanding, or attachment interpretation whose main contribution belongs to Topic 08 rather than deciding whether or what to retrieve.",
+  "Downgrade factuality, contradiction, lifecycle, or state-resolution work whose main contribution belongs to Topic 06 unless it explicitly emits or consumes a missing-evidence requirement.",
+  "Downgrade generic fact-checking retrieval if the claim and retrieval corpus are fixed and the work does not address iterative sufficiency or evidence-acquisition stopping.",
+  "Downgrade enterprise-search product descriptions, vendor material, and ranking papers with no explicit access, evidence, temporal, or investigation semantics.",
+  "Downgrade security/access-control literature if it only enforces confidentiality and does not expose denial or authorization state in a way that an evidence-retrieval process can reason about.",
+  "Downgrade recommendation retrieval, conversational recommendation, and personalized content retrieval unrelated to answering a bounded work-information question.",
+  "Downgrade any method that treats an empty search result as evidence that the underlying fact or work item does not exist without justifying the completeness semantics of the searched source.",
+  "Downgrade any method that discards source identity or document version after retrieval when its findings depend on exact evidence provenance.",
+  "Downgrade any method whose stopping rule is merely a fixed hop count, fixed document count, or context-window limit unless it is used as an explicit budget baseline rather than evidence sufficiency.",
+  "Downgrade papers that claim end-to-end workplace applicability solely from open-domain QA, web search, or synthetic benchmarks; retain them only as TRANSFER evidence."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 2000,
+  "rationale": "Discovery should search from 2000 onward rather than imposing a recent RAG-era window. The product problem combines several literatures whose relevant foundations predate modern LLMs: temporal information retrieval has important early-2000s work such as Time-Based Language Models; enterprise and context-sensitive retrieval, interactive information seeking, cost-sensitive search, and related query-reformulation work also developed before the current conversational-search and RAG terminology. The most direct adaptive/active RAG, multi-hop neural retrieval, answerability, and selective-QA literature is much newer, but restricting discovery to the 2018-2026 or 2020-2026 period would silently remove foundational IR concepts needed to reason about temporal relevance, cost, and search termination. Classical pre-2000 relevance-feedback and query-expansion work should not be bulk-admitted merely because it uses 'query reformulation'; it should be followed further back only if a later admitted paper identifies a specific pre-2000 result as foundational to a capability Topic 07 actually needs."
+ }
+}

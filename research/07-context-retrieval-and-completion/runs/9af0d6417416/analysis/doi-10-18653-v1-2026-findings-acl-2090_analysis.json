@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-18653-v1-2026-findings-acl-2090",
+ "title": "Beyond Single-Shot: Multi-step Tool Retrieval via Query Planning",
+ "research_question": "Can iterative query planning that decomposes complex requests and adapts subsequent queries to retrieval feedback outperform single-shot retrieval for large compositional tool libraries and improve downstream tool execution?",
+ "methodology": "ToolQP first produces a natural-language plan that decomposes an instruction into retrieval-relevant subtasks, then iteratively generates queries while conditioning on previous retrieval feedback and aggregates tools using their best rank across attempts. Because standard tool-retrieval datasets lack query trajectories, the authors synthesize training trajectories with a teacher model, including successful and selected failed-then-corrected query attempts, and use them for supervised fine-tuning. The model is subsequently optimized with GRPO-style reinforcement learning with verifiable retrieval rewards based on final nDCG and recall/completeness, plus formatting and plan-semantic constraints. Evaluation uses ToolRet across Web, Code, and Custom tool collections, transfer to retrievers not used for trajectory generation, ablations, and end-to-end execution on API-Bank and StableToolBench.",
+ "key_findings": [
+  {
+   "finding": "On ToolRet, ToolQP improved the reported macro zero-shot nDCG@10 and Completeness@10 from 29.8 and 27.0 for the base gte-Qwen retriever to 36.9 and 35.8.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "When transferred to retrievers not used to create its training trajectories, ToolQP produced average zero-shot gains of 5.4 points in nDCG@10 and 7.1 points in Completeness@10.",
+   "evidence_type": "supported",
+   "section": "Retriever Transfer"
+  },
+  {
+   "finding": "End-to-end evaluation showed higher execution performance after ToolQP retrieval, including about a three-point accuracy improvement on API-Bank and roughly eight-to-nine-point pass-rate improvements on the reported StableToolBench measures.",
+   "evidence_type": "supported",
+   "section": "End-to-End Evaluation"
+  },
+  {
+   "finding": "Ablations indicate that supervised training supplies most of the in-domain improvement, while the subsequent reinforcement-learning stage provides additional gains and is particularly useful for zero-shot performance.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Removing the original user instruction from the iterative planner reduced performance, supporting the use of the original request as an anchor when subtask decomposition or intermediate retrieval feedback is incomplete.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Qualitative examples show that feedback-conditioned retrieval can expose an implicit prerequisite tool that was not explicitly named in the original request, although this evidence is illustrative rather than a quantified dependency-recovery evaluation.",
+   "evidence_type": "supported",
+   "section": "Qualitative Analysis"
+  }
+ ],
+ "limitations": [
+  "Synthetic query trajectories were generated against a single base retriever, which the authors note can bias the planner toward that retriever's embedding and ranking behavior.",
+  "Inter-tool dependencies are handled implicitly through iterative retrieval interaction; the paper notes that explicit tool knowledge graphs could represent such dependencies more efficiently.",
+  "The training supervision is synthetic and therefore inherits errors and assumptions from the teacher-generated plans, subtasks, and candidate queries.",
+  "The experiments focus on tool discovery and execution benchmarks rather than document evidence retrieval with permission, version, or temporal-validity constraints.",
+  "The stopping condition is based on subtask coverage within the query-planning procedure rather than a calibrated guarantee that all decision-relevant evidence has been found.",
+  "The paper does not provide an end-to-end cost model balancing additional planning/model inference against retrieval savings."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "toolret_zero_shot_improvement": 0.99,
+  "cross_retriever_transfer": 0.98,
+  "downstream_execution_improvement": 0.97,
+  "sft_and_rlvr_contributions": 0.96,
+  "original_query_anchoring": 0.97,
+  "implicit_dependency_discovery": 0.86
+ },
+ "raw_claims": [
+  "ToolQP represents retrieval as an iterative query-planning process instead of one embedding lookup for the whole request.",
+  "The planner decomposes a complex instruction into subtasks before interacting repeatedly with a retriever.",
+  "Later queries are conditioned on feedback from earlier retrieval attempts.",
+  "The final tool ranking uses the best rank achieved by each tool across multiple retrieval attempts.",
+  "The training trajectories are synthetically generated because existing tool-retrieval datasets do not provide multi-step query trajectories.",
+  "The training data includes some failed retrieval attempts followed by successful revisions so that the model can learn correction behavior.",
+  "Reinforcement learning optimizes sequence-level retrieval measures over the aggregated final tool list.",
+  "ToolQP was trained with trajectories produced using one retriever but was evaluated with several different retrievers.",
+  "Keeping the original user request in the planner context improves retrieval relative to relying only on its decomposition.",
+  "The authors identify explicit modeling of inter-tool dependencies as an avenue for further improvement."
+ ],
+ "source_url": "https://arxiv.org/html/2601.07782",
+ "access": "full_text"
+}

@@ -1,0 +1,67 @@
+{
+ "paper_id": "2406.10490",
+ "title": "Active, anytime-valid risk controlling prediction sets",
+ "research_question": "Can risk-controlling prediction sets be extended to sequential and actively labeled data so that risk control remains valid at every stopping time while labels are acquired efficiently under a budget?",
+ "methodology": "The paper builds anytime-valid risk-controlling prediction sets using betting-based e-processes, yielding a time-uniform guarantee over the entire sequential process rather than a guarantee only at a predetermined sample size. It extends the construction to adaptive label acquisition through randomized labeling policies and inverse-propensity correction, and adds a learned conditional-risk predictor as a variance-reduction control variate. The authors analytically characterize optimal predictors and label-allocation policies under a labeling budget and derive regret results relating estimation error to e-process growth. Numerical simulations and ImageNet experiments compare label-all, oblivious random sampling, pretrained, and online-learned active policies.",
+ "key_findings": [
+  {
+   "finding": "The paper establishes an anytime-valid risk-control guarantee that holds simultaneously over all time steps, allowing the procedure to be stopped adaptively without invalidating the stated risk guarantee under its assumptions.",
+   "evidence_type": "supported",
+   "section": "2 Anytime-Valid Risk-Controlling Prediction Sets"
+  },
+  {
+   "finding": "Adaptive label sampling with inverse-propensity correction preserves the validity of the e-process construction while allowing the expected labeling rate to be constrained by a budget.",
+   "evidence_type": "supported",
+   "section": "3 Active Anytime-Valid Risk Control"
+  },
+  {
+   "finding": "The theoretically optimal auxiliary predictor is the conditional expected risk given the features, and the optimal labeling probability is related to the conditional residual variability under the budget constraint.",
+   "evidence_type": "supported",
+   "section": "3 Active Anytime-Valid Risk Control"
+  },
+  {
+   "finding": "Prediction error and deviation of the learned sampling policy from the optimal policy reduce expected wealth growth and therefore statistical efficiency, with this loss characterized by the paper's regret analysis.",
+   "evidence_type": "supported",
+   "section": "Theorem 3 and Section 5.3"
+  },
+  {
+   "finding": "In both the numerical simulations and ImageNet experiments, the pretrained and learned active policies reach better prediction-set utility for a given number of queried labels than the label-all and oblivious strategies while the observed safety-violation rate remains below the configured level.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  }
+ ],
+ "limitations": [
+  "The central theoretical development primarily assumes i.i.d. data, and the authors explicitly identify test-time distribution shift as an unresolved extension.",
+  "The theory uses a lower-bounded labeling policy and an existence assumption for the analytically optimal sampling policy.",
+  "Empirical validation is limited to simulations and ImageNet rather than retrieval, language generation, or evidence-adjudication systems.",
+  "The method controls a mathematically specified prediction risk; it does not itself define how free-form evidence completeness or omission risk should be measured.",
+  "The framework does not model temporal document versions, source provenance, or permission-aware retrieval.",
+  "Applying the guarantees to adaptive RAG would require defining an appropriate bounded loss and justifying how retrieval-induced non-i.i.d. dependence fits the statistical assumptions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "anytime_valid_risk_control": 0.99,
+  "active_sampling_preserves_validity": 0.99,
+  "optimal_predictor_and_sampling_characterization": 0.98,
+  "regret_links_estimation_to_efficiency": 0.97,
+  "empirical_label_efficiency": 0.96
+ },
+ "raw_claims": [
+  "The proposed RCPS guarantee is time-uniform rather than valid only at one fixed sample size.",
+  "The construction uses nonnegative betting e-processes and Ville-type maximal inequalities.",
+  "Labels may be queried adaptively according to probabilities that depend on the observed feature vector.",
+  "Inverse-propensity weighting corrects for selective label acquisition.",
+  "An auxiliary prediction of conditional risk is used to reduce variance without being required for validity.",
+  "The optimal auxiliary predictor equals the conditional expectation of the risk given the observed features.",
+  "The optimal sampling rule allocates more labeling probability where residual risk variability is larger, subject to the budget.",
+  "The empirical study compares active policies with labeling every example and with oblivious random labeling.",
+  "Pretrained and learned policies are more label-efficient in the reported simulation and ImageNet studies.",
+  "The authors identify distribution shift as a major direction not covered by the primary i.i.d. analysis."
+ ],
+ "source_url": "https://arxiv.org/html/2406.10490",
+ "access": "full_text"
+}

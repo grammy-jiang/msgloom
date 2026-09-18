@@ -1,0 +1,88 @@
+{
+ "paper_id": "2510.22344",
+ "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
+ "research_question": "Can iterative RAG improve faithful multi-hop answering by explicitly decomposing a query into required findings, auditing accumulated evidence for missing information, and refining retrieval until those evidence requirements are judged sufficient?",
+ "methodology": "FAIR-RAG introduces a Structured Evidence Assessment module that decomposes a question into a checklist of required findings, tracks which findings are confirmed by retrieved evidence, and identifies explicit information gaps. Those gaps drive subsequent query refinement and hybrid dense-sparse retrieval, and the loop terminates when all required findings are judged supported or when the maximum of three iterations is reached. Final generation is instructed to rely only on retrieved evidence and attach source-document references to claims, and the method is evaluated on HotpotQA, 2WikiMultiHopQA, MuSiQue, and TriviaQA with answer-quality and efficiency analyses.",
+ "key_findings": [
+  {
+   "finding": "FAIR-RAG provides an explicit structured sufficiency representation: required findings are enumerated, confirmed findings are tracked, and unresolved findings become named evidence gaps.",
+   "evidence_type": "supported",
+   "section": "Structured Evidence Assessment"
+  },
+  {
+   "finding": "The iterative controller terminates early when the Structured Evidence Assessment judges every required finding confirmed; otherwise identified gaps are used to formulate the next retrieval query.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "On HotpotQA, the reported adaptive three-iteration configuration achieved F1 0.453, an 8.3-point absolute improvement over the cited Iter-RetGen iterative baseline at F1 0.370.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Iteration analysis found that two to three retrieval-refinement cycles generally provided the best trade-off, while a fourth cycle could degrade answer quality and increased API calls and token consumption.",
+   "evidence_type": "supported",
+   "section": "Iteration Analysis"
+  },
+  {
+   "finding": "Final generation is constrained to retrieved evidence and instructed to attach source-document reference tokens to claims, creating claim-to-source traceability.",
+   "evidence_type": "supported",
+   "section": "Faithful Answer Generation"
+  },
+  {
+   "finding": "The stopping horizon remains a fixed heuristic maximum of three iterations rather than a learned or statistically risk-controlled stopping budget.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  },
+  {
+   "finding": "The authors' error analysis identifies erroneous sufficiency judgments as an important failure source: false positives can stop retrieval prematurely and false negatives can trigger unnecessary additional retrieval.",
+   "evidence_type": "supported",
+   "section": "Error Analysis and Limitations"
+  },
+  {
+   "finding": "No calibrated or conformal guarantee, temporal/version-aware provenance mechanism, or permission-aware retrieval policy is described.",
+   "evidence_type": "unsupported",
+   "section": "Method and Limitations"
+  }
+ ],
+ "limitations": [
+  "The Structured Evidence Assessment depends on LLM reasoning fidelity and prompt quality.",
+  "Errors can propagate between retrieval, evidence assessment, query refinement, and final generation.",
+  "A false-positive sufficiency decision can terminate retrieval before all necessary evidence has been acquired.",
+  "A false-negative sufficiency decision can cause unnecessary retrieval and additional cost.",
+  "The maximum of three refinement iterations is a manually chosen heuristic rather than a query-adaptive or risk-controlled horizon.",
+  "Every additional refinement cycle adds latency and inference cost.",
+  "Evaluation is primarily on static QA benchmarks and does not test temporally evolving or versioned evidence collections.",
+  "Claim-to-document references provide traceability but do not encode document versions, validity intervals, or permission state.",
+  "No conformal calibration or statistically bounded premature-stop risk is provided."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_checklist_sufficiency": 0.99,
+  "gap_driven_iterative_stopping": 0.99,
+  "source_traceability": 0.98,
+  "bounded_three_iteration_horizon": 0.99,
+  "premature_stop_failure_mode": 0.98,
+  "no_conformal_risk_guarantee": 0.98,
+  "no_version_or_permission_control": 0.97
+ },
+ "raw_claims": [
+  "FAIR-RAG first decomposes a nontrivial question into a checklist of information that must be established.",
+  "The Structured Evidence Assessment records supported findings and explicit unresolved information gaps.",
+  "Unresolved gaps guide the next query-refinement step.",
+  "The retrieval loop may terminate before its maximum iteration count when the evidence is judged sufficient.",
+  "The implementation uses hybrid dense and sparse retrieval.",
+  "Final answer generation is instructed to use retrieved evidence rather than unsupported external knowledge.",
+  "Generated claims are associated with source-document reference tokens.",
+  "The benchmark experiments include HotpotQA, 2WikiMultiHopQA, MuSiQue, and TriviaQA.",
+  "The iteration study shows that adding retrieval rounds beyond the useful point can raise cost and reduce answer quality.",
+  "The paper explicitly identifies false-positive and false-negative sufficiency judgments as opposing failure modes.",
+  "The evaluated implementation uses a maximum of three refinement iterations."
+ ],
+ "source_url": "https://arxiv.org/html/2510.22344",
+ "access": "full_text"
+}

@@ -1,0 +1,71 @@
+{
+ "paper_id": "2604.01413",
+ "title": "Adaptive Stopping for Multi-Turn LLM Reasoning",
+ "research_question": "Can conformal prediction jointly calibrate retrieval, adaptive early stopping, and final answer sets in multi-turn LLM reasoning while preserving target coverage and reducing unnecessary inference?",
+ "methodology": "The paper proposes MiCP, a conformal-prediction framework that allocates an error budget across retrieval filtering, turn-specific stopping, and final answer-set construction in adaptive RAG and ReAct pipelines. Stopping decisions use calibrated uncertainty derived from clustered stochastic answers, while a final conformal threshold constructs the prediction set and can include a Can't Answer outcome. Experiments use Natural Questions, TriviaQA, HotpotQA, MuSiQue, and 2WikiMultiHopQA with Gemma-2-9B-IT, Qwen3.5-9B, and GPT-4o-mini, sampling 900 examples per dataset into 300 optimization, 300 calibration, and 300 test examples.",
+ "key_findings": [
+  {
+   "finding": "Across the evaluated datasets, models, and error levels, MiCP met or exceeded the intended empirical coverage at the retrieval and final-answer stages, with final prediction sets often slightly over-covering the nominal target.",
+   "evidence_type": "supported",
+   "section": "5.2 RQ1"
+  },
+  {
+   "finding": "Adaptive stopping reduced the average number of reasoning or retrieval turns relative to the fixed three-turn no-early-stopping baseline across the reported benchmark rows.",
+   "evidence_type": "supported",
+   "section": "5.3 RQ2, Table 1"
+  },
+  {
+   "finding": "The paper's statement that MiCP consistently improves prediction-set size is contradicted by several Table 1 rows, including GPT-4o-mini on HotpotQA and HotpotQA-ReAct where the proposed objective gives larger sets than the no-early-stopping baseline.",
+   "evidence_type": "contradicted",
+   "section": "5.3 RQ2, Table 1"
+  },
+  {
+   "finding": "Optimizing explicitly for average turns generally produces the fewest turns and small prediction sets, illustrating a controllable trade-off between stopping aggressively and other objectives.",
+   "evidence_type": "supported",
+   "section": "5.3 RQ2, Table 1"
+  },
+  {
+   "finding": "Grid-search allocation of the turn-specific error budget improves the proposed composite objective for Qwen3.5-9B and GPT-4o-mini, while gains are smaller and less stable for Gemma-2-9B-IT.",
+   "evidence_type": "supported",
+   "section": "5.4 RQ3"
+  },
+  {
+   "finding": "The stated conformal guarantee is marginal under exchangeability rather than a conditional guarantee for arbitrary subgroups or shifted deployment populations.",
+   "evidence_type": "supported",
+   "section": "4 Method and Remark 5"
+  }
+ ],
+ "limitations": [
+  "The formal conformal guarantees depend on exchangeability and the experiments do not evaluate non-stationary or cross-domain distribution shift.",
+  "Coverage is marginal; subgroup-conditional coverage would require separate group-conditional calibration.",
+  "The empirical study is limited to question-answering benchmarks, three LLMs, and a maximum of three turns.",
+  "The procedure uses repeated stochastic generations per turn and grid search over error allocations, adding calibration and inference cost.",
+  "The framework does not model temporal validity, document versions, or version-aware provenance of retrieved evidence.",
+  "Some reported prediction-set results do not support the paper's blanket statement that early stopping consistently makes prediction sets smaller."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "coverage_target": 0.98,
+  "turn_reduction": 0.98,
+  "prediction_set_claim_mixed": 0.99,
+  "grid_search_model_dependence": 0.94,
+  "exchangeability_limitation": 0.97
+ },
+ "raw_claims": [
+  "MiCP jointly calibrates retrieval filtering, turn-specific stopping, and final prediction-set construction.",
+  "The stopping controller allocates a finite conformal error budget across multiple reasoning turns.",
+  "If no early stopping criterion is met, the final prediction set can include a Can't Answer outcome.",
+  "The evaluation covers five single-hop and multi-hop QA benchmarks and a ReAct variant on HotpotQA.",
+  "Each dataset contributes 900 sampled examples divided equally among optimization, calibration, and test splits.",
+  "The tested configurations empirically achieve the intended retrieval and answer coverage levels.",
+  "Early stopping lowers the average number of turns relative to always executing all three turns.",
+  "Several GPT-4o-mini rows have prediction sets that are not smaller than the no-early-stopping baseline.",
+  "The theoretical guarantees rely on exchangeability and are marginal rather than universally conditional."
+ ],
+ "source_url": "https://arxiv.org/html/2604.01413",
+ "access": "full_text"
+}

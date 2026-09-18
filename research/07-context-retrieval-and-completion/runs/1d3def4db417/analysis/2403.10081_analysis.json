@@ -1,0 +1,79 @@
+{
+ "paper_id": "2403.10081",
+ "title": "DRAGIN: Dynamic Retrieval Augmented Generation based on the Information Needs of Large Language Models",
+ "research_question": "Can dynamic RAG improve knowledge-intensive generation by deciding both when to retrieve and what to retrieve from the LLM's real-time information needs rather than from fixed retrieval schedules or only the most recent generated text?",
+ "methodology": "DRAGIN combines Real-time Information Needs Detection (RIND), which scores generated tokens using uncertainty, semantic importance, and influence on later tokens, with Query Formulation based on Self-attention (QFS), which selects information-relevant tokens from the broader generation context for retrieval. The framework is training-free and is evaluated with multiple LLMs on 2WikiMultihopQA, HotpotQA, StrategyQA, and IIRC using Wikipedia passages and primarily BM25 retrieval. Comparisons include no-RAG, single-round RAG, fixed-length retrieval, fixed-sentence retrieval, and FLARE, with ablations isolating retrieval timing and query formulation.",
+ "key_findings": [
+  {
+   "finding": "DRAGIN achieved the strongest overall performance across most evaluated LLM and dataset combinations, with especially pronounced gains on multi-hop QA tasks.",
+   "evidence_type": "supported",
+   "section": "5.1 Overall Results of DRAGIN and Baselines"
+  },
+  {
+   "finding": "Fixed-interval and fixed-sentence dynamic retrieval did not consistently outperform single-round RAG, supporting the claim that retrieving at an inappropriate generation point can be unhelpful.",
+   "evidence_type": "supported",
+   "section": "5.1 Overall Results of DRAGIN and Baselines"
+  },
+  {
+   "finding": "When query formulation was held fixed, the RIND retrieval-timing strategy outperformed the timing strategies of FLARE, fixed-length RAG, and fixed-sentence RAG on the IIRC experiments.",
+   "evidence_type": "supported",
+   "section": "5.3 Timing of Retrieval"
+  },
+  {
+   "finding": "When retrieval timing was held to RIND, QFS outperformed query formulations based on the last sentence, local token windows, FLARE's filtered sentence, and the complete generation context on HotpotQA.",
+   "evidence_type": "supported",
+   "section": "5.4 Query Formulation"
+  },
+  {
+   "finding": "DRAGIN required fewer retrieval calls than fixed-length and fixed-sentence RAG in the reported efficiency comparison, although FLARE generally made the fewest retrieval calls.",
+   "evidence_type": "supported",
+   "section": "5.2 Efficiency"
+  },
+  {
+   "finding": "HotpotQA performance remained relatively stable over a broad range of RIND thresholds, while the threshold controlled how frequently retrieval was activated.",
+   "evidence_type": "supported",
+   "section": "5.3 Timing of Retrieval"
+  },
+  {
+   "finding": "BM25 outperformed the SGPT dense retriever in all three reported DRAGIN retriever comparisons on 2WikiMultihopQA, HotpotQA, and IIRC.",
+   "evidence_type": "supported",
+   "section": "5.5 Impact of Retriever"
+  }
+ ],
+ "limitations": [
+  "RIND and QFS require access to Transformer self-attention information, making the method unusable with APIs that do not expose the required internals.",
+  "The experiments focus on four knowledge-intensive QA and reasoning benchmarks rather than long-lived workplace communication or heterogeneous enterprise evidence.",
+  "The external corpus is Wikipedia segmented into fixed-size passages, so document permissions, revisions, source versions, and enterprise access-control constraints are not modeled.",
+  "Retrieval stopping is driven by repeated information-need detection rather than an explicit global evidence-completeness criterion.",
+  "The evaluation primarily measures answer correctness and retrieval-call counts rather than end-to-end monetary cost, temporal validity, or evidence provenance."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dynamic_information_need_timing_improves_generation": 0.97,
+  "self_attention_query_formulation_improves_retrieval_queries": 0.98,
+  "fixed_retrieval_schedules_can_underperform_single_round_rag": 0.98,
+  "dragin_reduces_calls_relative_to_fixed_dynamic_rag": 0.96,
+  "self_attention_access_limits_api_applicability": 0.99
+ },
+ "raw_claims": [
+  "DRAGIN makes separate decisions about when retrieval is needed and what query should be issued.",
+  "RIND uses generation uncertainty together with token importance and influence to detect information needs.",
+  "QFS uses self-attention over the generation context to choose tokens for the retrieval query.",
+  "The framework does not require additional model training or fine-tuning.",
+  "The evaluation covers four knowledge-intensive generation benchmarks.",
+  "Single-round RAG consistently improves over direct generation in the reported experiments.",
+  "Fixed-rule dynamic retrieval does not consistently improve over single-round retrieval.",
+  "DRAGIN's retrieval-timing method performs better than the compared timing strategies in the timing ablation.",
+  "QFS performs better than the compared query-formulation strategies in the query ablation.",
+  "The full generated context is not necessarily an optimal retrieval query because it can contain redundant information.",
+  "DRAGIN usually makes fewer retrieval calls than fixed-length and fixed-sentence dynamic RAG.",
+  "The authors released code, data, and models for the work.",
+  "The method cannot directly support APIs that hide the self-attention scores it needs."
+ ],
+ "source_url": "https://arxiv.org/html/2403.10081",
+ "access": "full_text"
+}

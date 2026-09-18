@@ -1,0 +1,80 @@
+{
+ "paper_id": "2510.13590",
+ "title": "RAG Meets Temporal Graphs: Time-Sensitive Modeling and Retrieval for Evolving Knowledge",
+ "research_question": "Can an explicitly temporal graph representation and incremental indexing strategy improve time-sensitive retrieval and question answering while efficiently incorporating newly arriving knowledge?",
+ "methodology": "The paper proposes Temporal GraphRAG, a bi-level representation combining a temporal knowledge graph of timestamped facts with a hierarchical time graph whose nodes hold multi-granularity summaries. New documents are incrementally processed so newly extracted temporal facts and affected temporal summaries are updated without reconstructing the entire graph, and inference retrieves dynamically scoped temporal and semantic subgraphs. Evaluation uses the newly constructed ECT-QA benchmark from 480 earnings-call transcripts spanning 2020-2024, an incremental 2024 update protocol, specific and abstract temporal queries, multiple RAG baselines, ablations, cross-generator tests, and additional conventional QA datasets.",
+ "key_findings": [
+  {
+   "finding": "On base-corpus ECT-QA specific questions, Temporal GraphRAG obtains a Correct score of 0.599, compared with approximately 0.380 to 0.410 for the reported non-oracle RAG baselines.",
+   "evidence_type": "supported",
+   "section": "VI Results: Specific Query Evaluation"
+  },
+  {
+   "finding": "After adding the 2024 corpus slice, Temporal GraphRAG retains a Correct score of 0.587 on base queries and reaches 0.617 on new queries, indicating that incremental updates can add recent knowledge without a large loss on earlier questions.",
+   "evidence_type": "supported",
+   "section": "VI Incremental Evaluation"
+  },
+  {
+   "finding": "The incremental update consumes about 1.6 million prompt tokens and 2.0 million completion tokens for Temporal GraphRAG versus about 30.0 million prompt and 7.8 million completion tokens for the reported GraphRAG update.",
+   "evidence_type": "supported",
+   "section": "VI Indexing and Update Efficiency"
+  },
+  {
+   "finding": "Pairwise evaluation of abstract questions reports high temporal-coverage win rates for Temporal GraphRAG against GraphRAG, HippoRAG2, and LightRAG, supporting the intended benefit of explicit temporal organization for broad time-sensitive synthesis.",
+   "evidence_type": "supported",
+   "section": "VI Abstract Query Evaluation"
+  },
+  {
+   "finding": "Ablation results show a large accuracy drop when temporal retrieval is removed, with Correct score falling from 0.599 for the full system to about 0.382 in the corresponding ablation, making temporal retrieval the strongest reported component-level contribution.",
+   "evidence_type": "supported",
+   "section": "VI Ablation Study"
+  },
+  {
+   "finding": "The temporal graph is substantially smaller than the compared GraphRAG graph in the reported corpus, including 16,817 entities and 28,157 relations at base time versus 45,540 entities and 59,679 relations for GraphRAG.",
+   "evidence_type": "supported",
+   "section": "VI Graph Statistics and Efficiency"
+  },
+  {
+   "finding": "The dataset-size statement is internally inconsistent: the paper says there are 1,105 specific queries but identifies 656 base and 349 new specific queries, which account for only 1,005 specific queries; the separately reported 100 abstract queries would make the overall query total 1,105.",
+   "evidence_type": "contradicted",
+   "section": "V-A Incremental RAG Evaluation"
+  }
+ ],
+ "limitations": [
+  "ECT-QA is restricted to 480 earnings-call transcripts from 24 companies over 2020-2024, so transfer to other evolving knowledge domains remains uncertain.",
+  "Questions are synthesized with LLM assistance and then automatically and manually quality-controlled, which may not reproduce the distribution of organically asked temporal questions.",
+  "Important evaluation judgments use GPT-4o-mini, while indexing and answering also depend on specific proprietary or hosted models, making some results model-dependent.",
+  "The approach represents timestamps and temporal relations but does not directly evaluate document-version lineage, supersession semantics, or fine-grained version-aware provenance as a distinct capability.",
+  "The incremental protocol tests corpus evolution rather than statistically calibrated robustness under arbitrary non-stationary distribution shift.",
+  "The system reports refusal behavior but does not provide conformal abstention, calibrated risk-controlled stopping, or a formal criterion for deciding when additional retrieval should cease.",
+  "The paper contains an internal numerical inconsistency in the reported count of specific queries."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "temporal_qa_gain": 0.99,
+  "incremental_update_stability": 0.98,
+  "update_token_efficiency": 0.99,
+  "temporal_retrieval_ablation": 0.99,
+  "compact_graph": 0.99,
+  "query_count_inconsistency": 0.99
+ },
+ "raw_claims": [
+  "Temporal GraphRAG combines timestamped knowledge-graph relations with a hierarchy of temporal summary nodes.",
+  "The incremental index updates newly affected temporal structures instead of rebuilding every temporal summary from scratch.",
+  "The ECT-QA corpus contains 480 earnings-call transcripts from 2020 through 2024.",
+  "The incremental experiment uses 384 documents from 2020-2023 as the base corpus and 96 documents from 2024 as new knowledge.",
+  "Temporal GraphRAG achieves a higher Correct score than the reported non-oracle RAG baselines on base specific queries.",
+  "Performance on earlier queries changes only modestly after the 2024 documents are incorporated.",
+  "The reported incremental token cost is much lower than rebuilding the compared GraphRAG index.",
+  "Removing temporal retrieval causes a large drop in specific-query accuracy.",
+  "The benchmark evaluates Correct, Refusal, and Incorrect factual elements with attention to the required temporal scope.",
+  "The paper makes its ECT-QA dataset and implementation code publicly available.",
+  "The stated specific-query total does not equal the sum of the reported base and new specific-query counts."
+ ],
+ "source_url": "https://arxiv.org/html/2510.13590",
+ "access": "full_text"
+}

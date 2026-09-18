@@ -1,0 +1,177 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2210.03350",
+   "title": "Measuring and Narrowing the Compositionality Gap in Language Models",
+   "research_question": "How often do language models fail to compose facts they can answer individually, and can explicit decomposition with self-generated follow-up questions and external search reduce this compositionality gap?",
+   "methodology": "The authors construct Compositional Celebrities, an automatically generated dataset of roughly 8.6k two-hop questions, and Bamboogle, a smaller manually written set of diverse two-hop questions, and also evaluate on 2WikiMultiHopQA and Musique. They measure a compositionality gap by comparing performance on a multi-hop question with performance on its constituent one-hop questions across GPT-3-family models. They compare direct prompting, chain-of-thought prompting, and a proposed self-ask prompt that makes the model explicitly formulate and answer follow-up questions. They additionally connect self-ask to an internet search engine, repeatedly submitting model-generated follow-up questions to search and returning results to the model until it produces a final answer.",
+   "key_findings": [
+    {
+     "finding": "GPT-3-family models frequently fail to answer a compositional question even when they correctly answer its component subquestions, with the compositionality gap remaining roughly constant rather than shrinking substantially with GPT-3 scale.",
+     "evidence_type": "supported",
+     "section": "2 Systematically Measuring the Compositionality Gap"
+    },
+    {
+     "finding": "Higher model confidence on the answers to constituent subquestions is associated with a substantially higher probability of correctly answering the corresponding compositional question.",
+     "evidence_type": "supported",
+     "section": "2 Systematically Measuring the Compositionality Gap"
+    },
+    {
+     "finding": "Elicitive prompting improves compositional question answering, and self-ask generally outperforms direct prompting and chain-of-thought in the reported experiments.",
+     "evidence_type": "supported",
+     "section": "3 Elicitive Prompts Narrow the Compositionality Gap and Improve Question Answering Performance"
+    },
+    {
+     "finding": "Self-ask provides an explicit next-retrieval mechanism: the model generates a follow-up question, receives its answer, can generate another follow-up, and terminates the loop when it decides to issue the final answer.",
+     "evidence_type": "supported",
+     "section": "3.1 Self-ask and 3.3 Improving Self-ask with a Search Engine"
+    },
+    {
+     "finding": "Adding internet search to self-ask improved Davinci-002 accuracy from 57.6% to 60.0% on Bamboogle, from 30.0% to 40.1% on 2WikiMultiHopQA, and from 13.8% to 15.2% on Musique in the reported evaluation.",
+     "evidence_type": "supported",
+     "section": "3.4 Experiments"
+    },
+    {
+     "finding": "The search-augmented self-ask loop requires no model fine-tuning or architecture change because search results are inserted into the prompt as intermediate answers.",
+     "evidence_type": "supported",
+     "section": "3.3 Improving Self-ask with a Search Engine"
+    },
+    {
+     "finding": "The paper does not evaluate a calibrated evidence-sufficiency criterion, retrieval budget, uncertainty threshold, permission policy, source version, or temporal-validity rule for deciding whether another retrieval step should occur.",
+     "evidence_type": "supported",
+     "section": "3 Self-ask experiments and 6 Limitations"
+    }
+   ],
+   "limitations": [
+    "The main experiments focus on English two-hop question answering rather than longer or more structurally complex retrieval chains.",
+    "The reported scaling analysis covers models up to 175 billion parameters, so the observed scaling pattern is not established for larger models.",
+    "Compositional Celebrities relies on automatically generated templates and therefore has lower linguistic and structural diversity than naturally occurring information needs.",
+    "Bamboogle is manually constructed and small, so its breadth comes with limited statistical power.",
+    "The self-ask retrieval loop stops when the language model chooses to emit a final answer; the paper does not provide an explicit evidence-sufficiency, uncertainty, maximum-cost, or optimal-stopping mechanism.",
+    "The search integration does not enforce source permissions or discuss access-control boundaries.",
+    "The paper does not model source versions, document freshness, temporal validity, or retrieval provenance beyond returning search results.",
+    "The study does not test workplace communication corpora or incomplete conversational evidence where relevant information may be spread across messages, attachments, and versions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "persistent_compositionality_gap": 0.99,
+    "subquestion_confidence_predicts_composition": 0.98,
+    "self_ask_improves_compositional_qa": 0.99,
+    "iterative_follow_up_retrieval": 0.99,
+    "search_improves_self_ask": 0.99,
+    "no_finetuning_needed_for_search_integration": 0.99,
+    "no_explicit_bounded_stopping_or_governance": 0.96
+   },
+   "raw_claims": [
+    "The Compositional Celebrities dataset contains about 8.6 thousand automatically generated two-hop questions.",
+    "Davinci-002 answered 45.4% of the Compositional Celebrities two-hop questions correctly while answering about 80% of their subquestions correctly.",
+    "Across the evaluated GPT-3 variants and sizes, the compositionality gap remained around 40% rather than consistently narrowing with scale.",
+    "Models were more likely to compose two facts successfully when they assigned higher confidence to the correct answers of the component questions.",
+    "Self-ask explicitly asks whether follow-up questions are needed and generates intermediate questions before producing the final answer.",
+    "Search-augmented self-ask sends generated follow-up questions to an internet search engine and inserts returned answers into the continuing prompt.",
+    "The search loop repeats until the model produces its final answer.",
+    "On Bamboogle, Davinci-002 accuracy was 57.6% with self-ask and 60.0% with self-ask plus search.",
+    "On 2WikiMultiHopQA, Davinci-002 accuracy was 30.0% with self-ask and 40.1% with self-ask plus search.",
+    "On Musique, Davinci-002 accuracy was 13.8% with self-ask and 15.2% with self-ask plus search.",
+    "The authors released code and data for the work."
+   ],
+   "source_url": "https://arxiv.org/html/2210.03350",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1109-access-2025-3628960",
+   "title": "Permission-Aware RAG: Identity and Access Management (IAM)-Based Access Filtering in Multi-Resource Environments",
+   "research_question": "Can a RAG system enforce fine-grained, current document permissions across independently governed resources by validating each retrieved document against its provider's native IAM system without centrally merging heterogeneous access policies?",
+   "methodology": "The authors implement a permission-aware RAG architecture in which semantic retrieval first selects candidate documents and a Permission Retriever then validates each candidate against the source provider's IAM before any authorized subset is passed to the LLM. The prototype integrates GCP IAM, AWS IAM, and Keycloak, uses all-MiniLM-L6-v2 embeddings in FAISS and gpt-4o-mini for answer generation, and evaluates HotpotQA-derived resources distributed across simulated services. Evaluation comprises a 20-question scenario-based qualitative study, a quantitative experiment over 1,000 sampled HotpotQA questions and approximately 13,783 supporting documents with eight permission profiles, and latency experiments varying top-k and permission-check concurrency. Metrics include permission coverage, exact permission-match checking against pre-generated ground truth, Exact Match, F1, EM@Admin, IAM latency, and end-to-end latency.",
+   "key_findings": [
+    {
+     "finding": "The framework preserves provider-specific policy authority by performing per-document authorization through native IAM systems after semantic candidate retrieval and before documents enter the LLM context.",
+     "evidence_type": "supported",
+     "section": "III.C System Architecture"
+    },
+    {
+     "finding": "The architecture maintains persistent resource and source-local identifiers and separates embeddings from mutable metadata, enabling resource metadata and permission-related mappings to be updated without necessarily rebuilding embeddings.",
+     "evidence_type": "supported",
+     "section": "III.D.1 Data Ingestion"
+    },
+    {
+     "finding": "In the constructed qualitative comparison, a manually merged policy omitted an attribute and incorrectly exposed a document, while delegated native-IAM checking denied that access.",
+     "evidence_type": "supported",
+     "section": "V.A Qualitative Evaluation: A Scenario-Based Analysis"
+    },
+    {
+     "finding": "Across eight user profiles in the 1,000-question quantitative experiment, the framework achieved a PASS Match result for permission enforcement against the experiment's ground-truth authorization lists.",
+     "evidence_type": "supported",
+     "section": "V.B Quantitative Evaluation: Large-Scale Analysis"
+    },
+    {
+     "finding": "Answer quality generally increased with permission coverage; for example, the reported F1 rose from 0.30 for a user with 9.48% permission coverage to 0.50 for a user with 69.84% coverage.",
+     "evidence_type": "supported",
+     "section": "V.B Quantitative Evaluation: Large-Scale Analysis"
+    },
+    {
+     "finding": "A user with zero document permission coverage still obtained F1 0.31, showing that withholding all retrieved evidence does not itself make the generator abstain because it can answer from parametric knowledge or guesses.",
+     "evidence_type": "supported",
+     "section": "V.B Quantitative Evaluation: Large-Scale Analysis"
+    },
+    {
+     "finding": "Parallel permission checking substantially reduced authorization overhead: increasing workers from 1 to 15 reduced mean IAM latency from 420.71 ms to 127.33 ms, with diminishing gains after the first few workers.",
+     "evidence_type": "supported",
+     "section": "V.C Latency Evaluation: Impact of Permission Retrieval and Concurrency"
+    },
+    {
+     "finding": "The evaluated retrieval process uses a fixed initial top-k, with k=5 in the quantitative experiment, followed by authorization filtering; it does not test evidence-gap-driven replenishment when filtering removes necessary supporting documents.",
+     "evidence_type": "supported",
+     "section": "IV.D Evaluation Procedure and Metrics"
+    }
+   ],
+   "limitations": [
+    "The framework depends on external IAM service availability and responsiveness, so outages or authorization-service failures can affect reliability.",
+    "HotpotQA does not reproduce the full scale, heterogeneity, document lifecycle, or policy complexity of proprietary enterprise environments.",
+    "The experimental Credential Manager uses static pre-generated credentials rather than the dynamic SSO and token-federation workflow described for production deployment.",
+    "The quantitative retrieval experiment uses a fixed top-k of five and filters unauthorized results without evaluating whether missing evidence should trigger additional bounded retrieval.",
+    "The framework evaluates access filtering but does not provide an explicit abstention policy when permission filtering leaves insufficient evidence.",
+    "The zero-permission user still achieved non-trivial QA performance, demonstrating that document authorization alone does not guarantee evidence-grounded generation.",
+    "The paper discusses dynamic metadata and current IAM validation but does not experimentally evaluate document-version conflicts, source freshness, temporal validity of factual content, or historical permission snapshots.",
+    "Permission-result caching, API-rate-limit handling, fallback health checks, and related production edge cases are left for future work.",
+    "The experiments focus mainly on GCP RBAC, AWS ABAC, and Keycloak-based scenarios and therefore do not establish behavior across the full diversity of enterprise authorization systems."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "native_iam_pre_generation_filtering": 0.99,
+    "persistent_source_identity_and_mutable_metadata": 0.98,
+    "manual_policy_merge_leak_scenario": 0.99,
+    "permission_match_across_eight_profiles": 0.99,
+    "permission_coverage_quality_tradeoff": 0.98,
+    "zero_evidence_does_not_force_abstention": 0.99,
+    "parallel_iam_checks_reduce_latency": 0.99,
+    "no_gap_driven_replenishment_after_filtering": 0.97
+   },
+   "raw_claims": [
+    "The system retrieves semantic candidates first and validates each candidate against its provider's IAM before passing authorized documents to the LLM.",
+    "Resources receive both a globally unique resource identifier and their original source-local identifier for traceability.",
+    "The design separates relatively static vector embeddings from operational metadata that may change over time.",
+    "The experiments use HotpotQA and a corpus of 13,783 unique supporting-fact documents corresponding to 7,405 development-set questions.",
+    "The quantitative evaluation randomly samples 1,000 HotpotQA questions and uses fixed top-k retrieval with k equal to five.",
+    "Eight user profiles represent different permission scopes, including a no-access user and an unrestricted admin.",
+    "Every evaluated profile received a PASS result on the paper's exact permission-match criterion.",
+    "A user with 9.48% permission coverage obtained F1 0.30, while a user with 69.84% coverage obtained F1 0.50.",
+    "The user with zero document permission coverage still obtained F1 0.31.",
+    "Increasing permission-check workers from one to fifteen reduced mean IAM latency from 420.71 milliseconds to 127.33 milliseconds.",
+    "When top-k increased from one to twenty with parallel checking, IAM latency increased by about 140 milliseconds.",
+    "The implementation is released as open-source code on GitHub."
+   ],
+   "source_url": "https://www.researchgate.net/publication/397278007_Permission-Aware_RAG_Identity_and_Access_Management_IAM-Based_Access_Filtering_in_Multi-Resource_Environments",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

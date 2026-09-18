@@ -1,0 +1,87 @@
+{
+ "paper_id": "2510.08109",
+ "title": "VersionRAG: Version-Aware Retrieval-Augmented Generation for Evolving Documents",
+ "research_question": "Can explicitly representing document versions, version sequences, and changes in a retrieval graph prevent RAG systems from returning semantically relevant but temporally invalid information from evolving documentation?",
+ "methodology": "VersionRAG builds a five-level graph containing category, document, version, content, and change nodes, with version ordering and content boundaries represented explicitly and vector embeddings retained for semantic search. An LLM classifies each query into content retrieval, version retrieval, or change retrieval so that the system can route it through version-specific graph filtering and vector retrieval; explicit changelogs and inferred document differences are both indexed. The authors create VersionQA, containing 100 manually curated questions across 34 versioned Node.js, Apache Spark, and Bootstrap documents, and compare VersionRAG with naive RAG and Neo4j GraphRAG using several LLM backbones. Accuracy is judged with GPT-4.1 against ground truth and manually reviewed for all 100 questions, while indexing tokens, cost, time, query-routing accuracy, and category-level results are also measured.",
+ "key_findings": [
+  {
+   "finding": "With DeepSeek-R1 70B, VersionRAG achieves 90% overall VersionQA accuracy compared with 58% for naive RAG and 64% for GraphRAG.",
+   "evidence_type": "supported",
+   "section": "6 Results and Analysis"
+  },
+  {
+   "finding": "The largest gains occur on version-sensitive tasks: VersionRAG reaches 100% on version listing and 70% on change retrieval with DeepSeek-R1 70B, versus 35% and 25% for naive RAG and 80% and 30% for GraphRAG.",
+   "evidence_type": "supported",
+   "section": "6 Results and Analysis"
+  },
+  {
+   "finding": "VersionRAG reaches 60% accuracy on implicit change detection while the reported baselines achieve only 0-10%, showing value from explicitly modeling transitions between document states.",
+   "evidence_type": "supported",
+   "section": "Abstract; 6 Results and Analysis"
+  },
+  {
+   "finding": "VersionRAG's structured indexing uses 186K tokens and 25 minutes with DeepSeek-R1 70B, compared with GraphRAG's 2.97M tokens and about 5.2 hours, corresponding to reported reductions of 97% in tokens and 92% in indexing time.",
+   "evidence_type": "supported",
+   "section": "6.3 Efficiency Analysis"
+  },
+  {
+   "finding": "Performance depends strongly on query-routing capability: intent-classification accuracy is reported as 92% with DeepSeek-R1 70B versus 76% with Llama 3 8B.",
+   "evidence_type": "supported",
+   "section": "6.2 Impact of Model Capacity"
+  },
+  {
+   "finding": "The graph supports incremental addition of new versions without reprocessing all previous versions, providing a practical mechanism for maintaining version-aware provenance over evolving document collections.",
+   "evidence_type": "supported",
+   "section": "4.3 Generation"
+  },
+  {
+   "finding": "The authors explicitly retain version provenance in the graph and recommend source attribution, but acknowledge that access control must still be added separately for sensitive repositories.",
+   "evidence_type": "supported",
+   "section": "Ethical Considerations"
+  }
+ ],
+ "limitations": [
+  "VersionQA contains only 100 manually curated questions across 34 documents, limiting statistical analysis and fine-grained error characterization.",
+  "The evaluation is restricted to English technical documentation from Node.js, Apache Spark, and Bootstrap; legal, medical, and other versioning regimes are untested.",
+  "Implicit change detection reaches only 60%, and text-difference methods can miss semantic consequences of subtle modifications.",
+  "Version extraction assumes version information is extractable and document structure remains sufficiently consistent; irregular or non-semantic version schemes may fail.",
+  "Sequential version processing cannot naturally represent all dependencies between non-adjacent releases.",
+  "The system handles discrete versions but cannot directly reason about continuous calendar-time questions or lifecycle patterns.",
+  "Errors can propagate through the pipeline because query misclassification, version extraction errors, and incorrect change detection affect downstream retrieval.",
+  "The architecture requires both Neo4j and Milvus and still incurs substantial LLM indexing cost despite being more efficient than GraphRAG.",
+  "VersionRAG does not itself implement permission-aware retrieval; the paper explicitly notes that sensitive version graphs require appropriate access controls.",
+  "The system does not provide a calibrated risk-bounded rule for deciding when evidence is sufficient or when retrieval should stop."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "90_percent_overall_accuracy": 0.99,
+  "version_sensitive_tasks_improve": 0.99,
+  "implicit_change_detection_gain": 0.99,
+  "indexing_efficiency_gain": 0.99,
+  "routing_quality_depends_on_model_capacity": 0.99,
+  "incremental_version_updates_supported": 0.97,
+  "access_control_remains_external": 0.98
+ },
+ "raw_claims": [
+  "VersionRAG explicitly represents document evolution rather than treating all versions as interchangeable chunks.",
+  "Its graph includes category, document, version, content, and change nodes.",
+  "Queries are routed differently depending on whether they request content, version metadata, or changes.",
+  "Version-specific filtering constrains semantic retrieval to the relevant document state.",
+  "VersionQA contains 100 manually curated questions from 34 versioned technical documents.",
+  "Sixty percent of VersionQA questions require version-aware reasoning.",
+  "VersionRAG scores 90% overall with the strongest evaluated model, compared with 58% for naive RAG and 64% for GraphRAG.",
+  "The system substantially improves implicit change retrieval relative to the evaluated baselines.",
+  "Structured version edges make VersionRAG's indexing far cheaper than the evaluated GraphRAG implementation.",
+  "Large models classify retrieval intent more accurately than the tested smaller model.",
+  "Incorrect routing and incomplete change extraction are the main reported VersionRAG failure modes.",
+  "The framework cannot directly answer continuous calendar-time questions that require mapping dates to version histories.",
+  "Sensitive version repositories still require external access-control enforcement.",
+  "The authors publicly release the VersionRAG code and VersionQA dataset."
+ ],
+ "source_url": "https://arxiv.org/html/2510.08109",
+ "access": "full_text"
+}

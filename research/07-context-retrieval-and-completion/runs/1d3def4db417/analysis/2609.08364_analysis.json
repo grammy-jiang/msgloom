@@ -1,0 +1,86 @@
+{
+ "paper_id": "2609.08364",
+ "title": "SentryLine: Evidence-Grounded Question Answering over Evolving Documents in Oncology Care",
+ "research_question": "Can a clinical RAG system reliably answer questions from evolving oncology guidelines while preserving exact source provenance, detecting superseded recommendations, and presenting evidence appropriately to clinicians and patients?",
+ "methodology": "SentryLine extracts structured clinical entities and uses PageIndex, a hierarchical vectorless retrieval mechanism, to retrieve passages from versioned ASCO guideline PDFs while preserving document and page information. It merges retrieved evidence with bounded conversation context, routes generation by declared user role, and applies factual, page-level, temporal, and citation-grounding checks before presenting the answer and a persistent evidence panel. The system is evaluated on ASCOBench, containing 405 three-turn conversations, with a 105-conversation/315-question clinician-annotated test set, three generation backbones, several RAG baselines, ablations, and an LLM judge calibrated against clinical expert ratings.",
+ "key_findings": [
+  {
+   "finding": "SentryLine explicitly incorporates temporal/version-aware provenance by identifying guideline years, confirmed updates, superseding passages, and stale recommendations.",
+   "evidence_type": "supported",
+   "section": "3.1 Architecture; 3.2 Verification-First Workflow"
+  },
+  {
+   "finding": "Each generated citation is converted into a structured evidence item containing document, page, passage text, citation key, and update status, enabling paragraph-level navigation back to the source.",
+   "evidence_type": "supported",
+   "section": "3.3 Evidence Grounding and Interactive PDF Highlighting"
+  },
+  {
+   "finding": "The temporal verifier only accepts a stale-guidance flag when it is backed by an explicit superseding passage, reducing reliance on the model's parametric knowledge of guideline history.",
+   "evidence_type": "supported",
+   "section": "3.2 Verification-First Workflow"
+  },
+  {
+   "finding": "On Gemini, SentryLine reached 59.3% fully correct on contrasting questions containing outdated recommendations, compared with 43.5% to 50.9% for the reported RAG baselines.",
+   "evidence_type": "supported",
+   "section": "6 Results and Analysis, RQ1-RQ2"
+  },
+  {
+   "finding": "Removing the temporal verifier raised the DeepSeek role-specific incorrect rate from 5.6% to 26.4%, indicating a substantial contribution from temporal checking in that setting.",
+   "evidence_type": "supported",
+   "section": "Appendix C Ablation Results"
+  },
+  {
+   "finding": "The system achieved the lowest incorrect rate in 11 of 12 backbone-by-category cells, with verification tending to convert some failures into partially correct rather than fully incorrect answers.",
+   "evidence_type": "supported",
+   "section": "6 Results and Analysis, RQ6"
+  },
+  {
+   "finding": "SentryLine does not calibrate its factual or temporal verifier with conformal prediction and does not use a calibrated risk threshold as an evidence-retrieval stopping criterion.",
+   "evidence_type": "supported",
+   "section": "3 SentryLine: System Architecture and Workflow"
+  },
+  {
+   "finding": "The declared clinician/patient role controls response framing, not authorization to different evidence sources, so the role router is not a permission-aware access-control mechanism.",
+   "evidence_type": "supported",
+   "section": "3.1 Architecture"
+  }
+ ],
+ "limitations": [
+  "Answer quality remains dependent on the generation backbone; Dense RAG exceeded SentryLine's fully-correct factual rate under the DeepSeek backbone.",
+  "Drift detection depends on guideline PDFs explicitly indicating that an update occurred and can miss implicit supersession.",
+  "Evaluation covers only ASCO breast and prostate cancer guidelines rather than broader oncology or other medical societies.",
+  "ASCOBench conversations are model-generated and clinician-reviewed rather than sampled from actual clinician or patient sessions.",
+  "The evaluation relies in part on an LLM judge, although the paper calibrates it against expert ratings.",
+  "The verification outputs are categorical rather than conformally calibrated risk estimates.",
+  "There is no runtime retrieve-more-until-sufficient controller driven by a statistically calibrated evidence-completeness criterion.",
+  "User role changes generation style rather than enforcing source-level permissions or authorization boundaries.",
+  "No explicit retrieval-token or document-count budget is used as the central stopping mechanism, although conversation history beyond three turns is summarized."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "temporal_version_provenance": 0.99,
+  "page_level_evidence_grounding": 0.99,
+  "temporal_verifier_effect": 0.98,
+  "structured_retrieval_improves_results": 0.96,
+  "no_conformal_risk_stopping": 0.97,
+  "role_router_not_access_control": 0.97
+ },
+ "raw_claims": [
+  "SentryLine retrieves from hierarchically indexed ASCO guideline PDFs rather than fixed-size embedding chunks.",
+  "Retrieved passages retain verbatim document and page citations through generation.",
+  "Clinician context includes available guideline years and documents known to be updates.",
+  "The factual verifier independently checks generated claims against retrieved passages.",
+  "The temporal verifier requires evidence from a superseding passage before marking a recommendation outdated.",
+  "The citation guardrail distinguishes corpus-grounded citations from unsupported model-recognized references.",
+  "Evidence items preserve document, page, passage text, citation key, and update status.",
+  "ASCOBench contains 405 three-turn conversations and a clinician-annotated 315-question test set.",
+  "The study evaluates Llama 3.3 70B, DeepSeek-R1, and Gemini 3.1 Pro backbones.",
+  "The code and ASCOBench evaluation assets are described as released for reproducible evaluation."
+ ],
+ "source_url": "https://arxiv.org/html/2609.08364",
+ "access": "full_text"
+}

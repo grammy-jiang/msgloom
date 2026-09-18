@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-32604-cmc-2026-086343",
+ "title": "Do LLMs Know When Evidence is Insufficient? An Evidence Sufficiency Benchmark for Answer-Abstention Calibration in Retrieval-Augmented Generation",
+ "research_question": "Do contemporary LLMs appropriately switch from answering to abstaining as retrieved evidence moves from sufficient support through partial, irrelevant, absent, and explicitly conflicting evidence?",
+ "methodology": "The paper introduces the Evidence Sufficiency Benchmark with five controlled evidence levels: full support, partial support, irrelevant evidence, no context, and conflicting evidence, with the first two treated as answerable and the latter three as requiring abstention. It samples 100 questions each from SQuAD and HotpotQA, constructs five evidence conditions per question, evaluates three prompting strategies, and tests seven LLMs from five model families, producing approximately 29,400 model calls including conflict-order randomization. Evaluation uses abstention, answer accuracy, over-answering, wrong-answer rate, bootstrap confidence intervals, significance tests, and manual validation of 200 stratified examples.",
+ "key_findings": [
+  {
+   "finding": "Models generally abstain more as evidence degrades from supported to irrelevant or absent, but this pattern reverses under explicit conflict: L5 abstention is only 9.5% to 34.8% compared with 34% to 84% under no-context L4.",
+   "evidence_type": "supported",
+   "section": "6.1 Evidence Sufficiency Curve"
+  },
+  {
+   "finding": "All seven evaluated models over-answer more than 65% of conflicting-evidence cases; Gemini 2.5 Flash abstains most at 34.8%, while Claude Sonnet 4.6 abstains only 9.5%.",
+   "evidence_type": "supported",
+   "section": "6.2 Cross-family Results under Conflicting Evidence"
+  },
+  {
+   "finding": "Evidence picking, in which a model selects one side of contradictory retrieved evidence, is the dominant reported L5 failure pattern.",
+   "evidence_type": "supported",
+   "section": "6.2 Cross-family Results under Conflicting Evidence"
+  },
+  {
+   "finding": "Explicit sufficiency-oriented prompting can substantially increase conflict abstention for some models but has strongly model-dependent effects; for example, P1-to-P3 abstention changes from 5.2% to 55.2% for Gemini and from 7.2% to 11.2% for Claude Sonnet 4.6.",
+   "evidence_type": "supported",
+   "section": "6.3 Prompt Sensitivity"
+  },
+  {
+   "finding": "Six of seven models exhibit significant dependence on whether gold or conflicting evidence appears first, with the largest reported absolute order effect reaching 20.5 percentage points.",
+   "evidence_type": "supported",
+   "section": "6.4 Position Bias under Conflicting Evidence"
+  },
+  {
+   "finding": "Manual review of 200 stratified examples finds 89.0% overall agreement with automatic response classification but only 75.0% agreement for the conflicting-evidence level, indicating that conflict behavior is harder to label automatically.",
+   "evidence_type": "supported",
+   "section": "7.7 Human Validation"
+  }
+ ],
+ "limitations": [
+  "The benchmark is built from only 200 seed questions drawn from SQuAD and HotpotQA, so the evidence-sufficiency findings are not established for specialized domains such as medicine, law, finance, education, or multilingual QA.",
+  "Automatic response classification relies partly on explicit abstention patterns and answer-string matching, which may miss implicit or mixed responses.",
+  "Human validation is an internal review of 200 samples rather than a formal multi-annotator study with reported inter-rater reliability.",
+  "The study evaluates inference-time prompting rather than fine-tuned evidence-sufficiency models or adaptive retrieval controllers.",
+  "The benchmark diagnoses whether evidence should trigger abstention but does not determine which missing evidence should be retrieved next.",
+  "There is no conformal or other formal risk-control guarantee for the abstention behavior.",
+  "Temporal freshness, source versions, and version-aware provenance are outside the benchmark design.",
+  "The full text states that benchmark data and evaluation code are intended for public release upon acceptance, but it does not provide an accessible release link in the article."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conflict_trap": 0.99,
+  "conflict_over_answering": 0.99,
+  "prompt_sensitivity": 0.99,
+  "position_bias": 0.99,
+  "human_validation_agreement": 0.98
+ },
+ "raw_claims": [
+  "The benchmark defines five evidence levels spanning full support through explicitly conflicting evidence.",
+  "L1 and L2 are treated as answerable while L3 through L5 are treated as insufficient-evidence cases requiring abstention.",
+  "The evaluation uses 100 SQuAD questions and 100 HotpotQA questions.",
+  "Each of seven models is evaluated with three prompting strategies across the five evidence levels.",
+  "The full experiment involves approximately 29,400 model calls.",
+  "Models abstain much more often when context is absent than when retrieved passages explicitly contradict one another.",
+  "Every evaluated model over-answers most conflicting-evidence examples.",
+  "Prompt instructions about sufficiency substantially change behavior for some model families but barely change others.",
+  "Passage order significantly affects conflict handling for six of seven models.",
+  "Automatic response labels agree with internal human review less reliably for conflicting evidence than for the other evidence levels."
+ ],
+ "source_url": "https://www.techscience.com/cmc/v89n1/68467/html",
+ "access": "full_text"
+}

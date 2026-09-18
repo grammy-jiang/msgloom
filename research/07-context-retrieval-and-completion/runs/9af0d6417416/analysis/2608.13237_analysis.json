@@ -1,0 +1,73 @@
+{
+ "paper_id": "2608.13237",
+ "title": "When Should Multi-Round RAG Stop? Structured Stopping Judgments and Retrieval Reduction in Search-R1",
+ "research_question": "Can a structured sufficiency-and-gap judge change only the stopping time of a frozen multi-round Search-R1 trajectory to reduce retrieval while keeping answer-quality loss within a prespecified bound, and what stopping risk remains?",
+ "methodology": "The study freezes Search-R1's reasoner, E5 top-3 retriever, Wiki-2018 corpus, prompt, and four-search budget, then constructs reachable retrieval states and labels whether a correct answer is already recoverable using a frozen answer-only probe. It trains a Qwen3.5-2B structured judge on 3,009 states from 900 disjoint HotpotQA training questions and selects its stopping threshold on grouped validation under a STOP-precision constraint. A held-out 800-question confirmatory evaluation applies the first threshold crossing on each trajectory and measures exact match, search calls, state-ranking quality, calibration, and safe versus unsafe early stops with paired bootstrap confidence intervals.",
+ "key_findings": [
+  {
+   "finding": "The confirmatory stopping policy removed 77 retrieval calls, reducing mean searches from 2.60125 to 2.50500, a 3.70% reduction, with the confidence interval satisfying the prespecified retrieval-reduction criterion.",
+   "evidence_type": "supported",
+   "section": "Confirmatory Results"
+  },
+  {
+   "finding": "Official exact match decreased from 0.44875 to 0.44250, a 0.625 percentage-point loss whose confidence interval remained inside the prespecified two-percentage-point noninferiority margin; this does not establish unchanged or improved accuracy.",
+   "evidence_type": "supported",
+   "section": "Confirmatory Results"
+  },
+  {
+   "finding": "Among 69 confirmatory early stops, 42 were classified as safe and 27 as unsafe, so 39.13% of the executed early stops were unsafe under the paper's probe-based definition.",
+   "evidence_type": "supported",
+   "section": "Risk Diagnostics"
+  },
+  {
+   "finding": "The expanded structured judge improved STOP average precision over the structured-base judge, but validation STOP precision did not transfer to the final test set and calibration remained weak.",
+   "evidence_type": "supported",
+   "section": "Confirmatory Results and Risk Diagnostics"
+  },
+  {
+   "finding": "Exploratory trajectories contained substantial over-retrieval headroom: 143 of 523 native SEARCH actions occurred after the answer probe was already correct, and a native-preserving cost oracle could remove 131 searches while retaining native exact match.",
+   "evidence_type": "supported",
+   "section": "Exploratory Analysis"
+  },
+  {
+   "finding": "Reducing retrieval calls is not equivalent to reducing total system cost because the additional judge introduces compute, memory, and latency that were not included in the retrieval-call metric.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  }
+ ],
+ "limitations": [
+  "The conclusions are conditional on a frozen Search-R1 configuration and a HotpotQA-based evaluation rather than a broad set of RAG systems and domains.",
+  "The learned stopping policy is not risk-certified: a substantial fraction of executed early stops were unsafe under the paper's own probe-based criterion.",
+  "The high validation STOP precision was based on a small number of positive stop predictions and did not transfer to the confirmatory set.",
+  "The evaluation counts retrieval calls but does not normalize end-to-end latency, token usage, memory, or judge-computation cost.",
+  "The correctness labels rely on a frozen answer-only probe, so they operationalize recoverability rather than proving that the retrieved evidence is complete or sufficient in a stronger semantic sense.",
+  "Per-question trajectories, benchmark-derived labels, and model weights are not redistributed in the reproduction repository, although the underlying benchmark and upstream resources remain available under their original licenses."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "retrieval_reduction": 0.99,
+  "accuracy_within_prespecified_margin": 0.99,
+  "unsafe_stopping_risk": 0.99,
+  "ranking_policy_mismatch": 0.96,
+  "over_retrieval_headroom": 0.98,
+  "total_cost_not_established": 0.99
+ },
+ "raw_claims": [
+  "The paper treats multi-round RAG stopping as a sequential decision over already reachable reasoning and retrieval states.",
+  "A frozen answer-only probe is used to decide whether an official answer is already recoverable at a state.",
+  "The structured judge predicts sufficiency and evidence gaps without changing the underlying Search-R1 reasoner or retriever.",
+  "The judge was trained on 3,009 clean states derived from 900 HotpotQA training questions.",
+  "The confirmatory evaluation contains 800 held-out HotpotQA questions.",
+  "The learned policy reduced mean search calls by 0.09625 per question.",
+  "Official exact match fell by 0.00625 in absolute proportion.",
+  "Only a minority of available safe early-stop opportunities were actually captured by the learned policy.",
+  "Validation precision substantially overestimated confirmatory STOP precision.",
+  "The paper explicitly cautions that fewer searches do not by themselves demonstrate lower total inference cost."
+ ],
+ "source_url": "https://arxiv.org/html/2608.13237",
+ "access": "full_text"
+}

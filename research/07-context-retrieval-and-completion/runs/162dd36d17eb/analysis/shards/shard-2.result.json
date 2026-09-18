@@ -1,0 +1,408 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1038-s41598-026-71936-x",
+   "title": "Privacy-provisioned-permission-aware RAG in cloud using identity and access management, trust and large-language models (PPPARITL)",
+   "research_question": "Can a cloud-based RAG architecture combine identity and access management, dynamic trust assessment, encrypted embeddings, and malicious-query controls to reduce unauthorized information access while retaining useful LLM-assisted retrieval?",
+   "methodology": "The paper proposes PPPARITL, a two-stage permission-aware RAG architecture in which an IAM-controlled Role-Resource-Action-Condition gate first filters access according to administrator-defined ACL rules. Document and query embeddings are protected at rest with CKKS homomorphic encryption, and only authorized candidates are decrypted before similarity ranking; a subsequent trust score uses contextual, behavioral, and historical user interactions to govern permission-aware retrieval. A sanitization and monitoring layer detects malicious query patterns and supports revocation. The accessible abstract reports simulation experiments against baseline access-control approaches on a synthetic enterprise dataset.",
+   "key_findings": [
+    {
+     "finding": "PPPARITL places authorization filtering before similarity ranking, so only candidates passing the RRAC access-control gate are eligible for decryption and retrieval.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The framework combines static IAM policy enforcement with a second-stage trust score derived from contextual, behavioral, and historical interactions.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Document and query embeddings are protected at rest using CKKS homomorphic encryption, with the decryption key held by an administrator.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The architecture includes query sanitization and continuous malicious-query monitoring intended to mitigate denial-of-service and insider threats and to support user revocation.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "On the reported synthetic enterprise evaluation, the proposed approach reaches 95.84% authorization accuracy and reduces the False Access Rate relative to baseline access-control approaches.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "Only the abstract and publisher metadata were accessible through the available web interface, so implementation details, baseline definitions, statistical analysis, and ablations could not be independently inspected.",
+    "The reported experiment uses a synthetic enterprise dataset, leaving performance on real organizational identities, policies, documents, and adversarial workloads unestablished in the accessible text.",
+    "The accessible abstract does not report retrieval-quality or answer-quality metrics alongside authorization metrics.",
+    "The accessible text does not evaluate temporal validity, document-version provenance, explicit evidence-gap tracking, or calibrated retrieval stopping.",
+    "The architecture relies on an administrator-held secret key for candidate decryption, creating a centralized trust dependency that is not evaluated in the accessible abstract."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "authorization_before_ranking": 0.99,
+    "two_stage_IAM_and_trust": 0.99,
+    "CKKS_embedding_protection": 0.99,
+    "malicious_query_controls": 0.97,
+    "95.84_percent_authorization_accuracy": 0.99
+   },
+   "raw_claims": [
+    "The proposed system adds privacy and permission controls to a RAG pipeline used in a cloud setting.",
+    "An RRAC policy gate checks each request against administrator-configured access-control rules.",
+    "Only candidates that pass authorization are decrypted for similarity ranking.",
+    "CKKS encryption is used to protect document and query embeddings at rest.",
+    "A trust score incorporates contextual, behavioral, and historical information about service-user interactions.",
+    "The trust score influences permission-aware retrieval after the initial access-control gate.",
+    "A sanitization layer is intended to reject malicious query patterns and mitigate denial-of-service behavior.",
+    "The system continuously monitors requests and can revoke users when malicious behavior is detected.",
+    "The reported synthetic-enterprise experiment reaches 95.84% authorization accuracy.",
+    "The paper reports a reduction in False Access Rate compared with its baseline access-control approaches."
+   ],
+   "source_url": "https://www.nature.com/articles/s41598-026-71936-x",
+   "access": "abstract_only"
+  },
+  {
+   "paper_id": "2412.15540",
+   "title": "MRAG: A Modular Retrieval Framework for Time-Sensitive Question Answering",
+   "research_question": "Can explicitly separating semantic relevance from temporal reasoning improve retrieval and downstream answering for questions whose evidence must satisfy a temporal constraint?",
+   "methodology": "The authors construct TempRAGEval by adapting TimeQA and SituatedQA with manually designed temporal perturbations and gold evidence annotations, thereby reducing direct date overlap between questions and relevant passages. MRAG is a training-free three-stage framework: question processing separates topical content from temporal constraints, retrieval and LLM summarization reduce retrieved passages to fine-grained evidence, and semantic-temporal hybrid ranking combines semantic similarity with symbolic temporal scoring. The framework is evaluated against sparse, dense, reranking, and generation baselines using answer recall, evidence recall, exact match, and F1, with additional ablations, controlled temporal tests, case studies, and a 200-example human retrieval evaluation.",
+   "key_findings": [
+    {
+     "finding": "Temporal perturbations expose substantial brittleness in conventional retrievers; for example, the Gemma baseline's top-1 answer recall on perturbed SituatedQA falls from 85.8% to 54.7%, while evidence recall falls from 45.0% to 20.3%.",
+     "evidence_type": "supported",
+     "section": "3.3 Preliminary Evaluation on TempRAGEval"
+    },
+    {
+     "finding": "Controlled experiments indicate that conventional retrieval methods tend to favor exact date matching rather than correctly modeling relations such as before, after, and as-of.",
+     "evidence_type": "supported",
+     "section": "3.3 Preliminary Evaluation on TempRAGEval"
+    },
+    {
+     "finding": "MRAG outperforms retrieve-then-rerank baselines on both TempRAGEval subsets; against Contriever plus Gemma it improves top-5 evidence recall by 7.7 points on TimeQA and 13.9 points on SituatedQA.",
+     "evidence_type": "supported",
+     "section": "5.2 Main Results"
+    },
+    {
+     "finding": "Improved temporal retrieval propagates to end-to-end QA: for Llama-3.1-8B, MRAG-Concat improves TimeQA EM/F1 from 44.0/52.8 with standard RAG-Concat to 49.2/59.2, and Self-MRAG reaches 54.2/65.6.",
+     "evidence_type": "supported",
+     "section": "5.2 Main Results"
+    },
+    {
+     "finding": "The modular filtering and ranking stages offer an adjustable efficiency-accuracy trade-off, but the complete MRAG pipeline is reported to require roughly twice the computational overhead of standard RAG.",
+     "evidence_type": "supported",
+     "section": "6.1 Ablation Study"
+    },
+    {
+     "finding": "Human evaluation on 200 sampled examples supports the reported retrieval advantage of MRAG over the Gemma baseline and addresses known imperfections in automatic answer-recall and evidence-recall metrics.",
+     "evidence_type": "supported",
+     "section": "6.2 Human Evaluation"
+    }
+   ],
+   "limitations": [
+    "TempRAGEval focuses on questions with explicit temporal constraints; implicit temporal constraints are left for future work.",
+    "The benchmark does not target questions whose relevant facts occur beyond the underlying model knowledge cutoff.",
+    "Multi-hop and recursive temporal reasoning are not addressed by the primary framework.",
+    "MRAG introduces additional retrieval, summarization, and reranking computation, reported as approximately twice the overhead of standard RAG.",
+    "The work studies conflicts between model knowledge and retrieved passages but leaves conflicts among retrieved passages for future work.",
+    "The framework does not model document permissions, access-control policy, or version histories.",
+    "It improves ranking of temporally relevant evidence but does not provide a calibrated bounded-risk stopping rule for deciding whether further retrieval is necessary."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "temporal_perturbations_hurt_baselines": 0.99,
+    "retrievers_use_date_matching_shortcuts": 0.97,
+    "MRAG_improves_evidence_recall": 0.99,
+    "retrieval_gain_improves_QA": 0.99,
+    "MRAG_has_extra_compute_overhead": 0.99,
+    "human_evaluation_supports_retrieval_gain": 0.96
+   },
+   "raw_claims": [
+    "TempRAGEval augments existing temporal QA datasets with harder temporal perturbations and gold evidence annotations.",
+    "The perturbations are designed to remove simple timestamp overlap between the query and relevant evidence.",
+    "Existing retrieval methods lose substantial recall when temporal matching requires reasoning rather than literal date overlap.",
+    "Controlled tests suggest that baseline retrievers over-rely on exact date similarity.",
+    "MRAG separates the topical content of a question from its temporal constraint.",
+    "Retrieved passages are split and summarized into finer-grained evidence before final ranking.",
+    "MRAG scores semantic relevance and temporal relevance separately and then combines them.",
+    "MRAG improves evidence retrieval over tested reranking baselines on both TempRAGEval subsets.",
+    "Using MRAG evidence improves downstream exact-match and F1 scores for several answer-generation configurations.",
+    "The authors report an adjustable trade-off between the number of processed candidates and retrieval performance.",
+    "The complete MRAG pipeline has about twice the computational overhead of a standard RAG pipeline.",
+    "The authors make code and TempRAGEval data available."
+   ],
+   "source_url": "https://arxiv.org/html/2412.15540",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2010.11915",
+   "title": "Challenges in Information-Seeking QA: Unanswerable Questions and Paragraph Retrieval",
+   "research_question": "Why do naturally occurring information-seeking questions remain unanswerable for strong QA systems, and how much of the difficulty comes from paragraph selection, answerability prediction, missing evidence, invalid questions, or restrictive task design?",
+   "methodology": "The paper analyzes Natural Questions and TyDi QA, contrasting their naturally occurring information-seeking queries with SQuAD 2.0's artificially constructed unanswerable questions. It performs controlled oracle experiments that provide models with gold answer type and/or gold evidence paragraphs, then evaluates answerability classification using question-only and full QA models. The authors manually classify 800 unanimously unanswerable examples from NQ and five TyDi languages, search alternative Wikipedia and non-Wikipedia sources, and categorize failures into retrieval misses, non-factoid or multi-evidence needs, invalid questions, false premises, and annotation errors. Performance is reported with QA F1/precision/recall, answer-type classification accuracy, category-level error rates, and annotation agreement.",
+   "key_findings": [
+    {
+     "finding": "Oracle experiments show that paragraph selection and answerability prediction account for substantial remaining error; once models receive gold evidence and answer-type information, their answer extraction becomes much stronger.",
+     "evidence_type": "supported",
+     "section": "3 QA performances with Gold Answer Type and Gold Paragraph"
+    },
+    {
+     "finding": "Answerability prediction remains difficult on naturally occurring information-seeking questions: for binary classification, the reported QA model reaches 82.5% on NQ and 79.4% on TyDi QA, compared with aggregate human agreement of 85.6% and 94.0%.",
+     "evidence_type": "supported",
+     "section": "4 Answerability Prediction"
+    },
+    {
+     "finding": "Question-only models exceed 70% binary answerability accuracy on NQ and TyDi QA, showing that surface-form artifacts provide substantial cues even though the questions were collected independently of evidence documents.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "The causes of unanswerability vary strongly by dataset and language: 38% of the analyzed NQ unanswerable subset consists of invalid or ill-defined questions, whereas retrieval misses account for roughly 50-74% of annotated TyDi examples across the five studied languages.",
+     "evidence_type": "supported",
+     "section": "5.3 Results"
+    },
+    {
+     "finding": "Many questions labeled unanswerable relative to their supplied document become answerable when annotators search another Wikipedia page or a non-Wikipedia source, demonstrating that evidence-source coverage is a major determinant of apparent answerability.",
+     "evidence_type": "supported",
+     "section": "5.3 Results"
+    },
+    {
+     "finding": "Single-paragraph extractive task definitions themselves create unanswerability for questions that require multiple pieces of evidence or descriptive, non-factoid answers.",
+     "evidence_type": "supported",
+     "section": "5.5 Discussion"
+    },
+    {
+     "finding": "Lexically related but incorrect evidence can induce confident wrong answers, so evidence relevance alone is insufficient for reliable abstention.",
+     "evidence_type": "supported",
+     "section": "5.4 Per-category Performance"
+    }
+   ],
+   "limitations": [
+    "The primary modeling experiments use a reading-comprehension setting with a supplied reference document rather than a fully adaptive open-domain retrieval controller.",
+    "The manual study contains 800 examples and covers NQ plus five TyDi languages, so it is not a comprehensive sample of all information-seeking domains or languages.",
+    "The categorization boundaries can overlap, particularly between retrieval failure and inherently multi-evidence or non-factoid questions.",
+    "Searching heterogeneous non-Wikipedia sources improves coverage but introduces untested domain-adaptation and format-generalization problems.",
+    "The paper identifies abstention and evidence-coverage problems but does not implement a calibrated risk-bounded stopping policy.",
+    "It does not model temporal validity, document versions, or permission-aware retrieval.",
+    "The authors note that moving from extractive to free-form answers creates a harder evaluation problem that the study does not solve."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "paragraph_and_answerability_are_major_headrooms": 0.99,
+    "natural_answerability_prediction_is_hard": 0.99,
+    "question_only_artifacts_exist": 0.99,
+    "unanswerability_causes_vary_by_dataset": 0.99,
+    "broader_sources_increase_answer_coverage": 0.98,
+    "single_paragraph_design_limits_coverage": 0.98,
+    "lexical_overlap_can_cause_false_answers": 0.97
+   },
+   "raw_claims": [
+    "Naturally occurring information-seeking QA remains harder than reading-comprehension benchmarks whose questions are written from the evidence.",
+    "Providing gold evidence paragraphs and gold answer types removes a large fraction of model errors.",
+    "Predicting whether a question is answerable remains a major source of error.",
+    "Question-only classifiers can exploit cues in the wording of NQ and TyDi questions.",
+    "The reasons questions are unanswerable differ substantially across datasets and languages.",
+    "Ill-defined questions form a large part of the unanswerable Natural Questions sample.",
+    "Document-retrieval failures dominate several of the analyzed TyDi language subsets.",
+    "Some apparently unanswerable factoid questions have answers on different Wikipedia pages or non-Wikipedia websites.",
+    "Some questions require information distributed across multiple paragraphs or documents.",
+    "A single-paragraph extractive formulation can incorrectly convert a valid information need into an unanswerable example.",
+    "Models can give high-confidence wrong answers when an irrelevant paragraph has misleading lexical overlap with the query.",
+    "The authors recommend broader knowledge sources, clarification of ambiguous questions, multi-document access, and abstractive answering.",
+    "The paper's code and annotated data are publicly available."
+   ],
+   "source_url": "https://arxiv.org/html/2010.11915",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2510.08109",
+   "title": "VersionRAG: Version-Aware Retrieval-Augmented Generation for Evolving Documents",
+   "research_question": "Can explicitly representing document versions, version sequences, and changes in a retrieval graph prevent RAG systems from returning semantically relevant but temporally invalid information from evolving documentation?",
+   "methodology": "VersionRAG builds a five-level graph containing category, document, version, content, and change nodes, with version ordering and content boundaries represented explicitly and vector embeddings retained for semantic search. An LLM classifies each query into content retrieval, version retrieval, or change retrieval so that the system can route it through version-specific graph filtering and vector retrieval; explicit changelogs and inferred document differences are both indexed. The authors create VersionQA, containing 100 manually curated questions across 34 versioned Node.js, Apache Spark, and Bootstrap documents, and compare VersionRAG with naive RAG and Neo4j GraphRAG using several LLM backbones. Accuracy is judged with GPT-4.1 against ground truth and manually reviewed for all 100 questions, while indexing tokens, cost, time, query-routing accuracy, and category-level results are also measured.",
+   "key_findings": [
+    {
+     "finding": "With DeepSeek-R1 70B, VersionRAG achieves 90% overall VersionQA accuracy compared with 58% for naive RAG and 64% for GraphRAG.",
+     "evidence_type": "supported",
+     "section": "6 Results and Analysis"
+    },
+    {
+     "finding": "The largest gains occur on version-sensitive tasks: VersionRAG reaches 100% on version listing and 70% on change retrieval with DeepSeek-R1 70B, versus 35% and 25% for naive RAG and 80% and 30% for GraphRAG.",
+     "evidence_type": "supported",
+     "section": "6 Results and Analysis"
+    },
+    {
+     "finding": "VersionRAG reaches 60% accuracy on implicit change detection while the reported baselines achieve only 0-10%, showing value from explicitly modeling transitions between document states.",
+     "evidence_type": "supported",
+     "section": "Abstract; 6 Results and Analysis"
+    },
+    {
+     "finding": "VersionRAG's structured indexing uses 186K tokens and 25 minutes with DeepSeek-R1 70B, compared with GraphRAG's 2.97M tokens and about 5.2 hours, corresponding to reported reductions of 97% in tokens and 92% in indexing time.",
+     "evidence_type": "supported",
+     "section": "6.3 Efficiency Analysis"
+    },
+    {
+     "finding": "Performance depends strongly on query-routing capability: intent-classification accuracy is reported as 92% with DeepSeek-R1 70B versus 76% with Llama 3 8B.",
+     "evidence_type": "supported",
+     "section": "6.2 Impact of Model Capacity"
+    },
+    {
+     "finding": "The graph supports incremental addition of new versions without reprocessing all previous versions, providing a practical mechanism for maintaining version-aware provenance over evolving document collections.",
+     "evidence_type": "supported",
+     "section": "4.3 Generation"
+    },
+    {
+     "finding": "The authors explicitly retain version provenance in the graph and recommend source attribution, but acknowledge that access control must still be added separately for sensitive repositories.",
+     "evidence_type": "supported",
+     "section": "Ethical Considerations"
+    }
+   ],
+   "limitations": [
+    "VersionQA contains only 100 manually curated questions across 34 documents, limiting statistical analysis and fine-grained error characterization.",
+    "The evaluation is restricted to English technical documentation from Node.js, Apache Spark, and Bootstrap; legal, medical, and other versioning regimes are untested.",
+    "Implicit change detection reaches only 60%, and text-difference methods can miss semantic consequences of subtle modifications.",
+    "Version extraction assumes version information is extractable and document structure remains sufficiently consistent; irregular or non-semantic version schemes may fail.",
+    "Sequential version processing cannot naturally represent all dependencies between non-adjacent releases.",
+    "The system handles discrete versions but cannot directly reason about continuous calendar-time questions or lifecycle patterns.",
+    "Errors can propagate through the pipeline because query misclassification, version extraction errors, and incorrect change detection affect downstream retrieval.",
+    "The architecture requires both Neo4j and Milvus and still incurs substantial LLM indexing cost despite being more efficient than GraphRAG.",
+    "VersionRAG does not itself implement permission-aware retrieval; the paper explicitly notes that sensitive version graphs require appropriate access controls.",
+    "The system does not provide a calibrated risk-bounded rule for deciding when evidence is sufficient or when retrieval should stop."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "90_percent_overall_accuracy": 0.99,
+    "version_sensitive_tasks_improve": 0.99,
+    "implicit_change_detection_gain": 0.99,
+    "indexing_efficiency_gain": 0.99,
+    "routing_quality_depends_on_model_capacity": 0.99,
+    "incremental_version_updates_supported": 0.97,
+    "access_control_remains_external": 0.98
+   },
+   "raw_claims": [
+    "VersionRAG explicitly represents document evolution rather than treating all versions as interchangeable chunks.",
+    "Its graph includes category, document, version, content, and change nodes.",
+    "Queries are routed differently depending on whether they request content, version metadata, or changes.",
+    "Version-specific filtering constrains semantic retrieval to the relevant document state.",
+    "VersionQA contains 100 manually curated questions from 34 versioned technical documents.",
+    "Sixty percent of VersionQA questions require version-aware reasoning.",
+    "VersionRAG scores 90% overall with the strongest evaluated model, compared with 58% for naive RAG and 64% for GraphRAG.",
+    "The system substantially improves implicit change retrieval relative to the evaluated baselines.",
+    "Structured version edges make VersionRAG's indexing far cheaper than the evaluated GraphRAG implementation.",
+    "Large models classify retrieval intent more accurately than the tested smaller model.",
+    "Incorrect routing and incomplete change extraction are the main reported VersionRAG failure modes.",
+    "The framework cannot directly answer continuous calendar-time questions that require mapping dates to version histories.",
+    "Sensitive version repositories still require external access-control enforcement.",
+    "The authors publicly release the VersionRAG code and VersionQA dataset."
+   ],
+   "source_url": "https://arxiv.org/html/2510.08109",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2607.24010",
+   "title": "When Should Active RAG Retrieve? A Budget-Aware Evaluation of Utility, Calibration, and Cost",
+   "research_question": "How should an Active RAG controller decide when retrieval is worth its cost while respecting a future evidence-usage budget, accounting for retrieval benefit, retrieval harm, threshold calibration error, and trigger-side computation?",
+   "methodology": "The paper formulates the retrieval decision as per-example marginal utility, assigning +1 when retrieval fixes an answer, -1 when it harms a previously correct answer, and 0 when correctness is unchanged. It separates score-ranking quality from deployable operating-point calibration through exact top-k frontiers, calibration-split threshold frontiers, and conservative DKW-style budget frontiers, while separately accounting for trigger computation and retrieved-answer costs. Experiments use HotpotQA, 2WikiMultiHopQA, and MuSiQue, with the primary Qwen2.5-1.5B setting evaluating 2,000 examples per dataset and comparing adaptive, uncertainty-based, retrieval-score, linear utility, gradient-boosted utility, and cascade-style routers. The study also performs multiple calibration/held-out splits, model-family checks, retrieval-harm analyses, cost simulations, and a 733-row LLM-judge audit of automatically derived utility labels.",
+   "key_findings": [
+    {
+     "finding": "Retrieval utility is heterogeneous rather than monotonic: with Qwen2.5-1.5B, retrieval harms 8.8% of 2Wiki examples, 4.0% of HotpotQA examples, and 1.5% of MuSiQue examples even though always-retrieve accuracy improves overall.",
+     "evidence_type": "supported",
+     "section": "5 RQ1: Is retrieval utility heterogeneous?"
+    },
+    {
+     "finding": "A nominal evidence-usage target does not guarantee the same held-out usage: at the 50% target, several routers exceed the budget on substantial fractions of random calibration/test splits.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "Router rankings change across datasets, budgets, and model families, so a single adaptive-accuracy number does not provide a stable characterization of retrieval-policy quality.",
+     "evidence_type": "supported",
+     "section": "5 Results; 6 Discussion"
+    },
+    {
+     "finding": "Simple uncertainty and retrieval-score baselines often rival learned budgeted-utility routers, so additional router complexity does not consistently translate into superior budgeted retrieval decisions.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "Exact top-k frontiers and deployable threshold frontiers measure different properties: the first isolates ranking quality at matched usage, whereas the second measures whether a threshold calibrated on historical data transfers to future inputs.",
+     "evidence_type": "supported",
+     "section": "3 Budgeted Utility Frontiers"
+    },
+    {
+     "finding": "Evidence-usage rate is an incomplete proxy for deployment cost because some trigger architectures perform no-RAG generation or probe retrieval before deciding whether to invoke the final retrieved-context generation.",
+     "evidence_type": "supported",
+     "section": "5 Cost Analysis; 6 Discussion"
+    },
+    {
+     "finding": "An audit of 733 sampled decisions finds that an LLM judge validates 93.3% of automatically labeled retrieval benefits and 83.8% of harms, while borderline EM/F1 cases are substantially noisier at 40.0% validity.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "The paper advocates conservative calibration when budget violations are costly, trading some accuracy or retrieval opportunity for better held-out budget control.",
+     "evidence_type": "supported",
+     "section": "3 Budget-safe calibration"
+    }
+   ],
+   "limitations": [
+    "The main experiments use candidate evidence paragraphs supplied by each dataset rather than a true full-corpus open-domain index.",
+    "The primary evaluation centers on small open instruction models; non-Qwen model-family checks are more limited.",
+    "Automatic correctness metrics can under-credit valid paraphrases despite the paper's manual and LLM-judge audits.",
+    "Long-form generation, multi-step retrieval, memory-augmented agents, and API-scale models are not evaluated.",
+    "Official Self-RAG and FLARE implementations are not reproduced within the same frontier protocol, so results characterize router families rather than comprehensively ranking named Active RAG systems.",
+    "The cost model separates trigger computation from retrieved-context answering but omits real deployment latency, monetary, and energy costs.",
+    "The study addresses whether to retrieve under a budget but not structured multi-field evidence gaps, version-aware provenance, or permission-aware access.",
+    "The conservative budget argument assumes exchangeability for its DKW-style interpretation, which may be weakened under temporal or distribution shift."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_can_help_or_harm": 0.99,
+    "nominal_thresholds_can_violate_budget": 0.99,
+    "router_rankings_are_context_dependent": 0.98,
+    "simple_routers_rival_learned_routers": 0.97,
+    "ranking_and_threshold_calibration_are_distinct": 0.99,
+    "usage_is_not_full_cost": 0.99,
+    "utility_label_audit_results": 0.99,
+    "conservative_calibration_reduces_budget_risk": 0.96
+   },
+   "raw_claims": [
+    "The paper treats retrieval as an action whose value is the change in answer correctness relative to not retrieving.",
+    "Retrieval can be beneficial, neutral, or harmful on individual examples.",
+    "Always retrieving improves average accuracy on all three main datasets but still damages some previously correct answers.",
+    "A router score and a deployable threshold are different objects and should be evaluated separately.",
+    "Exact top-k frontiers compare ranking quality while holding evidence usage fixed.",
+    "Deployable frontiers calibrate a threshold on one split and measure realized usage on another.",
+    "Conservative calibration deliberately targets usage below the nominal budget to reduce the probability of overspending.",
+    "Thresholds calibrated to nominal budgets can exceed those budgets on held-out samples.",
+    "The relative quality of retrieval routers varies by dataset and model family.",
+    "Simple uncertainty-based policies can perform competitively with learned utility routers.",
+    "Probe-based routers can incur significant computation even on requests that ultimately do not use retrieved evidence.",
+    "Retrieval-rate budgets therefore do not uniquely determine real deployment cost.",
+    "Automatic benefit and harm labels are mostly supported by the paper's LLM-judge audit, but borderline metric cases are less reliable.",
+    "The authors recommend reporting exact frontiers, deployable frontiers, realized usage, threshold-transfer error, harm rates, and cost decompositions."
+   ],
+   "source_url": "https://arxiv.org/html/2607.24010",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

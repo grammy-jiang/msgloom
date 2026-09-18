@@ -1,0 +1,74 @@
+{
+ "paper_id": "2406.19215",
+ "title": "SeaKR: Self-aware Knowledge Retrieval for Adaptive Retrieval Augmented Generation",
+ "research_question": "Can uncertainty derived from an LLM's internal states be used to decide when to retrieve external knowledge, which retrieved evidence to use, and how to reason, thereby improving adaptive retrieval-augmented generation without task-specific fine-tuning?",
+ "methodology": "SeaKR estimates model uncertainty from internal hidden-state representations obtained over multiple sampled generations, using a Gram-matrix-based measure. During iterative reasoning, high uncertainty triggers retrieval; an uncertainty-focused provisional rationale is transformed into a retrieval query, and candidate snippets are reranked according to how much they reduce model uncertainty. The system also uses uncertainty to choose between reasoning from accumulated rationales and reasoning with retrieved knowledge, and it is evaluated on multi-hop and single-hop QA benchmarks using LLaMA-family models and BM25 retrieval.",
+ "key_findings": [
+  {
+   "finding": "SeaKR achieves the highest reported F1 among the compared systems on all three complex-QA evaluations, reaching 36.0 on 2WikiMultiHopQA, 39.7 on HotpotQA, and 23.5 on answerable IIRC.",
+   "evidence_type": "supported",
+   "section": "Section 4.2.1"
+  },
+  {
+   "finding": "Compared with the strongest reported baseline for each complex-QA benchmark, the corresponding SeaKR F1 improvements are 6.0, 5.5, and 0.6 percentage points.",
+   "evidence_type": "supported",
+   "section": "Section 4.2.1"
+  },
+  {
+   "finding": "Ablating adaptive retrieval and retrieving at every generation step reduces performance, supporting the paper's claim that unnecessary retrieval can introduce misleading information rather than uniformly helping.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  },
+  {
+   "finding": "Removing uncertainty-based reranking causes a substantial degradation, and in the reported ablation it has a larger effect than removing the adaptive retrieval trigger.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  },
+  {
+   "finding": "The retrieval loop is explicitly bounded: iterative reasoning stops when the model emits its final-answer preface or when the configured maximum number of retrievals is reached.",
+   "evidence_type": "supported",
+   "section": "Section 3.3"
+  },
+  {
+   "finding": "The internal-state uncertainty estimator outperforms several alternative uncertainty signals in the paper's comparison, although it requires multiple pseudo-generations and access to model internals.",
+   "evidence_type": "supported",
+   "section": "Section 5.3 and Limitations"
+  }
+ ],
+ "limitations": [
+  "The uncertainty estimator depends on access to internal LLM hidden states, which restricts direct use with closed models that expose only an API.",
+  "The main evaluation is short-form question answering rather than long-form synthesis or workplace communication.",
+  "The uncertainty calculation uses multiple pseudo-generations, increasing compute even though batching can reduce wall-clock latency.",
+  "The reported model-scale experiments are limited to models up to approximately 8B parameters because of compute constraints.",
+  "The external corpus is a fixed Wikipedia snapshot, so the system does not evaluate source freshness or temporal validity.",
+  "The method does not model workplace authorization, per-document permissions, or access-control changes.",
+  "Document versions and source lineage are not first-class retrieval constraints.",
+  "Its stop condition is tied to answer-generation state or a retrieval cap rather than an explicit audit that every required evidence gap has been resolved."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "complex_qa_gain": 0.99,
+  "adaptive_retrieval_value": 0.97,
+  "uncertainty_reranking_value": 0.97,
+  "bounded_stopping": 0.99,
+  "uncertainty_compute_cost": 0.98
+ },
+ "raw_claims": [
+  "SeaKR uses an LLM's internal-state uncertainty to decide whether another retrieval operation is needed.",
+  "When uncertainty is high, the method generates a provisional rationale and converts its uncertain content into a retrieval query.",
+  "Retrieved candidates are compared by measuring how much each candidate reduces the model's uncertainty.",
+  "The system accumulates reasoning and retrieved knowledge over multiple steps.",
+  "SeaKR outperforms the compared methods on the paper's three complex question-answering benchmarks.",
+  "Always retrieving at every step performs worse than the adaptive retrieval policy in the reported ablation.",
+  "Uncertainty-based reranking is an important contributor to the system's performance.",
+  "The iterative process terminates either when a final answer is initiated or when the retrieval limit is reached.",
+  "The uncertainty estimator requires repeated model sampling and access to internal representations.",
+  "The experiments do not enforce temporal freshness, source-version constraints, or enterprise permission policies."
+ ],
+ "source_url": "https://arxiv.org/html/2406.19215",
+ "access": "full_text"
+}

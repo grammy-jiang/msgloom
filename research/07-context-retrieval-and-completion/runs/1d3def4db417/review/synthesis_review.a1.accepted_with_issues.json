@@ -1,0 +1,24 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/runs/1d3def4db417/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 9 slightly overstates the supplied evidence when it says retrieved context can be insufficient 'despite confident answering.' Paper 2411.06037 establishes that models often answer under insufficient context and that sufficiency adds useful information beyond answer confidence, but the reduced analysis does not directly establish that those insufficient-context answers were themselves high-confidence. The safer formulation is that evidence can be insufficient even when the model answers, and that sufficiency and answer confidence provide distinct signals.",
+  "Gap-1 is somewhat broader than the evidence warrants in saying structured-gap representations are insufficiently validated for 'complex compositional evidence requirements.' S2G-RAG and FAIR-RAG already evaluate structured missing findings on multi-hop/compositional QA, and ToolQP evaluates iterative planning for compositional retrieval. What remains clearly unsupported is the joint combination of structured gaps with temporal constraints, multi-entity joins, and richer compositional requirements. The gap-status wording is more faithful than the gap description and should be used consistently.",
+  "The 'contradictions' section contains two genuine internal paper claim-versus-result inconsistencies, for 2510.14337 and 2604.01413, rather than contradictions between different papers. This does not invalidate the synthesis because the supplied analyses do not expose a clear like-for-like cross-paper contradiction that has been averaged away, but these entries should be labeled internal inconsistencies and the synthesis should explicitly state that no material direct cross-paper contradiction was identified among comparable evaluations.",
+  "The synthesis correctly notes that calibrated retrieval-budget thresholds can fail to transfer nominal usage to held-out inputs, but the gap list does not separately surface robustness of soft/expected retrieval-budget compliance under shift. This is partially covered by gap-3 and gap-8 and therefore is not a blocking omission, but it would improve gap completeness to distinguish deterministic hard caps from calibrated usage targets whose realized budget can drift."
+ ],
+ "unsupported_claims": [
+  "Finding 9: 'retrieved context can be insufficient despite confident answering' is stronger than the reduced evidence supplied for 2411.06037; the analyses support answering despite insufficient context and a distinction between sufficiency and confidence, but not explicitly high-confidence answering in those same cases.",
+  "Gap-1: the broad implication that structured-gap methods lack validation on complex compositional evidence requirements is not fully supported because the corpus already includes structured-gap multi-hop QA and separate compositional planning evaluations. The unsupported part is the broad formulation, not the narrower claim that no study combines structured gaps with temporal constraints, multi-entity joins, and the other stated requirements."
+ ],
+ "required_fixes": [],
+ "confidence": 0.96,
+ "scores": {
+  "faithfulness": 0.96,
+  "coherence": 0.93,
+  "gap_completeness": 0.94,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the 61 supplied analyses. All cited paper_ids in findings, gaps, contradiction entries, and gap-status evidence are drawn from the permitted identifier set. The central conclusion is well supported: the corpus provides empirical evidence for structured sufficiency/gap control, adaptive retrieval and stopping, conformal or selective risk control, temporal/version-aware retrieval, permission enforcement, and budget-aware retrieval as separate or partially combined components, but the supplied analyses do not establish a single evaluated controller integrating structured evidence gaps, temporal/version provenance, permission-aware replenishment, distribution-shift-aware calibrated stopping, abstention, and complete cost control. The eight stated gaps are therefore reasonably kept open. Transfer-domain and synthetic evidence are not misrepresented as direct workplace-production evidence; the confidence summary and limitations explicitly preserve that distinction. The identified issues are wording and categorization problems rather than evidence failures requiring rejection."
+}

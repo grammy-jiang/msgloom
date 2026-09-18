@@ -1,0 +1,74 @@
+{
+ "paper_id": "2604.25676",
+ "title": "CORAL: Adaptive Retrieval Loop for Culturally-Aligned Multilingual RAG",
+ "research_question": "Can critique-driven iterative revision of both the corpus selection and the retrieval query improve culturally aligned multilingual RAG compared with fixed multilingual retrieval spaces?",
+ "methodology": "CORAL uses a planner to select language-specific corpora and formulate retrieval queries and a critic to score retrieved documents for relevance, usefulness, specificity, and contextual compatibility, then decide whether accumulated evidence is sufficient. Each selected corpus contributes top-ranked documents, validated documents accumulate across iterations, and an insufficient or culturally misaligned evidence set triggers feedback to the planner for corpus reselection and query reformulation; the highest-scoring validated documents are ultimately passed to the answer generator. Experiments use BLEnD and CLIcK cultural question answering, 13 language-specific Wikipedia corpora from October 2025, two large planner/critic backbones, multiple answer generators, fixed-scope and multilingual-RAG baselines, and component ablations.",
+ "key_findings": [
+  {
+   "finding": "CORAL achieved the strongest reported accuracy across the evaluated resource tiers and planner/critic configurations, with the final paper reporting improvements of roughly four percentage points on low-resource BLEnD averages in one configuration and up to 2.82 points on CLIcK.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "For the Qwen-based planner and critic, dynamic corpus selection without query rewriting improved the reported BLEnD mid-resource score by 3.78 points and CLIcK by 6.62 points relative to the multiRAG baseline.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Adding query reformulation on top of dynamic selection produced further gains; with the GPT-OSS configuration the reported increments included 2.36 points on low-resource BLEnD and 1.41 points on CLIcK.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "Fixed retrieval from a culture's own language corpus remained below CORAL in the reported ablation, while indiscriminately pooling corpora could introduce culturally mismatched evidence.",
+   "evidence_type": "supported",
+   "section": "Static Corpus Ablation"
+  },
+  {
+   "finding": "In a manual analysis of 158 rewritten queries from 100 CLIcK questions, 53.8% of rewrites narrowed the query and 32.9% were categorized as paraphrases; narrowing frequently supplied contextual details that the critic had identified as missing.",
+   "evidence_type": "supported",
+   "section": "Query Reformulation Analysis"
+  },
+  {
+   "finding": "CORAL contains an explicit evidence-sufficiency feedback loop and can terminate early, but the paper also acknowledges that this additional agentic reasoning incurs inference cost and calls for future cost-aware stopping methods.",
+   "evidence_type": "supported",
+   "section": "Method and Limitations"
+  }
+ ],
+ "limitations": [
+  "The retrieval collection is restricted to language-specific Wikipedia corpora, so culturally relevant knowledge that is absent or sparse in Wikipedia cannot be recovered by the loop.",
+  "Wikipedia coverage varies substantially across languages and can privilege well-documented perspectives while underrepresenting others.",
+  "The main evaluation uses multiple-choice cultural question answering and therefore does not test many open-ended or multi-turn failure modes.",
+  "The language and corpus set was restricted for computational reasons and does not cover arbitrary multilingual or regional information sources.",
+  "Agentic corpus selection, criticism, and query reformulation increase inference cost even though the system uses iteration limits and early termination.",
+  "The paper discusses privacy and access-control requirements for deployment with sensitive or private sources, but these permission-enforcement mechanisms are not part of the evaluated retrieval loop.",
+  "The experimental design does not explicitly model document versions, superseded evidence, or temporal-validity checks."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "adaptive_retrieval_improves_accuracy": 0.97,
+  "dynamic_corpus_selection_contribution": 0.99,
+  "query_rewriting_contribution": 0.98,
+  "fixed_scope_limitation": 0.97,
+  "rewrite_behavior_analysis": 0.99,
+  "agentic_cost_tradeoff": 0.97
+ },
+ "raw_claims": [
+  "CORAL adapts both the retrieval corpus and the retrieval query in response to the quality of currently retrieved evidence.",
+  "A planner chooses retrieval corpora and queries while a separate critic evaluates retrieved evidence.",
+  "The critic scores documents along four dimensions before accepting them as validated evidence.",
+  "Documents that pass the validation thresholds can accumulate across retrieval iterations.",
+  "Insufficient evidence causes the critic's feedback to be sent back to the planner for another retrieval attempt.",
+  "The final generator receives a small set of the highest-scoring validated documents.",
+  "Dynamic corpus selection contributes substantial gains over a fixed multilingual retrieval setup in the reported ablations.",
+  "Query reformulation supplies additional gains beyond dynamic corpus selection alone.",
+  "Manual analysis indicates that many query rewrites narrow retrieval by adding missing contextual cues.",
+  "The authors state that real deployments over sensitive material require privacy and access-control mechanisms beyond the experimental setup."
+ ],
+ "source_url": "https://aclanthology.org/2026.findings-acl.1356.pdf",
+ "access": "full_text"
+}

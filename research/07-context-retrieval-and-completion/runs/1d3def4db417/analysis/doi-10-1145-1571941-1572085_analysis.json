@@ -1,0 +1,66 @@
+{
+ "paper_id": "doi-10-1145-1571941-1572085",
+ "title": "Improving search relevance for implicitly temporal queries",
+ "research_question": "Can frequency patterns of year-qualified query variants reveal implicit temporal intent and be used to improve ranking for queries whose desired results depend on a year that the user did not explicitly specify?",
+ "methodology": "The paper mines aggregate query-log frequencies to identify base queries that are repeatedly qualified with different years, without using click, user, or session information. It defines a year-qualified weight and a temporal-ambiguity score measuring how strongly year qualifications dominate other query qualifications. The inferred year distribution and ambiguity score are then used to modify a commercial search engine's document scores according to years appearing in document fields. Evaluation uses 670 web queries with editorial relevance judgments and reports DCG@5 across temporal-ambiguity ranges.",
+ "key_findings": [
+  {
+   "finding": "The query-log analysis estimated that more than 7% of queries belong to the implicitly year-qualified category considered by the paper.",
+   "evidence_type": "supported",
+   "section": "1. Introduction"
+  },
+  {
+   "finding": "The proposed mining algorithm can infer implicit temporal intent solely from frequencies of base queries and their year-qualified variants, without click or session data.",
+   "evidence_type": "supported",
+   "section": "2. Mining Algorithm"
+  },
+  {
+   "finding": "Baseline DCG@5 decreased monotonically as queries became more strongly associated with implicit temporal intent, indicating that the commercial search engine performed worse on the most temporally specific queries in this evaluation.",
+   "evidence_type": "supported",
+   "section": "3. Evaluation"
+  },
+  {
+   "finding": "Temporal reordering produced little or negative change for low-ambiguity-score groups but improved the highest temporal-intent group from 7.02 to 7.07 DCG@5, a reported 0.84% statistically significant improvement.",
+   "evidence_type": "supported",
+   "section": "3. Evaluation"
+  },
+  {
+   "finding": "The effectiveness of temporal reordering increased as the estimated confidence that a query had implicit temporal intent increased.",
+   "evidence_type": "supported",
+   "section": "3. Evaluation"
+  }
+ ],
+ "limitations": [
+  "The method addresses only implicitly year-qualified queries and therefore covers a narrow subset of possible temporal information needs.",
+  "The evaluation uses a proprietary query log and a commercial search engine, which limits independent reproduction.",
+  "The reordering experiment uses parameters tied to the evaluation period, including a Gaussian centered on the year 2008.",
+  "The statistically significant ranking improvement is confined to the group with the strongest inferred temporal intent, while lower-confidence groups show negligible or negative changes.",
+  "The method infers temporal intent from aggregate qualification behavior and does not determine the intent of an individual user issuing an ambiguous base query.",
+  "The study does not address permissions, source versioning, or changing validity of retrieved evidence beyond year-oriented relevance."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "query_logs_expose_implicit_year_intent": 0.98,
+  "strong_temporal_intent_correlates_with_lower_baseline_relevance": 0.97,
+  "temporal_reordering_helps_high_confidence_temporal_queries": 0.99,
+  "benefit_is_not_uniform_across_queries": 0.99
+ },
+ "raw_claims": [
+  "The paper defines an implicitly year-qualified query as one that omits a year even though the user's intent may concern a particular year.",
+  "A base query is treated as implicitly year qualified when it appears with at least two distinct year qualifications in the query log.",
+  "The mining procedure uses query-frequency information rather than user, click, or session data.",
+  "Temporal ambiguity is estimated from the share of a query's qualifications that are years.",
+  "The ambiguity measure can also be interpreted as confidence that a query carries implicit temporal intent.",
+  "The reranking method boosts documents containing years that are strongly associated with the query.",
+  "The evaluation contains 670 web queries with graded editorial relevance judgments.",
+  "Baseline DCG@5 is lower for queries with stronger inferred temporal intent.",
+  "The largest reported reordering benefit occurs for the least temporally ambiguous query group.",
+  "Only the highest temporal-intent group's improvement is reported as statistically significant."
+ ],
+ "source_url": "https://www.cs.cmu.edu/afs/cs/user/rosie/www/papers/yqq.pdf",
+ "access": "full_text"
+}

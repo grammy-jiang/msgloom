@@ -1,0 +1,92 @@
+{
+ "paper_id": "2601.19827",
+ "title": "When Iterative RAG Beats Ideal Evidence: A Diagnostic Study in Scientific Multi-hop Question Answering",
+ "research_question": "When and why can an iterative retrieve-reason-retrieve controller outperform a static condition in which all oracle evidence is supplied at once, and which retrieval, synthesis, and stopping failures determine the outcome?",
+ "methodology": "The authors compare eleven LLMs on 1,186 ChemKGMultiHopQA questions under No Context, Gold Context, and a training-free Iterative RAG controller. The controller has a maximum budget of five retrieval actions, retrieves ten passages per step, maintains a partial-answer state, lets the planner either issue a targeted follow-up retrieval or finalize, and limits accumulated context through selective retention of earlier passages. Evaluation includes answer accuracy plus diagnostics for hop coverage, evidence sufficiency, confidence/stopping behavior, distractor latch, composition failure, procedural compliance, token usage, and retrieval dynamics, with GPT-5-mini used as an answer verifier.",
+ "key_findings": [
+  {
+   "finding": "Across the eleven evaluated models, average accuracy increased from 37.16% with No Context to 69.14% with Gold Context and 80.89% with Iterative RAG.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  },
+  {
+   "finding": "Every evaluated model improved from Gold Context to Iterative RAG in aggregate accuracy, although individual questions could regress when retrieval introduced noise or misleading evidence.",
+   "evidence_type": "supported",
+   "section": "Sections 4.1-4.3"
+  },
+  {
+   "finding": "The largest reported Gold-to-Iterative gain was 25.64 percentage points for GPT-4o, while gains were generally larger for the paper's non-reasoning model group than for reasoning models.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Missing at least one required retrieval hop was a major failure mode, and accuracy was substantially worse when retrieval coverage gaps occurred.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.1"
+  },
+  {
+   "finding": "High retrieval coverage could partly compensate for low measured evidence sufficiency, whereas simultaneously low coverage and low sufficiency produced the weakest observed accuracy region.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.2"
+  },
+  {
+   "finding": "Stopping behavior was frequently miscalibrated: some models finalized before enough evidence was obtained, while others continued retrieving after sufficient evidence had already been accumulated.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.3"
+  },
+  {
+   "finding": "Longer iterative chains can accumulate semantically plausible distractors; the diagnosed distractor-latch cases were associated with a large accuracy reduction.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.5"
+  },
+  {
+   "finding": "The controller's stopping rule is an LLM planning decision under a fixed step budget rather than a statistically calibrated bounded-risk stopping guarantee.",
+   "evidence_type": "supported",
+   "section": "Sections 3.2.2 and 5.2.3"
+  }
+ ],
+ "limitations": [
+  "The principal experiments use a single chemistry benchmark, ChemKGMultiHopQA, which the authors explicitly identify as a generalization limitation.",
+  "The benchmark's 1-4-hop short-answer structure and chemistry corpus may not represent enterprise retrieval, long-form synthesis, or other scientific domains.",
+  "Correctness is assessed using an LLM-as-a-judge protocol, introducing dependence on the verifier despite attempts to normalize chemical aliases and nomenclature.",
+  "The controller uses fixed design choices including top-10 retrieval, 220-word chunks with 50-word overlap, selective history retention, and a maximum of five retrieval steps.",
+  "The Gold Context condition supplies oracle evidence statically but is not an oracle reasoning process, so outperforming Gold Context does not mean outperforming a perfect evidence-using reasoner.",
+  "Stopping calibration is evaluated post hoc using thresholds on hop coverage and evidence sufficiency rather than being guaranteed by a formal risk-control procedure.",
+  "Model APIs, model versions, pricing, and proprietary behaviors can change, limiting exact longitudinal reproducibility of the eleven-model comparison.",
+  "The study analyzes permission-free scientific retrieval and does not evaluate authorization-aware evidence acquisition, temporal validity, or versioned provenance."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "aggregate_iterative_rag_gain": 0.99,
+  "all_models_gold_to_iterative_improvement": 0.99,
+  "gpt4o_25_64pp_gain": 0.99,
+  "coverage_gap_failure": 0.98,
+  "coverage_sufficiency_interaction": 0.96,
+  "stopping_miscalibration": 0.98,
+  "distractor_latch": 0.98,
+  "stopping_not_formally_risk_calibrated": 0.98
+ },
+ "raw_claims": [
+  "The study evaluates eleven language models under No Context, Gold Context, and Iterative RAG conditions.",
+  "ChemKGMultiHopQA contains 1,186 questions spanning one to four reasoning hops.",
+  "The iterative controller performs at most five retrieval actions.",
+  "Each retrieval action returns ten passages before the planner decides how to proceed.",
+  "The planner can either formulate a new query for an unresolved knowledge gap or finalize the answer.",
+  "A partial-answer state carries confirmed or hypothesized information between retrieval steps.",
+  "The controller retains only a limited subset of earlier passages to reduce context dilution.",
+  "Mean accuracy across models was higher with Iterative RAG than with static Gold Context.",
+  "Some Gold-Context successes became failures after iterative retrieval, showing that iteration can also cause regressions.",
+  "Failure to retrieve every required hop strongly reduces the probability of a correct final answer.",
+  "Premature stopping can occur even when measured evidence coverage or sufficiency remains low.",
+  "Other runs continue retrieving after adequate evidence is already available.",
+  "Distractor latch describes repeated pursuit of a semantically similar but incorrect entity or relation.",
+  "The authors released code and evaluation results.",
+  "The authors explicitly identify reliance on a single benchmark as a central limitation."
+ ],
+ "source_url": "https://arxiv.org/html/2601.19827",
+ "access": "full_text"
+}
