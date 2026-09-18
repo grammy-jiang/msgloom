@@ -1,0 +1,87 @@
+{
+ "paper_id": "doi-10-18653-v1-w18-6104",
+ "title": "Assigning people to tasks identified in email: The EPA dataset for addressee tagging for detected task intent",
+ "research_question": "Given a task already detected in an email thread, how can the people responsible for carrying it out be annotated and predicted from the sender, recipient, and conversational context?",
+ "methodology": "The authors construct the Enron People Assignment dataset by pairing pre-extracted email tasks with candidate people derived from Sender, To, and Cc metadata and labeling each candidate as responsible or not responsible. The complete email thread is shown to annotators because task ownership can depend on prior messages and implicit references; three managed crowd workers independently label each task instance after qualification and training. The released data contain 5,998 unique emails, 6,300 tasks, 3,460 unique recipients, and 15,649 email-task-recipient tuples. They report agreement statistics and precision, recall, and F1 baselines, including a logistic-regression model trained on the separate Avocado email collection.",
+ "key_findings": [
+  {
+   "finding": "Task ownership in email can be implicit, plural, or absent from the candidate recipients, so recipient metadata and thread context are necessary parts of the assignment problem.",
+   "evidence_type": "supported",
+   "section": "Introduction"
+  },
+  {
+   "finding": "EPA supports multiple responsible people and an explicit no-one outcome rather than assuming every detected task must belong to one recipient.",
+   "evidence_type": "supported",
+   "section": "Dataset and Challenge Description; Label Creation Process"
+  },
+  {
+   "finding": "The released Enron annotations contain 15,649 email-task-recipient tuples covering 5,998 unique emails and 6,300 tasks.",
+   "evidence_type": "supported",
+   "section": "Dataset Analysis; Conclusion"
+  },
+  {
+   "finding": "Owner labeling was substantially noisy: recipient-level perfect agreement was 71.07% and Krippendorff's alpha was 0.6123.",
+   "evidence_type": "supported",
+   "section": "Dataset Analysis"
+  },
+  {
+   "finding": "The comparable Avocado annotations had higher agreement than Enron, and the authors associate much of the difference with cleaner and more consistent formatting and sentence segmentation.",
+   "evidence_type": "supported",
+   "section": "Dataset Analysis"
+  },
+  {
+   "finding": "A model trained on Avocado transferred imperfectly to Enron: for multiple-recipient cases it reached F1 0.6567 versus 0.6145 for assigning every recipient, while for single-recipient cases the every-recipient baseline had F1 0.8045 versus 0.7795 for the Avocado model.",
+   "evidence_type": "supported",
+   "section": "Model and Performance, Table 5"
+  },
+  {
+   "finding": "Temporal and location assignment are not part of EPA; the paper explicitly proposes extending the same deictic-assignment framework to time and location as future work.",
+   "evidence_type": "supported",
+   "section": "Future work"
+  },
+  {
+   "finding": "Task detection is deliberately removed from the challenge by supplying already extracted task sentences, isolating owner assignment from task-extraction errors.",
+   "evidence_type": "supported",
+   "section": "Introduction; Dataset and Challenge Description"
+  }
+ ],
+ "limitations": [
+  "The study is not end-to-end because tasks are pre-extracted before owner assignment is evaluated.",
+  "Tasks are represented as marked task sentences rather than a complete structured record with action, owner, deadline, conditions, negation, and evidence spans.",
+  "Although examples contain deadline phrases such as 'by Friday', deadline extraction and deadline-to-action binding are not annotated; temporal assignment is left to future work.",
+  "Candidate owners are largely constrained by Sender, To, and Cc metadata, so responsibility by a person outside that candidate set cannot be recovered as a named owner.",
+  "Inter-annotator reliability on Enron is relatively low, demonstrating that owner assignment is subjective and sensitive to noisy email formatting.",
+  "The reported experimental model is trained on Avocado rather than the released Enron training data and transfers poorly in some settings.",
+  "The Avocado counterpart cannot be released because of licensing restrictions.",
+  "Conditional and negated obligations are not separately modeled."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "implicit_owner_context": 0.99,
+  "multiowner_and_noone": 0.99,
+  "epa_dataset_size": 0.99,
+  "owner_annotation_reliability": 0.99,
+  "cross_corpus_agreement_difference": 0.98,
+  "baseline_transfer_results": 0.99,
+  "deadline_binding_absent": 0.99,
+  "task_detection_preprovided": 0.99
+ },
+ "raw_claims": [
+  "EPA associates detected email tasks with the person or people responsible for carrying them out.",
+  "Candidate people are derived from the sender and the To and Cc address lists.",
+  "The entire email thread is retained because earlier messages can help resolve responsibility.",
+  "Annotators may assign multiple recipients, the sender, or no one to a task.",
+  "Each task instance receives three independent annotations.",
+  "The Enron dataset contains 5,998 unique emails and 6,300 tasks.",
+  "The dataset contains 15,649 email-task-recipient tuples.",
+  "Recipient-level perfect agreement is 71.07% and Krippendorff's alpha is 0.6123.",
+  "The Avocado annotations exhibit substantially higher agreement than the Enron annotations.",
+  "The authors propose time and location assignment as extensions of the addressee-assignment task."
+ ],
+ "source_url": "https://aclanthology.org/W18-6104.pdf",
+ "access": "full_text"
+}

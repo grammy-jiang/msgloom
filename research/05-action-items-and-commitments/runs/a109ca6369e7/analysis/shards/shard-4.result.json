@@ -1,0 +1,166 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1145-1076034-1076140",
+   "title": "Detecting Action-Items in E-mail",
+   "research_question": "Does using fine-grained sentence-level action-item annotation improve automatic detection of action-item e-mails compared with document-level annotation, and which text representations work best for the task?",
+   "methodology": "The authors collected 744 non-duplicate e-mails from university volunteers, manually removed quoted material, and had two annotators identify action-item segments; after reconciliation, 328 messages contained action-items, with kappa of 0.85 at document level and 0.82 at sentence level. They compared document-level and sentence-level classifiers using unigram and n-gram representations with k-NN, multinomial naive Bayes, and SVM models; automatically segmented sentences were labeled positive when they contained at least 30% of a marked action-item segment. Sentence predictions were aggregated to document predictions by marking a document positive if any sentence was positive. Evaluation used 10-fold document-level cross-validation, nested feature selection, F1 and accuracy, and two-tailed t-tests at p=0.05.",
+   "key_findings": [
+    {
+     "finding": "Sentence-level classifiers generally produced better document-level action-item detection than classifiers trained directly on whole e-mails; the advantage was significant for the reported comparisons except SVM F1.",
+     "evidence_type": "supported",
+     "section": "4. Results & Discussion"
+    },
+    {
+     "finding": "N-gram features improved document-level performance for k-NN and SVM and yielded the strongest document-level representations, while multinomial naive Bayes was hurt by n-gram double-counting.",
+     "evidence_type": "supported",
+     "section": "4. Results & Discussion"
+    },
+    {
+     "finding": "The best reported document-detection F1 was 0.7790 for the sentence-level n-gram k-NN system, while the best reported document accuracy was 0.8173 for the sentence-level n-gram SVM system.",
+     "evidence_type": "supported",
+     "section": "Table 1"
+    },
+    {
+     "finding": "At sentence granularity, unigrams approached n-gram performance because the short sentence window already captured much of the local lexical-pattern information supplied explicitly by n-grams.",
+     "evidence_type": "supported",
+     "section": "4. Results & Discussion"
+    },
+    {
+     "finding": "Direct sentence detection achieved accuracy around 0.94-0.96 but substantially lower F1 around 0.62-0.67, indicating that the positive action-item class remained considerably harder than overall accuracy alone suggests.",
+     "evidence_type": "supported",
+     "section": "Table 3"
+    },
+    {
+     "finding": "The formulation explicitly treats action-item detection as recovering whether the sender intends to elicit an action or response and localizing the text expressing that request.",
+     "evidence_type": "supported",
+     "section": "1. Introduction"
+    }
+   ],
+   "limitations": [
+    "The corpus contains only 744 e-mails collected from volunteers at one university, so generalization to diverse organizations, industries, languages, and modern workplace chat is not established.",
+    "Only the body of each e-mail was used; sender, recipient, timestamps, and other header information were excluded.",
+    "Quoted material was removed manually, so the experiments do not test realistic handling of complete conversational threads or inline replies.",
+    "The task detects whether an e-mail or sentence contains an action-item but does not decompose it into owner, action/object, deadline, conditions, status, or other structured fields.",
+    "The study does not separately model requests, commitments, decisions, promises, or other speech-act subclasses that may underlie an action-item.",
+    "The main sentence-versus-document comparison evaluates document detection after a simple any-positive-sentence aggregation rule, rather than evaluating richer cross-sentence or thread-level reasoning.",
+    "Automatic sentence segmentation and the rule that a sentence is positive when it contains at least 30% of an annotated action-item segment introduce task-specific preprocessing assumptions.",
+    "The paper notes that associated user studies are omitted, so improved classification metrics are not directly tied to measured productivity or task-completion benefits."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "sentence_level_improves_document_detection": 0.98,
+    "ngrams_help_document_models": 0.98,
+    "best_document_scores": 0.99,
+    "small_windows_reduce_ngram_advantage": 0.96,
+    "sentence_detection_class_imbalance_effect": 0.94,
+    "sender_intent_is_core_to_task": 0.99
+   },
+   "raw_claims": [
+    "Action-item detection seeks both to identify e-mails requiring action or response and to highlight the text expressing the request.",
+    "The authors treat sender intent to elicit a receiver response or action as central to the task.",
+    "They formulate three system problems: document detection, document ranking, and sentence detection.",
+    "The experimental corpus contains 744 e-mail messages after duplicate removal.",
+    "Two annotators marked action-item segments, with reported kappa of 0.85 for document judgments and 0.82 for sentence judgments.",
+    "After annotation reconciliation, 328 e-mails were considered to contain action-items.",
+    "The experiments compare k-NN, multinomial naive Bayes, and SVM classifiers with unigram and n-gram representations.",
+    "N-grams improve document-level results for most classifiers but degrade multinomial naive Bayes in these experiments.",
+    "Sentence-level classifiers outperform their document-level counterparts in most reported document-detection comparisons.",
+    "At sentence level, a unigram representation performs almost as well as n-grams because the local context window is already small.",
+    "The best reported document-level F1 is 0.7790 and the best reported document-level accuracy is 0.8173."
+   ],
+   "source_url": "https://www.cs.cmu.edu/~pbennett/papers/action-item-detection-poster.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2106.08037",
+   "title": "The Possible, the Plausible, and the Desirable: Event-Based Modality Detection for Language Processing",
+   "research_question": "Can modality be modeled and automatically detected at the event level by identifying open-class modal triggers, assigning them a linguistically grounded fine-grained sense, and linking each trigger to the event it modifies?",
+   "methodology": "The authors transform the Georgetown Gradable Modal Expressions corpus, derived from MPQA and containing about 11,000 sentences, into an event-based modality dataset with modal triggers, modal senses, and modified-event information, using spaCy analyses and the head of each annotated proposition as the event head. They reserve 10% of the shuffled data for testing and use five train-validation folds on the remainder. Experiments cover oracle-trigger modal-sense classification, joint trigger detection and sense classification, and detection of modalized event spans or heads. Majority-vote baselines are compared with RoBERTa-base sequence models, with BIOSE-style tagging, CRF decoding for longer spans, and precision, recall, and F1 reported using CoNLL evaluation.",
+   "key_findings": [
+    {
+     "finding": "Restricting modality to a small closed set of modal auxiliary verbs makes detection much easier than allowing modal triggers from arbitrary syntactic classes; for example, RoBERTa modal-versus-nonmodal F1 drops from 99.9 on the six modal verbs to 73.2 on all trigger types.",
+     "evidence_type": "supported",
+     "section": "5. Results — Modal Triggers Detection"
+    },
+    {
+     "finding": "When a modal trigger is already known, contextual information improves sense classification, especially for fine-grained senses: the full-context RoBERTa condition reaches 76.4 F1 versus 72.0 for majority voting, while masking the trigger reduces F1 to 58.3.",
+     "evidence_type": "supported",
+     "section": "5. Results — Modal Sense Classification"
+    },
+    {
+     "finding": "For unrestricted trigger detection and classification, RoBERTa consistently improves over the majority-vote baseline; fine-grained labeled F1 is 58.14 compared with 51.29 for the baseline.",
+     "evidence_type": "supported",
+     "section": "5. Results — Modal Triggers Detection"
+    },
+    {
+     "finding": "Gold event-head information substantially helps modal-trigger tagging, but using predicted event heads can reduce performance because event-prediction errors propagate into trigger classification.",
+     "evidence_type": "supported",
+     "section": "5. Results — Modal Triggers Detection"
+    },
+    {
+     "finding": "Modal-trigger information improves detection of the event being modified: modal/nonmodal event-span F1 rises from 51.1 without trigger information to 71.13 with a gold trigger, although predicted-trigger information gives only 53.55.",
+     "evidence_type": "supported",
+     "section": "5. Results — Event Detection Based on Modal Triggers"
+    },
+    {
+     "finding": "The proposed taxonomy separates priority-related modality into rules and norms, desires and wishes, and plans and goals, while plausibility is divided according to knowledge, state of the world, and state of the agent.",
+     "evidence_type": "supported",
+     "section": "3. Event-Based Modality Detection: Proposed Task Definition"
+    },
+    {
+     "finding": "Manual inspection of development-set errors found that a substantial fraction of apparent model errors were actually missed or incorrect gold annotations, indicating incomplete coverage in the underlying annotation.",
+     "evidence_type": "supported",
+     "section": "5. Results — Error Analysis"
+    }
+   ],
+   "limitations": [
+    "The GME corpus annotates MPQA material rather than workplace e-mail or chat, so the reported performance does not directly establish effectiveness on organizational communication.",
+    "Modality is related to but distinct from speech acts: the task does not directly classify utterances as requests, commitments, decisions, promises, assignments, or responses.",
+    "The representation links modal triggers to events but does not extract action owners, recipients, detailed action objects, deadlines, temporal constraints, or execution conditions.",
+    "Fine-grained unrestricted trigger classification remains difficult, with substantially lower F1 than detection restricted to a closed list of modal auxiliary verbs.",
+    "Gold event-head information is highly beneficial whereas predicted event heads can hurt performance, showing substantial sensitivity to upstream prediction errors.",
+    "The oracle-trigger sense-classification experiments have 73%-79% trigger-lemma overlap between training and development/test data, and the authors note that this partly explains the strong majority-vote baseline.",
+    "The authors' manual error analysis indicates that the gold corpus has incomplete modal-trigger coverage, so measured precision and recall are affected by annotation errors.",
+    "For some fine-grained experimental reporting, wishes and goals are merged into an 'intentions' category because of data sparsity, reducing fidelity to the full proposed taxonomy.",
+    "The experiments use shuffled corpus splits rather than an explicit cross-domain or workplace-domain evaluation, leaving robustness to new genres unresolved."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "open_class_triggers_are_harder": 0.99,
+    "context_improves_sense_classification": 0.98,
+    "roberta_beats_majority_baseline": 0.99,
+    "gold_event_heads_help_but_predicted_heads_hurt": 0.99,
+    "trigger_information_improves_event_detection": 0.99,
+    "fine_grained_taxonomy": 0.99,
+    "gold_annotation_has_incomplete_coverage": 0.97
+   },
+   "raw_claims": [
+    "The paper defines event-based modality detection as finding modal triggers, their senses, and the events they modify.",
+    "Modal triggers are allowed to come from any part of speech rather than only from a predefined list of auxiliary verbs.",
+    "The modal taxonomy has two broad branches, Priority and Plausibility, each divided into three finer-grained senses.",
+    "The processed GME data includes sentences without modality rather than restricting evaluation to sentences known to contain modal triggers.",
+    "The authors evaluate modal-sense classification, trigger detection with sense classification, and detection of modalized events.",
+    "RoBERTa-base is fine-tuned as the principal contextual sequence model and compared with majority-vote baselines.",
+    "Detection performance drops markedly when moving from six conventional modal verbs to unrestricted modal expressions.",
+    "Full sentential context contributes to modal-sense disambiguation, while removing the trigger lemma substantially harms performance.",
+    "RoBERTa improves over the majority-vote baseline for unrestricted trigger detection at both coarse and fine sense granularities.",
+    "Gold event-head information improves trigger tagging, whereas predicted heads introduce error propagation.",
+    "Providing modal-trigger information improves identification of the associated event span compared with detecting modal events without trigger information.",
+    "Manual review of model errors indicates that some apparent false positives and false negatives are errors or omissions in the gold annotation.",
+    "The authors release code, trained-model-related experimental resources, evaluation scripts, and a processed version of the modality corpus."
+   ],
+   "source_url": "https://arxiv.org/html/2106.08037",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

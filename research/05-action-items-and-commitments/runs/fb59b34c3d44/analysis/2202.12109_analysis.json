@@ -1,0 +1,87 @@
+{
+ "paper_id": "2202.12109",
+ "title": "Prompt for Extraction? PAIE: Prompting Argument Interaction for Event Argument Extraction",
+ "research_question": "Can prompt-based joint span extraction improve sentence- and document-level event argument extraction while handling long-range dependencies, multiple same-role arguments, limited supervision, and inference efficiency?",
+ "methodology": "PAIE reformulates event argument extraction as role-conditioned span selection using BART, with the event context processed by the encoder and a joint multi-role prompt by the decoder. Role-specific representations generate start and end span selectors, while multiple prompt slots allow several arguments to share one role and bipartite matching provides permutation-invariant assignment to gold spans. The model is evaluated on ACE05, RAMS, and WIKIEVENTS using argument-identification and argument-classification F1, with additional argument-head F1 for WIKIEVENTS. The authors compare against classification, QA, and generation baselines and perform ablations, long-distance, same-role, few-shot, and inference-speed analyses.",
+ "key_findings": [
+  {
+   "finding": "PAIE performs direct evidence-span extraction: an argument is represented by its start and end offsets and associated with an event role.",
+   "evidence_type": "supported",
+   "section": "Methodology: Formulating Prompt for Extraction; Task Definition"
+  },
+  {
+   "finding": "PAIE achieved the strongest reported results in the paper on all three evaluated benchmarks, including base-model Arg-C scores of 69.8 on ACE05, 49.5 on RAMS, and 63.4 on WIKIEVENTS.",
+   "evidence_type": "supported",
+   "section": "Overall Performance, Table 2"
+  },
+  {
+   "finding": "Joint multi-role prompts consistently improved performance over single-role prompting, supporting the value of modeling interactions among argument roles.",
+   "evidence_type": "supported",
+   "section": "Ablation Study; Prompt Variants"
+  },
+  {
+   "finding": "Bipartite matching contributed an average Arg-C improvement of about 0.7 percentage points across the three benchmarks.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "On WIKIEVENTS roles containing three or at least four arguments, PAIE exceeded EEQA-BART by 9.5 and 26.4 Arg-C F1 points respectively.",
+   "evidence_type": "supported",
+   "section": "Analysis on Real Scenario: Same-role Argument Assignment"
+  },
+  {
+   "finding": "PAIE improved extraction of arguments located in sentences away from the event trigger, particularly arguments occurring after the trigger.",
+   "evidence_type": "supported",
+   "section": "Analysis on Real Scenario: Long-range Dependencies"
+  },
+  {
+   "finding": "In few-shot experiments, PAIE generally outperformed the QA baselines and could reach comparable performance to EEQA-BART with roughly 20% of the training data and to EEQA with roughly 10%.",
+   "evidence_type": "supported",
+   "section": "Analysis on Real Scenario: Few-shot Setting"
+  },
+  {
+   "finding": "PAIE was reported to run roughly three to four times faster than EEQA-style sequential role extraction because it predicts multiple roles jointly.",
+   "evidence_type": "supported",
+   "section": "Analysis on Real Scenario: Inference Speed"
+  }
+ ],
+ "limitations": [
+  "The experiments concern general event argument extraction rather than workplace email or chat action items.",
+  "The formulation assumes an event trigger and event type are already supplied, so it does not solve end-to-end task or decision detection.",
+  "The number of slots for multiple arguments of one role is heuristically set from the maximum observed in training data, which can limit extrapolation to higher unseen cardinalities.",
+  "Long documents are processed using a trigger-centered window because full contexts can exceed encoder length and memory limits.",
+  "The authors identify coreference and entity information as future work for improving argument resolution and boundaries.",
+  "The benchmarks do not specifically evaluate task owners, deadlines, conditional obligations, or negated obligations.",
+  "Although span-role binding is explicit, temporal expressions are not treated as a workplace-specific deadline relation to an action."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "span_based_argument_extraction": 0.99,
+  "overall_benchmark_performance": 0.99,
+  "joint_prompt_benefit": 0.98,
+  "bipartite_matching_gain": 0.99,
+  "same_role_multiargument_gain": 0.99,
+  "long_distance_gain": 0.98,
+  "few_shot_advantage": 0.97,
+  "inference_speed": 0.99
+ },
+ "raw_claims": [
+  "PAIE casts event argument extraction as selecting text spans for event-specific roles.",
+  "A joint prompt contains the role slots associated with one event type.",
+  "Role-specific selectors predict the start and end tokens of argument spans.",
+  "Multiple slots for one role allow more than one argument to receive the same role.",
+  "Bipartite matching is used to align multiple same-role predictions with gold arguments.",
+  "The experiments use ACE05, RAMS, and WIKIEVENTS.",
+  "Joint prompts outperform single-role templates in the reported prompt comparisons.",
+  "PAIE performs particularly strongly when one role has several arguments.",
+  "The model shows improved performance on long-distance document-level arguments.",
+  "PAIE is reported to be substantially faster at inference than sequential QA extraction.",
+  "The paper provides a public GitHub repository for the model code."
+ ],
+ "source_url": "https://arxiv.org/html/2202.12109",
+ "access": "full_text"
+}

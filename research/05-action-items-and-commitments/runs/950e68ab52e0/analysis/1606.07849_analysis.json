@@ -1,0 +1,89 @@
+{
+ "paper_id": "1606.07849",
+ "title": "Focused Meeting Summarization via Unsupervised Relation Extraction",
+ "research_question": "Can unsupervised relation extraction identify the salient content phrases associated with individual meeting decisions well enough to support focused, potentially abstractive decision summaries?",
+ "methodology": "The authors recast focused decision summarization as unsupervised relation extraction, representing latent relations as indicator-argument pairs in clusters of decision-related dialogue acts. A generative relation-learning model is adapted using posterior regularization with syntactic, prevalence, occurrence, and discourse constraints, together with lexical, syntactic, speaker, dialogue-act, adjacency-pair, topic, and WordNet-derived features. The method is evaluated on the AMI Meeting Corpus using both gold decision-related-dialogue-act clusterings and automatically produced clusterings. Human-written decision abstracts are the gold summaries, and systems are compared with utterance baselines, a generic unsupervised relation extractor, supervised SVM and CRF systems, and an extractive upper bound using ROUGE-1, ROUGE-2, and ROUGE-SU4.",
+ "key_findings": [
+  {
+   "finding": "The paper distinguishes a Decision Cue from the Decision Content and argues that only the content phrase, rather than the entire decision-related utterance, should normally enter a focused decision summary.",
+   "evidence_type": "supported",
+   "section": "Section 1"
+  },
+  {
+   "finding": "The relation representation extracts phrase-level indicator-argument structures, providing finer evidence than whole-utterance decision detection and preserving identifiable source phrases.",
+   "evidence_type": "supported",
+   "section": "Sections 1, 3, and 4"
+  },
+  {
+   "finding": "Under gold decision clusterings, configurations of the unsupervised method outperform the reported utterance-level and generic relation-extraction baselines on ROUGE-1 F1 and ROUGE-SU4 F1, while remaining competitive rather than superior to the strongest supervised SVM.",
+   "evidence_type": "supported",
+   "section": "Section 8"
+  },
+  {
+   "finding": "With true clusterings, the 10-relation model reports ROUGE-1 F1 of 37.47, ROUGE-2 F1 of 12.20, and ROUGE-SU4 F1 of 14.59; the supervised SVM reports 40.87, 12.91, and 16.29 respectively.",
+   "evidence_type": "supported",
+   "section": "Section 8, Table 4"
+  },
+  {
+   "finding": "Performance falls substantially when automatically produced decision clusterings replace gold clusterings, showing strong dependence on accurate upstream association of dialogue acts with decisions.",
+   "evidence_type": "supported",
+   "section": "Section 8, Table 5"
+  },
+  {
+   "finding": "Learned decision cues include group-oriented expressions involving 'we', including wrap-up, suggestion, and final-decision patterns, but these are discourse cues rather than explicit structured group-assignee annotations.",
+   "evidence_type": "supported",
+   "section": "Section 6"
+  },
+  {
+   "finding": "The model does not generate a complete abstractive decision sentence; it identifies content phrases intended to support later generation.",
+   "evidence_type": "supported",
+   "section": "Section 1"
+  },
+  {
+   "finding": "Gold supervision is available for decision-related utterances and human abstracts, not for a workplace argument schema containing assignee, action, deadline, condition, negation, or modality spans.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 7"
+  }
+ ],
+ "limitations": [
+  "The experiments use scenario-driven AMI meetings rather than authentic workplace email or enterprise chat.",
+  "The system assumes that decision-related dialogue acts have already been identified and grouped, or relies on an upstream clustering system whose errors substantially reduce performance.",
+  "The extracted relation arguments are designed for summary content, not for normalized structured slots such as decision proposition, assignee, action, deadline, condition, negation, or modality.",
+  "Group expressions such as 'we' are learned as decision cues but are not resolved to concrete group membership or responsibility.",
+  "There is no explicit gold annotation or metric for exact evidence-span boundaries of the extracted indicator and argument phrases.",
+  "ROUGE against human decision abstracts evaluates lexical summary overlap rather than factual argument attachment accuracy.",
+  "The method identifies phrases for later abstraction but does not itself produce a final abstractive summary.",
+  "No public implementation is identified in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "cue_content_distinction": 0.99,
+  "phrase_level_relation_extraction": 0.98,
+  "unsupervised_vs_baselines": 0.99,
+  "true_clustering_scores": 0.99,
+  "clustering_dependency": 0.99,
+  "group_we_cues": 0.97,
+  "no_full_generation": 0.99,
+  "workplace_argument_schema_gap": 0.98
+ },
+ "raw_claims": [
+  "The method treats focused decision summarization as an unsupervised relation-extraction problem.",
+  "A decision-related utterance may contain discourse cue material that should not appear in the final decision summary.",
+  "The desired decision content is modeled as an argument phrase associated with a lexical indicator.",
+  "Posterior regularization introduces syntactic, prevalence, occurrence, and discourse constraints.",
+  "One discourse constraint encourages relation instances near the end of a decision discussion.",
+  "The feature set includes dialogue-act type, speaker role, topic, adjacency-pair structure, syntax, and WordNet information.",
+  "The experiments use the AMI corpus, which contains manually written abstracts for individual decisions.",
+  "The paper evaluates both perfect decision-related-dialogue-act clusterings and automatically generated clusterings.",
+  "Automatic clustering causes a large reduction in ROUGE scores for all evaluated systems.",
+  "Group expressions using 'we' appear among learned decision-cue patterns.",
+  "The proposed method outputs phrase-based relations rather than a complete generated decision abstract."
+ ],
+ "source_url": "https://arxiv.org/html/1606.07849",
+ "access": "full_text",
+ "source_citation": "citeturn524617view1turn374276view0turn374276view1turn527182view5"
+}

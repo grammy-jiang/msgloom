@@ -1,0 +1,345 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-fde6beef40",
+   "title": "Classifying Action Items for Semantic Email",
+   "research_question": "Can action items in email be automatically classified into useful semantic categories using a computationally tractable speech-act model and linguistic rules?",
+   "methodology": "The authors define email action items using three dimensions: action, object, and subject, producing a taxonomy that distinguishes requests, assignments, suggestions, and deliveries over tasks, events, information, and resources. They implement a rule-based classifier in GATE using tokenization, sentence splitting, POS tagging, gazetteers, named-entity processing, semantic and grammatical features, and JAPE speech-act grammars. The system is evaluated by 12 people on 116 emails, with evaluators judging automatically identified items and adding missed items.",
+   "key_findings": [
+    {
+     "finding": "The proposed model represents action items through action, object, and subject dimensions and yields 22 basic action-item combinations.",
+     "evidence_type": "supported",
+     "section": "2 Background"
+    },
+    {
+     "finding": "The implemented classifier uses modality, verb category, tense, negation, and semantic-role information, with additional rules for phenomena such as conditional constructions.",
+     "evidence_type": "supported",
+     "section": "3 Classification Model"
+    },
+    {
+     "finding": "An earlier human annotation exercise over the 22-category scheme achieved inter-annotator agreement of 0.811, indicating substantial but imperfect agreement on the task.",
+     "evidence_type": "supported",
+     "section": "2 Background"
+    },
+    {
+     "finding": "In the reported evaluation, the rule-based classifier achieved precision 0.56, recall 0.60, and F1 0.58.",
+     "evidence_type": "supported",
+     "section": "4 Evaluation"
+    },
+    {
+     "finding": "The authors conclude that the classifier is not reliable enough for unattended automatic annotation and is better used to suggest candidate annotations for user review and correction.",
+     "evidence_type": "supported",
+     "section": "4 Evaluation and 5 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The linguistic model and implementation are designed for English-language email.",
+    "The evaluation contains only 116 emails and 194 automatically classified action items, so it is not a large standardized benchmark.",
+    "The reported F1 score of 0.58 leaves substantial false-positive and false-negative error.",
+    "The approach depends on manually engineered linguistic and JAPE rules and is therefore potentially brittle under new wording or domains.",
+    "The model represents actor participation and broad action semantics but does not provide a dedicated deadline field comparable to structured action-item extraction schemas.",
+    "The paper does not report release of the task-specific evaluation corpus or the complete rule set as a reusable research artifact."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "action_item_taxonomy": 0.99,
+    "linguistic_rule_pipeline": 0.99,
+    "human_agreement": 0.98,
+    "classification_f1": 0.99,
+    "human_review_recommended": 0.98
+   },
+   "raw_claims": [
+    "The action-item representation separates the type of action from its semantic object and participating subject.",
+    "The four principal action types are request, assign, suggest, and deliver.",
+    "Tasks and events are treated as activity objects, while information and resources are treated as data objects.",
+    "The classifier incorporates grammatical modality, verb semantics, tense, negation, and semantic roles.",
+    "The JAPE speech-act component alone contains 58 rules arranged in 14 phases.",
+    "The evaluation involved 12 people reviewing at least eight emails each.",
+    "Evaluators assessed 194 automatically classified action items and manually added 74 missed items.",
+    "The reported precision, recall, and F1 are 0.56, 0.60, and 0.58 respectively.",
+    "The authors propose using corrected rule-based output later as training material for machine-learning approaches."
+   ],
+   "source_url": "https://www.researchgate.net/publication/220746717_Classifying_Action_Items_for_Semantic_Email",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-ee40d588e3",
+   "title": "*SEM 2012 Shared Task: Resolving the Scope and Focus of Negation",
+   "research_question": "How accurately can computational systems identify negation cues, their scope, negated events or properties, and the focus of negation under standardized shared-task conditions?",
+   "methodology": "The shared task defines a scope-resolution task with cue identification, scope resolution, and negated-event identification, plus a separate focus-detection task. It provides the CD-SCO corpus derived from Conan Doyle stories for scope experiments and the PB-FOC corpus derived from PropBank for focus experiments, together with detailed official evaluation measures. Systems are entered in closed and open tracks, and participating approaches include CRFs, SVMs, syntactic models, dependency heuristics, and rule-based methods.",
+   "key_findings": [
+    {
+     "finding": "Negation cue detection is substantially easier than complete resolution of cue, scope, and negated event together.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "The best closed-track official global score for complete negation resolution was 57.63 F1, while individual cue identification reached above 92 F1.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Machine-learning systems generally outperformed the rule-based system on the complete Task 1 evaluation.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Only one team participated in focus detection, and its best reported focus score was 58.40 F1.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Scope scores are sensitive to how partial matches are counted, although the alternative evaluation reported by the organizers did not change the system ranking.",
+     "evidence_type": "supported",
+     "section": "4 Evaluation and 5 Results and Discussion"
+    }
+   ],
+   "limitations": [
+    "The scope corpus is literary narrative and the focus corpus is derived from PropBank and Wall Street Journal material rather than workplace email or dialogue.",
+    "The scope and focus tasks use different source corpora and annotation schemes rather than one unified conversational dataset.",
+    "Focus annotation is restricted to the verbal-negation cases represented by the PB-FOC construction.",
+    "Focus detection received only two runs from one participating team, limiting comparative conclusions.",
+    "Shared-task participants had a relatively short development period, which may limit optimization.",
+    "The work addresses negation rather than action-item, request, owner, or deadline extraction directly, so its relevance to workplace action extraction is primarily as a linguistic component."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "cue_detection_easier": 0.99,
+    "best_global_score": 0.99,
+    "machine_learning_advantage": 0.98,
+    "focus_participation": 0.99,
+    "partial_match_sensitivity": 0.98
+   },
+   "raw_claims": [
+    "Task 1 evaluates negation cues, their scopes, and the negated events or properties.",
+    "Task 2 evaluates the focus of negation.",
+    "The shared task distinguishes closed systems using only supplied information from open systems using additional resources or tools.",
+    "CD-SCO contains annotated negation examples from Conan Doyle stories.",
+    "PB-FOC contains focus annotations adapted from PropBank instances of verbal negation.",
+    "The official metrics include cue F1, scope measures, negated-event F1, a strict global measure, token-level scope F1, and sentence-level correctness.",
+    "Fourteen runs were submitted across the shared task, including twelve for Task 1 and two for Task 2.",
+    "The strongest cue scores are much higher than the strongest strict end-to-end negation-resolution scores.",
+    "The organizers provide the datasets and evaluation software associated with the task."
+   ],
+   "source_url": "https://aclanthology.org/S12-1035.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-cd3fa58e4c",
+   "title": "Detecting Emails Containing Requests for Action",
+   "research_question": "Can emails containing requests for action be detected accurately at message level, and does removing quoted and other non-author message zones improve classification?",
+   "methodology": "The authors annotate a random sample from the Enron email corpus for whether each message contains a request that places an obligation on a recipient to act, refrain from acting, schedule something, or respond. After retaining 505 messages on which all three annotators agreed, they train binary SVM classifiers in Weka using lexical, structural, orthographic, and message-level features. They compare classification over whole messages with classification after Zebra-based message zoning removes quoted text, forwarded material, signatures, advertising, disclaimers, and similar non-author content, using stratified ten-fold cross-validation.",
+   "key_findings": [
+    {
+     "finding": "Message zoning substantially improves request detection, raising accuracy from 72.28% without zoning to 83.76% with zoning.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "With zoning, request-class F1 reaches 0.843 and weighted overall F1 reaches 0.838.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "The improvement from zoning is statistically significant across the reported classification metrics and corresponds to more than a 41% reduction in classification error.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "Lexical n-gram features provide most of the predictive power, while zoning makes even small lexical feature sets substantially more effective.",
+     "evidence_type": "supported",
+     "section": "5 Results"
+    },
+    {
+     "finding": "Important remaining errors include implicit requests, request-like spam or marketing text, requests embedded in ignored zones, zoning mistakes, pleasantries, and requests associated with attachments.",
+     "evidence_type": "supported",
+     "section": "6 Error Analysis"
+    }
+   ],
+   "limitations": [
+    "The task predicts whether an entire email contains a request and does not identify the exact request span.",
+    "The approach does not extract structured fields such as action owner, requested object, deadline, conditions, or commitment status.",
+    "The final classifier experiments use only 505 unanimously annotated messages.",
+    "Messages on which annotators disagreed were removed rather than retained as difficult examples, which makes the evaluation set cleaner than the original sample.",
+    "Experiments use one corporate email collection, so transfer to other organizations or chat platforms is not demonstrated.",
+    "Attachments are unavailable in the Enron data and requests referring to attached material remain difficult.",
+    "The paper does not report release of the exact labeled sample and task-specific annotations used in the experiments."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "zoning_accuracy_gain": 0.99,
+    "zoned_request_f1": 0.99,
+    "error_reduction": 0.99,
+    "ngram_importance": 0.98,
+    "remaining_error_types": 0.97
+   },
+   "raw_claims": [
+    "A request is defined broadly enough to include requests for actions, inaction, scheduling, or a responsive speech act.",
+    "Questions that require the recipient to provide information are treated as requests.",
+    "Three annotators labeled 664 sampled Enron messages and achieved kappa of 0.681.",
+    "The classifier experiments use 505 messages for which all three annotators agreed.",
+    "Approximately 52% of the final messages contain requests.",
+    "The unzoned classifier obtains 72.28% accuracy and weighted F1 of 0.723.",
+    "The zoned classifier obtains 83.76% accuracy and weighted F1 of 0.838.",
+    "Removing lexical n-grams causes a large performance decrease in both zoned and unzoned settings.",
+    "Only a small part of the analyzed residual error is attributed directly to incorrect zoning.",
+    "Implicit and context-dependent requests remain an important source of error."
+   ],
+   "source_url": "https://aclanthology.org/N10-1142.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-11965152-18",
+   "title": "Detecting Action Items in Multi-party Meetings: Annotation and Initial Experiments",
+   "research_question": "How should action items in multi-party meetings be annotated and detected so that systems can identify both the relevant dialogue region and properties such as task description, owner, timeframe, and commitment?",
+   "methodology": "The paper first examines a flat annotation of action-item-related utterances in ICSI and ISL meeting data and trains lexical SVM classifiers, finding weak agreement and weak detection performance. It then introduces a more structured action-item definition requiring a concrete future action, an explicit responsible person who agrees to perform it, and a reasonably specific timeframe, with utterances labeled as Description, Owner, Timeframe, or Agreement. Initial classifiers for these components are combined over local dialogue windows and evaluated mainly on five CALO meetings using leave-one-meeting-out validation together with additional fixed ICSI and ISL training data.",
+   "key_findings": [
+    {
+     "finding": "The initial flat utterance-level formulation performs poorly, with precision, recall, and F1 below 0.25 on the earlier meeting data and relatively low inter-annotator agreement.",
+     "evidence_type": "supported",
+     "section": "2 Previous Work and Initial Annotation"
+    },
+    {
+     "finding": "The revised annotation scheme decomposes an action item into task Description, Owner, Timeframe, and Agreement components, explicitly modeling both responsibility and commitment.",
+     "evidence_type": "supported",
+     "section": "3 Action Item Annotation"
+    },
+    {
+     "finding": "Among the component classifiers, Agreement is easiest in the reported experiment with F1 0.40, while Owner is hardest with F1 0.17.",
+     "evidence_type": "supported",
+     "section": "4 Experiments"
+    },
+    {
+     "finding": "Combining evidence from several nearby utterances can locate action-item regions, but results vary greatly between meetings, with reported per-meeting F1 ranging from 0.00 to 1.00.",
+     "evidence_type": "supported",
+     "section": "4 Experiments"
+    },
+    {
+     "finding": "The results motivate treating action-item creation as a multi-utterance discourse process rather than as an isolated sentence-classification problem.",
+     "evidence_type": "supported",
+     "section": "4 Experiments and 5 Discussion"
+    }
+   ],
+   "limitations": [
+    "The structured experiments use only a very small number of meetings, so the authors explicitly regard the results as preliminary.",
+    "Part of the evaluation uses simulated CALO meetings rather than only naturally occurring workplace meetings.",
+    "The experiments use human transcripts rather than a full automatic-speech-recognition pipeline.",
+    "The combination of component scores uses manually chosen weights and thresholds rather than a learned integration model.",
+    "Owner detection is especially weak in the reported component results.",
+    "Performance varies dramatically across individual meetings.",
+    "The combined action-item evaluation primarily checks whether an action-item region is found and does not establish that every extracted Description, Owner, Timeframe, and Agreement value is correct.",
+    "The paper does not report a public release of the complete task-specific annotation set or implementation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "flat_detection_weak": 0.99,
+    "structured_aida_schema": 0.99,
+    "owner_hardest": 0.98,
+    "meeting_level_variance": 0.99,
+    "multi_utterance_structure": 0.94
+   },
+   "raw_claims": [
+    "The earliest flat action-item annotation produced low agreement and weak lexical classification results.",
+    "The revised definition requires a concrete future action suitable for a to-do list.",
+    "The revised definition expects an identifiable person or people who will perform the action.",
+    "Owner agreement or commitment is treated as a distinct part of establishing an action item.",
+    "A timeframe is included as a separate action-item component.",
+    "Description, Owner, Timeframe, and Agreement are annotated separately.",
+    "Separate lexical classifiers are trained for the structured subclasses.",
+    "Owner classification has the lowest F1 among the four reported subclasses.",
+    "The combined detector pools subclass evidence across a local sequence of utterances.",
+    "The very small evaluation set prevents strong conclusions about general performance."
+   ],
+   "source_url": "https://www.researchgate.net/publication/221040314_Detecting_Action_Items_in_Multi-party_Meetings_Annotation_and_Initial_Experiments",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+   "title": "Detecting and Summarizing Action Items in Multi-Party Dialogue",
+   "research_question": "Can action items in natural multi-party meetings be detected as structured multi-utterance commitments and summarized into useful task and timeframe information under both manual-transcript and speech-recognition conditions?",
+   "methodology": "The authors annotate 18 natural ICSI research-group meetings using four action-item dialogue-act classes: Description, Timeframe, Owner, and Agreement. Four SVM classifiers identify these classes and a higher-level classifier combines their labels and confidences over a ten-utterance context window; evaluation uses leave-one-meeting-out cross-validation and compares structured detection with a flat binary baseline on manual transcripts, 1-best ASR, and word confusion networks. For summarization, a rule-based semantic parser generates candidate task-description and timeframe phrases, which are ranked using SVM regression and lexical, syntactic, semantic, temporal, and acoustic features.",
+   "key_findings": [
+    {
+     "finding": "The structured detector outperforms the flat detector on manual transcripts, reaching overlap-based F1 of 0.45 versus 0.35 for the flat approach.",
+     "evidence_type": "supported",
+     "section": "4 Action Item Detection"
+    },
+    {
+     "finding": "Automatic speech recognition reduces action-item detection performance substantially; the structured overlap F1 falls from 0.45 on manual transcripts to 0.36 on 1-best ASR, with word confusion networks recovering only a small amount to 0.37.",
+     "evidence_type": "supported",
+     "section": "4 Action Item Detection"
+    },
+    {
+     "finding": "Timeframe summarization benefits from semantic and temporal features, with the best reported automatic configuration reaching F1 0.51 compared with 0.31 for a TIMEX-only baseline and 0.39 for an entire-utterance baseline.",
+     "evidence_type": "supported",
+     "section": "5 Action Item Summarization"
+    },
+    {
+     "finding": "Task-description summarization remains difficult: semantic features can raise precision, but the evaluated candidate-ranking systems do not exceed the entire-utterance description baseline in F1.",
+     "evidence_type": "supported",
+     "section": "5 Action Item Summarization"
+    },
+    {
+     "finding": "The action-item annotations are sparse and moderately to substantially reproducible, with only about 1.4% of utterances receiving any action-item class and pairwise kappa values ranging from 0.64 to 0.78.",
+     "evidence_type": "supported",
+     "section": "3 Data and Annotation"
+    }
+   ],
+   "limitations": [
+    "The study uses 18 meetings from the ICSI Meeting Corpus, so organizational and domain diversity is limited.",
+    "Action-item utterances are very sparse, with only about 1.4% of utterances carrying any of the four action-item labels.",
+    "ASR errors cause substantial degradation relative to manual transcripts.",
+    "The structured detector's advantage over the flat detector is not statistically significant in the reported ASR conditions.",
+    "Owner identity extraction is explicitly left outside the summarization experiment even though Owner is annotated for detection.",
+    "Task descriptions can span multiple utterances, while the summarizer selects material from a single acoustically segmented utterance.",
+    "Sentence and utterance segmentation errors limit semantic parsing and description extraction.",
+    "The paper does not report release of the task-specific annotations or complete custom implementation as reproducibility artifacts."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "structured_beats_flat_manual": 0.99,
+    "asr_performance_drop": 0.99,
+    "timeframe_summary_gain": 0.99,
+    "description_summary_difficulty": 0.99,
+    "annotation_agreement_and_sparsity": 0.98
+   },
+   "raw_claims": [
+    "The paper treats action items as public commitments to carry out tasks rather than merely as sentences mentioning future activity.",
+    "The annotation scheme distinguishes Description, Timeframe, Owner, and Agreement utterances.",
+    "Eighteen natural ICSI meetings are used in the experiments.",
+    "Pairwise annotation kappa values range from 0.64 to 0.78.",
+    "Only about 1.4% of meeting utterances receive at least one action-item label.",
+    "Four independent SVM classifiers feed a higher-level detector that examines a ten-utterance context.",
+    "Structured detection performs better than flat detection on manual transcripts.",
+    "ASR degrades both structured and flat action-item detection.",
+    "Word confusion networks provide only a small improvement over 1-best ASR in the reported detection results.",
+    "Semantic and TIMEX features substantially improve timeframe extraction.",
+    "The task-description extractor does not outperform using the full utterance as the description baseline.",
+    "The authors note that useful summaries may need information combined across multiple utterances."
+   ],
+   "source_url": "https://aclanthology.org/2007.sigdial-1.4.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

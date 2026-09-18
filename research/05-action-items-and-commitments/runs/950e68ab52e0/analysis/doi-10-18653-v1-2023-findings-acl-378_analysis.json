@@ -1,0 +1,77 @@
+{
+ "paper_id": "doi-10-18653-v1-2023-findings-acl-378",
+ "title": "LEDA: a Large-Organization Email-Based Decision-Dialogue-Act Analysis Dataset",
+ "research_question": "What dialogue-act taxonomy and empirical patterns can characterize decision-making communication in a large, distributed organization, and how predictable are those acts from email text and conversational context?",
+ "methodology": "The authors construct LEDA from public Internet Engineering Task Force mailing-list discussions surrounding four expert-selected Internet drafts, retaining complete discussion threads and segmenting messages into author-written, quoted, and signature material. Seven linguistically trained annotators assign a calibrated multi-label taxonomy containing decision-relevant acts such as ProposeAction and StateDecision; the released corpus contains 8,230 segments from 2,196 messages by 363 authors. They analyze dialogue-act distributions over draft life cycles and participant groups, then train a hierarchical BERT-plus-BiLSTM multi-label tagging baseline using thread paths and a 60/20/20 train-validation-test split.",
+ "key_findings": [
+  {
+   "finding": "The calibrated taxonomy contains explicit decision-relevant categories including ProposeAction and StateDecision while retaining broader information-seeking, information-providing, response, and social categories.",
+   "evidence_type": "supported",
+   "section": "2 Dataset"
+  },
+  {
+   "finding": "ProposeAction is much more frequent than StateDecision in the annotated corpus, with 2,225 versus 359 labeled instances, indicating substantially more discussion of possible actions than explicit decision statements.",
+   "evidence_type": "supported",
+   "section": "2 Dataset / Table 1 and 3.1 Draft life-cycle"
+  },
+  {
+   "finding": "The frequency of ProposeAction remains comparatively stable over the draft life cycle, whereas questions and answers are more common earlier in discussions.",
+   "evidence_type": "supported",
+   "section": "3.1 Draft life-cycle"
+  },
+  {
+   "finding": "Draft authors and participants with high interaction-graph centrality make more StateDecision acts than their comparison groups; influential participants also propose slightly more actions.",
+   "evidence_type": "supported",
+   "section": "3.2 Different groups"
+  },
+  {
+   "finding": "Approximately two thirds of annotated questions appear to remain unanswered, and answer rates vary substantially by participant role, with chairs receiving answers more often than authors.",
+   "evidence_type": "supported",
+   "section": "3.2 Different groups"
+  },
+  {
+   "finding": "Fine-grained dialogue acts that are subjective or infrequent have poorer inter-annotator agreement and poorer automatic tagging performance than broad categories such as information provision or questions.",
+   "evidence_type": "supported",
+   "section": "2 Dataset and 4 Automated Dialogue Act Tagging"
+  },
+  {
+   "finding": "Domain-adaptive pretraining on the full IETF email archive did not improve the dialogue-act baseline over ordinary BERT in the reported experiment.",
+   "evidence_type": "supported",
+   "section": "4 Automated Dialogue Act Tagging"
+  }
+ ],
+ "limitations": [
+  "The dataset covers discussions of only four IETF drafts from one organization, so transfer to other enterprises or workplace-email cultures is untested.",
+  "The annotation unit is an email segment with dialogue-act labels rather than a structured action record with predicate, assignee, deadline, condition, modality, or argument links.",
+  "ProposeAction and StateDecision identify communicative function but do not annotate the exact action phrase, decision proposition, responsible person or group, or temporal expression as separate evidence spans.",
+  "The taxonomy does not encode attachment relations such as which deadline modifies which action, which condition licenses an action, or which negation/modal operator scopes over a proposition.",
+  "Some categories have low inter-annotator agreement because relevant acts can be implicit and subjective.",
+  "The automatic baseline can truncate emails longer than BERT's 512-token limit and was not subjected to a hyperparameter search.",
+  "The corpus is authentic organizational email, but it is public standards-development communication rather than private enterprise email."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "action_vs_decision_frequency": 0.99,
+  "participant_role_patterns": 0.96,
+  "unanswered_question_rate": 0.97,
+  "fine_grained_annotation_difficulty": 0.96,
+  "domain_adaptation_result": 0.94
+ },
+ "raw_claims": [
+  "LEDA is built from real IETF mailing-list discussions associated with four Internet drafts.",
+  "Messages are separated into normal author text, quoted material, and signatures before annotation.",
+  "The final dialogue-act taxonomy is multi-label and contains three coarse categories and eleven fine-grained categories.",
+  "ProposeAction has substantially more annotations than StateDecision.",
+  "Action proposals remain common throughout the draft life cycle.",
+  "Authors and influential participants account for relatively more explicit decisions than their comparison groups.",
+  "A large fraction of questions in the annotated discussions receive no labeled answer.",
+  "The authors release individual annotator labels, text data, and code.",
+  "A BERT-based segment encoder followed by a BiLSTM is used as the preliminary tagging baseline."
+ ],
+ "source_url": "https://aclanthology.org/2023.findings-acl.378.pdf",
+ "access": "full_text"
+}

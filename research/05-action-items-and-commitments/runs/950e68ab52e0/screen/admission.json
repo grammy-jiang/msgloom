@@ -1,0 +1,209 @@
+{
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Structured action-item and task-assignment extraction from workplace email or enterprise chat."
+  },
+  {
+   "id": "F3",
+   "description": "Decision, approval, rejection, and proposal extraction from workplace communication."
+  },
+  {
+   "id": "F5",
+   "description": "Meeting decision and decision-related dialogue-act detection."
+  },
+  {
+   "id": "F7",
+   "description": "Addressee recognition and implicit participant resolution in multi-party discourse."
+  },
+  {
+   "id": "F9",
+   "description": "Temporal expression normalization and event-time relation modeling."
+  },
+  {
+   "id": "F10",
+   "description": "Condition, exception, negation, and modality scope attachment."
+  },
+  {
+   "id": "F11",
+   "description": "Event and semantic-argument extraction with implicit or cross-sentence arguments."
+  },
+  {
+   "id": "F12",
+   "description": "Span-based structured information extraction and evidence annotation."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-1007-978-3-030-30284-9-5",
+   "decision": "REJECT",
+   "reason": "The topic is authentic professional email and business-activity recovery, but the abstract describes business-process activity discovery and associated metadata rather than extraction of work requests, assignments, owners, deadlines, conditions, or decision arguments. Topic words match F1, but the demonstrated capability does not establish action-item extraction at the semantic granularity required here.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-0ff0b7dafd",
+   "decision": "REJECT",
+   "reason": "The Enron annotations establish organizational power and influence context, not assignee or responsible-party extraction. Organizational context could later be an input to owner inference, but the abstract does not show recovery of implicit owners or any action arguments, so it does not materially strengthen F6 or close gap-3.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1145-3297280-3297534",
+   "decision": "REJECT",
+   "reason": "The abstract concerns elicitation of business-process activities and metadata such as participant roles, attachment types, and link domains. Those metadata are not shown to be semantic action arguments such as requester, assignee, action object, deadline, or condition. It is adjacent to F1 but does not demonstrate the required capability.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-26615-issn-2603-2821-2021-027",
+   "decision": "REJECT",
+   "reason": "This is primarily a real-corporate-email corpus construction and thread-reconstruction paper. Mentioning commitments or deadlines as potentially useful information is not equivalent to annotating or extracting them. It therefore does not materially strengthen F13 or F14 for the act/action representations required in this round.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1007-978-3-540-78155-4-15",
+   "decision": "REJECT",
+   "reason": "The abstract demonstrates meeting decision-act and decision-segment detection, but that capability is substantially covered by the admitted meeting-domain papers manual-90280d2776 and 1606.07849, which add distinctions between proposal/agreement roles or explicit decision-cue-to-content relations. Reading this additional generic decision detector is unlikely to materially strengthen F5.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-findings-acl-378",
+   "decision": "ADMIT",
+   "reason": "The abstract directly establishes decision-focused dialogue-act annotation and automatic tagging over authentic public IETF organizational email. This materially strengthens F3 with direct workplace-like email evidence for distinguishing decision-related communicative functions, addressing part of gap-2 even though it does not supply the complete owner/deadline/condition argument schema. The identifier is UNCHECKED, but no VERIFIED candidate in this set provides equivalent direct organizational-email decision-act evidence.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-fa95b41a69",
+   "decision": "REJECT",
+   "reason": "The paper extracts IT-support resolutions from Slack and Microsoft Teams and compares them with structured-ticket resolutions, but the target representation is a support resolution rather than a request, commitment, assignment, approval, rejection, owner-deadline structure, or condition-attached action. It is authentic enterprise-chat evidence, but the capability is outside the core semantic extraction streams for this round.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2205.12585",
+   "decision": "REJECT",
+   "reason": "TAGPRIME is a strong generic relational-structure extraction framework, but the abstract does not specifically address implicit workplace owners, deadline binding, condition attachment, or workplace acts. Its trigger-conditioned argument extraction substantially overlaps the generic structured-span capability supplied here by the admitted DyGIE++ paper, which additionally emphasizes contextualized spans and cross-sentence information. The VERIFIED identity does not outweigh that redundancy.",
+   "confidence": 0.84
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d16-1078",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly models both speculation and negation cues together with their scopes. That is directly useful transfer evidence for F10 because msgloom must preserve whether uncertainty or negation applies to a particular proposition rather than merely detect cue words. It does not establish workplace accuracy, but it supplies a concrete scope-attachment mechanism relevant to gap-5.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p18-2085",
+   "decision": "REJECT",
+   "reason": "The paper is relevant to F10, but its contribution is specifically structured negation-scope extraction and is substantially redundant for this reading round with the admitted 2016 speculation-and-negation scope paper, which covers both negation and uncertainty-like speculation. The abstract does not add workplace action attachment or condition/exception handling sufficient to justify another slot.",
+   "confidence": 0.84
+  },
+  {
+   "paper_id": "manual-78cd003eec",
+   "decision": "REJECT",
+   "reason": "This meeting-domain paper demonstrates decision-act and decision-segment detection, but its capability is duplicated by stronger admitted F5 candidates in this set, especially manual-90280d2776 for proposal/agreement structure and 1606.07849 for relating decision cues to decision content. It does not add structured arguments needed by the open gaps.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-1177-002383099804100410",
+   "decision": "REJECT",
+   "reason": "The paper studies generic conversational-speech dialogue-act classification and prosody. It is historically relevant but neither workplace-specific nor focused on the request, commitment, decision, owner, deadline, or condition distinctions needed here. The capability is too remote from the current gaps to justify a reading slot.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-69bc2555ab",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly annotates and evaluates binding of implicit semantic roles to non-local discourse entities. This materially strengthens F11 because gap-3 requires mechanisms for owners or participants that are omitted locally and recoverable from broader discourse. It is transfer rather than workplace evidence, but its non-local role-binding problem is directly analogous to implicit argument recovery.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-aacl-demo-10",
+   "decision": "REJECT",
+   "reason": "The system detects meeting decisions and rewrites them into de-contextualized minutes, but generated de-contextualization is not evidence for exact source-span preservation or structured decision arguments. Decision detection itself is already better represented by admitted F5 papers, so this system demonstration does not materially strengthen the stream.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-acl-main-667",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses implicit event arguments at document level and decomposes recovery into argument-head identification followed by expansion to full argument spans. This materially strengthens F11 and also informs exact evidence-span construction: it is especially relevant to missing owners or other arguments that are not surface-local. It remains transfer evidence rather than workplace validation.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2409.18602",
+   "decision": "ADMIT",
+   "reason": "The paper directly evaluates addressee recognition in multi-party conversations and shows dependence on conversation structure and history. This materially strengthens F7 and is closely aligned with gap-3 and engineering gap-7, where an action's responsible participant may require conversational rather than sentence-local context. Its VERIFIED identity further supports admission, while its non-workplace conversation domain keeps the role TRANSFER.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-acl-short-8",
+   "decision": "REJECT",
+   "reason": "The IETF email domain is directly relevant organizational communication, but the paper studies linguistic markers of influence rather than action ownership, assignment, addressee resolution, requests, commitments, or decisions. Organizational role signals might become auxiliary features, but the abstract does not demonstrate the target extraction capability.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1109-icdew71238-2026-00020",
+   "decision": "REJECT",
+   "reason": "CORE provides current direct evidence that enterprise Slack and Teams conversations can be mined into structured support resolutions, but the abstract does not show extraction of action owners, deadlines, conditions, requests, commitments, approvals, rejections, or decision arguments. Resolution mining is adjacent but not a demonstrated solution to any open academic gap in this round.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-e6bb5aee88",
+   "decision": "ADMIT",
+   "reason": "The abstract describes semantic-role-based task extraction from professional email and explicitly structures who performs the action, what is done, when, and related participants. This is the strongest direct candidate for F1 and materially addresses gaps 1, 3, and 4 at least in part. It does not establish conditions, exceptions, or the complete joint benchmark, so those gaps remain open. The identifier is UNCHECKED, but no VERIFIED candidate here offers comparable direct professional-email task-role extraction.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "1909.03546",
+   "decision": "ADMIT",
+   "reason": "DyGIE++ jointly models entities, relations, and events using contextualized span representations and cross-sentence information. This materially strengthens F12 because msgloom requires exact trigger/argument evidence spans rather than sentence-level labels, and the cross-sentence modeling is also useful when an argument lies outside the local clause. It is VERIFIED transfer evidence, not a workplace action benchmark.",
+   "stream_id": "F12",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "1704.02709",
+   "decision": "REJECT",
+   "reason": "The paper is relevant to implicit semantic roles, but the admitted manual-69bc2555ab directly addresses binding implicit roles to non-local discourse entities and the admitted 2020 implicit-event-argument paper adds document-level span recovery. This candidate's expected-frame-argument modeling is useful but substantially redundant for the present F11 reading objective.",
+   "confidence": 0.83
+  },
+  {
+   "paper_id": "manual-90280d2776",
+   "decision": "ADMIT",
+   "reason": "The abstract distinguishes meeting-decision subdialogue roles including issues, resolution proposals or restatements, and agreement. This materially strengthens F5 because the project explicitly requires proposal or intention to remain distinct from an accepted decision, and it gives transfer evidence for modeling the discourse structure through which a proposal becomes agreed. It does not establish direct email/chat accuracy.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1162-tacl-a-00006",
+   "decision": "ADMIT",
+   "reason": "The abstract models temporal anchoring by extracting relations between events and time expressions rather than treating every date as an isolated temporal mention. That materially strengthens F9 and provides transfer machinery relevant to gap-4, where a deadline must be bound to the correct action. It does not itself distinguish deadlines from other event-time relations, so direct workplace deadline evidence remains open.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-01c535c108",
+   "decision": "REJECT",
+   "reason": "This is foundational generic dialogue-act modeling for conversational speech. Although it demonstrates use of discourse sequence context, it does not focus on workplace requests, commitments, decisions, assignments, or argument extraction and is superseded for this round by candidates with direct organizational-email acts or more targeted meeting decision structures.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1606.07849",
+   "decision": "ADMIT",
+   "reason": "The abstract frames decision-focused meeting analysis as relation extraction that separates decision cues from the content associated with them and identifies informative phrases in decision-related utterances. This materially strengthens F5 by moving beyond a binary decision label toward a relation between the decision indicator and decision content, while also providing evidence-extraction ideas useful to the project's structured decision representation. It remains transfer evidence and must not be treated as resolving Topic 04 proposition scope in workplace email.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "Admission was intentionally strict. The reading set prioritizes the two unusually direct workplace-email contributions (LEDA for decision-related acts and the professional-email task-role extractor) plus transfer papers that add capabilities needed by the still-open owner, deadline, condition/scope, implicit-argument, exact-span, addressee, and proposal-versus-decision gaps. Papers about business-process activity discovery, organizational influence, corpus/thread construction, support-resolution mining, or generic historical dialogue-act classification were rejected when their abstracts did not demonstrate the required semantic extraction capability. Several meeting-decision and implicit-argument papers were also rejected where the capability was substantially duplicated by a more targeted admitted candidate. UNCHECKED identity was treated as a disadvantage only where an otherwise equivalent VERIFIED candidate existed; it was not used to discard unique direct evidence."
+}

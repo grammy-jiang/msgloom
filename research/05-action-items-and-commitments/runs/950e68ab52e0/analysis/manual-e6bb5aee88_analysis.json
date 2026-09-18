@@ -1,0 +1,81 @@
+{
+ "paper_id": "manual-e6bb5aee88",
+ "title": "Extraction de tâches dans les e-mails : une approche fondée sur les rôles sémantiques",
+ "research_question": "Can a semantic-role-based symbolic system detect and structure action and information requests in professional French emails so that the action predicate and participants such as agent, theme, recipient, and temporal context are explicitly represented?",
+ "methodology": "The authors formulate email task extraction as semantic role labeling rather than message- or sentence-level classification. Their symbolic pipeline combines a VerbeNet-based module that maps dependency-derived syntactic frames to semantic roles with a second hand-written rule module intended to improve coverage when the lexical-semantic resource fails. Filters then distinguish action requests from information requests using morphosyntactic form, the Agent role, recipient identity, and semantic classes of governing predicates. Evaluation uses 1,000 development emails and 200 manually annotated professional French test emails, with precision, recall, and F-measure reported at message, request, and semantic-role levels, both before and after manual spelling correction.",
+ "key_findings": [
+  {
+   "finding": "The proposed representation structures a task around a predicate and semantic arguments such as Agent, Theme/Patient, Recipient, Time, Location, Purpose, Manner, Instrument, Cause, and Consequence, making it substantially closer to structured action-argument extraction than simple email classification.",
+   "evidence_type": "supported",
+   "section": "Sections 3.2 and 4"
+  },
+  {
+   "finding": "On the uncorrected test emails, the system reports F1 scores of 0.91 for detecting messages containing requests, 0.83 for action requests, 0.93 for information requests, and 0.84 for semantic-role extraction.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  },
+  {
+   "finding": "After manual spelling correction, reported F1 rises to 0.94 for request-containing messages, 0.88 for action requests, 0.94 for information requests, and 0.89 for semantic roles, indicating notable sensitivity to noisy email text.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  },
+  {
+   "finding": "The action-request filter requires an Agent corresponding to the email recipient and uses imperative, semi-auxiliary, or complement-clause constructions while excluding predicates governed by conjectural verbs such as think, presume, hope, or believe.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "The task definition explicitly allows negative requested actions and includes a Time semantic role, but the evaluation does not separately measure negation attachment or deadline-to-action attachment accuracy.",
+   "evidence_type": "supported",
+   "section": "Sections 3.1, 3.2, and 5"
+  },
+  {
+   "finding": "The test corpus contains only five Time-role annotations among 203 action-request role annotations, so evidence for robust deadline extraction is very limited.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  },
+  {
+   "finding": "Although the paper identifies implicit subjects as a weakness of prior pattern-based systems, it does not provide a dedicated evaluation of implicit or group assignee resolution; its action filter still depends on obtaining an Agent role that matches the recipient.",
+   "evidence_type": "supported",
+   "section": "Sections 2 and 4.3"
+  }
+ ],
+ "limitations": [
+  "The evaluation is limited to 200 French professional emails, of which 87 contain at least one request.",
+  "Only 74 action requests occur in the test corpus, and temporal information is especially sparse with five Time-role annotations.",
+  "The paper does not report dedicated metrics for individual semantic roles, implicit assignees, group assignees, deadline-to-action relations, conditions, negation scope, or modality attachment.",
+  "The system is rule-heavy and depends on dependency parsing, named-entity recognition, VerbeNet coverage, manually developed rules, and manually added lexical-semantic coverage.",
+  "Manual spelling correction materially improves recall, highlighting sensitivity to authentic noisy email text.",
+  "The paper focuses on requests from the recipient's perspective rather than a general schema covering commitments, decisions, completed actions, or arbitrary enterprise-chat participants.",
+  "No public implementation is identified in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_semantic_roles": 0.99,
+  "request_detection_results": 0.99,
+  "spelling_correction_effect": 0.99,
+  "recipient_agent_filter": 0.98,
+  "negation_and_time_not_separately_evaluated": 0.96,
+  "deadline_evidence_sparse": 0.99,
+  "implicit_group_assignee_gap": 0.92
+ },
+ "raw_claims": [
+  "The paper treats task extraction as semantic-role annotation centered on an action predicate.",
+  "Its intended structured output answers questions such as who performs an action, what is acted on, for whom, and when.",
+  "The primary resource-based module maps dependency-derived syntactic frames to semantic frames from French VerbeNet.",
+  "A second rule-based module attempts to recover semantic roles that the resource-based module misses.",
+  "Action requests are filtered partly by requiring the Agent to correspond to the email recipient.",
+  "The authors explicitly include negative action requests in their task definition.",
+  "Time is one of the semantic roles considered relevant to email actions.",
+  "The development set contains 1,000 emails and the test set contains 200 emails.",
+  "The test set contains 74 action requests and 65 information requests.",
+  "Semantic-role F1 increases from 0.84 to 0.89 after manual spelling correction."
+ ],
+ "source_url": "https://editions-rnti.fr/render_pdf.php?p=1002573",
+ "access": "full_text",
+ "source_citation": "citeturn192635view0turn890695view0turn890695view1"
+}

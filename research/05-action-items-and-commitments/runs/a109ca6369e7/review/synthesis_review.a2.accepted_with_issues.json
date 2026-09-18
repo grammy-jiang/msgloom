@@ -1,0 +1,28 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/05-action-items-and-commitments/runs/a109ca6369e7/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "The synthesis materially underuses manual-fde6beef40, a directly relevant email paper that explicitly models action items by action, object, and subject and evaluates an automatic classifier. Its omission does not falsify the major conclusions, but it weakens the claim that the synthesis comprehensively characterizes direct email evidence for structured action semantics.",
+  "Gap G3 over-specifies several owner-extraction failure modes—implicit owners, group ownership, multiple actions with different owners, and owners recoverable only from organizational or conversation context. The cited meeting papers establish that owner identification is difficult, and manual-0839b98ee7 establishes that organizational relationship context affects interpretation of requests and commitments, but the supplied analyses do not directly establish all of these owner-specific subcases.",
+  "Gap G4 names specific unresolved deadline-binding cases such as 'shared date' and distinguishing a deadline from a 'merely mentioned date'. The corpus clearly leaves reliable workplace deadline extraction open, but those particular failure categories are not directly documented in the supplied analyses.",
+  "Actionable insight 1 is labeled 'Directly supported' and refers to 'proposal/decision-related' concepts, but the cited papers support requests, commitments, proposals, deliveries, directives, commissives, and overlapping labels; the decision-specific evidence comes instead from doi-10-3115-1708376-1708410. The wording should either omit 'decision-related' or cite the decision-dialogue paper and make the transfer-domain status explicit.",
+  "The temporal actionable insight slightly blurs specification evidence and extraction evidence. manual-1e8332286e defines temporal representation and normalization/linking structures but does not evaluate an automatic temporal extractor. The recommendation is reasonable, but wording that the literature 'supports' temporal mention detection, normalization, and action-time linking should distinguish representational support from empirical extraction validation.",
+  "Several engineering gaps introduce adversarial cases such as multiple actions in one sentence and shared deadlines that are sensible test cases but are not all directly evidenced by the supplied analyses. They should be presented explicitly as synthesis-derived stress-test hypotheses rather than as observed corpus failure modes."
+ ],
+ "unsupported_claims": [
+  "G3: 'especially for implicit owners, group ownership, multiple actions with different owners, and owners recoverable only from organizational or conversation context' is only partially supported by the cited analyses.",
+  "G4: 'distinguishing a deadline for a particular action from a merely mentioned date, shared date, scheduling expression, or conditional future time' contains specific subcases not established by the supplied analyses.",
+  "Actionable insight 1: the phrase 'proposal/decision-related' is not fully supported by its cited papers because the decision-specific paper doi-10-3115-1708376-1708410 is not cited there.",
+  "The temporal actionable insight can be read as claiming empirical support for automatic temporal normalization and event-time linking from TimeML, although manual-1e8332286e is a representation/specification paper rather than an extraction benchmark."
+ ],
+ "required_fixes": [],
+ "confidence": 0.95,
+ "scores": {
+  "faithfulness": 0.9,
+  "coherence": 0.97,
+  "gap_completeness": 0.88,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_ids are in the allowed set. The central synthesis is faithful: the supplied analyses support separation of request/commitment and related acts, overlapping labels, conditional and indirect phenomena, context dependence, structured meeting action-item representations, owner difficulty, zoning effects, decision-dialogue structure, and the absence of a single authentic workplace email/chat study validating the complete target schema. The three stated tensions are appropriately named rather than averaged away, and transfer-domain evidence is generally identified as such. No production-accuracy claim rests on meeting, Switchboard, TimeML, modality, or negation evidence. The problems above are localized overreach and evidence-coverage issues rather than failures that invalidate the synthesis, so rejection is not warranted."
+}

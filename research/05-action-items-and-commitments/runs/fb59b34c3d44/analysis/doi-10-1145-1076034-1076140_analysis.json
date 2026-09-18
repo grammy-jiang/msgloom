@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-1145-1076034-1076140",
+ "title": "Detecting Action-Items in E-mail",
+ "research_question": "Does using fine-grained sentence-level action-item annotation improve automatic detection of action-item e-mails compared with document-level annotation, and which text representations work best for the task?",
+ "methodology": "The authors collected 744 non-duplicate e-mails from university volunteers, manually removed quoted material, and had two annotators identify action-item segments; after reconciliation, 328 messages contained action-items, with kappa of 0.85 at document level and 0.82 at sentence level. They compared document-level and sentence-level classifiers using unigram and n-gram representations with k-NN, multinomial naive Bayes, and SVM models; automatically segmented sentences were labeled positive when they contained at least 30% of a marked action-item segment. Sentence predictions were aggregated to document predictions by marking a document positive if any sentence was positive. Evaluation used 10-fold document-level cross-validation, nested feature selection, F1 and accuracy, and two-tailed t-tests at p=0.05.",
+ "key_findings": [
+  {
+   "finding": "Sentence-level classifiers generally produced better document-level action-item detection than classifiers trained directly on whole e-mails; the advantage was significant for the reported comparisons except SVM F1.",
+   "evidence_type": "supported",
+   "section": "4. Results & Discussion"
+  },
+  {
+   "finding": "N-gram features improved document-level performance for k-NN and SVM and yielded the strongest document-level representations, while multinomial naive Bayes was hurt by n-gram double-counting.",
+   "evidence_type": "supported",
+   "section": "4. Results & Discussion"
+  },
+  {
+   "finding": "The best reported document-detection F1 was 0.7790 for the sentence-level n-gram k-NN system, while the best reported document accuracy was 0.8173 for the sentence-level n-gram SVM system.",
+   "evidence_type": "supported",
+   "section": "Table 1"
+  },
+  {
+   "finding": "At sentence granularity, unigrams approached n-gram performance because the short sentence window already captured much of the local lexical-pattern information supplied explicitly by n-grams.",
+   "evidence_type": "supported",
+   "section": "4. Results & Discussion"
+  },
+  {
+   "finding": "Direct sentence detection achieved accuracy around 0.94-0.96 but substantially lower F1 around 0.62-0.67, indicating that the positive action-item class remained considerably harder than overall accuracy alone suggests.",
+   "evidence_type": "supported",
+   "section": "Table 3"
+  },
+  {
+   "finding": "The formulation explicitly treats action-item detection as recovering whether the sender intends to elicit an action or response and localizing the text expressing that request.",
+   "evidence_type": "supported",
+   "section": "1. Introduction"
+  }
+ ],
+ "limitations": [
+  "The corpus contains only 744 e-mails collected from volunteers at one university, so generalization to diverse organizations, industries, languages, and modern workplace chat is not established.",
+  "Only the body of each e-mail was used; sender, recipient, timestamps, and other header information were excluded.",
+  "Quoted material was removed manually, so the experiments do not test realistic handling of complete conversational threads or inline replies.",
+  "The task detects whether an e-mail or sentence contains an action-item but does not decompose it into owner, action/object, deadline, conditions, status, or other structured fields.",
+  "The study does not separately model requests, commitments, decisions, promises, or other speech-act subclasses that may underlie an action-item.",
+  "The main sentence-versus-document comparison evaluates document detection after a simple any-positive-sentence aggregation rule, rather than evaluating richer cross-sentence or thread-level reasoning.",
+  "Automatic sentence segmentation and the rule that a sentence is positive when it contains at least 30% of an annotated action-item segment introduce task-specific preprocessing assumptions.",
+  "The paper notes that associated user studies are omitted, so improved classification metrics are not directly tied to measured productivity or task-completion benefits."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "sentence_level_improves_document_detection": 0.98,
+  "ngrams_help_document_models": 0.98,
+  "best_document_scores": 0.99,
+  "small_windows_reduce_ngram_advantage": 0.96,
+  "sentence_detection_class_imbalance_effect": 0.94,
+  "sender_intent_is_core_to_task": 0.99
+ },
+ "raw_claims": [
+  "Action-item detection seeks both to identify e-mails requiring action or response and to highlight the text expressing the request.",
+  "The authors treat sender intent to elicit a receiver response or action as central to the task.",
+  "They formulate three system problems: document detection, document ranking, and sentence detection.",
+  "The experimental corpus contains 744 e-mail messages after duplicate removal.",
+  "Two annotators marked action-item segments, with reported kappa of 0.85 for document judgments and 0.82 for sentence judgments.",
+  "After annotation reconciliation, 328 e-mails were considered to contain action-items.",
+  "The experiments compare k-NN, multinomial naive Bayes, and SVM classifiers with unigram and n-gram representations.",
+  "N-grams improve document-level results for most classifiers but degrade multinomial naive Bayes in these experiments.",
+  "Sentence-level classifiers outperform their document-level counterparts in most reported document-detection comparisons.",
+  "At sentence level, a unigram representation performs almost as well as n-grams because the local context window is already small.",
+  "The best reported document-level F1 is 0.7790 and the best reported document-level accuracy is 0.8173."
+ ],
+ "source_url": "https://www.cs.cmu.edu/~pbennett/papers/action-item-detection-poster.pdf",
+ "access": "full_text"
+}

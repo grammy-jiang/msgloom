@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-26615-978-954-452-092-2-076",
+ "title": "Reading between the Lines: Information Extraction from Industry Requirements",
+ "research_question": "Can scope, applicability conditions, and demanded behavior be extracted from authentic industrial requirement sentences when some of that information is implicit in document context?",
+ "methodology": "The authors extract requirement sentences from 23 English DNV rule documents and annotate three semantic components: scope, condition, and demand. Requirements are identified through the modal verb \"shall,\" and two dataset variants are created, one containing only the sentence and another enriched with hierarchical document context and related noun chunks. RoBERTa token-classification models are evaluated with five-fold cross-validation, while GPT-3 text-davinci-003 is tested in a similarity-selected few-shot setup; both are also evaluated on 400 sentences from four held-out documents using ROUGE-L, BLEU-1, and embedding similarity.",
+ "key_findings": [
+  {
+   "finding": "The final annotated training collection contains 2,147 requirement sentences from 23 authentic DNV industry documents, and contextual annotation yields substantially more scope spans than sentence-only annotation because scope is frequently implicit outside the requirement sentence.",
+   "evidence_type": "supported",
+   "section": "Dataset Construction and Statistics"
+  },
+  {
+   "finding": "Adding document context produces the largest improvement for scope extraction with RoBERTa, whose average scope scores on the held-out test rise from 0.45 to 0.70 ROUGE-L, 0.43 to 0.62 BLEU-1, and 0.55 to 0.77 embedding similarity.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Tables 3 and 4"
+  },
+  {
+   "finding": "Condition and demand extraction change comparatively little when context is added to the RoBERTa input, consistent with these components being more often explicit in the requirement sentence itself.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Tables 3 and 4"
+  },
+  {
+   "finding": "Without contextual input, GPT-3 performs better than RoBERTa on the reported scope and demand text-similarity measures, whereas contextual RoBERTa becomes stronger on scope.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Tables 3 and 4"
+  },
+  {
+   "finding": "The authors' contextual representation does not produce a comparable scope gain for the GPT-3 few-shot system, suggesting that its prompting setup does not exploit the supplied context as effectively as the supervised sequence-labeling model.",
+   "evidence_type": "supported",
+   "section": "Results and Discussion"
+  },
+  {
+   "finding": "The requirement representation explicitly separates applicability condition from demanded behavior, making condition extraction a first-class span-labeling problem rather than folding it into the demand text.",
+   "evidence_type": "supported",
+   "section": "Task Definition"
+  }
+ ],
+ "limitations": [
+  "The source is authentic industry documentation but not workplace email or enterprise chat, so it does not model conversational participants, thread structure, or assignments.",
+  "Requirements are selected by the presence of the word \"shall\"; the study therefore does not establish coverage for requirements expressed through other modal, permissive, prohibitive, conditional, or indirect constructions.",
+  "The schema contains scope, condition, and demand but no assignee or group-assignee field.",
+  "There is no explicit deadline representation or relation linking a demanded action to a deadline.",
+  "Although condition spans are annotated, the task does not model logical scope of negation or modal operators over particular actions or arguments.",
+  "The reported evaluation metrics are ROUGE-L, BLEU-1, and embedding similarity rather than strict exact-span precision, recall, or F1, so exact evidence-boundary quality is not directly established.",
+  "Gold annotations were created primarily by the first author and only a subset was independently validated; no full inter-annotator agreement statistic is reported.",
+  "The context representation uses document headings and related noun chunks, which differs substantially from email-thread and chat-conversation context.",
+  "The GPT-3 baseline depends on the proprietary text-davinci-003 service, reducing exact reproducibility.",
+  "The paper does not report a public release of the annotated dataset or implementation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "authentic_dnv_dataset_and_contextual_scope": 0.99,
+  "context_improves_roberta_scope": 0.99,
+  "condition_and_demand_need_less_context": 0.96,
+  "gpt3_vs_roberta_without_context": 0.98,
+  "gpt3_uses_context_less_effectively": 0.92,
+  "condition_is_explicit_schema_component": 0.99
+ },
+ "raw_claims": [
+  "The paper treats an industry requirement as containing a scope, an applicability condition, and a demanded behavior.",
+  "The intended logical interpretation is that entities within the scope that satisfy the condition must satisfy the demand.",
+  "The authors obtain requirements from 23 English DNV rule documents that reflect real industrial classification and risk-management practice.",
+  "Sentences containing \"shall\" are used to identify requirement candidates in these documents.",
+  "After annotation filtering, the dataset contains 2,147 requirement sentences.",
+  "The contextual version supplies document hierarchy information and noun chunks associated with the same requirement number.",
+  "Scope is frequently recoverable only from context rather than from the isolated requirement sentence.",
+  "RoBERTa is trained as a token-level sequence-labeling model for scope, condition, and demand.",
+  "The GPT-3 experiment uses ten demonstrations chosen according to semantic similarity and requests structured scope, condition, and demand output.",
+  "Four additional documents provide a 400-sentence held-out evaluation set spanning both similar and different subject areas.",
+  "Context substantially improves supervised scope extraction but has much smaller effects on condition and demand extraction.",
+  "The study evaluates generated or extracted component text with ROUGE-L, BLEU-1, and sentence-embedding similarity rather than strict exact-boundary scoring."
+ ],
+ "source_url": "https://aclanthology.org/2023.ranlp-1.76.pdf",
+ "access": "full_text"
+}

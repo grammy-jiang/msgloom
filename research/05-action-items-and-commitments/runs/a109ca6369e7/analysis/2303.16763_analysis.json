@@ -1,0 +1,83 @@
+{
+ "paper_id": "2303.16763",
+ "title": "Meeting Action Item Detection with Regularized Context Modeling",
+ "research_question": "Can regularized modeling of both nearby and non-contiguous meeting context, together with lightweight reuse of different pretrained models, improve sentence-level action-item detection across Chinese and English meetings?",
+ "methodology": "The authors formulate action-item detection as binary sentence classification and release AMC-A, a manually annotated Chinese corpus containing 424 meetings, 306,846 utterances, and 1,506 action items, alongside experiments on 101 action-item-labeled AMI meetings. AMC-A candidate sentences are preselected using temporal expressions and action-related verbs, independently annotated by three annotators with contextual information, and adjudicated by an expert when labels disagree. Context-Drop supplies local context from adjacent sentences and global context retrieved by n-gram cosine similarity, randomly or deterministically drops context during training, and adds a bidirectional KL-divergence consistency loss; experiments report positive-class F1 over five runs. A lightweight model ensemble is also tested by combining the encoder layers of one pretrained model with the pooler of another without increasing inference-time model size.",
+ "key_findings": [
+  {
+   "finding": "AMC-A substantially expands publicly described action-item resources in the study, containing 424 meetings, 306,846 utterances, and 1,506 labeled actions, with train/dev/test splits of 295, 65, and 64 meetings.",
+   "evidence_type": "supported",
+   "section": "2.2 Building A Large-scale Chinese Meeting Corpus"
+  },
+  {
+   "finding": "Action-item annotation remained subjective despite detailed guidelines: average pairwise kappa among AMC-A annotators was 0.47, followed by expert review of disagreements.",
+   "evidence_type": "supported",
+   "section": "2.2 Building A Large-scale Chinese Meeting Corpus"
+  },
+  {
+   "finding": "Adding ordinary local and global context already improved AMC-A StructBERT positive F1 from 67.84 for the focus sentence alone to 69.09 for local plus global context.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "On AMC-A, dynamic Context-Drop with local and global context achieved 70.82 positive F1, an absolute gain of 2.98 over the sentence-only baseline and 2.10 over the corresponding R-Drop configuration.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "On AMI, the strongest reported Context-Drop configuration was fixed Context-Drop with local context at F1 43.12, compared with 38.67 for sentence-only StructBERT and 42.72 for local-context R-Drop; the configuration that was best on AMC-A was therefore not universally best.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "Removing the KL-divergence regularization term degraded Context-Drop configurations on both corpora, supporting the claim that the gain is not explained solely by context-dropping data augmentation.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "The lightweight hybridization experiment provided modest gains without an additional inference model: a StructBERT encoder with a RoBERTa pooler reached 68.36 F1 versus 67.84 for StructBERT alone, while the reverse hybrid improved RoBERTa from 66.87 to 67.25.",
+   "evidence_type": "supported",
+   "section": "3.2 Lightweight Model Ensemble and Table 4"
+  }
+ ],
+ "limitations": [
+  "AMC-A annotation candidates are prefiltered using temporal expressions and action-related verbs, which can bias the labeled set toward explicit action formulations and potentially miss implicit actions.",
+  "Average pairwise kappa of 0.47 indicates substantial annotation subjectivity even after guideline development.",
+  "AMI labels are indirect: dialogue acts linked to action-related abstractive summaries are treated as positive rather than being directly annotated as action items.",
+  "AMC-A is Chinese and biased toward work meetings, while much of AMI is scenario-based, so cross-domain and cross-language generalization remains only partially tested.",
+  "Global context is retrieved with relatively simple n-gram cosine similarity rather than learned discourse or semantic retrieval.",
+  "The task is binary sentence detection and does not directly output normalized action object, owner, deadline, condition, commitment/request type, or supporting evidence spans.",
+  "The lightweight ensemble gains are small and were evaluated separately from the strongest Context-Drop setup.",
+  "The study evaluates manual transcripts rather than presenting an end-to-end ASR-to-action extraction evaluation."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "amca_resource_scale": 0.99,
+  "annotation_subjectivity": 0.99,
+  "context_improves_baseline": 0.99,
+  "dynamic_context_drop_amca_gain": 0.99,
+  "ami_best_configuration_differs": 0.99,
+  "kl_regularization_matters": 0.98,
+  "lightweight_ensemble_gain": 0.99
+ },
+ "raw_claims": [
+  "The paper releases the Chinese AliMeeting-Action Corpus with manual action-item annotations.",
+  "AMC-A contains 424 meetings and 306,846 utterances.",
+  "The corpus contains 1,506 labeled actions.",
+  "AMC-A sentences containing action-item information such as task description, timeframe, or owner are positive examples.",
+  "Three annotators independently label candidate sentences while viewing their context.",
+  "Average pairwise kappa on AMC-A is 0.47.",
+  "The AMI benchmark is derived indirectly from dialogue acts linked to action-related abstractive summaries.",
+  "Local context is adjacent to the focus sentence, whereas global context is relevant but non-contiguous.",
+  "Dynamic Context-Drop reached positive F1 70.82 on AMC-A with local and global context.",
+  "Fixed Context-Drop with local context reached F1 43.12 on AMI.",
+  "Removing the KL consistency loss reduced Context-Drop performance.",
+  "The paper provides links to both the released corpus and action-item-detection code."
+ ],
+ "source_url": "https://arxiv.org/html/2303.16763",
+ "access": "full_text"
+}

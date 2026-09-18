@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-3115-1564535-1564540",
+ "title": "Shallow Discourse Structure for Action Item Detection",
+ "research_question": "Can action items in multi-party meeting transcripts be detected more effectively, while also exposing their task, owner, timeframe, and agreement information, by modeling shallow discourse structure instead of treating all action-item-related utterances as one flat class?",
+ "methodology": "The authors first reproduce a flat action-item utterance classifier on 12 meetings: five short three-participant CALO meetings plus six ICSI and one ISL meeting, using SVMlight with word-unigram features and five-fold evaluation over the CALO meetings. They then introduce a hierarchical annotation scheme with four potentially overlapping utterance classes: task description, timeframe, owner, and agreement. Separate classifiers are trained for these subclasses, after which their outputs are combined with a manually weighted five-utterance window to hypothesize complete action items and identify representative property-bearing utterances.",
+ "key_findings": [
+  {
+   "finding": "Flat binary action-item classification was weak: the five CALO meetings produced F1 scores between 0.30 and 0.38, and neither higher-order n-grams nor alternative discriminative classifiers improved the reported baseline.",
+   "evidence_type": "supported",
+   "section": "3 Baseline Experiments"
+  },
+  {
+   "finding": "The proposed discourse representation decomposes an action item into task description, timeframe, owner, and agreement, while allowing one utterance to realize multiple components and multiple utterances to realize the same component.",
+   "evidence_type": "supported",
+   "section": "4 Hierarchical Annotations"
+  },
+  {
+   "finding": "Initial annotation reliability on one relatively complex ISL meeting was substantially higher than the earlier flat action-item agreement cited by the paper, with kappa 0.86 for timeframe, about 0.77 for owner, and 0.73 for agreement and task description.",
+   "evidence_type": "supported",
+   "section": "4 Hierarchical Annotations"
+  },
+  {
+   "finding": "Subclass detection performance varied greatly: agreement was the strongest subclass at F1 0.40, while owner was weakest at F1 0.17; description and timeframe reached F1 0.29 and 0.26 respectively.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  },
+  {
+   "finding": "The authors attribute some owner-class difficulty to overlap with other component classes, because owner utterances were especially likely to receive multiple labels.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  },
+  {
+   "finding": "A preliminary weighted combination of the four subclassifiers could detect some complete action items and provide candidate property-bearing utterances, but results were highly variable across meetings, including F1 values of 0.67, 0.40, 0.50, 1.00, and 0.00.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  }
+ ],
+ "limitations": [
+  "The experiments use only 12 meetings, with evaluation focused on five short CALO meetings.",
+  "The CALO meetings were scenario-driven simulations rather than unconstrained workplace meetings.",
+  "Interannotator reliability for the hierarchical scheme was reported from only one ISL meeting and two annotators.",
+  "Each subclass has little training data, producing especially weak owner and timeframe classifiers.",
+  "The final subclass-combination weights and five-utterance window were manually chosen rather than learned.",
+  "Combined-system accuracy was evaluated for detecting an action item in a window, not for correct extraction of every component value.",
+  "Experiments used human transcripts; robustness to ASR errors was left for future work.",
+  "The study detects utterances containing properties but does not yet demonstrate reliable normalization of owners, deadlines, or task objects into structured records."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "flat_baseline_is_weak": 0.99,
+  "four_component_structure": 0.99,
+  "hierarchical_annotation_reliability": 0.97,
+  "agreement_best_owner_worst": 0.99,
+  "owner_label_overlap": 0.94,
+  "combined_detector_preliminary": 0.99
+ },
+ "raw_claims": [
+  "The paper treats action items as assignments of concrete tasks together with properties such as responsible party and timeframe.",
+  "The flat unigram baseline produced F1 scores no higher than 0.38 on the five evaluated CALO meetings.",
+  "The hierarchical annotation scheme separates task description, timeframe, owner, and agreement information.",
+  "An utterance may carry more than one action-item component label.",
+  "Timeframe annotation achieved the highest reported initial agreement, with kappa 0.86.",
+  "Agreement utterances were the easiest of the four subclasses to classify in the reported experiments.",
+  "Owner utterances were the hardest subclass, with F1 0.17.",
+  "The preliminary combined detector used a five-utterance window and manually weighted subclass decisions.",
+  "The combined detector failed on one meeting in which explicit agreement was absent and the chosen weights emphasized agreement.",
+  "The authors propose later work on ASR hypotheses, learned classifier combination, semantic parsing, and extraction into calendars or to-do lists."
+ ],
+ "source_url": "https://aclanthology.org/W06-3405.pdf",
+ "access": "full_text"
+}

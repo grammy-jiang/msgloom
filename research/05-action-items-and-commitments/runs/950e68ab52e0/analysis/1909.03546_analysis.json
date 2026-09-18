@@ -1,0 +1,88 @@
+{
+ "paper_id": "1909.03546",
+ "title": "Entity, Relation, and Event Extraction with Contextualized Span Representations",
+ "research_question": "Can a unified span-based information-extraction architecture combine contextualized language representations and dynamically propagated span graphs to improve entity, relation, and event extraction across domains?",
+ "methodology": "DyGIE++ enumerates candidate within-sentence spans, represents them with multi-sentence BERT encodings, and optionally refines span representations through task-specific graph propagation for coreference, relations, and events. Shared representations feed neural scoring functions for named entities, relations, event triggers, and trigger-argument roles, with coreference used as an auxiliary task. The authors evaluate variants using BERT plus an LSTM or BERT fine-tuning on ACE05, SciERC, GENIA, and wet-lab-protocol data and compare them with previous state-of-the-art systems. Evaluation requires exact span matches for entities, relations, event triggers, and event arguments, with additional label correctness required for classification scores.",
+ "key_findings": [
+  {
+   "finding": "The framework achieves reported state-of-the-art results on the three high-level extraction tasks and on all listed subtasks except event argument identification, although event-argument gains are not statistically supported.",
+   "evidence_type": "supported",
+   "section": "Sections 3 and 4; Appendix D"
+  },
+  {
+   "finding": "Coreference propagation improves named-entity recognition across the evaluated domains and improves relation extraction on SciERC, demonstrating that non-local mention links can improve span representations.",
+   "evidence_type": "supported",
+   "section": "Section 4, Benefits of Graph Propagation"
+  },
+  {
+   "finding": "Event-specific graph propagation does not improve the best ACE event-extraction results; the authors hypothesize that asymmetric trigger-argument structure may require better higher-order modeling.",
+   "evidence_type": "supported",
+   "section": "Section 4, Benefits of Graph Propagation"
+  },
+  {
+   "finding": "Increasing BERT's sentence context can help some entity, relation, trigger, and argument tasks, but the effects are task-dependent rather than uniformly positive.",
+   "evidence_type": "supported",
+   "section": "Section 4, Benefits of Cross-Sentence Context with BERT"
+  },
+  {
+   "finding": "Evaluation explicitly requires matching gold offsets, making this paper directly relevant to exact evidence-span extraction methodology.",
+   "evidence_type": "supported",
+   "section": "Section 3, Evaluation"
+  },
+  {
+   "finding": "For event extraction, candidate arguments are restricted to spans in the same sentence as the trigger, so the architecture as evaluated does not directly solve cross-sentence or cross-message action-argument attachment.",
+   "evidence_type": "supported",
+   "section": "Section 2.1, Task definitions"
+  },
+  {
+   "finding": "The ACE event preprocessing used in the paper ignores time and value arguments, limiting the reported event experiments for deadline-to-action extraction.",
+   "evidence_type": "supported",
+   "section": "Appendix A.2"
+  },
+  {
+   "finding": "The datasets and schemas do not define workplace-specific assignee, group-assignee, deadline, condition, negation, or deontic-modality slots, so those capabilities are not established by the reported results.",
+   "evidence_type": "supported",
+   "section": "Sections 2 and 3"
+  }
+ ],
+ "limitations": [
+  "None of the evaluated datasets is an authentic workplace email or enterprise-chat corpus.",
+  "Event arguments are modeled only within the trigger's sentence in the evaluated event task.",
+  "ACE preprocessing explicitly discards time and value arguments, which removes evidence needed for deadline-oriented evaluation.",
+  "The task schemas do not directly represent implicit assignees, group responsibility, conditions, negation scope, or obligation/permission modality.",
+  "The strongest event argument identification result is below the cited previous state of the art, and averaged event-argument results do not demonstrate improvement.",
+  "Some headline results use the best single run, while the appendix shows materially different averages across random seeds.",
+  "Exact span matching is evaluated, but the evidence spans are benchmark entity/event arguments rather than workplace action or decision evidence."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overall_IE_performance": 0.99,
+  "coreference_propagation": 0.98,
+  "event_propagation_not_helpful": 0.99,
+  "cross_sentence_context_task_dependent": 0.97,
+  "exact_span_evaluation": 0.99,
+  "same_sentence_event_arguments": 0.99,
+  "time_arguments_ignored": 0.99,
+  "workplace_schema_gap": 0.97
+ },
+ "raw_claims": [
+  "DyGIE++ jointly models named entities, relations, event triggers, event arguments, and auxiliary coreference links.",
+  "Candidate spans are enumerated only within sentence boundaries.",
+  "BERT is supplied with surrounding-sentence context through a sliding-window scheme.",
+  "Dynamic graph updates can propagate information through predicted coreference, relation, or event links.",
+  "Event argument candidates are predicted entity mentions in the same sentence as the event trigger.",
+  "Entity and relation correctness requires exact matching of gold spans.",
+  "Event trigger correctness also depends on matching gold offsets.",
+  "Coreference propagation is especially beneficial on SciERC, where long-range coreference and abbreviations are common.",
+  "The best event extraction configuration does not benefit from event propagation.",
+  "ACE event preprocessing in these experiments excludes time and value arguments.",
+  "The authors publicly released the DyGIE++ implementation."
+ ],
+ "source_url": "https://arxiv.org/html/1909.03546",
+ "access": "full_text",
+ "source_citation": "citeturn524617view0turn502509view1turn502509view3turn502509view6"
+}

@@ -1,0 +1,75 @@
+{
+ "paper_id": "1606.07965",
+ "title": "Summarizing Decisions in Spoken Meetings",
+ "research_question": "How effectively can decision-related utterances in multi-party meetings be clustered by decision and summarized using dialogue-act-level or token-level supervised and unsupervised methods?",
+ "methodology": "The work uses the AMI meeting corpus and assumes decision-related dialogue acts have already been identified. It first clusters decision-related utterances belonging to the same decision using TF-IDF or LDA-based unsupervised methods and supervised classifiers, then generates extractive summaries at the dialogue-act or token level with optional discourse context. Cluster quality is evaluated with clustering measures and summary quality with ROUGE against human decision abstracts.",
+ "key_findings": [
+  {
+   "finding": "Decision-related dialogue acts can be distributed and interleaved across a meeting, motivating an explicit clustering stage before decision summarization.",
+   "evidence_type": "supported",
+   "section": "Sections 1-2"
+  },
+  {
+   "finding": "Supervised clustering performs better than the reported unsupervised LDA clustering on B-cubed F1, although the LDA method remains competitive for downstream summary quality.",
+   "evidence_type": "supported",
+   "section": "Section 3, Table 3"
+  },
+  {
+   "finding": "With automatically produced clusters, an unsupervised LDA-based clustering pipeline can yield decision-summary quality comparable to the supervised clustering alternative.",
+   "evidence_type": "supported",
+   "section": "Sections 4-5"
+  },
+  {
+   "finding": "When true decision clusters are supplied, supervised token-level summarization with discourse context achieves the strongest reported supervised configuration and approaches the paper's extractive upper bound more closely than automatic-cluster conditions.",
+   "evidence_type": "supported",
+   "section": "Section 4, Table 7"
+  },
+  {
+   "finding": "The AMI data are scenario-driven four-person design-team meetings rather than authentic enterprise email or chat logs.",
+   "evidence_type": "supported",
+   "section": "Section 2"
+  },
+  {
+   "finding": "The task summarizes decisions but does not provide structured evaluation of assignee, deadline, condition, negation, modality, or exact argument evidence spans.",
+   "evidence_type": "unsupported",
+   "section": "Task formulation and evaluation"
+  }
+ ],
+ "limitations": [
+  "The corpus consists of scenario-driven spoken design meetings rather than naturally occurring enterprise email or chat.",
+  "The system assumes that decision-related dialogue acts have already been identified, so decision detection itself is outside the evaluated pipeline.",
+  "The output is decision summarization rather than structured extraction of action, assignee, deadline, condition, or decision arguments.",
+  "Implicit and group assignees are not defined as dedicated annotation targets.",
+  "Condition, negation, and modality scope are not separately annotated or evaluated.",
+  "ROUGE-based summary scoring does not enforce exact evidence spans for individual structured arguments.",
+  "Some clustering stopping thresholds are manually selected."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "decision_clustering_needed": 0.99,
+  "supervised_clustering_advantage": 0.98,
+  "lda_summary_competitiveness": 0.97,
+  "token_context_true_clusters": 0.99,
+  "scenario_meeting_domain": 0.99,
+  "structured_argument_gap": 0.98
+ },
+ "raw_claims": [
+  "The work targets concise summaries of individual decisions made during meetings.",
+  "Decision-related dialogue acts associated with one decision may be separated by other discussion.",
+  "The experiments use the AMI meeting corpus.",
+  "AMI contains scenario-driven meetings involving four participants playing design-team roles.",
+  "The experiments assume decision-related dialogue acts have already been identified.",
+  "The pipeline separately studies clustering and summarization.",
+  "Both unsupervised and supervised clustering approaches are evaluated.",
+  "Both dialogue-act-level and token-level summary selection are investigated.",
+  "Human-written decision abstracts provide the summary reference.",
+  "Automatic clustering substantially constrains downstream summary quality compared with true decision clusters.",
+  "ROUGE is used to assess generated decision summaries."
+ ],
+ "source_url": "https://arxiv.org/html/1606.07965",
+ "access": "full_text"
+}

@@ -1,0 +1,228 @@
+{
+ "round": 1,
+ "streams": [
+  {
+   "id": "D01",
+   "description": "Workplace email action-item detection and extraction: detect source-grounded passages that require action or response without turning mere mentions, suggestions, or dates into obligations."
+  },
+  {
+   "id": "D02",
+   "description": "Email speech-act classification for requests and commitments, especially distinctions between directive/request and commissive/commitment acts."
+  },
+  {
+   "id": "D03",
+   "description": "Structured request and commitment argument extraction: recover actors or owners, actions, objects or targets, recipients, deadlines, conditions, exceptions, and supporting source spans."
+  },
+  {
+   "id": "D06",
+   "description": "Workplace action/request corpora and annotation schemas that empirically distinguish action-bearing acts and difficult request/commitment phenomena."
+  },
+  {
+   "id": "T01",
+   "description": "Meeting action-item detection and argument annotation, including task, owner, timeframe, agreement, and source-grounded task description extraction."
+  },
+  {
+   "id": "T02",
+   "description": "Meeting decision detection: identify decision discussions, resolution-related dialogue roles, and source-grounded decision content."
+  },
+  {
+   "id": "T03",
+   "description": "Dialogue-act and illocutionary-force classification using conversational and sequential context."
+  },
+  {
+   "id": "T07",
+   "description": "Conditionality, negation, hedge, and modality scope over events or propositions, needed to avoid promoting negated, hypothetical, or qualified actions into live obligations."
+  },
+  {
+   "id": "T08",
+   "description": "Temporal expression recognition and event-time linking, including explicit representation of relations between events and temporal expressions."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "manual-fde6beef40",
+   "decision": "ADMIT",
+   "reason": "D03. The abstract describes email action items with explicit Action, Object, and optional Subject/agent structure and distinguishes Request, Assign, Suggest, and Deliver. That directly strengthens structured action representation and helps preserve the distinction between different action-bearing speech acts rather than extracting verbs alone.",
+   "stream_id": "D03",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-ee40d588e3",
+   "decision": "ADMIT",
+   "reason": "T07. The shared task explicitly annotates negation cues, scope, and focus. Scope-sensitive negation is directly transferable to determining whether an apparent action proposition is negated instead of treating the presence of an action verb as a live request or commitment.",
+   "stream_id": "T07",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-cd3fa58e4c",
+   "decision": "ADMIT",
+   "reason": "D01. The target is specifically email containing requests for action, and the method localizes relevant content through functional-zone segmentation before classifying the request. Although primarily message-level, it provides direct workplace-email evidence for distinguishing actionable email from non-actionable surrounding material.",
+   "stream_id": "D01",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-9f2d597e28",
+   "decision": "REJECT",
+   "reason": "Out of scope for this reading round. It is foundational philosophical theory of performatives and illocutionary acts, but the abstract provides no empirical NLP capability, annotation evidence, extraction method, or workplace-communication evaluation that materially strengthens an authorized stream.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1007-11965152-18",
+   "decision": "ADMIT",
+   "reason": "T01. The abstract defines meeting action items using task description, timeframe, owner, and participant agreement and introduces a hierarchical annotation scheme for the assignment process. Those explicit arguments closely match msgloom's owner/action/deadline/evidence requirements and provide strong transfer evidence.",
+   "stream_id": "T01",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-f22a8b3ac6",
+   "decision": "REJECT",
+   "reason": "The capability is substantially covered by stronger T01 candidates that add either explicit assignment structure or source-grounded task extraction. This abstract mainly contributes utterance-level action-item detection from meeting audio features. Because identity is UNCHECKED and the otherwise similar modern action-item detection candidate 2303.16763 is VERIFIED and adds explicit local/global context modeling plus two corpora, the VERIFIED paper is preferred for the overlapping detection evidence.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+   "decision": "ADMIT",
+   "reason": "T01. It goes beyond classifying action-item utterances: it detects the surrounding subdialogue where an item is proposed, discussed, and committed to, then semantically parses source phrases to summarize the task. That materially strengthens source-grounded action extraction and the distinction between discussion and commitment.",
+   "stream_id": "T01",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-3115-1564535-1564540",
+   "decision": "ADMIT",
+   "reason": "T01. The abstract explicitly targets action-item assignment regions and properties including responsible party, task, and deadline, using discourse structure rather than treating a single sentence as the complete unit. This materially strengthens owner/task/deadline argument recovery and discourse-context handling.",
+   "stream_id": "T01",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-3115-1708376-1708410",
+   "decision": "ADMIT",
+   "reason": "T02. The paper detects decision discussions, distinguishes dialogue-act roles including the issue and its resolution, and extracts decision phrases from the source dialogue. That directly strengthens transfer evidence for separating discussion/proposal material from actual resolution and for retaining grounded decision evidence.",
+   "stream_id": "T02",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2303.16763",
+   "decision": "ADMIT",
+   "reason": "T01. The VERIFIED paper contributes a manually annotated meeting action-item corpus and explicitly models both local and global conversational context, with experiments on Chinese meetings and AMI. This materially strengthens evidence about context-dependent action-item detection beyond isolated-utterance classification.",
+   "stream_id": "T01",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-0839b98ee7",
+   "decision": "ADMIT",
+   "reason": "D06. The abstract reports sentence-level human annotation of both Requests-for-Action and Commitments-to-Act in workplace email, including strength and inter-annotator reliability questions. This is direct empirical annotation evidence for the crucial request-versus-commitment distinction.",
+   "stream_id": "D06",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-20b8cd2fdd",
+   "decision": "ADMIT",
+   "reason": "D06. The paper analyzes difficult real-world workplace-email request and commitment cases and proposes annotation treatments for conditional, repeated, ambiguous, and context-dependent evidence. Those phenomena map directly to the project's highest-risk false-obligation and lost-condition cases, so this materially strengthens the annotation and error model.",
+   "stream_id": "D06",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-173770768a",
+   "decision": "REJECT",
+   "reason": "Topic words match, but the abstract is too summarization-oriented and provides too little evidence about how action items are defined, localized, distinguished from non-obligatory mentions, or decomposed into arguments. Its action-item contribution is also covered more specifically by the admitted email action-detection papers.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-d19b0f6f1e",
+   "decision": "ADMIT",
+   "reason": "D02. The abstract provides utterance-level definitions of requests and commitments in workplace email, two annotation experiments on Enron mail, and explicit responsibility distinctions between sender and recipients. This is direct empirical evidence for request-versus-commitment classification at a finer level than whole-message genre labels.",
+   "stream_id": "D02",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-3115-1699571-1699632",
+   "decision": "REJECT",
+   "reason": "Topic words match only indirectly. Functional-zone segmentation can be useful preprocessing for separating quoted text, signatures, and current-message content, but the paper does not itself detect action-bearing acts, classify requests or commitments, extract action arguments, or attach deadlines. It therefore does not materially strengthen an authorized Topic 05 stream.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1109-hicss-2006-528",
+   "decision": "ADMIT",
+   "reason": "D02. The abstract defines email-oriented speech acts and applies them to communicative-purpose and genre categorization. It is weaker than proposition-level extraction, but it materially strengthens the direct email speech-act taxonomy and baseline evidence needed to distinguish request, commitment, and related act classes.",
+   "stream_id": "D02",
+   "role": "DIRECT",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-1111-j-1467-8640-1992-tb00380-x",
+   "decision": "REJECT",
+   "reason": "The paper is relevant conceptual background for task-oriented conversation acts, but the abstract emphasizes extending the speech-act inventory and discussing computational recognition rather than presenting sufficiently specific empirical act-classification, action-argument, or workplace-action evidence. Stronger empirical T03 evidence is available in the admitted dialogue-act modeling paper.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-1e8332286e",
+   "decision": "ADMIT",
+   "reason": "T08. TimeML explicitly represents events, temporal expressions, and links between events and times. That relation layer materially strengthens the representation needed to attach a temporal expression to the correct action instead of treating every nearby date as that action's deadline.",
+   "stream_id": "T08",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-01c535c108",
+   "decision": "ADMIT",
+   "reason": "T03. The paper empirically models dialogue-act tagging with lexical, prosodic, and discourse-sequence information, directly demonstrating how neighboring conversational acts provide context for act recognition. That is useful transfer evidence for context-dependent request, agreement, and action-oriented act classification.",
+   "stream_id": "T03",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1145-1076034-1076094",
+   "decision": "ADMIT",
+   "reason": "D02. The paper directly classifies email speech acts including requests and commitments and exploits dependencies between messages in the same thread. It materially strengthens direct evidence that act classification can require conversational context rather than independent whole-message classification alone.",
+   "stream_id": "D02",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1145-1076034-1076140",
+   "decision": "ADMIT",
+   "reason": "D01. The abstract specifically distinguishes whole-email action classification from localized detection and highlights the text span expressing the request for action or response. That source-grounded localization is directly aligned with the requirement to retain exact action evidence rather than merely flag an email.",
+   "stream_id": "D01",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-73870f8488",
+   "decision": "REJECT",
+   "reason": "Out of scope for this empirical reading round. It is foundational speech-act theory covering requests, orders, promises, and assertions, but the abstract provides no corpus, annotation results, computational extraction method, or workplace-communication evaluation.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-acl-long-536",
+   "decision": "REJECT",
+   "reason": "The paper concerns general event temporal-relation extraction and a structured start/end-point representation. That is potentially useful temporal reasoning, but the abstract does not show deadline recognition, due-time or trigger semantics, or attachment of temporal expressions to requested or committed workplace actions. TimeML provides the more directly relevant event-time-linking evidence for this round.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-3115-1564535-1564541",
+   "decision": "REJECT",
+   "reason": "The abstract is relevant to D02 but mainly contributes feature selection, preprocessing, and n-gram sequence improvements for email-act classification. The central capability is already covered by admitted direct email speech-act papers that provide stronger taxonomy, request/commitment definitions, annotation evidence, or thread-context modeling, so this would consume a reading slot for largely incremental classifier evidence.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2106.08037",
+   "decision": "ADMIT",
+   "reason": "T07. The VERIFIED paper models modality as a relation between modal expressions and the specific events they modify rather than merely detecting modal cues. That event-scoped representation materially strengthens the ability to distinguish actual commitments or requested actions from possible, hypothetical, qualified, or otherwise modalized events.",
+   "stream_id": "T07",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  }
+ ],
+ "notes": "Admission is based on the supplied abstracts and the Topic 05 project boundary. UNCHECKED identity was not treated as evidence that a paper is invalid; it affected selection only where otherwise comparable candidates overlapped, most explicitly for the rejected 2006 audio-only meeting detector versus the VERIFIED 2023 meeting action-item detector. No candidate was admitted for D04, D05, T04, T05, or T06 because the supplied abstracts did not show sufficiently direct capability for those streams."
+}

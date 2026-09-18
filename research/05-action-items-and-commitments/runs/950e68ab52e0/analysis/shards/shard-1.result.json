@@ -1,0 +1,405 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-18653-v1-2023-findings-acl-378",
+   "title": "LEDA: a Large-Organization Email-Based Decision-Dialogue-Act Analysis Dataset",
+   "research_question": "What dialogue-act taxonomy and empirical patterns can characterize decision-making communication in a large, distributed organization, and how predictable are those acts from email text and conversational context?",
+   "methodology": "The authors construct LEDA from public Internet Engineering Task Force mailing-list discussions surrounding four expert-selected Internet drafts, retaining complete discussion threads and segmenting messages into author-written, quoted, and signature material. Seven linguistically trained annotators assign a calibrated multi-label taxonomy containing decision-relevant acts such as ProposeAction and StateDecision; the released corpus contains 8,230 segments from 2,196 messages by 363 authors. They analyze dialogue-act distributions over draft life cycles and participant groups, then train a hierarchical BERT-plus-BiLSTM multi-label tagging baseline using thread paths and a 60/20/20 train-validation-test split.",
+   "key_findings": [
+    {
+     "finding": "The calibrated taxonomy contains explicit decision-relevant categories including ProposeAction and StateDecision while retaining broader information-seeking, information-providing, response, and social categories.",
+     "evidence_type": "supported",
+     "section": "2 Dataset"
+    },
+    {
+     "finding": "ProposeAction is much more frequent than StateDecision in the annotated corpus, with 2,225 versus 359 labeled instances, indicating substantially more discussion of possible actions than explicit decision statements.",
+     "evidence_type": "supported",
+     "section": "2 Dataset / Table 1 and 3.1 Draft life-cycle"
+    },
+    {
+     "finding": "The frequency of ProposeAction remains comparatively stable over the draft life cycle, whereas questions and answers are more common earlier in discussions.",
+     "evidence_type": "supported",
+     "section": "3.1 Draft life-cycle"
+    },
+    {
+     "finding": "Draft authors and participants with high interaction-graph centrality make more StateDecision acts than their comparison groups; influential participants also propose slightly more actions.",
+     "evidence_type": "supported",
+     "section": "3.2 Different groups"
+    },
+    {
+     "finding": "Approximately two thirds of annotated questions appear to remain unanswered, and answer rates vary substantially by participant role, with chairs receiving answers more often than authors.",
+     "evidence_type": "supported",
+     "section": "3.2 Different groups"
+    },
+    {
+     "finding": "Fine-grained dialogue acts that are subjective or infrequent have poorer inter-annotator agreement and poorer automatic tagging performance than broad categories such as information provision or questions.",
+     "evidence_type": "supported",
+     "section": "2 Dataset and 4 Automated Dialogue Act Tagging"
+    },
+    {
+     "finding": "Domain-adaptive pretraining on the full IETF email archive did not improve the dialogue-act baseline over ordinary BERT in the reported experiment.",
+     "evidence_type": "supported",
+     "section": "4 Automated Dialogue Act Tagging"
+    }
+   ],
+   "limitations": [
+    "The dataset covers discussions of only four IETF drafts from one organization, so transfer to other enterprises or workplace-email cultures is untested.",
+    "The annotation unit is an email segment with dialogue-act labels rather than a structured action record with predicate, assignee, deadline, condition, modality, or argument links.",
+    "ProposeAction and StateDecision identify communicative function but do not annotate the exact action phrase, decision proposition, responsible person or group, or temporal expression as separate evidence spans.",
+    "The taxonomy does not encode attachment relations such as which deadline modifies which action, which condition licenses an action, or which negation/modal operator scopes over a proposition.",
+    "Some categories have low inter-annotator agreement because relevant acts can be implicit and subjective.",
+    "The automatic baseline can truncate emails longer than BERT's 512-token limit and was not subjected to a hyperparameter search.",
+    "The corpus is authentic organizational email, but it is public standards-development communication rather than private enterprise email."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "action_vs_decision_frequency": 0.99,
+    "participant_role_patterns": 0.96,
+    "unanswered_question_rate": 0.97,
+    "fine_grained_annotation_difficulty": 0.96,
+    "domain_adaptation_result": 0.94
+   },
+   "raw_claims": [
+    "LEDA is built from real IETF mailing-list discussions associated with four Internet drafts.",
+    "Messages are separated into normal author text, quoted material, and signatures before annotation.",
+    "The final dialogue-act taxonomy is multi-label and contains three coarse categories and eleven fine-grained categories.",
+    "ProposeAction has substantially more annotations than StateDecision.",
+    "Action proposals remain common throughout the draft life cycle.",
+    "Authors and influential participants account for relatively more explicit decisions than their comparison groups.",
+    "A large fraction of questions in the annotated discussions receive no labeled answer.",
+    "The authors release individual annotator labels, text data, and code.",
+    "A BERT-based segment encoder followed by a BiLSTM is used as the preliminary tagging baseline."
+   ],
+   "source_url": "https://aclanthology.org/2023.findings-acl.378.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d16-1078",
+   "title": "Speculation and Negation Scope Detection via Convolutional Neural Networks",
+   "research_question": "Can convolutional neural networks using syntactic-path and positional features accurately identify the token-level scope of speculation and negation cues and generalize across biomedical text genres?",
+   "methodology": "The paper recasts scope detection as token classification relative to a known speculation or negation cue, assigning tokens labels that distinguish material before the cue, material at or after the cue, and tokens outside the scope. CNNs learn representations from constituency-tree or dependency-tree paths between the cue and each candidate token, combine them with relative-position features, and apply post-processing to enforce continuous scopes. Models are evaluated on the BioScope Abstracts, Clinical Records, and Full Papers subcorpora using token precision, recall and F1 as well as exact Percentage of Correct Scopes and boundary metrics; Abstracts use ten-fold cross-validation and also serve as the training domain for cross-domain experiments.",
+   "key_findings": [
+    {
+     "finding": "On BioScope Abstracts, the strongest reported configuration reaches 85.75% exact-scope accuracy for speculation and 77.14% for negation, outperforming the cited prior result for speculation and ranking second among the compared systems for negation.",
+     "evidence_type": "supported",
+     "section": "4.3 Experimental Results on Abstracts and 4.5 Comparison with the State-of-the-Art"
+    },
+    {
+     "finding": "Constituency-path features perform better for speculation on Abstracts, whereas dependency-path features perform better for negation, indicating that the two phenomena benefit from different syntactic representations.",
+     "evidence_type": "supported",
+     "section": "4.3 Experimental Results on Abstracts"
+    },
+    {
+     "finding": "The CNN models improve negation right-boundary detection markedly relative to the feature-based baseline, which accounts for an important part of the overall gain.",
+     "evidence_type": "supported",
+     "section": "4.3 Experimental Results on Abstracts"
+    },
+    {
+     "finding": "Models trained on Abstracts transfer comparatively well to Clinical Records, obtaining exact-scope scores of 73.92% for speculation and 89.66% for negation with the best reported configurations.",
+     "evidence_type": "supported",
+     "section": "4.4 Experimental Results on Clinical Records and Full Papers"
+    },
+    {
+     "finding": "Cross-domain performance is substantially worse on Full Papers, where the best reported exact-scope scores are 59.82% for speculation and 55.32% for negation.",
+     "evidence_type": "supported",
+     "section": "4.4 Experimental Results on Clinical Records and Full Papers"
+    },
+    {
+     "finding": "Longer and structurally more complex sentences, class imbalance, and difficulty determining right boundaries are identified as important sources of scope errors.",
+     "evidence_type": "supported",
+     "section": "4.3-4.4 Experimental Results"
+    },
+    {
+     "finding": "The authors conclude that token-level modeling is less effective at capturing long-distance syntactic dependencies than stronger tree-level approaches may be.",
+     "evidence_type": "supported",
+     "section": "4.5 Comparison with the State-of-the-Art and 5 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The experiments are entirely in the biomedical BioScope domain and provide no evidence for workplace email or enterprise chat.",
+    "The task assumes a speculation or negation cue and focuses on its scope rather than jointly discovering cues and scopes end to end.",
+    "The method models speculation and grammatical negation, not broader business-action modality such as obligation, permission, commitment, conditional execution, or deadline semantics.",
+    "The system depends on automatically produced constituency and dependency parses and therefore inherits parser errors and domain-transfer weaknesses.",
+    "A heuristic post-processing stage forces scope continuity and cue inclusion, limiting the representation of genuinely discontinuous scope phenomena.",
+    "Cross-domain results degrade strongly on full scientific papers.",
+    "The annotations identify scope tokens but do not relate modal or negative scope to structured workplace action arguments, assignees, deadlines, or decisions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "abstracts_scope_accuracy": 0.99,
+    "syntax_representation_difference": 0.96,
+    "clinical_transfer": 0.98,
+    "full_paper_degradation": 0.99,
+    "long_distance_limitation": 0.95
+   },
+   "raw_claims": [
+    "Scope detection is formulated as deciding, for every token, whether it belongs to the scope of a specified cue.",
+    "The model uses syntactic paths between each candidate token and its cue together with relative-position information.",
+    "Both constituency-tree and dependency-tree variants are evaluated.",
+    "BioScope provides annotated speculation and negation cues and scopes in biomedical texts.",
+    "Abstracts are used for in-domain cross-validation and as training data for cross-domain tests.",
+    "The constituency variant is strongest for speculation on Abstracts, while the dependency variant is strongest for negation there.",
+    "Transfer to Clinical Records is considerably better than transfer to Full Papers.",
+    "The authors identify long-distance dependency modeling as an important direction for improvement."
+   ],
+   "source_url": "https://aclanthology.org/D16-1078.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-69bc2555ab",
+   "title": "Predicate-specific Annotations for Implicit Role Binding: Corpus Annotation, Data Analysis and Evaluation Experiments",
+   "research_question": "Can higher-volume, predicate-specific annotation of omitted semantic roles improve the empirical analysis and automatic linking of implicit arguments to discourse antecedents?",
+   "methodology": "The authors select five verbal predicates—give, put, leave, bring, and pay—from OntoNotes and map their PropBank annotations into FrameNet roles with alignments to VerbNet. For null-instantiated core roles, annotators classify whether the role is discourse-resolvable, distinguish licensing type, and, when resolvable, link it to an antecedent mention in surrounding discourse; the annotation process includes calibration against SemEval data and between annotators. The resulting annotations are analyzed for predicate- and role-specific patterns and then evaluated with a prior implicit-role-linking system in ten-fold predicate-specific cross-validation and as additional training data for the SemEval 2010 implicit-role task.",
+   "key_findings": [
+    {
+     "finding": "The annotation effort yields 630 null-instantiated roles for genuine target-frame readings across 438 verb occurrences, providing substantially denser predicate-specific implicit-role evidence than the sparse SemEval resource motivating the work.",
+     "evidence_type": "supported",
+     "section": "4 Data Analysis"
+    },
+    {
+     "finding": "Non-resolvable implicit roles are more common than discourse-resolvable ones in the new annotations, at 61.6% versus 38.4%.",
+     "evidence_type": "supported",
+     "section": "4 Data Analysis"
+    },
+    {
+     "finding": "Seventy-eight percent of resolvable implicit roles have their antecedent within a three-sentence window, although the rate differs from previously reported corpora and therefore appears genre- and target-dependent.",
+     "evidence_type": "supported",
+     "section": "4 Data Analysis"
+    },
+    {
+     "finding": "For a given predicate, null instantiation tends to concentrate in one or two semantic roles rather than being distributed uniformly across all roles.",
+     "evidence_type": "supported",
+     "section": "4 Data Analysis"
+    },
+    {
+     "finding": "Annotation calibration achieves high agreement for resolvability classification and reasonably high agreement for the selected antecedent, including kappa 0.94 and 85.7% antecedent agreement in the two-annotator give calibration.",
+     "evidence_type": "supported",
+     "section": "3.3 Annotation Process and Categories"
+    },
+    {
+     "finding": "Predicate-specific cross-validation shows large variation across lexical predicates, with some predicates substantially easier to link than others.",
+     "evidence_type": "supported",
+     "section": "5 Evaluation Experiments"
+    },
+    {
+     "finding": "Adding the new annotations to the SemEval linking setup with feature selection raises the reported F1 to 29.8%, about 2.1 points above the strongest compared prior setting; the authors summarize gains from the added annotations as roughly 2.1-4.5 F1 points depending on configuration.",
+     "evidence_type": "supported",
+     "section": "5 Evaluation Experiments and 6 Conclusions"
+    }
+   ],
+   "limitations": [
+    "Only five deliberately selected verb predicates are annotated, so the corpus does not establish broad coverage across action predicates.",
+    "Predicate selection favors senses that are comparatively easy to discriminate and that already appear likely to exhibit implicit roles, which can bias observed distributions.",
+    "The evaluation assumes resolvable null-instantiated roles are already known and evaluates filler linking rather than the full pipeline of deciding whether a role is missing and recoverable.",
+    "Candidate fillers in the evaluation are restricted to selected constituent types in the current and two preceding sentences.",
+    "The corpus is based on OntoNotes rather than authentic workplace email or enterprise chat.",
+    "The annotation links one implicit semantic role to an antecedent mention but does not model organizational group membership, collective assignees, action deadlines, condition attachment, negation, or modality.",
+    "Evidence is antecedent-oriented rather than an annotation scheme for complete action records with exact spans for action, assignee, deadline, condition, and decision components.",
+    "The paper reports that the annotations will be available to the community but does not present a released implementation of the linking system itself."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "non_resolvable_majority": 0.99,
+    "three_sentence_antecedents": 0.99,
+    "role_concentration": 0.94,
+    "annotation_agreement": 0.99,
+    "added_training_gain": 0.98
+   },
+   "raw_claims": [
+    "The annotation is built on OntoNotes and aligns selected predicates with FrameNet, PropBank, and VerbNet.",
+    "Five verbs are targeted to obtain denser predicate-specific implicit-role annotations.",
+    "Annotators first decide whether a null-instantiated role is resolvable from discourse.",
+    "Resolvable roles are linked to an antecedent mention in the surrounding document context.",
+    "The final analysis includes 630 implicit roles belonging to genuine target-frame readings.",
+    "Most annotated implicit roles are classified as non-resolvable.",
+    "Most resolvable roles have an antecedent within a short discourse window.",
+    "Implicit-role behavior differs substantially across predicates and across their semantic roles.",
+    "Additional predicate-specific annotations improve the evaluated SemEval linking model."
+   ],
+   "source_url": "https://aclanthology.org/W13-0211.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-acl-main-667",
+   "title": "A Two-Step Approach for Implicit Event Argument Detection",
+   "research_question": "Can document-level implicit event argument detection be made more tractable and accurate by first detecting argument head words and then expanding those heads to full evidence spans?",
+   "methodology": "The model encodes an event trigger and its five-sentence RAMS context with BERT, detects one head-word candidate for each event role using a biaffine scorer, and then expands each selected head to left and right boundaries with learned classifiers. This decomposition reduces argument-candidate growth from quadratic span enumeration to linear token-level head detection, with a bounded head-to-span expansion stage. Experiments on RAMS compare the method with a BERT-based sequence-labeling baseline, report span- and head-level F1 over five runs, include type-constrained decoding experiments using gold event types, and provide ablations plus manual error analysis.",
+   "key_findings": [
+    {
+     "finding": "When gold argument spans are supplied as candidates, head-word representations produce performance comparable to the earlier span-based RAMS model, supporting the hypothesis that contextualized argument heads can represent much of the useful span information.",
+     "evidence_type": "supported",
+     "section": "3.1 Argument Linking with Gold Spans"
+    },
+    {
+     "finding": "For full argument detection with gold event-type constrained decoding, the head-based model reaches 41.8 Span-F1 and 49.7 Head-F1 on the test set, significantly exceeding the corresponding sequence-labeling results of 40.5 and 48.0.",
+     "evidence_type": "supported",
+     "section": "3.2 Full Argument Detection"
+    },
+    {
+     "finding": "Without type-constrained decoding, the head-based model is also slightly better on average than the sequence-labeling baseline, although the reported significance claim is attached to the type-constrained comparison.",
+     "evidence_type": "supported",
+     "section": "3.2 Full Argument Detection"
+    },
+    {
+     "finding": "Fine-tuned BERT and explicit indicators marking the trigger/center-sentence context materially improve performance over frozen BERT or an LSTM encoder.",
+     "evidence_type": "supported",
+     "section": "3.2 Full Argument Detection / Ablation"
+    },
+    {
+     "finding": "Non-local arguments are much harder than same-sentence arguments; only about 18% of RAMS arguments are non-local, creating a substantial data imbalance in addition to weaker syntactic signals.",
+     "evidence_type": "supported",
+     "section": "3.2 On Sentence Distances"
+    },
+    {
+     "finding": "Core roles such as communicator, employee, and victim obtain much higher F1 than non-core roles such as instrument, origin, and destination, whose reported F1 values are roughly in the 20-30 range.",
+     "evidence_type": "supported",
+     "section": "3.2 On Argument Roles"
+    },
+    {
+     "finding": "Manual analysis identifies exact-span mismatch and coreference as recurring error sources, showing that strict span evaluation can penalize predictions that recover the relevant entity or head but choose a different surface mention or boundary.",
+     "evidence_type": "supported",
+     "section": "3.3 Manual Analysis"
+    },
+    {
+     "finding": "The two-step architecture reduces the candidate-space problem while preserving support for overlapping mentions and different role assignments more flexibly than ordinary BIO sequence labeling.",
+     "evidence_type": "supported",
+     "section": "2 Model and 3.2 Full Argument Detection"
+    }
+   ],
+   "limitations": [
+    "Experiments use RAMS, whose event contexts are not workplace email or enterprise chat, so domain transfer is untested.",
+    "Gold event triggers are supplied, and the strongest type-constrained setting also uses gold event types, so results are not for fully end-to-end event and argument extraction.",
+    "At inference time the head detector selects the maximum-scoring candidate for each role, which does not directly represent multiple independent fillers for the same role.",
+    "Gold head words are not annotated in RAMS and are derived heuristically from predicted dependency trees, introducing noise and failing for some conjunctions or multi-word expressions.",
+    "Head-to-span expansion is bounded to a fixed number of tokens on either side of the head.",
+    "The five-sentence RAMS context constrains how far implicit arguments can be recovered.",
+    "Non-local and non-core arguments remain substantially harder than local core roles.",
+    "The model extracts event arguments but does not represent deadline-to-action attachment, condition/negation/modality scope, organizational group-assignee semantics, or decision-vs-proposal status."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "two_step_test_gain": 0.99,
+    "non_local_difficulty": 0.99,
+    "non_core_role_difficulty": 0.98,
+    "head_representation_viability": 0.96,
+    "span_and_coreference_errors": 0.97
+   },
+   "raw_claims": [
+    "The model decomposes implicit event argument extraction into head-word detection and head-to-span expansion.",
+    "Using token heads reduces the main detection candidate space from quadratic spans to a linear number of tokens.",
+    "BERT encodes the trigger together with a five-sentence event context.",
+    "A biaffine scorer selects argument heads for event roles.",
+    "Separate classifiers expand each predicted head to its left and right span boundaries.",
+    "The head-based system outperforms the tested sequence-labeling baseline in the type-constrained full-detection setting.",
+    "Arguments outside the trigger sentence are considerably harder to detect than local arguments.",
+    "Roles that occur locally more often tend to receive higher extraction F1.",
+    "Manual inspection finds boundary mismatch and coreference among recurring sources of evaluation error.",
+    "The implementation is publicly released by the authors."
+   ],
+   "source_url": "https://aclanthology.org/2020.acl-main.667.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2409.18602",
+   "title": "Do LLMs suffer from Multi-Party Hangover? A Diagnostic Approach to Addressee Recognition and Response Selection in Conversations",
+   "research_question": "How do textual content, interaction structure, prompt formulation, and structural conversation complexity affect zero-shot LLM performance on response selection and addressee recognition in multi-party conversations?",
+   "methodology": "The authors derive four diagnostic subsets from the authentic Ubuntu Internet Relay Chat corpus, fixing conversations at 15 turns and separating cases with three, four, five, and six participants while retaining structurally varied connected interaction graphs. Llama2-13b-chat is evaluated zero-shot on response selection and addressee recognition using combinations of raw conversation transcripts, speaker-addressee interaction transcripts, generated conversation summaries, and generated descriptions of the next speaker. Three prompt-verbosity variants are tested, candidate choices are scored with conditional perplexity, and results are related to interaction-graph measures including the next speaker's degree centrality and average outgoing edge weight.",
+   "key_findings": [
+    {
+     "finding": "Addressee recognition benefits strongly from explicit interaction structure: combinations containing the speaker-addressee interaction transcript consistently outperform the text-only conversation baseline.",
+     "evidence_type": "supported",
+     "section": "7 Results / Classification Performance"
+    },
+    {
+     "finding": "Response selection depends more strongly on linguistic content: the raw conversation transcript, alone or combined with structure, consistently gives the strongest results across the diagnostic subsets.",
+     "evidence_type": "supported",
+     "section": "7 Results / Classification Performance"
+    },
+    {
+     "finding": "Generated conversation summaries preserve substantially more useful information than speaker-description-only representations and can approach the strongest configurations in some higher-participant settings.",
+     "evidence_type": "supported",
+     "section": "7 Results / Classification Performance"
+    },
+    {
+     "finding": "Addressee recognition is more sensitive to prompt formulation than response selection, with verbose prompts frequently giving the best addressee results while no consistent verbosity benefit appears for response selection.",
+     "evidence_type": "supported",
+     "section": "7 Results / Prompt Sensitivity"
+    },
+    {
+     "finding": "As the next speaker's degree centrality increases, addressee-recognition performance generally falls across input combinations, revealing weaknesses that are obscured by aggregate macro accuracy.",
+     "evidence_type": "supported",
+     "section": "8 Discussion / Structural Complexity"
+    },
+    {
+     "finding": "The strongest configurations perform particularly well on simpler interaction structures but generalize less effectively to structurally more complex conversations.",
+     "evidence_type": "supported",
+     "section": "8 Discussion / Structural Complexity"
+    },
+    {
+     "finding": "Replacing original text with minimized representations such as summaries can come close to the best input in some structurally complex addressee cases, but the authors conclude that the data-minimization direction is not yet fully satisfactory.",
+     "evidence_type": "supported",
+     "section": "8-9 Discussion and Conclusions"
+    },
+    {
+     "finding": "The software and processed diagnostic data are released in the authors' GitHub repository.",
+     "evidence_type": "supported",
+     "section": "1 Introduction"
+    }
+   ],
+   "limitations": [
+    "All experiments are derived from one source, Ubuntu IRC, rather than multiple enterprise-chat platforms or workplace domains.",
+    "Every diagnostic conversation is fixed at 15 turns, so the study intentionally removes conversation length as a variable and does not test long workplace threads.",
+    "Only one instruction-tuned LLM, Llama2-13b-chat, is evaluated in zero-shot mode.",
+    "The paper analyzes the best prompt run for combinations and explicitly cautions against generalizing model capability from these experiments.",
+    "Addressee candidates are individual conversation participants plus a dummy unseen-user label; there is no annotation for a collective group, team, distribution list, or implicit organizational assignee.",
+    "The underlying corpus provides explicit addressee relations, so the task does not directly test extraction of implicit assignees from action language.",
+    "The study does not extract actions, decisions, deadlines, conditions, negation or modality attachment, nor exact evidence spans for such arguments.",
+    "Ubuntu IRC is authentic technical multi-party conversation but is not equivalent to private enterprise chat and does not establish workplace-specific decision or accountability semantics."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "structure_for_addressee": 0.99,
+    "text_for_response_selection": 0.99,
+    "prompt_sensitivity_difference": 0.98,
+    "complexity_degradation": 0.98,
+    "summary_data_minimization": 0.94
+   },
+   "raw_claims": [
+    "The study treats response selection as primarily linguistic and addressee recognition as primarily structural proxy tasks for multi-party conversation understanding.",
+    "Four Ubuntu IRC subsets are created for conversations containing three through six participants.",
+    "All selected diagnostic conversations contain fifteen turns and connected interaction graphs.",
+    "The model is given the identity of the next speaker and must select either the next response or the next addressee.",
+    "Conversation transcripts contain speaker-message pairs, while interaction transcripts contain only speaker-addressee pairs.",
+    "Llama2-13b-chat is evaluated without task-specific training.",
+    "Structural information is critical for the strongest addressee-recognition results.",
+    "Raw conversational text is critical for the strongest response-selection results.",
+    "Addressee recognition changes more under alternative prompt formulations than response selection.",
+    "Addressee performance declines as interaction structure becomes more complex by speaker-degree measures.",
+    "The experiment code and processed data are publicly released."
+   ],
+   "source_url": "https://arxiv.org/pdf/2409.18602",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

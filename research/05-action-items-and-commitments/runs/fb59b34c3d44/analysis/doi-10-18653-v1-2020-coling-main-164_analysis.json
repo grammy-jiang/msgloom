@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-18653-v1-2020-coling-main-164",
+ "title": "Lin: Unsupervised Extraction of Tasks from Textual Communication",
+ "research_question": "Can specific task actions be extracted from email and chat without supervised task labels by combining dependency syntax with VerbNet semantic information?",
+ "methodology": "Lin treats a task as a verb phrase describing a single action and focuses on identifying its main verb. It traverses dependency parses using rules for dependency relations, tense, performer, questions, negation, coordination, and verb association, then validates candidate verbs using VerbNet thematic roles and semantic predicates. The authors evaluate on 1,000 Enron emails containing 6,418 sentences and on 114 task-oriented chatbot dialogues containing 300 sentences, with two annotators providing task labels. Lin is compared with SVM plus Universal Sentence Encoder, FastText, BERT, and syntax-only and semantics-only ablations using five-fold cross-validation.",
+ "key_findings": [
+  {
+   "finding": "Lin achieved 80.42% F1 on the Enron email dataset and 90.45% F1 on the chat dataset.",
+   "evidence_type": "supported",
+   "section": "Evaluation, Table 1"
+  },
+  {
+   "finding": "The combined syntactic-semantic system outperformed its syntax-only and semantics-only variants, showing complementary value from the two information sources.",
+   "evidence_type": "supported",
+   "section": "Evaluation; Qualitative analysis"
+  },
+  {
+   "finding": "Lin explicitly filters negated imperatives such as a prohibition from being treated as positive tasks.",
+   "evidence_type": "supported",
+   "section": "Method: Syntactic Features"
+  },
+  {
+   "finding": "The method uses first-person and second-person grammatical information plus dependency relations as a limited representation of the task performer.",
+   "evidence_type": "supported",
+   "section": "Method: Syntactic Features"
+  },
+  {
+   "finding": "Coordination is handled so that multiple distinct task verbs can be extracted from one sentence.",
+   "evidence_type": "supported",
+   "section": "Method: Syntactic Features; Task Inference"
+  },
+  {
+   "finding": "Although the paper initially describes the improvement over supervised approaches as significant, no significance test is reported and the evaluation section explicitly says the small margin over BERT may not be significant.",
+   "evidence_type": "contradicted",
+   "section": "Introduction; Evaluation"
+  },
+  {
+   "finding": "The labeled email data had Cohen's kappa of 0.76 and the chatbot data had kappa of 0.93.",
+   "evidence_type": "supported",
+   "section": "Experimental Setup"
+  }
+ ],
+ "limitations": [
+  "The extracted representation is centered on the main task verb rather than a richer structured action containing object, owner, deadline, condition, and supporting evidence spans.",
+  "Deadline expressions such as 'later today' or 'next week' appear in examples but are not extracted or bound to the corresponding task.",
+  "The system assumes questions do not indicate tasks, which can miss workplace requests expressed interrogatively, such as common 'Can you ...?' constructions.",
+  "Negation is handled mainly as a filter for negative intent rather than as a structured representation of prohibited or negated obligations.",
+  "Performer handling is based largely on grammatical first/second-person assumptions and is not evaluated as explicit named-person owner assignment.",
+  "Many decisions are encoded as handcrafted dependency and VerbNet rules, making performance dependent on parser behavior, VerbNet coverage, and manually shortlisted predicates.",
+  "The chat evaluation set is small and comes from a task-oriented chatbot dataset rather than natural workplace chat."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "email_f1": 0.99,
+  "chat_f1": 0.99,
+  "syntax_semantics_complementarity": 0.97,
+  "negation_filter": 0.99,
+  "performer_heuristic": 0.98,
+  "multiple_task_coordination": 0.98,
+  "significance_claim_not_established": 0.96
+ },
+ "raw_claims": [
+  "Lin defines a task as a verb phrase describing one action that is to be carried out.",
+  "The algorithm combines dependency parsing with VerbNet semantic information.",
+  "Candidate tasks are filtered using tense, grammatical performer, question, negation, and dependency-structure rules.",
+  "The email dataset contains 1,000 Enron emails, 6,418 sentences, 14,132 verb phrases, and 1,910 labeled tasks.",
+  "The email annotation achieved Cohen's kappa of 0.76.",
+  "The chat dataset contains 114 dialogues and 300 sentences, with Cohen's kappa of 0.93.",
+  "Lin obtained 80.42% F1 on email and 90.45% F1 on chat.",
+  "The authors report that the improvement over BERT is small and may not be statistically significant.",
+  "The paper provides a GitHub location for both code and data."
+ ],
+ "source_url": "https://aclanthology.org/2020.coling-main.164.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,81 @@
+{
+ "paper_id": "2104.05919",
+ "title": "Document-Level Event Argument Extraction by Conditional Generation",
+ "research_question": "Can document-level event arguments be extracted more accurately by generating filled event templates conditioned on the entire document rather than classifying candidate argument spans independently?",
+ "methodology": "The authors formulate event argument extraction as conditional generation using event templates and encoder-decoder models such as BART, while constraining generated argument tokens to come from the input document. They introduce WikiEvents, a document-level event dataset with event and coreference annotation, and evaluate on both WikiEvents and RAMS using argument identification and classification metrics. The study also distinguishes ordinary argument extraction from informative-mention extraction and includes zero-shot transfer experiments across event types.",
+ "key_findings": [
+  {
+   "finding": "Template-conditioned BART generation outperforms the compared extraction baselines on both RAMS and WikiEvents for document-level event argument extraction.",
+   "evidence_type": "supported",
+   "section": "Sections 4-5"
+  },
+  {
+   "finding": "The paper reports gains of 7.6 F1 on RAMS and 5.7 F1 on WikiEvents over the next-best compared systems, with a 9.3 F1 improvement for informative argument extraction.",
+   "evidence_type": "supported",
+   "section": "Abstract and Section 5"
+  },
+  {
+   "finding": "WikiEvents evaluates argument heads by matching annotated offsets, while an alternative coreference-aware score gives credit when the predicted mention is coreferential with the reference argument.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "Informative argument extraction deliberately prefers more informative mentions, such as names over nominal mentions and pronouns, which often requires selecting arguments farther from the trigger.",
+   "evidence_type": "supported",
+   "section": "Sections 3 and 5"
+  },
+  {
+   "finding": "The authors identify remaining errors in which mutually exclusive semantic roles are both predicted and note that commonsense reasoning is needed for some implicit arguments.",
+   "evidence_type": "supported",
+   "section": "Section 6"
+  },
+  {
+   "finding": "The benchmark is built from Wikipedia and linked news material rather than workplace communication, and it does not define dedicated assignee-to-action or deadline-to-action relation targets.",
+   "evidence_type": "supported",
+   "section": "Sections 3 and 6"
+  },
+  {
+   "finding": "The paper provides stronger span-grounding evaluation than summary-based benchmarks, but its coreference-aware metric deliberately relaxes exact mention identity and its head metric is not equivalent to requiring the complete evidence span for an argument.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  }
+ ],
+ "limitations": [
+  "WikiEvents is based on Wikipedia and news sources rather than authentic workplace email or enterprise chat.",
+  "The ontology is general event extraction and does not define implicit assignee, group assignee, or action-to-deadline binding as dedicated benchmark dimensions.",
+  "Head-offset evaluation checks an argument head rather than the complete textual evidence span.",
+  "Coreference-aware evaluation intentionally accepts a coreferential alternative mention, so it is less strict than exact evidence-span evaluation.",
+  "Condition, negation, and modality scope are not modeled as dedicated structured outputs.",
+  "The error analysis identifies unresolved ontological-role consistency problems and cases requiring commonsense knowledge for implicit arguments.",
+  "Document-level context can distract some baseline systems, indicating that simply enlarging context does not solve argument binding."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conditional_generation_gain": 0.99,
+  "informative_argument_gain": 0.99,
+  "head_offset_evaluation": 0.99,
+  "coreference_relaxation": 0.99,
+  "commonsense_implicit_argument_limit": 0.98,
+  "news_domain_not_workplace": 0.99
+ },
+ "raw_claims": [
+  "The approach casts document-level event argument extraction as conditional generation from an event template.",
+  "The generator is constrained so that argument tokens originate from the input document.",
+  "WikiEvents provides document-level event and coreference annotation.",
+  "The WikiEvents split contains 206 training documents, 20 development documents, and 20 test documents.",
+  "The dataset uses 67 event types from the KAIROS ontology.",
+  "BART-based conditional generation improves over the compared baselines on RAMS and WikiEvents.",
+  "The paper reports a 7.6 F1 gain on RAMS and a 5.7 F1 gain on WikiEvents relative to the next-best systems.",
+  "Informative argument extraction yields a reported 9.3 F1 gain over the strongest compared baseline.",
+  "Informative argument mentions are often substantially farther from event triggers than the nearest mention.",
+  "Head F1 uses reference offsets, whereas Coref F1 can accept a coreferential mention.",
+  "The error analysis finds mutually exclusive role predictions and cases where implicit arguments require commonsense reasoning.",
+  "Code, data, and related resources are publicly released."
+ ],
+ "source_url": "https://arxiv.org/html/2104.05919",
+ "access": "full_text"
+}

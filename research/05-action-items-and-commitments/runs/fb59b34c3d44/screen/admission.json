@@ -1,0 +1,218 @@
+{
+ "round": 2,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Workplace email/chat speech-act and action-item recognition: empirical classification or extraction of requests, commitments, directives, proposals, approvals, decisions, and action items from authentic workplace email or enterprise chat."
+  },
+  {
+   "id": "F2",
+   "description": "Structured action-item argument extraction: extraction of an action together with action-specific content or arguments rather than merely detecting an actionable sentence."
+  },
+  {
+   "id": "F3",
+   "description": "Request, commitment, promise, and obligation extraction: recognition and structured interpretation of directives and commissives, including who commits and what future action is involved."
+  },
+  {
+   "id": "F4",
+   "description": "Decision, approval, rejection, agreement, and proposal extraction: detection or extraction of communicative acts that propose, accept, reject, approve, agree to, or decide an action or proposition."
+  },
+  {
+   "id": "F5",
+   "description": "Owner, assignee, and responsibility extraction: identification of the person, group, or role responsible for an extracted action."
+  },
+  {
+   "id": "F11",
+   "description": "Implicit argument and omitted participant resolution: recovery or discourse linking of arguments that are semantically understood but absent from the local predicate or clause."
+  },
+  {
+   "id": "F12",
+   "description": "Temporal expression extraction, normalization, and event-time relations: extraction or relation labeling that binds temporal information to the corresponding event."
+  },
+  {
+   "id": "F13",
+   "description": "Modality, negation, hedge, speculation, and factuality scope: detection of modal, negation, or uncertainty cues and the textual targets or scopes they modify."
+  },
+  {
+   "id": "F14",
+   "description": "Span-based structured information extraction: extraction of triggers, arguments, entities, or relations grounded in exact source spans and evaluated at span or argument level."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-17398-2340-2784-47-67",
+   "decision": "REJECT",
+   "reason": "The topic words match workplace request research, but the abstract describes a descriptive phrase-frame analysis over emails already identified as requests, not empirical recognition or structured extraction of requests from unseen workplace communication. It therefore does not materially strengthen F1-F7. Identity is UNCHECKED, which further weakens the case when stronger direct computational papers are available.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2005.13084",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F1. The abstract reports empirical email intent detection using weak supervision from interaction logs plus clean annotations, including actionable, request-related, and action-related intents. Although it does not extract owner, deadline, or conditions, it supplies modern direct evidence about recognizing action-relevant communicative intent in email.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1515-pr-2016-0027",
+   "decision": "REJECT",
+   "reason": "The workplace-email request annotation is relevant background, but the study analyzes politeness realization within already retrievable request speech acts rather than evaluating request recognition or action-argument extraction. The capability needed by the research streams is therefore not demonstrated. Identity is UNCHECKED.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1145-3331184-3331260",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F1 and is also useful for engineering gap-7. The abstract describes sentence-level intent identification in a public enterprise-email dataset, explicitly including requests and future-action intents, while experimentally modeling message and conversational context. This gives direct workplace evidence on both act recognition and the effect of broader context.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1145-3289600-3290984",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F3. The paper empirically detects genuine commitments to future actions in email and studies cross-corpus domain bias and adaptation. That is directly relevant to distinguishing commitments from generic modality or capability and provides evidence about robustness across workplace-email domains.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p18-1122",
+   "decision": "REJECT",
+   "reason": "The temporal-relation annotation work is relevant transfer background, but it does not address workplace deadlines or action-to-deadline binding directly. Its contribution is also substantially covered for this round by the verified structured temporal-relation candidate 1909.10094, so spending another reading slot would add limited incremental value. Identity is UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1109-scc-2013-62",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F3, with secondary relevance to F2 and gap-5. The abstract reports commitment detection in real email and chat service engagements and uses a representation containing who is responsible to whom, what is to be achieved, and circumstances. Even though separate field-level extraction accuracy is not established for every argument, it is unusually close to the project's structured commitment object and uses authentic workplace communication.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d17-1108",
+   "decision": "REJECT",
+   "reason": "This is useful transfer work on jointly consistent temporal relations, but it does not distinguish deadlines from other event-time relations in workplace communication. Its capability substantially overlaps the verified 1909.10094 candidate, which is preferred when the two serve essentially the same transfer role. Identity is UNCHECKED.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2005.12889",
+   "decision": "REJECT",
+   "reason": "The implicit-argument typology is relevant conceptually to missing owners, but the abstract describes annotation refinement rather than recovery of the omitted participant or action-specific owner. Stronger transfer candidates in this set directly model or benchmark implicit argument extraction, so this paper would add limited capability evidence.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "1909.10094",
+   "decision": "ADMIT",
+   "reason": "Strengthens F12 as transfer evidence for gap-4. It combines neural temporal-relation scoring with structured inference and enforces global constraints such as transitivity across event-time relations. It does not establish workplace deadline accuracy, but it materially informs how independently predicted action-time bindings can be made globally consistent when several temporal relations coexist.",
+   "stream_id": "F12",
+   "role": "TRANSFER",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "manual-a9d613628b",
+   "decision": "REJECT",
+   "reason": "DAMSL is foundational dialogue-act background and distinguishes forward-looking influence, commitments, and agreement, but this round already contains direct workplace email and Slack evidence for those act families. The abstract does not show a workplace extraction benchmark or structured arguments, so it would not materially close the current gaps. Identity is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-1186-1471-2105-9-s11-s9",
+   "decision": "ADMIT",
+   "reason": "Strengthens F13 as transfer evidence for gap-5. BioScope explicitly annotates negation and uncertainty cues together with their linguistic scopes, providing an argument for preserving cue-to-scope attachment instead of assigning a sentence-level negation or uncertainty flag. It is not workplace evidence, but the scope annotation capability is directly relevant to preventing negation or uncertainty from being attached to the wrong action.",
+   "stream_id": "F13",
+   "role": "TRANSFER",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-coling-main-164",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F2. The abstract describes extraction of specific tasks expressed through commitments and requests in emails and chat, using dependency parsing and VerbNet, with evaluation across domains. Unlike pure actionable-intent classification, it extracts task content, making it directly relevant to structured action representation.",
+   "stream_id": "F2",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w18-6104",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F5 and directly addresses gap-3. The Enron People Assignment dataset links detected tasks in authentic workplace emails to the person or people responsible for carrying them out, defines evaluation, and evaluates assignment models. This is the clearest candidate in the set for action-specific owner or assignee extraction.",
+   "stream_id": "F5",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2202.12109",
+   "decision": "ADMIT",
+   "reason": "Strongly strengthens F14 as transfer evidence for gaps 1, 3, 4, and 6. PAIE performs role-specific extractive argument selection, models interactions among multiple roles, supports multiple arguments sharing the same role, and evaluates sentence- and document-level extraction. Its span-level formulation is highly relevant to preserving exact evidence and correctly binding several co-occurring arguments to an event, although workplace obligation semantics remain unvalidated.",
+   "stream_id": "F14",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1410.4868",
+   "decision": "ADMIT",
+   "reason": "Strengthens F13 as transfer evidence for gap-5. The modality representation explicitly links a modality trigger, its target, and its holder, which is substantially closer to the project's need to attach modal force to the correct action and preserve whose stance or obligation is expressed than sentence-level modality classification. The paper is not workplace-specific, so its value is representational and methodological rather than direct accuracy evidence.",
+   "stream_id": "F13",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1162-089120102760275983",
+   "decision": "REJECT",
+   "reason": "Semantic-role labeling is relevant background for predicate-specific participant extraction, but semantic agents are not workplace assignees and the abstract does not address obligations, decisions, or contextual ownership. Modern event-argument papers admitted in this round provide more directly applicable span and multi-argument extraction evidence. Identity is UNCHECKED.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2004.13625",
+   "decision": "REJECT",
+   "reason": "The paper is relevant transfer work because it extracts event-role arguments as source spans, but its contribution overlaps substantially with the later PAIE candidate admitted under F14. PAIE additionally models multi-role interaction and multiple same-role arguments, making it the stronger fit for this round's binding and evidence-span gaps.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1162-089120100561737",
+   "decision": "REJECT",
+   "reason": "The paper provides general dialogue-act tagging on telephone conversations, including agreement and disagreement, but it is neither workplace communication nor structured action or decision extraction. Direct enterprise-email and Slack candidates in this set provide materially closer evidence for the same act-recognition questions. Identity is UNCHECKED.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-3115-980845-980860",
+   "decision": "REJECT",
+   "reason": "FrameNet is foundational for semantic frame and argument representation, but the abstract does not demonstrate extraction of workplace actions, assigned responsibility, commitments, decisions, or deadline relations. Its generic representational contribution is already operationalized more directly by the admitted modern event-argument candidates. Identity is UNCHECKED.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "1909.07755",
+   "decision": "REJECT",
+   "reason": "SpERT provides generic span-based entity and relation extraction, but the evaluated capability does not specifically bind action predicates to role-typed owner, time, condition, or decision arguments. The admitted PAIE paper is more directly aligned with action/event argument binding and exact evidence spans, so SpERT adds limited incremental value for this round.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2312.05471",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F4 and also informs F1 and engineering gap-7. The study uses authentic organizational Slack conversations and annotates collaborative acts including proposals, requests, assignments, and rejections, then evaluates a context-aware sequence model. It provides the strongest direct enterprise-chat evidence in this candidate set for proposal/rejection-related communicative acts and therefore materially narrows gap-2, while not by itself establishing structured proposition arguments or scope.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1162-coli-a-00236",
+   "decision": "REJECT",
+   "reason": "The paper addresses implicit predicate arguments and therefore matches gap-3 conceptually, but the comparable-text induction setting is not clearly aligned with recovering task owners from conversation or organizational context. The verified 2024 DiscourseEE candidate provides more directly applicable evidence about explicit, implicit, and distributed arguments within contextual text. Identity is UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-1007-s10579-009-9089-9",
+   "decision": "REJECT",
+   "reason": "FactBank concerns event factuality, including actual, non-occurring, and uncertain events. That is useful general semantic evidence but is closer to Topic 06's factuality/state boundary than to Topic 05's deontic obligation, commitment, permission, prohibition, or condition attachment. It therefore does not materially close the current action-extraction gaps. Identity is UNCHECKED.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2410.03594",
+   "decision": "ADMIT",
+   "reason": "Strengthens F11 as transfer evidence for gaps 3, 6, 7, and 9. DiscourseEE explicitly benchmarks event arguments that are explicit, implicit, or scattered across contextual text, demonstrating that important arguments may require contextual inference or distributed evidence rather than a single local span. Although the domain is health discourse rather than workplace communication, the capability is directly relevant to implicit owners and context-dependent structured arguments.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  }
+ ],
+ "notes": "Admission is intentionally selective. The round admits direct workplace evidence where it demonstrates actual act, task, commitment, proposal/rejection, or assignee recognition, and admits transfer work only where it materially addresses argument binding, temporal relations, implicit arguments, or modality/negation scope. Descriptive pragmatics papers, foundational generic NLP papers, and transfer papers substantially dominated by a stronger candidate were rejected rather than used to fill reading slots. No candidate in this set directly closes gap-1 as a joint workplace benchmark spanning act type, owner, object, deadline, conditions/exceptions, and evidence spans; no candidate directly closes gap-4 for true deadline-to-action binding; and gap-5 remains without direct workplace evidence despite useful transfer evidence."
+}

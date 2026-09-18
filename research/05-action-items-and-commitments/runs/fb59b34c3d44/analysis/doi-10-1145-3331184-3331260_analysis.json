@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-1145-3331184-3331260",
+ "title": "Context-Aware Intent Identification in Email Conversations",
+ "research_question": "Does incorporating the surrounding email-message context improve sentence-level identification of actionable workplace email intents?",
+ "methodology": "The authors analyze the Avocado enterprise email corpus, initially annotating a random sample of 1,300 threads for multiple message-level intents and then constructing sentence-level datasets for Request Information, Schedule Meeting, and Promise Action. Human annotators identify whether an intent is present and highlight the text span where it is manifested; a separate experiment compares human judgments on 540 Request Information examples with and without access to the full email body. Models include sentence-only LR, SVM, and CNN baselines, simple sentence-plus-context models, and a Dynamic-Context Recurrent Neural Network using bidirectional GRUs and attention to model interactions between a target sentence and the rest of the message. Evaluation uses user-disjoint five-fold splits and F1.",
+ "key_findings": [
+  {
+   "finding": "Enterprise messages frequently contain multiple intents: 55.2% of the analyzed messages had one intent, 35.8% had two, and 9.0% had three or more.",
+   "evidence_type": "supported",
+   "section": "3.1 Characterizing Types of Intents in Email"
+  },
+  {
+   "finding": "Providing annotators with the full email body substantially improved Request Information recall, from 52.86 without context to 76.61 with context, while precision changed from 91.51 to 93.45.",
+   "evidence_type": "supported",
+   "section": "3.2 Effect of Contextual Information on Human Performance"
+  },
+  {
+   "finding": "The context-sensitive DCRNN significantly outperformed the compared models on all three evaluated intents, reporting F1 values of 73.48 for Schedule Meeting, 80.42 for Promise Action, and 78.37 for Request Information.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Simply concatenating conventional target-sentence and message-context features did not reliably help LR or SVM; the gains came from modeling interactions between the target sentence and relevant parts of context.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Performance generally increased as more surrounding context was supplied, and the full email body produced the best DCRNN results among the tested context windows.",
+   "evidence_type": "supported",
+   "section": "5.3 Effect of the Context Size"
+  },
+  {
+   "finding": "The annotation procedure explicitly highlighted the text span inside the email where an intent was manifested, providing direct evidence-span supervision even though the prediction task itself was sentence-level classification.",
+   "evidence_type": "supported",
+   "section": "5.1 Tasks"
+  },
+  {
+   "finding": "The paper does not convert Promise Action or Request Action instances into structured records that separately resolve action owner, deadline-to-action attachment, conditions, or negated obligation state.",
+   "evidence_type": "unsupported",
+   "section": "3.1 Characterizing Types of Intents in Email and 5.1 Tasks"
+  }
+ ],
+ "limitations": [
+  "The experimental classification tasks cover only Request Information, Schedule Meeting, and Promise Action rather than the full intent taxonomy identified during corpus analysis.",
+  "The intent taxonomy is explicitly non-comprehensive.",
+  "The study is based on one enterprise corpus from a defunct IT company, and the authors note that workplace environment can affect intent distributions.",
+  "The models identify intent-bearing sentences rather than extracting structured owner-action-deadline-condition relations.",
+  "Although annotators highlight evidence spans, the reported models are evaluated as intent classifiers rather than exact span extractors.",
+  "Simple temporal and user-history metadata explored by the authors did not materially improve the model, leaving richer metadata modeling for future work."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multiple_intents_are_common": 0.99,
+  "context_improves_human_recall": 0.99,
+  "dcrnn_outperforms_baselines": 0.99,
+  "interaction_modeling_matters": 0.97,
+  "full_message_context_best": 0.97,
+  "evidence_spans_annotated": 0.99,
+  "no_structured_owner_deadline_binding": 0.96
+ },
+ "raw_claims": [
+  "The study analyzes workplace email from the Avocado corpus.",
+  "Email messages can contain multiple co-occurring intents.",
+  "Request Action means that the sender asks a recipient to perform an activity.",
+  "Promise Action means that the sender commits to performing an action.",
+  "Annotators highlighted the text span where an intent appeared.",
+  "Human annotators detected Request Information more completely when they could read the full email body.",
+  "The DCRNN represents both a target sentence and the surrounding message context.",
+  "Attention is used to determine which parts of context are relevant to tokens in the target sentence.",
+  "The DCRNN outperformed sentence-only and simple context-concatenation baselines on the three main tasks.",
+  "Larger context windows generally yielded better results.",
+  "An ambiguous time expression can require surrounding context to distinguish a meeting time from a task deadline.",
+  "The experiments do not explicitly bind a detected deadline to a structured action object."
+ ],
+ "source_url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/05/Wang_SIGIR19.pdf",
+ "access": "full_text"
+}

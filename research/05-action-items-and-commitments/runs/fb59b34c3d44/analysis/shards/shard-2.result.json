@@ -1,0 +1,419 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1186-1471-2105-9-s11-s9",
+   "title": "The BioScope corpus: biomedical texts annotated for uncertainty, negation and their scopes",
+   "research_question": "Can a manually annotated biomedical corpus reliably capture lexical cues and linguistic scopes of negation and uncertainty across heterogeneous clinical and scientific text?",
+   "methodology": "The authors constructed BioScope from clinical radiology reports, biological full papers, and biological paper abstracts, totaling more than 20,000 sentences. Annotators marked minimal negation or speculation cues and maximally extended syntactic scopes, including explicit span boundaries. Two linguists independently annotated the material under evolving guidelines, after which a linguist expert adjudicated disagreements to produce gold labels. Annotation consistency was evaluated with F1-style inter-annotator agreement for cues and exact left, right, and full scope boundaries.",
+   "key_findings": [
+    {
+     "finding": "BioScope contains more than 20,000 annotated sentences, and more than 10% of sentences contain at least one negation or uncertainty modifier.",
+     "evidence_type": "supported",
+     "section": "Results; Discussion; Conclusion"
+    },
+    {
+     "finding": "The annotation scheme explicitly links minimal negation or speculation cues to maximal linguistic scope spans, making the resource directly useful for span-level scope-resolution research.",
+     "evidence_type": "supported",
+     "section": "Methods: General guidelines; Scope marking"
+    },
+    {
+     "finding": "Two independent annotations were reconciled by an expert, and agreement evaluation required exact scope-boundary correspondence for full-scope agreement.",
+     "evidence_type": "supported",
+     "section": "The annotation process; Agreement analysis"
+    },
+    {
+     "finding": "Negation and hedge interpretation cannot be determined from apparent cue words alone because context and syntactic structure can change whether a candidate is genuinely negative or speculative.",
+     "evidence_type": "supported",
+     "section": "Methods: Special cases"
+    },
+    {
+     "finding": "Scientific text presents greater cue ambiguity and scope difficulty than the clinical subcorpus; for example, the candidate 'or' was annotated as speculative far less often in scientific abstracts than in clinical text.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    },
+    {
+     "finding": "The authors conclude that hedge detection is more difficult than negation detection because speculative cues are more diverse and more lexically ambiguous, a pattern also reflected in annotator agreement.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    }
+   ],
+   "limitations": [
+    "The corpus is biomedical rather than workplace email or chat, so its distributions of negation and uncertainty cannot be assumed to transfer directly to organizational communication.",
+    "The maximal-scope policy deliberately includes some tokens whose semantic status is ambiguous, trading precision of semantic scope for annotation consistency.",
+    "Some syntactically ambiguous sentences cannot be disambiguated from available context, and the authors resolve them by selecting the wider scope.",
+    "The annotation targets negation and speculation rather than obligations, task ownership, deadlines, or action-deadline binding.",
+    "Questions are generally ignored unless they contain explicit speculative language, which differs from workplace settings where interrogative forms can realize requests and obligations.",
+    "The chief annotator primarily adjudicated disagreements; initially matching annotations were generally accepted, although samples of agreements were separately checked."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "corpus_size_and_prevalence": 0.99,
+    "cue_scope_span_annotation": 0.99,
+    "expert_adjudication": 0.99,
+    "context_sensitive_negation": 0.98,
+    "scientific_vs_clinical_difficulty": 0.98,
+    "hedging_harder_than_negation": 0.97
+   },
+   "raw_claims": [
+    "BioScope combines clinical free text, biological full papers, and biological scientific abstracts.",
+    "Negation and speculative cues are annotated together with the linguistic spans over which they take scope.",
+    "The annotation policy uses minimal cue spans but maximal scope spans.",
+    "Two linguists annotated independently and a linguist expert resolved disagreements.",
+    "The corpus contains more than 20,000 sentences.",
+    "More than one tenth of the sentences contain a negation or uncertainty modifier.",
+    "Cue ambiguity is substantially greater in scientific text than in the clinical reports.",
+    "The authors regard speculative-language detection as harder than negation detection.",
+    "The corpus was made available free of charge for research use."
+   ],
+   "source_url": "https://link.springer.com/article/10.1186/1471-2105-9-S11-S9",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-coling-main-164",
+   "title": "Lin: Unsupervised Extraction of Tasks from Textual Communication",
+   "research_question": "Can specific task actions be extracted from email and chat without supervised task labels by combining dependency syntax with VerbNet semantic information?",
+   "methodology": "Lin treats a task as a verb phrase describing a single action and focuses on identifying its main verb. It traverses dependency parses using rules for dependency relations, tense, performer, questions, negation, coordination, and verb association, then validates candidate verbs using VerbNet thematic roles and semantic predicates. The authors evaluate on 1,000 Enron emails containing 6,418 sentences and on 114 task-oriented chatbot dialogues containing 300 sentences, with two annotators providing task labels. Lin is compared with SVM plus Universal Sentence Encoder, FastText, BERT, and syntax-only and semantics-only ablations using five-fold cross-validation.",
+   "key_findings": [
+    {
+     "finding": "Lin achieved 80.42% F1 on the Enron email dataset and 90.45% F1 on the chat dataset.",
+     "evidence_type": "supported",
+     "section": "Evaluation, Table 1"
+    },
+    {
+     "finding": "The combined syntactic-semantic system outperformed its syntax-only and semantics-only variants, showing complementary value from the two information sources.",
+     "evidence_type": "supported",
+     "section": "Evaluation; Qualitative analysis"
+    },
+    {
+     "finding": "Lin explicitly filters negated imperatives such as a prohibition from being treated as positive tasks.",
+     "evidence_type": "supported",
+     "section": "Method: Syntactic Features"
+    },
+    {
+     "finding": "The method uses first-person and second-person grammatical information plus dependency relations as a limited representation of the task performer.",
+     "evidence_type": "supported",
+     "section": "Method: Syntactic Features"
+    },
+    {
+     "finding": "Coordination is handled so that multiple distinct task verbs can be extracted from one sentence.",
+     "evidence_type": "supported",
+     "section": "Method: Syntactic Features; Task Inference"
+    },
+    {
+     "finding": "Although the paper initially describes the improvement over supervised approaches as significant, no significance test is reported and the evaluation section explicitly says the small margin over BERT may not be significant.",
+     "evidence_type": "contradicted",
+     "section": "Introduction; Evaluation"
+    },
+    {
+     "finding": "The labeled email data had Cohen's kappa of 0.76 and the chatbot data had kappa of 0.93.",
+     "evidence_type": "supported",
+     "section": "Experimental Setup"
+    }
+   ],
+   "limitations": [
+    "The extracted representation is centered on the main task verb rather than a richer structured action containing object, owner, deadline, condition, and supporting evidence spans.",
+    "Deadline expressions such as 'later today' or 'next week' appear in examples but are not extracted or bound to the corresponding task.",
+    "The system assumes questions do not indicate tasks, which can miss workplace requests expressed interrogatively, such as common 'Can you ...?' constructions.",
+    "Negation is handled mainly as a filter for negative intent rather than as a structured representation of prohibited or negated obligations.",
+    "Performer handling is based largely on grammatical first/second-person assumptions and is not evaluated as explicit named-person owner assignment.",
+    "Many decisions are encoded as handcrafted dependency and VerbNet rules, making performance dependent on parser behavior, VerbNet coverage, and manually shortlisted predicates.",
+    "The chat evaluation set is small and comes from a task-oriented chatbot dataset rather than natural workplace chat."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "email_f1": 0.99,
+    "chat_f1": 0.99,
+    "syntax_semantics_complementarity": 0.97,
+    "negation_filter": 0.99,
+    "performer_heuristic": 0.98,
+    "multiple_task_coordination": 0.98,
+    "significance_claim_not_established": 0.96
+   },
+   "raw_claims": [
+    "Lin defines a task as a verb phrase describing one action that is to be carried out.",
+    "The algorithm combines dependency parsing with VerbNet semantic information.",
+    "Candidate tasks are filtered using tense, grammatical performer, question, negation, and dependency-structure rules.",
+    "The email dataset contains 1,000 Enron emails, 6,418 sentences, 14,132 verb phrases, and 1,910 labeled tasks.",
+    "The email annotation achieved Cohen's kappa of 0.76.",
+    "The chat dataset contains 114 dialogues and 300 sentences, with Cohen's kappa of 0.93.",
+    "Lin obtained 80.42% F1 on email and 90.45% F1 on chat.",
+    "The authors report that the improvement over BERT is small and may not be statistically significant.",
+    "The paper provides a GitHub location for both code and data."
+   ],
+   "source_url": "https://aclanthology.org/2020.coling-main.164.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w18-6104",
+   "title": "Assigning people to tasks identified in email: The EPA dataset for addressee tagging for detected task intent",
+   "research_question": "Given a task already detected in an email thread, how can the people responsible for carrying it out be annotated and predicted from the sender, recipient, and conversational context?",
+   "methodology": "The authors construct the Enron People Assignment dataset by pairing pre-extracted email tasks with candidate people derived from Sender, To, and Cc metadata and labeling each candidate as responsible or not responsible. The complete email thread is shown to annotators because task ownership can depend on prior messages and implicit references; three managed crowd workers independently label each task instance after qualification and training. The released data contain 5,998 unique emails, 6,300 tasks, 3,460 unique recipients, and 15,649 email-task-recipient tuples. They report agreement statistics and precision, recall, and F1 baselines, including a logistic-regression model trained on the separate Avocado email collection.",
+   "key_findings": [
+    {
+     "finding": "Task ownership in email can be implicit, plural, or absent from the candidate recipients, so recipient metadata and thread context are necessary parts of the assignment problem.",
+     "evidence_type": "supported",
+     "section": "Introduction"
+    },
+    {
+     "finding": "EPA supports multiple responsible people and an explicit no-one outcome rather than assuming every detected task must belong to one recipient.",
+     "evidence_type": "supported",
+     "section": "Dataset and Challenge Description; Label Creation Process"
+    },
+    {
+     "finding": "The released Enron annotations contain 15,649 email-task-recipient tuples covering 5,998 unique emails and 6,300 tasks.",
+     "evidence_type": "supported",
+     "section": "Dataset Analysis; Conclusion"
+    },
+    {
+     "finding": "Owner labeling was substantially noisy: recipient-level perfect agreement was 71.07% and Krippendorff's alpha was 0.6123.",
+     "evidence_type": "supported",
+     "section": "Dataset Analysis"
+    },
+    {
+     "finding": "The comparable Avocado annotations had higher agreement than Enron, and the authors associate much of the difference with cleaner and more consistent formatting and sentence segmentation.",
+     "evidence_type": "supported",
+     "section": "Dataset Analysis"
+    },
+    {
+     "finding": "A model trained on Avocado transferred imperfectly to Enron: for multiple-recipient cases it reached F1 0.6567 versus 0.6145 for assigning every recipient, while for single-recipient cases the every-recipient baseline had F1 0.8045 versus 0.7795 for the Avocado model.",
+     "evidence_type": "supported",
+     "section": "Model and Performance, Table 5"
+    },
+    {
+     "finding": "Temporal and location assignment are not part of EPA; the paper explicitly proposes extending the same deictic-assignment framework to time and location as future work.",
+     "evidence_type": "supported",
+     "section": "Future work"
+    },
+    {
+     "finding": "Task detection is deliberately removed from the challenge by supplying already extracted task sentences, isolating owner assignment from task-extraction errors.",
+     "evidence_type": "supported",
+     "section": "Introduction; Dataset and Challenge Description"
+    }
+   ],
+   "limitations": [
+    "The study is not end-to-end because tasks are pre-extracted before owner assignment is evaluated.",
+    "Tasks are represented as marked task sentences rather than a complete structured record with action, owner, deadline, conditions, negation, and evidence spans.",
+    "Although examples contain deadline phrases such as 'by Friday', deadline extraction and deadline-to-action binding are not annotated; temporal assignment is left to future work.",
+    "Candidate owners are largely constrained by Sender, To, and Cc metadata, so responsibility by a person outside that candidate set cannot be recovered as a named owner.",
+    "Inter-annotator reliability on Enron is relatively low, demonstrating that owner assignment is subjective and sensitive to noisy email formatting.",
+    "The reported experimental model is trained on Avocado rather than the released Enron training data and transfers poorly in some settings.",
+    "The Avocado counterpart cannot be released because of licensing restrictions.",
+    "Conditional and negated obligations are not separately modeled."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "implicit_owner_context": 0.99,
+    "multiowner_and_noone": 0.99,
+    "epa_dataset_size": 0.99,
+    "owner_annotation_reliability": 0.99,
+    "cross_corpus_agreement_difference": 0.98,
+    "baseline_transfer_results": 0.99,
+    "deadline_binding_absent": 0.99,
+    "task_detection_preprovided": 0.99
+   },
+   "raw_claims": [
+    "EPA associates detected email tasks with the person or people responsible for carrying them out.",
+    "Candidate people are derived from the sender and the To and Cc address lists.",
+    "The entire email thread is retained because earlier messages can help resolve responsibility.",
+    "Annotators may assign multiple recipients, the sender, or no one to a task.",
+    "Each task instance receives three independent annotations.",
+    "The Enron dataset contains 5,998 unique emails and 6,300 tasks.",
+    "The dataset contains 15,649 email-task-recipient tuples.",
+    "Recipient-level perfect agreement is 71.07% and Krippendorff's alpha is 0.6123.",
+    "The Avocado annotations exhibit substantially higher agreement than the Enron annotations.",
+    "The authors propose time and location assignment as extensions of the addressee-assignment task."
+   ],
+   "source_url": "https://aclanthology.org/W18-6104.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2202.12109",
+   "title": "Prompt for Extraction? PAIE: Prompting Argument Interaction for Event Argument Extraction",
+   "research_question": "Can prompt-based joint span extraction improve sentence- and document-level event argument extraction while handling long-range dependencies, multiple same-role arguments, limited supervision, and inference efficiency?",
+   "methodology": "PAIE reformulates event argument extraction as role-conditioned span selection using BART, with the event context processed by the encoder and a joint multi-role prompt by the decoder. Role-specific representations generate start and end span selectors, while multiple prompt slots allow several arguments to share one role and bipartite matching provides permutation-invariant assignment to gold spans. The model is evaluated on ACE05, RAMS, and WIKIEVENTS using argument-identification and argument-classification F1, with additional argument-head F1 for WIKIEVENTS. The authors compare against classification, QA, and generation baselines and perform ablations, long-distance, same-role, few-shot, and inference-speed analyses.",
+   "key_findings": [
+    {
+     "finding": "PAIE performs direct evidence-span extraction: an argument is represented by its start and end offsets and associated with an event role.",
+     "evidence_type": "supported",
+     "section": "Methodology: Formulating Prompt for Extraction; Task Definition"
+    },
+    {
+     "finding": "PAIE achieved the strongest reported results in the paper on all three evaluated benchmarks, including base-model Arg-C scores of 69.8 on ACE05, 49.5 on RAMS, and 63.4 on WIKIEVENTS.",
+     "evidence_type": "supported",
+     "section": "Overall Performance, Table 2"
+    },
+    {
+     "finding": "Joint multi-role prompts consistently improved performance over single-role prompting, supporting the value of modeling interactions among argument roles.",
+     "evidence_type": "supported",
+     "section": "Ablation Study; Prompt Variants"
+    },
+    {
+     "finding": "Bipartite matching contributed an average Arg-C improvement of about 0.7 percentage points across the three benchmarks.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "On WIKIEVENTS roles containing three or at least four arguments, PAIE exceeded EEQA-BART by 9.5 and 26.4 Arg-C F1 points respectively.",
+     "evidence_type": "supported",
+     "section": "Analysis on Real Scenario: Same-role Argument Assignment"
+    },
+    {
+     "finding": "PAIE improved extraction of arguments located in sentences away from the event trigger, particularly arguments occurring after the trigger.",
+     "evidence_type": "supported",
+     "section": "Analysis on Real Scenario: Long-range Dependencies"
+    },
+    {
+     "finding": "In few-shot experiments, PAIE generally outperformed the QA baselines and could reach comparable performance to EEQA-BART with roughly 20% of the training data and to EEQA with roughly 10%.",
+     "evidence_type": "supported",
+     "section": "Analysis on Real Scenario: Few-shot Setting"
+    },
+    {
+     "finding": "PAIE was reported to run roughly three to four times faster than EEQA-style sequential role extraction because it predicts multiple roles jointly.",
+     "evidence_type": "supported",
+     "section": "Analysis on Real Scenario: Inference Speed"
+    }
+   ],
+   "limitations": [
+    "The experiments concern general event argument extraction rather than workplace email or chat action items.",
+    "The formulation assumes an event trigger and event type are already supplied, so it does not solve end-to-end task or decision detection.",
+    "The number of slots for multiple arguments of one role is heuristically set from the maximum observed in training data, which can limit extrapolation to higher unseen cardinalities.",
+    "Long documents are processed using a trigger-centered window because full contexts can exceed encoder length and memory limits.",
+    "The authors identify coreference and entity information as future work for improving argument resolution and boundaries.",
+    "The benchmarks do not specifically evaluate task owners, deadlines, conditional obligations, or negated obligations.",
+    "Although span-role binding is explicit, temporal expressions are not treated as a workplace-specific deadline relation to an action."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "span_based_argument_extraction": 0.99,
+    "overall_benchmark_performance": 0.99,
+    "joint_prompt_benefit": 0.98,
+    "bipartite_matching_gain": 0.99,
+    "same_role_multiargument_gain": 0.99,
+    "long_distance_gain": 0.98,
+    "few_shot_advantage": 0.97,
+    "inference_speed": 0.99
+   },
+   "raw_claims": [
+    "PAIE casts event argument extraction as selecting text spans for event-specific roles.",
+    "A joint prompt contains the role slots associated with one event type.",
+    "Role-specific selectors predict the start and end tokens of argument spans.",
+    "Multiple slots for one role allow more than one argument to receive the same role.",
+    "Bipartite matching is used to align multiple same-role predictions with gold arguments.",
+    "The experiments use ACE05, RAMS, and WIKIEVENTS.",
+    "Joint prompts outperform single-role templates in the reported prompt comparisons.",
+    "PAIE performs particularly strongly when one role has several arguments.",
+    "The model shows improved performance on long-distance document-level arguments.",
+    "PAIE is reported to be substantially faster at inference than sequential QA extraction.",
+    "The paper provides a public GitHub repository for the model code."
+   ],
+   "source_url": "https://arxiv.org/html/2202.12109",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1410.4868",
+   "title": "A Modality Lexicon and its use in Automatic Tagging",
+   "research_question": "Can a practical modality annotation scheme and lexicon support automatic identification of modality triggers and their semantic targets with useful precision for downstream language processing?",
+   "methodology": "The authors define a modality representation built conceptually around trigger, target, and holder and operationalize eight factivity-related modality classes through a simplified thirteen-choice annotation scheme that incorporates selected interactions with negation. They construct an English modality lexicon semi-automatically from about 150 initial lemmas, dictionary subcategorization information, and syntactic templates. Two automatic taggers are developed: a string-based system using a next-verb heuristic for targets and a structure-based system using parser output and TSurgeon rules. They evaluate agreement between taggers, manually estimate structure-based precision on 249 tagged sentences, and measure the effect of modality annotation on English-Urdu machine translation.",
+   "key_findings": [
+    {
+     "finding": "The representation explicitly distinguishes a modality trigger from the target proposition or event over which that modality operates, providing a form of trigger-to-evidence binding.",
+     "evidence_type": "supported",
+     "section": "The Modality Annotation Scheme: Anatomy of Modality in Sentences"
+    },
+    {
+     "finding": "The annotation design represents several interactions between modality and negation through thirteen operational choices plus target polarity, but it deliberately simplifies some semantically distinct negation readings.",
+     "evidence_type": "supported",
+     "section": "Linguistic Simplifications / Efficient Operationalization"
+    },
+    {
+     "finding": "Although holder is one of the three theoretical modality components, holders were not annotated and automatic holder identification was left outside the project scope.",
+     "evidence_type": "supported",
+     "section": "Linguistic Simplifications; Automatic Modality Annotation"
+    },
+    {
+     "finding": "The semi-automatically expanded modality lexicon began from about 150 trigger lemmas and was made publicly available.",
+     "evidence_type": "supported",
+     "section": "The English Modality Lexicon"
+    },
+    {
+     "finding": "Sentence-level agreement between the string-based and structure-based taggers was kappa 0.82 for triggers and 0.76 for targets.",
+     "evidence_type": "supported",
+     "section": "Agreement of string and structure-based taggers"
+    },
+    {
+     "finding": "Manual inspection found 215 correct tags among 249 structure-based modality tags, corresponding to 86.3% precision; reported precision varied by genre from about 92% in a native-English newswire sample to potentially about 83% in harder text.",
+     "evidence_type": "supported",
+     "section": "Results"
+    },
+    {
+     "finding": "A quantitative recall estimate was not produced, so the reported 86.3% precision does not establish complete extraction performance.",
+     "evidence_type": "unsupported",
+     "section": "Results"
+    },
+    {
+     "finding": "Adding English modality annotations to the translation experiment increased BLEU from 26.4 to 26.7, while entities plus modalities increased it to 26.9.",
+     "evidence_type": "supported",
+     "section": "Results"
+    }
+   ],
+   "limitations": [
+    "The data and evaluation are not specific to workplace email or chat.",
+    "Modality holders are not annotated, so the scheme does not provide the owner or obligated-person assignment needed for structured workplace action extraction.",
+    "Nested modalities are deliberately not annotated because of project time constraints.",
+    "Some interactions between negation and modalities are collapsed for annotation convenience, losing semantic distinctions that can matter for obligation interpretation.",
+    "The default strong-belief heuristic for sentences without overt modality triggers may fail for conditionals, counterfactuals, fiction, and other implicitly non-factual contexts.",
+    "The structure-based tagger depends on a particular flattened parser representation and its TSurgeon patterns are not portable unchanged to another parser.",
+    "Word-sense ambiguity, coordination, compound-noun heads, complex negation constructions, and lexicon omissions are documented error sources.",
+    "No quantitative recall measure is reported.",
+    "The scheme does not annotate deadlines or bind temporal expressions to actions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "trigger_target_representation": 0.99,
+    "negation_modality_operationalization": 0.99,
+    "holder_not_annotated": 0.99,
+    "public_modality_lexicon": 0.99,
+    "tagger_agreement": 0.99,
+    "structure_tagger_precision": 0.99,
+    "recall_not_quantified": 0.99,
+    "translation_bleu_gain": 0.99
+   },
+   "raw_claims": [
+    "The modality scheme conceptualizes modality in terms of a trigger, a target, and a holder.",
+    "Eight factivity-related modality categories are operationalized for annotation.",
+    "Negation is incorporated into several composite modality choices and target polarity decisions.",
+    "Nested modalities were not annotated.",
+    "The holder of a modality was not annotated because of the project's time constraints.",
+    "The English lexicon was expanded from an initial list of about 150 modality lemmas.",
+    "The structure-based tagger uses syntactic patterns to connect modality triggers with targets.",
+    "Trigger agreement between the two automatic taggers was 0.82 and target agreement was 0.76.",
+    "Manual evaluation reported 86.3% precision for the structure-based tagger.",
+    "The paper does not provide a quantitative recall figure.",
+    "Using modality annotations increased the reported translation BLEU score from 26.4 to 26.7."
+   ],
+   "source_url": "https://arxiv.org/html/1410.4868",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,89 @@
+{
+ "run_id": "fb59b34c3d44",
+ "round": 2,
+ "topic": "empirical workplace email and chat studies on structured action and decision extraction, focusing on owner assignment, deadline-to-action binding, conditional or negated obligations, and evidence-span annotation",
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "There is no direct modern workplace email/chat benchmark in this corpus that jointly annotates speech-act type, owner/assignee, action object, deadline, conditions/exceptions, and exact evidence spans.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "\"action item extraction\" (email OR Slack OR workplace chat) assignee deadline condition \"evidence span\" corpus",
+   "resolution_notes": "Still open after round 2. The cited corpus supplies partial structured schemas, email intent spans, assignee data, and meeting action-item annotations, but none of the identified papers establishes a modern authentic workplace email/chat benchmark jointly annotating all required fields and exact provenance spans."
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct empirical evidence for extracting decisions, approvals, rejections, and proposals with structured arguments from authentic workplace email or chat is still missing from this corpus.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"decision extraction\" OR \"decision detection\") (workplace email OR enterprise chat OR Slack) proposal approval rejection argument extraction",
+   "resolution_notes": "Still open after round 2. Meeting-dialogue work and workplace Slack evidence cover decision-related dialogue acts such as proposals, acceptances, and rejections, but the supplied synthesis does not identify direct validation of structured decision arguments in authentic workplace email or enterprise chat."
+  },
+  {
+   "id": "gap-3",
+   "description": "Owner/assignee extraction remains weakly evidenced, especially for implicit owners, group ownership, multiple actions with different owners, and owners recoverable only from organizational or conversation context.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"assignee prediction\" OR \"assignee extraction\" OR \"responsibility extraction\") email workplace implicit owner group owner action item",
+   "resolution_notes": "Still open after round 2. EPA strengthens direct email evidence for assignee prediction and supports multiple-owner and no-owner outcomes, but the supplied evidence does not resolve implicit ownership, group ownership, multiple actions mapped to different owners, or owner recovery requiring broader organizational or conversational context."
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not establish reliable deadline binding in workplace communication: distinguishing a deadline for a particular action from a merely mentioned date, shared date, scheduling expression, or conditional future time remains open.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"deadline extraction\" OR \"due date extraction\") (email OR workplace communication) action item temporal relation event argument",
+   "resolution_notes": "Still open after round 2. The corpus includes timeframe extraction and general event-time relation work, but the supplied synthesis identifies no direct empirical evaluation of deadline-to-action relation binding in authentic workplace email or chat."
+  },
+  {
+   "id": "gap-5",
+   "description": "Direct workplace evidence is insufficient for attaching conditions, exceptions, negation, and modality to the correct action when several actions or clauses occur together.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"conditional commitment\" OR \"deontic modality\" OR \"negation scope\") (email OR workplace communication) action extraction condition attachment",
+   "resolution_notes": "Still open after round 2. Existing evidence shows that conditionality is difficult in Enron email and provides transferable work on negation and modality scope, but it does not directly evaluate attachment of conditions, exceptions, negation, or modality to the correct action among multiple workplace actions or clauses."
+  },
+  {
+   "id": "gap-6",
+   "description": "Build an independent argument-level benchmark and adversarial fixture suite covering implicit owners, multiple actions in one sentence, shared deadlines, conditional and negated actions, overlapping request/commitment labels, quoted-history contamination, and attachment references; score false positives, false negatives, and each argument separately.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by constructing a project-specific gold benchmark with explicit annotation guidelines and provenance spans. Include controlled adversarial fixtures for each listed phenomenon, double-annotate a representative subset to measure agreement, adjudicate disagreements, and report per-field precision, recall, F1, false-positive and false-negative counts, exact-span accuracy, and joint-record accuracy. This requires dataset and benchmark engineering rather than additional literature."
+  },
+  {
+   "id": "gap-7",
+   "description": "Compare sentence-local, message-level, and selectively expanded thread-context extraction with controlled ablations, because the literature shows both context gains and context-induced degradation.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve with a controlled ablation benchmark using identical extraction models and test examples under three context policies: sentence-local, full current-message, and selective thread expansion. Hold prompts, decoding, schema, and evaluation fixed; stratify results by phenomena such as implicit owner, cross-message antecedent, quoted history, and multiple actions; report both aggregate and per-argument metrics plus latency and token-cost effects."
+  },
+  {
+   "id": "gap-8",
+   "description": "Test author/quoted/forwarded content zoning while preserving provenance, and measure whether zoning improves act and argument extraction without losing obligations whose interpretation depends on prior-message context.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by implementing provenance-preserving message zoning that marks authored text, quoted prior text, forwarded material, signatures, and attachment references without deleting source offsets. Compare no zoning, hard exclusion, and provenance-aware selective access on the same benchmark. Measure act classification, argument extraction, false obligations from quoted history, missed context-dependent obligations, and evidence-span fidelity."
+  },
+  {
+   "id": "gap-9",
+   "description": "Evaluate an uncertainty-preserving structured output in which owner, deadline, condition, or act subtype can remain unresolved, and measure whether this reduces false obligations and wrong argument assignments without unacceptable recall loss.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by defining nullable or explicitly unresolved fields for owner, deadline, condition, and act subtype, then benchmarking this representation against forced assignment. Calibrate confidence or abstention thresholds on development data and evaluate false-obligation rate, wrong-argument assignment rate, precision, recall, coverage, and selective-risk curves to determine whether abstention improves reliability at an acceptable recall cost."
+  }
+ ],
+ "convergence": {
+  "should_continue": true,
+  "reason": "open_gaps_remain",
+  "next_round_topic": "authentic workplace email and enterprise-chat extraction of structured action and decision arguments, with emphasis on implicit or group assignees, deadline-to-action relations, condition/negation/modality attachment, and exact evidence-span annotation"
+ }
+}

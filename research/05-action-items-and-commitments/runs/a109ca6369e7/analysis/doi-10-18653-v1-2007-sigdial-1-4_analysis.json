@@ -1,0 +1,71 @@
+{
+ "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+ "title": "Detecting and Summarizing Action Items in Multi-Party Dialogue",
+ "research_question": "Can action items in natural multi-party meetings be detected as structured multi-utterance commitments and summarized into useful task and timeframe information under both manual-transcript and speech-recognition conditions?",
+ "methodology": "The authors annotate 18 natural ICSI research-group meetings using four action-item dialogue-act classes: Description, Timeframe, Owner, and Agreement. Four SVM classifiers identify these classes and a higher-level classifier combines their labels and confidences over a ten-utterance context window; evaluation uses leave-one-meeting-out cross-validation and compares structured detection with a flat binary baseline on manual transcripts, 1-best ASR, and word confusion networks. For summarization, a rule-based semantic parser generates candidate task-description and timeframe phrases, which are ranked using SVM regression and lexical, syntactic, semantic, temporal, and acoustic features.",
+ "key_findings": [
+  {
+   "finding": "The structured detector outperforms the flat detector on manual transcripts, reaching overlap-based F1 of 0.45 versus 0.35 for the flat approach.",
+   "evidence_type": "supported",
+   "section": "4 Action Item Detection"
+  },
+  {
+   "finding": "Automatic speech recognition reduces action-item detection performance substantially; the structured overlap F1 falls from 0.45 on manual transcripts to 0.36 on 1-best ASR, with word confusion networks recovering only a small amount to 0.37.",
+   "evidence_type": "supported",
+   "section": "4 Action Item Detection"
+  },
+  {
+   "finding": "Timeframe summarization benefits from semantic and temporal features, with the best reported automatic configuration reaching F1 0.51 compared with 0.31 for a TIMEX-only baseline and 0.39 for an entire-utterance baseline.",
+   "evidence_type": "supported",
+   "section": "5 Action Item Summarization"
+  },
+  {
+   "finding": "Task-description summarization remains difficult: semantic features can raise precision, but the evaluated candidate-ranking systems do not exceed the entire-utterance description baseline in F1.",
+   "evidence_type": "supported",
+   "section": "5 Action Item Summarization"
+  },
+  {
+   "finding": "The action-item annotations are sparse and moderately to substantially reproducible, with only about 1.4% of utterances receiving any action-item class and pairwise kappa values ranging from 0.64 to 0.78.",
+   "evidence_type": "supported",
+   "section": "3 Data and Annotation"
+  }
+ ],
+ "limitations": [
+  "The study uses 18 meetings from the ICSI Meeting Corpus, so organizational and domain diversity is limited.",
+  "Action-item utterances are very sparse, with only about 1.4% of utterances carrying any of the four action-item labels.",
+  "ASR errors cause substantial degradation relative to manual transcripts.",
+  "The structured detector's advantage over the flat detector is not statistically significant in the reported ASR conditions.",
+  "Owner identity extraction is explicitly left outside the summarization experiment even though Owner is annotated for detection.",
+  "Task descriptions can span multiple utterances, while the summarizer selects material from a single acoustically segmented utterance.",
+  "Sentence and utterance segmentation errors limit semantic parsing and description extraction.",
+  "The paper does not report release of the task-specific annotations or complete custom implementation as reproducibility artifacts."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_beats_flat_manual": 0.99,
+  "asr_performance_drop": 0.99,
+  "timeframe_summary_gain": 0.99,
+  "description_summary_difficulty": 0.99,
+  "annotation_agreement_and_sparsity": 0.98
+ },
+ "raw_claims": [
+  "The paper treats action items as public commitments to carry out tasks rather than merely as sentences mentioning future activity.",
+  "The annotation scheme distinguishes Description, Timeframe, Owner, and Agreement utterances.",
+  "Eighteen natural ICSI meetings are used in the experiments.",
+  "Pairwise annotation kappa values range from 0.64 to 0.78.",
+  "Only about 1.4% of meeting utterances receive at least one action-item label.",
+  "Four independent SVM classifiers feed a higher-level detector that examines a ten-utterance context.",
+  "Structured detection performs better than flat detection on manual transcripts.",
+  "ASR degrades both structured and flat action-item detection.",
+  "Word confusion networks provide only a small improvement over 1-best ASR in the reported detection results.",
+  "Semantic and TIMEX features substantially improve timeframe extraction.",
+  "The task-description extractor does not outperform using the full utterance as the description baseline.",
+  "The authors note that useful summaries may need information combined across multiple utterances."
+ ],
+ "source_url": "https://aclanthology.org/2007.sigdial-1.4.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-3115-1708376-1708410",
+ "title": "Extracting Decisions from Multi-Party Dialogue Using Directed Graphical Models and Semantic Similarity",
+ "research_question": "Can directed graphical models improve structured detection of decision-making dialogue, and can semantic similarity improve extraction of concise issue-and-resolution summaries from both manual and ASR meeting transcripts?",
+ "methodology": "The study uses 17 approximately 30-minute, four-participant scenario-driven meetings from the freely available AMI Meeting Corpus, annotated with decision dialogue acts for Issue, Resolution Proposal, Resolution Restatement, and Agreement. Directed graphical models use non-lexical utterance, manually annotated dialogue-act, and prosodic features and are evaluated with 17-fold cross-validation on both manual and ASR transcripts, using per-utterance and lenient 40-second matching metrics; simple rules then form decision-discussion regions. For summarization, Gemini parses Issue and Resolution word-confusion networks into candidate phrases, SVMlight regression ranks the candidates, and a WordNet normalized-path-length semantic-similarity feature is evaluated with 10-fold cross-validation.",
+ "key_findings": [
+  {
+   "finding": "The best directed graphical models outperformed the earlier hierarchical SVM for all four decision-dialogue-act classes on both evaluation metrics, with class-level F1 gains reported between 0.04 and 0.19 and p < 0.005.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Using DGM outputs plus simple structural rules improved decision-discussion-region F1 from 0.50 for the hierarchical SVM system to 0.55, with precision 0.39 and recall 0.93 for the DGM-based system.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Explicitly adding dependencies among the DDA classes did not improve Issue, Resolution Proposal, or Resolution Restatement detection; Agreement gained 0.03 under the 40-second metric, but that gain was not statistically significant.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Removing manually annotated dialogue-act features reduced the strongest Issue, Resolution Proposal, and Agreement F1 scores by roughly 0.07 to 0.09, indicating that dialogue-act information was materially useful.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "The DGM approach remained usable on one-best ASR output; for some Issue and Resolution Proposal configurations the reported ASR F1 was even higher than on manual transcripts, although the authors partly attribute this to different sparsity caused by segmentation.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Adding semantic similarity between candidate Issue phrases and Resolution utterances, and vice versa, improved phrase-selection F1 for both manual and ASR transcripts; Resolution improvements were reported as statistically significant at p < 0.005.",
+   "evidence_type": "supported",
+   "section": "5.3 Experiments"
+  },
+  {
+   "finding": "The best automatic phrase-selection results remained well below their oracle counterparts, particularly with ASR, leaving substantial headroom in decision-summary extraction.",
+   "evidence_type": "supported",
+   "section": "5.3 Experiments"
+  }
+ ],
+ "limitations": [
+  "The evaluation contains only 17 scenario-driven AMI meetings from a constrained product-design setting.",
+  "Dialogue-act annotations used as important detector features are manually supplied and are available only for manual transcripts.",
+  "Model thresholds and Gaussian-mixture component counts were hand-tuned.",
+  "Decision-discussion regions were still assembled with explicit rules rather than detected end-to-end by a graphical model.",
+  "The detection experiments did not yet integrate lexical features into the DGMs.",
+  "The summarization similarity feature considers nouns through WordNet path similarity and therefore captures only a restricted form of semantics.",
+  "Gold summary-worthy phrases were manually annotated, and automatic phrase selection remained substantially below oracle performance.",
+  "The decision representation captures issue, resolution, and agreement structure but does not directly extract workplace action owners, deadlines, or conditions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dgm_beats_hierarchical_svm": 0.99,
+  "decision_region_gain": 0.99,
+  "explicit_dependency_gain_limited": 0.98,
+  "dialogue_act_features_help": 0.97,
+  "asr_robustness": 0.96,
+  "semantic_similarity_improves_summaries": 0.99,
+  "oracle_gap_remains": 0.98
+ },
+ "raw_claims": [
+  "A decision discussion is modeled around an Issue, a Resolution, and Agreement, with Resolution split into proposal and restatement subclasses.",
+  "The experiments use 17 meetings from the AMI Meeting Corpus.",
+  "Interannotator kappa for the four decision-dialogue-act classes ranged from 0.63 to 0.73.",
+  "The DGM classifiers use utterance, dialogue-act, and prosodic evidence rather than lexical features.",
+  "The best DGM outperformed the hierarchical SVM for every decision-dialogue-act class in the reported comparison.",
+  "The rule-based DGM decision-region detector obtained F1 0.55 compared with 0.50 for the SVM super-classifier.",
+  "The DGM experiments were run on both manual transcripts and ASR one-best transcripts.",
+  "Decision summaries are formed by selecting phrases from Issue and Resolution utterances.",
+  "The semantic-similarity feature uses WordNet normalized path length over nouns.",
+  "Semantic similarity improved Issue and Resolution phrase selection on both manual and ASR transcripts.",
+  "The gap between automatic and oracle phrase selection was especially large on ASR input."
+ ],
+ "source_url": "https://aclanthology.org/W09-3934.pdf",
+ "access": "full_text"
+}

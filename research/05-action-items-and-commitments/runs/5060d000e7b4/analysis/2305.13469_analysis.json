@@ -1,0 +1,81 @@
+{
+ "paper_id": "2305.13469",
+ "title": "MAILEX: Email Event and Argument Extraction",
+ "research_question": "Can event triggers and their structured arguments be extracted reliably from conversational workplace email threads despite shared triggers, long non-entity arguments, and dependencies on preceding messages?",
+ "methodology": "The authors construct MAILEX from Enron email threads and define a taxonomy containing 10 event types and 76 argument roles covering requests, deliveries, amendments, data, meetings, and actions. They annotate 1,500 multi-message threads containing 3,936 emails and 8,392 event instances, then evaluate sequence-labeling, conditional-generation, and few-shot large-language-model approaches. Experiments include gold-trigger settings, ablations without conversation history, and qualitative error analysis of trigger and argument extraction.",
+ "key_findings": [
+  {
+   "finding": "MAILEX provides an authentic workplace-email event extraction benchmark derived from Enron, with event roles that include people or members, dates, times, and action-related information.",
+   "evidence_type": "supported",
+   "section": "Sections 2-3"
+  },
+  {
+   "finding": "End-to-end argument extraction remains difficult: the reported argument-classification F1 is 0.368 for the BERT sequence-labeling system and 0.363 for the BART generation system.",
+   "evidence_type": "supported",
+   "section": "Sections 5.1-5.2.1, Table 2"
+  },
+  {
+   "finding": "Providing gold triggers substantially improves argument extraction, showing that trigger errors propagate strongly into downstream argument prediction.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.1, Table 2"
+  },
+  {
+   "finding": "Conversation history is useful: removing preceding emails lowers trigger and argument scores, and manual inspection found that 11 of 50 sampled emails required information from an earlier turn.",
+   "evidence_type": "supported",
+   "section": "Section 5.2.4"
+  },
+  {
+   "finding": "Shared or discontinuous trigger realizations and long non-named-entity arguments are recurring failure modes for the evaluated models.",
+   "evidence_type": "supported",
+   "section": "Sections 5.2.2-5.2.3"
+  },
+  {
+   "finding": "Argument scoring permits partial span matching rather than requiring exact argument-span identity, so the benchmark does not directly enforce the exact evidence-span criterion needed for strict provenance-oriented extraction.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  },
+  {
+   "finding": "Few-shot text-davinci-003 and gpt-3.5-turbo perform far below the fine-tuned models, with error analysis also identifying fabricated, missing, and span-mismatched arguments.",
+   "evidence_type": "supported",
+   "section": "Sections 5.2.1 and 5.2.5"
+  }
+ ],
+ "limitations": [
+  "Conversation history is represented mainly by straightforward concatenation rather than a dedicated retrieval, selection, or memory mechanism.",
+  "The event taxonomy contains person/member and temporal roles, but the paper does not define a dedicated evaluation for implicit assignees versus explicit assignees or for group-assignee resolution.",
+  "The benchmark contains temporal arguments, but it does not isolate action-to-deadline binding as a separate benchmark task or metric.",
+  "Argument evaluation allows partial overlap, which is weaker than exact evidence-span evaluation.",
+  "Condition, negation, and modality scope are not modeled as a general compositional scope-extraction problem.",
+  "The corpus is drawn from Enron and therefore represents one historical organizational setting rather than a broad sample of present-day enterprise email and chat.",
+  "The authors note unresolved difficulties with long non-named-entity arguments, sequential event dependencies, and effective use of conversational history."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "enron_email_benchmark": 0.99,
+  "argument_extraction_difficulty": 0.99,
+  "history_dependency": 0.98,
+  "shared_trigger_difficulty": 0.98,
+  "exact_argument_span_gap": 0.99,
+  "few_shot_llm_gap": 0.99
+ },
+ "raw_claims": [
+  "MAILEX is built from conversational email threads in the Enron corpus.",
+  "The taxonomy contains 10 event types and 76 argument roles.",
+  "The annotated dataset contains 1,500 threads, 3,936 emails, and 8,392 event instances.",
+  "BERT sequence labeling obtains an end-to-end argument-classification F1 of 0.368.",
+  "BART conditional generation obtains an end-to-end argument-classification F1 of 0.363.",
+  "Gold event triggers produce much higher argument scores than predicted triggers.",
+  "Removing conversational history reduces extraction performance.",
+  "Eleven of fifty manually sampled emails were judged to require information from an earlier turn.",
+  "Models have difficulty with shared trigger spans and long non-named-entity arguments.",
+  "Argument evaluation gives credit for partial span matches instead of requiring exact matching.",
+  "Few-shot GPT-family systems perform substantially below the supervised BERT and BART systems on this benchmark.",
+  "The released resources include code and data."
+ ],
+ "source_url": "https://arxiv.org/pdf/2305.13469",
+ "access": "full_text"
+}

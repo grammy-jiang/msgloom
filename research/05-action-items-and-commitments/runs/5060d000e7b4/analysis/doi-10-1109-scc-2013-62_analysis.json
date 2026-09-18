@@ -1,0 +1,84 @@
+{
+ "paper_id": "doi-10-1109-scc-2013-62",
+ "title": "Monitoring Commitments in People-Driven Service Engagements",
+ "research_question": "Can commitments and their lifecycle operations be automatically identified and tracked from real-world email and chat conversations in people-driven service engagements?",
+ "methodology": "The paper defines commitments as structured debtor-creditor relationships with antecedent and consequent components and models lifecycle operations including creation, detachment, discharge, cancellation, and delegation or subcontracting. Its extraction pipeline parses sentences, identifies tasks and participants, applies linguistic and dependency-based heuristics, and then uses Naive Bayes, logistic regression, or SVM classifiers to identify commitment operations. Evaluation uses 4,161 Enron email sentences and 7,154 sentences from 271 HP IT-support chat conversations, manually labeled by two annotators, with ten-fold cross-validation followed by evaluation on disjoint test sets. A prototype integrates parsing, feature extraction, prediction, and user confirmation.",
+ "key_findings": [
+  {
+   "finding": "The representation explicitly separates a commitment's debtor, creditor, antecedent, and consequent, making this paper directly relevant to structured responsibility assignment rather than only action-intent classification.",
+   "evidence_type": "supported",
+   "section": "II Commitments and IV Understanding Commitments"
+  },
+  {
+   "finding": "Although the formal model supports conditional commitments, the operational extraction treatment states that most examined email and chat interactions are taken to indicate unconditional commitments, so empirical conditional-antecedent extraction is limited.",
+   "evidence_type": "supported",
+   "section": "IV.B Commitment Creation"
+  },
+  {
+   "finding": "The approach derives owner-like roles explicitly: task performer maps to commitment debtor and beneficiary maps to creditor, while conversation roles and parsed linguistic structure help identify those parameters.",
+   "evidence_type": "supported",
+   "section": "IV Task and Commitment Creation and V Approach"
+  },
+  {
+   "finding": "Deadline expressions are included as a feature indicating commitment creation or delegation, but the evaluated representation does not separately extract and score an explicit deadline span bound to a particular consequent.",
+   "evidence_type": "supported",
+   "section": "V Approach to Identify and Monitor Commitments"
+  },
+  {
+   "finding": "Negation is operationalized primarily as evidence of cancellation: an existing commitment whose matching action appears with a negative dependency such as 'not' can be classified as canceled.",
+   "evidence_type": "supported",
+   "section": "V.H Identifying Cancellations"
+  },
+  {
+   "finding": "Creation detection is much stronger than rare lifecycle-operation detection on independent data: email F1 was 0.90 for commissive creation and 0.86 for directive creation, while email discharge and cancellation obtained zero F1; chat discharge reached 0.69 while cancellation remained zero.",
+   "evidence_type": "supported",
+   "section": "VI.C Results"
+  },
+  {
+   "finding": "Annotations and predictions are primarily sentence-level operation labels rather than explicit evidence-span boundaries for each extracted debtor, creditor, action, deadline, or negation cue.",
+   "evidence_type": "unsupported",
+   "section": "VI.B Labeling Data"
+  }
+ ],
+ "limitations": [
+  "Lifecycle-operation classes are highly imbalanced; cancellation and delegation examples are extremely sparse.",
+  "Independent-test performance is strong for creation but weak or zero for several lifecycle operations.",
+  "The formal model allows conditional commitments, but the implemented extraction largely concentrates on unconditional cases.",
+  "Deadline presence is used as a feature rather than evaluated as an explicit deadline-to-action relation.",
+  "Negation is mainly interpreted as cancellation of a previously created commitment and does not constitute a general treatment of negated obligations or prohibitions.",
+  "Correct discharge, cancellation, and subcontract detection depends on finding and matching a previous commitment across conversational context.",
+  "The email evaluation is drawn from conversations involving one Enron employee and a limited set of correspondents.",
+  "The HP IT-support chat corpus and the paper's manual annotations are not documented as publicly released.",
+  "The annotation scheme does not provide independently evaluated evidence-span extraction."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_debtor_creditor_representation": 0.99,
+  "conditional_model_but_unconditional_empirics": 0.97,
+  "explicit_owner_assignment": 0.99,
+  "deadline_used_only_as_feature": 0.95,
+  "negation_used_for_cancellation": 0.99,
+  "creation_far_easier_than_rare_lifecycle_ops": 0.99,
+  "no_span_level_evaluation": 0.96
+ },
+ "raw_claims": [
+  "A commitment relates a debtor to a creditor for a consequent under an antecedent.",
+  "Commitments can be created, discharged, canceled, and delegated or subcontracted.",
+  "The task performer is used as the commitment debtor and the beneficiary as the creditor.",
+  "The approach parses email and chat sentences before extracting task and commitment features.",
+  "Modal verbs and action verbs are used as commitment-creation signals.",
+  "Deadline expressions are treated as features associated with creation or delegation.",
+  "Past-tense actions can signal discharge when they match an existing commitment.",
+  "Negative dependencies can signal cancellation of an existing commitment.",
+  "Two annotators labeled email and chat sentences for commitment operations.",
+  "Creation classes are much more frequent than cancellation and delegation classes.",
+  "Independent-test results show substantially better creation detection than cancellation or discharge detection.",
+  "The prototype is designed to display inferred commitments for user verification."
+ ],
+ "source_url": "https://www.csc2.ncsu.edu/faculty/mpsingh/papers/societal/SCC-13-people.pdf",
+ "access": "full_text"
+}
