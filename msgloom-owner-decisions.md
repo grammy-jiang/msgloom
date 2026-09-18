@@ -34,6 +34,8 @@ architecture stage needs one list.
 | **D-21** | The Topic definition §§1–6 is approved, with the two amendments below | 2026-09-18 | `msgloom-topic-definition-proposal.md` — **approved** |
 | **D-22** | A Topic can form because evidence accumulated over months, not only because the owner's context changed | 2026-09-18 | proposal §2.1 |
 | **D-23** | A scheduled pass maintains Topic relationships. It deletes nothing, and it changes nothing without new evidence | 2026-09-18 | proposal §6.1 |
+| **D-24** | There are two Topic-to-Topic edges: `supersedes` and `member of` | 2026-09-18 | proposal §6 |
+| **D-25** | Relationship storage is a named stack decision. The owner proposes a graph database. **OPEN** | 2026-09-18 | below |
 
 ---
 
@@ -316,6 +318,110 @@ The pass is Phase 2, because Phase 1 excludes joining independent groups by
 meaning. **But Phase 1 must retain the standing residue rather than discard it**,
 or there is nothing for Phase 2 to re-examine. A Phase 2 capability creates a
 Phase 1 storage requirement, and it is cheap now and expensive later.
+
+## D-24 — Two Topic-to-Topic edges, not one
+
+> "The five topics should remember where they come from."
+
+**This resolves a contradiction inside the definition the owner had just
+approved.** D-21 was put to them as *`supersedes` only*, which is what `§6`'s
+table said. But `§3.5` and `§7` Q-A both required a subevent acted on separately
+to carry a membership edge. Both could not be true.
+
+| Edge | Means |
+| --- | --- |
+| **`supersedes`** | This Topic replaces that one — a revised contract against the one it revises |
+| **`member of`** | This Topic is part of a larger matter and is acted on separately |
+
+**Why the contradiction resolved this way.** D-11 splits a matter at the level an
+action is owed. A Q3 budget whose five items are each approved separately becomes
+five Topics. **Without a membership edge those five are unrelated**, and the split
+has destroyed the thing it was splitting. That is the opposite of what D-11 is
+for.
+
+**No third edge.** Every other Topic-to-Topic relation runs into `§3.5`'s
+non-transitivity and has no established workplace semantics.
+
+**`§3.5` is not relaxed.** An edge is recorded where it is observed and is never
+chained: A is `member of` B and B is `member of` C does not make A `member of` C.
+This binds the D-23 consolidation pass, which runs unattended and is therefore
+the most likely place for a wrong chain to be created.
+
+## D-25 — Relationship storage is a stack decision — OPEN
+
+> "I think we should introduce a graph database, like for the knowledge, knowledge
+> storage. I think we haven't discussed this in the research topics, but when we
+> try to build up this project, we will face this problem."
+
+**The owner is right that this was never researched, and the observation is
+confirmed.** None of the ten research topics covers storage. The design documents
+parked it rather than answering it: `phase-roadmap.md` calls knowledge graphs and
+vector databases "implementation options, not phase deliverables", and
+`tech-stack.md §8` says none is selected **for Phase 1**. Parked is not decided.
+
+**What is already selected.** `tech-stack.md` picks SQLite through an async
+SQLAlchemy ORM as the Application database, and records that A4 needs no vector
+database "by the logical contract". That contract was written before `member of`
+existed.
+
+### The real gap, which is separable from the engine
+
+**D-20's seven store requirements describe the Topic record and say nothing about
+the edges.** They were written before D-24. The edge set in `§6` is where the
+relationships actually live, so the requirements were incomplete.
+
+**That gap is closed now**, in `msgloom-architecture-design.md §6`, as three
+added requirements: typed edges with properties and one-hop queries in both
+directions; multi-hop traversal not available as a default operation; and adding
+an edge type is cheap.
+
+**Naming the requirement is not the same as naming the engine**, and the first is
+what was missing.
+
+### The argument the owner should weigh before deciding the engine
+
+**A graph database's distinctive capability is multi-hop traversal.** `§3.5`
+forbids exactly that operation: no edge may be inferred from two other edges.
+
+| Query msgloom actually needs | Hops |
+| --- | --- |
+| What is `member of` the Q3 budget | **One** |
+| What is this Topic a `member of` | **One** |
+| Everything this person appears in, and in what role | **One** |
+| Every Topic sharing this invoice number | **One**, and it is an indexed lookup, not a traversal |
+
+**So the one thing that distinguishes a graph store is the one operation this
+design prohibits.** A store that cannot traverse makes the prohibition
+structural rather than a matter of discipline — which matters most in the D-23
+pass, because it runs unattended.
+
+**Three more costs of a second engine**, all from rules already in force:
+
+1. `DP-10` — avoid custom infrastructure.
+2. `architecture.md §3` requires the Application database and its referenced
+   files to be **one recoverable set** for backup and restore. A second engine
+   either joins that set or breaks the invariant.
+3. `DP-02` binds every stage result to its input and configuration versions.
+   Two write paths make that harder to keep consistent.
+
+**And the honest case for it.** `§4` is approved with a revisit trigger, so the
+element set is expected to grow; a schema-flexible edge store makes growth
+cheaper. Against that, `§3.1` requires the model to be **unable** to write
+identifier fields, and a schema enforces that where a convention does not.
+
+### Recommendation, and what settles it
+
+**Recommended: one store, extended, unless a measured query need forces a
+second.** That is `DP-10` applied, and it matches how this programme settled IG5
+and Q1 — by measurement rather than by intuition.
+
+**What would change the recommendation:** a query the product genuinely needs
+that cannot be answered in one hop. **If one exists, it is worth more than this
+whole argument**, because it would also mean `§3.5` needs revisiting.
+
+**Status: OPEN.** The owner's position is recorded above. This is theirs to
+decide, and `tech-stack-selection` is the stage that carries it. It is now
+triggered, because architecture design is complete.
 
 ## D-17 — Anchors are configured, not built in
 

@@ -132,18 +132,15 @@ visible rather than absent.
 | Topic → Topic | **`supersedes` only** |
 | Topic → Topic | **`member of`**, for D-11's subevent acted on separately |
 
-**`member of` needs the owner's confirmation, because it was not in what they
-approved.** D-21 was put to them as *`supersedes` only*, and they agreed on that
-wording. **The approved document contradicts itself here:** `§3.5` and `§7` Q-A
-both state that a subevent acted on separately is its own Topic **and** carries a
-membership edge, while `§6`'s table lists `supersedes` as the only Topic-to-Topic
-edge.
+**`member of` was confirmed by the owner on 2026-09-18 — D-24.** The approved
+definition had contradicted itself: `§3.5` and `§7` Q-A both required a
+membership edge, while `§6`'s table listed `supersedes` as the only
+Topic-to-Topic edge. The owner resolved it in favour of the membership edge.
+Without it a budget's five separately decided items become five unrelated
+Topics, which is the outcome D-11's granularity rule exists to prevent.
 
-**The contradiction should be resolved in favour of the membership edge.**
-Without it, a budget's five separately-decided items become five unrelated
-Topics and the connection to the budget is lost — which is the outcome D-11's
-granularity rule exists to prevent. **A data model cannot leave this implicit**,
-so it is drawn here and flagged rather than assumed.
+**No third Topic-to-Topic edge is added**, and `§3.5` is not relaxed. An edge is
+recorded where it is observed and is never chained from two other edges.
 
 **No edge may be inferred from two other edges.** A relates to B and B to C does
 not give A to C. This binds the consolidation pass in §7 and every retrieval path.
@@ -237,6 +234,9 @@ a stack decision and is not made here.**
 | 5 | Unbounded growth — D-12 keeps every Topic, and D-22 keeps the standing residue |
 | 6 | No access-control layer — one owner, no roles |
 | 7 | Adding an element to §3.2 is cheap |
+| 8 | **Typed edges with properties**, and one-hop queries in both directions |
+| 9 | **Multi-hop traversal is not a default operation** |
+| 10 | Adding an edge type is cheap |
 
 **Requirement 3 is the one that rules designs out.** D-18 cannot apply its
 no-stacking rule without knowing each match's kind, and the contextual wording
@@ -247,9 +247,22 @@ insufficient, which excludes the simplest vector-only design.
 the residue a standing set measured in months. Both grow forever and neither is
 a leak.
 
+**Requirements 8 to 10 are new, added 2026-09-18 with D-24 and D-25.** D-20's
+seven requirements described the Topic record and said nothing about the edges,
+because `member of` did not exist when they were written. §3.3's edge set is
+where the relationships live, and a store requirement that ignores them is
+incomplete.
+
+**Requirement 9 states a prohibition as a requirement on purpose.** §3.5 forbids
+inferring an edge from two other edges. A store that offers traversal as an
+ordinary query makes that prohibition a matter of discipline; a store that does
+not offer it makes the prohibition structural. **The difference matters most in
+the consolidation pass**, which runs unattended.
+
 **Against over-building:** at one person's mailbox scale lexical matching may be
 enough, and `DP-10` says avoid custom infrastructure. This is a real choice with
-evidence on both sides, and it belongs to stack selection.
+evidence on both sides, and it belongs to stack selection — see D-25, which the
+owner opened on 2026-09-18.
 
 ---
 
@@ -404,7 +417,7 @@ that assumes they were made will build on nothing.
 
 | Not decided | Owner |
 | --- | --- |
-| The storage technology for §6 | `tech-stack-selection` |
+| The storage technology for §6, including whether relationships need a second engine | `tech-stack-selection` — **D-25, now triggered** |
 | Every number — the exchange rate, the verification level, group size | Measurement, after MVP-0 runs |
 | Screen layouts, copy and navigation | `ux-design` |
 | Field types, encodings and identifiers | Implementation design |

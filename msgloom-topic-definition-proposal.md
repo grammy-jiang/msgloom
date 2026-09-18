@@ -569,13 +569,29 @@ edge set:
 | Topic → Time | which of the four kinds, and its source | A deadline stated in an attachment is not the same as one inferred |
 | Topic → Action | direction, who owes it, its state | Goal 1 depends on this being enumerable, not inferred per report |
 | Topic → Evidence | permalink plus locator (D-6) | The report contract requires every detail to reference its source |
-| Topic → Topic | **`supersedes` only, for now** | See §7 |
+| Topic → Topic | **`supersedes`** and **`member of`** — D-24 | See below and §7 |
 
-**Why `supersedes` is the only Topic-to-Topic edge proposed.** It is already in
-Topic 09's state vocabulary, so it exists whether or not it is modelled. Every
-other Topic-to-Topic relation runs into §3.5's non-transitivity and has no
-established workplace semantics. **Adding them later is cheap; getting them
-wrong now silently merges matters.**
+**Two Topic-to-Topic edges, not one — owner decision D-24, 2026-09-18.**
+
+**This section contradicted itself until 2026-09-18.** It listed `supersedes` as
+the only Topic-to-Topic edge, while §3.5 and §7 Q-A both required a subevent
+acted on separately to carry a membership edge. The owner resolved it:
+
+> "The five topics should remember where they come from."
+
+| Edge | Means | Why it is needed |
+| --- | --- | --- |
+| **`supersedes`** | This Topic replaces that one — a revised contract against the one it revises | Already in Topic 09's state vocabulary, so it exists whether or not it is modelled |
+| **`member of`** | This Topic is part of a larger matter and is acted on separately | D-11 splits a matter at the level an action is owed. **Without this edge the split loses the whole**, and five separately approved budget items become five unrelated Topics |
+
+**No third Topic-to-Topic edge is added.** Every other relation runs into §3.5's
+non-transitivity and has no established workplace semantics. Adding one later is
+cheap; getting one wrong now silently merges matters.
+
+**The rule that keeps `member of` safe.** D-24 does not relax §3.5. **No edge may
+be inferred from two other edges** — A is `member of` B and B is `member of` C
+does not make A `member of` C. Membership is recorded where it is observed and
+never chained.
 
 ### 6.1 Relationships are maintained by a scheduled pass — owner decision D-23
 
