@@ -1,0 +1,411 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1002-asi-21264",
+   "title": "New event detection and topic tracking in Turkish",
+   "research_question": "How effectively can new-event detection and topic tracking be performed on Turkish news streams, and how do representation, similarity, temporal-window, stemming, stopword, and adaptive-tracking choices affect performance?",
+   "methodology": "The authors constructed BilCol-2005, a temporally ordered Turkish news collection containing 209,305 stories and 80 annotated events, using their ETracker annotation system. They evaluated new event detection by comparing incoming stories with recent stories inside a sliding temporal window using cosine and cover-coefficient similarity, and evaluated topic tracking from an initial seed story using static and adaptive topic representations. Experiments varied stemming methods, stoplists, vector lengths, temporal windows, and combinations of similarity decisions, with effectiveness measured primarily using TDT miss rate, false-alarm rate, and CDet.",
+   "key_findings": [
+    {
+     "finding": "The paper operationalizes continuity across documents as a TDT topic consisting of a seminal event or activity plus directly related subsequent events and activities, so document membership can persist even when later stories describe consequences or related developments rather than merely repeat the original event.",
+     "evidence_type": "supported",
+     "section": "Introduction / TDT definitions"
+    },
+    {
+     "finding": "Adaptive topic tracking, which updates the topic representation with newly accepted stories, was consistently more effective than corresponding static tracking approaches, providing evidence that an evolving representation can preserve continuity as a topic develops.",
+     "evidence_type": "supported",
+     "section": "Topic Tracking: Experimental Results; Conclusions and Future Work"
+    },
+    {
+     "finding": "Combining cover-coefficient and cosine decisions with an OR rule reduced new-event miss rate and produced the lowest test CDet among the evaluated NED variants, although its advantage over the individual similarity measures was not statistically significant on the test set.",
+     "evidence_type": "supported",
+     "section": "Comparative Evaluation of NED Methods"
+    },
+    {
+     "finding": "A broad stoplist significantly improved Turkish NED relative to using no stopwords, showing that feature-selection choices materially affect judgments of whether a document continues an existing event.",
+     "evidence_type": "supported",
+     "section": "Word Stopping Strategy Considerations"
+    },
+    {
+     "finding": "Topic tracking was substantially easier than first-story detection, and the authors judged Turkish tracking performance suitable for operational use while stating that NED still had considerable room for improvement.",
+     "evidence_type": "supported",
+     "section": "Topic Tracking: Experimental Results; Conclusions and Future Work"
+    },
+    {
+     "finding": "The evidence concerns public news streams rather than enterprise email, chat, or workplace work-matter threads, so transfer to workplace continuity is not directly evaluated.",
+     "evidence_type": "supported",
+     "section": "Corpus and task scope"
+    }
+   ],
+   "limitations": [
+    "The experiments use Turkish news stories rather than enterprise email, workplace chat, tickets, or other internal business communication.",
+    "TDT topic identity is broader than strict event coreference because a topic includes a seminal event or activity together with directly related events and activities.",
+    "The collection is restricted to news from five Turkish sources during 2005.",
+    "Topic selection was not balanced systematically across source, month, or topic category.",
+    "Sliding-window methods assume temporally related stories occur sufficiently close together, and performance can degrade when the window becomes too large.",
+    "Large temporal windows create substantial computational cost in real-time streams.",
+    "The authors explicitly state that new-event detection remains difficult and needs further improvement."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "topic_identity_includes_related_developments": 0.99,
+    "adaptive_tracking_supports_evolving_continuity": 0.98,
+    "combined_similarity_reduces_ned_misses": 0.97,
+    "stopword_choice_affects_identity_detection": 0.96,
+    "tracking_easier_than_first_story_detection": 0.97,
+    "no_direct_workplace_evidence": 0.99
+   },
+   "raw_claims": [
+    "TDT new-event detection attempts to identify the first story about an event not previously discussed.",
+    "Topic tracking attempts to identify subsequent stories belonging to a topic from a small number of known examples.",
+    "A TDT topic can contain the seminal event together with directly related events and activities.",
+    "BilCol-2005 contains 209,305 Turkish news stories and 80 annotated events.",
+    "The NED implementation compares incoming stories against recent stories using a sliding time window.",
+    "Cosine and cover-coefficient similarities provide partly complementary NED decisions.",
+    "The OR combination lowered the test miss rate relative to either similarity measure alone.",
+    "Longer stoplists improved NED effectiveness relative to no word stopping.",
+    "Adaptive tracking updates the topic representation using subsequently tracked documents.",
+    "Adaptive topic tracking outperformed corresponding static tracking methods.",
+    "Very large time windows can preserve influence from old events and reduce both effectiveness and efficiency.",
+    "The study does not evaluate continuity across enterprise communication threads."
+   ],
+   "source_url": "https://repository.bilkent.edu.tr/bitstreams/7bc0e319-1308-4347-b693-3a5f8af58801/download",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-3115-1220575-1220591",
+   "title": "Using Names and Topics for New Event Detection",
+   "research_question": "Can separate similarity evidence from named entities, topical terms, and full text improve automatic discrimination between stories that continue known events and stories that introduce new events?",
+   "methodology": "The authors represent each incoming story using three comparison features against its closest prior story: full-text cosine similarity, named-entity cosine similarity, and cosine similarity over non-named-entity topical terms. Support vector machines with several kernels are trained on TDT3 and TDT4 and tested on TDT2 and TDT5, using English newswire and broadcast-news material. Performance is evaluated with the official TDT minimum CDet measure, and additional experiments examine degradation from automatic speech-recognition transcripts and retraining of the named-entity recognizer for ASR-like input.",
+   "key_findings": [
+    {
+     "finding": "The central identity hypothesis is that stories about the same topic should usually overlap in both event-characterizing names and topical terms, whereas different but superficially similar events may overlap strongly in only one of those dimensions.",
+     "evidence_type": "supported",
+     "section": "Features for NED"
+    },
+    {
+     "finding": "SVM classifiers using full-text, named-entity, and topic-term similarities significantly improved NED performance over the baseline vector-space system on the tested TDT collections.",
+     "evidence_type": "supported",
+     "section": "Results"
+    },
+    {
+     "finding": "The main observed benefit was better separation of previously seen stories from genuinely new stories, especially by moving many old-story scores toward the old end of the confidence scale and thereby reducing false alarms.",
+     "evidence_type": "supported",
+     "section": "Analysis; Conclusions and Future Work"
+    },
+    {
+     "finding": "Names alone are insufficient for event identity because two distinct events may share high-IDF people, places, or organizations while differing in topical content.",
+     "evidence_type": "supported",
+     "section": "Features for NED"
+    },
+    {
+     "finding": "The method becomes unreliable for loosely connected evolving topics in which later stories share only a tenuous cue such as the disaster name or location with the original story.",
+     "evidence_type": "supported",
+     "section": "Analysis"
+    },
+    {
+     "finding": "Named-entity extraction errors on ASR transcripts substantially harmed the approach, while retraining the recognizer on ASR-like material restored statistically significant improvement for an appropriate classifier.",
+     "evidence_type": "supported",
+     "section": "Analysis; ASR experiments"
+    },
+    {
+     "finding": "The study provides evidence about cross-document event/topic continuity in news but does not evaluate enterprise email/chat continuity or workplace work-matter identity.",
+     "evidence_type": "supported",
+     "section": "Task and corpus scope"
+    }
+   ],
+   "limitations": [
+    "The evaluation is on English TDT news streams, not enterprise communication.",
+    "The model assumes that related stories generally retain both named-entity and topical-term overlap, an assumption that the paper shows fails for some loosely connected topics.",
+    "Named-entity recognition errors directly propagate into event novelty decisions.",
+    "Automatic speech-recognition noise can make a named-entity model trained on clean newswire inappropriate.",
+    "The approach compares an incoming story principally with the closest prior story rather than modeling a richer evolving event structure.",
+    "The paper treats TDT topic continuity, which can encompass related developments, rather than strict same-real-world-event coreference."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "names_and_topics_jointly_signal_identity": 0.99,
+    "svm_improves_ned": 0.99,
+    "old_story_detection_drives_gain": 0.96,
+    "shared_names_do_not_imply_same_event": 0.99,
+    "loose_topic_evolution_breaks_overlap_assumption": 0.99,
+    "asr_noise_harms_identity_features": 0.98,
+    "no_direct_workplace_evidence": 0.99
+   },
+   "raw_claims": [
+    "New-event detection classifies chronologically arriving stories as reports of new or already known events.",
+    "The model separates full-text similarity, named-entity similarity, and topical-term similarity into distinct features.",
+    "Named entities are intended to represent who, where, and when aspects of an event.",
+    "Non-named topical terms are intended to represent what happened.",
+    "Stories on the same topic are expected to share both entity and topical evidence.",
+    "Distinct but similar events can share names without sharing their substantive topical content.",
+    "SVM models improved minimum CDet over the vector-space baseline on the evaluated test collections.",
+    "The strongest practical effect was improved recognition of old stories.",
+    "Some evolving topics contain later stories connected to the original event by only a weak common cue.",
+    "Named-entity recognition errors reduce the value of entity-based continuity features.",
+    "Retraining the entity recognizer for ASR-style input improved results on noisy broadcast transcripts.",
+    "The study does not test workplace threads or enterprise messaging."
+   ],
+   "source_url": "https://aclanthology.org/H05-1016.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-35bac66e3c",
+   "title": "Detecting Subevent Structure for Event Coreference Resolution",
+   "research_question": "Can event coreference resolution explicitly distinguish full event identity from partial identity expressed through hierarchical subevent parent-child and sister relations, and can structural reasoning improve those classifications?",
+   "methodology": "The authors formulate pairwise event-relation classification with four classes: full coreference, subevent parent-child, subevent sister, and no coreference. A first-stage L2-regularized multiclass logistic-regression model uses 135 features, with MetaCost addressing severe class imbalance; a second-stage voting procedure exploits predicted sister clusters to select a likely parent and improve parent-child relations. The system is evaluated with BLANC-style precision, recall, and F1 under five-fold cross-validation on 65 Intelligence Community-domain newspaper articles containing 35,908 annotated or derived event-pair relations.",
+   "key_findings": [
+    {
+     "finding": "The paper directly distinguishes full event identity from partial event identity, treating subevent parent-child relations as a form of partial coreference rather than collapsing them into either identity or non-identity.",
+     "evidence_type": "supported",
+     "section": "Introduction; Approach"
+    },
+    {
+     "finding": "Event structure is not purely pairwise: several subevents can share a parent and form a subevent cluster, while subevents under the same parent can have sister relations.",
+     "evidence_type": "supported",
+     "section": "Introduction"
+    },
+    {
+     "finding": "The first-stage multiclass model jointly predicts full coreference, directed subevent parent-child relations, subevent sister relations, and no coreference.",
+     "evidence_type": "supported",
+     "section": "First Stage: Event Relation Learning"
+    },
+    {
+     "finding": "Using sister-cluster structure to vote for a parent improved subevent-parent BLANC F1 from 56.19 in the first-stage model to 59.45 with the stronger second-stage option, a gain of about 3.2 points.",
+     "evidence_type": "supported",
+     "section": "Experimental Results"
+    },
+    {
+     "finding": "The results support the value of enforcing structure beyond independent pairwise judgments, but the authors identify structural consistency as unfinished work rather than a solved problem.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    },
+    {
+     "finding": "A common error occurs when the parent event is expressed with a rare or abstract linguistic form, illustrating that semantic identity relations may be difficult to infer from surface similarity alone.",
+     "evidence_type": "supported",
+     "section": "Discussion"
+    },
+    {
+     "finding": "Despite its relevance to partial and evolving event identity, the evaluated relations are within-document, not cross-document workplace threads.",
+     "evidence_type": "supported",
+     "section": "Introduction / Scope"
+    }
+   ],
+   "limitations": [
+    "The experiment is explicitly restricted to within-document full coreference and subevent relations.",
+    "The corpus contains only 65 newspaper articles from an Intelligence Community domain.",
+    "Subevent parent-child annotation agreement is relatively modest, with Fleiss kappa reported as 0.467.",
+    "The relation distribution is highly imbalanced, with no-coreference pairs dominating the corpus.",
+    "The system assumes gold-annotated event mentions rather than solving event detection jointly.",
+    "Independent pairwise classifications can create structurally inconsistent subevent configurations.",
+    "The paper reports no evaluation on enterprise email, chat, or cross-thread work-matter continuity.",
+    "The corpus is not stated to be publicly released in the paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "partial_identity_distinct_from_full_identity": 0.99,
+    "hierarchical_subevent_structure": 0.99,
+    "four_way_relation_model": 0.99,
+    "structural_voting_improves_parent_detection": 0.99,
+    "pairwise_consistency_remains_open": 0.98,
+    "abstract_parent_expression_causes_errors": 0.97,
+    "not_cross_document_or_workplace": 0.99
+   },
+   "raw_claims": [
+    "Event mentions can exhibit partial identity rather than only perfect identity or complete non-coreference.",
+    "A subevent may stand in a directed parent-child relation to a larger event.",
+    "Subevents sharing a parent can also be related as sisters.",
+    "The first-stage classifier distinguishes full coreference, parent-child subevent, sister subevent, and no-coreference relations.",
+    "The classifier models direction for parent-child relations.",
+    "The second stage uses predicted subevent clusters to vote for a likely parent.",
+    "The evaluation corpus contains 65 Intelligence Community-domain newspaper articles.",
+    "The corpus is strongly imbalanced toward no-coreference pairs.",
+    "The second-stage aggregate voting option improves parent-child BLANC F1 by about 3.2 points.",
+    "Rare or abstract parent-event expressions are a recurring source of errors.",
+    "The authors propose structural consistency checking as future work.",
+    "The reported experiment is within-document rather than cross-document."
+   ],
+   "source_url": "https://www.cs.cmu.edu/~hovy/papers/14LREC-subevents.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-emnlp-main-294",
+   "title": "Cross-Document Event Coreference Resolution on Discourse Structure",
+   "research_question": "Does representing global discourse structure and long-distance discourse paths improve clustering of event mentions across documents that refer to the same real-world event?",
+   "methodology": "The model combines a local event-pair representation from pretrained language-model embeddings with a global representation derived from rhetorical discourse trees. For cross-document pairs, the authors construct combined discourse structures, extract lowest-common-parent information and shortest dependency paths between discourse units, encode path information with a BiLSTM, and feed local and global representations to an MLP pairwise classifier followed by best-first clustering. Experiments use the standard ECB+ train/dev/test split with gold event mentions and evaluate MUC, B3, CEAFe, and aggregate CoNLL scores against prior CD-ECR systems, with ablations isolating within-document global features, cross-document global features, discourse paths, and tree-construction strategies.",
+   "key_findings": [
+    {
+     "finding": "The task explicitly defines cross-document event identity as grouping event mentions from different documents that refer to the same real-world event.",
+     "evidence_type": "supported",
+     "section": "Introduction; Model"
+    },
+    {
+     "finding": "Adding within-document discourse lowest-common-parent information raised CoNLL from 81.1 to 82.3, adding cross-document LCP information raised it further to 83.9, and adding discourse-tree shortest-path information raised it to 85.7.",
+     "evidence_type": "supported",
+     "section": "Analysis: Impact of Global Information"
+    },
+    {
+     "finding": "The ablation results provide direct evidence that cross-document global discourse information contributes beyond local event-sentence representations when deciding event identity.",
+     "evidence_type": "supported",
+     "section": "Analysis: Impact of Global Information"
+    },
+    {
+     "finding": "With Longformer as encoder, the proposed model reached a CoNLL score of 86.4 and significantly exceeded the strongest reported comparison by 0.7 points.",
+     "evidence_type": "supported",
+     "section": "Experimental Results"
+    },
+    {
+     "finding": "The best cross-document discourse construction strategy retained the event sentences while compressing other context; using only event sentences lost useful contextual links, while concatenating full documents introduced excessive noise.",
+     "evidence_type": "supported",
+     "section": "Analysis on Construction Strategy for Cross Document Discourse Structure"
+    },
+    {
+     "finding": "A case analysis shows that discourse paths can propagate a shared participant across differing local descriptions and thereby recover coreference that direct local comparison would misclassify.",
+     "evidence_type": "supported",
+     "section": "Case Study"
+    },
+    {
+     "finding": "The study directly addresses cross-document event identity but uses news articles rather than enterprise emails or chats, so workplace continuity remains untested.",
+     "evidence_type": "supported",
+     "section": "Dataset and task scope"
+    }
+   ],
+   "limitations": [
+    "Training and evaluation use gold event mentions, so upstream event-detection errors are excluded.",
+    "The discourse-structure constructor has high inference cost.",
+    "The authors state that cross-document discourse-tree construction remains open to further optimization.",
+    "Evaluation is limited to ECB+, a news-domain benchmark.",
+    "The pipeline first clusters documents to topics and only considers mention pairs within the same document cluster, so topic-prediction errors can constrain later coreference decisions.",
+    "The work evaluates binary full coreference, not partial or evolving-event relations such as subevent identity.",
+    "No enterprise email, workplace chat, ticket, or business-process corpus is evaluated.",
+    "No code release is stated in the paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "same_real_world_event_across_documents": 0.99,
+    "cross_document_global_information_improves_coreference": 0.99,
+    "discourse_paths_add_substantial_gain": 0.99,
+    "longformer_model_outperforms_prior_baselines": 0.98,
+    "compressed_context_best_for_tree_construction": 0.99,
+    "shared_arguments_can_be_recovered_through_discourse": 0.96,
+    "no_direct_workplace_evaluation": 0.99
+   },
+   "raw_claims": [
+    "Cross-document event coreference clusters mentions from different documents that denote the same real-world event.",
+    "The proposed architecture combines local event representations with global discourse-tree representations.",
+    "Cross-document lowest-common-parent information improves performance beyond within-document discourse information.",
+    "Shortest paths through the discourse tree add further information about long-distance event interactions.",
+    "The RoBERTa local-only baseline has a CoNLL score of 81.1 in the reported ablation.",
+    "The complete RoBERTa discourse model reaches 85.7 CoNLL in that ablation.",
+    "The Longformer version reaches 86.4 CoNLL in the main comparison.",
+    "Event-sentence-plus-compressed-context discourse trees outperform event-sentence-only and full-document alternatives.",
+    "Full-document tree construction introduces distracting information.",
+    "The model is evaluated with annotated event mentions rather than predicted mentions.",
+    "The discourse constructor is computationally expensive.",
+    "The study uses ECB+ news documents rather than enterprise communications."
+   ],
+   "source_url": "https://aclanthology.org/2023.emnlp-main.294.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1906.01753",
+   "title": "Revisiting Joint Modeling of Cross-document Entity and Event Coreference Resolution",
+   "research_question": "Can jointly resolving cross-document entity and event coreference, with each event representation informed by its argument entities and each entity representation informed by related events, outperform disjoint cross-document coreference models?",
+   "methodology": "The authors propose an iterative neural architecture that alternates between entity and event clustering, updating mention representations after each complementary clustering step. Each mention is represented by its lexical span, surrounding context, and vectors for semantically dependent entity or event mentions extracted through predicate-argument structures; a learned pairwise scorer supplies scores to agglomerative clustering. Documents are first clustered into topics, and coreference is then resolved within those document clusters. Evaluation on ECB+ uses gold entity and event mentions and reports MUC, B3, CEAFe, and CoNLL F1, including disjoint and component-ablation comparisons.",
+   "key_findings": [
+    {
+     "finding": "Joint entity-event modeling improved event coreference by 1.0 CoNLL F1 over the otherwise comparable disjoint model and improved entity coreference by 1.2 points, with the joint-versus-disjoint differences reported as statistically significant.",
+     "evidence_type": "supported",
+     "section": "Results"
+    },
+    {
+     "finding": "The joint model achieved 79.5 CoNLL F1 for event coreference, 10.5 points above the previously published KCP result and 3.0 points above the strong topic-clustered lemma baseline.",
+     "evidence_type": "supported",
+     "section": "Results"
+    },
+    {
+     "finding": "Predicate-argument relationships provide useful cross-document identity evidence because event mentions can be compared partly through whether their participants resolve to the same entity clusters, and entity identity can similarly exploit related event clusters.",
+     "evidence_type": "supported",
+     "section": "Introduction; Model"
+    },
+    {
+     "finding": "Document-level topic clustering is itself a strong continuity signal: near-perfect topic clustering made a simple lemma-based event-coreference baseline outperform earlier published ECB+ systems, and adding topic pre-clustering improved KCP by 4.6 CoNLL points.",
+     "evidence_type": "supported",
+     "section": "Results"
+    },
+    {
+     "finding": "ECB+ deliberately contains different events of the same type in paired subtopics, so the benchmark tests whether models avoid merging superficially similar but non-identical events.",
+     "evidence_type": "supported",
+     "section": "Background and Related Work: Datasets"
+    },
+    {
+     "finding": "All tested mention-representation components contribute: removing predicate-argument dependent-mention vectors from the joint event model reduces CoNLL F1, while removing both joint-feature components reduces it to the disjoint score.",
+     "evidence_type": "supported",
+     "section": "Results; Analysis"
+    },
+    {
+     "finding": "The paper gives direct cross-document same-event evidence, but it does not study enterprise mail/chat threads or evolving partial identity between related but non-identical business events.",
+     "evidence_type": "supported",
+     "section": "Dataset and task scope"
+    }
+   ],
+   "limitations": [
+    "The experiments use ECB+ news articles rather than enterprise communication.",
+    "Evaluation relies on gold entity and event mentions rather than end-to-end mention prediction.",
+    "ECB+ annotations are not exhaustive and cover only selected salient entities and events.",
+    "Predicate-argument extraction errors propagate into the joint model; the paper's manual error analysis attributes part of its errors to this stage.",
+    "The system pre-clusters documents by topic, so document-clustering mistakes can constrain the coreference search space.",
+    "The task models full coreference clusters, not partial identity or explicit subevent relations.",
+    "The strongest improvements are demonstrated on a single benchmark/domain, limiting evidence for transfer to workplace work-matter identity."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "joint_entity_event_modeling_improves_coreference": 0.99,
+    "joint_model_state_of_art_event_result": 0.99,
+    "arguments_supply_identity_evidence": 0.98,
+    "topic_preclustering_is_strong_continuity_signal": 0.99,
+    "same_type_different_event_subtopics_test_disambiguation": 0.99,
+    "all_representation_components_contribute": 0.98,
+    "no_direct_workplace_or_partial_identity_test": 0.99
+   },
+   "raw_claims": [
+    "Cross-document coreference groups mentions that refer to the same entity or event across multiple texts.",
+    "The model alternates between event clustering and entity clustering.",
+    "Event representations incorporate entity mentions linked through predicate-argument structure.",
+    "Entity representations analogously incorporate related event mentions.",
+    "Pairwise mention scores are converted into clusters using agglomerative clustering.",
+    "ECB+ contains subtopics describing different events of the same general type.",
+    "The joint event model reaches 79.5 CoNLL F1 on the reported ECB+ setup.",
+    "The disjoint event variant reaches 78.5 CoNLL F1.",
+    "Topic clustering materially improves simple lemma and neural event-coreference baselines.",
+    "The benchmark evaluation uses gold mentions because ECB+ annotation is partial.",
+    "Predicate-argument extraction errors are a documented source of model error.",
+    "The authors released implementation code.",
+    "The work does not evaluate enterprise email or chat continuity."
+   ],
+   "source_url": "https://arxiv.org/html/1906.01753",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

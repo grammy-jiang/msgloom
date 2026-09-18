@@ -1,0 +1,73 @@
+{
+ "paper_id": "2011.12249",
+ "title": "Generalizing Cross-Document Event Coreference Resolution Across Multiple Corpora",
+ "research_question": "How well do cross-document event-coreference systems and their learned signals generalize across heterogeneous corpora, and can multi-corpus evaluation and training improve robustness?",
+ "methodology": "The authors establish a uniform evaluation across ECB+, GVC, and a token-level reannotation of FCC called FCC-T. They compare a corpus-independent feature-based mention-pair system with a recent neural event-coreference model and analyze which action, participant, temporal, spatial, and contextual features matter in each corpus. They then train systems on individual and combined corpora and test cross-corpus transfer using coreference metrics including LEA and CoNLL measures. Model behavior and dataset structure are also inspected to identify sources of corpus-specific overfitting.",
+ "key_findings": [
+  {
+   "finding": "Systems trained on a single event-coreference corpus suffer substantial performance degradation when evaluated on unseen corpora.",
+   "evidence_type": "supported",
+   "section": "Cross-Dataset Generalization"
+  },
+  {
+   "finding": "ECB+ can be modeled largely from event-action information, while FCC-T and GVC require a more balanced use of time, participants, and other contextual signals.",
+   "evidence_type": "supported",
+   "section": "Feature Analysis"
+  },
+  {
+   "finding": "The feature-based approach has lower peak performance in some settings but behaves more consistently across corpora than the evaluated neural system.",
+   "evidence_type": "supported",
+   "section": "System Comparison"
+  },
+  {
+   "finding": "Design choices tailored to ECB+, including exploiting its document-link distribution through preclustering, can overfit that corpus and generalize poorly elsewhere.",
+   "evidence_type": "supported",
+   "section": "Model Analysis"
+  },
+  {
+   "finding": "Joint training on FCC-T and GVC obtains a harmonic-mean LEA F1 of 40.9 across the evaluated corpora, more than 4.5 points above the best corresponding single-corpus training result.",
+   "evidence_type": "supported",
+   "section": "Multi-Corpus Training"
+  },
+  {
+   "finding": "The experiments support evaluating cross-document event-coreference systems on multiple corpora rather than treating strong performance on one benchmark as evidence of general robustness.",
+   "evidence_type": "supported",
+   "section": "Conclusion"
+  }
+ ],
+ "limitations": [
+  "The empirical study is restricted to the news domain.",
+  "The evaluated corpora each contain fewer than one thousand documents, far below the scale of many real document streams.",
+  "The available corpora do not permit a meaningful investigation of event-coreference links across unrelated topic partitions.",
+  "The study evaluates three corpora and a limited set of system architectures, so conclusions about all possible modeling approaches remain bounded by that setup.",
+  "The authors do not demonstrate the effect of improved cross-document event coreference on downstream applications.",
+  "Incomplete event-mention annotation in existing corpora complicates end-to-end event-detection evaluation."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "poor_single_corpus_transfer": 0.99,
+  "feature_importance_differs_by_corpus": 0.99,
+  "feature_model_more_consistent": 0.97,
+  "ecb_plus_overfitting": 0.98,
+  "joint_training_robustness": 0.99,
+  "multi_corpus_evaluation_recommendation": 0.99
+ },
+ "raw_claims": [
+  "Prior cross-document event-coreference systems were commonly developed and evaluated on only one corpus.",
+  "The study compares ECB+, GVC, and the reannotated FCC-T corpus under a uniform setup.",
+  "Event-action similarity dominates prediction on ECB+ more strongly than on the other two datasets.",
+  "Time and participant information are more important on FCC-T and GVC.",
+  "Single-corpus models generally transfer poorly to unseen datasets.",
+  "A simpler feature-based model is more stable across corpora than the evaluated neural model.",
+  "Some ECB+-specific modeling choices exploit structural properties that do not transfer reliably.",
+  "Training on FCC-T and GVC together improves aggregate robustness across corpora.",
+  "The authors recommend multi-corpus evaluation for future cross-document event-coreference systems.",
+  "The released resources include data, annotation guidelines, and a system implementation."
+ ],
+ "source_url": "https://aclanthology.org/2021.cl-3.18.pdf",
+ "access": "full_text"
+}

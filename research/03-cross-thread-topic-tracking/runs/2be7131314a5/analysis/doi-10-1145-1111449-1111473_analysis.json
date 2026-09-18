@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-1145-1111449-1111473",
+ "title": "A hybrid learning system for recognizing user tasks from desktop activities and email messages",
+ "research_question": "Can machine-learning models automatically infer a user's current task from desktop activity or an incoming email with sufficiently high precision to reduce the need for manual task selection?",
+ "methodology": "The paper presents TaskPredictor as a component of TaskTracer, with separate predictors for desktop window/document sequences and incoming email messages. Email classification uses features derived from sender, recipients, and subject words, while desktop classification uses words associated with applications and accessed resources; mutual-information feature selection reduces the feature space. The authors compare Naive Bayes, support vector machines, and a hybrid in which Naive Bayes supplies a confidence estimate and an SVM chooses the class, with confidence thresholds allowing the system to abstain. Evaluation uses TaskTracer data from nine users, although desktop-sequence evaluation is limited to two faculty users and email evaluation uses manually task-sorted messages from the remaining participants.",
+ "key_findings": [
+  {
+   "finding": "Incoming email can be classified into a user's predefined work tasks using sender, recipient, and subject information with high precision at useful but incomplete coverage.",
+   "evidence_type": "supported",
+   "section": "Experimental Results - Email"
+  },
+  {
+   "finding": "The email predictor reached about 92% precision at roughly 66% coverage with the hybrid classifier in the reported evaluation.",
+   "evidence_type": "supported",
+   "section": "Experimental Results - Confidence Threshold"
+  },
+  {
+   "finding": "The hybrid Naive-Bayes/SVM design generally matched or exceeded the best individual classifier's precision at comparable coverage.",
+   "evidence_type": "supported",
+   "section": "Experimental Results - Hybrid Classifier"
+  },
+  {
+   "finding": "Using approximately 200 mutual-information-selected features was sufficient for the evaluated email and desktop predictors and avoided unnecessary feature growth.",
+   "evidence_type": "supported",
+   "section": "Feature Selection"
+  },
+  {
+   "finding": "Words from the email body did not provide additional predictive benefit in the authors' experiments beyond sender, recipient, and subject features.",
+   "evidence_type": "supported",
+   "section": "Email Task Predictor"
+  },
+  {
+   "finding": "Prediction errors increase when a user begins a new task for which the classifier has little training data.",
+   "evidence_type": "supported",
+   "section": "Online Performance and Discussion"
+  }
+ ],
+ "limitations": [
+  "The participant pool is small and largely drawn from one academic environment, limiting external validity for broader enterprises.",
+  "Desktop-sequence evaluation uses data from only two users because of privacy and data-quality constraints.",
+  "Email ground truth was created by participants manually sorting sampled messages into folders corresponding to TaskTracer tasks rather than by observing naturally evolving business-event identities.",
+  "The study classifies individual messages into predefined user tasks; it does not directly link separate email or chat threads into a common evolving business matter.",
+  "The models largely treat classification examples independently even though task switching is inherently sequential; the authors identify temporal models as future work.",
+  "Performance degrades for newly created tasks that have few training examples and may reuse resources associated with older tasks.",
+  "The private user data and email corpus are not released as a reproducible public dataset."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "email_task_prediction": 0.99,
+  "hybrid_precision_coverage": 0.99,
+  "hybrid_classifier_advantage": 0.96,
+  "feature_selection_result": 0.96,
+  "email_body_result": 0.94,
+  "new_task_failure_mode": 0.97
+ },
+ "raw_claims": [
+  "TaskTracer associates computer resources such as files, email messages, contacts, and web pages with user-defined activities.",
+  "Users can forget to change the declared task when they switch work contexts.",
+  "TaskPredictor attempts to infer the current task automatically.",
+  "The email predictor uses sender, recipient, and subject-word features.",
+  "The authors found no useful additional predictive value from email-body words in their experiments.",
+  "Mutual-information ranking is used to select a compact subset of features.",
+  "The hybrid classifier uses Naive Bayes to estimate confidence and an SVM to choose the predicted task.",
+  "A confidence threshold permits the predictor to abstain when its prediction is uncertain.",
+  "Email evaluation uses a chronological split between training and test messages.",
+  "The hybrid email predictor achieved high precision while making predictions for only part of the messages.",
+  "Newly introduced tasks are particularly difficult because little task-specific training data exists.",
+  "The paper notes that sequential or temporal modeling could improve future versions of the system."
+ ],
+ "source_url": "https://web.engr.oregonstate.edu/~tgd/publications/IUI06-TaskPredictor.pdf",
+ "access": "full_text"
+}

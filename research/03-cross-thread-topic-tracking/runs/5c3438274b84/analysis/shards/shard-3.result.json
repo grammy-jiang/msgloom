@@ -1,0 +1,239 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1016-j-ipm-2025-104085",
+   "title": "Improving cross-document event coreference resolution by discourse coherence and structure",
+   "research_question": "Can cross-document event coreference resolution be improved by constructing coherent discourse between mentions in different documents and exploiting the resulting rhetorical discourse structure for pairwise coreference decisions?",
+   "methodology": "The authors formulate Event-oriented Cross-Document Coherence Enhancement (ECD-CoE), which selects bridging sentences and inserts them between the contexts of two cross-document event mentions to form a more coherent text. The resulting text is represented as a rhetorical discourse tree, from which global interaction features such as the closest common ancestor and shortest rhetorical path between event mentions are extracted and used for pairwise coreference prediction with an MLP, followed by clustering. The approach is evaluated with gold event mentions on the English ECB+ and GVC datasets, with candidate pairs restricted to mentions assigned to the same subtopic. Performance is compared with prior cross-document event-coreference baselines using standard coreference metrics including CoNLL F1.",
+   "key_findings": [
+    {
+     "finding": "ECD-CoE explicitly constructs a textual bridge between event mentions from separate documents so that cross-document pairs can be processed more like document-level coherent discourse.",
+     "evidence_type": "supported",
+     "section": "Introduction / Contributions"
+    },
+    {
+     "finding": "The model represents the constructed discourse as a rhetorical tree and derives global pair information from the closest common ancestor and the shortest rhetorical path between event mentions.",
+     "evidence_type": "supported",
+     "section": "Introduction / Methodology"
+    },
+    {
+     "finding": "The reported CoNLL F1 scores are 88.1 on ECB+ and 87.3 on GVC.",
+     "evidence_type": "supported",
+     "section": "Introduction / Experimental results"
+    },
+    {
+     "finding": "The proposed approach is reported to outperform several state-of-the-art comparison systems on both ECB+ and GVC.",
+     "evidence_type": "supported",
+     "section": "Abstract / Conclusion"
+    },
+    {
+     "finding": "The evaluation uses gold event mentions rather than evaluating an end-to-end event-detection and coreference pipeline.",
+     "evidence_type": "supported",
+     "section": "Dataset and setups"
+    },
+    {
+     "finding": "Coreference classification is performed only for candidate event pairs that belong to the same subtopic, making prior topic or subtopic organization part of the evaluation setup.",
+     "evidence_type": "supported",
+     "section": "Methodology"
+    }
+   ],
+   "limitations": [
+    "The experiments cover two English news-oriented benchmarks, ECB+ and GVC, rather than enterprise email, chat, ticketing, or other organizational communication.",
+    "Evaluation uses gold event mentions, so errors from real-world event-mention detection are not represented.",
+    "Candidate pairs are restricted to mentions within the same subtopic, leaving open the harder problem of discovering continuity across incorrectly separated or previously unseen topics.",
+    "The architecture depends on sentence selection and discourse-structure analysis before the final coreference classifier, so errors in these intermediate stages can propagate.",
+    "No implementation repository was identified in the accessible paper text."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "ECD-CoE bridging mechanism": 0.99,
+    "discourse-tree interaction features": 0.98,
+    "ECB+ CoNLL F1 88.1": 0.99,
+    "GVC CoNLL F1 87.3": 0.99,
+    "outperforms reported baselines": 0.97,
+    "gold-mention evaluation": 0.98,
+    "same-subtopic candidate restriction": 0.97
+   },
+   "raw_claims": [
+    "Cross-document event mentions lack the continuous textual context available to mentions within one document.",
+    "ECD-CoE selects additional sentences to create a coherent text connecting two cross-document event contexts.",
+    "The constructed coherent text is parsed into a rhetorical discourse tree.",
+    "Elementary discourse units and their rhetorical and nuclearity relations provide structural information for event-pair representation.",
+    "The closest common ancestor and shortest rhetorical path are used to represent global interaction between event mentions.",
+    "Pairwise coreference predictions are subsequently converted into event clusters.",
+    "Experiments use the ECB+ and GVC datasets with gold event mentions.",
+    "The reported CoNLL F1 values are 88.1 for ECB+ and 87.3 for GVC.",
+    "The authors report better performance than several prior state-of-the-art baselines."
+   ],
+   "source_url": "https://www.sciencedirect.com/science/article/pii/S0306457325000275",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1080-01621459-1969-10501049",
+   "title": "A Theory for Record Linkage",
+   "research_question": "How can a record-linkage system optimally decide whether records from two files represent the same underlying person, object, or event while controlling false-link and false-nonlink errors?",
+   "methodology": "Fellegi and Sunter construct a probabilistic model in which every pair of records belongs either to a matched set or an unmatched set and is represented by a comparison vector describing agreements, disagreements, and missing values across fields. They define conditional distributions m(gamma) and u(gamma) for comparison patterns among matched and unmatched pairs and formulate three possible decisions: link, possible link, and non-link. A fundamental theorem derives an optimal linkage rule based on the likelihood ratio m(gamma)/u(gamma), minimizing unresolved comparisons for stipulated error levels. The paper then develops practical approximations for additive comparison weights, parameter estimation, blocking, comparison-space design, and decision thresholds.",
+   "key_findings": [
+    {
+     "finding": "Record linkage can be formulated as a three-way statistical decision problem with link, possible-link, and non-link outcomes.",
+     "evidence_type": "supported",
+     "section": "Section 2: Theory"
+    },
+    {
+     "finding": "For fixed false-link and false-nonlink error levels, the optimal linkage rule minimizes the probability of leaving a comparison unresolved as a possible link.",
+     "evidence_type": "supported",
+     "section": "Section 2 / Section 2.1"
+    },
+    {
+     "finding": "The optimal ordering of comparison patterns is determined by the likelihood ratio m(gamma)/u(gamma), with upper and lower thresholds defining link, review, and non-link regions.",
+     "evidence_type": "supported",
+     "section": "Section 2.1: A fundamental theorem"
+    },
+    {
+     "finding": "The derived linkage rule is equivalent to a likelihood-ratio hypothesis-testing procedure.",
+     "evidence_type": "supported",
+     "section": "Section 2.1: A fundamental theorem"
+    },
+    {
+     "finding": "Under conditional independence of groups of comparison variables, the logarithm of the likelihood ratio decomposes into additive field-level weights.",
+     "evidence_type": "supported",
+     "section": "Section 3.2: Some simplifying assumptions"
+    },
+    {
+     "finding": "The paper gives two practical approaches for estimating match and non-match probabilities and warns that dependence between comparison variables can seriously affect the probabilistic interpretation of the resulting weights.",
+     "evidence_type": "supported",
+     "section": "Section 3.3: The Calculation of Weights"
+    },
+    {
+     "finding": "Blocking is treated as a necessary computational restriction for large files, but the paper explicitly incorporates the resulting changes in linkage error and processing cost.",
+     "evidence_type": "supported",
+     "section": "Section 3.1 / Section 3.4"
+    }
+   ],
+   "limitations": [
+    "The practical additive-weight formulation relies on conditional-independence assumptions that may be violated when fields, reporting errors, or missingness are correlated.",
+    "The quality of the decision rule depends on accurate estimation of the matched and unmatched comparison-pattern distributions.",
+    "Blocking improves computational feasibility but can exclude true matches before scoring and therefore changes effective error rates.",
+    "The framework primarily treats pairwise linkage between two files and does not itself provide a modern global clustering or transitivity mechanism across arbitrarily many evolving records.",
+    "The article is primarily theoretical and does not present a modern benchmark dataset or empirical comparison against alternative record-linkage systems.",
+    "The work is domain-general rather than direct evidence about enterprise email, chat, or organizational workflow continuity."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "three-way linkage decision": 0.99,
+    "optimal rule minimizes unresolved cases": 0.99,
+    "likelihood-ratio thresholds": 0.99,
+    "hypothesis-testing equivalence": 0.99,
+    "additive weights under conditional independence": 0.99,
+    "dependence threatens probability estimates": 0.99,
+    "blocking trades computation against linkage error": 0.97
+   },
+   "raw_claims": [
+    "The linkage problem is defined over pairs of records that either represent the same underlying unit or do not.",
+    "A comparison vector encodes agreements, disagreements, missing values, and other field-comparison outcomes.",
+    "The model allows three decisions: link, possible link, and non-link.",
+    "Two error types correspond to linking an unmatched pair and rejecting a genuinely matched pair.",
+    "An optimal rule is defined as one that minimizes unresolved comparisons while satisfying specified error levels.",
+    "Comparison patterns are ranked by their probability under the match distribution relative to their probability under the non-match distribution.",
+    "Likelihood-ratio thresholds determine the three decision regions.",
+    "Conditional independence permits total linkage evidence to be represented as a sum of component log weights.",
+    "The authors propose methods for estimating the match and non-match probabilities from population information or from the files themselves.",
+    "The paper explicitly warns that departures from the independence assumptions can distort the probabilistic meaning of estimated weights.",
+    "Blocking is introduced because exhaustive comparison of large files is computationally impractical."
+   ],
+   "source_url": "https://www.cs.cornell.edu/~shmat/courses/cs6434/fellegi-sunter.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-61a7e10e5f",
+   "title": "Semantic Relations between Events and their Time, Locations and Participants for Event Coreference Resolution",
+   "research_question": "How much do event participants, times, locations, and semantic relations such as hyponymy and granularity contribute to cross-document event coreference resolution beyond matching event actions alone?",
+   "methodology": "The authors model an event with four components: action, participants, location, and time, while allowing partial rather than strictly identical relations between component descriptions. They experiment on the EventCorefBank corpus, containing 482 Google News texts grouped into 43 topics and annotated for cross-document event coreference, processing the text with KYOTO tools, the Stanford Parser, WordNet 3.0, and manually designed extraction rules. Action-based candidate chains are filtered or rescored using time, location, participant similarity, hyponymy, and participant-granularity heuristics. The resulting chains are compared with manually annotated reference chains using MUC, B3, mention-based CEAF, BLANC, and CoNLL F1.",
+   "key_findings": [
+    {
+     "finding": "Using semantic similarity for actions rather than strict lemma matching increases recall by as much as about six percentage points on most metrics but reduces precision by roughly two to seventeen points.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "Adding participant compatibility to action similarity performs slightly better than adding time or location information, with approximately one percentage point higher precision in the reported comparison.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "For participant matching, the semantic similarity heuristic produces about one point higher F-scores and roughly two to four points higher precision than the granularity heuristic on most metrics.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "Both participant-based variants improve F-scores over the action-similarity-only heuristic on most metrics, by roughly one to four points for granularity and one to six points for participant similarity.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "The best action-plus-participant configuration reports F-scores of 70.7 MUC, 74.1 B3, 64.9 CEAFm, 70.4 BLANC, and 69.8 CoNLL.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "Despite being the authors' best semantic configuration, action plus participant similarity remains about one F-score point below the strict lemma baseline on most metrics, while gaining up to two recall points and losing about four precision points.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    },
+    {
+     "finding": "The authors argue that the unusually strong lemma baseline reflects properties of ECB: topics are narrowly organized around specific real-world events and therefore contain less variation in time, place, and participants than realistic news streams.",
+     "evidence_type": "supported",
+     "section": "Section 5: Evaluation Results"
+    }
+   ],
+   "limitations": [
+    "The study uses news articles rather than enterprise email, chat, task systems, or other organizational communications.",
+    "ECB is organized within narrow topics and short real-world event windows, which the authors argue makes exact lemma matching unusually competitive and reduces the diversity of negative event instances.",
+    "Participant descriptions occur substantially more often than explicit time and location expressions, making direct comparisons among the contributions of the event slots uneven.",
+    "The approach does not perform anaphora resolution.",
+    "The authors note that their coreference method does not exploit additional syntactic features that could improve performance.",
+    "The event-component extraction rules were developed from manual annotations of only five independent texts.",
+    "The experiments use hand-designed heuristics rather than a learned model, intentionally isolating feature contributions but limiting conclusions about achievable end-to-end performance."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "action similarity recall-precision tradeoff": 0.99,
+    "participants outperform time and location slightly": 0.97,
+    "participant semantic similarity beats granularity": 0.98,
+    "participant information improves over action-only": 0.98,
+    "best configuration metric values": 0.99,
+    "best semantic configuration trails lemma baseline": 0.99,
+    "ECB topic structure inflates lemma baseline": 0.97
+   },
+   "raw_claims": [
+    "The event representation contains action, participant, location, and time components.",
+    "The method treats event identity as potentially partial or graded rather than requiring exact linguistic identity.",
+    "Time and location are used as compatibility constraints for possible coreference.",
+    "The experiments use cross-document event-coreference annotations from the EventCorefBank corpus.",
+    "The corpus contains 482 news texts organized into 43 topics.",
+    "Participant, location, and time expressions are extracted with rule-based linguistic processing and WordNet-based semantic information.",
+    "A strict same-lemma system is used as a baseline.",
+    "Participant information contributes more consistently than explicit time or location information in these experiments.",
+    "The best semantic configuration combines action similarity with participant similarity.",
+    "That configuration reports a CoNLL F1 of 69.8.",
+    "The strong lemma baseline suggests that the evaluation corpus contains comparatively little diversity among same-type events within a topic.",
+    "The authors recommend evaluating on datasets containing more distinct instances of the same event classes across different times, places, and participants."
+   ],
+   "source_url": "https://aclanthology.org/R13-1021.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

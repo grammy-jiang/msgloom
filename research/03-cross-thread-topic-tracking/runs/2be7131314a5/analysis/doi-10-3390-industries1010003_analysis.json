@@ -1,0 +1,78 @@
+{
+ "paper_id": "doi-10-3390-industries1010003",
+ "title": "StableID: An Iterative Graph-Based Framework for Persistent Entity Identification in Evolving Industrial Data Systems",
+ "research_question": "How can graph-based entity-resolution systems preserve stable, auditable identifiers for real-world entities as identifying evidence and connected components evolve over repeated executions?",
+ "methodology": "The paper develops StableID, an iterative graph framework that feeds prior grouping results into subsequent executions, applies deterministic identifier dominance when components merge, and generates time-scoped identifiers for newly observed entities. Entity groups are represented as connected components, so identifying edges induce transitive component membership. The framework is evaluated over ten iterative executions on large-scale entity data modeled on multi-state voter-registration structure; the data-availability statement characterizes the specific entity-level datasets generated for the study as synthetic. The evaluation compares identifier retention and convergence against independently recomputed connected-component identifiers and reports operational behavior at more than 200 million records.",
+ "key_findings": [
+  {
+   "finding": "Feeding prior entity-group assignments into later graph executions and retaining a dominant historical identifier substantially reduces identifier churn across repeated runs.",
+   "evidence_type": "supported",
+   "section": "Results / Identifier Stability"
+  },
+  {
+   "finding": "StableID maintains roughly 95% or better identifier retention through most iterative runs, while the naive independently recomputed connected-component baseline exhibits about 40% identifier churn on otherwise stable data.",
+   "evidence_type": "supported",
+   "section": "Results / Baseline Comparison"
+  },
+  {
+   "finding": "The graph converges as new identifying evidence is absorbed: reported merge counts fall from 12,847 in iteration 8 to 847 in iteration 9 and 12 in iteration 10 while the total identifier count stabilizes near 7.63 million.",
+   "evidence_type": "supported",
+   "section": "Results / Component Convergence and Merge Saturation"
+  },
+  {
+   "finding": "The deterministic dominance rule preserves the identifier carrying the greatest historical support when previously separate components merge, making identifier evolution auditable rather than arbitrary.",
+   "evidence_type": "supported",
+   "section": "Framework / Identifier Dominance"
+  },
+  {
+   "finding": "The evaluation does not establish precision or recall against definitive real-world identity ground truth because such ground truth was unavailable for the protected voter-identity setting.",
+   "evidence_type": "supported",
+   "section": "Validation Strategy / Limitations"
+  },
+  {
+   "finding": "The framework does not provide evidence for partial, overlapping, or non-transitive continuity relationships: connected-component membership instead represents a transitive equivalence relation once identifying edges connect records.",
+   "evidence_type": "contradicted",
+   "section": "Graph Model / Connected Components"
+  },
+  {
+   "finding": "The study does not evaluate enterprise email, chat, conversational threads, or organizational work-item linking.",
+   "evidence_type": "unsupported",
+   "section": "Application Scope"
+  }
+ ],
+ "limitations": [
+  "Definitive person-level identity ground truth was unavailable, so the evaluation cannot directly measure entity-resolution precision and recall against verified identities.",
+  "The specific entity-level evaluation datasets are synthetic even though their structure is based on voter-registration and election-domain data.",
+  "Connected components force transitive equivalence and cannot natively represent partial, overlapping, directional, subevent, or non-transitive continuity relations.",
+  "The empirical study concerns industrial entity identification rather than enterprise email, chat, or longitudinal work-item continuity.",
+  "The evaluated execution model is oriented toward repeated batch-style runs rather than continuously updated conversational workflows.",
+  "Suggested applicability to customer, supply-chain, medical, and IoT identity systems is broader than the domains directly evaluated."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "persistent_identifier_stability": 0.98,
+  "deterministic_merge_dominance": 0.97,
+  "convergence_under_iterations": 0.98,
+  "absence_of_identity_ground_truth": 0.99,
+  "nontransitive_continuity_not_modeled": 0.98,
+  "direct_enterprise_communication_relevance": 0.99
+ },
+ "raw_claims": [
+  "StableID treats identifiers as persistent operational assets rather than recomputing arbitrary component labels at every run.",
+  "Prior grouping information is fed back into the graph so historical identity can influence subsequent executions.",
+  "When components merge, a deterministic dominance rule selects which historical identifier survives.",
+  "New entities receive identifiers scoped to the execution in which they are first created, reducing collision risk.",
+  "Identifier retention remains high across repeated executions even when identifying relationships are added or removed.",
+  "The number of component merges declines sharply in the final iterations as the graph approaches a stable state.",
+  "The implementation was exercised at a scale exceeding 200 million records.",
+  "The evaluation reports identifier stability, component convergence, and merge saturation rather than supervised identity accuracy.",
+  "Definitive person-level ground truth was not available for validating whether every graph component corresponds to one true individual.",
+  "A connected-component model makes identity membership transitive and does not encode graded or overlapping continuity."
+ ],
+ "source_url": "https://www.mdpi.com/3042-9021/1/1/3",
+ "access": "full_text"
+}

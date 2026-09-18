@@ -1,0 +1,83 @@
+{
+ "paper_id": "1906.01753",
+ "title": "Revisiting Joint Modeling of Cross-document Entity and Event Coreference Resolution",
+ "research_question": "Can jointly resolving cross-document entity and event coreference, with each event representation informed by its argument entities and each entity representation informed by related events, outperform disjoint cross-document coreference models?",
+ "methodology": "The authors propose an iterative neural architecture that alternates between entity and event clustering, updating mention representations after each complementary clustering step. Each mention is represented by its lexical span, surrounding context, and vectors for semantically dependent entity or event mentions extracted through predicate-argument structures; a learned pairwise scorer supplies scores to agglomerative clustering. Documents are first clustered into topics, and coreference is then resolved within those document clusters. Evaluation on ECB+ uses gold entity and event mentions and reports MUC, B3, CEAFe, and CoNLL F1, including disjoint and component-ablation comparisons.",
+ "key_findings": [
+  {
+   "finding": "Joint entity-event modeling improved event coreference by 1.0 CoNLL F1 over the otherwise comparable disjoint model and improved entity coreference by 1.2 points, with the joint-versus-disjoint differences reported as statistically significant.",
+   "evidence_type": "supported",
+   "section": "Results"
+  },
+  {
+   "finding": "The joint model achieved 79.5 CoNLL F1 for event coreference, 10.5 points above the previously published KCP result and 3.0 points above the strong topic-clustered lemma baseline.",
+   "evidence_type": "supported",
+   "section": "Results"
+  },
+  {
+   "finding": "Predicate-argument relationships provide useful cross-document identity evidence because event mentions can be compared partly through whether their participants resolve to the same entity clusters, and entity identity can similarly exploit related event clusters.",
+   "evidence_type": "supported",
+   "section": "Introduction; Model"
+  },
+  {
+   "finding": "Document-level topic clustering is itself a strong continuity signal: near-perfect topic clustering made a simple lemma-based event-coreference baseline outperform earlier published ECB+ systems, and adding topic pre-clustering improved KCP by 4.6 CoNLL points.",
+   "evidence_type": "supported",
+   "section": "Results"
+  },
+  {
+   "finding": "ECB+ deliberately contains different events of the same type in paired subtopics, so the benchmark tests whether models avoid merging superficially similar but non-identical events.",
+   "evidence_type": "supported",
+   "section": "Background and Related Work: Datasets"
+  },
+  {
+   "finding": "All tested mention-representation components contribute: removing predicate-argument dependent-mention vectors from the joint event model reduces CoNLL F1, while removing both joint-feature components reduces it to the disjoint score.",
+   "evidence_type": "supported",
+   "section": "Results; Analysis"
+  },
+  {
+   "finding": "The paper gives direct cross-document same-event evidence, but it does not study enterprise mail/chat threads or evolving partial identity between related but non-identical business events.",
+   "evidence_type": "supported",
+   "section": "Dataset and task scope"
+  }
+ ],
+ "limitations": [
+  "The experiments use ECB+ news articles rather than enterprise communication.",
+  "Evaluation relies on gold entity and event mentions rather than end-to-end mention prediction.",
+  "ECB+ annotations are not exhaustive and cover only selected salient entities and events.",
+  "Predicate-argument extraction errors propagate into the joint model; the paper's manual error analysis attributes part of its errors to this stage.",
+  "The system pre-clusters documents by topic, so document-clustering mistakes can constrain the coreference search space.",
+  "The task models full coreference clusters, not partial identity or explicit subevent relations.",
+  "The strongest improvements are demonstrated on a single benchmark/domain, limiting evidence for transfer to workplace work-matter identity."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "joint_entity_event_modeling_improves_coreference": 0.99,
+  "joint_model_state_of_art_event_result": 0.99,
+  "arguments_supply_identity_evidence": 0.98,
+  "topic_preclustering_is_strong_continuity_signal": 0.99,
+  "same_type_different_event_subtopics_test_disambiguation": 0.99,
+  "all_representation_components_contribute": 0.98,
+  "no_direct_workplace_or_partial_identity_test": 0.99
+ },
+ "raw_claims": [
+  "Cross-document coreference groups mentions that refer to the same entity or event across multiple texts.",
+  "The model alternates between event clustering and entity clustering.",
+  "Event representations incorporate entity mentions linked through predicate-argument structure.",
+  "Entity representations analogously incorporate related event mentions.",
+  "Pairwise mention scores are converted into clusters using agglomerative clustering.",
+  "ECB+ contains subtopics describing different events of the same general type.",
+  "The joint event model reaches 79.5 CoNLL F1 on the reported ECB+ setup.",
+  "The disjoint event variant reaches 78.5 CoNLL F1.",
+  "Topic clustering materially improves simple lemma and neural event-coreference baselines.",
+  "The benchmark evaluation uses gold mentions because ECB+ annotation is partial.",
+  "Predicate-argument extraction errors are a documented source of model error.",
+  "The authors released implementation code.",
+  "The work does not evaluate enterprise email or chat continuity."
+ ],
+ "source_url": "https://arxiv.org/html/1906.01753",
+ "access": "full_text"
+}

@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-1007-978-3-540-27868-9-84",
+ "title": "A Two-Stage Classifier with Reject Option for Text Categorisation",
+ "research_question": "Can a text classifier improve overall classification reliability by rejecting uncertain category decisions at a first stage and automatically resolving those rejected decisions with a specialized second-stage classifier?",
+ "methodology": "The study evaluates a two-stage reject-option architecture on the Reuters-21578 Mod-Apte text-categorization benchmark after retaining 7,769 training documents and 3,019 test documents over 90 categories. Documents are represented with TF-IDF bag-of-words features; the first stage uses either a multilayer perceptron or Naive Bayes, while rejected category assignments are passed to a modified category-specific k-nearest-neighbor second stage. Thresholds are tuned using validation data, and experiments vary first-stage rejection rates and the amount of data available to the second stage. Reported micro- and macro-averaged F1 values are averages over ten runs with randomly generated first-stage training subsets.",
+ "key_findings": [
+  {
+   "finding": "With an MLP first-stage classifier, the two-stage reject architecture raises micro-F1 from 0.846 to 0.854 and macro-F1 from 0.447 to 0.481 in the reported configurations.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "With Naive Bayes at the first stage, reported micro-F1 rises from 0.700 to 0.825 and macro-F1 from 0.214 to 0.456 under the strongest shown reject configuration.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "For a fixed first-stage reject rate, larger second-stage training sets generally produce larger improvements.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "When the second-stage training and validation sets are too small, F1 can fall below the corresponding no-reject result.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "In some configurations the tailored two-stage architecture outperforms a conventional k-NN classifier without rejection.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "The whole two-stage system remains worse than the first-stage classifier evaluated only on decisions it accepted, because the second stage cannot correct every rejected assignment.",
+   "evidence_type": "supported",
+   "section": "5 Experimental Results"
+  },
+  {
+   "finding": "The reject-option concept is relevant as a general uncertainty-handling mechanism, but the study provides no direct evidence about event coreference, cross-thread identity, or enterprise email/chat continuity.",
+   "evidence_type": "unsupported",
+   "section": "Task scope"
+  }
+ ],
+ "limitations": [
+  "The authors describe the results as preliminary and evaluate only one benchmark dataset.",
+  "The method performs multi-label topical categorization, not event identity resolution or cross-document coreference.",
+  "The representation is based on TF-IDF bag-of-words features and classifiers characteristic of the period, limiting direct comparison with modern contextual models.",
+  "Performance depends on the amount of data available to the second stage, and undersized second-stage sets can make performance worse.",
+  "Automatic handling of rejects adds computational cost relative to a single-stage classifier.",
+  "No code release is identified in the accessible full text.",
+  "The paper does not evaluate temporal continuity, evolving event identity, cross-thread communication, or workplace-specific data."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "mlp_improvement": 0.99,
+  "naive_bayes_improvement": 0.99,
+  "second_stage_data_effect": 0.98,
+  "small_second_stage_risk": 0.98,
+  "uncertainty_handling_relevance": 0.92,
+  "direct_coreference_relevance": 0.99
+ },
+ "raw_claims": [
+  "The classifier may withhold category decisions that are considered insufficiently reliable.",
+  "Rejected category assignments are passed automatically to a second classifier so that no rejection remains in the final output.",
+  "The experiments use the Reuters-21578 Mod-Apte benchmark.",
+  "The processed data contain 7,769 training documents and 3,019 test documents across 90 categories.",
+  "Documents are represented using TF-IDF-weighted bag-of-words features.",
+  "The first-stage experiments use MLP and Naive Bayes classifiers.",
+  "The second stage uses a modified k-nearest-neighbor procedure specialized to rejected category decisions.",
+  "Thresholds are selected on validation data.",
+  "The reported F1 results are averaged over ten randomized runs.",
+  "The reject architecture improves MLP micro- and macro-F1 in the stronger configurations.",
+  "The reject architecture produces especially large absolute gains for the weak Naive Bayes baseline.",
+  "Larger second-stage training sets generally improve the treatment of rejected decisions.",
+  "A poorly provisioned second stage can reduce performance.",
+  "The final two-stage system cannot recover all errors that would theoretically be avoidable if rejected decisions were handled perfectly."
+ ],
+ "source_url": "https://www.researchgate.net/publication/221275693_A_Two-Stage_Classifier_with_Reject_Option_for_Text_Categorisation",
+ "access": "full_text"
+}

@@ -1,0 +1,83 @@
+{
+ "paper_id": "2109.06417",
+ "title": "Cross-document Event Identity via Dense Annotation",
+ "research_question": "How can cross-document event identity be densely annotated when events may be only partially identical because their participants, time, location, or evolving real-world state overlap incompletely?",
+ "methodology": "The authors construct CDEC-WN, a densely annotated cross-document event-coreference dataset by considering event mentions across document pairs and asking crowd workers about identity together with overlap in time, location, participants, and event inclusion. They represent annotation primarily as mention-pair links rather than forcing all links into equivalence clusters, because quasi-identity relations need not obey transitivity. Expert validation is used to estimate annotation quality, and qualitative analysis is used to characterize partial-identity phenomena. The paper also evaluates a lemma-matching baseline and a BERT-based cross-encoder on a train/dev versus test subtopic split.",
+ "key_findings": [
+  {
+   "finding": "Dense cross-document annotation reveals substantial partial or quasi-identity phenomena that would be obscured by a binary notion of exact event identity.",
+   "evidence_type": "supported",
+   "section": "4 Dataset Collection; 5 Quasi-Identity"
+  },
+  {
+   "finding": "About 32% of annotated coreference links are identified as candidates for partial identity based on annotators' responses about contextual overlap.",
+   "evidence_type": "supported",
+   "section": "5 Quasi-Identity"
+  },
+  {
+   "finding": "The authors identify membership, subevent relations, and spatiotemporal continuity as recurring forms of partial event identity, with spatiotemporal continuity capturing events that evolve across time or space.",
+   "evidence_type": "supported",
+   "section": "5 Quasi-Identity"
+  },
+  {
+   "finding": "Partial event identity can violate transitivity, so the dataset preserves pairwise judgments rather than imposing transitive closure over all coreference links.",
+   "evidence_type": "supported",
+   "section": "4.3 Annotation Aggregation; 5 Quasi-Identity"
+  },
+  {
+   "finding": "Crowd agreement is substantially more difficult for partial identity than for clear full identity: perfect three-annotator agreement is reported for 31% of full-coreference links versus 13% of partial-coreference links.",
+   "evidence_type": "supported",
+   "section": "4.3 Annotation Aggregation"
+  },
+  {
+   "finding": "Expert inspection of a test subset reports 97.5% precision for the resulting links while also uncovering evidence that some valid links were missed, making recall harder to establish.",
+   "evidence_type": "supported",
+   "section": "4.4 Validation"
+  },
+  {
+   "finding": "The BERT cross-encoder reaches a reported test F1 of 57.6, compared with 48.2 for lemma matching, but error analysis indicates that partial identity and limited sentence-level context remain challenging.",
+   "evidence_type": "supported",
+   "section": "6 Baselines and Analysis"
+  }
+ ],
+ "limitations": [
+  "The corpus is English-only.",
+  "The corpus is restricted to the disaster-and-accidents domain rather than enterprise communication.",
+  "The dataset omits within-document coreference links because its focus is cross-document identity.",
+  "Crowd annotation has only moderate overall agreement, reflecting ambiguity in the task.",
+  "Expert validation indicates that the resulting link set can still contain missed coreference relations, so recall is difficult to quantify reliably.",
+  "The boundary among full identity, partial identity, and non-coreference can be intrinsically fuzzy.",
+  "The baseline cross-encoder uses limited local context and performs particularly poorly on some partial-identity cases.",
+  "The evidence comes from news documents rather than email threads, chat channels, or business workflow records."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "partial_identity_prevalence": 0.98,
+  "three_quasi_identity_types": 0.99,
+  "nontransitive_pairwise_identity": 0.99,
+  "annotation_agreement_gap": 0.99,
+  "expert_precision": 0.99,
+  "cross_encoder_improvement": 0.99,
+  "partial_identity_remains_hard": 0.96
+ },
+ "raw_claims": [
+  "Cross-document event identity requires reasoning beyond lexical similarity because event arguments and document context can differ.",
+  "CDEC-WN densely annotates event relationships across document pairs instead of sampling only a small subset of candidate mention pairs.",
+  "The released corpus contains 176 documents, 7,220 event mentions, and 4,282 annotated cross-document coreference links.",
+  "Of the 4,282 links, 2,914 are labeled full identity and 1,368 partial identity.",
+  "Annotators answer follow-up questions about time, location, participants, and event inclusion to characterize relationships between mentions.",
+  "The dataset does not impose transitive closure because quasi-identity links can be non-transitive.",
+  "Membership and subevent relations are two observed varieties of partial event identity.",
+  "Spatiotemporal continuity describes an event whose real-world state evolves across time or space while retaining meaningful continuity.",
+  "Human judgments show that the line between full identity, partial identity, and non-coreference is not always sharp.",
+  "Expert validation reports high precision but also indicates that dense annotation can still miss valid links.",
+  "A BERT cross-encoder outperforms a lemma-matching baseline but does not solve the partial-identity problem.",
+  "The authors release the dataset and supporting toolkit publicly."
+ ],
+ "source_url": "https://arxiv.org/html/2109.06417",
+ "access": "full_text"
+}

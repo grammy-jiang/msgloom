@@ -1,0 +1,65 @@
+{
+ "paper_id": "doi-10-1145-354756-354843",
+ "title": "First Story Detection In TDT Is Hard",
+ "research_question": "Can first-story detection performance be explained and bounded by tracking performance, and what does that relationship imply about the practical difficulty of detecting genuinely new topics in a news stream?",
+ "methodology": "The authors reduce first-story detection to repeated tracking decisions and derive expected first-story miss and false-alarm behavior from tracking error rates under simplifying independence assumptions. They implement full-text similarity systems using stemmed terms, Inquery-style TF-IDF weighting, cosine similarity, and either one or several training stories per tracked topic. They evaluate tracking and first-story detection on the TDT-2 corpus using DET curves and compare observed first-story performance with bounds predicted from tracking performance.",
+ "key_findings": [
+  {
+   "finding": "Observed first-story detection performance falls close to and substantially overlaps the range predicted from the corresponding tracking system, supporting the proposed reduction from first-story detection to tracking.",
+   "evidence_type": "supported",
+   "section": "4.2 Expected FSD performance"
+  },
+  {
+   "finding": "The tracking error rates achievable by the evaluated similarity-based systems imply poor first-story detection performance across practical operating thresholds.",
+   "evidence_type": "supported",
+   "section": "4.2 Expected FSD performance"
+  },
+  {
+   "finding": "For the one-training-story tracking case, reaching the authors' illustrative first-story target would require roughly a twenty-fold improvement in tracking effectiveness.",
+   "evidence_type": "supported",
+   "section": "4.3 Difficulty of improving FSD"
+  },
+  {
+   "finding": "Historical tracking results available to the authors gave little reason to expect an improvement of that magnitude from conventional tracking or filtering technology.",
+   "evidence_type": "supported",
+   "section": "4.3 Difficulty of improving FSD"
+  },
+  {
+   "finding": "The authors conclude that substantially better first-story detection probably requires approaches that exploit information about event or topic structure rather than simply treating the problem as repeated full-text tracking.",
+   "evidence_type": "supported",
+   "section": "5 Conclusions"
+  }
+ ],
+ "limitations": [
+  "The analytical bounds depend on simplifying assumptions, including approximate independence of tracking errors across topics.",
+  "The empirical conclusions principally concern full-text similarity systems that can be interpreted as tracking systems and therefore do not establish an impossibility result for all first-story detection methods.",
+  "The TDT evaluation framework largely assumes a single topic for each story, while a small fraction of stories can concern multiple topics.",
+  "The desirable operating point used to illustrate required improvement is a chosen target rather than a universal application requirement.",
+  "The evaluation is confined to the TDT-2 news-stream setting, so transfer to other forms of evolving communication is not directly established."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "tracking_predicts_fsd": 0.98,
+  "tracking_based_fsd_is_difficult": 0.97,
+  "twenty_fold_improvement_estimate": 0.99,
+  "conventional_tracking_unlikely_sufficient": 0.92,
+  "different_approaches_needed": 0.9
+ },
+ "raw_claims": [
+  "First-story detection can be modeled as deciding whether each incoming story matches any previously observed story.",
+  "The experiments use the TDT-2 news corpus and evaluate both tracking and first-story detection behavior.",
+  "The tracking representation uses stemmed terms with TF-IDF-style weighting and cosine similarity.",
+  "The paper derives upper and lower first-story detection performance bounds from tracking error rates.",
+  "Actual first-story detection results lie near the range predicted from tracking performance.",
+  "A system that makes modest tracking errors can accumulate much larger errors when many previous stories must be considered during novelty detection.",
+  "The paper estimates that the one-story tracking condition would need about a twenty-fold effectiveness improvement to reach its illustrative first-story target.",
+  "Previous tracking and filtering results examined by the authors do not exhibit improvements of that magnitude.",
+  "The authors argue that future gains are more likely to come from task-specific modeling of how topics and events are related and defined."
+ ],
+ "source_url": "https://ciir.cs.umass.edu/pubfiles/ir-206.pdf",
+ "access": "full_text"
+}

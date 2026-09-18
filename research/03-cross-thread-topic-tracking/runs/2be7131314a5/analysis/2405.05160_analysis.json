@@ -1,0 +1,78 @@
+{
+ "paper_id": "2405.05160",
+ "title": "Selective Classification Under Distribution Shifts",
+ "research_question": "How can selective classifiers reliably reject uncertain predictions and maintain low risk when test data contain in-distribution examples together with label, covariate, and out-of-distribution shifts?",
+ "methodology": "The paper formulates generalized selective classification under mixtures of distribution shifts and proposes two training-free confidence scores based on margins between classifier logits. The scores can be applied to pretrained classifiers without access to their original training data and are designed to avoid undesirable sensitivity of softmax-based scores to logit scaling. Experiments cover ImageNet with ImageNet-C and OpenImage-O, iWildCam, Amazon review sentiment data, and CIFAR benchmarks. Performance is evaluated using risk-coverage curves and normalized partial area-under-risk-coverage metrics across multiple coverage ranges.",
+ "key_findings": [
+  {
+   "finding": "Common confidence and out-of-distribution scores do not consistently provide reliable selective-classification rankings when multiple forms of distribution shift coexist.",
+   "evidence_type": "supported",
+   "section": "Experiments / Generalized Selective Classification"
+  },
+  {
+   "finding": "The proposed logit-margin scores produce competitive or better risk-coverage behavior than strong softmax-response and OOD-oriented alternatives across the evaluated image and text benchmarks.",
+   "evidence_type": "supported",
+   "section": "Experiments / Main Results"
+  },
+  {
+   "finding": "On mixed ImageNet distribution shifts, the proposed margin scores are among the methods that maintain decreasing risk as coverage is reduced and perform strongly when several shift types coexist.",
+   "evidence_type": "supported",
+   "section": "Experiments / ImageNet"
+  },
+  {
+   "finding": "The methods require no additional training and can rank predictions from an already trained classifier using its output logits.",
+   "evidence_type": "supported",
+   "section": "Method / Margin Confidence Scores"
+  },
+  {
+   "finding": "The paper does not determine how an operational calibration set should be constructed or how the abstention threshold should be selected in deployment.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  },
+  {
+   "finding": "The study provides no empirical evidence about cross-thread event identity, work-item linking, longitudinal conversational continuity, or enterprise email/chat workflows.",
+   "evidence_type": "unsupported",
+   "section": "Evaluation Scope"
+  },
+  {
+   "finding": "Its Amazon review experiment is a sentiment-classification distribution-shift task, not a study of conversations, event coreference, or relationships among organizational work items.",
+   "evidence_type": "unsupported",
+   "section": "Datasets / Amazon"
+  }
+ ],
+ "limitations": [
+  "The paper does not solve calibration-set construction or operational threshold selection for selective prediction.",
+  "Evaluation focuses on benchmark distribution shifts rather than enterprise communication or workflow linkage.",
+  "The proposed scores rank single-example classification confidence and do not model relations between records, messages, events, or work items.",
+  "No partial, subevent, evolving, overlapping, or non-transitive continuity relation is defined or evaluated.",
+  "The conclusions are empirical over the tested architectures and mainly moderate benchmark shifts rather than every possible production shift.",
+  "The paper leaves deeper analysis of why the two proposed margin variants behave differently to future work."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "generalized_selective_classification_problem": 0.99,
+  "margin_scores_under_shift": 0.98,
+  "training_free_application": 0.99,
+  "calibration_limitation": 0.98,
+  "no_event_or_work_item_linking_evidence": 1.0
+ },
+ "raw_claims": [
+  "The paper broadens selective classification to settings containing several kinds of distribution shift at once.",
+  "Two proposed confidence scores are constructed from margins among raw classifier logits.",
+  "The margin rankings are designed to be insensitive to simple rescaling of the logits.",
+  "The methods can be used with pretrained classifiers without retraining them.",
+  "Experiments include both computer-vision datasets and Amazon review sentiment data.",
+  "Risk-coverage curves are the central means of measuring whether rejection lowers prediction risk.",
+  "Normalized partial area under the risk-coverage curve is also reported at several coverage ranges.",
+  "Several conventional OOD scores perform poorly when used as generalized selective-classification confidence scores.",
+  "The proposed margins are competitive with strong softmax-response baselines across the tested shifts.",
+  "The study evaluates individual classification confidence, not identity or continuity relations between observations.",
+  "The authors do not prescribe how to choose a deployment calibration set or final acceptance threshold."
+ ],
+ "source_url": "https://arxiv.org/html/2405.05160",
+ "access": "full_text"
+}

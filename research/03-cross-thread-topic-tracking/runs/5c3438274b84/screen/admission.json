@@ -1,0 +1,212 @@
+{
+ "round": 3,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Cross-document event coreference and same-event identity: determine whether event mentions across documents denote the same concrete real-world event and cluster identity-equivalent mentions."
+  },
+  {
+   "id": "F5",
+   "description": "Entity resolution, record linkage, and incremental identity matching: combine heterogeneous evidence to decide match, non-match, or uncertain identity relationships."
+  },
+  {
+   "id": "F6",
+   "description": "Event partial identity, subevents, event hierarchy, event mereology, and evolving event relations: represent related but non-identical event descriptions rather than forcing all relations into equivalence classes."
+  },
+  {
+   "id": "F7",
+   "description": "Business-process event correlation and case-notion discovery: reconstruct which process or case instance an event belongs to when explicit case identifiers are absent or incompatible."
+  },
+  {
+   "id": "F9",
+   "description": "Cross-channel activity linking and task-based personal information management: associate communications and application artifacts with persistent work activities or tasks across tools and time."
+  },
+  {
+   "id": "F10",
+   "description": "Selective prediction, reject option, abstention, and uncertainty under distribution shift: avoid forced assignments when confidence is insufficient and study calibration under changing distributions."
+  },
+  {
+   "id": "F11",
+   "description": "Retrieval-augmented and global-context event coreference: use evidence beyond an isolated mention pair, including cluster-level, document-level, or constructed cross-document context, for identity decisions."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-1007-s00778-010-0203-9",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses event-to-process-instance correlation when enterprise and Web-service logs are distributed across systems and explicit instance identifiers are unavailable. That is a concrete formulation of reconstructing continuity from heterogeneous organizational events, materially strengthening F7. The identifier is UNCHECKED, so bibliographic identity should be verified during acquisition.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-3115-v1-w14-2910",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly distinguishes full event identity from partial coreference, including subevent and membership relations, and evaluates directed hierarchical structures rather than equivalence partitions. This directly addresses gap-5 and is unusually important for deciding when related evidence must not be collapsed into one transitive Topic identity. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2109.06417",
+   "decision": "ADMIT",
+   "reason": "The paper directly studies cross-document event identity and quasi-identity, with dense annotations linking identity judgments to overlapping time, location, and participant context. This materially strengthens F1 and gap-1 because it provides evidence about which contextual dimensions accompany or distinguish event-identity judgments rather than merely measuring semantic similarity.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2203.10123",
+   "decision": "REJECT",
+   "reason": "The paper is genuinely about multi-source event coreference, but the abstract mainly establishes a new contentious-politics dataset and the utility of coreference for information collection. It does not, from the abstract, add sufficiently specific evidence about workplace continuity, partial identity, abstention, correction, or evidence-combination rules beyond the stronger F1 candidates already available this round.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1038-s41598-026-40637-w",
+   "decision": "ADMIT",
+   "reason": "The abstract combines selective prediction, conformal uncertainty treatment, cost-aware deferral, and explicit distribution shift. Those capabilities directly strengthen F10 and gap-7 by testing when a system should defer rather than force a classification when confidence becomes unreliable under shift. It remains transfer evidence from clinical triage, not evidence of workplace accuracy. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1137-1-9781611972764-5",
+   "decision": "REJECT",
+   "reason": "The probabilistic latent-entity formulation is relevant to F5, but the abstract supplies generic unsupervised entity-resolution evidence rather than incremental correction, explicit reject semantics, enterprise communication evidence, or a new answer to the remaining gaps. Additional generic record-linkage transfer evidence is not enough to justify a reading slot here. The identifier is also UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "manual-bbb1f99f59",
+   "decision": "REJECT",
+   "reason": "Online entity resolution and relational evidence are relevant vocabulary and capabilities, but the open-gap statement already recognizes that incremental entity-resolution literature can revise identity assignments. The abstract does not show a contribution specific to msgloom's remaining stable-ID/history semantics, workplace evidence, or CONTINUE/NEW/UNCERTAIN policy. With an UNCHECKED identity, it does not displace stronger candidates.",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-coling-main-275",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly predicts event identity while using paraphrases and argument-aware representations, making it relevant to the project's distinction between wording similarity and identity. Argument information is also a concrete evidence family for determining whether differently worded event descriptions denote the same event, so the paper materially strengthens F1 and gap-1. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1080-01621459-1995-10476563",
+   "decision": "REJECT",
+   "reason": "The paper offers useful generic calibration of false-match rates for record-linkage thresholds, but gap-2 is explicitly application-specific: msgloom's relative false-merge/false-split costs and CONTINUE/NEW/UNCERTAIN semantics must be determined from project requirements and empirical evaluation. This paper cannot establish those target-domain costs, and stronger uncertainty-under-shift evidence is available this round. The identifier is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "manual-22a0545b51",
+   "decision": "REJECT",
+   "reason": "This is foundational cross-document event-coreference work, but the abstract as summarized does not expose a capability or evidence distinction that materially advances the current gaps beyond the denser and more explicit modern identity/evidence candidates in this round. Historical priority alone is not a reason to consume a reading slot. The identity is UNCHECKED.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-1109-icpm57379-2022-9980684",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies event-to-case correlation when unique case identifiers are absent and introduces mined rules to improve both correlation accuracy and explainability. This materially strengthens F7 because it addresses reconstruction of concrete process-instance membership from observable evidence rather than assuming identity is supplied. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1145-1090193-1090195",
+   "decision": "REJECT",
+   "reason": "Combining attributes with relational evidence is relevant to F5, but the abstract remains generic entity-resolution transfer evidence and does not address the current high-value gaps in workplace communication, partial event identity, abstention under drift, or stable correction semantics. The contribution is therefore too indirect for this constrained reading round. The identifier is UNCHECKED.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-1109-access-2023-3284053",
+   "decision": "ADMIT",
+   "reason": "The paper concerns cross-organizational process mining where separate organizations use incompatible identifiers and incrementally infers probable case-ID correspondences from activity connections. That is strong workflow-domain transfer evidence for reconstructing continuity across independently identified sources and materially strengthens F7. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1504.05929",
+   "decision": "REJECT",
+   "reason": "The hierarchical Bayesian formulation and unfixed number of event clusters are relevant to F1 and clustering, but the abstract does not establish online arrival semantics, explicit abstention, later merge/split correction, workplace evidence, or another unresolved gap strongly enough to justify a slot over the more targeted candidates admitted this round.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-1016-j-jbi-2011-02-008",
+   "decision": "REJECT",
+   "reason": "Controlling false matches is relevant to conservative identity assignment, but this is another generic record-linkage threshold method. It does not determine msgloom's application-specific false-merge costs or CONTINUE/NEW/UNCERTAIN semantics and does not address workplace concept drift. It therefore does not materially close an open gap. The identifier is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-1146-annurev-statistics-040522-114848",
+   "decision": "REJECT",
+   "reason": "The paper focuses on convergence diagnostics for Bayesian entity-resolution computation. That can improve inference reliability, but it does not materially strengthen the core capability under review: deciding continuity, rejecting uncertain links, constructing work-matter identity, or correcting identity relationships. Its main claim is therefore outside the highest-value scope. The identifier is UNCHECKED.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1145-1111449-1111473",
+   "decision": "ADMIT",
+   "reason": "This is the strongest target-adjacent enterprise candidate in the set: it explicitly associates a knowledge worker's email messages and desktop activities from multiple resources with persistent user-defined tasks. That materially strengthens F9 and provides unusually direct evidence for cross-application work-activity continuity, making it relevant to gaps 1 and 4 even though it is not specifically Outlook-plus-Teams or cross-thread Topic identity. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F9",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-03d6dfa532",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies post-hoc calibration when the test distribution drifts away from the calibration distribution and proposes a method intended to improve uncertainty estimates under such drift. This materially strengthens F10 and gap-7 by addressing the exact weakness of IID calibration in changing streams. It is transfer evidence from computer vision, not workplace or NLP validation, and its identity is UNCHECKED.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "2003.04238",
+   "decision": "REJECT",
+   "reason": "Record-specific disagreement probabilities and expert-labeled evaluation are useful F5 techniques, but the abstract does not address incremental identity revision, workplace communication evidence, abstention under stream drift, or partial event identity. It is additional generic linkage evidence rather than a material answer to an open gap.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "1707.07344",
+   "decision": "ADMIT",
+   "reason": "The method iteratively builds event clusters and, after cluster merges, accumulates arguments from merged events so that newly available cluster evidence influences subsequent identity decisions. This is directly relevant to F11 and gap-6 because it demonstrates that non-local accumulated evidence can alter later event-coreference decisions rather than treating each mention pair in isolation.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-ipm-2025-104085",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly targets the missing shared context problem in cross-document event coreference, constructs coherent context from selected sentences, models discourse structure, and uses resulting global interactions for identity resolution. This directly strengthens F11 and gap-6 by testing additional cross-document evidence beyond a local mention pair. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-d5167d76f6",
+   "decision": "PENDING",
+   "reason": "The abstract indicates an intentionally inclusive cross-document event-hopper annotation scheme, but the summary is not sufficient to determine whether that inclusiveness explicitly distinguishes full identity from partial, subevent, membership, or evolving-event relations, or merely broadens ordinary coreference annotation. Admit to F6 only if the paper's annotation guidelines define non-equivalence event relations relevant to gap-5; otherwise it is redundant F1 annotation work. The identity is UNCHECKED.",
+   "confidence": 0.73
+  },
+  {
+   "paper_id": "doi-10-1080-01621459-1969-10501049",
+   "decision": "ADMIT",
+   "reason": "The abstract formalizes link, non-link, and possible-link decisions while explicitly controlling false-link and missed-link errors. That materially strengthens F5 because it provides a foundational probabilistic model in which uncertain identity need not be forced into match or non-match, a distinction directly relevant to msgloom's requirement that no confident match need not imply a NEW Topic. It does not determine msgloom's application-specific costs. The identifier is UNCHECKED and should be verified.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-61a7e10e5f",
+   "decision": "ADMIT",
+   "reason": "The abstract directly examines how time, location, participants, and other semantic event components support event-coreference decisions. This is precisely the kind of evidence-combination question highlighted in gap-1: which contextual dimensions establish or refute concrete identity rather than merely indicating semantic similarity. It remains non-workplace evidence, so it cannot close the production-domain gap. The identity is UNCHECKED.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-fc2b898487",
+   "decision": "REJECT",
+   "reason": "A systematic comparison of cross-document event-coreference approaches is useful background, but the abstract as summarized does not introduce a new identity relation, workplace evidence source, abstention mechanism, correction model, or global evidence capability that materially closes the current gaps. Method-comparison value alone is insufficient for admission in this targeted round. The identity is UNCHECKED.",
+   "confidence": 0.89
+  }
+ ],
+ "notes": "Admission was deliberately strict. No candidate provides direct longitudinal Outlook-plus-Microsoft-Teams evidence, so gap-4 remains open. The admitted F9 task-recognition paper is the closest target-adjacent enterprise evidence but should not be treated as production representativeness for msgloom. Gap-5 is materially strengthened by the partial-event-coreference evaluation paper, while the event-hopper candidate remains pending because the abstract does not establish whether its inclusive hopper semantics encode the non-equivalence relations needed by the project. F10 admissions provide transfer evidence for abstention and calibration under shift but cannot determine msgloom's application-specific loss function or thresholds, so gap-2 remains engineering work. UNCHECKED identifiers should be verified during canonical acquisition before a paper is relied on."
+}

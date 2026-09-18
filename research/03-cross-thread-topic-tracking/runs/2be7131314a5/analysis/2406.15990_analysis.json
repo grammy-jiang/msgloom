@@ -1,0 +1,86 @@
+{
+ "paper_id": "2406.15990",
+ "title": "Enhancing Cross-Document Event Coreference Resolution by Discourse Structure and Semantic Information",
+ "research_question": "Can document-level discourse structure and cross-document semantic information improve the identification and clustering of mentions that refer to the same event across documents?",
+ "methodology": "The authors propose DIE-EC, which combines contextual mention representations with document-level Rhetorical Structure Theory trees and cross-document lexical chains in heterogeneous graphs processed by graph attention networks. A pairwise scorer estimates whether event mentions corefer, after which agglomerative clustering creates event clusters. The paper also constructs WEC-Zh from Chinese Wikipedia links, yielding 53,066 event mentions in 4,476 clusters, with manually cross-validated development and test subsets. Experiments on WEC-Zh, WEC-Eng, and ECB+ use standard event-coreference metrics and include component ablations and analyses by lexical overlap and document length.",
+ "key_findings": [
+  {
+   "finding": "Combining discourse structure and lexical-chain semantics improves cross-document event-coreference performance over the evaluated baselines on both English and Chinese datasets.",
+   "evidence_type": "supported",
+   "section": "Experiments / Main Results"
+  },
+  {
+   "finding": "On WEC-Zh, DIE-EC reports a CoNLL F1 of 66.9 compared with 62.1 for the cited WEC baseline, with improvements also reported for B3 and CEAF metrics.",
+   "evidence_type": "supported",
+   "section": "Experiments / WEC-Zh"
+  },
+  {
+   "finding": "Ablation experiments show that removing lexical chains causes a larger performance reduction than removing RST structure, indicating that cross-document semantic coherence contributes strongly to event identity decisions.",
+   "evidence_type": "supported",
+   "section": "Experiments / Ablation Study"
+  },
+  {
+   "finding": "Lexical chains are especially useful when event mentions have little direct lexical overlap, with substantially larger F1 degradation when the lexical-chain component is removed in the low-overlap subset.",
+   "evidence_type": "supported",
+   "section": "In-depth Analysis / Lexical Overlap"
+  },
+  {
+   "finding": "RST-based discourse information becomes more useful for long documents, where removing the RST component produces larger performance losses.",
+   "evidence_type": "supported",
+   "section": "In-depth Analysis / Document Length"
+  },
+  {
+   "finding": "The model can distinguish highly similar but non-coreferential event mentions when contextual lexical chains expose differences such as time or location, supporting the importance of concrete event arguments for identity.",
+   "evidence_type": "supported",
+   "section": "Error Analysis"
+  },
+  {
+   "finding": "The study does not model partial, subevent, overlapping, or non-transitive continuity as separate relation types; binary pairwise coreference decisions are ultimately converted into disjoint event clusters.",
+   "evidence_type": "contradicted",
+   "section": "Method / Agglomerative Clustering"
+  },
+  {
+   "finding": "The datasets are Wikipedia- and benchmark-derived rather than enterprise email, chat, or organizational workflow communications, so transfer to longitudinal work-item linking is not empirically established.",
+   "evidence_type": "unsupported",
+   "section": "Datasets and Evaluation Scope"
+  }
+ ],
+ "limitations": [
+  "WEC-Zh derives much of its supervision from Wikipedia hyperlink structure, which is only a proxy for independently adjudicated real-world event identity.",
+  "Manual cross-validation is concentrated in development and test construction rather than providing fully manual annotation of the complete training corpus.",
+  "Reported Fleiss' kappa of 0.71 indicates substantial but not perfect annotator agreement.",
+  "Performance depends on upstream discourse parsing and lexical-chain construction quality.",
+  "Agglomerative clustering produces equivalence-like event groups and does not represent asymmetric, partial, overlapping, subevent, or non-transitive continuity relations.",
+  "The work does not evaluate enterprise email, chat, ticketing, or other organizational workflow streams.",
+  "The evaluation is primarily static cross-document coreference rather than longitudinal identity maintenance as work items evolve over time."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "discourse_and_semantics_improve_coreference": 0.99,
+  "lexical_chains_are_important": 0.99,
+  "rst_helps_long_documents": 0.97,
+  "time_location_context_disambiguates_events": 0.96,
+  "partial_nontransitive_relations_not_modeled": 0.99,
+  "enterprise_workflow_transfer_unverified": 0.99
+ },
+ "raw_claims": [
+  "DIE-EC augments event mentions with both document-level discourse relations and cross-document semantic links.",
+  "RST structures and lexical chains are converted into heterogeneous graphs and encoded with graph attention networks.",
+  "Pairwise event-coreference scores are followed by agglomerative clustering to create event groups.",
+  "WEC-Zh contains 53,066 event mentions organized into 4,476 clusters.",
+  "The Chinese dataset is derived from Wikipedia anchors that refer to the same underlying subject and is cleaned for event mentions.",
+  "The development and test data were checked by two annotators, with reported Fleiss' kappa of 0.71.",
+  "The complete model outperforms the compared WEC baseline on the reported WEC-Zh aggregate metrics.",
+  "Removing lexical chains hurts performance more than removing discourse structure in the reported ablations.",
+  "Lexical-chain information is particularly valuable when mentions share little surface vocabulary.",
+  "Discourse structure contributes more strongly when documents become long.",
+  "Time and location information can help separate superficially similar mentions that actually denote different events.",
+  "The final representation of identity is a cluster of coreferential mentions rather than a graded or overlapping continuity relation."
+ ],
+ "source_url": "https://arxiv.org/html/2406.15990",
+ "access": "full_text"
+}

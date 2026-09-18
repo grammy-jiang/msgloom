@@ -1,0 +1,84 @@
+{
+ "paper_id": "doi-10-1038-s41598-025-32765-6",
+ "title": "Argument centric causal intervention for cross document event coreference resolution",
+ "research_question": "Can cross-document event coreference be improved by explicitly suppressing spurious trigger-word correlations and shifting model decisions toward event arguments and contextual semantics through causal and counterfactual intervention?",
+ "methodology": "The paper introduces ACCI, an argument-centric causal-intervention framework built around pairwise cross-encoder ECR backbones. A structural causal model treats lexical trigger matching as a confounding influence, while counterfactual inputs mask or isolate triggers to estimate and subtract trigger-induced bias. A separate argument-aware path encodes the surrounding context without the trigger and is jointly optimized with the factual prediction objective. The method is evaluated on ECB+ and GVC, including backbone comparisons, ablations, cross-dataset generalization experiments, and qualitative case studies.",
+ "key_findings": [
+  {
+   "finding": "ACCI achieves a reported CoNLL F1 of 88.4 on ECB+, outperforming the compared systems on aggregate CoNLL F1 in the reported table.",
+   "evidence_type": "supported",
+   "section": "Experimental results — ECB+"
+  },
+  {
+   "finding": "ACCI reports a CoNLL F1 of 85.2 on GVC; it is competitive but is not the highest result in that table, where Chen2025 reports 85.8.",
+   "evidence_type": "supported",
+   "section": "Experimental results — GVC"
+  },
+  {
+   "finding": "Removing both trigger-bias mitigation and context-argument enhancement reduces CoNLL F1 from 88.4 to 87.2 on ECB+ and from 79.0 to 77.6 in the corresponding GVC ablation setting.",
+   "evidence_type": "supported",
+   "section": "Ablation experiment"
+  },
+  {
+   "finding": "The cross-dataset experiments report that ACCI consistently exceeds its corresponding baselines when training on ECB+ and testing on GVC or reversing the domains.",
+   "evidence_type": "supported",
+   "section": "Generalizability experiments"
+  },
+  {
+   "finding": "Qualitative cases demonstrate both relevant identity patterns: semantically different events can share the same trigger, and the same event can be expressed with different triggers.",
+   "evidence_type": "supported",
+   "section": "Case study"
+  },
+  {
+   "finding": "The results support reducing dependence on surface lexical identity and using argument-level relational context as evidence for event identity.",
+   "evidence_type": "supported",
+   "section": "Ablation experiment and Conclusion"
+  },
+  {
+   "finding": "The work directly studies cross-document real-world event identity, but it does not experimentally establish performance on enterprise email, workplace chat, or cross-channel work-matter continuity.",
+   "evidence_type": "unsupported",
+   "section": "Datasets and Future work"
+  }
+ ],
+ "limitations": [
+  "The causal treatment assumes that trigger information and argument/context information can be procedurally separated by subword masking, although their semantics can be entangled.",
+  "The counterfactual mechanism presents masked or placeholder-based inputs that differ from ordinary pretrained-model inputs.",
+  "The framework assumes that spurious trigger effects and causal semantic effects can be decomposed sufficiently for the proposed adjustment.",
+  "The authors identify document-level topic bias as a potential confounder not handled by the current model.",
+  "The GVC discussion notes limitations in explicitly modeling document-level event-chain structure.",
+  "The experiments use ECB+ and GVC rather than enterprise email or conversational workplace corpora.",
+  "Multilingual, multimodal, noisy social-media, news, and conversational settings are identified as future extensions rather than demonstrated capabilities."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "ecb_conll_result": 0.99,
+  "gvc_conll_result": 0.99,
+  "ablation_support": 0.99,
+  "cross_domain_generalization": 0.96,
+  "trigger_bias_problem": 0.98,
+  "argument_context_value": 0.98,
+  "workplace_generalization": 0.99
+ },
+ "raw_claims": [
+  "Cross-document event coreference asks whether mentions in different documents refer to the same real-world occurrence.",
+  "The authors argue that pairwise models can learn spurious associations between trigger-word similarity and coreference labels.",
+  "ACCI represents trigger matching as a confounding influence in a structural causal model.",
+  "The counterfactual module evaluates predictions after altering or withholding trigger information.",
+  "The argument-aware path represents the event context while excluding the trigger.",
+  "Training combines the ordinary factual coreference objective with an argument-focused semantic objective.",
+  "Inference combines the factual score, an argument-centric score, and a correction for trigger-induced bias.",
+  "ACCI reports 88.4 CoNLL F1 on ECB+.",
+  "ACCI reports 85.2 CoNLL F1 on GVC.",
+  "Ablations reduce performance when trigger-bias mitigation or argument enhancement is removed.",
+  "Cross-domain experiments favor ACCI over corresponding baseline models.",
+  "Case studies show that identical trigger words need not indicate identical events.",
+  "Case studies also show that different trigger words can describe the same event.",
+  "The authors identify simplifying causal assumptions and document-level topic bias as unresolved limitations."
+ ],
+ "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12827381/",
+ "access": "full_text"
+}

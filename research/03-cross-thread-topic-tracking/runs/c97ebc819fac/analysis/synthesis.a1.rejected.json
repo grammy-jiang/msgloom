@@ -1,0 +1,282 @@
+{
+ "topic": "cross-thread topic identity and incremental continuity in work communication",
+ "paper_count": 14,
+ "executive_summary": "The literature strongly supports treating longitudinal work-matter identity as an open-world, incremental identity-resolution problem rather than ordinary semantic clustering. Continuation decisions should combine multiple identity-bearing signals, permit abstention, and preserve sufficient historical evidence for later merge or split correction. Incremental entity-resolution work shows that localized reassessment can approach batch quality while avoiding full recomputation, but naive incremental assignment can become order-dependent. Event-coreference research shows that action similarity alone is insufficient across domains: participants, time, location, arguments, and context materially affect identity, while partial or quasi-identity can be non-transitive. New-event and selective-classification work further supports an explicit UNCERTAIN/reject outcome rather than forcing attachment or novelty. However, the evidence is primarily from news, Wikipedia, entity resolution, image recognition, and public-record linkage; none establishes production accuracy for cross-thread email and Teams work matters.",
+ "themes": [
+  "Identity requires evidence beyond semantic similarity: action, participants, time, location, arguments, references, and context contribute differently across datasets [2011.12249] [doi-10-18653-v1-2022-emnlp-main-58] [doi-10-1002-sim-4780140510].",
+  "Open-world rejection and abstention are first-class mechanisms for avoiding forced assignment when evidence is insufficient [1412.5687] [1705.08500] [doi-10-1145-354756-354843].",
+  "Incremental identity resolution can update only affected historical state and still approach batch-resolution quality [1402.4417] [doi-10-1007-978-3-030-49461-2-23].",
+  "Correction requires retained historical linkage structure; aggressive state compression can reduce future repairability [doi-10-1007-978-3-030-49461-2-23].",
+  "Benchmark-specific structure can improve in-domain results yet cause poor cross-corpus generalization [2011.12249] [2104.05022] [manual-e988e24127].",
+  "Partial or quasi-identity may be non-transitive, so not every related event should be collapsed into one identity cluster [manual-c43ffe3135].",
+  "Retrieval can narrow large historical collections before an expensive identity judgment, but local retrieved context may still be insufficient [doi-10-18653-v1-2022-emnlp-main-58].",
+  "Evaluation should distinguish continuation/linking, novelty/new-event detection, clustering, and abstention rather than reporting one aggregate clustering score [manual-5c20fb0229] [1705.08500] [doi-10-1145-354756-354843]."
+ ],
+ "findings": [
+  {
+   "statement": "Cross-document identity should be decided from multiple compatibility signals rather than semantic or action similarity alone; participant, temporal, spatial, argument, and contextual evidence materially affects identity decisions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2011.12249",
+     "section": "Feature Analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-58",
+     "section": "5.5 Qualitative Error Analysis"
+    },
+    {
+     "paper_id": "doi-10-1002-sim-4780140510",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "A system should support an explicit reject or UNCERTAIN outcome instead of forcing every incoming item to an existing identity or declaring it definitively new.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1412.5687",
+     "section": "Open World Recognition"
+    },
+    {
+     "paper_id": "1705.08500",
+     "section": "3 Selection with Guaranteed Risk Control"
+    },
+    {
+     "paper_id": "doi-10-1145-354756-354843",
+     "section": "4.2 Expected FSD performance"
+    }
+   ]
+  },
+  {
+   "statement": "Incremental identity resolution can avoid reprocessing all historical data while retaining resolution quality close to batch processing, and new evidence can legitimately revise earlier identity structure.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1402.4417",
+     "section": "Incremental ERLD Experiments"
+    },
+    {
+     "paper_id": "1402.4417",
+     "section": "Incremental Entity Resolution"
+    },
+    {
+     "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+     "section": "Evaluation"
+    }
+   ]
+  },
+  {
+   "statement": "Naive online attachment can be sensitive to arrival order; bounded local reclustering is a practical mechanism for repairing historical decisions and reducing that dependency.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+     "section": "Source-wise Increments"
+    }
+   ]
+  },
+  {
+   "statement": "Preserving historical relationship structure is important for later correction: compact representations that discard intra-cluster links can make subsequent merge or split repair harder or impossible for repair algorithms that depend on those links.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+     "section": "Incremental Clustering"
+    }
+   ]
+  },
+  {
+   "statement": "Conversation, topic, or document preclustering can improve coreference performance, but such structural partitions must not be treated as identity because benchmark-specific clustering assumptions can overfit and transfer poorly.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-e988e24127",
+     "section": "6 Results"
+    },
+    {
+     "paper_id": "2011.12249",
+     "section": "Model Analysis"
+    },
+    {
+     "paper_id": "2104.05022",
+     "section": "Cross-Dataset Evaluation"
+    }
+   ]
+  },
+  {
+   "statement": "Relatedness and identity are not equivalent: partial event identity includes membership, subevent, and spatiotemporal-continuity relations that can violate transitivity, so forcing all related evidence into one cluster can over-merge.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-c43ffe3135",
+     "section": "Analysis of Event Identity"
+    }
+   ]
+  },
+  {
+   "statement": "A retrieval-first architecture is plausible for Phase 2 investigation: candidate historical evidence can be retrieved from a very large collection before detailed coreference assessment, but unresolved cases may require evidence beyond the local query-candidate pair.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-58",
+     "section": "3 The CoreSearch Dataset"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-58",
+     "section": "5.5 Qualitative Error Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Identity models and evaluation results transfer poorly across corpora with different mention distributions and structural assumptions, so strong performance on ECB+, WEC, or another single benchmark is insufficient evidence for workplace communication.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2011.12249",
+     "section": "Cross-Dataset Generalization"
+    },
+    {
+     "paper_id": "2104.05022",
+     "section": "Cross-Dataset Evaluation"
+    },
+    {
+     "paper_id": "manual-f56d02b8f9",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "Evaluation for msgloom should separately measure continuation/link detection, new-Topic detection, clustering quality, abstention coverage, and false-merge versus false-split behavior rather than relying on one clustering metric.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "manual-5c20fb0229",
+     "section": "Abstract"
+    },
+    {
+     "paper_id": "1705.08500",
+     "section": "5 Empirical Results"
+    },
+    {
+     "paper_id": "doi-10-1145-354756-354843",
+     "section": "4.2 Expected FSD performance"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Document/topic preclustering: useful signal versus unsafe identity shortcut",
+   "papers": [
+    "manual-e988e24127",
+    "2011.12249",
+    "2104.05022"
+   ],
+   "note": "On ECB+, document topic clustering materially improves event-coreference performance [manual-e988e24127], but cross-corpus analysis finds ECB+-specific preclustering and document-link assumptions can overfit and transfer poorly [2011.12249], with substantial WEC/ECB+ transfer degradation also reported [2104.05022]. For msgloom this is best interpreted as a boundary condition, not a true logical contradiction: Group or conversation structure can narrow candidates but should not define Topic identity."
+  },
+  {
+   "topic": "Simple incremental attachment versus repair-oriented incremental clustering",
+   "papers": [
+    "1402.4417",
+    "doi-10-1007-978-3-030-49461-2-23"
+   ],
+   "note": "Incremental ERLD reports quality close to batch resolution while processing affected state [1402.4417], whereas the multi-source FAMER study shows simple incremental max-both assignment can be arrival-order sensitive and that local reclustering is needed to recover batch-like quality [doi-10-1007-978-3-030-49461-2-23]. The difference suggests that repair requirements depend on matching errors, graph structure, and arrival pattern."
+  },
+  {
+   "topic": "Transitive cluster identity versus non-transitive relatedness",
+   "papers": [
+    "1402.4417",
+    "doi-10-1007-978-3-030-49461-2-23",
+    "manual-c43ffe3135"
+   ],
+   "note": "Entity-resolution methods operate naturally with transitive identity clusters [1402.4417] [doi-10-1007-978-3-030-49461-2-23], while dense event annotation finds important partial-identity relations that may violate transitivity [manual-c43ffe3135]. Msgloom should therefore keep Topic identity itself coherent while representing subevent, continuation-like, or uncertain relations separately instead of forcing them into the identity cluster."
+  },
+  {
+   "topic": "Similarity-based tracking versus structure-aware identity modeling",
+   "papers": [
+    "doi-10-1145-354756-354843",
+    "2011.12249",
+    "doi-10-18653-v1-2022-emnlp-main-58"
+   ],
+   "note": "TDT results show that repeated full-text similarity tracking yields poor first-story detection at useful operating points [doi-10-1145-354756-354843], while later event-coreference work finds material value in participants, time, arguments, and explicit coreference scoring [2011.12249] [doi-10-18653-v1-2022-emnlp-main-58]. This argues against using embedding similarity alone as msgloom's identity rule."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G03-1",
+   "description": "There is no direct benchmark in this corpus for cross-thread, cross-channel concrete work-matter identity in enterprise email and chat, including same customer/project but distinct matters, multi-matter messages, and long-lived matters that change titles or channels.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"work item identity\" email chat cross-thread enterprise OR \"cross-channel\" conversation linking work matter"
+  },
+  {
+   "id": "G03-2",
+   "description": "The corpus does not establish a calibrated decision rule for CONTINUE versus NEW versus UNCERTAIN under asymmetric costs where false merges are substantially more damaging than false splits.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"event coreference\" abstention reject option open set OR \"cluster assignment\" abstention asymmetric cost"
+  },
+  {
+   "id": "G03-3",
+   "description": "More evidence is needed on partial identity, event evolution, and multiple simultaneous work matters when one incoming message contains spans that continue different historical identities.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"partial event coreference\" event evolution subevent cross-document multi-event"
+  },
+  {
+   "id": "G03-4",
+   "description": "Design and benchmark a msgloom-specific multi-signal matcher using independent synthetic/adversarial fixtures and transfer datasets, explicitly measuring false merges, false splits, NEW detection, UNCERTAIN coverage, and insertion-order sensitivity.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G03-5",
+   "description": "Define the stable Topic-ID and correction data model: immutable source evidence, versioned identity assessments, CONTINUE/NEW/UNCERTAIN decisions, merge/split corrections, supersession or alias links, and reconstructable history.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G03-6",
+   "description": "Determine the minimum historical evidence graph that must be retained to support bounded reclustering and later merge/split correction without keeping unnecessary derived state.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G03-7",
+   "description": "Benchmark candidate-retrieval strategies for Phase 2, measuring historical-candidate recall, latency, and downstream identity accuracy before choosing dense retrieval, sparse retrieval, deterministic indexes, or a hybrid.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "G03-8",
+   "description": "Optimization of generated Topic titles or labels is not an identity problem; titles are presentation metadata and should not be used as stable Topic identifiers.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "LOW"
+  }
+ ],
+ "actionable_insights": [
+  "Represent Topic identity with stable internal IDs independent of generated titles, subjects, conversation IDs, or source-specific thread IDs.",
+  "In Phase 1, link a candidate to an existing Topic only when supplied evidence positively supports identity; otherwise preserve the candidate separately with an explicit UNCERTAIN relationship rather than forcing CONTINUE or NEW.",
+  "Use semantic similarity, subject, participants, customer/project names, and conversation ancestry primarily for candidate generation; require additional identity-compatible evidence before merging.",
+  "Combine positive and negative evidence across action/object, participants, time, location, referenced artifacts, commitments, state compatibility, and source relationships; argument or temporal conflicts should be able to veto a superficially similar match.",
+  "Persist versioned identity assessments and provenance so later MERGE or SPLIT corrections add history instead of rewriting earlier source evidence or silently changing Topic meaning.",
+  "Retain enough pairwise or graph-level historical linkage evidence to support bounded local reclustering; do not irreversibly fuse clusters into representations that destroy the evidence needed for repair.",
+  "Test incremental assignment under adversarial insertion orders and delayed evidence, because arrival order can change results when repair is weak.",
+  "Calibrate a reject/UNCERTAIN threshold using risk-coverage style evaluation and explicitly assign a higher cost to false merges than false splits for msgloom's reporting objective.",
+  "For Phase 2, retrieve a bounded set of historical candidate Topics and supporting evidence, then rerun the identity assessment rather than searching the entire history inside every Phase 1 decision.",
+  "Evaluate continuation, novelty, uncertainty, merge repair, and split repair separately; aggregate clustering F1 alone can hide the failure modes that matter most to missed or duplicated work."
+ ],
+ "confidence_summary": "Confidence is HIGH for the architectural conclusions that identity should be multi-signal, incremental, repairable, and allowed to abstain: these mechanisms recur across entity resolution, event coreference, open-world recognition, selective classification, and TDT. Confidence is also HIGH that single-benchmark results do not transfer reliably. Confidence is MEDIUM for the exact decision policy msgloom should use because no paper directly evaluates enterprise email/Teams work-matter identity, asymmetric false-merge costs, or msgloom's five-way CONTINUE/NEW/UNCERTAIN/MERGE/SPLIT contract. Transfer evidence justifies mechanisms and engineering experiments, not production-domain accuracy claims.",
+ "limitations": [
+  "No paper in the corpus directly evaluates concrete work-matter identity across enterprise email and Teams or an equivalent work-communication domain.",
+  "Several strong results come from news or Wikipedia event coreference, whose event distributions, annotation assumptions, and document structures differ materially from workplace communication [2011.12249] [2104.05022] [doi-10-18653-v1-2022-emnlp-main-58].",
+  "Open-world and selective-classification papers use image recognition, so they support abstention and calibration mechanisms but not text-identity accuracy [1412.5687] [1705.08500].",
+  "Entity-resolution papers concern people, companies, or knowledge-graph entities; their transitive identity assumptions transfer imperfectly to evolving work matters [1402.4417] [doi-10-1007-978-3-030-49461-2-23].",
+  "The probabilistic public-health linkage paper and TDT overview were available only at abstract level, limiting inspection of experimental details [doi-10-1002-sim-4780140510] [manual-5c20fb0229].",
+  "Many event-coreference evaluations assume gold event mentions or pre-existing topic partitions, so they do not measure end-to-end errors from Topic-02 span detection or unrestricted historical candidate generation [2104.05022] [manual-c43ffe3135] [manual-e988e24127].",
+  "The synthesis cannot determine production thresholds, calibration values, or the acceptable UNCERTAIN coverage for msgloom without engineering evaluation on independently constructed fixtures and eventually authorized domain data."
+ ],
+ "gap_status": []
+}

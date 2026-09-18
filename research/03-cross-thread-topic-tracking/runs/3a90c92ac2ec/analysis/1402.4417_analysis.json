@@ -1,0 +1,67 @@
+{
+ "paper_id": "1402.4417",
+ "title": "Incremental Entity Resolution from Linked Documents",
+ "research_question": "Can entity resolution exploit links between documents and update previously resolved entity clusters efficiently when new documents arrive without rerunning resolution over the complete historical collection?",
+ "methodology": "The proposed ERLD pipeline combines document traversal over inter-document references, locality-sensitive hashing for blocking, iterative match-merge processing, and connected-component clustering. Its incremental variant updates indexes for new documents, compares them against relevant previously resolved entities retrieved through traversal and blocking, and reclusters only the affected partial entities rather than the entire historical collection. The approach is evaluated on a large synthetic residents dataset and a labeled subset of real company records, comparing linkage quality and runtime with alternative blocking or full rerun strategies.",
+ "key_findings": [
+  {
+   "finding": "Using links between documents in addition to attribute similarity improves entity-resolution recall on the synthetic residents data while preserving the reported perfect precision.",
+   "evidence_type": "supported",
+   "section": "Experiments on Synthetic Residents Data"
+  },
+  {
+   "finding": "The incremental procedure can combine new documents with previously resolved entities and can merge historical clusters when the new evidence changes the identity structure.",
+   "evidence_type": "supported",
+   "section": "Incremental Entity Resolution"
+  },
+  {
+   "finding": "Incremental resolution produces almost the same precision, recall, and F-measure as batch ERLD in the reported incremental experiments while processing only the affected portion of historical state.",
+   "evidence_type": "supported",
+   "section": "Incremental ERLD Experiments"
+  },
+  {
+   "finding": "Locality-sensitive hashing and traversal substantially reduce candidate comparisons and execution time relative to an unblocked iterative match-merge process without materially sacrificing resolution quality in the reported tests.",
+   "evidence_type": "supported",
+   "section": "Experiments on Synthetic Residents Data"
+  },
+  {
+   "finding": "On the real company evaluation subset, incremental ERLD closely matches the quality of resolving the complete enlarged dataset while requiring less processing time for the new increment.",
+   "evidence_type": "supported",
+   "section": "Experiments on Company Data"
+  }
+ ],
+ "limitations": [
+  "The method exploits references that imply two documents describe the same entity; references between different entities are not modeled as positive structural evidence.",
+  "Schema mapping across sources is assumed to have already been performed.",
+  "The synthetic residents collection excludes some types of cross-entity reference noise that can occur in real data.",
+  "The real company evaluation is based on a manually labeled subset rather than the entire company collection.",
+  "Inter-document reference traversal is not meaningfully tested on the real company subset because that dataset does not provide the same reference structure.",
+  "Resolution behavior depends on the accuracy of the underlying document-matching function and blocking configuration."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "references_improve_resolution": 0.99,
+  "incremental_can_revise_old_clusters": 0.97,
+  "incremental_matches_batch_quality": 0.98,
+  "blocking_improves_scalability": 0.99,
+  "real_data_incremental_quality": 0.97
+ },
+ "raw_claims": [
+  "ERLD combines document-reference structure with attribute-based matching for entity resolution.",
+  "Document traversal expands the evidence associated with a record through references to other records.",
+  "Locality-sensitive hashing limits expensive matching to candidate documents or entities likely to be similar.",
+  "Iterative match-merge repeatedly merges records judged to describe the same entity.",
+  "The incremental algorithm indexes new documents and retrieves relevant historical resolved entities instead of reconsidering every old document.",
+  "New evidence can cause two entities that were previously separate to be merged.",
+  "On the synthetic residents data, adding reference information raises recall while precision remains at the reported maximum.",
+  "The incremental experiments show resolution quality close to that obtained by rerunning the batch method on the enlarged collection.",
+  "The real company experiment also shows similar batch and incremental precision-recall behavior.",
+  "The authors present incremental resolution as a way to retain continuity of entity identity as linked document collections grow."
+ ],
+ "source_url": "https://arxiv.org/html/1402.4417",
+ "access": "full_text"
+}

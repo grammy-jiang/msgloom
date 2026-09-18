@@ -1,0 +1,350 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1145-354756-354843",
+   "title": "First Story Detection In TDT Is Hard",
+   "research_question": "Can first-story detection performance be explained and bounded by tracking performance, and what does that relationship imply about the practical difficulty of detecting genuinely new topics in a news stream?",
+   "methodology": "The authors reduce first-story detection to repeated tracking decisions and derive expected first-story miss and false-alarm behavior from tracking error rates under simplifying independence assumptions. They implement full-text similarity systems using stemmed terms, Inquery-style TF-IDF weighting, cosine similarity, and either one or several training stories per tracked topic. They evaluate tracking and first-story detection on the TDT-2 corpus using DET curves and compare observed first-story performance with bounds predicted from tracking performance.",
+   "key_findings": [
+    {
+     "finding": "Observed first-story detection performance falls close to and substantially overlaps the range predicted from the corresponding tracking system, supporting the proposed reduction from first-story detection to tracking.",
+     "evidence_type": "supported",
+     "section": "4.2 Expected FSD performance"
+    },
+    {
+     "finding": "The tracking error rates achievable by the evaluated similarity-based systems imply poor first-story detection performance across practical operating thresholds.",
+     "evidence_type": "supported",
+     "section": "4.2 Expected FSD performance"
+    },
+    {
+     "finding": "For the one-training-story tracking case, reaching the authors' illustrative first-story target would require roughly a twenty-fold improvement in tracking effectiveness.",
+     "evidence_type": "supported",
+     "section": "4.3 Difficulty of improving FSD"
+    },
+    {
+     "finding": "Historical tracking results available to the authors gave little reason to expect an improvement of that magnitude from conventional tracking or filtering technology.",
+     "evidence_type": "supported",
+     "section": "4.3 Difficulty of improving FSD"
+    },
+    {
+     "finding": "The authors conclude that substantially better first-story detection probably requires approaches that exploit information about event or topic structure rather than simply treating the problem as repeated full-text tracking.",
+     "evidence_type": "supported",
+     "section": "5 Conclusions"
+    }
+   ],
+   "limitations": [
+    "The analytical bounds depend on simplifying assumptions, including approximate independence of tracking errors across topics.",
+    "The empirical conclusions principally concern full-text similarity systems that can be interpreted as tracking systems and therefore do not establish an impossibility result for all first-story detection methods.",
+    "The TDT evaluation framework largely assumes a single topic for each story, while a small fraction of stories can concern multiple topics.",
+    "The desirable operating point used to illustrate required improvement is a chosen target rather than a universal application requirement.",
+    "The evaluation is confined to the TDT-2 news-stream setting, so transfer to other forms of evolving communication is not directly established."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "tracking_predicts_fsd": 0.98,
+    "tracking_based_fsd_is_difficult": 0.97,
+    "twenty_fold_improvement_estimate": 0.99,
+    "conventional_tracking_unlikely_sufficient": 0.92,
+    "different_approaches_needed": 0.9
+   },
+   "raw_claims": [
+    "First-story detection can be modeled as deciding whether each incoming story matches any previously observed story.",
+    "The experiments use the TDT-2 news corpus and evaluate both tracking and first-story detection behavior.",
+    "The tracking representation uses stemmed terms with TF-IDF-style weighting and cosine similarity.",
+    "The paper derives upper and lower first-story detection performance bounds from tracking error rates.",
+    "Actual first-story detection results lie near the range predicted from tracking performance.",
+    "A system that makes modest tracking errors can accumulate much larger errors when many previous stories must be considered during novelty detection.",
+    "The paper estimates that the one-story tracking condition would need about a twenty-fold effectiveness improvement to reach its illustrative first-story target.",
+    "Previous tracking and filtering results examined by the authors do not exhibit improvements of that magnitude.",
+    "The authors argue that future gains are more likely to come from task-specific modeling of how topics and events are related and defined."
+   ],
+   "source_url": "https://ciir.cs.umass.edu/pubfiles/ir-206.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+   "title": "Incremental Multi-source Entity Resolution for Knowledge Graph Completion",
+   "research_question": "How can multi-source entity resolution incorporate newly arriving entities efficiently while preserving clustering quality and correcting earlier identity decisions without repeatedly resolving all previously processed data?",
+   "methodology": "The authors extend the FAMER entity-resolution framework with incremental linking and clustering methods based on max-both assignment, optional linking among new entities, cluster fusion, and n-depth reclustering. The n-depth method revisits neighborhoods surrounding newly inserted entities so that earlier clusters can be repaired while limiting how much existing data is reconsidered. Parallel implementations are evaluated under source-wise and entity-wise insertion scenarios on geographical, music, and voter-record datasets, using precision, recall, F-measure, runtime, and different source insertion orders, with batch processing and Greedy repair as comparison points.",
+   "key_findings": [
+    {
+     "finding": "Incremental resolution can achieve clustering quality comparable to batch resolution while avoiding repeated linking and clustering of all historical entities.",
+     "evidence_type": "supported",
+     "section": "Evaluation"
+    },
+    {
+     "finding": "Simple max-both incremental assignment can become sensitive to the order in which sources arrive, whereas one-depth reclustering substantially reduces this dependency.",
+     "evidence_type": "supported",
+     "section": "Source-wise Increments"
+    },
+    {
+     "finding": "One-depth reclustering reaches approximately the same clustering quality as batch processing in the reported source-wise experiments while allowing previous cluster decisions to be repaired locally.",
+     "evidence_type": "supported",
+     "section": "Source-wise Increments"
+    },
+    {
+     "finding": "Linking newly arriving entities to one another as well as to historical entities improves results in entity-wise incremental scenarios.",
+     "evidence_type": "supported",
+     "section": "Entity-wise Increments"
+    },
+    {
+     "finding": "All evaluated incremental approaches are faster than repeatedly executing the batch procedure on the growing data, with max-both variants being faster than the more repair-oriented n-depth method.",
+     "evidence_type": "supported",
+     "section": "Efficiency"
+    },
+    {
+     "finding": "Cluster fusion can reduce processing cost but removes the intra-cluster links needed by n-depth reclustering, creating a trade-off between compact state and later repairability.",
+     "evidence_type": "supported",
+     "section": "Incremental Clustering"
+    }
+   ],
+   "limitations": [
+    "The framework assumes that individual sources are duplicate-free or have already undergone source-local deduplication.",
+    "N-depth reclustering depends on retained intra-cluster links and therefore cannot be applied after clusters have been reduced to fused representatives that discard those links.",
+    "Resolution quality remains dependent on the underlying similarity functions, thresholds, and clustering configuration.",
+    "The evaluation covers three domains, with part of the experimental data produced through synthetic duplication or corruption, so behavior in other knowledge-graph domains is not established.",
+    "The work primarily addresses resolution of entities of the same type; richer incremental handling of different entity and relationship types is left for future work."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "incremental_matches_batch_quality": 0.97,
+    "reclustering_reduces_order_dependence": 0.98,
+    "new_entity_linking_helps": 0.94,
+    "incremental_is_faster": 0.99,
+    "fusion_repairability_tradeoff": 0.98
+   },
+   "raw_claims": [
+    "The system treats entity-resolution state as something that can be extended when new entities arrive rather than recomputed from scratch.",
+    "Max-both assignment links a new entity to an existing cluster when their strongest compatible relationships agree.",
+    "N-depth reclustering expands reconsideration from new entities into a bounded neighborhood of the existing similarity graph.",
+    "Increasing the reclustering neighborhood allows historical clustering decisions to be repaired at additional computational cost.",
+    "The experiments include geographical, MusicBrainz-derived, and North Carolina voter-record data.",
+    "The evaluation measures precision, recall, F-measure, and execution time.",
+    "Source insertion order can materially affect a non-repairing incremental clustering method.",
+    "One-depth reclustering largely removes the insertion-order quality loss observed for simpler incremental assignment.",
+    "Incremental variants require substantially less accumulated runtime than repeatedly running batch resolution as the data grows.",
+    "Keeping enough historical graph structure enables future identity decisions to revise earlier clusters."
+   ],
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7250616/",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1412.5687",
+   "title": "Towards Open World Recognition",
+   "research_question": "How can a recognition system reject observations belonging to previously unseen classes and then incrementally incorporate newly labeled classes without retraining the complete classifier?",
+   "methodology": "The paper formalizes open-world recognition as a process combining recognition, novelty detection, labeling of unknowns, and incremental learning, and analyzes open-space risk for recognition functions. It introduces Nearest Non-Outlier, which represents classes by means in a learned metric space, uses compact abating probability-style scores to reject sufficiently distant observations, and adds a newly labeled class by inserting its class mean. Experiments on ImageNet progressively vary the numbers of known and unknown categories and compare open-set Nearest Class Mean with NNO, including experiments starting metric learning with different numbers of classes and supplementary feature representations.",
+   "key_findings": [
+    {
+     "finding": "The paper gives an explicit formulation of open-world recognition in which unknown inputs must be rejected and subsequently labeled classes can be added incrementally.",
+     "evidence_type": "supported",
+     "section": "Open World Recognition"
+    },
+    {
+     "finding": "Thresholded recognition functions that decrease with distance can be constructed to control open-space risk under the conditions analyzed by the authors.",
+     "evidence_type": "supported",
+     "section": "Managing Open Space Risk"
+    },
+    {
+     "finding": "NNO can add a new class by computing and storing its class mean rather than retraining the complete multiclass classifier.",
+     "evidence_type": "supported",
+     "section": "Nearest Non-Outlier"
+    },
+    {
+     "finding": "In the ImageNet open-world experiments, NNO consistently handles mixtures of known and unknown classes better than the open-set adaptation of Nearest Class Mean while retaining comparable closed-set behavior.",
+     "evidence_type": "supported",
+     "section": "Experiments"
+    },
+    {
+     "finding": "For the largest reported comparison with 500 trained known classes and testing involving 500 known plus 500 unknown classes, the paper reports almost a 74 percent improvement for open-set NNO over open-set NCM.",
+     "evidence_type": "supported",
+     "section": "Experiments"
+    },
+    {
+     "finding": "Once the representation and metric are established, adding classes to NNO is computationally inexpensive because incremental learning requires class statistics rather than a full optimization pass.",
+     "evidence_type": "supported",
+     "section": "Experiments"
+    }
+   ],
+   "limitations": [
+    "Unknown classes are assumed to be assigned semantic labels by a supervised labeling process before they can be learned.",
+    "The incremental procedure keeps the previously learned feature transformation or metric fixed rather than jointly relearning the representation as classes accumulate.",
+    "The theoretical open-space bounds can be loose when recognition is performed after dimensionality reduction, and a threshold that minimizes open-space risk can also reduce useful generalization.",
+    "The empirical evaluation is centered on ImageNet object recognition, so applicability to identity tracking or conversational topics is not directly demonstrated.",
+    "The primary experiments use engineered visual descriptors rather than an end-to-end representation that is itself updated incrementally."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "open_world_formalization": 0.99,
+    "open_space_risk_control": 0.96,
+    "cheap_incremental_class_addition": 0.99,
+    "nno_beats_open_ncm": 0.98,
+    "reported_74_percent_improvement": 0.99
+   },
+   "raw_claims": [
+    "Open-world recognition requires a system to distinguish known classes from observations that belong to classes it has not learned.",
+    "The authors model unknown-class rejection as part of the recognition function rather than forcing every observation into a known class.",
+    "After unknown observations receive labels, the learner is expected to extend its recognized class set.",
+    "NNO stores a representative mean for each learned class in a transformed feature space.",
+    "An observation is rejected as unknown when no learned class gives it sufficient support.",
+    "Adding a class to NNO mainly requires computing a new class mean.",
+    "The ImageNet protocol progressively adds known categories while also exposing the classifier to withheld unknown categories.",
+    "Open-set NCM performance deteriorates markedly as unknown categories are introduced.",
+    "NNO performs substantially better than the open-set NCM baseline in the reported open-world tests.",
+    "The incremental class update is much cheaper than the initial metric-learning stage."
+   ],
+   "source_url": "https://arxiv.org/html/1412.5687",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1402.4417",
+   "title": "Incremental Entity Resolution from Linked Documents",
+   "research_question": "Can entity resolution exploit links between documents and update previously resolved entity clusters efficiently when new documents arrive without rerunning resolution over the complete historical collection?",
+   "methodology": "The proposed ERLD pipeline combines document traversal over inter-document references, locality-sensitive hashing for blocking, iterative match-merge processing, and connected-component clustering. Its incremental variant updates indexes for new documents, compares them against relevant previously resolved entities retrieved through traversal and blocking, and reclusters only the affected partial entities rather than the entire historical collection. The approach is evaluated on a large synthetic residents dataset and a labeled subset of real company records, comparing linkage quality and runtime with alternative blocking or full rerun strategies.",
+   "key_findings": [
+    {
+     "finding": "Using links between documents in addition to attribute similarity improves entity-resolution recall on the synthetic residents data while preserving the reported perfect precision.",
+     "evidence_type": "supported",
+     "section": "Experiments on Synthetic Residents Data"
+    },
+    {
+     "finding": "The incremental procedure can combine new documents with previously resolved entities and can merge historical clusters when the new evidence changes the identity structure.",
+     "evidence_type": "supported",
+     "section": "Incremental Entity Resolution"
+    },
+    {
+     "finding": "Incremental resolution produces almost the same precision, recall, and F-measure as batch ERLD in the reported incremental experiments while processing only the affected portion of historical state.",
+     "evidence_type": "supported",
+     "section": "Incremental ERLD Experiments"
+    },
+    {
+     "finding": "Locality-sensitive hashing and traversal substantially reduce candidate comparisons and execution time relative to an unblocked iterative match-merge process without materially sacrificing resolution quality in the reported tests.",
+     "evidence_type": "supported",
+     "section": "Experiments on Synthetic Residents Data"
+    },
+    {
+     "finding": "On the real company evaluation subset, incremental ERLD closely matches the quality of resolving the complete enlarged dataset while requiring less processing time for the new increment.",
+     "evidence_type": "supported",
+     "section": "Experiments on Company Data"
+    }
+   ],
+   "limitations": [
+    "The method exploits references that imply two documents describe the same entity; references between different entities are not modeled as positive structural evidence.",
+    "Schema mapping across sources is assumed to have already been performed.",
+    "The synthetic residents collection excludes some types of cross-entity reference noise that can occur in real data.",
+    "The real company evaluation is based on a manually labeled subset rather than the entire company collection.",
+    "Inter-document reference traversal is not meaningfully tested on the real company subset because that dataset does not provide the same reference structure.",
+    "Resolution behavior depends on the accuracy of the underlying document-matching function and blocking configuration."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "references_improve_resolution": 0.99,
+    "incremental_can_revise_old_clusters": 0.97,
+    "incremental_matches_batch_quality": 0.98,
+    "blocking_improves_scalability": 0.99,
+    "real_data_incremental_quality": 0.97
+   },
+   "raw_claims": [
+    "ERLD combines document-reference structure with attribute-based matching for entity resolution.",
+    "Document traversal expands the evidence associated with a record through references to other records.",
+    "Locality-sensitive hashing limits expensive matching to candidate documents or entities likely to be similar.",
+    "Iterative match-merge repeatedly merges records judged to describe the same entity.",
+    "The incremental algorithm indexes new documents and retrieves relevant historical resolved entities instead of reconsidering every old document.",
+    "New evidence can cause two entities that were previously separate to be merged.",
+    "On the synthetic residents data, adding reference information raises recall while precision remains at the reported maximum.",
+    "The incremental experiments show resolution quality close to that obtained by rerunning the batch method on the enlarged collection.",
+    "The real company experiment also shows similar batch and incremental precision-recall behavior.",
+    "The authors present incremental resolution as a way to retain continuity of entity identity as linked document collections grow."
+   ],
+   "source_url": "https://arxiv.org/html/1402.4417",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1002-sim-4780140510",
+   "title": "Probabilistic linkage of large public health data files",
+   "research_question": "How can large public-health files be linked probabilistically when identifiers are uncertain or erroneous while making linkage computationally feasible and statistically defensible?",
+   "methodology": "The paper describes probabilistic record linkage in terms of field-specific probabilities of agreement conditional on a true match and probabilities of chance agreement for nonmatches. According to the accessible abstract, the method incorporates expectation-maximization for iterative parameter estimation, linear-sum assignment for optimizing record assignments, and probability models that account for different values within comparison fields. The approach was developed and tested in U.S. Census Bureau work and later generalized software was validated on linkage among highway crash, emergency-medical-service, and hospital-admission records.",
+   "key_findings": [
+    {
+     "finding": "The method models linkage uncertainty using match-agreement probabilities and chance-agreement probabilities for comparison fields rather than treating field agreement as deterministic identity.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Expectation-maximization is used to estimate linkage parameters iteratively rather than requiring all agreement probabilities to be fixed before matching.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The approach incorporates linear-sum assignment optimization to make globally consistent linkage assignments between two files.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The abstract states that modeling match and nonmatch probabilities across individual field values provides greater precision when field-value frequencies are non-uniform, but the accessible abstract does not expose quantitative evidence for the gain.",
+     "evidence_type": "unsupported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The abstract describes iterative parameter estimation as more robust than estimating parameters before matching, although the underlying comparative results are not available in the accessible text.",
+     "evidence_type": "unsupported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The generalized linkage software is reported as having been validated on linking highway crashes to emergency-service and hospital-admission records.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "Only the abstract was accessible for this analysis, so the experimental design, algorithms, parameter settings, and detailed validation results could not be inspected.",
+    "The accessible abstract provides no quantitative accuracy or runtime results with which to assess the magnitude of the claimed improvements.",
+    "The accessible text does not establish whether the software or evaluation datasets were publicly released.",
+    "The available abstract is insufficient to evaluate sensitivity to model assumptions, convergence behavior, blocking errors, or violations of conditional-independence assumptions.",
+    "Generality beyond the Census and public-health linkage applications mentioned in the abstract cannot be assessed from the accessible material."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "probabilistic_m_u_linkage": 0.98,
+    "em_parameter_estimation": 0.97,
+    "linear_assignment": 0.97,
+    "value_specific_probabilities_improve_precision": 0.68,
+    "iterative_estimation_more_robust": 0.65,
+    "public_health_validation_reported": 0.92
+   },
+   "raw_claims": [
+    "The linkage framework represents field agreements probabilistically when deciding whether records from two files refer to the same entity.",
+    "For each comparison field, match and nonmatch agreement behavior is represented by separate probabilities.",
+    "Expectation-maximization is used for iterative estimation of linkage parameters.",
+    "Linear-sum assignment is used as part of the optimization of record linkages.",
+    "The method accounts for the fact that agreement on common field values is less informative than agreement on rare values.",
+    "The abstract claims that value-sensitive probability modeling improves precision for fields with non-uniform value distributions.",
+    "The abstract describes iterative estimation as more robust than estimating linkage parameters only before matching.",
+    "The methodology originated in Census Bureau applications for census-undercount estimation.",
+    "Generalized software was later applied to linking highway crash, emergency-medical-service, and hospital-admission records."
+   ],
+   "source_url": "https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.4780140510",
+   "access": "abstract_only"
+  }
+ ],
+ "skipped": []
+}

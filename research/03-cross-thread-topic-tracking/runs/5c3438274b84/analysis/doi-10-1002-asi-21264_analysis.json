@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-1002-asi-21264",
+ "title": "New event detection and topic tracking in Turkish",
+ "research_question": "How effectively can new-event detection and topic tracking be performed on Turkish news streams, and how do representation, similarity, temporal-window, stemming, stopword, and adaptive-tracking choices affect performance?",
+ "methodology": "The authors constructed BilCol-2005, a temporally ordered Turkish news collection containing 209,305 stories and 80 annotated events, using their ETracker annotation system. They evaluated new event detection by comparing incoming stories with recent stories inside a sliding temporal window using cosine and cover-coefficient similarity, and evaluated topic tracking from an initial seed story using static and adaptive topic representations. Experiments varied stemming methods, stoplists, vector lengths, temporal windows, and combinations of similarity decisions, with effectiveness measured primarily using TDT miss rate, false-alarm rate, and CDet.",
+ "key_findings": [
+  {
+   "finding": "The paper operationalizes continuity across documents as a TDT topic consisting of a seminal event or activity plus directly related subsequent events and activities, so document membership can persist even when later stories describe consequences or related developments rather than merely repeat the original event.",
+   "evidence_type": "supported",
+   "section": "Introduction / TDT definitions"
+  },
+  {
+   "finding": "Adaptive topic tracking, which updates the topic representation with newly accepted stories, was consistently more effective than corresponding static tracking approaches, providing evidence that an evolving representation can preserve continuity as a topic develops.",
+   "evidence_type": "supported",
+   "section": "Topic Tracking: Experimental Results; Conclusions and Future Work"
+  },
+  {
+   "finding": "Combining cover-coefficient and cosine decisions with an OR rule reduced new-event miss rate and produced the lowest test CDet among the evaluated NED variants, although its advantage over the individual similarity measures was not statistically significant on the test set.",
+   "evidence_type": "supported",
+   "section": "Comparative Evaluation of NED Methods"
+  },
+  {
+   "finding": "A broad stoplist significantly improved Turkish NED relative to using no stopwords, showing that feature-selection choices materially affect judgments of whether a document continues an existing event.",
+   "evidence_type": "supported",
+   "section": "Word Stopping Strategy Considerations"
+  },
+  {
+   "finding": "Topic tracking was substantially easier than first-story detection, and the authors judged Turkish tracking performance suitable for operational use while stating that NED still had considerable room for improvement.",
+   "evidence_type": "supported",
+   "section": "Topic Tracking: Experimental Results; Conclusions and Future Work"
+  },
+  {
+   "finding": "The evidence concerns public news streams rather than enterprise email, chat, or workplace work-matter threads, so transfer to workplace continuity is not directly evaluated.",
+   "evidence_type": "supported",
+   "section": "Corpus and task scope"
+  }
+ ],
+ "limitations": [
+  "The experiments use Turkish news stories rather than enterprise email, workplace chat, tickets, or other internal business communication.",
+  "TDT topic identity is broader than strict event coreference because a topic includes a seminal event or activity together with directly related events and activities.",
+  "The collection is restricted to news from five Turkish sources during 2005.",
+  "Topic selection was not balanced systematically across source, month, or topic category.",
+  "Sliding-window methods assume temporally related stories occur sufficiently close together, and performance can degrade when the window becomes too large.",
+  "Large temporal windows create substantial computational cost in real-time streams.",
+  "The authors explicitly state that new-event detection remains difficult and needs further improvement."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "topic_identity_includes_related_developments": 0.99,
+  "adaptive_tracking_supports_evolving_continuity": 0.98,
+  "combined_similarity_reduces_ned_misses": 0.97,
+  "stopword_choice_affects_identity_detection": 0.96,
+  "tracking_easier_than_first_story_detection": 0.97,
+  "no_direct_workplace_evidence": 0.99
+ },
+ "raw_claims": [
+  "TDT new-event detection attempts to identify the first story about an event not previously discussed.",
+  "Topic tracking attempts to identify subsequent stories belonging to a topic from a small number of known examples.",
+  "A TDT topic can contain the seminal event together with directly related events and activities.",
+  "BilCol-2005 contains 209,305 Turkish news stories and 80 annotated events.",
+  "The NED implementation compares incoming stories against recent stories using a sliding time window.",
+  "Cosine and cover-coefficient similarities provide partly complementary NED decisions.",
+  "The OR combination lowered the test miss rate relative to either similarity measure alone.",
+  "Longer stoplists improved NED effectiveness relative to no word stopping.",
+  "Adaptive tracking updates the topic representation using subsequently tracked documents.",
+  "Adaptive topic tracking outperformed corresponding static tracking methods.",
+  "Very large time windows can preserve influence from old events and reduce both effectiveness and efficiency.",
+  "The study does not evaluate continuity across enterprise communication threads."
+ ],
+ "source_url": "https://repository.bilkent.edu.tr/bitstreams/7bc0e319-1308-4347-b693-3a5f8af58801/download",
+ "access": "full_text"
+}

@@ -1,0 +1,71 @@
+{
+ "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+ "title": "Incremental Multi-source Entity Resolution for Knowledge Graph Completion",
+ "research_question": "How can multi-source entity resolution incorporate newly arriving entities efficiently while preserving clustering quality and correcting earlier identity decisions without repeatedly resolving all previously processed data?",
+ "methodology": "The authors extend the FAMER entity-resolution framework with incremental linking and clustering methods based on max-both assignment, optional linking among new entities, cluster fusion, and n-depth reclustering. The n-depth method revisits neighborhoods surrounding newly inserted entities so that earlier clusters can be repaired while limiting how much existing data is reconsidered. Parallel implementations are evaluated under source-wise and entity-wise insertion scenarios on geographical, music, and voter-record datasets, using precision, recall, F-measure, runtime, and different source insertion orders, with batch processing and Greedy repair as comparison points.",
+ "key_findings": [
+  {
+   "finding": "Incremental resolution can achieve clustering quality comparable to batch resolution while avoiding repeated linking and clustering of all historical entities.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "Simple max-both incremental assignment can become sensitive to the order in which sources arrive, whereas one-depth reclustering substantially reduces this dependency.",
+   "evidence_type": "supported",
+   "section": "Source-wise Increments"
+  },
+  {
+   "finding": "One-depth reclustering reaches approximately the same clustering quality as batch processing in the reported source-wise experiments while allowing previous cluster decisions to be repaired locally.",
+   "evidence_type": "supported",
+   "section": "Source-wise Increments"
+  },
+  {
+   "finding": "Linking newly arriving entities to one another as well as to historical entities improves results in entity-wise incremental scenarios.",
+   "evidence_type": "supported",
+   "section": "Entity-wise Increments"
+  },
+  {
+   "finding": "All evaluated incremental approaches are faster than repeatedly executing the batch procedure on the growing data, with max-both variants being faster than the more repair-oriented n-depth method.",
+   "evidence_type": "supported",
+   "section": "Efficiency"
+  },
+  {
+   "finding": "Cluster fusion can reduce processing cost but removes the intra-cluster links needed by n-depth reclustering, creating a trade-off between compact state and later repairability.",
+   "evidence_type": "supported",
+   "section": "Incremental Clustering"
+  }
+ ],
+ "limitations": [
+  "The framework assumes that individual sources are duplicate-free or have already undergone source-local deduplication.",
+  "N-depth reclustering depends on retained intra-cluster links and therefore cannot be applied after clusters have been reduced to fused representatives that discard those links.",
+  "Resolution quality remains dependent on the underlying similarity functions, thresholds, and clustering configuration.",
+  "The evaluation covers three domains, with part of the experimental data produced through synthetic duplication or corruption, so behavior in other knowledge-graph domains is not established.",
+  "The work primarily addresses resolution of entities of the same type; richer incremental handling of different entity and relationship types is left for future work."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "incremental_matches_batch_quality": 0.97,
+  "reclustering_reduces_order_dependence": 0.98,
+  "new_entity_linking_helps": 0.94,
+  "incremental_is_faster": 0.99,
+  "fusion_repairability_tradeoff": 0.98
+ },
+ "raw_claims": [
+  "The system treats entity-resolution state as something that can be extended when new entities arrive rather than recomputed from scratch.",
+  "Max-both assignment links a new entity to an existing cluster when their strongest compatible relationships agree.",
+  "N-depth reclustering expands reconsideration from new entities into a bounded neighborhood of the existing similarity graph.",
+  "Increasing the reclustering neighborhood allows historical clustering decisions to be repaired at additional computational cost.",
+  "The experiments include geographical, MusicBrainz-derived, and North Carolina voter-record data.",
+  "The evaluation measures precision, recall, F-measure, and execution time.",
+  "Source insertion order can materially affect a non-repairing incremental clustering method.",
+  "One-depth reclustering largely removes the insertion-order quality loss observed for simpler incremental assignment.",
+  "Incremental variants require substantially less accumulated runtime than repeatedly running batch resolution as the data grows.",
+  "Keeping enough historical graph structure enables future identity decisions to revise earlier clusters."
+ ],
+ "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7250616/",
+ "access": "full_text"
+}

@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-3115-v1-w14-2910",
+ "title": "Evaluation for Partial Event Coreference",
+ "research_question": "How should systems that predict partial, hierarchical relationships among event mentions be evaluated when ordinary event-coreference metrics assume flat equivalence clusters?",
+ "methodology": "The paper represents partial event coreference through conceptual event hierarchies, modeled as forests of unordered trees whose conceptual nodes group fully coreferential event mentions. It extends or adapts three evaluation approaches—MUC, BLANC, and Simple Tree Matching—to this hierarchical setting. The proposed metrics are examined against formal desiderata including identity, symmetry, zero behavior, monotonicity, and linearity using systematically varied response structures. The resulting behavior of the metrics is compared to determine which are suitable for partial-event-coreference evaluation.",
+ "key_findings": [
+  {
+   "finding": "Grouping fully coreferential mentions into conceptual event nodes provides a representation in which partial coreference can be evaluated as hierarchical relations between events rather than only as flat mention clusters.",
+   "evidence_type": "supported",
+   "section": "3 Evaluation Scheme"
+  },
+  {
+   "finding": "Extensions of MUC and BLANC satisfy the paper's evaluation desiderata more adequately than the normalized Simple Tree Matching approach examined by the authors.",
+   "evidence_type": "supported",
+   "section": "5 Experiments; 6 Discussion"
+  },
+  {
+   "finding": "The normalized Simple Tree Matching metric fails some monotonicity or linearity requirements in the tested response configurations.",
+   "evidence_type": "supported",
+   "section": "5 Experiments"
+  },
+  {
+   "finding": "The partial-coreference extension of MUC is described as flexible but retains known MUC weaknesses, including preferences associated with larger coreference groups and poor treatment of singleton recall.",
+   "evidence_type": "supported",
+   "section": "6 Discussion"
+  },
+  {
+   "finding": "The partial-coreference extension of BLANC is presented as an attractive alternative when true event mentions are supplied, while mention-detection mismatches complicate its use.",
+   "evidence_type": "supported",
+   "section": "6 Discussion"
+  },
+  {
+   "finding": "The authors conclude that extended MUC and BLANC are more appropriate for evaluating partial event coreference than the examined tree-matching alternative.",
+   "evidence_type": "supported",
+   "section": "7 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The work evaluates metrics rather than proposing or testing a complete partial-event-coreference resolver.",
+  "The evaluation relies heavily on constructed hierarchical response cases rather than evidence from enterprise communication streams.",
+  "The formalization assumes directed partial-coreference relationships and makes structural assumptions about how full and partial links propagate.",
+  "MUC-based evaluation inherits known biases of the original MUC metric, particularly around singleton events and differently sized coreference groups.",
+  "BLANC-based evaluation is easier to interpret when gold event mentions are already available, limiting what it says about end-to-end mention detection plus coreference.",
+  "The paper does not address email-thread linking, chat conversations, or organizational workflow identity directly."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conceptual_event_hierarchy": 0.99,
+  "muc_blanc_outperform_tree_matching": 0.99,
+  "tree_matching_desiderata_failures": 0.97,
+  "muc_limitations": 0.98,
+  "blanc_with_gold_mentions": 0.95,
+  "metric_recommendation": 0.99
+ },
+ "raw_claims": [
+  "Partial event coreference includes relations such as subevent and membership rather than only full event identity.",
+  "Partial event coreference is directional and naturally induces hierarchical structure.",
+  "Conceptual event nodes can collapse fully coreferential mentions before partial links are evaluated.",
+  "The proposed representation treats partial-event structure as a forest of unordered trees.",
+  "The evaluation desiderata include identity, symmetry, zero behavior, monotonicity, and linearity.",
+  "Standard cluster-oriented metrics such as B-CUBED and CEAF are not directly suited to the hierarchical representation considered here.",
+  "The paper adapts MUC and BLANC to score partial-event links.",
+  "MUC-based and BLANC-based extensions behave more appropriately than the tested Simple Tree Matching variant on the paper's desiderata.",
+  "MUC's established shortcomings remain present after adaptation to partial event coreference.",
+  "The authors identify evaluation of broader structural consistency as future work."
+ ],
+ "source_url": "https://aclanthology.org/W14-2910.pdf",
+ "access": "full_text"
+}

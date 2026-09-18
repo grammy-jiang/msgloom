@@ -1,0 +1,71 @@
+{
+ "paper_id": "doi-10-18653-v1-2025-acl-long-1134",
+ "title": "Employing Discourse Coherence Enhancement to Improve Cross-Document Event and Entity Coreference Resolution",
+ "research_question": "Can explicitly adding coherent bridging discourse between mentions from different documents improve cross-document event and entity coreference resolution?",
+ "methodology": "The paper introduces Cross-Document Discourse Coherence Enhancement, which selects text that is coherent with two cross-document mentions and inserts it between their contexts to reduce the semantic discontinuity faced by a coreference model. Candidate mentions are first constrained using document clustering into subtopics, mention-pair representations are scored for coreference, and pairwise predictions are subsequently clustered into coreference chains. The method is evaluated on ECB+, WEC, and ECB+META using established coreference metrics, with ablations comparing coherent bridging text against random or suboptimal inserted text. Experiments use gold mention boundaries, so mention detection is outside the evaluated pipeline.",
+ "key_findings": [
+  {
+   "finding": "Adding selected coherent bridging text improves cross-document coreference performance relative to the same coreference approach without discourse-coherence enhancement.",
+   "evidence_type": "supported",
+   "section": "5.2 Main Results"
+  },
+  {
+   "finding": "Reported CoNLL-score gains over the corresponding no-enhancement model include 1.6 points for ECB+ event coreference, 1.0 point for ECB+ entity coreference, 5.7 points on WEC, 3.6 points on ECB+META1, and 5.7 points on ECB+METAm.",
+   "evidence_type": "supported",
+   "section": "5.2 Main Results"
+  },
+  {
+   "finding": "Random or deliberately suboptimal inserted text performs worse than coherently selected text across the reported datasets, supporting the authors' claim that discourse coherence rather than merely extra context drives the benefit.",
+   "evidence_type": "supported",
+   "section": "5.3 Analysis"
+  },
+  {
+   "finding": "Event identity is represented as ordinary coreference: mention pairs judged to refer to the same event are clustered into shared coreference chains.",
+   "evidence_type": "supported",
+   "section": "2. Related Work and 3. Methodology"
+  },
+  {
+   "finding": "The resulting identity relation is equivalence-style clustering rather than a representation of partial, subevent, evolving, or explicitly non-transitive continuity.",
+   "evidence_type": "supported",
+   "section": "3. Methodology"
+  },
+  {
+   "finding": "The work is cross-document but is not an enterprise email/chat or organizational-workflow study, so it supplies evidence about event identity resolution rather than direct evidence about longitudinal business work-item linking.",
+   "evidence_type": "supported",
+   "section": "1. Introduction and 5. Experiments"
+  }
+ ],
+ "limitations": [
+  "Evaluation assumes gold event and entity mentions rather than jointly detecting mention spans.",
+  "Discourse-coherence enhancement and coreference resolution are arranged as a pipeline, so errors can propagate between stages.",
+  "The reported work is monolingual and single-modal.",
+  "The benchmark documents are not enterprise email or chat conversations.",
+  "Coreference chains encode same-event identity but do not model weaker, partial, hierarchical, or non-transitive continuity relationships."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "coherence_improves_cdcr": 0.99,
+  "reported_conll_gains": 0.99,
+  "coherent_context_ablation": 0.99,
+  "identity_as_coreference_chain": 0.98,
+  "no_partial_continuity_model": 0.96,
+  "not_enterprise_communication": 0.99
+ },
+ "raw_claims": [
+  "Cross-document mentions lack the continuous intervening discourse available to mentions inside one document.",
+  "The proposed method inserts selected coherent text between cross-document mention contexts.",
+  "Coreference is predicted for mention pairs and the resulting decisions are clustered into chains.",
+  "The experiments cover both event and entity coreference on ECB+ and event coreference on WEC and ECB+META.",
+  "Coherently chosen bridging text outperforms random and suboptimal alternatives in the reported ablations.",
+  "The method improves the reported aggregate coreference scores over the corresponding model without discourse enhancement.",
+  "The experiments use gold mentions rather than evaluating mention extraction.",
+  "The paper models identity across documents, not enterprise work-item continuity across email or chat threads.",
+  "Its coreference chains treat identity as a same-referent relation rather than a graded or hierarchical continuity relation."
+ ],
+ "source_url": "https://aclanthology.org/2025.acl-long.1134.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,82 @@
+{
+ "paper_id": "manual-61a7e10e5f",
+ "title": "Semantic Relations between Events and their Time, Locations and Participants for Event Coreference Resolution",
+ "research_question": "How much do event participants, times, locations, and semantic relations such as hyponymy and granularity contribute to cross-document event coreference resolution beyond matching event actions alone?",
+ "methodology": "The authors model an event with four components: action, participants, location, and time, while allowing partial rather than strictly identical relations between component descriptions. They experiment on the EventCorefBank corpus, containing 482 Google News texts grouped into 43 topics and annotated for cross-document event coreference, processing the text with KYOTO tools, the Stanford Parser, WordNet 3.0, and manually designed extraction rules. Action-based candidate chains are filtered or rescored using time, location, participant similarity, hyponymy, and participant-granularity heuristics. The resulting chains are compared with manually annotated reference chains using MUC, B3, mention-based CEAF, BLANC, and CoNLL F1.",
+ "key_findings": [
+  {
+   "finding": "Using semantic similarity for actions rather than strict lemma matching increases recall by as much as about six percentage points on most metrics but reduces precision by roughly two to seventeen points.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "Adding participant compatibility to action similarity performs slightly better than adding time or location information, with approximately one percentage point higher precision in the reported comparison.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "For participant matching, the semantic similarity heuristic produces about one point higher F-scores and roughly two to four points higher precision than the granularity heuristic on most metrics.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "Both participant-based variants improve F-scores over the action-similarity-only heuristic on most metrics, by roughly one to four points for granularity and one to six points for participant similarity.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "The best action-plus-participant configuration reports F-scores of 70.7 MUC, 74.1 B3, 64.9 CEAFm, 70.4 BLANC, and 69.8 CoNLL.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "Despite being the authors' best semantic configuration, action plus participant similarity remains about one F-score point below the strict lemma baseline on most metrics, while gaining up to two recall points and losing about four precision points.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  },
+  {
+   "finding": "The authors argue that the unusually strong lemma baseline reflects properties of ECB: topics are narrowly organized around specific real-world events and therefore contain less variation in time, place, and participants than realistic news streams.",
+   "evidence_type": "supported",
+   "section": "Section 5: Evaluation Results"
+  }
+ ],
+ "limitations": [
+  "The study uses news articles rather than enterprise email, chat, task systems, or other organizational communications.",
+  "ECB is organized within narrow topics and short real-world event windows, which the authors argue makes exact lemma matching unusually competitive and reduces the diversity of negative event instances.",
+  "Participant descriptions occur substantially more often than explicit time and location expressions, making direct comparisons among the contributions of the event slots uneven.",
+  "The approach does not perform anaphora resolution.",
+  "The authors note that their coreference method does not exploit additional syntactic features that could improve performance.",
+  "The event-component extraction rules were developed from manual annotations of only five independent texts.",
+  "The experiments use hand-designed heuristics rather than a learned model, intentionally isolating feature contributions but limiting conclusions about achievable end-to-end performance."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "action similarity recall-precision tradeoff": 0.99,
+  "participants outperform time and location slightly": 0.97,
+  "participant semantic similarity beats granularity": 0.98,
+  "participant information improves over action-only": 0.98,
+  "best configuration metric values": 0.99,
+  "best semantic configuration trails lemma baseline": 0.99,
+  "ECB topic structure inflates lemma baseline": 0.97
+ },
+ "raw_claims": [
+  "The event representation contains action, participant, location, and time components.",
+  "The method treats event identity as potentially partial or graded rather than requiring exact linguistic identity.",
+  "Time and location are used as compatibility constraints for possible coreference.",
+  "The experiments use cross-document event-coreference annotations from the EventCorefBank corpus.",
+  "The corpus contains 482 news texts organized into 43 topics.",
+  "Participant, location, and time expressions are extracted with rule-based linguistic processing and WordNet-based semantic information.",
+  "A strict same-lemma system is used as a baseline.",
+  "Participant information contributes more consistently than explicit time or location information in these experiments.",
+  "The best semantic configuration combines action similarity with participant similarity.",
+  "That configuration reports a CoNLL F1 of 69.8.",
+  "The strong lemma baseline suggests that the evaluation corpus contains comparatively little diversity among same-type events within a topic.",
+  "The authors recommend evaluating on datasets containing more distinct instances of the same event classes across different times, places, and participants."
+ ],
+ "source_url": "https://aclanthology.org/R13-1021.pdf",
+ "access": "full_text"
+}

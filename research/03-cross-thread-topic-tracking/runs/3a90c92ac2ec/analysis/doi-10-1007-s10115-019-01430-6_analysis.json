@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-1007-s10115-019-01430-6",
+ "title": "Case notion discovery and recommendation: automated event log building on databases",
+ "research_question": "Can candidate case notions for process mining be automatically discovered from complex databases and ranked by predicted event-log interestingness before the expensive event logs themselves are constructed?",
+ "methodology": "The authors formalize database-oriented case notions using the OpenSLEX meta-model and define procedures for deriving case identifiers and event logs from connected database structures. They define structural event-log quality or interestingness measures and inexpensive predictors based on case-notion and dataset characteristics, implementing the workflow in the open-source eddytools package. Evaluation uses an SAP sample dataset containing 87 tables and generates 10,622 candidate case notions; actual generated logs provide ground-truth metric values. Prediction accuracy and recommendation quality are compared with regression and learning-to-rank methods, including fivefold cross-validation and NDCG@10.",
+ "key_findings": [
+  {
+   "finding": "The framework can systematically generate alternative database case notions and construct corresponding event logs, allowing multiple process perspectives to be explored from the same underlying data.",
+   "evidence_type": "supported",
+   "section": "7 Implementation"
+  },
+  {
+   "finding": "The authors' unsupervised predictors were substantially less accurate for individual log-property values than stronger supervised regressors such as quantile regression and neural-network regression.",
+   "evidence_type": "supported",
+   "section": "8.2 Evaluation of prediction accuracy"
+  },
+  {
+   "finding": "Despite weak absolute prediction accuracy, the custom unsupervised predictor preserved relative interestingness well enough to provide useful rankings and outperformed the evaluated regressors on average for ranking quality.",
+   "evidence_type": "supported",
+   "section": "8.3 Evaluation of ranking quality / 8.4 Discussion"
+  },
+  {
+   "finding": "Among the compared supervised ranking approaches, MART and Random Forest were the only algorithms whose median NDCG@10 exceeded the custom predictor's median in the reported comparison.",
+   "evidence_type": "supported",
+   "section": "8.3 Evaluation of ranking quality"
+  },
+  {
+   "finding": "When labeled training data are available, supervised regressors are preferable for accurate property prediction and learning-to-rank methods such as Random Forest and MART provide stronger rankings; the proposed predictor is intended for settings without such training data.",
+   "evidence_type": "supported",
+   "section": "8.4 Discussion"
+  },
+  {
+   "finding": "The SAP evaluation generated 10,622 case-notion candidates from 87 tables, illustrating the combinatorial search problem that motivates predicting promising views before materializing every event log.",
+   "evidence_type": "supported",
+   "section": "8 Evaluation"
+  }
+ ],
+ "limitations": [
+  "The proposed definition of log interestingness uses only structural properties such as support, level of detail, and average events per trace.",
+  "The interestingness metric ignores business semantics, activity meaningfulness, and behavioral homogeneity.",
+  "The relationship between the objective interestingness score and subjective judgments from business analysts or domain experts was not evaluated.",
+  "Individual predictions of event-log properties lack accuracy even when the resulting relative ranking is useful.",
+  "The approach assumes that the database schema and the locations or representation of events are already known, so event-data discovery itself still requires domain knowledge.",
+  "The main quantitative evaluation uses a single SAP sample dataset, limiting evidence for generalization across substantially different database environments."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "automatic_case_notion_generation": 0.98,
+  "weak_absolute_prediction": 0.99,
+  "useful_unsupervised_ranking": 0.97,
+  "supervised_rankers_stronger": 0.99,
+  "interestingness_limitations": 0.99
+ },
+ "raw_claims": [
+  "Different ways of correlating database objects and events produce different process-mining case notions.",
+  "The framework represents these correlations formally so candidate event logs can be generated automatically.",
+  "The authors evaluate candidate logs using structural characteristics intended to represent interestingness.",
+  "Predicted interestingness can be calculated without first building every candidate event log.",
+  "The evaluation produces 10,622 candidate case notions from an SAP dataset containing 87 tables.",
+  "The custom unsupervised predictors are weak at estimating exact event-log property values.",
+  "Relative ranking quality is considerably better than the absolute prediction accuracy would suggest.",
+  "MART and Random Forest provide stronger rankings when suitable training data are available.",
+  "The unsupervised custom predictor remains useful because it requires no labeled training set.",
+  "The eddytools package implements the data preparation, case-notion discovery, and event-log building workflow.",
+  "The paper explicitly treats its structural definition of interestingness as incomplete and in need of user-centered validation."
+ ],
+ "source_url": "https://link.springer.com/article/10.1007/s10115-019-01430-6",
+ "access": "full_text",
+ "source_citation": "citeturn322071view0turn322071view8turn202429view0turn202429view1"
+}

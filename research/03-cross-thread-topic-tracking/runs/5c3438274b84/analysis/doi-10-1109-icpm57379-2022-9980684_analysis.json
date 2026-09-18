@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-1109-icpm57379-2022-9980684",
+ "title": "Improving Accuracy and Explainability in Event-Case Correlation via Rule Mining",
+ "research_question": "Can event-case correlation be made more accurate and explainable when reliable prior domain rules are unavailable by iteratively learning association rules during the correlation process?",
+ "methodology": "The authors introduce EC-SA-RM, which combines simulated-annealing-based event-case correlation with iterative association-rule mining over control-flow and data attributes. Starting from a timestamped event sequence and a process model, candidate correlated logs are generated, rules are mined and ranked using support, confidence, and lift, and the learned rules guide subsequent candidate generation. The method is evaluated on four real-world BPI Challenge-derived event logs whose original case identifiers are removed, with comparisons against earlier simulated-annealing correlation approaches under no-prior-rule and partial-prior-rule settings.",
+ "key_findings": [
+  {
+   "finding": "When no prior data rules were supplied, EC-SA-RM produced more accurate event-case correlations than the baseline simulated-annealing method across the evaluated logs.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Experiment 1"
+  },
+  {
+   "finding": "In the no-prior-rule experiment, average structural similarity improved by about 14% for the 2-gram measure and about 20% for the case-similarity measure.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Experiment 1"
+  },
+  {
+   "finding": "In the same experiment, elapsed-time and cycle-time deviations decreased by about 13% and 19%, respectively.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Experiment 1"
+  },
+  {
+   "finding": "When partial prior rules were available, iterative rule mining still improved structural and temporal correlation quality over the comparison method using only the supplied rules.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Experiment 2"
+  },
+  {
+   "finding": "The mined association rules provide human-readable conditions that can be used to explain why events are assigned to particular cases.",
+   "evidence_type": "supported",
+   "section": "Conclusion"
+  },
+  {
+   "finding": "Iterative rule discovery increases computation time, especially on the larger event logs.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Runtime"
+  }
+ ],
+ "limitations": [
+  "The method requires an input process model and is sensitive to the accuracy of that model.",
+  "The quality of initial prior rules, when supplied, can affect the resulting correlation.",
+  "Rule discovery adds substantial runtime compared with correlation methods that do not repeatedly mine rules.",
+  "The evaluation removes known case identifiers from already correlated BPI Challenge logs, so it does not fully reproduce the messiness of independently generated enterprise systems whose identifiers were never aligned.",
+  "The paper does not directly evaluate email or chat conversation linking.",
+  "The explainability contribution is primarily the availability of interpretable rules; the paper identifies direct quantitative evaluation of rule explanations as future work."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "correlation_accuracy_gain": 0.98,
+  "structural_similarity_gain": 0.98,
+  "temporal_deviation_reduction": 0.97,
+  "benefit_with_partial_prior_rules": 0.96,
+  "rule_based_explainability": 0.91,
+  "runtime_cost": 0.98
+ },
+ "raw_claims": [
+  "Event-case correlation is needed when events from disparate systems lack a common case identifier.",
+  "EC-SA-RM learns association rules while repeatedly searching for better event-to-case assignments.",
+  "The approach requires a timestamped event sequence and a process model.",
+  "Association rules are mined from control-flow and data perspectives and ranked using standard rule-quality measures.",
+  "The evaluation uses four real-world BPI Challenge-derived event logs with their case identifiers removed for the experiment.",
+  "Learned rules improve correlation quality even when no domain rules are given beforehand.",
+  "The method also improves results when only partial prior knowledge is initially available.",
+  "Structural similarity and temporal-deviation measures are both used to evaluate reconstructed logs.",
+  "Rule mining makes the method slower than the comparison methods.",
+  "The learned rules can expose conditions underlying event-to-case assignments."
+ ],
+ "source_url": "https://icpmconference.org/2022/wp-content/uploads/sites/7/2022/10/paper_40.pdf",
+ "access": "full_text"
+}

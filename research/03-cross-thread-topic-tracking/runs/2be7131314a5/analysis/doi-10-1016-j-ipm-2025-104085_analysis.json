@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-1016-j-ipm-2025-104085",
+ "title": "Improving cross-document event coreference resolution by discourse coherence and structure",
+ "research_question": "Can cross-document event coreference resolution be improved by constructing coherent discourse between mentions in different documents and exploiting the resulting rhetorical discourse structure for pairwise coreference decisions?",
+ "methodology": "The authors formulate Event-oriented Cross-Document Coherence Enhancement (ECD-CoE), which selects bridging sentences and inserts them between the contexts of two cross-document event mentions to form a more coherent text. The resulting text is represented as a rhetorical discourse tree, from which global interaction features such as the closest common ancestor and shortest rhetorical path between event mentions are extracted and used for pairwise coreference prediction with an MLP, followed by clustering. The approach is evaluated with gold event mentions on the English ECB+ and GVC datasets, with candidate pairs restricted to mentions assigned to the same subtopic. Performance is compared with prior cross-document event-coreference baselines using standard coreference metrics including CoNLL F1.",
+ "key_findings": [
+  {
+   "finding": "ECD-CoE explicitly constructs a textual bridge between event mentions from separate documents so that cross-document pairs can be processed more like document-level coherent discourse.",
+   "evidence_type": "supported",
+   "section": "Introduction / Contributions"
+  },
+  {
+   "finding": "The model represents the constructed discourse as a rhetorical tree and derives global pair information from the closest common ancestor and the shortest rhetorical path between event mentions.",
+   "evidence_type": "supported",
+   "section": "Introduction / Methodology"
+  },
+  {
+   "finding": "The reported CoNLL F1 scores are 88.1 on ECB+ and 87.3 on GVC.",
+   "evidence_type": "supported",
+   "section": "Introduction / Experimental results"
+  },
+  {
+   "finding": "The proposed approach is reported to outperform several state-of-the-art comparison systems on both ECB+ and GVC.",
+   "evidence_type": "supported",
+   "section": "Abstract / Conclusion"
+  },
+  {
+   "finding": "The evaluation uses gold event mentions rather than evaluating an end-to-end event-detection and coreference pipeline.",
+   "evidence_type": "supported",
+   "section": "Dataset and setups"
+  },
+  {
+   "finding": "Coreference classification is performed only for candidate event pairs that belong to the same subtopic, making prior topic or subtopic organization part of the evaluation setup.",
+   "evidence_type": "supported",
+   "section": "Methodology"
+  }
+ ],
+ "limitations": [
+  "The experiments cover two English news-oriented benchmarks, ECB+ and GVC, rather than enterprise email, chat, ticketing, or other organizational communication.",
+  "Evaluation uses gold event mentions, so errors from real-world event-mention detection are not represented.",
+  "Candidate pairs are restricted to mentions within the same subtopic, leaving open the harder problem of discovering continuity across incorrectly separated or previously unseen topics.",
+  "The architecture depends on sentence selection and discourse-structure analysis before the final coreference classifier, so errors in these intermediate stages can propagate.",
+  "No implementation repository was identified in the accessible paper text."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "ECD-CoE bridging mechanism": 0.99,
+  "discourse-tree interaction features": 0.98,
+  "ECB+ CoNLL F1 88.1": 0.99,
+  "GVC CoNLL F1 87.3": 0.99,
+  "outperforms reported baselines": 0.97,
+  "gold-mention evaluation": 0.98,
+  "same-subtopic candidate restriction": 0.97
+ },
+ "raw_claims": [
+  "Cross-document event mentions lack the continuous textual context available to mentions within one document.",
+  "ECD-CoE selects additional sentences to create a coherent text connecting two cross-document event contexts.",
+  "The constructed coherent text is parsed into a rhetorical discourse tree.",
+  "Elementary discourse units and their rhetorical and nuclearity relations provide structural information for event-pair representation.",
+  "The closest common ancestor and shortest rhetorical path are used to represent global interaction between event mentions.",
+  "Pairwise coreference predictions are subsequently converted into event clusters.",
+  "Experiments use the ECB+ and GVC datasets with gold event mentions.",
+  "The reported CoNLL F1 values are 88.1 for ECB+ and 87.3 for GVC.",
+  "The authors report better performance than several prior state-of-the-art baselines."
+ ],
+ "source_url": "https://www.sciencedirect.com/science/article/pii/S0306457325000275",
+ "access": "full_text"
+}

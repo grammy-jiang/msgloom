@@ -1,0 +1,73 @@
+{
+ "paper_id": "2211.07342",
+ "title": "MAVEN-ERE: A Unified Large-scale Dataset for Event Coreference, Temporal, Causal, and Subevent Relation Extraction",
+ "research_question": "Can a unified large-scale annotation of event coreference, temporal, causal, and subevent relations provide a stronger benchmark for event-relation extraction and exploit interactions among these relation types?",
+ "methodology": "The authors extend 4,480 English Wikipedia documents from MAVEN with human annotations for event coreference, temporal, causal, and subevent relations. Annotation is staged so that event coreference chains are established before other relations, while temporal timelines and logical constraints help structure later causal and subevent annotation. Multiple trained annotators label each document and agreement is reported for the different tasks. Baseline experiments use RoBERTa-based document representations and compare individual-task with joint-learning models using standard coreference metrics and micro precision, recall, and F1 for the other relation types.",
+ "key_findings": [
+  {
+   "finding": "MAVEN-ERE explicitly separates same-event identity from temporal, causal, and subevent relations, containing 103,193 event coreference chains, 1,216,217 temporal relations, 57,992 causal relations, and 15,841 subevent relations.",
+   "evidence_type": "supported",
+   "section": "Abstract and 2. Data Annotation"
+  },
+  {
+   "finding": "Event coreference is defined by whether mentions refer to the same real-world event, making coreference the dataset's explicit representation of event identity.",
+   "evidence_type": "supported",
+   "section": "2.1 Event Coreference"
+  },
+  {
+   "finding": "Subevent links are distinct from identity: a subevent is treated as a component of a larger event that is spatiotemporally contained by that larger event.",
+   "evidence_type": "supported",
+   "section": "2.4 Subevent Relation"
+  },
+  {
+   "finding": "The annotation scheme permits temporal ambiguity through sub-timelines and allows an event to occur on multiple timelines, so the representation is richer than a single total temporal order.",
+   "evidence_type": "supported",
+   "section": "2.2 Temporal Relation"
+  },
+  {
+   "finding": "The framework makes substantial use of transitivity: the authors report that 88.8% of temporal relations and 23.9% of causal relations can be inferred from other annotated relations using their transitivity rules.",
+   "evidence_type": "supported",
+   "section": "3. Dataset Analysis"
+  },
+  {
+   "finding": "The dataset supports hierarchical and typed relations beyond identity, but it does not provide direct evidence for cross-thread enterprise continuity because all annotated relations are within documents drawn from Wikipedia.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "The dataset contains only English documents.",
+  "Relations are annotated only within documents rather than across documents.",
+  "All source documents are from Wikipedia, creating a substantial genre gap from enterprise email, chat, and workflow logs.",
+  "Temporal annotation agreement is lower than ideal and the relation distributions are highly imbalanced.",
+  "The paper models event identity and multiple typed relations but does not study incremental conversation-thread linking in organizational communication.",
+  "The strong use of explicit transitivity rules means the paper is not evidence that continuity relations in enterprise workflows should generally be non-transitive."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "four_relation_layers": 1.0,
+  "real_world_event_identity": 0.99,
+  "subevent_hierarchy": 0.99,
+  "temporal_ambiguity": 0.97,
+  "transitivity_prevalence": 0.99,
+  "not_cross_document_enterprise": 1.0
+ },
+ "raw_claims": [
+  "MAVEN-ERE augments 4,480 English Wikipedia documents with four kinds of event relations.",
+  "Coreferent mentions are intended to denote the same real-world event.",
+  "Coreference is annotated before the other event relations and serves as a foundation for them.",
+  "Temporal annotation distinguishes several relation types rather than imposing only a before-after relation.",
+  "Ambiguous temporal placement can be represented with additional timelines.",
+  "Causal annotation distinguishes direct cause from a precondition relation.",
+  "A subevent must be a component of its parent event and be spatiotemporally contained by it.",
+  "Many temporal relations and a smaller but substantial fraction of causal relations can be inferred through the specified transitivity rules.",
+  "A meaningful portion of event relations spans more than 200 words, making long-range extraction important.",
+  "The released benchmark is within-document and therefore does not directly test cross-document or cross-thread organizational continuity."
+ ],
+ "source_url": "https://arxiv.org/html/2211.07342",
+ "access": "full_text"
+}

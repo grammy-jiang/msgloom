@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-1109-access-2023-3284053",
+ "title": "Step-by-Step Case ID Identification Based on Activity Connection for Cross-Organizational Process Mining",
+ "research_question": "Can corresponding case identifiers across independently identified organizational event logs be recovered accurately by iteratively discovering temporal connections between activities, including in cyclic business processes?",
+ "methodology": "The proposed method begins with activity pairs that occur consecutively within a short time interval and uses those connections to identify probable mappings between local case identifiers in different organizations. Newly identified cases are then used to discover additional activity connections, so case-ID mapping and connection discovery proceed iteratively while candidate mappings are narrowed and unreliable alternatives are removed. Multiple time thresholds are explored automatically, and an extension reduces bias caused by the order in which more than two organizational logs are integrated. Evaluation uses BPI Challenge 2012 and 2017 logs split into organizational sections, retaining the original whole-process identifiers only as ground truth.",
+ "key_findings": [
+  {
+   "finding": "The step-by-step procedure can recover cross-organizational case relationships without using a globally shared case identifier during mining.",
+   "evidence_type": "supported",
+   "section": "Proposed Method"
+  },
+  {
+   "finding": "Iteratively using already identified case mappings to discover new activity connections expands the set of cases that can subsequently be matched.",
+   "evidence_type": "supported",
+   "section": "Proposed Method"
+  },
+  {
+   "finding": "On the two evaluated datasets, the resulting integrated process models achieved precision above 98.4% and recall above 94.2% in the reported headline evaluation.",
+   "evidence_type": "supported",
+   "section": "Evaluation"
+  },
+  {
+   "finding": "The proposed approach outperformed the compared previous method for reconstructing process models in the evaluated settings.",
+   "evidence_type": "supported",
+   "section": "Evaluation - BPI Challenge 2012 and 2017"
+  },
+  {
+   "finding": "Removing integration-order bias produces a more robust three-organization process model on the BPI Challenge 2017 experiment.",
+   "evidence_type": "supported",
+   "section": "Evaluation - BPI Challenge 2017"
+  },
+  {
+   "finding": "High process-model accuracy does not imply that every individual cross-organizational case identifier is recovered; some three-organization orders showed substantially lower case-ID recall.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Case ID Identification Results"
+  }
+ ],
+ "limitations": [
+  "The method assumes event logs are complete and free of errors.",
+  "It relies on the assumption that activities belonging to the same case tend to occur closer together in time than activities belonging to different cases.",
+  "The experiments simulate independent organizations by partitioning logs that originally came from a common process, rather than collecting truly independently administered cross-organizational systems.",
+  "Individual case-ID recall can fall substantially for some three-organization integration orders even when the reconstructed process model remains accurate.",
+  "The study focuses on horizontal cross-organizational process integration and does not establish performance for all organizational structures.",
+  "The paper does not evaluate email or chat threads directly."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "iterative_case_matching": 0.99,
+  "process_model_precision_recall": 0.99,
+  "outperformance_over_prior_method": 0.97,
+  "integration_order_effect": 0.98,
+  "case_id_recall_limitation": 0.99
+ },
+ "raw_claims": [
+  "Different organizations may use independent identifiers for portions of the same end-to-end process.",
+  "The method infers cross-organizational case relationships from activity connections and timestamps.",
+  "Short temporal separation between connected activities is used as evidence for correspondence.",
+  "Case mappings discovered in one step enable additional activity connections to be extracted in later steps.",
+  "The procedure continues until additional reliable case mappings can no longer be identified.",
+  "The method considers multiple time thresholds rather than relying on a single manually chosen threshold.",
+  "The evaluation uses BPI Challenge 2012 and 2017 event logs.",
+  "Original global case identifiers are retained only for evaluating the inferred mappings.",
+  "The generated process models obtain high precision and recall on both evaluated datasets.",
+  "Some individual case-ID mappings remain unrecovered in the more difficult three-organization settings."
+ ],
+ "source_url": "https://www.researchgate.net/publication/371440370_Step-by-Step_Case_ID_Identification_based_on_Activity_Connection_for_Cross-Organizational_Process_Mining",
+ "access": "full_text"
+}

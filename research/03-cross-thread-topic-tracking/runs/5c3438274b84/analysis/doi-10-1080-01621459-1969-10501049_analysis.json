@@ -1,0 +1,80 @@
+{
+ "paper_id": "doi-10-1080-01621459-1969-10501049",
+ "title": "A Theory for Record Linkage",
+ "research_question": "How can a record-linkage system optimally decide whether records from two files represent the same underlying person, object, or event while controlling false-link and false-nonlink errors?",
+ "methodology": "Fellegi and Sunter construct a probabilistic model in which every pair of records belongs either to a matched set or an unmatched set and is represented by a comparison vector describing agreements, disagreements, and missing values across fields. They define conditional distributions m(gamma) and u(gamma) for comparison patterns among matched and unmatched pairs and formulate three possible decisions: link, possible link, and non-link. A fundamental theorem derives an optimal linkage rule based on the likelihood ratio m(gamma)/u(gamma), minimizing unresolved comparisons for stipulated error levels. The paper then develops practical approximations for additive comparison weights, parameter estimation, blocking, comparison-space design, and decision thresholds.",
+ "key_findings": [
+  {
+   "finding": "Record linkage can be formulated as a three-way statistical decision problem with link, possible-link, and non-link outcomes.",
+   "evidence_type": "supported",
+   "section": "Section 2: Theory"
+  },
+  {
+   "finding": "For fixed false-link and false-nonlink error levels, the optimal linkage rule minimizes the probability of leaving a comparison unresolved as a possible link.",
+   "evidence_type": "supported",
+   "section": "Section 2 / Section 2.1"
+  },
+  {
+   "finding": "The optimal ordering of comparison patterns is determined by the likelihood ratio m(gamma)/u(gamma), with upper and lower thresholds defining link, review, and non-link regions.",
+   "evidence_type": "supported",
+   "section": "Section 2.1: A fundamental theorem"
+  },
+  {
+   "finding": "The derived linkage rule is equivalent to a likelihood-ratio hypothesis-testing procedure.",
+   "evidence_type": "supported",
+   "section": "Section 2.1: A fundamental theorem"
+  },
+  {
+   "finding": "Under conditional independence of groups of comparison variables, the logarithm of the likelihood ratio decomposes into additive field-level weights.",
+   "evidence_type": "supported",
+   "section": "Section 3.2: Some simplifying assumptions"
+  },
+  {
+   "finding": "The paper gives two practical approaches for estimating match and non-match probabilities and warns that dependence between comparison variables can seriously affect the probabilistic interpretation of the resulting weights.",
+   "evidence_type": "supported",
+   "section": "Section 3.3: The Calculation of Weights"
+  },
+  {
+   "finding": "Blocking is treated as a necessary computational restriction for large files, but the paper explicitly incorporates the resulting changes in linkage error and processing cost.",
+   "evidence_type": "supported",
+   "section": "Section 3.1 / Section 3.4"
+  }
+ ],
+ "limitations": [
+  "The practical additive-weight formulation relies on conditional-independence assumptions that may be violated when fields, reporting errors, or missingness are correlated.",
+  "The quality of the decision rule depends on accurate estimation of the matched and unmatched comparison-pattern distributions.",
+  "Blocking improves computational feasibility but can exclude true matches before scoring and therefore changes effective error rates.",
+  "The framework primarily treats pairwise linkage between two files and does not itself provide a modern global clustering or transitivity mechanism across arbitrarily many evolving records.",
+  "The article is primarily theoretical and does not present a modern benchmark dataset or empirical comparison against alternative record-linkage systems.",
+  "The work is domain-general rather than direct evidence about enterprise email, chat, or organizational workflow continuity."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "three-way linkage decision": 0.99,
+  "optimal rule minimizes unresolved cases": 0.99,
+  "likelihood-ratio thresholds": 0.99,
+  "hypothesis-testing equivalence": 0.99,
+  "additive weights under conditional independence": 0.99,
+  "dependence threatens probability estimates": 0.99,
+  "blocking trades computation against linkage error": 0.97
+ },
+ "raw_claims": [
+  "The linkage problem is defined over pairs of records that either represent the same underlying unit or do not.",
+  "A comparison vector encodes agreements, disagreements, missing values, and other field-comparison outcomes.",
+  "The model allows three decisions: link, possible link, and non-link.",
+  "Two error types correspond to linking an unmatched pair and rejecting a genuinely matched pair.",
+  "An optimal rule is defined as one that minimizes unresolved comparisons while satisfying specified error levels.",
+  "Comparison patterns are ranked by their probability under the match distribution relative to their probability under the non-match distribution.",
+  "Likelihood-ratio thresholds determine the three decision regions.",
+  "Conditional independence permits total linkage evidence to be represented as a sum of component log weights.",
+  "The authors propose methods for estimating the match and non-match probabilities from population information or from the files themselves.",
+  "The paper explicitly warns that departures from the independence assumptions can distort the probabilistic meaning of estimated weights.",
+  "Blocking is introduced because exhaustive comparison of large files is computationally impractical."
+ ],
+ "source_url": "https://www.cs.cornell.edu/~shmat/courses/cs6434/fellegi-sunter.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,89 @@
+{
+ "paper_id": "doi-10-1145-290941-290954",
+ "title": "On-Line New Event Detection and Tracking",
+ "research_question": "How can a system operating strictly online detect previously unseen real-world news events and continue tracking those events as their reporting and descriptive features evolve over time?",
+ "methodology": "The paper evaluates online new-event detection and event tracking on the TDT pilot corpus, which contains broadcast-news and newswire stories with exhaustive judgments for 25 selected events. New-event detection is implemented as a single-pass clustering/classification process using weighted lexical queries, event-specific thresholds, and a time penalty, with miss and false-alarm tradeoffs evaluated by DET curves, leave-one-event-out parameter selection, and bootstrap estimation. Event tracking is evaluated with rolling per-event training sets of 1, 2, 4, 8, or 16 example stories, using tf-idf-style query representations, common and temporally surprising features, and an adaptive procedure that rebuilds a query when newly accepted stories appear. Failure analysis is used to examine event granularity and semantic drift.",
+ "key_findings": [
+  {
+   "finding": "The paper treats concrete event identity, rather than broad topical similarity, as the central relation for detection: a story is old if it describes an event identical to one already represented, and otherwise it is a new event.",
+   "evidence_type": "supported",
+   "section": "2.1 What is an event?"
+  },
+  {
+   "finding": "The authors find that event identity is intrinsically difficult to delimit by time and place; their own examples show that an intuitively single event can extend across long periods and multiple locations.",
+   "evidence_type": "supported",
+   "section": "2.1 What is an event?"
+  },
+  {
+   "finding": "Adding a temporal penalty to detection thresholds generally improved performance, supporting the idea that stories close together in the stream are more likely to concern the same event than stories far apart.",
+   "evidence_type": "supported",
+   "section": "4.2 Detection Thresholding; 4.4 Results"
+  },
+  {
+   "finding": "Failure analysis shows a granularity problem: representations of a specific event can drift toward a broad event class, causing a system to confuse distinct plane crashes, bombing-related stories, or other events that share class-level vocabulary.",
+   "evidence_type": "supported",
+   "section": "4.5 Failure Analysis"
+  },
+  {
+   "finding": "Event tracking benefits substantially from incremental adaptation because important event-specific entities and facts may emerge only well after the initial stories; adaptive query rebuilding can capture such later features and reduce the amount of initial training material required.",
+   "evidence_type": "supported",
+   "section": "5.4 Adaptive tracking"
+  },
+  {
+   "finding": "The proposed 'surprising feature' heuristic does not by itself provide sufficiently reliable event coverage: some true event stories lack the surprising term, while some unusual terms are accidental or retrieval-useless.",
+   "evidence_type": "supported",
+   "section": "5.3 Surprising features"
+  },
+  {
+   "finding": "The paper explicitly identifies the relationship between an event and a sub-event, and the appropriate level of event granularity, as unresolved research questions rather than solved relations in its model.",
+   "evidence_type": "supported",
+   "section": "6 Conclusions and future work"
+  },
+  {
+   "finding": "The suggestion that combining surprise with a feature's subsequent persistence will improve adaptive tracking is presented as a hypothesis rather than demonstrated experimentally in this paper.",
+   "evidence_type": "unsupported",
+   "section": "5.3 Surprising features; 5.4 Adaptive tracking"
+  }
+ ],
+ "limitations": [
+  "The study uses broadcast news and newswire rather than enterprise email or organizational chat, so it is not direct evidence about cross-thread workplace communication.",
+  "The TDT pilot corpus is small by information-retrieval standards and contains only 25 judged events; the authors explicitly characterize the results as suggestive rather than conclusive.",
+  "The operational decision is largely binary same-event versus new-event, even though the paper recognizes ambiguity in event granularity; graded, partial, hierarchical, or non-transitive continuity relations are not explicitly modeled.",
+  "Event/sub-event structure is raised as future work rather than evaluated.",
+  "The surprising-feature formulation is described as largely ad hoc and does not obtain broad enough coverage for reliable tracking by itself.",
+  "Some tracking evaluations at larger training-set sizes necessarily cover fewer events because several judged events contain too few relevant stories.",
+  "The work predates modern semantic representations and relies mainly on lexical features, so failures from class-level lexical overlap are prominent."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "concrete_event_identity": 0.99,
+  "temporal_proximity_signal": 0.96,
+  "granularity_failure": 0.98,
+  "adaptive_evolving_tracking": 0.98,
+  "surprising_features_insufficient": 0.96,
+  "subevent_relation_unresolved": 0.99
+ },
+ "raw_claims": [
+  "New-event detection and event tracking are formulated as relationships among stories based on the real-world events the stories describe.",
+  "A new-event detector must decide on each arriving story before seeing any later story.",
+  "The authors distinguish specific event identity from membership in a broad event class.",
+  "They note that simple time-and-place definitions of an event fail for extended phenomena such as the O. J. Simpson saga.",
+  "The TDT pilot evaluation uses judged events in a mixed Reuters and CNN news stream.",
+  "The detection system uses story-derived lexical queries and event-specific thresholds within a single-pass online procedure.",
+  "A time penalty improves the thresholding model because recent stories are more likely to concern the same event.",
+  "Bootstrap evaluation with the selected detection parameters produced a mean miss rate of 40.5% and a mean false-alarm rate of 7.8%.",
+  "Failure cases show that generic vocabulary can make a query for one concrete event behave like a classifier for an entire event class.",
+  "Tracking experiments use progressively larger seed sets and evaluate later stories for the same event.",
+  "Common-word tracking queries need relatively few features, with the paper reporting little additional benefit from very large query representations.",
+  "Important event descriptors can appear only after many earlier stories, which motivates adaptive tracking.",
+  "Adaptive tracking rebuilds an event query after accepting a new relevant story so that later-emerging features can enter the representation.",
+  "The surprising-feature experiment shows that unusual terms can be event-indicative but can also have poor coverage or be accidental.",
+  "The conclusion leaves event-versus-subevent relationships and preferred event granularity as open problems."
+ ],
+ "source_url": "https://sigir.hosting.acm.org/wp-content/uploads/2017/06/p185.pdf",
+ "access": "full_text"
+}

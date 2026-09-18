@@ -1,0 +1,74 @@
+{
+ "paper_id": "2607.26384",
+ "title": "An ER-Model-Based Framework for Case Notion Selection in Object-Centric Processes",
+ "research_question": "How can an ER-schema-grounded case notion identify coherent enterprise process executions in object-centric event logs without losing coordination among business objects or spuriously merging executions through shared resource objects?",
+ "methodology": "The paper constructs a case notion from an entity-relationship schema by distinguishing a primary entity, secondary coordination entities, parent entities, and resources. It creates an object graph after excluding resource and parent objects that would generate semantically inappropriate connections, then defines cases as connected components containing primary-entity instances and their coordinating secondary entities. The framework enforces strict partitioning and transitive closure and derives deterministic case identifiers from the primary-entity membership of each case. A 1,000-event object-centric event log for an order process is used as a validation example, followed by process-discovery analysis at case and secondary-entity levels.",
+ "key_findings": [
+  {
+   "finding": "The framework grounds case identity in concrete business entities: a domain-selected primary entity acts as the semantic anchor, while selected secondary entities connect primary-entity instances participating in a joint execution.",
+   "evidence_type": "supported",
+   "section": "3. ER-Based Framework"
+  },
+  {
+   "finding": "Filtering out resource-like and parent objects is intended to prevent unrelated executions from being merged merely because they share employees, equipment, customers, or other broadly connected objects.",
+   "evidence_type": "supported",
+   "section": "3. ER-Based Framework and 5. Discussion"
+  },
+  {
+   "finding": "On the evaluated 1,000-event log, the framework reports 40 cases derived from 114 orders and 50 packages, with zero omitted primary entities and zero overlap between cases.",
+   "evidence_type": "supported",
+   "section": "4. Evaluation"
+  },
+  {
+   "finding": "The largest reported case contains 11 orders connected transitively through four packages even though no single package directly connects all 11 orders, demonstrating that case identity can arise from a chain of coordination events rather than a single shared event.",
+   "evidence_type": "supported",
+   "section": "4. Evaluation"
+  },
+  {
+   "finding": "The evaluation identifies 21 complete and 19 incomplete cases; incomplete cases remain legitimate cases even when the expected package event has not yet appeared, which provides concrete evidence for partially observed and potentially evolving work executions.",
+   "evidence_type": "supported",
+   "section": "4. Evaluation"
+  },
+  {
+   "finding": "The proposed case relation is deliberately transitive and partitioning rather than overlapping or non-transitive: any primary entities connected through an allowed chain are placed in the same case.",
+   "evidence_type": "supported",
+   "section": "3. ER-Based Framework"
+  }
+ ],
+ "limitations": [
+  "Correct classification of primary, secondary, parent, and resource entities requires a suitable ER schema and business-domain knowledge.",
+  "Coverage and sharing thresholds are empirically chosen and may require tuning for other logs.",
+  "The empirical validation uses a single 1,000-event object-centric log rather than a broad set of enterprise datasets.",
+  "The evaluated example contains only one secondary coordination entity type.",
+  "The current selection rule focuses on direct relationships between primary and candidate secondary entity types rather than arbitrary deeper schema reachability.",
+  "The method analyzes event-log case structure rather than communication threads in email or chat.",
+  "Strict partitioning and transitive closure cannot directly express overlapping, graded, or non-transitive continuity when business semantics require those forms."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "business_entity_case_identity": 0.99,
+  "resource_filtering": 0.98,
+  "forty_case_validation": 0.99,
+  "transitive_multi_order_case": 0.99,
+  "incomplete_evolving_cases": 0.98,
+  "strict_transitive_membership": 1.0
+ },
+ "raw_claims": [
+  "Object-centric events may simultaneously reference several business-object types.",
+  "Choosing only one object type as a conventional case identifier can lose coordination information.",
+  "Naive connected components can over-merge executions when resource-like objects connect otherwise independent work.",
+  "The framework selects a primary business entity and uses secondary entities to capture coordination among primary instances.",
+  "Cases are connected components after resource and parent objects are excluded from the case graph.",
+  "Primary entities connected through any allowed chain belong to the same case under the transitive-closure rule.",
+  "The validation log contains 1,000 events, 114 orders, 50 packages, and 17 customers and yields 40 cases.",
+  "One case joins 11 orders through a chain involving four packages rather than through one common package event.",
+  "Nineteen reported cases are incomplete at the observed log boundary but are still treated as valid cases.",
+  "The framework therefore captures partially observed executions, but it does not model non-transitive case membership."
+ ],
+ "source_url": "https://arxiv.org/pdf/2607.26384",
+ "access": "full_text"
+}

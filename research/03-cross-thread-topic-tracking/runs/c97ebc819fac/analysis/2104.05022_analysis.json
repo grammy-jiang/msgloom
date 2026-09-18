@@ -1,0 +1,77 @@
+{
+ "paper_id": "2104.05022",
+ "title": "WEC: Deriving a Large-scale Cross-document Event Coreference dataset from Wikipedia",
+ "research_question": "Can Wikipedia hyperlink structure be exploited to build a large corpus-wide cross-document event-coreference dataset efficiently and support models beyond the topic-partitioned setting of earlier corpora?",
+ "methodology": "The authors identify Wikipedia pages representing events and use hyperlinks whose anchors point to the same event page as candidate coreferent mentions, followed by several automatic filters. The English training set is generated automatically, while development and test clusters are manually validated. They train a RoBERTa-based mention-pair model followed by agglomerative clustering and evaluate it with standard coreference metrics on WEC and ECB+. They also perform cross-corpus training and testing to measure differences between the two resources.",
+ "key_findings": [
+  {
+   "finding": "The WEC English training set contains 40,529 event mentions grouped into 7,042 clusters, providing substantially larger-scale supervision than earlier manually built datasets.",
+   "evidence_type": "supported",
+   "section": "Dataset Statistics"
+  },
+  {
+   "finding": "Unlike topic-partitioned corpora, WEC permits mentions to corefer across the corpus rather than restricting links to predefined topic clusters.",
+   "evidence_type": "supported",
+   "section": "Dataset Structure"
+  },
+  {
+   "finding": "Manual checking of development and test data yielded estimated annotation precision of 0.95, recall of 0.96, and Cohen's kappa of 0.75 in the reported quality check.",
+   "evidence_type": "supported",
+   "section": "Manual Validation"
+  },
+  {
+   "finding": "The proposed model achieves 62.3 CoNLL F1 on WEC compared with 53.1 for the lemma baseline, a 9.2-point improvement.",
+   "evidence_type": "supported",
+   "section": "Experimental Results"
+  },
+  {
+   "finding": "On ECB+, the same modeling approach reaches 80.8 CoNLL F1, exceeding the cited Joint baseline at 79.5.",
+   "evidence_type": "supported",
+   "section": "Experimental Results"
+  },
+  {
+   "finding": "Cross-corpus transfer loses roughly 8 to 12 CoNLL-F1 points, showing that WEC and ECB+ encode materially different event-mention distributions and corpus structures.",
+   "evidence_type": "supported",
+   "section": "Cross-Dataset Evaluation"
+  },
+  {
+   "finding": "A manual sample indicates that WEC is dominated by referential and nominal event mentions, whereas ECB+ contains more descriptive and verbal mentions.",
+   "evidence_type": "supported",
+   "section": "Dataset Content Analysis"
+  }
+ ],
+ "limitations": [
+  "The training portion is automatically derived and therefore contains annotation noise; only development and test data are manually validated.",
+  "Event-mention annotation is not exhaustive, and the experiments evaluate clustering over gold mentions.",
+  "The presented corpus is derived from English Wikipedia and adaptation to other languages requires language-specific resources such as NER and event-page identification.",
+  "Wikipedia hyperlinking introduces selection and lexical biases that require filtering and downsampling of repeated mention strings.",
+  "WEC primarily captures referential Wikipedia mentions, which differ from the more descriptive event mentions common in news corpora.",
+  "The baseline sometimes fails to exploit contextual time and location evidence and has difficulty with longer mention spans."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "large_corpus_wide_dataset": 0.99,
+  "manual_validation_quality": 0.98,
+  "wec_model_gain": 0.99,
+  "ecb_plus_result": 0.99,
+  "cross_corpus_degradation": 0.99,
+  "referential_nominal_bias": 0.97
+ },
+ "raw_claims": [
+  "WEC derives candidate event-coreference clusters from hyperlinks pointing to Wikipedia event pages.",
+  "Its English training split contains 40,529 mentions in 7,042 clusters.",
+  "Coreference links are not restricted to predefined topic partitions.",
+  "Development and test clusters are manually validated while training data remain automatically generated.",
+  "The WEC model reaches 62.3 CoNLL F1 compared with 53.1 for a lemma baseline.",
+  "The same model reaches 80.8 CoNLL F1 on ECB+.",
+  "Models trained on one corpus perform substantially worse when transferred to the other corpus.",
+  "WEC contains many referential nominal mentions that differ from the descriptive event mentions prevalent in ECB+.",
+  "The authors release the dataset and implementation for further research."
+ ],
+ "source_url": "https://arxiv.org/html/2104.05022",
+ "access": "full_text"
+}

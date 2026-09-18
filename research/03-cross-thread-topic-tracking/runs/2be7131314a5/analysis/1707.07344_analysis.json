@@ -1,0 +1,76 @@
+{
+ "paper_id": "1707.07344",
+ "title": "Event Coreference Resolution by Iteratively Unfolding Inter-dependencies among Events",
+ "research_question": "Can event coreference resolution be improved by iteratively exploiting dependencies among event mentions and their accumulating arguments, while treating within-document and cross-document coreference differently?",
+ "methodology": "The system uses separate neural pairwise classifiers for within-document and cross-document event coreference and repeatedly alternates between the two types of merging. Whenever clusters are merged, their arguments are pooled so that information recovered from one mention can support later decisions involving another mention with sparse local context. A second stage adds higher-order evidence from relations between event clusters and sentence-context similarity. The approach is evaluated on the ECB+ corpus with standard MUC, B3, CEAF_e, and CoNLL F1 metrics against prior systems and ablated variants.",
+ "key_findings": [
+  {
+   "finding": "Iteratively propagating arguments across merged event clusters improves event coreference decisions because later comparisons can use information that was absent from an individual mention's local sentence.",
+   "evidence_type": "supported",
+   "section": "Model and Analysis"
+  },
+  {
+   "finding": "Using distinct classifiers for within-document and cross-document coreference is beneficial because the two settings depend on different evidence.",
+   "evidence_type": "supported",
+   "section": "Event Coreference Classifiers and Evaluation"
+  },
+  {
+   "finding": "The complete system achieves a cross-document CoNLL F1 of 63.6 on ECB+, compared with 58.7 for the reported HDDCRP baseline and 54.8 for the lemma baseline.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Cross-document Coreference"
+  },
+  {
+   "finding": "For within-document coreference, the complete system reaches a CoNLL F1 of 68.9, exceeding the reported HDDCRP and lemma baselines.",
+   "evidence_type": "supported",
+   "section": "Evaluation - Within-document Coreference"
+  },
+  {
+   "finding": "Second-order relations between event clusters resolve additional difficult links after the first iterative stage.",
+   "evidence_type": "supported",
+   "section": "Second-order Event Relations and Analysis"
+  },
+  {
+   "finding": "Sparse or missing event arguments can prevent valid merges, while same-lemma reporting and light verbs are recurring sources of erroneous merges.",
+   "evidence_type": "supported",
+   "section": "Error Analysis"
+  }
+ ],
+ "limitations": [
+  "Evaluation is confined to the ECB+ news-event benchmark, not organizational email, enterprise chat, or workflow records.",
+  "The method depends on upstream event mentions, semantic-role arguments, and parsing features, so errors in those components can reduce coreference quality.",
+  "Mentions with few or no local arguments can leave the iterative process unable to establish otherwise valid links.",
+  "Lexically similar reporting events and light-verb events can be incorrectly merged even when they refer to different real-world events.",
+  "High merge thresholds are used to reduce error propagation, which can also leave genuine coreference links unresolved.",
+  "Document clustering is unusually easy on ECB+ because documents are organized by topics, so robustness to noisy topic or thread grouping is not strongly tested.",
+  "The paper models real-world event identity in news text rather than the progressive and partially observed identity of business matters across enterprise communication channels."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "iterative_argument_propagation": 0.99,
+  "separate_wd_cd_models": 0.98,
+  "cross_document_f1": 0.99,
+  "within_document_f1": 0.99,
+  "second_order_benefit": 0.96,
+  "error_modes": 0.99
+ },
+ "raw_claims": [
+  "Event coreference groups textual event mentions that refer to the same real-world event.",
+  "Within-document and cross-document event coreference present different evidence patterns.",
+  "The proposed system uses separate pairwise classifiers for the two settings.",
+  "Within-document and cross-document clustering are applied iteratively rather than as independent one-pass stages.",
+  "Arguments from event mentions are combined when their clusters are merged.",
+  "Accumulated arguments can reveal relationships that were not visible from the original local contexts.",
+  "A second stage considers higher-order relations between event clusters.",
+  "The system is evaluated on the ECB+ event coreference corpus.",
+  "The complete model outperforms the reported lemma and HDDCRP baselines on CoNLL F1.",
+  "Several iterations are useful because later merges can exploit information accumulated in earlier ones.",
+  "Missing arguments cause some true coreference relationships to remain unresolved.",
+  "Same-lemma reporting and light-verb events account for a notable class of false merges."
+ ],
+ "source_url": "https://arxiv.org/html/1707.07344",
+ "access": "full_text"
+}
