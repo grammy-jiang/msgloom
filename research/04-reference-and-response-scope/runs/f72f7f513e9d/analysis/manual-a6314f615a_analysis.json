@@ -1,0 +1,73 @@
+{
+ "paper_id": "manual-a6314f615a",
+ "title": "Detection of Question-Answer Pairs in Email Conversations",
+ "research_question": "Can question-answer pairs in asynchronous email threads be detected for summarization more effectively by combining automatic question detection with thread-structure-aware answer pairing than by relying on lexical similarity alone?",
+ "methodology": "The authors first trained RIPPER rules for interrogative-question detection using 5,000 positive and 5,000 negative SWITCHBOARD/DAMSL examples and tested the detector on manually selected ACM email questions and statements. For answer detection, they annotated question-answer links in a corpus of approximately 300 email threads containing about 1,000 messages from a Columbia University ACM student organization and represented messages as paragraph-level discourse segments. They trained RIPPER classifiers with lexical, positional, candidate-set, and email-thread structural features and evaluated them with five-fold cross-validation against a cosine-similarity baseline. They additionally divided questions according to whether they had at most two or more than two candidate answer segments.",
+ "key_findings": [
+  {
+   "finding": "Thread-structure and candidate-context features substantially improved answer-pair detection over lexical similarity alone: on the Union annotation set, F1 increased from 0.503 with cosine similarity to 0.656 with the full feature set.",
+   "evidence_type": "supported",
+   "section": "Section 4.4, Tables 3 and 4"
+  },
+  {
+   "finding": "Alignment became markedly harder as the number of plausible answer segments increased: the full model reached F1 0.899 for questions with at most two candidate answers but 0.625 for questions with more candidates.",
+   "evidence_type": "supported",
+   "section": "Section 4.4, Table 5"
+  },
+  {
+   "finding": "Training separate classifiers for low- and high-candidate cases and combining their predictions produced F1 0.730, compared with 0.656 for the unsplit Union data.",
+   "evidence_type": "supported",
+   "section": "Section 4.4, Table 5"
+  },
+  {
+   "finding": "A heuristic that split initially missed utterances at commas and re-applied the question rules to the first and last phrases raised interrogative-question recall from 0.56 to 0.72 while precision remained 0.96, increasing F1 from 0.70 to 0.82.",
+   "evidence_type": "supported",
+   "section": "Section 3, Table 1"
+  },
+  {
+   "finding": "The annotations included highlighted questions for which no corresponding answer was present in the thread, but answer-pair training instances were constructed only for questions that had a marked answer.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "Annotator agreement was higher for linking answers to an identified question segment than for identifying question segments themselves, with reported kappa values of 0.81 and 0.68 respectively.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  }
+ ],
+ "limitations": [
+  "The email corpus is small and comes from a single student-organization setting, limiting evidence about generalization to workplace or other email domains.",
+  "Questions without marked answers were not included in the answer-pair classifier's candidate training instances, so unanswered-question detection was not evaluated as a modeled outcome.",
+  "Messages were segmented primarily by paragraphs, which is too coarse to represent proposition-level partial replies when a paragraph contains several requests or propositions.",
+  "Automatic detection of declarative-form questions and rhetorical questions was explicitly left for future work.",
+  "The two annotators had completed different portions of the corpus at the time of the study, so the annotation set was still incomplete.",
+  "The study did not evaluate whether adding detected question-answer pairs actually improved downstream email summaries."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "thread_features_improve_alignment": 0.99,
+  "many_candidates_are_harder": 0.99,
+  "split_candidate_models_improve_f1": 0.99,
+  "question_detector_improvement": 0.99,
+  "unanswered_questions_exist_but_are_not_modeled": 0.97,
+  "annotation_agreement": 0.99
+ },
+ "raw_claims": [
+  "About one fifth of the email threads in the corpus primarily involved question-answer exchanges.",
+  "Email participants can pursue several questions in parallel because responses are asynchronous.",
+  "Reply headers do not guarantee that the content of a message answers the immediately preceding message.",
+  "An answer can occur several messages after the question that motivated it.",
+  "Questions and their answers can have little lexical overlap.",
+  "The system treats paragraphs as discourse segments because different issues are often addressed in separate paragraphs.",
+  "Thread-structural features improved recall relative to a cosine-similarity-only baseline.",
+  "Questions with many candidate answer segments were substantially more difficult to align than questions with few candidates.",
+  "Some annotated questions had no corresponding answer anywhere in the thread.",
+  "The reported system did not automatically handle declarative-form or rhetorical questions."
+ ],
+ "source_url": "https://aclanthology.org/C04-1128.pdf",
+ "access": "full_text"
+}

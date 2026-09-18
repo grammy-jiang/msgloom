@@ -1,0 +1,376 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+   "title": "Stay Together: A System for Single and Split-antecedent Anaphora Resolution",
+   "research_question": "Can split-antecedent anaphora be resolved jointly with ordinary single-antecedent anaphora, singleton detection, and non-referring mention recognition in an end-to-end system that uses predicted rather than gold mentions?",
+   "methodology": "The authors extend a cluster-ranking anaphora-resolution architecture with a split-antecedent module that scores candidate discourse clusters for membership in the antecedent set of an anaphor. The model shares mention representations and candidate structures with the base resolver, and the split component is trained as a binary classification problem with measures to mitigate the extreme imbalance between positive and negative candidates. They compare joint training with a variant that trains the split component on a pre-trained base resolver and evaluate on the RST portion of ARRAU using ordinary coreference metrics, split-antecedent metrics, and an extension of LEA for joint evaluation.",
+   "key_findings": [
+    {
+     "finding": "Both proposed end-to-end variants substantially outperform prior naive or pipeline-style baselines on split-antecedent recognition and resolution when mentions are predicted.",
+     "evidence_type": "supported",
+     "section": "Experiments: predicted setting"
+    },
+    {
+     "finding": "The pre-trained variant achieves a split-anaphor recognition F1 of 55.1 and a strict split-resolution F1 of 20.4, while the joint variant obtains 50.9 and 15.3 respectively.",
+     "evidence_type": "supported",
+     "section": "Experiments: predicted setting"
+    },
+    {
+     "finding": "Joint optimization does not improve the ordinary single-antecedent and non-referring parts of the system; the pre-trained configuration gives slightly better overall performance on those aspects.",
+     "evidence_type": "supported",
+     "section": "Experiments: predicted setting"
+    },
+    {
+     "finding": "With gold mentions and gold split anaphors, the proposed resolver reaches 68.1 lenient F1 and 45.0 strict accuracy, exceeding the compared earlier system's best reported 66.4 lenient F1 and 35.0 strict accuracy.",
+     "evidence_type": "supported",
+     "section": "Experiments: gold setting"
+    },
+    {
+     "finding": "A major end-to-end bottleneck is candidate and anaphor identification: predicted mentions cover 98.33 percent of gold split anaphors, but only 65 percent survive the discourse-new candidate restriction, and the pre-trained system recognizes 45 percent of the gold split anaphors.",
+     "evidence_type": "supported",
+     "section": "Analysis"
+    },
+    {
+     "finding": "The extended LEA evaluation shows that gains from explicitly modeling split antecedents become more visible when split-anaphoric entities receive greater evaluation weight.",
+     "evidence_type": "supported",
+     "section": "Joint evaluation"
+    }
+   ],
+   "limitations": [
+    "Split-antecedent anaphors are extremely sparse in the corpus, with only 60 such anaphors in the reported test set, limiting statistical robustness.",
+    "The end-to-end architecture restricts split-anaphor candidates through a discourse-new gate, making a substantial fraction of otherwise detected gold anaphors inaccessible to the split resolver.",
+    "Errors in predicted mentions and predicted clusters account for much of the gap between gold-input and end-to-end performance.",
+    "The split-antecedent module constrains an antecedent group to between two and five antecedents, which encodes an architectural assumption about group size.",
+    "The relative importance assigned to split-anaphoric entities in the extended LEA metric is an evaluation design choice and materially affects the apparent size of the joint-system improvement.",
+    "Joint training did not produce benefits for the single-antecedent and non-referring subtasks."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "end_to_end_improvement": 0.99,
+    "pretrained_vs_joint": 0.99,
+    "gold_setting_improvement": 0.99,
+    "candidate_bottleneck": 0.99,
+    "joint_LEA_effect": 0.97
+   },
+   "raw_claims": [
+    "Split-antecedent anaphora differs from ordinary identity coreference because an anaphor can refer collectively to entities introduced by multiple antecedent clusters.",
+    "Earlier split-antecedent systems commonly assumed gold mentions or gold split anaphors.",
+    "The proposed architecture handles ordinary anaphora and split antecedents within one shared representation framework.",
+    "The split component independently scores candidate clusters as members of the antecedent set.",
+    "The authors address severe class imbalance during training because almost all mention-candidate decisions are negative.",
+    "Both proposed variants improve substantially over the compared baselines for predicted split-antecedent resolution.",
+    "The pre-trained configuration is generally preferable to the jointly trained configuration for overall anaphora performance.",
+    "Performance with gold inputs remains much higher than performance with predicted mentions and clusters.",
+    "Restricting split-anaphor processing to discourse-new mentions eliminates some valid gold cases before split resolution begins.",
+    "The paper extends LEA so ordinary and split-antecedent anaphora can be evaluated in one framework."
+   ],
+   "source_url": "https://aclanthology.org/2021.naacl-main.329.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-bf00351935",
+   "title": "Syntax and Semantics of Questions",
+   "research_question": "How can a Montague-style grammar provide a compositional and substantially unified account of the syntax and semantics of yes-no, alternative, single-wh, and multiple-wh questions and their behavior under question-embedding predicates?",
+   "methodology": "Karttunen develops a formal linguistic analysis within the Montague Grammar tradition, using English judgments and contrasts to motivate syntactic and semantic rules for interrogatives. The proposal modifies earlier Hamblin-style accounts by treating a question as denoting a set of propositions corresponding to its true answers and derives interrogative interpretations compositionally in intensional logic. The analysis is tested through constructed examples involving direct and indirect questions, embedding predicates, wh quantification, multiple-wh constructions, scope, and island phenomena rather than through corpus or experimental data.",
+   "key_findings": [
+    {
+     "finding": "The paper analyzes the denotation of a question as a set of propositions that together constitute its true and complete answer rather than as an undifferentiated set of all possible answers.",
+     "evidence_type": "supported",
+     "section": "Question semantics"
+    },
+    {
+     "finding": "Alternative questions and wh-questions can be assigned the same broad semantic type, with yes-no questions treated as a limiting form of alternative question.",
+     "evidence_type": "supported",
+     "section": "Alternative Questions and Wh-questions"
+    },
+    {
+     "finding": "Wh expressions can retain semantic types closely related to corresponding existential noun phrases while special syntactic rules derive their interrogative scope.",
+     "evidence_type": "supported",
+     "section": "WH-Quantification"
+    },
+    {
+     "finding": "The compositional rules extend from single-wh to multiple-wh questions and provide representations for differences in quantifier scope.",
+     "evidence_type": "supported",
+     "section": "Multiple wh-questions"
+    },
+    {
+     "finding": "Question-embedding predicates motivate a semantics in which their complements supply answer propositions rather than simply ordinary propositional objects.",
+     "evidence_type": "supported",
+     "section": "Question Embedding Verbs"
+    },
+    {
+     "finding": "The proposed relation between direct and indirect questions remains incomplete, and several phenomena involving negative questions, question presuppositions, and movement constraints are explicitly left unresolved.",
+     "evidence_type": "supported",
+     "section": "Outstanding Problems"
+    }
+   ],
+   "limitations": [
+    "The author explicitly describes parts of the syntactic analysis, especially constraints on wh movement and quantifier scope, as tentative.",
+    "The formal relationship between direct and indirect questions is not completely worked out.",
+    "The account does not adequately capture the interpretive asymmetries between positive and negative direct yes-no questions.",
+    "Presuppositional or implicature-like properties of alternative and wh questions are largely outside the developed model.",
+    "Echo questions and related second-order interrogative constructions are outside the intended coverage.",
+    "The analysis relies on theoretical judgments and formal derivation rather than experimental or corpus-based validation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "question_denotation": 0.99,
+    "unified_interrogative_type": 0.96,
+    "wh_quantification": 0.98,
+    "multiple_wh_composition": 0.96,
+    "embedding_semantics": 0.97,
+    "outstanding_problems": 0.99
+   },
+   "raw_claims": [
+    "A satisfactory theory of questions should connect the syntax and semantics of direct and indirect interrogatives.",
+    "Yes-no questions can be treated as a degenerate case of alternative questions.",
+    "Wh and whether complements have closely related syntactic distributions.",
+    "A question denotes propositions corresponding to answers that are true in the relevant world.",
+    "Question-embedding verbs create semantic contrasts that are not captured by treating interrogative complements exactly like declarative complements.",
+    "Wh phrases need special syntactic treatment even though their semantic contribution can resemble that of existential noun phrases.",
+    "The same basic compositional machinery can derive both single and multiple wh interrogatives.",
+    "Scope relations among wh expressions can create distinct interpretations.",
+    "The correspondence between constraints on wh movement and ordinary quantifier scope is suggestive but imperfect.",
+    "Several aspects of direct-question interpretation lie outside the model developed in the paper."
+   ],
+   "source_url": "https://semantics.uchicago.edu/kennedy/classes/s08/semantics2/karttunen77.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-8b8a394daa",
+   "title": "Resolving abstract anaphors in Spanish discourse: Underspecification and mereological structures",
+   "research_question": "How can Spanish abstract anaphors be resolved when several preceding propositions or events are plausible antecedents, and what roles do mereological grouping and rhetorical coherence play in selecting their discourse referent?",
+   "methodology": "The paper develops a theoretical account of abstract anaphora by extending mereological ideas used for nominal reference to propositional and event-like discourse referents. It combines discourse representation structures with rhetorical relations and analyzes naturally occurring and constructed Spanish examples, including examples drawn from the Corpus de Referencia del Español Actual. For each discourse, the analysis considers atomic propositional candidates as well as possible sums of those candidates and argues that rhetorical coherence helps determine which complex referent is salient.",
+   "key_findings": [
+    {
+     "finding": "The paper proposes a three-stage resolution process in which hearers construct possible atomic and complex abstract referents, infer rhetorical connections among their components, and then resolve the abstract anaphor.",
+     "evidence_type": "supported",
+     "section": "Proposed resolution procedure"
+    },
+    {
+     "finding": "Mereological structure alone is insufficient to select among all logically possible sums of preceding propositions because some structurally available combinations do not form coherent discourse units.",
+     "evidence_type": "supported",
+     "section": "Analysis of Spanish examples"
+    },
+    {
+     "finding": "A summed or merged propositional referent is predicted to become salient when its components participate in a meaningful rhetorical organization that advances a common discourse purpose.",
+     "evidence_type": "supported",
+     "section": "Analysis of Spanish examples"
+    },
+    {
+     "finding": "Coordinating relations such as Narration and Continuation are particularly compatible with constructing merged abstract referents, often under a broader Elaboration relation.",
+     "evidence_type": "supported",
+     "section": "Rhetorical structure analysis"
+    },
+    {
+     "finding": "A complex abstract referent can function as a discourse topic summarizing several propositions and can be incrementally enlarged as further coherent material is added.",
+     "evidence_type": "supported",
+     "section": "Discourse-topic analysis"
+    },
+    {
+     "finding": "The proposed processing sequence remains a hypothesis rather than an experimentally established model of human anaphora resolution.",
+     "evidence_type": "supported",
+     "section": "Conclusions"
+    }
+   ],
+   "limitations": [
+    "The proposed cognitive resolution sequence is explicitly hypothetical and is not validated by psycholinguistic experiments.",
+    "The evidence is qualitative and example-driven rather than based on a quantitatively annotated evaluation set.",
+    "Selection among candidate discourse referents depends on inferred rhetorical relations and speaker plans that are not operationalized as a computational decision procedure.",
+    "The paper identifies discourse connectives and discourse markers as areas requiring further investigation.",
+    "The differential behavior of noun phrases, pronouns, and demonstratives as abstract anaphors requires additional study.",
+    "The author calls for empirical psychological work on the processing of multisentential abstract antecedents."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "three_stage_process": 0.97,
+    "mereology_insufficient": 0.95,
+    "rhetorical_coherence": 0.94,
+    "coordinating_relations": 0.91,
+    "incremental_summum": 0.92,
+    "hypothetical_status": 0.99
+   },
+   "raw_claims": [
+    "Abstract anaphors may refer to propositions, events, or larger discourse-derived abstract objects.",
+    "Several preceding clauses can simultaneously be plausible sources for an abstract anaphor.",
+    "A discourse representation can contain both atomic propositional referents and sums formed from several such referents.",
+    "Not every formally possible sum is an equally plausible antecedent.",
+    "Rhetorical relations constrain which propositions are naturally interpreted as one coherent abstract object.",
+    "A merged interpretation is favored when its components contribute to a common discourse purpose.",
+    "Continuation and Narration can support the construction of complex abstract discourse referents.",
+    "Elaboration can organize several propositions around a broader discourse topic.",
+    "A complex abstract referent can be updated as additional discourse material becomes rhetorically connected to it.",
+    "The proposed account requires empirical testing before it can be treated as a verified model of human processing."
+   ],
+   "source_url": "https://scholarworks.indianapolis.iu.edu/bitstream/1805/18711/1/Zulaica_2018_resolving.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-3765-sp-5-6",
+   "title": "Information structure in discourse: Towards an integrated formal theory of pragmatics",
+   "research_question": "How can discourse information structure be formally represented around questions under discussion so that answerhood, relevance, discourse strategy, and the interpretation of English prosodic focus receive an integrated pragmatic account?",
+   "methodology": "Roberts develops a formal theory of discourse as a cooperative language game organized around a dynamically evolving Question Under Discussion structure. The framework enriches a Stalnakerian common ground with discourse moves, accepted questions and assertions, ordering relations, and a QUD stack, while adopting an alternative-set semantics for questions. The theory is developed through formal definitions and constructed English discourse and prosody examples, with comparisons to existing accounts of focus and information structure rather than quantitative experimentation.",
+   "key_findings": [
+    {
+     "finding": "A discourse context can be represented with an explicit QUD stack in addition to the common ground, allowing accepted unresolved questions to constrain subsequent moves.",
+     "evidence_type": "supported",
+     "section": "Information Structure"
+    },
+    {
+     "finding": "An assertion is relevant to the current QUD when it contributes at least a partial answer, while a subordinate question is relevant when answering it forms part of a strategy for answering the current QUD.",
+     "evidence_type": "supported",
+     "section": "Relevance"
+    },
+    {
+     "finding": "Discourse strategies are hierarchically organized through questions and subquestions, so a reply can contribute indirectly to a larger conversational goal by resolving a strategically subordinate question.",
+     "evidence_type": "supported",
+     "section": "Questions and discourse strategies"
+    },
+    {
+     "finding": "Accepted assertions update the common ground whereas accepted unresolved questions update the QUD structure, providing different contextual roles for declarative and interrogative moves.",
+     "evidence_type": "supported",
+     "section": "Information Structure"
+    },
+    {
+     "finding": "English prosodic focus is analyzed as presupposing congruence between the utterance's focus alternatives and the current QUD, which can also help hearers accommodate an implicit question.",
+     "evidence_type": "supported",
+     "section": "Prosodic Focus"
+    },
+    {
+     "finding": "The framework points to possible consequences for anaphora, discourse segmentation, rhetorical relations, and other pragmatic phenomena, but those applications are suggested rather than worked out in the paper.",
+     "evidence_type": "unsupported",
+     "section": "Applications and further issues"
+    }
+   ],
+   "limitations": [
+    "Embedded-question semantics is explicitly set aside, with the analysis concentrating on main-clause questions.",
+    "The hierarchy of discourse strategies is an idealization of more complicated real conversational planning.",
+    "The paper notes that answers may consist of sequences of assertions plus inferences but does not develop a detailed formal treatment of such multi-move answers.",
+    "The information-structure representation is largely static, while a more fully dynamic treatment is identified as necessary for phenomena such as presupposition projection.",
+    "The prosodic analysis abstracts away from many details of English intonation, including multiple intonation phrases, boundary tones, and choices among pitch accents.",
+    "Some focus-alternative and island-sensitivity phenomena are not fully accounted for.",
+    "The treatment of topics and topicalization is deliberately incomplete and does not provide universal necessary and sufficient conditions.",
+    "Connections to anaphora and rhetorical-relation theories are programmatic rather than empirically demonstrated."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "QUD_context_model": 0.99,
+    "relevance_definition": 0.99,
+    "hierarchical_strategy": 0.98,
+    "context_updates": 0.98,
+    "focus_QUD_congruence": 0.97,
+    "broader_applications": 0.99
+   },
+   "raw_claims": [
+    "Conversation can be modeled as a cooperative game whose participants pursue shared informational goals.",
+    "Questions structure discourse by establishing issues that interlocutors undertake to resolve.",
+    "The current QUD constrains which subsequent conversational moves count as relevant.",
+    "An assertion need not completely answer the current question in order to be relevant.",
+    "A subquestion can be relevant because its answer advances a strategy for answering a broader question.",
+    "Unresolved accepted questions can be organized as a stack reflecting the current discourse strategy.",
+    "Accepted assertions restrict the common ground by adding their content.",
+    "Focus alternatives can reflect the question that an utterance is intended to address.",
+    "Prosodic focus can provide evidence from which an implicit QUD is pragmatically reconstructed.",
+    "Answers can extend over more than one assertion and may depend on inference between discourse moves.",
+    "The paper does not supply a developed theory of embedded interrogatives.",
+    "Applications of the QUD framework to anaphora and rhetorical relations are left largely for further work."
+   ],
+   "source_url": "https://semprag.org/index.php/sp/article/download/sp.5.6/pdf/5868",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1706.02256",
+   "title": "A Mention-Ranking Model for Abstract Anaphora Resolution",
+   "research_question": "Can a neural mention-ranking model trained largely on automatically generated data learn to rank clause-like antecedents for abstract anaphors and transfer to shell-noun and unrestricted abstract-anaphora benchmarks?",
+   "methodology": "The authors formulate abstract-anaphora resolution as mention ranking with a Siamese bidirectional LSTM that represents an anaphoric context and each syntactically extracted antecedent candidate in a shared neural architecture and assigns candidates ranking scores. Training data are generated automatically from parsed Wall Street Journal text by transforming selected clauses into examples with abstract-anaphoric expressions, while evaluation uses shell-noun data and a 600-instance ARRAU-AA benchmark containing nominal and pronominal anaphors. Performance is measured mainly with success-at-n ranking metrics and compared with preceding-sentence and syntactic-tag baselines, together with feature ablations and hyperparameter variants.",
+   "key_findings": [
+    {
+     "finding": "The mention-ranking LSTM reaches substantially higher success-at-1 results than the compared earlier shell-noun method for the evaluated shell nouns, although the amount of gain varies by noun and tuning condition.",
+     "evidence_type": "supported",
+     "section": "Experiments: shell nouns"
+    },
+    {
+     "finding": "On ARRAU-AA, model variants perform strongly for nominal anaphors, with a reported success-at-1 of 51.89 for the best listed nominal configuration compared with 40.10 for the syntactic-tag baseline.",
+     "evidence_type": "supported",
+     "section": "Experiments: unrestricted abstract anaphora"
+    },
+    {
+     "finding": "Pronominal abstract anaphora remains markedly harder: the neural configurations reach at most about 28.57 success-at-1 in the reported table, below the syntactic-tag baseline's 35.17.",
+     "evidence_type": "supported",
+     "section": "Experiments: unrestricted abstract anaphora"
+    },
+    {
+     "finding": "Explicit syntactic information helps on the shell-noun task but can hurt on the broader ARRAU-AA task; removing or disrupting syntactic information yields substantially better ARRAU-AA ranking results.",
+     "evidence_type": "supported",
+     "section": "Ablation analysis"
+    },
+    {
+     "finding": "Automatically generated training instances can transfer to naturally occurring abstract-anaphora cases despite a substantial mismatch between the artificial training distribution and the unrestricted evaluation data.",
+     "evidence_type": "supported",
+     "section": "Experiments and discussion"
+    },
+    {
+     "finding": "The reported tuning procedure records test performance for each hyperparameter trial and may report the best test success-at-1 result across trials, introducing test-set selection into some reported numbers.",
+     "evidence_type": "supported",
+     "section": "Experimental setup"
+    }
+   ],
+   "limitations": [
+    "Artificial training antecedents are constructed with a restricted syntactic distribution, particularly clause-level S constituents, which differs from the broader distribution of naturally occurring abstract antecedents.",
+    "The artificial training material is pronominal, yet performance on naturally occurring pronominal anaphora remains considerably weaker than on nominal anaphora.",
+    "ARRAU-AA contains only 600 evaluated instances, including 203 pronominal cases, so subgroup conclusions rest on relatively small samples.",
+    "Candidate extraction depends on syntactic parsing and on a predefined sentence region containing the antecedent, so the evaluation does not test unrestricted document-wide antecedent discovery.",
+    "The authors note a potential bias in an existing shell-noun resource because annotators were shown a model-ranked subset of candidate antecedents.",
+    "Hyperparameter trials inspect test performance and the paper may select the best test score across trials, which weakens the independence of the reported test evaluation.",
+    "Different datasets are reused for development when evaluating across task variants, making comparisons sensitive to dataset-specific tuning choices."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "shell_noun_improvement": 0.99,
+    "nominal_ARRAU_improvement": 0.99,
+    "pronominal_gap": 0.99,
+    "syntax_ablation_effect": 0.99,
+    "artificial_transfer": 0.95,
+    "test_selection_issue": 0.99
+   },
+   "raw_claims": [
+    "The paper treats abstract-anaphora resolution as ranking possible antecedent mentions for an anaphoric expression.",
+    "The neural architecture uses recurrent representations of both the anaphoric context and candidate antecedent spans.",
+    "Most training examples are generated automatically rather than manually annotated.",
+    "The artificial-data procedure uses syntactic parses to identify clauses that can serve as antecedents.",
+    "The paper evaluates both shell-noun anaphora and a broader ARRAU-derived abstract-anaphora benchmark.",
+    "The proposed model performs very well on several shell-noun categories relative to the compared earlier method.",
+    "Nominal abstract anaphors in ARRAU-AA are resolved more successfully than pronominal abstract anaphors.",
+    "Removing syntactic signals can improve performance on unrestricted abstract anaphora.",
+    "The authors interpret this contrast as evidence that the model must learn semantic or contextual distinctions beyond coarse syntactic candidate type.",
+    "Artificially generated supervision transfers to natural examples despite differences between the training and evaluation distributions.",
+    "Pronominal abstract anaphora remains an unresolved weakness of the model.",
+    "The experimental tuning procedure consults test-set performance across hyperparameter trials."
+   ],
+   "source_url": "https://arxiv.org/html/1706.02256",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

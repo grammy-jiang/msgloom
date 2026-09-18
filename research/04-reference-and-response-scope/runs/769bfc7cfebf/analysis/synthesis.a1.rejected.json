@@ -1,0 +1,282 @@
+{
+ "topic": "reference resolution to propositions and the semantic scope of replies in work communication",
+ "paper_count": 13,
+ "executive_summary": "Across the 13 papers, the strongest common result is that reference resolution beyond entities requires explicit modeling of propositions, events, utterances, questions, and sometimes composite discourse objects. Candidate selection cannot safely rely on proximity alone: recency is highly useful in conversational discourse deixis, yet other event references can span substantially longer distances. Exact antecedent boundaries, split or multi-span antecedents, and semantic typing remain difficult. Question semantics and QUD theory further show that responses can be partial, subordinate, or relevant without resolving an entire preceding question. For msgloom, this supports proposition-level antecedent candidates, explicit response-to relations, partial-scope representations, and abstention when evidence is insufficient. However, the corpus provides little direct evidence on business email, approvals, multi-question replies, or partial agreement scope, leaving these as important academic and engineering gaps.",
+ "themes": [
+  "Abstract reference requires proposition-, event-, fact-, utterance-, or discourse-level antecedents rather than entity coreference alone.",
+  "Antecedent selection is strongly context dependent, with recency useful but not universally sufficient.",
+  "Exact antecedent-span identification is difficult and some valid antecedents are discontinuous, multi-sentential, or composed from multiple discourse units.",
+  "Syntactic and structural information is useful as a defeasible constraint, but overly rigid syntax can reduce generalization.",
+  "Question-answer interpretation is inherently scoped: replies may provide partial answers, answer subordinate questions, or leave other issues unresolved.",
+  "Joint reasoning across detection, anaphoricity, antecedent selection, and discourse structure can improve resolution but may introduce upstream bottlenecks.",
+  "Current datasets and evaluations provide limited direct evidence for business-work communication and decision-critical approval scope."
+ ],
+ "findings": [
+  {
+   "statement": "A product that must resolve expressions such as \"this\", \"that\", or shell nouns cannot reduce the problem to named-entity coreference: the relevant referent may be a proposition, fact, event, situation, utterance, speech act, or other abstract discourse object.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 1, 3.2.1, and 5"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "Introduction and task formulation"
+    },
+    {
+     "paper_id": "manual-8b8a394daa",
+     "section": "Proposed resolution procedure"
+    }
+   ]
+  },
+  {
+   "statement": "Antecedent resolution should be formulated as candidate selection or ranking over explicit discourse candidates rather than as an unconstrained whole-message label; multiple studies successfully use mention ranking, cluster ranking, or pairwise candidate comparison.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1706.02256",
+     "section": "Model and experiments"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Model"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "paper_id": "manual-5c0971730d",
+     "section": "Experiments: Twin-Candidate Resolution"
+    }
+   ]
+  },
+  {
+   "statement": "Recency is an important but defeasible antecedent prior. In conversational discourse deixis, most antecedents are highly local and recency restrictions materially improve performance, while event-reference studies show that some antecedents occur at substantially longer distances and that simple most-recent heuristics are inadequate.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "5.1 Analysis by Distance and 5.2 Ablation Experiments"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Data Analysis"
+    },
+    {
+     "paper_id": "manual-5c0971730d",
+     "section": "Experiments: Baselines"
+    }
+   ]
+  },
+  {
+   "statement": "Exact scope cannot always be represented by one contiguous antecedent span: abstract reference may target several antecedents, discontinuous material, multi-sentence content, or a discourse object composed from several propositions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 4.1, 4.3, and 6"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Task formulation and experiments"
+    },
+    {
+     "paper_id": "manual-8b8a394daa",
+     "section": "Analysis of Spanish examples and discourse-topic analysis"
+    }
+   ]
+  },
+  {
+   "statement": "For response scope, a reply need not completely resolve the currently salient question. Formal question and QUD accounts explicitly permit partial answers and subordinate questions that contribute toward a broader unresolved issue.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3765-sp-5-6",
+     "section": "Relevance and Questions and discourse strategies"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00351935",
+     "section": "Question semantics and Multiple wh-questions"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00983299",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "Syntactic structure is useful for generating and ranking antecedent candidates, but it should be treated as defeasible evidence rather than a hard semantic rule because restrictive syntactic assumptions can exclude valid references or introduce noise.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3115-v1-d14-1056",
+     "section": "Evaluation and Results"
+    },
+    {
+     "paper_id": "1706.02256",
+     "section": "Ablation analysis"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Composite Kernel"
+    }
+   ]
+  },
+  {
+   "statement": "End-to-end performance is often limited by upstream candidate, mention, trigger, or anaphor identification, so msgloom should preserve intermediate uncertainty rather than interpreting a failed link as evidence that no antecedent exists.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-p17-1009",
+     "section": "Section 4.4"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+     "section": "Sections 8.1-8.4"
+    }
+   ]
+  },
+  {
+   "statement": "The available literature supports explicit antecedent grounding, but it does not establish reliable business-email-level behavior for partial approvals, multi-question replies, clause-specific rejection, or short answers such as \"yes\" whose target must be selected among several propositions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+     "section": "Sections 3-4 and 8.4"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "Limitations"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 4-6"
+    },
+    {
+     "paper_id": "doi-10-3765-sp-5-6",
+     "section": "Limitations and Relevance"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "How strongly antecedent search should be restricted by recency",
+   "papers": [
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "manual-555fa5b6e8",
+    "manual-5c0971730d"
+   ],
+   "note": "The dialogue discourse-deixis study finds very strong locality and a statistically useful recency restriction, whereas event-NP resolution finds substantially longer-distance links and event-pronoun work shows that a most-recent-verb heuristic is poor. These results are best interpreted as domain- and referent-type-dependent rather than as a universal recency rule."
+  },
+  {
+   "topic": "Whether stronger syntactic constraints improve resolution",
+   "papers": [
+    "doi-10-3115-v1-d14-1056",
+    "1706.02256",
+    "manual-555fa5b6e8"
+   ],
+   "note": "Shell-noun experiments show family-specific syntax helping some nouns but hurting versatile nouns; the abstract-anaphora ranking study finds syntax helpful on one task but harmful on broader ARRAU-AA evaluation; the event-NP study finds structural syntax useful but simpler structural representations outperform richer ones. Syntax is therefore informative but not safely enforceable as a hard constraint."
+  },
+  {
+   "topic": "Whether exact textual antecedent spans are always necessary",
+   "papers": [
+    "doi-10-1162-coli-a-00327",
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "manual-8b8a394daa"
+   ],
+   "note": "The survey argues that exact span recovery is application-dependent, while the dialogue resolver uses whole utterances partly because fine clausal boundaries are difficult. The Spanish analysis shows that the intended referent can itself be a composite of several propositions. For msgloom, however, traceability and decision scope create a stronger product requirement for explicit grounding than some source applications require."
+  },
+  {
+   "topic": "Whether integrating related subtasks should be preferred over staged models",
+   "papers": [
+    "doi-10-18653-v1-p17-1009",
+    "doi-10-18653-v1-2021-naacl-main-329"
+   ],
+   "note": "Joint event modeling improves trigger, anaphoricity, and coreference in the event-coreference study, but joint optimization does not improve the ordinary components of the split-antecedent system and its pre-trained variant performs better overall. Integration can exploit dependencies, but joint training is not uniformly beneficial."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G1",
+   "description": "There is insufficient direct evidence on proposition-level reference and response scope in business email or Teams-like work communication, particularly approvals, rejections, commitments, and terse replies.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"business email\" reply scope approval agreement antecedent OR \"email\" \"discourse deixis\" OR workplace dialogue reference resolution"
+  },
+  {
+   "id": "G2",
+   "description": "The corpus does not adequately establish methods for aligning a short response such as \"yes\", \"approved\", or \"agreed\" to one proposition among several questions, proposals, conditions, or clauses in the preceding context.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"answer scope\" dialogue multiple questions OR \"question answer alignment\" dialogue OR \"agreement target\" dialogue OR \"partial agreement\" conversation"
+  },
+  {
+   "id": "G3",
+   "description": "The literature does not provide a validated representation and evaluation protocol tailored to exact, partial, ambiguous, unsupported, multi-span, and composite antecedent scope for msgloom.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G4",
+   "description": "It remains unknown which candidate-window strategy gives the best safety/recall trade-off for work communication, where many references may be local but some may cross messages, threads, or long intervals.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G5",
+   "description": "A robust abstention policy is needed for missing antecedents, competing antecedents, and low-confidence scope decisions so the system does not invent approval or closure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G6",
+   "description": "More evidence is needed on computational treatment of multi-proposition, discontinuous, and rhetorically composed abstract antecedents, especially when the target is a response rather than a demonstrative anaphor.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"abstract anaphora\" discontinuous antecedent OR multi-sentence antecedent OR \"propositional anaphora\" rhetorical relation OR composite discourse referent"
+  },
+  {
+   "id": "G7",
+   "description": "References whose targets are table cells, rows, attachments, screenshots, pages, or visual regions require multimodal/document grounding rather than Topic 04-only resolution.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "G8",
+   "description": "General calibration, confidence calibration, and system-wide attribution/completeness evaluation are cross-cutting reliability problems rather than Topic 04-specific research.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  }
+ ],
+ "actionable_insights": [
+  "Represent each candidate antecedent as an explicit span or structured proposition with source lineage; do not store only a message-level response label.",
+  "Allow one response to link to one, several, or composite antecedents and record scope independently for each link.",
+  "Use recency as a strong prior, not a hard cutoff; preserve a fallback path for longer-distance candidates.",
+  "Treat syntax, quotation structure, Topic membership, discourse relations, and lexical cues as candidate-generation or ranking evidence rather than irreversible filters.",
+  "Separate anaphor/response detection, antecedent availability, antecedent ranking, semantic relation, and scope confidence so failures remain diagnosable.",
+  "Support explicit outcomes such as exact, partial, ambiguous, and unresolved/unsupported instead of forcing one antecedent.",
+  "For multiple preceding questions or proposals, maintain proposition-level candidates so that answering one does not mark siblings as resolved.",
+  "Build an independent adversarial evaluation set containing multi-question messages, mixed approval/rejection, conditions, corrections, terse yes/no replies, multi-span targets, and missing antecedents.",
+  "Evaluate false broad-scope links as first-class errors because incorrectly expanding an approval or commitment is more damaging than leaving an uncertain link unresolved.",
+  "Hand missing-context cases to Topic 07 and references into attachments or visual regions to Topic 08 rather than forcing Topic 04 to guess."
+ ],
+ "confidence_summary": "Confidence is HIGH for the broad architectural conclusions that abstract reference requires non-entity antecedents, candidate ranking is useful, exact boundaries are difficult, recency is defeasible, and partial question resolution must be represented. Confidence is MEDIUM for transferring specific modeling choices or distance windows into msgloom because the empirical studies use dialogue, newswire, broadcast news, ARRAU, CODI-CRAC, or TAC data rather than business email. Confidence is LOW for any claim that the reviewed systems are already sufficient for approval scope, multi-question email replies, or production work-state transitions; those cases were not directly validated by this corpus.",
+ "limitations": [
+  "The corpus contains no direct benchmark focused on Outlook email, Microsoft Teams work communication, or business approval/commitment scope.",
+  "Several foundational papers are formal linguistic theories rather than computational evaluations, so they establish distinctions and representations more strongly than implementable performance.",
+  "doi-10-1007-bf00983299 was available only through its abstract, limiting assessment of the underlying formal analysis.",
+  "The computational studies use heterogeneous datasets, annotation schemes, candidate definitions, and metrics, so numerical results are not directly comparable.",
+  "Several datasets are small for rare phenomena such as split antecedents and pronominal abstract anaphora.",
+  "Exact clausal antecedent boundaries have known annotation disagreement, so a gold standard for msgloom will require careful operational definitions.",
+  "The literature reviewed here does not directly evaluate the product-critical asymmetric cost of over-broad approval or rejection scope.",
+  "No result in this corpus establishes production representativeness for the user's work communication."
+ ],
+ "gap_status": []
+}

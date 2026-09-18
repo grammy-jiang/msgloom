@@ -1,0 +1,44 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/04-reference-and-response-scope/runs/f72f7f513e9d/analysis/synthesis.json",
+ "status": "rejected",
+ "issues": [
+  "Executive summary and actionable insight on abstention overstate doi-10-1609-aaai-v33i01-3301134 and the abstract-anaphora evidence. Those analyses support explicit None/no-antecedent outcomes and annotation ambiguity, not a validated model-level abstention policy under uncertainty. This matters because gap-5 itself correctly says the abstention policy and cost threshold remain unvalidated.",
+  "The safety-critical actionable insight ('a detected yes, approval, or agreement should not propagate to sibling propositions without target-specific evidence') is a product-risk policy, not a result established by doi-10-1609-aaai-v33i01-3301134 or doi-10-1162-coli-a-00327. The former is customer-service utterance alignment and the latter is a survey of non-nominal anaphora; neither directly evaluates workplace approval/commitment propagation or its harms.",
+  "The actionable insight proposing independent proposition states 'answered/resolved, partially addressed, unresolved, ambiguous, and unsupported' states a specific product state model that is not established by doi-10-1007-s10489-013-0481-1 and doi-10-3765-sp-5-6. Those papers support unresolved-question status and formal partial answerhood respectively, but not this complete operational taxonomy.",
+  "The actionable insight requiring decomposition of antecedent messages into proposition/question/request units before alignment goes beyond doi-10-3233-aic-2012-0516 and manual-5a32708675. Those studies operate at sentence or grouped-segment level and explicitly do not validate proposition-level decomposition. The recommendation may be a reasonable engineering hypothesis, but it cannot be presented as directly literature-supported.",
+  "The proposed msgloom gold scheme is partly under-cited. doi-10-18653-v1-s15-1035, manual-7743c50805, and manual-be69c3aa17 support overlapping, alternative, ambiguous, and discontinuous antecedents, but they do not by themselves establish an explicit no-supported-antecedent label or the complete multi-target response annotation contract described.",
+  "gap handoff-topic-07 is not traceable to any supplied per-paper analysis. The assignment of missing-evidence retrieval to 'Topic 07' is pipeline/project architecture knowledge external to this corpus.",
+  "gap handoff-topic-08 is not traceable to any supplied per-paper analysis. The assignment of screenshot, cell, page, attachment-region, and document-object grounding to 'Topic 08' is external scope-management information, not a literature finding from the supplied analyses.",
+  "The executive-summary wording that exact antecedent boundaries are 'intrinsically ambiguous' is stronger than the supplied empirical evidence. doi-10-1162-coli-a-00327, doi-10-18653-v1-s15-1035, manual-7743c50805, and manual-be69c3aa17 establish frequent boundary difficulty, disagreement, overlap, and legitimate alternatives; they do not justify claiming that exact boundaries are intrinsically ambiguous in general.",
+  "The contradiction section is mostly coherent, but 'Value of strict syntactic constraints' is not a genuine contradiction between 1706.02256 and doi-10-3115-v1-d14-1056. Both analyses converge on the same conditional conclusion: syntax helps in restricted settings and can hurt when constructions are more diverse. It should be labeled a domain/task-conditioned convergence or tension rather than a cross-paper contradiction.",
+  "The locality contradiction includes manual-5c0971730d as evidence for locality even though that study imposes a short candidate window by construction. That design choice is not empirical evidence that antecedents are genuinely local. doi-10-18653-v1-2022-emnlp-main-778 provides the direct locality evidence; manual-555fa5b6e8 and manual-a6314f615a provide counterevidence for longer or delayed links."
+ ],
+ "unsupported_claims": [
+  "The corpus supports an 'abstaining' architecture. The corpus supports explicit None/no-link outcomes and ambiguity handling; uncertainty-based abstention as a product policy remains open.",
+  "For safety-critical downstream state changes, a detected approval/agreement should not propagate to sibling propositions without target-specific evidence. This is a defensible engineering rule, but the cited transfer-domain literature does not empirically validate it.",
+  "Each antecedent proposition should be independently assigned the full state set answered/resolved, partially addressed, unresolved, ambiguous, and unsupported. The cited papers support only portions of that taxonomy.",
+  "Antecedent messages should be decomposed into proposition/question/request units before semantic alignment as a literature-established design. The direct QA studies do not validate proposition-level decomposition.",
+  "handoff-topic-07 and handoff-topic-08 as corpus-derived gaps. Their topic assignments are external project-scope decisions.",
+  "Exact antecedent boundaries are 'intrinsically ambiguous' as a general conclusion. The evidence supports that they are often difficult, disputed, overlapping, or multiply acceptable."
+ ],
+ "required_fixes": [
+  "Replace claims that the literature supports an 'abstaining architecture' with the narrower supported conclusion that explicit no-link/None outcomes and ambiguous antecedents must be representable. Keep uncertainty-driven abstention thresholds explicitly in gap-5 as an unvalidated engineering/product-risk decision.",
+  "Rewrite the safety-critical approval/commitment recommendation as a msgloom engineering or risk-management policy rather than an empirically established literature conclusion. State explicitly that the cited customer-service and anaphora work only motivates avoiding forced single-target links and preserving uncertainty.",
+  "Recast the proposition-level state taxonomy and proposition-decomposition recommendations as proposed design hypotheses for msgloom. Do not imply that the cited QA-alignment studies validated those proposition-level operations.",
+  "Fix the gold-scheme actionable insight by separating directly evidenced annotation requirements from proposed msgloom extensions. Add appropriate support for explicit no-link outcomes if retained, such as doi-10-1609-aaai-v33i01-3301134 or doi-10-1093-jos-17-1-51, and make clear that the combined annotation contract itself remains gap-2.",
+  "Remove handoff-topic-07 and handoff-topic-08 from the evidence synthesis, or explicitly mark them as external project-scope handoffs not derived from the reviewed papers.",
+  "Change 'intrinsically ambiguous' to a supported formulation such as 'often difficult or ambiguous to delimit, with overlapping or multiple acceptable antecedents documented in several datasets and annotation studies.'",
+  "Reclassify the syntax item from a contradiction to a convergence/task-dependence observation, because 1706.02256 and doi-10-3115-v1-d14-1056 do not take opposing empirical positions.",
+  "In the locality contradiction, do not treat manual-5c0971730d's imposed short search window as evidence that antecedents are local. Retain it only as an example of a modeling assumption, clearly distinguished from observed distance distributions.",
+  "Preserve the current open status of gaps 1-5. The corpus does not close proposition-level workplace reply scope, multi-question partial-answer alignment, composite workplace response targets, a complete annotation/evaluation contract, or msgloom-specific abstention/cost policy."
+ ],
+ "confidence": 0.99,
+ "scores": {
+  "faithfulness": 0.82,
+  "coherence": 0.91,
+  "gap_completeness": 0.97,
+  "citation_integrity": true
+ },
+ "notes": "The core empirical synthesis is largely strong: non-bijective alignment, coarse alignment units, unanswered-question limitations, ambiguous abstract antecedent boundaries, multi-parent discourse structures, usefulness of discourse context, and upstream candidate/segmentation bottlenecks are all well supported by the supplied analyses. All cited paper_ids are from the allowed set, and the five principal research gaps are correctly left open. Rejection is required because several actionable and executive claims cross the line from supported structural evidence into unvalidated proposition-level product architecture or safety policy, and two gap handoffs are not derived from the supplied corpus at all. These are correctable without changing the central empirical conclusions."
+}

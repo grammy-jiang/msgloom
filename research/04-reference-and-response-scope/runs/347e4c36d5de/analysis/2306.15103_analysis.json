@@ -1,0 +1,81 @@
+{
+ "paper_id": "2306.15103",
+ "title": "Structured Dialogue Discourse Parsing",
+ "research_question": "Can dialogue discourse parsing be improved by globally and jointly learning discourse links and relation labels as a structured labeled multi-root non-projective spanning tree rather than making independent local decisions?",
+ "methodology": "The authors formulate a dialogue's discourse structure as a labeled directed multi-root non-projective spanning tree, jointly scoring links and their discourse relations with structured encoding and matrix-tree learning and performing structured inference with a modified Chiu-Liu-Edmonds procedure. The model uses pretrained language representations and contextual encoding without explicit hand-crafted speaker or turn-relation features. It is evaluated in-domain and cross-domain on STAC game dialogues and Molweni, derived from Ubuntu IRC technical discussions, using UAS/Link F1 and LAS/Link-and-Relation F1, with reported main results averaged over three runs. Additional analyses examine dialogue length, individual relation types, and robustness when speaker and turn information is removed.",
+ "key_findings": [
+  {
+   "finding": "The proposed parser reaches LAS 59.6 on STAC and 59.9 on Molweni, improving over the previous best results by 2.3 and 1.5 points respectively.",
+   "evidence_type": "supported",
+   "section": "5.4 Main Results - In-domain"
+  },
+  {
+   "finding": "In cross-domain evaluation, the method obtains LAS 38.0 for STAC-to-Molweni and 31.6 for Molweni-to-STAC, beating the best compared baselines by 5.1 and 4.8 points respectively, although it is not best on cross-domain UAS.",
+   "evidence_type": "supported",
+   "section": "5.4 Main Results - Cross-domain"
+  },
+  {
+   "finding": "The structured parser's performance degrades less than baseline parsers as dialogues become longer.",
+   "evidence_type": "supported",
+   "section": "5.5 Additional Analyses - Dialogue Length Robustness"
+  },
+  {
+   "finding": "The structured method improves correct predictions for relations including QA_pair and Comment on STAC and QA_pair and Clarification Question on Molweni, while low-resource relations remain difficult.",
+   "evidence_type": "supported",
+   "section": "5.5 Additional Analyses - Relation Performance Breakdown"
+  },
+  {
+   "finding": "Removing speaker and turn information reduces STAC LAS from 59.6 to 54.4 for the proposed parser, compared with 57.3 to 47.8 for the Struct-Aware baseline.",
+   "evidence_type": "supported",
+   "section": "5.5 Additional Analyses - Speaker and Turn Feature Robustness"
+  },
+  {
+   "finding": "The tree conversion does not retain all multi-parent discourse links: 6% of STAC edges are discarded, and when a node has more than one parent only the latest parent is retained; Molweni requires no such edge removal.",
+   "evidence_type": "supported",
+   "section": "3 Structure Formulation"
+  },
+  {
+   "finding": "Consequently, the evaluated representation does not directly preserve a response EDU that is jointly attached to multiple antecedent propositions, and the experiments do not separately measure multi-question partial replies, unanswered subquestions, or scoped approval or rejection.",
+   "evidence_type": "unsupported",
+   "section": "3 Structure Formulation; 5 Experiments"
+  }
+ ],
+ "limitations": [
+  "The tree constraint forces each non-root node to a single retained parent, so genuine multi-parent discourse attachment is lost in the transformed STAC data.",
+  "The paper assumes elementary discourse units are already segmented rather than evaluating proposition or EDU segmentation jointly with attachment.",
+  "The evaluated units are dialogue EDUs or utterances, not explicitly proposition-level components within a multi-question email message.",
+  "Neither STAC nor Molweni is a workplace-email corpus; STAC is game chat and Molweni is based on technical Ubuntu IRC discussions.",
+  "The evaluation does not report dedicated measures for unanswered questions, partially answered multi-question turns, or the scope of approval and rejection acts.",
+  "Low-resource discourse-relation types remain difficult.",
+  "Cross-domain UAS results are not uniformly better than older baselines, so the improvement is strongest for joint link-and-relation prediction rather than link prediction alone."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "in_domain_las_gain": 0.99,
+  "cross_domain_las_gain": 0.99,
+  "long_dialogue_robustness": 0.96,
+  "qa_relation_improvement": 0.97,
+  "single_parent_tree_constraint": 1.0,
+  "multi_antecedent_reply_gap": 0.99,
+  "partial_reply_scope_gap": 0.98
+ },
+ "raw_claims": [
+  "Dialogue discourse parsing predicts both links between discourse units and labels for those links.",
+  "The method globally models dialogue structure with a latent tree distribution rather than treating every link independently.",
+  "STAC contains multiparty online-game dialogue, whereas Molweni is based on Ubuntu IRC technical discussion.",
+  "UAS evaluates link existence, while LAS requires both the link and its relation label to be correct.",
+  "The proposed system reports 74.4 UAS and 59.6 LAS on STAC in-domain evaluation.",
+  "It reports 83.5 UAS and 59.9 LAS on Molweni in-domain evaluation.",
+  "The main table reports averages over three runs.",
+  "Six percent of STAC graph edges are removed to obtain the tree-like training structure.",
+  "For a node with multiple annotated parents, only the latest parent is kept.",
+  "QA_pair is among the relations for which the structured parser improves over the comparison baseline.",
+  "The study models dialogue-level attachment but does not evaluate proposition-level completeness of replies to multi-part questions."
+ ],
+ "source_url": "https://arxiv.org/html/2306.15103",
+ "access": "full_text"
+}

@@ -1,0 +1,87 @@
+{
+ "paper_id": "2403.16609",
+ "title": "Conversational Grounding: Annotation and Analysis of Grounding Acts and Grounding Units",
+ "research_question": "How can natural task-oriented dialogues be annotated in terms of grounding acts, common grounding units, and degrees of grounding, and how effectively can a baseline transformer model predict those structures?",
+ "methodology": "Two computational-linguistics annotators labeled all 430 Meetup dialogues containing 5,131 utterances and 50 randomly selected Spot the Difference dialogues containing 4,934 utterances with Grounding Acts, Common Grounding Units, and grounding degree. The authors measured Grounding Act agreement with Cohen's kappa and analyzed phenomena such as reopening, ambiguity, delayed grounding, and multi-threaded dialogue. They released the annotated data and coding manual. As a computational baseline, they fine-tuned T5-base with cross-entropy and weighted cross-entropy using a 70:15:15 train-development-test split and performed classification relative to each potentially relevant CGU.",
+ "key_findings": [
+  {
+   "finding": "A single utterance can participate in multiple Common Grounding Units, so the annotation explicitly permits one response to have distinct relations to several simultaneously active discourse units.",
+   "evidence_type": "supported",
+   "section": "5 Annotation Scheme"
+  },
+  {
+   "finding": "The paper documents a direct multi-question scope ambiguity: after three successive questions, a negative response could not be reliably assigned to any one question, so the associated grounding was labeled ambiguous even though the interaction moved on.",
+   "evidence_type": "supported",
+   "section": "5 Annotation Scheme"
+  },
+  {
+   "finding": "Grounding is not irrevocable: an already grounded CGU may be reopened by repair or acknowledgment requests, and a proposer can also revoke information from the grounded set.",
+   "evidence_type": "supported",
+   "section": "5 Annotation Scheme"
+  },
+  {
+   "finding": "Written chat contained non-linear and multi-threaded response behavior in which a later utterance answered an older contribution rather than the immediately preceding material, demonstrating that simple nearest-turn linkage is insufficient.",
+   "evidence_type": "supported",
+   "section": "6 Challenges"
+  },
+  {
+   "finding": "The annotations sometimes require future context: annotators revised 23 Meetup cases after seeing later utterances, and 171 Spot the Difference cases were marked as requiring subsequent utterances for correct interpretation.",
+   "evidence_type": "supported",
+   "section": "6 Challenges; 7 Analysis"
+  },
+  {
+   "finding": "Grounding dependencies can span long stretches: the longest reported trajectory was 13 utterances in Meetup and 85 utterances in Spot the Difference, and grounded CGUs could later be revisited.",
+   "evidence_type": "supported",
+   "section": "7 Analysis"
+  },
+  {
+   "finding": "The T5 baseline performs well on some frequent categories but extremely poorly on many rare Grounding Acts, and weighted loss does not resolve the general class-imbalance problem.",
+   "evidence_type": "supported",
+   "section": "8 Model"
+  },
+  {
+   "finding": "Grounding Act annotation achieved Cohen's kappa of 0.81 for Meetup and 0.78 for Spot the Difference.",
+   "evidence_type": "supported",
+   "section": "5 Annotation Scheme"
+  }
+ ],
+ "limitations": [
+  "Both corpora are collaborative task-oriented dialogues rather than workplace email, so communication medium and organizational norms differ from the target setting.",
+  "Only 50 Spot the Difference dialogues were annotated rather than the full corpus.",
+  "The Grounding Unit representation does not explicitly decompose a multi-proposition utterance into independently answerable propositions or subquestions.",
+  "Some annotations depend on prosody, inferred speaker intent, future dialogue context, or timing heuristics, making transcript-only replication difficult.",
+  "Grounding Act frequencies are highly imbalanced, with several important repair and acknowledgment categories represented by very few examples.",
+  "The T5 experiments are presented as a preliminary baseline and perform poorly on numerous minority categories.",
+  "The paper does not report a dedicated model for proposition-level reply scope or unanswered-subquestion detection."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multiple-CGU membership": 0.99,
+  "multi-question response ambiguity": 0.99,
+  "reopening and revocation": 0.98,
+  "multi-threaded reply links": 0.98,
+  "future-context dependence": 0.99,
+  "long grounding trajectories": 0.99,
+  "baseline class imbalance": 0.97,
+  "annotation reliability": 0.99
+ },
+ "raw_claims": [
+  "The released annotation represents dialogue as Grounding Acts grouped into Common Grounding Units.",
+  "One utterance may be associated with more than one grounding unit.",
+  "A response after several questions can be ambiguous as to which question it addresses.",
+  "The annotation allows a grounded unit to be reopened after repair-related acts.",
+  "A proposer can revoke information that had previously been treated as grounded.",
+  "Written chat can contain multiple conversational threads whose response links cross intervening utterances.",
+  "Later dialogue context was necessary to annotate some earlier utterances correctly.",
+  "Some grounding trajectories extend across many intervening utterances.",
+  "Meetup contains explicitly annotated ambiguous grounding cases.",
+  "The model evaluates an utterance separately with respect to each candidate grounding unit.",
+  "Rare Grounding Acts remain difficult for the T5 baseline despite use of weighted loss."
+ ],
+ "source_url": "https://arxiv.org/html/2403.16609",
+ "access": "full_text"
+}

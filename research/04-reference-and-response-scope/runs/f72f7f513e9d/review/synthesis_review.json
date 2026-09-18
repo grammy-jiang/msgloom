@@ -1,0 +1,30 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/04-reference-and-response-scope/runs/f72f7f513e9d/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Contradiction 'One-to-one alignment assumptions versus empirically non-bijective reply structure' incorrectly groups manual-5a32708675 with one-to-one alignment assumptions. The NTCIR-16 overview explicitly represents potentially multi-sentence question and answer groups and expands each group into a full cross-product of sentence-level links. Its limitation is loss of finer proposition-level scope, not a one-to-one correspondence assumption.",
+  "Contradiction 'Single-gold antecedent evaluation versus documented ambiguity and overlap' overstates what the supplied analysis of doi-10-18653-v1-2021-codi-sharedtask-1 establishes. That analysis reports one primary annotator per newly annotated document and shared-task gold evaluation, but it does not establish that each discourse-deictic case is evaluated against exactly one uniquely acceptable antecedent. The ambiguity-versus-exact-gold tension is directly supported by doi-10-18653-v1-s15-1035, manual-be69c3aa17, and manual-7743c50805 without relying on this stronger characterization of the CODI-CRAC paper.",
+  "The theme on cross-domain robustness cites doi-10-18653-v1-2021-codi-sharedtask-1 for the claim that methods specialized to one corpus or discourse convention can degrade under transfer. The supplied CODI-CRAC analysis establishes genre-dependent difficulty and an out-of-domain-training setup, but not a controlled in-domain-versus-transfer degradation result. doi-10-1109-icaicta63815-2024-10762999 directly supports the degradation claim, so the theme remains supportable but the CODI citation should be narrowed or its wording softened.",
+  "Finding 'Several interrogatives in one turn cannot automatically be interpreted as several independent outstanding obligations' is faithful to doi-10-1016-j-pragma-2007-07-011, but its HIGH confidence rests on one abstract-only qualitative study in oral proficiency interviews. The finding is supported, but the synthesis should distinguish confidence in the observed phenomenon from confidence in transfer to workplace communication."
+ ],
+ "unsupported_claims": [
+  "manual-5a32708675 is presented within a contradiction about one-to-one alignment assumptions even though its gold representation explicitly permits grouped multi-sentence question and answer material and evaluates their cross-product links.",
+  "doi-10-18653-v1-2021-codi-sharedtask-1 is characterized as evidence for 'single-gold antecedent evaluation' more strongly than the supplied per-paper analysis supports.",
+  "doi-10-18653-v1-2021-codi-sharedtask-1 does not, from the supplied analysis alone, directly demonstrate degradation caused by transferring a corpus-specialized method, although it does demonstrate genre variation and an out-of-domain-training setting."
+ ],
+ "required_fixes": [
+  "Revise the first contradiction so manual-5a32708675 is described as a grouped/cross-product benchmark that loses proposition-level correspondence, not as evidence of a one-to-one alignment assumption. It may be retained as a related representational limitation but should be separated from the one-to-one side represented by doi-10-1109-icaicta63815-2024-10762999.",
+  "Revise the third contradiction to avoid asserting that doi-10-18653-v1-2021-codi-sharedtask-1 uses a uniquely acceptable single antecedent unless that fact is established elsewhere. The methodological tension can be stated using doi-10-18653-v1-s15-1035, manual-be69c3aa17, and manual-7743c50805, which directly document multiple acceptable, overlapping, or alternative antecedents.",
+  "Narrow the cross-domain-robustness theme so doi-10-1109-icaicta63815-2024-10762999 supports observed transfer degradation, while doi-10-18653-v1-2021-codi-sharedtask-1 supports genre dependence and the difficulty of out-of-domain evaluation rather than a measured transfer penalty.",
+  "Consider lowering the transfer-level confidence of the multiple-interrogative finding or explicitly state that the observed evidence comes from oral proficiency interviews and does not establish workplace-message obligation structure."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.91,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is broadly faithful and substantially stronger than the minimum needed for report generation. Its central conclusions are supported: zero-link and non-bijective structures occur; email and dialogue alignment cannot be reduced to adjacency; abstract antecedents can be clausal, discourse-segmental, discontinuous, overlapping, or multi-unit; proposition-level partial-answer and workplace approval/rejection/commitment scope remain unvalidated; and all five stated gaps are correctly left open. Transfer-domain evidence is generally labeled as such, and msgloom-specific abstention, proposition-state, and error-cost policies are explicitly framed as engineering hypotheses rather than empirical findings. All cited paper_ids belong to the permitted set. The remaining problems are localized mainly to how two contradiction entries characterize particular benchmark assumptions and to one secondary cross-domain citation; they do not overturn the executive summary or gap status."
+}

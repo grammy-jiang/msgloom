@@ -1,0 +1,411 @@
+{
+ "topic": "empirical reply-to-proposition alignment in email and dialogue, focusing on partial replies, multiple questions, unanswered questions, and multi-proposition antecedents",
+ "paper_count": 26,
+ "executive_summary": "Across 26 papers, the strongest empirical conclusion is that reply/reference structure is not reliably one-to-one: answers may target several earlier questions, questions may receive several responses, some moves have no antecedent, and abstract references may target clauses, discourse segments, or composite antecedents. Email, customer-service, assembly, and multiparty-dialogue studies show that thread/discourse structure materially improves alignment, but their units remain mostly sentences, paragraphs, utterances, or pre-grouped QA segments. None directly validates proposition-level partial approval, rejection, agreement, clarification, or answer scope in authentic workplace communication. Unanswered questions appear in annotations or discourse models but are rarely evaluated as first-class outcomes. Exact antecedent boundaries are also intrinsically ambiguous, especially for multi-clause or discontinuous content. The corpus therefore supports a multi-target, abstaining, scope-sensitive architecture, while leaving all five carried-over gaps open.",
+ "themes": [
+  "Reply and reference structure is frequently non-bijective: zero-target, one-to-many, many-to-one, and multi-parent configurations are empirically attested [doi-10-1609-aaai-v33i01-3301134; doi-10-18653-v1-d15-1109; doi-10-3233-aic-2012-0516; doi-10-1109-icaicta63815-2024-10762999].",
+  "Existing QA-alignment systems generally stop at utterance, sentence, paragraph, or segment alignment and do not determine which proposition inside a multi-proposition antecedent was actually resolved [doi-10-1609-aaai-v33i01-3301134; doi-10-3233-aic-2012-0516; manual-5a32708675; manual-a6314f615a].",
+  "Unanswered or unresolved questions are genuine discourse states, but most computational alignment benchmarks either omit them from training/evaluation or represent them only indirectly [doi-10-1007-s10489-013-0481-1; manual-a6314f615a; doi-10-1609-aaai-v33i01-3301134].",
+  "Non-nominal reference can target propositions, events, facts, speech acts, clauses, multi-utterance regions, and discontinuous or composite discourse material [doi-10-1093-jos-17-1-51; doi-10-1162-coli-a-00327; manual-7743c50805; manual-be69c3aa17; manual-8b8a394daa].",
+  "Conversation and thread structure, not lexical similarity alone, is repeatedly useful for alignment and antecedent selection [manual-a6314f615a; doi-10-1609-aaai-v33i01-3301134; doi-10-18653-v1-d15-1109; doi-10-18653-v1-2023-eacl-main-247].",
+  "Antecedent identification and evaluation are themselves uncertain: overlapping spans, multiple acceptable antecedents, and disagreement over exact boundaries are common enough to invalidate a simple single-gold-span assumption [doi-10-18653-v1-s15-1035; manual-7743c50805; doi-10-1162-coli-a-00327; manual-be69c3aa17].",
+  "Locality is useful as a prior but unsafe as a hard rule: discourse-deictic links are often local, while email answers and event references can be delayed or long-distance [doi-10-18653-v1-2022-emnlp-main-778; manual-a6314f615a; manual-555fa5b6e8].",
+  "Upstream candidate generation, segmentation, and recognition can dominate end-to-end failure even when the downstream linker is competent [doi-10-1109-icaicta63815-2024-10762999; doi-10-18653-v1-2021-naacl-main-329; doi-10-18653-v1-s15-1035]."
+ ],
+ "findings": [
+  {
+   "statement": "A response-alignment representation for msgloom should not enforce one-to-one links. Empirical datasets contain answer utterances aligned to zero or multiple earlier questions, questions with several answers, and discourse units with several parents.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "Task Description - Data; None and One-to-Many Alignments"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-d15-1109",
+     "section": "2 What’s so special about multi party dialogue?"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2023-eacl-main-247",
+     "section": "2 Discourse structure and data; 3 Our Model"
+    },
+    {
+     "paper_id": "doi-10-3233-aic-2012-0516",
+     "section": "4.3 Answer detection and Q-A pairing"
+    }
+   ]
+  },
+  {
+   "statement": "Current direct QA-alignment evidence does not solve proposition-level partial reply scope. The main email, customer-service, and assembly studies align whole sentences, paragraphs, utterances, or QA groups and explicitly leave unresolved which propositions inside those units were answered.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "Task formulation and limitations"
+    },
+    {
+     "paper_id": "doi-10-3233-aic-2012-0516",
+     "section": "4.3 Answer detection and Q-A pairing"
+    },
+    {
+     "paper_id": "manual-5a32708675",
+     "section": "Section 3.1.3; limitations"
+    },
+    {
+     "paper_id": "manual-a6314f615a",
+     "section": "Section 4; limitations"
+    },
+    {
+     "paper_id": "doi-10-1109-icaicta63815-2024-10762999",
+     "section": "Section IV-B; limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Unanswered-question state must remain distinct from successful alignment. Unanswered questions are observed or explicitly modeled in forum/email discourse, but major alignment systems frequently train only on answered questions or evaluate from the answer side rather than measuring unresolved antecedent obligations directly.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s10489-013-0481-1",
+     "section": "Abstract"
+    },
+    {
+     "paper_id": "manual-a6314f615a",
+     "section": "Section 4.3"
+    },
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "Task Description - Data; limitations"
+    },
+    {
+     "paper_id": "doi-10-3233-aic-2012-0516",
+     "section": "4.3 Answer detection and Q-A pairing; limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Several interrogatives in one turn cannot automatically be converted into several independent work obligations, because multiple questions can be repetitions or reformulations used to repair or prevent comprehension problems.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-j-pragma-2007-07-011",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "Proposition-level antecedents cannot safely be restricted to one nominal or one contiguous clause. Dialogue and abstract-anaphora studies find sentential, multi-utterance, discontinuous, composite, and sometimes linguistically unidentified antecedents.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1093-jos-17-1-51",
+     "section": "Abstract"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 3, 4, and 6"
+    },
+    {
+     "paper_id": "manual-7743c50805",
+     "section": "Sections 4-6"
+    },
+    {
+     "paper_id": "manual-be69c3aa17",
+     "section": "Sections 3, 4, and 6"
+    },
+    {
+     "paper_id": "manual-8b8a394daa",
+     "section": "Analysis of Spanish examples; discourse-topic analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Exact antecedent boundaries and unique-gold targets are often empirically unstable. Multiple reasonable antecedents, overlapping spans, and disagreement about where a discourse antecedent begins are documented, so evaluation should give explicit treatment to ambiguity and partial overlap.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-s15-1035",
+     "section": "6 Error Analysis and 7 Conclusion"
+    },
+    {
+     "paper_id": "manual-7743c50805",
+     "section": "4.2 Results; 6 Discussion"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 4.1, 4.3, and 6"
+    },
+    {
+     "paper_id": "manual-be69c3aa17",
+     "section": "Sections 4 and 6"
+    }
+   ]
+  },
+  {
+   "statement": "Discourse and thread structure should be features or constraints in candidate ranking: email thread information, conversation-level context, discourse attachment, and dialogue structure repeatedly outperform or improve on purely local lexical matching.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-a6314f615a",
+     "section": "Section 4.4"
+    },
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "Overall Performance; model analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-d15-1109",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2023-eacl-main-247",
+     "section": "3 Our Model; 5 Ablation study"
+    }
+   ]
+  },
+  {
+   "statement": "Recency is a strong prior for some dialogue deixis but should not be a hard cutoff for msgloom. More than 90 percent of antecedents were local in one dialogue-deixis benchmark, whereas email and event-reference studies document delayed or substantially longer-distance links.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "5.1 Analysis by Distance; 5.2 Ablation Experiments"
+    },
+    {
+     "paper_id": "manual-a6314f615a",
+     "section": "Introduction and Section 4"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Data Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Separating candidate/segment detection from target linking is analytically useful, but end-to-end evaluation is essential because segmentation, mention recognition, or candidate gating can eliminate correct links before the alignment model is reached.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-icaicta63815-2024-10762999",
+     "section": "Section IV-A and IV-B"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-s15-1035",
+     "section": "5 Results"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-p17-1009",
+     "section": "Section 4.3 and 4.4"
+    }
+   ]
+  },
+  {
+   "statement": "Linguistic and syntactic constraints are useful as defeasible priors rather than absolute rules: they improve some shell-noun and abstract-reference settings but hurt others when the phenomenon is syntactically diverse.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3115-v1-d14-1056",
+     "section": "Evaluation and Results; Conclusion"
+    },
+    {
+     "paper_id": "1706.02256",
+     "section": "Ablation analysis"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 5 and 6"
+    }
+   ]
+  },
+  {
+   "statement": "Formal discourse theories supply an important distinction between a reply that contributes a partial answer and one that fully resolves a question, but the supplied formal work does not empirically operationalize proposition-level workplace response scope.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3765-sp-5-6",
+     "section": "Relevance; Questions and discourse strategies"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00351935",
+     "section": "Question semantics; Multiple wh-questions"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00983299",
+     "section": "Abstract"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Locality of antecedents",
+   "papers": [
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "manual-555fa5b6e8",
+    "manual-a6314f615a",
+    "manual-5c0971730d"
+   ],
+   "note": "Dialogue discourse-deixis evidence strongly favors recent antecedents, and one event-pronoun model uses a short local window; by contrast, event-NP and asynchronous-email evidence contains substantially longer or delayed links. This is best interpreted as task/domain dependence rather than a direct empirical inconsistency."
+  },
+  {
+   "topic": "One-to-one alignment versus non-bijective discourse structure",
+   "papers": [
+    "doi-10-1109-icaicta63815-2024-10762999",
+    "manual-5a32708675",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "doi-10-18653-v1-d15-1109",
+    "doi-10-18653-v1-2023-eacl-main-247"
+   ],
+   "note": "Some assembly systems operationalize alignment with one-to-one matching or grouped cross-products, while customer-service and multiparty-dialogue data directly exhibit one-to-many and multi-parent relations. The Anjo results explicitly show recall loss from the one-to-one assumption."
+  },
+  {
+   "topic": "Value of strict syntactic constraints",
+   "papers": [
+    "1706.02256",
+    "doi-10-3115-v1-d14-1056"
+   ],
+   "note": "Explicit syntax helps in restricted shell-noun settings, but stronger syntactic constraints hurt broader or syntactically versatile cases. Both papers therefore reject a universal rule even though they differ on where syntax is beneficial."
+  },
+  {
+   "topic": "Unique exact antecedent versus ambiguous or composite antecedence",
+   "papers": [
+    "doi-10-18653-v1-s15-1035",
+    "manual-7743c50805",
+    "manual-be69c3aa17",
+    "manual-8b8a394daa",
+    "doi-10-1162-coli-a-00327"
+   ],
+   "note": "Several standard formulations score one exact antecedent, but annotation and theoretical analyses repeatedly find overlapping, alternative, discontinuous, or composite antecedents. The tension concerns representation and evaluation assumptions more than disagreement about the underlying language."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "Direct empirical evidence is still missing for proposition-level agreement, rejection, approval, clarification, and answer scope in authentic workplace email or enterprise chat, especially where a short response applies to only part of a preceding message.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"reply scope\" email dialogue proposition agreement approval rejection workplace communication"
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus still does not establish a validated annotation and evaluation scheme for mapping workplace responses to exact proposition/span targets while representing exact, partial, ambiguous, unsupported, discontinuous, and multiple antecedents. Existing annotation schemes supply useful components but not the complete msgloom task.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-3",
+   "description": "Direct evidence remains insufficient for aligning replies to one or more questions when a workplace message contains multiple questions, requests, or alternatives, including proposition-level detection of questions that remain unanswered.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"question answer alignment\" dialogue \"multiple questions\" partial answer unanswered questions workplace email"
+  },
+  {
+   "id": "gap-4",
+   "description": "It remains unresolved how workplace responses should be modeled and evaluated when they target a composite or multi-proposition antecedent. The corpus supports composite abstract referents and multi-parent discourse structures but lacks direct workplace response-scope validation.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"multi-antecedent\" propositional anaphora dialogue composite discourse referent reply workplace"
+  },
+  {
+   "id": "gap-5",
+   "description": "The appropriate abstention, ambiguity, and missing-antecedent policy for msgloom remains unvalidated. Literature supports allowing no-link and ambiguity, but it does not establish the product-specific cost of a false broad approval/commitment versus an unresolved link.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "handoff-topic-07",
+   "description": "Retrieving antecedent evidence that is genuinely absent from supplied context is a missing-evidence retrieval problem and should be handed to Topic 07 rather than treated as a Topic 04 alignment-model error.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH"
+  },
+  {
+   "id": "handoff-topic-08",
+   "description": "Grounding references such as 'row 4', attachment regions, screenshots, cells, or pages requires multimodal/document-object grounding and belongs to Topic 08; Topic 04 should consume those grounded objects when deciding response scope.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  }
+ ],
+ "actionable_insights": [
+  "Represent response scope as a graph over proposition/span nodes, not a single message-level parent: permit zero, one, or multiple antecedent targets and multiple responses to the same target [doi-10-1609-aaai-v33i01-3301134; doi-10-18653-v1-d15-1109].",
+  "Decompose candidate antecedent messages into proposition/question/request units before semantic response alignment; retain the original message and span lineage so a reply can resolve only a subset without closing the rest [doi-10-3233-aic-2012-0516; manual-5a32708675].",
+  "Track each antecedent proposition independently with states such as answered/resolved, partially addressed, unresolved, ambiguous, and unsupported rather than inferring message-level completion from any reply [doi-10-1007-s10489-013-0481-1; doi-10-3765-sp-5-6].",
+  "Do not equate the number of interrogative sentences with the number of obligations: detect reformulation/repair groups before creating separate question obligations [doi-10-1016-j-pragma-2007-07-011].",
+  "Allow candidate antecedents to be clauses, multiple propositions, or discontinuous groups, with explicit alternative candidates where the evidence is ambiguous [doi-10-1162-coli-a-00327; manual-be69c3aa17; doi-10-18653-v1-s15-1035].",
+  "Use recency and Topic/thread structure as ranking priors, not exclusion rules. Candidate pruning should preserve a recovery path for delayed answers and longer-distance references [doi-10-18653-v1-2022-emnlp-main-778; manual-a6314f615a; manual-555fa5b6e8].",
+  "Evaluate the pipeline both component-wise and end-to-end. Gold segmentation/mentions should diagnose linking quality, while predicted-input evaluation must count upstream losses in the final denominator [doi-10-1109-icaicta63815-2024-10762999; doi-10-18653-v1-2021-naacl-main-329].",
+  "Create a msgloom-specific gold scheme that permits overlapping targets, alternative acceptable targets, discontinuous antecedents, multiple targets, and explicit no-supported-antecedent labels; strict exact-span scoring alone is inadequate [doi-10-18653-v1-s15-1035; manual-7743c50805; manual-be69c3aa17].",
+  "For safety-critical downstream state changes, preserve uncertainty rather than broadening scope: a detected 'yes', approval, or agreement should not propagate to sibling propositions without target-specific evidence. The literature supports the need for abstention/multiple-target representation but does not provide the product cost threshold [doi-10-1609-aaai-v33i01-3301134; doi-10-1162-coli-a-00327].",
+  "Treat linguistic syntax and relation labels as defeasible evidence combined with contextual models rather than hard universal constraints [1706.02256; doi-10-3115-v1-d14-1056]."
+ ],
+ "confidence_summary": "Confidence is HIGH for the structural conclusions that response/reference relations are often non-bijective, that discourse context improves alignment, that exact abstract-antecedent boundaries can be ambiguous, and that current QA-alignment benchmarks do not directly solve proposition-level partial response scope. Confidence is MEDIUM for transferring these conclusions to authentic enterprise email approvals, agreements, and commitments because the closest direct email studies are older and coarse-grained, while much of the stronger modern evidence comes from customer service, assembly minutes, task-oriented chat, or general discourse deixis. The formal literature provides useful semantics for partial answerhood and unresolved questions but does not constitute empirical workplace validation.",
+ "limitations": [
+  "The synthesis is restricted to the 26 supplied per-paper analyses and does not independently re-read the primary papers.",
+  "Several relevant papers were available only through abstracts, limiting verification of annotation details, examples, and per-condition results [doi-10-1007-bf00983299; doi-10-1007-s10489-013-0481-1; doi-10-1016-j-pragma-2007-07-011; doi-10-1093-jos-17-1-51].",
+  "Direct authentic workplace-email evidence is sparse. The closest email corpora are Enron and a student-organization corpus, and neither evaluates proposition-level partial approval/agreement scope [doi-10-3233-aic-2012-0516; manual-a6314f615a].",
+  "Many computational datasets use utterance-, sentence-, paragraph-, EDU-, or pre-grouped-segment units, so their reported alignment accuracy cannot be interpreted as proposition-scope accuracy [doi-10-1609-aaai-v33i01-3301134; manual-5a32708675; doi-10-18653-v1-2023-eacl-main-247].",
+  "The evidence mixes question-answer alignment, abstract anaphora, event coreference, discourse deixis, and discourse parsing. These are useful transfer literatures but are not interchangeable with response-scope resolution [doi-10-1162-coli-a-00327; doi-10-18653-v1-p17-1009].",
+  "Some benchmarks encode structural assumptions, such as one-to-one matching, single exact antecedents, tree decoding, or full cross-products of grouped question/answer sentences, that can obscure the finer distinctions required by msgloom [doi-10-1109-icaicta63815-2024-10762999; doi-10-18653-v1-s15-1035; doi-10-18653-v1-d15-1109; manual-5a32708675].",
+  "No supplied study estimates the product-specific harm of falsely attaching an approval, rejection, or commitment too broadly, so the required abstention threshold remains an engineering/product-risk decision rather than a literature-derived constant [doi-10-1609-aaai-v33i01-3301134; doi-10-1162-coli-a-00327]."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "The new corpus strengthens transfer evidence for non-bijective alignment and abstract proposition reference, but no paper directly evaluates proposition-level agreement, rejection, approval, clarification, or partial answer scope in authentic workplace email or enterprise chat.",
+   "evidence": [
+    "doi-10-3233-aic-2012-0516",
+    "manual-a6314f615a",
+    "doi-10-1609-aaai-v33i01-3301134"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "Abstract-anaphora annotation work now supplies useful design components for alternative, overlapping, discourse-segment, and discontinuous antecedents, but no paper validates the complete exact/partial/ambiguous/unsupported/multiple-target workplace-response annotation and evaluation contract required by msgloom.",
+   "evidence": [
+    "doi-10-1162-coli-a-00327",
+    "doi-10-18653-v1-s15-1035",
+    "manual-7743c50805",
+    "manual-be69c3aa17"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "The corpus now gives stronger evidence that one answer may align to several questions and that unanswered questions occur, but it still lacks direct proposition-level evaluation of partial and unanswered subsets within multi-question workplace messages.",
+   "evidence": [
+    "doi-10-3233-aic-2012-0516",
+    "manual-a6314f615a",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "doi-10-1007-s10489-013-0481-1"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "Composite and distributed antecedents are well motivated by abstract-anaphora and discourse-graph work, but direct empirical evaluation of a workplace response targeting a composite set of propositions is still absent.",
+   "evidence": [
+    "manual-8b8a394daa",
+    "manual-7743c50805",
+    "manual-be69c3aa17",
+    "doi-10-18653-v1-d15-1109",
+    "doi-10-18653-v1-2021-naacl-main-329"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "Several papers support explicit None/no-antecedent outcomes and document annotation ambiguity, but none provides a msgloom-specific cost model or validated threshold balancing false broad commitments against unresolved links.",
+   "evidence": [
+    "doi-10-1609-aaai-v33i01-3301134",
+    "doi-10-1093-jos-17-1-51",
+    "doi-10-18653-v1-s15-1035",
+    "manual-be69c3aa17"
+   ]
+  }
+ ]
+}

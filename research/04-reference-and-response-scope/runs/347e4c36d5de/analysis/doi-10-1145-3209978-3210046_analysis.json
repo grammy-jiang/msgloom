@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1145-3209978-3210046",
+ "title": "Characterizing and Supporting Question Answering in Human-to-Human Communication",
+ "research_question": "How do information workers exchange and later retrieve question-answer information in enterprise email, and can corresponding answers in email threads be automatically identified?",
+ "methodology": "The authors surveyed 924 employees of a large technology company about question-answer information in work email and analyzed the Avocado corporate email collection, which contains 938,035 emails from 279 employees of a defunct IT company. They extracted candidate question sentences using rule-based patterns, filtered them with crowdsourced judgments, and took the top ten paragraphs from subsequent messages as candidate answers. Three annotators judged question validity, enduring value, and answer relevance, producing an Avocado QA set of 1,695 unique questions, after which several retrieval models were evaluated with ten-fold cross-validation using MAP and average recall.",
+ "key_findings": [
+  {
+   "finding": "Question-answer information is a frequent workplace-email retrieval need: 98.7% of surveyed respondents reported needing to locate an answer from their mailbox at least once in the preceding month.",
+   "evidence_type": "supported",
+   "section": "3.2 Results"
+  },
+  {
+   "finding": "The constructed QA dataset contains 1,695 unique question sentences, each paired with ten candidate answer paragraphs, with one or more candidates allowed to be relevant.",
+   "evidence_type": "supported",
+   "section": "4.2 Question/Answer Pairs Annotation; 6.1 Dataset and Evaluation"
+  },
+  {
+   "finding": "Selecting the paragraph or paragraphs that answer a question was substantially more subjective than recognizing questionhood: reported inter-annotator agreement was 0.48 for answer selection versus 0.91 for question validity.",
+   "evidence_type": "supported",
+   "section": "4.2 Question/Answer Pairs Annotation"
+  },
+  {
+   "finding": "The operational QA unit is an individual extracted question sentence matched to answer paragraphs independently, rather than a joint representation of all propositions or subquestions in an email.",
+   "evidence_type": "supported",
+   "section": "4 Data Sets and Task Definition; 4.2 Question/Answer Pairs Annotation"
+  },
+  {
+   "finding": "The proposed neural matching model outperformed TF-IDF, BiMPM, and decomposable attention on Avocado QA, reaching MAP 48.95 and average recall 82.34 before external pretraining.",
+   "evidence_type": "supported",
+   "section": "6.3 Results on Avocado QA Dataset"
+  },
+  {
+   "finding": "Pretraining on the out-of-domain SemEval 2017 community-QA data increased MAP from 48.95 to 50.75 and average recall from 82.34 to 82.55.",
+   "evidence_type": "supported",
+   "section": "6.4 Results on Avocado QA Dataset with Pre-training"
+  }
+ ],
+ "limitations": [
+  "The paper does not explicitly annotate whether a reply answers all versus only some of several questions contained in the same email.",
+  "Approval, rejection, and other short responses are not modeled as proposition-scoped acts over multiple antecedent propositions.",
+  "Question extraction favors sentences beginning with one of six wh-words and ending with a question mark, so many indirect, declarative, elliptical, or differently formatted questions can be omitted.",
+  "Emails longer than 100 words were filtered during question extraction, which can systematically exclude complex messages containing multiple propositions or questions.",
+  "Candidate answers were restricted to the top ten paragraphs of subsequent emails, so later or differently segmented answers can be missed.",
+  "Answer-selection agreement of 0.48 indicates substantial ambiguity in the ground-truth linkage.",
+  "The survey came from one technology company and had a 15% response rate.",
+  "The derived Avocado QA annotations were not accompanied by a release link in the paper inspected, although the underlying Avocado collection is distributed separately by the Linguistic Data Consortium."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "work_email_answer_retrieval_is_common": 0.99,
+  "avocado_qa_has_1695_questions": 0.99,
+  "answer_selection_is_subjective": 0.99,
+  "qa_unit_is_individual_question_sentence": 0.98,
+  "proposed_model_outperforms_baselines": 0.99,
+  "external_pretraining_improves_map": 0.99
+ },
+ "raw_claims": [
+  "The survey analysis uses 924 complete responses from employees of a large technology company.",
+  "Almost all respondents reported retrieving answers from work email during the preceding month.",
+  "The Avocado collection contains 938,035 corporate emails associated with 279 employees.",
+  "Questions are extracted and evaluated primarily as individual sentences rather than as complete multi-question messages.",
+  "For each extracted question, ten paragraphs from later emails are considered as candidate answers.",
+  "The annotation procedure permits multiple answer paragraphs to be relevant to one question.",
+  "The resulting Avocado QA dataset contains 1,695 unique questions.",
+  "Human agreement is considerably lower for selecting answers than for recognizing valid questions.",
+  "The proposed neural model performs better than the reported retrieval and neural baselines.",
+  "SemEval pretraining gives a modest additional improvement."
+ ],
+ "source_url": "https://www.microsoft.com/en-us/research/uploads/prod/2018/04/EmailQA_SIGIR18.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,376 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+   "title": "End-to-End Neural Discourse Deixis Resolution in Dialogue",
+   "research_question": "Can an end-to-end neural coreference architecture be adapted with dialogue- and discourse-deixis-specific modeling to improve resolution of anaphors whose antecedents denote utterance-level events, propositions, descriptions, or speech acts?",
+   "methodology": "The authors adapt a span-based higher-order coreference model to end-to-end discourse deixis resolution and introduce ten task-specific extensions covering recency, utterance distance, anaphor typing, context, structural penalties, and antecedent features. They train on dialogue portions of ARRAU together with additional ARRAU material and evaluate on four CODI-CRAC 2021 dialogue datasets: LIGHT, AMI, Persuasion, and Switchboard. Resolution is evaluated with the Universal Anaphora Scorer using the CoNLL average of MUC, B3, and CEAFe, while anaphor recognition is evaluated with precision, recall, and F-score; ablations and approximate-randomization significance tests are also reported.",
+   "key_findings": [
+    {
+     "finding": "The proposed dd-utt system achieved a substantially higher average discourse-deixis resolution score than the shared-task system and the two coreference baselines across the four evaluation datasets.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "dd-utt obtained an average CoNLL resolution score of 48.5, compared with 41.2 for coref-hoi-utt, 39.6 for coref-hoi, and 38.3 for the UTD_NLP shared-task system.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "The resolution improvement was attributed primarily to better antecedent selection rather than better anaphor recognition, because recognition performance was statistically indistinguishable among the compared systems while resolution improved significantly.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "Discourse-deictic antecedents were strongly local in the evaluated dialogue data: more than 90 percent occurred within four utterances of the anaphor, and the immediately preceding utterance was the most common distance.",
+     "evidence_type": "supported",
+     "section": "5.1 Analysis by Distance"
+    },
+    {
+     "finding": "Among the ten proposed extensions, restricting antecedent candidates using a recency window was the only ablation whose removal produced a statistically significant degradation under the reported test, although several other removals also reduced the numerical score.",
+     "evidence_type": "supported",
+     "section": "5.2 Ablation Experiments"
+    },
+    {
+     "finding": "The pronouns that, it, and this dominate discourse-deictic anaphora in the evaluated dialogue corpora, with that by far the most frequent individual form.",
+     "evidence_type": "supported",
+     "section": "5.1 Analysis by Anaphor"
+    },
+    {
+     "finding": "The system establishes the reported state of the art on the four CODI-CRAC dialogue datasets used in the paper.",
+     "evidence_type": "supported",
+     "section": "6 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The resolver links anaphors to whole utterances even though discourse-deictic antecedents can be clauses or other sub-utterance spans.",
+    "The authors note low inter-annotator agreement for fine-grained clausal antecedent boundaries, making more precise antecedent-span modeling difficult.",
+    "The experiments focus on dialogue, so generalization to narrative or other non-dialogue genres is not established.",
+    "Training data for discourse deixis is comparatively small.",
+    "The available corpora do not represent all language varieties and may encode dataset-specific biases."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "dd_utt_improves_resolution": 0.99,
+    "resolution_gain_from_linking": 0.96,
+    "antecedents_are_local": 0.98,
+    "recency_ablation_significant": 0.97,
+    "pronoun_distribution": 0.99,
+    "state_of_the_art_result": 0.97
+   },
+   "raw_claims": [
+    "Discourse deixis links an anaphoric expression to discourse material denoting an event, proposition, description, or speech act.",
+    "The paper treats discourse deixis as a form of generalized event coreference in dialogue.",
+    "dd-utt extends an existing end-to-end span-based coreference architecture with ten discourse-deixis-specific modifications.",
+    "Candidate antecedents are restricted to the current utterance and the preceding ten utterances in one of the model extensions.",
+    "The ten-utterance candidate window covers the large majority of gold antecedent-anaphor links in the development sets.",
+    "That, it, and this account for most discourse-deictic anaphors in the evaluated dialogue data.",
+    "dd-utt reports an average CoNLL resolution score of 48.5 across LIGHT, AMI, Persuasion, and Switchboard.",
+    "The recognition results do not explain the resolution gain, indicating that improved antecedent selection is the main source of improvement.",
+    "More than 90 percent of evaluated antecedents are located within four utterances of their anaphor.",
+    "The authors publicly released source code for the model."
+   ],
+   "source_url": "https://arxiv.org/html/2211.15980",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-5c0971730d",
+   "title": "A Twin-Candidate Based Approach for Event Pronoun Resolution using Composite Kernel",
+   "research_question": "Can event pronouns be resolved more accurately by combining lexical and positional features with syntactic tree kernels and by learning pairwise preferences between competing antecedent candidates?",
+   "methodology": "The paper formulates event-pronoun resolution over verbal antecedent candidates and combines a flat feature kernel with a convolution tree kernel encoding syntactic structure. It introduces a twin-candidate ranking formulation in which pairs of candidates are compared and the candidate winning the most pairwise comparisons is selected, and it also uses non-event examples plus a development-set decision threshold to distinguish resolvable event pronouns from other pronouns. Experiments use OntoNotes Release 2.0 English newswire and broadcast-news material with 502 event pronouns, ten-fold cross-validation, precision/recall/F-score, and paired significance tests.",
+   "key_findings": [
+    {
+     "finding": "Combining syntactic tree information with the flat lexical, positional, and syntactic features produced markedly better event-pronoun resolution than the flat-feature baseline.",
+     "evidence_type": "supported",
+     "section": "Experiments"
+    },
+    {
+     "finding": "The best composite-kernel configuration using the simple expansion tree reached an F-score of 0.561 before twin-candidate ranking, whereas the flat-feature baseline obtained 0.406.",
+     "evidence_type": "supported",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "finding": "Training with negative examples drawn from non-event pronouns improved precision and overall F-score relative to training without those negative instances.",
+     "evidence_type": "supported",
+     "section": "Experiments: Negative Training Examples"
+    },
+    {
+     "finding": "Balancing negative examples and tuning the event/non-event hyperplane on development data further improved the reported resolution performance.",
+     "evidence_type": "supported",
+     "section": "Experiments: Negative Training Examples"
+    },
+    {
+     "finding": "Twin-candidate preference learning increased recall from 0.492 to 0.540 and F-score from 0.561 to 0.579, with a modest decrease in precision from 0.652 to 0.626.",
+     "evidence_type": "supported",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "finding": "The improvement of the twin-candidate method over the single-candidate method was reported as statistically significant at the 5 percent level.",
+     "evidence_type": "supported",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "finding": "The most-recent-verb heuristic performed poorly, showing that proximity alone is insufficient for general event-pronoun resolution in this corpus.",
+     "evidence_type": "supported",
+     "section": "Experiments: Baselines"
+    }
+   ],
+   "limitations": [
+    "Antecedent candidates are limited to inflectional verbs and therefore do not cover every possible linguistic realization of an event.",
+    "The search window is restricted to the current sentence and two preceding sentences, so longer-distance antecedents are excluded by construction.",
+    "Evaluation is confined to English OntoNotes 2.0 newswire and broadcast news.",
+    "The structural representation depends on automatic parsing and is susceptible to syntactic-analysis noise, particularly in less regular broadcast material.",
+    "The model has limited explicit semantic representation; the authors identify semantic-role information and verb frames as future extensions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "composite_kernel_improves_fscore": 0.98,
+    "negative_examples_help": 0.95,
+    "twin_candidate_improves_fscore": 0.99,
+    "twin_candidate_significant": 0.97,
+    "proximity_baseline_weak": 0.96,
+    "structural_representation_useful": 0.95
+   },
+   "raw_claims": [
+    "The paper presents a general-purpose approach to resolving event pronouns to verbal event mentions.",
+    "The evaluated OntoNotes material contains 502 event pronouns.",
+    "Candidate antecedents are inflectional verbs in the current sentence and the two preceding sentences, with only preceding verbs considered within the current sentence.",
+    "An event pronoun has about 6.93 candidate antecedents on average under the paper's candidate-generation procedure.",
+    "Syntactic structures are represented with convolution tree kernels and combined with conventional features through a composite kernel.",
+    "The paper compares minimum, simple, and full syntactic-tree expansion schemes.",
+    "Negative examples from pronouns without verbal event antecedents are used to train the event-versus-non-event distinction.",
+    "The twin-candidate method learns pairwise preferences between antecedent candidates instead of scoring each candidate independently.",
+    "The best single-candidate composite model reports an F-score of 0.561.",
+    "The twin-candidate model reports an F-score of 0.579 and significantly higher recall than the corresponding single-candidate model."
+   ],
+   "source_url": "https://aclanthology.org/C10-1022.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-3115-v1-d14-1056",
+   "title": "Resolving Shell Nouns",
+   "research_question": "Can linguistically motivated lexico-syntactic knowledge be used to identify the clauses that supply the semantic content of shell nouns such as fact, idea, reason, and problem?",
+   "methodology": "The authors construct a rule-based shell-content resolver grounded in Schmid's semantic families of shell nouns and their characteristic lexico-syntactic patterns. They compare a permissive resolver that does not enforce noun-family-specific syntactic cues with a version that does enforce those cues, against a simple lexico-syntactic baseline. Evaluation uses crowd annotations for 12 representative shell nouns sampled from the New York Times corpus, with multiple annotators per instance and accuracy as the primary reported metric.",
+   "key_findings": [
+    {
+     "finding": "The resolver without strict shell-noun-family constraints outperformed the lexico-syntactic baseline for every one of the twelve evaluated nouns.",
+     "evidence_type": "supported",
+     "section": "Evaluation and Results"
+    },
+    {
+     "finding": "Across all evaluated nouns, the permissive resolver achieved 69 percent accuracy, compared with 57 percent for the baseline and 64 percent for the resolver that enforced Schmid-family constraints.",
+     "evidence_type": "supported",
+     "section": "Evaluation and Results"
+    },
+    {
+     "finding": "Family-specific syntactic cues were especially useful for nouns with relatively strict syntactic expectations, including reason and fact.",
+     "evidence_type": "supported",
+     "section": "Evaluation and Results"
+    },
+    {
+     "finding": "Strict family-specific cues harmed performance for several syntactically versatile nouns because valid shell-content constructions could fall outside the prototypical patterns.",
+     "evidence_type": "supported",
+     "section": "Evaluation and Results"
+    },
+    {
+     "finding": "Individual-noun accuracies varied substantially, ranging from approximately the low sixties to the low eighties for the better system on different nouns, indicating that shell-noun behavior is strongly noun dependent.",
+     "evidence_type": "supported",
+     "section": "Evaluation and Results"
+    },
+    {
+     "finding": "Parsing errors and insufficient contextual information were identified as important sources of resolution errors.",
+     "evidence_type": "supported",
+     "section": "Error Analysis"
+    },
+    {
+     "finding": "The study supports treating linguistic shell-noun cues as useful but defeasible constraints rather than universally valid rules.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    }
+   ],
+   "limitations": [
+    "The evaluation covers only twelve representative nouns rather than the full inventory of roughly 670 shell nouns discussed by the linguistic classification.",
+    "The implemented resolver focuses on a restricted set of primarily cataphoric shell-noun constructions.",
+    "The approach does not determine from broader discourse context whether an occurrence of a potentially shell-like noun is actually being used as a shell noun.",
+    "Automatic parsing errors can prevent otherwise valid lexico-syntactic patterns from being recognized.",
+    "Prototypical syntactic expectations are defeasible and therefore lose valid cases for versatile nouns.",
+    "The crowd-annotated evaluation set was constructed for this study and no public release artifact is identified in the paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "permissive_resolver_beats_baseline": 0.99,
+    "overall_accuracy_69": 0.99,
+    "strict_cues_help_some_nouns": 0.97,
+    "strict_cues_hurt_versatile_nouns": 0.97,
+    "parsing_and_context_errors": 0.95,
+    "cues_are_defeasible": 0.96
+   },
+   "raw_claims": [
+    "A shell noun has an underspecified meaning that becomes more specific through its relation to a piece of propositional or clausal content.",
+    "The approach draws on a linguistic classification containing 79 shell-noun families and about 670 shell nouns.",
+    "Twelve nouns were selected for detailed evaluation rather than attempting to annotate every noun in the inventory.",
+    "The evaluated nouns include idea, issue, concept, decision, plan, policy, problem, trouble, difficulty, reason, fact, and phenomenon.",
+    "The study collected about one hundred corpus instances per evaluated noun for crowd annotation.",
+    "At least five crowd judgments were obtained for each evaluated instance, and low-agreement cases were excluded from the final evaluation.",
+    "A resolver that permits a broad range of post-nominal clauses obtains 69 percent overall accuracy.",
+    "The simple baseline obtains 57 percent overall accuracy.",
+    "Enforcing family-specific linguistic cues increases accuracy for some nouns but substantially reduces it for others.",
+    "The authors conclude that contextual and deeper semantic information will be necessary for a more complete end-to-end shell-noun resolver."
+   ],
+   "source_url": "https://aclanthology.org/D14-1056.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-bf00983299",
+   "title": "Resolving questions, II",
+   "research_question": "How should a formal semantics distinguish questions, propositions, and facts while explaining the shared semantic relations that allow facts to resolve questions and prove propositions?",
+   "methodology": "The accessible abstract describes a formal, situation-semantics analysis rather than an empirical experiment. Part II motivates an ontology in which propositions, questions, and facts are distinct semantic objects while formal relations connect facts to both propositions and questions. The analysis is then used to account for factivity with predicates such as know and for the behavior of adverbially modified predicates with interrogative, declarative, and fact-nominal arguments.",
+   "key_findings": [
+    {
+     "finding": "The paper argues for an ontology that distinguishes propositions, questions, and facts instead of reducing these categories to a single type of semantic object.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Despite this ontological distinction, the analysis identifies a common role for facts: facts can prove propositions and resolve questions.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The proposed relation between facts and propositions/questions is used to explain why predicates such as know carry factive presuppositions.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The framework is also applied to the behavior of adverbially modified predicates when their arguments are interrogatives, declaratives, or fact-denoting nominals.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "In the broader two-part theory summarized by the abstract, a question is not reductively identified with its answers, allowing question resolution to depend on contextual parameters such as conversational goals and inferential capabilities.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "Only the abstract and bibliographic record were accessible through a reliable correctly identified source, so the detailed formal derivations, linguistic examples, objections, and scope conditions of Part II could not be independently assessed.",
+    "The accessible material reports a theoretical semantic analysis rather than a quantitative empirical evaluation, and it provides no dataset, experimental metrics, or reproducibility artifact.",
+    "Because full text was unavailable in the source used for analysis, claims beyond those explicitly summarized in the abstract were not inferred."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "distinct_semantic_ontology": 0.97,
+    "facts_prove_and_resolve": 0.97,
+    "factivity_account": 0.94,
+    "argument_type_account": 0.91,
+    "context_sensitive_resolution": 0.88
+   },
+   "raw_claims": [
+    "The theory is formulated within a situation-semantics framework.",
+    "Questions are treated as semantic objects distinct from propositions and facts.",
+    "The analysis does not reduce questions simply to collections of their answers.",
+    "Facts are related to propositions through a proof relation.",
+    "Facts are related to questions through a resolution relation.",
+    "The common semantic role of facts is used in the analysis of factive predicates such as know.",
+    "The framework addresses predicates that combine with interrogative, declarative, and fact-nominal arguments.",
+    "The broader theory makes whether an answer resolves a question sensitive to contextual factors such as goals and inferential capabilities."
+   ],
+   "source_url": "https://www.asc.ohio-state.edu/roberts.21/QUDbib/RetrievingMeaning.html",
+   "access": "abstract_only"
+  },
+  {
+   "paper_id": "manual-555fa5b6e8",
+   "title": "Resolving Event Noun Phrases to Their Verbal Mentions",
+   "research_question": "Can event-denoting noun phrases be linked to their corresponding verbal event mentions across potentially long discourse distances using lexical, positional, syntactic, and pairwise-ranking information?",
+   "methodology": "The authors formulate event-noun-phrase resolution as linking an event NP to a verbal mention and build a learning-based model with lexical, syntactic, and positional features. They encode syntactic relations with convolution tree kernels, combine these with flat features through a composite kernel, and apply a twin-candidate ranking SVM that compares antecedent candidates pairwise. Experiments use OntoNotes Release 2.0 English newswire and broadcast-news data, ten-fold cross-validation, precision/recall/F-score, ablation comparisons, learning curves, and paired significance testing.",
+   "key_findings": [
+    {
+     "finding": "Event noun phrases can refer to verbal mentions across substantially longer distances than the local windows commonly used for pronoun resolution, producing a much larger candidate set.",
+     "evidence_type": "supported",
+     "section": "Experiments: Data Analysis"
+    },
+    {
+     "finding": "The flat-feature model obtained an F-score of 43.35, while combining the same features with the minimum-expansion tree kernel raised F-score to 59.01.",
+     "evidence_type": "supported",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "finding": "All reported composite-kernel configurations improved F-score by more than ten percentage points over the flat-feature baseline.",
+     "evidence_type": "supported",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "finding": "The minimum-expansion structural representation performed better than the more elaborate simple and full expansions, which the authors interpret as evidence that additional syntactic structure can introduce harmful noise.",
+     "evidence_type": "supported",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "finding": "Twin-candidate ranking improved the best composite model from 59.01 to 61.36 F-score, with precision of 66.41 and recall of 57.93.",
+     "evidence_type": "supported",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "finding": "The twin-candidate improvement was reported as statistically significant at the 5 percent level.",
+     "evidence_type": "supported",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "finding": "Learning-curve results suggested that performance was already relatively stable with a substantial subset of the available training data and that the largest training fractions were statistically indistinguishable.",
+     "evidence_type": "supported",
+     "section": "Experiments: Learning Curve"
+    }
+   ],
+   "limitations": [
+    "The number of candidate verbs becomes very large because event-NP links may span long distances, increasing computational cost, especially for pairwise twin-candidate comparisons.",
+    "Evaluation is restricted to English OntoNotes 2.0 newswire and broadcast-news genres.",
+    "The task formulation focuses specifically on links between event noun phrases and verbal mentions rather than all possible cross-form event-coreference relations.",
+    "The model relies on automatic syntactic parsing and named-entity preprocessing, so upstream errors can affect resolution.",
+    "Explicit semantic-role and verb-frame information is not incorporated; the authors identify such semantic information as future work."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "long_distance_candidate_problem": 0.96,
+    "composite_kernel_gain": 0.99,
+    "minimum_expansion_best": 0.98,
+    "twin_candidate_improves_fscore": 0.99,
+    "twin_candidate_significant": 0.97,
+    "learning_curve_saturation": 0.93
+   },
+   "raw_claims": [
+    "The paper studies resolution of event-denoting noun phrases to verbal mentions of the same event.",
+    "The OntoNotes-based data extraction produced 977 verbal-mention and event-NP links for the study.",
+    "The average sentence distance between linked mentions is reported as 2.97.",
+    "The candidate-generation setting yields roughly 30.49 verb candidates per training instance and 583.74 per test instance on average.",
+    "A most-recent-verb strategy is unsuitable because most noun phrases in the candidate space are not event anaphors and only a small fraction of verbs are referred to by event NPs.",
+    "The flat lexical, syntactic, and positional feature model reports an F-score of 43.35.",
+    "Adding a minimum-expansion tree kernel to the flat features raises F-score to 59.01.",
+    "More elaborate tree expansions perform worse than the minimum expansion in the reported experiments.",
+    "Pairwise twin-candidate ranking raises the best system's F-score to 61.36.",
+    "The authors propose richer semantic information, including semantic roles and verb frames, as a direction for improving the resolver."
+   ],
+   "source_url": "https://aclanthology.org/D10-1085.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

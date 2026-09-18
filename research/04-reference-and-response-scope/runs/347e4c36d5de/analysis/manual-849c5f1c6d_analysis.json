@@ -1,0 +1,87 @@
+{
+ "paper_id": "manual-849c5f1c6d",
+ "title": "Automatically Selecting Answer Templates to Respond to Customer Emails",
+ "research_question": "Can historical customer-email question-answer associations be learned well enough to select and combine response templates for new emails that may contain multiple questions?",
+ "methodology": "The authors identify question and answer sentences using learned key phrases, then map questions to answer sentences using lexical overlap weighted by inverse document frequency and a positional heuristic. They evaluate question-answer mapping on 30 manually annotated query-first-response pairs from the Pine-Info mailing list and response generation on 1,320 real mobile-phone contact-center query-response pairs with 570 response templates. The contact-center experiments use 920 pairs for training and 400 for testing, with and without automatic triage, and evaluate both exact response agreement and partial correctness at the level of answered questions.",
+ "key_findings": [
+  {
+   "finding": "The system explicitly decomposes an email containing multiple questions and attempts to associate each individual question with an answer and ultimately a response template.",
+   "evidence_type": "supported",
+   "section": "3 Problem Definition; 5.2 Mapping Questions to Answers"
+  },
+  {
+   "finding": "The Pine-Info sample directly demonstrates incomplete first replies: 30 initiating emails contained 43 annotated questions but only 36 question-answer mappings in the first responses, and the paper's worked example has two questions but only one marked answer.",
+   "evidence_type": "supported",
+   "section": "7.1 Contact Center Data; 7.3 Experiments"
+  },
+  {
+   "finding": "In the 30 Pine-Info pairs, an initiating email averaged 1.43 questions, its first response averaged 1.3 answers, and there were 1.2 mapped question-answer pairs per pair of messages.",
+   "evidence_type": "supported",
+   "section": "7.1 Contact Center Data"
+  },
+  {
+   "finding": "The authors operationalize partial reply coverage explicitly: if a two-question message receives a system response matching the human response for only one question, that response receives 50% partial credit.",
+   "evidence_type": "supported",
+   "section": "7.2 Measures"
+  },
+  {
+   "finding": "On Pine-Info, the automatic mapping recovered 28 of the 36 manually identified question-answer mappings, reported as 77.78% correct.",
+   "evidence_type": "supported",
+   "section": "7.3 Experiments"
+  },
+  {
+   "finding": "On the contact-center test set, exact response reproduction was 61% and partial correctness 73.4% without triage; with triage these rose to 79.1% and 84.8%, respectively.",
+   "evidence_type": "supported",
+   "section": "7.3 Experiments"
+  },
+  {
+   "finding": "The contact-center responses used an average of 2.3 templates, which the authors interpret as indicating roughly two key questions per customer query.",
+   "evidence_type": "supported",
+   "section": "7.1 Contact Center Data"
+  },
+  {
+   "finding": "Some customer questions cannot be handled with the predefined template inventory because agents sometimes compose a new reply instead.",
+   "evidence_type": "supported",
+   "section": "7.3 Experiments"
+  }
+ ],
+ "limitations": [
+  "Only 30 Pine-Info query-response pairs were manually annotated for question-answer scope.",
+  "The Pine-Info evaluation examines only the first response after the initiating email, even though unanswered questions may be addressed later in the thread.",
+  "The larger contact-center corpus is from one mobile-phone support process and is not presented as a publicly released dataset.",
+  "Question and answer detection is sentence-based and relies on learned key phrases, so implicit questions, multi-sentence propositions, and short context-dependent replies may be missed.",
+  "The question-answer mapping relies heavily on lexical overlap and relative position, which can fail when an answer uses different vocabulary or addresses questions out of order.",
+  "Partial correctness compares system output with the human response rather than providing a comprehensive descriptive annotation of all human partial-reply behaviors.",
+  "The template formulation assumes that relevant replies can usually be represented by a finite template inventory, while the paper acknowledges free-form agent responses outside that inventory.",
+  "The study does not explicitly model one response clause as jointly scoped over several distinct antecedent propositions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multiple_questions_are_decomposed": 0.99,
+  "first_replies_can_leave_questions_unanswered": 0.99,
+  "pine_question_answer_averages": 0.99,
+  "partial_coverage_is_explicitly_scored": 0.99,
+  "pine_mapping_accuracy": 0.99,
+  "contact_center_partial_accuracy": 0.99,
+  "responses_use_multiple_templates": 0.98,
+  "templates_do_not_cover_all_replies": 0.98
+ },
+ "raw_claims": [
+  "A customer email can contain several questions that require several response templates.",
+  "The method first identifies individual questions and then maps them to corresponding answer material.",
+  "The first reply in an email thread does not necessarily answer every question in the initiating message.",
+  "The 30 Pine-Info initiating emails contain 43 manually identified questions and 36 mapped question-answer pairs in their first replies.",
+  "One illustrated Pine-Info message contains two questions while its first response supplies only one annotated answer.",
+  "Partial correctness is measured according to how many question-specific parts of the human response are reproduced.",
+  "The mobile-phone contact-center corpus contains 1,320 query-response pairs and 570 templates.",
+  "The contact-center responses contain multiple templates on average.",
+  "Automatic triage substantially improves exact response matching in the reported experiment.",
+  "Human agents sometimes write responses that do not use any predefined template."
+ ],
+ "source_url": "https://www.ijcai.org/Proceedings/07/Papers/268.pdf",
+ "access": "full_text"
+}

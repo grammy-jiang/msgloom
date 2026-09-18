@@ -1,0 +1,34 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/04-reference-and-response-scope/runs/f72f7f513e9d/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Theme on antecedent-selection errors: the phrase \"antecedent boundaries\" is not directly supported by the three citations attached to that theme (1706.02256, doi-10-18653-v1-2021-naacl-main-329, doi-10-18653-v1-p17-1009). Boundary uncertainty is directly supported by doi-10-1162-coli-a-00327 and should be cited there.",
+  "Finding on hard syntactic restrictions: the conclusion that \"lexical, syntactic, semantic, and discourse signals should be combined as defeasible evidence\" is broader than the cited analyses directly establish. doi-10-3115-v1-d14-1056 and 1706.02256 support defeasible syntactic constraints, and manual-555fa5b6e8 supports combining lexical/positional/syntactic evidence, but the cited set does not directly demonstrate the full proposed combination including discourse evidence.",
+  "Actionable insight on per-proposition state extends formal QUD evidence into a workplace-system architecture. doi-10-3765-sp-5-6 supports partial answerhood and unresolved QUD structure, but it does not empirically validate independently closing proposition records in multi-question workplace messages. This should be labeled an engineering implication or hypothesis rather than an evidence-backed result.",
+  "Actionable insight proposing gold labels for exact, partial, ambiguous, unsupported, and missing-context cases goes beyond the cited papers. The papers support difficult boundaries, discontinuous antecedents, and multiple antecedents, but they do not validate this complete annotation taxonomy. This is compatible with gap-2 being open, but should be identified explicitly as a proposed benchmark design.",
+  "Actionable insight about scoring over-broad links separately from missed links contains a product-specific claim: \"a false broad approval can incorrectly change downstream work state.\" The cited CODI-CRAC and discourse-deixis papers do not study workplace approvals, business-state consequences, or this asymmetric error cost. The statement is a plausible msgloom product-risk assumption, not a literature finding.",
+  "Actionable insight recommending that unsupported or missing antecedents remain unresolved and that missing-context cases be handed to Topic 07 is not established by manual-5c0971730d or manual-555fa5b6e8. Those papers support the weakness of proximity heuristics and difficulty of large candidate spaces; abstention policy and Topic 07 routing are engineering decisions.",
+  "Several actionable insights are phrased imperatively even though the synthesis correctly states that all five target-domain gaps remain open. The distinction between evidence-supported findings and proposed engineering responses should be made more explicit so transfer evidence is not mistaken for direct validation."
+ ],
+ "unsupported_claims": [
+  "The product-specific assertion that a false broad approval can incorrectly change downstream work state is not supported by doi-10-18653-v1-2021-codi-sharedtask-1 or doi-10-18653-v1-2022-emnlp-main-778.",
+  "The recommendation to route missing-context cases to Topic 07 is internal product architecture and is not supported by manual-5c0971730d or manual-555fa5b6e8.",
+  "The proposed annotation labels \"exact, partial, ambiguous, unsupported, and missing-context\" are not validated as a complete scheme by doi-10-1162-coli-a-00327 or doi-10-18653-v1-2021-naacl-main-329.",
+  "The full prescription to combine lexical, syntactic, semantic, and discourse signals is broader than the evidence cited for the corresponding finding."
+ ],
+ "required_fixes": [
+  "Add doi-10-1162-coli-a-00327 to the theme that attributes errors to antecedent-boundary uncertainty, or remove the boundary claim from that theme.",
+  "Rephrase the broad signal-combination finding so it states only what the cited analyses establish, or add appropriately analyzed evidence for semantic/discourse signals.",
+  "Mark the per-proposition-state recommendation, the proposed annotation taxonomy, abstention behavior, asymmetric approval-risk scoring, and Topic 07 routing explicitly as engineering proposals derived from the identified gaps rather than as validated literature findings.",
+  "Separate literature-supported premises from product-specific consequences in actionable insights; citations should attach only to the premises actually supported by those papers."
+ ],
+ "confidence": 0.96,
+ "scores": {
+  "faithfulness": 0.89,
+  "coherence": 0.98,
+  "gap_completeness": 1.0,
+  "citation_integrity": true
+ },
+ "notes": "The core synthesis is strong enough to proceed. All cited paper_ids belong to the allowed set, the executive summary correctly distinguishes direct-domain evidence from transfer and theoretical evidence, the contradictions are explicitly identified rather than averaged away, and all five inherited gaps are correctly left open. The principal weaknesses are confined mainly to actionable engineering recommendations whose wording or citations sometimes imply stronger empirical support than the supplied analyses provide. No core gap is falsely claimed as closed, and no production-accuracy claim is made from transfer-domain evidence."
+}

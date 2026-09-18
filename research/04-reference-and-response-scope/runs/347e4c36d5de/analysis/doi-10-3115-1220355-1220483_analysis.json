@@ -1,0 +1,88 @@
+{
+ "paper_id": "doi-10-3115-1220355-1220483",
+ "title": "Detection of Question-Answer Pairs in Email Conversations",
+ "research_question": "Can questions and their corresponding answer segments be detected automatically in asynchronous email threads, and do email-thread structural features improve pairing beyond lexical similarity alone?",
+ "methodology": "The authors use an approximately 300-thread corpus containing about 1,000 messages exchanged by the Columbia University ACM student-organization board, with two annotators marking and linking questions and answers. Interrogative question detection is trained with Ripper on 5,000 positive and 5,000 negative Switchboard examples and tested on manually selected ACM email examples. For answer pairing, email messages are segmented by paragraph, each question segment is paired with candidate answer segments from subsequent messages, and lexical, thread-structural, candidate-position, and ancestry features are supplied to a Ripper classifier. Answer-pair experiments use four annotation-derived datasets and five-fold cross-validation.",
+ "key_findings": [
+  {
+   "finding": "About 20% of the email threads in the corpus primarily involved question-answer exchanges, including both one-question/multiple-response and multiple-question/multiple-response configurations.",
+   "evidence_type": "supported",
+   "section": "§1 Introduction"
+  },
+  {
+   "finding": "Email reply structure is not a reliable proxy for response scope because a message sent using Reply or Reply-All can semantically answer an issue raised several messages earlier, and multiple topics can proceed in parallel.",
+   "evidence_type": "supported",
+   "section": "§4 Automatic Answer Detection"
+  },
+  {
+   "finding": "The annotation explicitly permits questions with no corresponding answer, so unanswered questions remain present rather than being removed from the annotated question set.",
+   "evidence_type": "supported",
+   "section": "§4.3 Training Data"
+  },
+  {
+   "finding": "Question-segment identification and question-to-answer linking showed kappa values of 0.68 and 0.81 respectively between the two annotators.",
+   "evidence_type": "supported",
+   "section": "§4.1 Corpus"
+  },
+  {
+   "finding": "The modified interrogative-question detector achieved precision 0.96, recall 0.72, and F1 0.82 after adding handling for questions preceded by declarative material.",
+   "evidence_type": "supported",
+   "section": "§3 Automatic Question Detection; Table 1"
+  },
+  {
+   "finding": "Thread-structural and candidate-position features substantially improved answer-link detection over cosine similarity alone; on the Union data, F1 increased from 0.503 for the lexical baseline to 0.656 with the full feature set.",
+   "evidence_type": "supported",
+   "section": "§4.4 Experiments and Results; Tables 3 and 4"
+  },
+  {
+   "finding": "Separating questions with at most two candidate answer segments from harder cases produced a combined F1 of 0.730, compared with 0.656 on the unsplit Union dataset.",
+   "evidence_type": "supported",
+   "section": "§4.4 Experiments and Results; Table 5"
+  },
+  {
+   "finding": "The system treats paragraphs as discourse segments on the assumption that writers tend to use separate paragraphs for separate issues, so the learned links operate above individual propositions or sentences.",
+   "evidence_type": "supported",
+   "section": "§4 Automatic Answer Detection"
+  }
+ ],
+ "limitations": [
+  "The email corpus comes from a single university student-organization board and mainly concerns event planning, limiting domain generalizability.",
+  "The answer model uses paragraphs as discourse segments, which can collapse several questions or propositions occurring within one paragraph and therefore does not resolve proposition-level partial reply scope.",
+  "Candidate answers are drawn from original-content segments in subsequent messages, so the formulation does not cover all possible self-answer or same-message response configurations.",
+  "Quoted material was not used as an answer-pairing feature because it was rare in this corpus, even though quotation can explicitly indicate response scope in many workplace email settings.",
+  "Automatic question detection was developed for interrogative questions; automatic handling of declarative requests and rhetorical questions remained future work.",
+  "The model evaluates binary question-segment/answer-segment links rather than which individual subquestions or propositions inside a multi-question segment are answered.",
+  "The paper does not report a public release of the annotated ACM email corpus or experiment code."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "qa_threads_common": 0.98,
+  "reply_structure_differs_from_response_scope": 0.99,
+  "unanswered_questions_retained": 0.98,
+  "annotation_agreement": 0.99,
+  "question_detection_performance": 0.99,
+  "structural_features_improve_pairing": 0.99,
+  "candidate_split_improves_f1": 0.99,
+  "paragraph_level_scope": 0.99
+ },
+ "raw_claims": [
+  "The ACM corpus contains roughly 300 threads and about 1,000 individual email messages.",
+  "Roughly one fifth of the observed threads primarily center on question-answer exchanges.",
+  "Several questions and several responses can be pursued in parallel in one email thread.",
+  "A semantic response can target an older message rather than the message that is its immediate structural parent.",
+  "Some annotated questions have no answer anywhere in the thread.",
+  "The authors use paragraphs as discourse segments for answer-link detection.",
+  "The annotators achieved higher agreement for question-answer linking than for deciding which segments contain questions.",
+  "Lexical similarity by itself is insufficient for reliable question-answer pairing.",
+  "Features based on message ancestry, distance, candidate ordering, and thread structure improve answer-link classification.",
+  "The modified interrogative-question detector reaches an F1 score of 0.82.",
+  "The full Union answer-pairing experiment reaches F1 0.656, and the split-data strategy reaches F1 0.730.",
+  "Declarative-form and rhetorical-question detection remained unresolved in the reported system."
+ ],
+ "source_url": "https://aclanthology.org/C04-1128.pdf",
+ "access": "full_text"
+}

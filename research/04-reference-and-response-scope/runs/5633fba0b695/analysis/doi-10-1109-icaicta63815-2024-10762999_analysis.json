@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-1109-icaicta63815-2024-10762999",
+ "title": "Automatic Question-Answer Alignment for Japanese Diverse Local Assembly Minutes",
+ "research_question": "Can a two-stage segmentation-and-alignment pipeline trained largely on Tokyo assembly minutes robustly recover question-answer correspondences in local assemblies with different linguistic and discourse conventions?",
+ "methodology": "The paper treats collective questioning and collective answering as a two-stage problem: first divide batched question and answer speeches into topic segments, then align the resulting segments. It compares regular-expression segmentation with LCseg, several unsupervised Sentence-BERT variants, and a supervised Japanese BERT boundary classifier trained on gold and automatically segmented Tokyo assembly data. All segmentation variants feed the same alignment method, which represents segments with BM25-weighted vectors and solves a one-to-one maximum-similarity matching problem with the Hungarian algorithm. Evaluation uses Tokyo data from the NTCIR-16 QA Alignment task and manually segmented and aligned material from one 1992 Anjo City Council session, with Pk, WindowDiff, segmentation F1, and sentence-pair QA-alignment precision, recall, and F1.",
+ "key_findings": [
+  {
+   "finding": "On Anjo question segmentation, supervised BERT improved F1 from 0.55 for the Tokyo-specific regular expressions to 0.69.",
+   "evidence_type": "supported",
+   "section": "Section IV-A, Table IV"
+  },
+  {
+   "finding": "On Anjo answer segmentation, supervised BERT improved over the regular-expression baseline from F1 0.38 to 0.48, although LCseg performed better at F1 0.57.",
+   "evidence_type": "supported",
+   "section": "Section IV-A, Table IV"
+  },
+  {
+   "finding": "For complete QA alignment on the Anjo minutes, the supervised-BERT segmentation pipeline achieved precision 0.60, recall 0.41, and F1 0.48, compared with 0.30, 0.32, and 0.31 for regular-expression segmentation.",
+   "evidence_type": "supported",
+   "section": "Section IV-B, Table V"
+  },
+  {
+   "finding": "The authors report that supervised segmentation raised Anjo QA-alignment F1 by 0.17, recall by 0.09, and precision by 0.30 relative to the regular-expression pipeline.",
+   "evidence_type": "supported",
+   "section": "Section IV-B"
+  },
+  {
+   "finding": "Even when gold segmentation was supplied on Anjo, the one-to-one alignment algorithm reached only recall 0.55 and F1 0.68, showing that segmentation errors were not the only bottleneck.",
+   "evidence_type": "supported",
+   "section": "Section IV-B, Table V"
+  },
+  {
+   "finding": "The paper attributes the residual recall problem to Anjo containing more cases in which two answers correspond to one question; the authors therefore identify support for one-to-many alignment as necessary future work.",
+   "evidence_type": "supported",
+   "section": "Section IV-B"
+  },
+  {
+   "finding": "The Tokyo-specific regular-expression pipeline remained much stronger on Tokyo QA alignment, obtaining F1 0.86 versus 0.47 for supervised BERT, demonstrating a substantial tradeoff between in-domain specialization and cross-council robustness.",
+   "evidence_type": "supported",
+   "section": "Section IV-B, Table V"
+  }
+ ],
+ "limitations": [
+  "Cross-domain evaluation is based on only one plenary session from Anjo City Council and questions and answers from one named council member, providing limited evidence about the diversity of Japanese assemblies.",
+  "The alignment stage imposes one-to-one perfect matching and therefore cannot represent empirically observed cases in which one question corresponds to multiple answers.",
+  "The one-question-one-answer representation does not explicitly model partial replies to only some propositions within a question segment.",
+  "The supervised segmenter is trained mainly on Tokyo data plus automatically generated Tokyo segmentations, so the amount of genuinely diverse manually labeled training data is limited.",
+  "The manually created Anjo segmentation and alignment annotations are described but no release link for those annotations is provided.",
+  "The study does not separately evaluate unanswered questions or distinguish an incomplete answer from a fully responsive answer."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "anjo_question_segmentation_improves": 0.99,
+  "anjo_answer_segmentation_improves_over_regex": 0.99,
+  "anjo_alignment_improves": 0.99,
+  "gold_segmentation_still_has_low_recall": 0.99,
+  "one_to_many_causes_alignment_failure": 0.99,
+  "tokyo_regex_remains_strong": 0.99
+ },
+ "raw_claims": [
+  "Some Japanese assemblies batch several questions before officials answer the topics one by one.",
+  "The paper calls this discourse pattern collective questioning and collective answering.",
+  "The proposed pipeline first identifies topic boundaries and then aligns question and answer segments.",
+  "The supervised segmenter classifies whether a boundary occurs between two consecutive sentences.",
+  "The alignment stage uses BM25 vectors, cosine similarity, and Hungarian maximum matching.",
+  "The implemented alignment stage requires one-to-one question-answer pairs.",
+  "Tokyo-specific regular expressions transfer poorly to Anjo answer segmentation.",
+  "Supervised BERT produces better complete QA alignment than the regular-expression pipeline on the Anjo sample.",
+  "Correct segmentation alone does not solve the Anjo alignment problem.",
+  "The Anjo sample contains more instances of two answers corresponding to one question than the Tokyo data.",
+  "The authors conclude that the alignment method should be extended to permit one-to-many relations."
+ ],
+ "source_url": "https://easychair.org/publications/preprint/Z92k/open",
+ "access": "full_text"
+}

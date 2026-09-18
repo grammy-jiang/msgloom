@@ -1,0 +1,396 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-15398-jlm-v4i2-173",
+   "title": "Query responses",
+   "research_question": "What functional kinds of query-as-response occur in dialogue, how common are they, and what contextual or information-state structures are needed to characterize them?",
+   "methodology": "The authors retrieved 1,051 adjacent query-query response pairs from the spoken British National Corpus using SCoRE, manually removed cross-talk and tag-question cases, and annotated the remaining pairs into seven functional categories. They examined category frequencies and whether the responding query or the original query subsequently received an answer, and they compared the taxonomy with smaller samples from CHILDES, BEE, and AMEX. Annotation reliability was assessed on a 100-case control sample using five annotators and kappa statistics. The resulting classes were then formally modeled in the KoS dialogue framework using structures including Questions Under Discussion, dialogue gameboards, and a PENDING buffer.",
+   "key_findings": [
+    {
+     "finding": "Query-to-query responses are common in the spoken BNC: the authors report 9,279 query-query cross-turn sequences against 41,041 query-declarative sequences, corresponding to their reported 22.61% ratio.",
+     "evidence_type": "supported",
+     "section": "1 Introduction"
+    },
+    {
+     "finding": "The corpus yielded seven functional response classes; clarification requests dominated the sample, while dependent questions were the largest non-clarification class, accounting for 49.31% after clarification requests were excluded.",
+     "evidence_type": "supported",
+     "section": "2 A corpus-based taxonomy of query responses; 3 Results"
+    },
+    {
+     "finding": "Whether the original query was eventually answered depended strongly on response class: the original query was answered in only 11.54% of NO ANSW cases and 16.67% of IGNORE cases, compared with 81.25% of FORM cases and 100% of IND cases.",
+     "evidence_type": "supported",
+     "section": "3 Results, Table 4"
+    },
+    {
+     "finding": "The NO ANSW and IGNORE classes provide direct empirical evidence that a locally coherent response can leave the preceding question unresolved rather than answering it.",
+     "evidence_type": "supported",
+     "section": "2.5 I don't want to answer your question; 2.7 I ignore your question; 7 Conclusions"
+    },
+    {
+     "finding": "The formal treatment of MOTIV and NO ANSW requires multiple issues to remain simultaneously accessible, motivating a partially ordered QUD rather than a simple stack, while clarification and IGNORE additionally require participant-specific dialogue gameboards and a buffer for ungrounded utterances.",
+     "evidence_type": "supported",
+     "section": "6.5 Summary; 7 Conclusions"
+    },
+    {
+     "finding": "The annotation task showed substantial but imperfect agreement, with Fleiss kappa of 0.64 and 51% exact agreement across five annotators on the 100-item reliability sample.",
+     "evidence_type": "supported",
+     "section": "5 Annotation reliability"
+    }
+   ],
+   "limitations": [
+    "The main BNC sample is heavily dominated by free conversation, which accounts for 89.44% of the 1,051 pairs, rather than workplace email or organizational dialogue.",
+    "The study is restricted to questions answered by questions and therefore does not directly annotate partial declarative answers to multi-question or multi-proposition antecedents.",
+    "The first author performed the primary corpus annotation, and the multi-annotator reliability experiment shows substantial remaining ambiguity between some response categories.",
+    "The smaller genre-specific corpora contain far fewer examples than the BNC sample, limiting conclusions about domain-specific distributions.",
+    "The adjacent query-query extraction strategy does not provide a general annotation of long-distance or multi-antecedent response links.",
+    "Although the underlying corpora are identified, the paper does not identify a downloadable release of its complete 1,051-item category annotation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "query-response prevalence": 0.98,
+    "seven-class taxonomy": 0.99,
+    "category-specific unanswered rates": 0.99,
+    "adversarial question deferral": 0.98,
+    "multi-QUD formalization": 0.96,
+    "annotation reliability": 0.99
+   },
+   "raw_claims": [
+    "Responding to a question with another question is a frequent pattern in the spoken BNC.",
+    "The taxonomy distinguishes clarification, dependent, answer-format, motivation, answer-avoidance, indirect-answer, and ignore responses.",
+    "Dependent questions are the largest class once clarification requests are removed.",
+    "A NO ANSW response attempts to make the original questioner answer a new question while putting the original question aside.",
+    "An IGNORE response can remain relevant to the surrounding situation while not addressing the original question.",
+    "An indirect query response can itself convey the answer to the original query without requiring an answer to the responding query.",
+    "Original questions are rarely answered later after NO ANSW and IGNORE responses.",
+    "FORM responses negotiate how an answer to the original question should be supplied.",
+    "Some query-response configurations require more than one question to remain simultaneously active in the dialogue state.",
+    "The annotation categories exhibit genuine ambiguity despite substantial inter-annotator agreement."
+   ],
+   "source_url": "https://jlm.ipipan.waw.pl/index.php/JLM/article/download/173/147/1278",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-5210-dad-2023-201",
+   "title": "Scoring Coreference Chains with Split-Antecedent Anaphors",
+   "research_question": "How can standard coreference evaluation metrics be generalized so that systems receive appropriate partial credit when resolving split-antecedent anaphors and related multi-antecedent discourse deixis?",
+   "methodology": "The paper represents accommodated entities created from multiple antecedents and defines a similarity term that gives partial credit when predicted and gold antecedent sets overlap only partially. It systematically extends commonly used coreference metrics, including MUC, B3, CEAF variants, BLANC, and LEA, and illustrates their behavior on worked examples. The implementation is incorporated into the Universal Anaphora scorer and evaluated using the Yu et al. split-antecedent system, several baselines, and oracle predictions on ARRAU and a transformed version of FRIENDS. The authors also compare their scoring behavior with the earlier Zhou and Choi approach and discuss extension to discourse deixis and other accommodation phenomena.",
+   "key_findings": [
+    {
+     "finding": "Partial-credit evaluation is empirically important because only 16% of split antecedents in the ARRAU evaluation were fully resolved by the tested Yu et al. model, while many others were only partially recovered.",
+     "evidence_type": "supported",
+     "section": "7.2 Evaluation on ARRAU"
+    },
+    {
+     "finding": "Split-antecedent phenomena can be almost invisible in aggregate coreference scores when they are rare: only 0.8% of ARRAU clusters contained split antecedents, whereas split-only evaluation exposed differences of up to 20 CoNLL-score percentage points.",
+     "evidence_type": "supported",
+     "section": "7.2 Evaluation on ARRAU"
+    },
+    {
+     "finding": "After normalizing the FRIENDS annotation so later references to an already accommodated group became ordinary coreference, 4.1% of mentions remained genuine split-antecedent anaphors, providing a larger test bed than ARRAU.",
+     "evidence_type": "supported",
+     "section": "7.3 Evaluation on FRIENDS"
+    },
+    {
+     "finding": "The Zhou and Choi scoring method substantially overweights missing split-antecedent links in the authors' diagnostic experiment: a system otherwise perfect on singular clusters loses 10 to 18 percentage points, whereas the proposed extensions give scores between 95% and 97%, close to the roughly 96% expected from the proportion of split mentions.",
+     "evidence_type": "supported",
+     "section": "7.3 Evaluation on FRIENDS"
+    },
+    {
+     "finding": "The same machinery can score split-antecedent discourse deixis, where the antecedents are utterances or clauses rather than noun phrases, and the authors report that this approach was used in CODI/CRAC shared tasks.",
+     "evidence_type": "supported",
+     "section": "8 Scoring other types of split-antecedent anaphora and of anaphora involving accommodation"
+    },
+    {
+     "finding": "The proposed representation does not yet directly solve every kind of multi-antecedent accommodation because context-change cases can combine antecedents through relations more complex than simple set membership.",
+     "evidence_type": "supported",
+     "section": "8 Scoring other types of split-antecedent anaphora and of anaphora involving accommodation"
+    }
+   ],
+   "limitations": [
+    "The paper evaluates anaphoric reference rather than answerhood, approval, rejection, or response scope, so its relevance to proposition-level replies is structural rather than a direct study of reply semantics.",
+    "Split antecedents are very rare in ARRAU, causing their effect to be diluted in overall coreference scores.",
+    "The FRIENDS annotations are transformed before evaluation, so the evaluated representation is not identical to the corpus's original labeling convention.",
+    "The authors could not obtain Zhou and Choi's original system outputs and therefore could not perform a direct system-output replication of that work.",
+    "The formal treatment is most natural when accommodated entities are formed by set membership; context-change accommodation needs additional semantic machinery.",
+    "The experiments do not involve workplace email or explicit multi-question response annotation."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "partial-credit necessity": 0.99,
+    "rarity masks aggregate scores": 0.99,
+    "FRIENDS split-antecedent prevalence": 0.98,
+    "prior-scorer overweighting": 0.98,
+    "multi-utterance discourse deixis": 0.97,
+    "context-change limitation": 0.95
+   },
+   "raw_claims": [
+    "A split-antecedent expression can refer jointly to entities introduced by separate earlier mentions.",
+    "A system may recover only part of the antecedent set, so all-or-nothing scoring loses useful information.",
+    "The proposed framework extends standard coreference metrics instead of introducing a completely separate metric family.",
+    "Split antecedents are sufficiently rare in ARRAU that overall coreference results obscure much of their effect.",
+    "Most split antecedents resolved by the tested model were not recovered completely.",
+    "FRIENDS contains a substantially larger concentration of split-antecedent phenomena than ARRAU.",
+    "Duplicating plural mentions into several singular chains can give split-antecedent cases disproportionate weight.",
+    "Discourse deixis can have several antecedent utterances that jointly evoke one abstract discourse entity.",
+    "The generalized scorer can evaluate discourse-deictic references with multiple utterance antecedents.",
+    "More complex accommodation relations may require extensions beyond the set-based treatment developed here."
+   ],
+   "source_url": "https://aclanthology.org/2023.dnd-14.3.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2403.16609",
+   "title": "Conversational Grounding: Annotation and Analysis of Grounding Acts and Grounding Units",
+   "research_question": "How can natural task-oriented dialogues be annotated in terms of grounding acts, common grounding units, and degrees of grounding, and how effectively can a baseline transformer model predict those structures?",
+   "methodology": "Two computational-linguistics annotators labeled all 430 Meetup dialogues containing 5,131 utterances and 50 randomly selected Spot the Difference dialogues containing 4,934 utterances with Grounding Acts, Common Grounding Units, and grounding degree. The authors measured Grounding Act agreement with Cohen's kappa and analyzed phenomena such as reopening, ambiguity, delayed grounding, and multi-threaded dialogue. They released the annotated data and coding manual. As a computational baseline, they fine-tuned T5-base with cross-entropy and weighted cross-entropy using a 70:15:15 train-development-test split and performed classification relative to each potentially relevant CGU.",
+   "key_findings": [
+    {
+     "finding": "A single utterance can participate in multiple Common Grounding Units, so the annotation explicitly permits one response to have distinct relations to several simultaneously active discourse units.",
+     "evidence_type": "supported",
+     "section": "5 Annotation Scheme"
+    },
+    {
+     "finding": "The paper documents a direct multi-question scope ambiguity: after three successive questions, a negative response could not be reliably assigned to any one question, so the associated grounding was labeled ambiguous even though the interaction moved on.",
+     "evidence_type": "supported",
+     "section": "5 Annotation Scheme"
+    },
+    {
+     "finding": "Grounding is not irrevocable: an already grounded CGU may be reopened by repair or acknowledgment requests, and a proposer can also revoke information from the grounded set.",
+     "evidence_type": "supported",
+     "section": "5 Annotation Scheme"
+    },
+    {
+     "finding": "Written chat contained non-linear and multi-threaded response behavior in which a later utterance answered an older contribution rather than the immediately preceding material, demonstrating that simple nearest-turn linkage is insufficient.",
+     "evidence_type": "supported",
+     "section": "6 Challenges"
+    },
+    {
+     "finding": "The annotations sometimes require future context: annotators revised 23 Meetup cases after seeing later utterances, and 171 Spot the Difference cases were marked as requiring subsequent utterances for correct interpretation.",
+     "evidence_type": "supported",
+     "section": "6 Challenges; 7 Analysis"
+    },
+    {
+     "finding": "Grounding dependencies can span long stretches: the longest reported trajectory was 13 utterances in Meetup and 85 utterances in Spot the Difference, and grounded CGUs could later be revisited.",
+     "evidence_type": "supported",
+     "section": "7 Analysis"
+    },
+    {
+     "finding": "The T5 baseline performs well on some frequent categories but extremely poorly on many rare Grounding Acts, and weighted loss does not resolve the general class-imbalance problem.",
+     "evidence_type": "supported",
+     "section": "8 Model"
+    },
+    {
+     "finding": "Grounding Act annotation achieved Cohen's kappa of 0.81 for Meetup and 0.78 for Spot the Difference.",
+     "evidence_type": "supported",
+     "section": "5 Annotation Scheme"
+    }
+   ],
+   "limitations": [
+    "Both corpora are collaborative task-oriented dialogues rather than workplace email, so communication medium and organizational norms differ from the target setting.",
+    "Only 50 Spot the Difference dialogues were annotated rather than the full corpus.",
+    "The Grounding Unit representation does not explicitly decompose a multi-proposition utterance into independently answerable propositions or subquestions.",
+    "Some annotations depend on prosody, inferred speaker intent, future dialogue context, or timing heuristics, making transcript-only replication difficult.",
+    "Grounding Act frequencies are highly imbalanced, with several important repair and acknowledgment categories represented by very few examples.",
+    "The T5 experiments are presented as a preliminary baseline and perform poorly on numerous minority categories.",
+    "The paper does not report a dedicated model for proposition-level reply scope or unanswered-subquestion detection."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "multiple-CGU membership": 0.99,
+    "multi-question response ambiguity": 0.99,
+    "reopening and revocation": 0.98,
+    "multi-threaded reply links": 0.98,
+    "future-context dependence": 0.99,
+    "long grounding trajectories": 0.99,
+    "baseline class imbalance": 0.97,
+    "annotation reliability": 0.99
+   },
+   "raw_claims": [
+    "The released annotation represents dialogue as Grounding Acts grouped into Common Grounding Units.",
+    "One utterance may be associated with more than one grounding unit.",
+    "A response after several questions can be ambiguous as to which question it addresses.",
+    "The annotation allows a grounded unit to be reopened after repair-related acts.",
+    "A proposer can revoke information that had previously been treated as grounded.",
+    "Written chat can contain multiple conversational threads whose response links cross intervening utterances.",
+    "Later dialogue context was necessary to annotate some earlier utterances correctly.",
+    "Some grounding trajectories extend across many intervening utterances.",
+    "Meetup contains explicitly annotated ambiguous grounding cases.",
+    "The model evaluates an utterance separately with respect to each candidate grounding unit.",
+    "Rare Grounding Acts remain difficult for the T5 baseline despite use of weighted loss."
+   ],
+   "source_url": "https://arxiv.org/html/2403.16609",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-ad98de9372",
+   "title": "The DAD Parallel Corpora and their Uses",
+   "research_question": "How are abstract pronominal anaphors represented and used in Danish and Italian DAD corpora, and how effectively can their pronominal functions be classified computationally?",
+   "methodology": "The DAD resource combines multiple Danish and Italian written and spoken subcorpora and annotates third-person singular neuter pronouns for function, antecedent, antecedent syntactic type, referent semantic type, anaphoric distance, and relation type using PALinkA with XML output. The paper analyzes the resulting distributions to compare abstract anaphora across Danish, Italian, and previously reported English patterns. It then runs Weka experiments using contextual n-grams, first exploring unsupervised learning and then supervised classifiers with ten-fold cross-validation on several Danish datasets and corresponding supervised experiments on Italian texts and dialogues. Precision, recall, and F-measure are reported, together with experiments adding part-of-speech and lemma features.",
+   "key_findings": [
+    {
+     "finding": "The DAD scheme explicitly treats predicates, verb phrases, clauses, and discourse segments as possible antecedents of abstract anaphors whose referents can be properties, events, facts, propositions, and speech acts.",
+     "evidence_type": "supported",
+     "section": "Introduction; 2.3 The DAD annotation"
+    },
+    {
+     "finding": "The annotation records the antecedent itself, its syntactic type, the semantic type of the referent, anaphoric distance in clauses, and identity or non-identity relation, providing an explicit representation of links to proposition-like discourse material.",
+     "evidence_type": "supported",
+     "section": "2.3 The DAD annotation"
+    },
+    {
+     "finding": "Italian abstract pronominal anaphora are relatively uncommon in these data and are frequently realized as zero anaphora when they do occur, while demonstrative abstract pronouns are especially rare.",
+     "evidence_type": "supported",
+     "section": "3 Exploring the annotated data"
+    },
+    {
+     "finding": "Supervised classification substantially outperformed ZeroR baselines; for Italian, the best text system reached F1 81.1 versus 25.8 for ZeroR, and the best dialogue system reached F1 69.6 versus 33.7.",
+     "evidence_type": "supported",
+     "section": "5 Machine Learning Experiments on the Italian Data"
+    },
+    {
+     "finding": "Classification of Danish multiparty dialogue was markedly weaker than for the more homogeneous monologue and two-party datasets, and the paper specifically notes the absence of adjacency-pair annotation as an important missing signal for multiparty dialogue processing.",
+     "evidence_type": "supported",
+     "section": "4 Machine Learning Experiments on the Danish Data"
+    },
+    {
+     "finding": "Adding part-of-speech and lemma information did not produce statistically significant gains on Danish data and slightly reduced Italian performance, which the author associates partly with uncertain tagger and lemmatizer quality.",
+     "evidence_type": "supported",
+     "section": "4 Machine Learning Experiments on the Danish Data; 5 Machine Learning Experiments on the Italian Data"
+    }
+   ],
+   "limitations": [
+    "The paper studies pronominal anaphora rather than conversational responses, so it does not determine whether a reply answers, approves, rejects, or leaves open a particular proposition.",
+    "It does not annotate multiple questions or partial answer coverage within a multi-proposition antecedent.",
+    "The underlying subcorpora are heterogeneous in genre, language, annotation, and size, complicating direct cross-corpus comparisons.",
+    "The author reports that multiparty dialogue lacks adjacency-pair information even though such information appears important for classification.",
+    "The quality of the part-of-speech tagging and lemmatization of the Italian text data was not known, and the author recommends rerunning those experiments after manual correction.",
+    "The resulting automatic pronoun-function classifications still require manual correction.",
+    "No paper-specific machine-learning code or experiment configuration is identified as released."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "abstract proposition antecedents": 0.99,
+    "antecedent-link annotation": 0.99,
+    "Italian abstract-anaphora pattern": 0.97,
+    "supervised classification gains": 0.99,
+    "missing adjacency-pair signal": 0.95,
+    "PoS and lemma weak effect": 0.97
+   },
+   "raw_claims": [
+    "DAD contains parallel and comparable Danish and Italian written and spoken data.",
+    "Abstract anaphors may have predicates, verb phrases, clauses, or larger discourse segments as antecedents.",
+    "The semantic referent of an abstract anaphor can be a fact, event, proposition, property, or speech act.",
+    "The annotation explicitly stores antecedent identity and antecedent type.",
+    "The resource also records anaphoric distance and whether the anaphor-antecedent relation is identity or non-identity.",
+    "Italian uses abstract pronominal anaphora less frequently than Danish in the analyzed material.",
+    "Supervised classifiers outperform the majority-class baseline on the pronoun-function classification task.",
+    "Classification is harder on heterogeneous multiparty dialogue than on the more homogeneous Danish datasets.",
+    "The paper identifies adjacency-pair information as potentially important for processing multiparty dialogue.",
+    "Adding morphological and lexical annotations did not yield significant improvements in the reported feature experiments.",
+    "The DAD annotations are described as available in XML format."
+   ],
+   "source_url": "https://www.researchgate.net/publication/220746973_The_DAD_Parallel_Corpora_and_their_Uses",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-e1981ecd9a",
+   "title": "Answering Clarification Questions",
+   "research_question": "Which factors affect how clarification questions are interpreted and whether, how, and how quickly interlocutors respond to them?",
+   "methodology": "The authors re-annotated a 406-item BNC clarification-request corpus for response type, question-answer distance, source-element part of speech, and grounding-related mention status, and examined associations between clarification form, interpretation, and answer behavior. They then conducted a controlled synchronous text-chat experiment with 28 computer-science and IT undergraduates using balloon-debate and story-telling tasks, while a server covertly inserted reprise-fragment clarification requests. The experiment produced 215 system-generated reprise fragments in a within-subject design manipulating word category and first versus second mention, with logs manually corrected for tagging errors. Statistical comparisons were performed with chi-square tests.",
+   "key_findings": [
+    {
+     "finding": "A large proportion of clarification requests appeared unanswered in the BNC: 39% had no apparent answer under the broad coding, falling to 17% when possible answers transcribed as unclear and cases where the requester immediately continued were discounted.",
+     "evidence_type": "supported",
+     "section": "3.2.1 Response Type"
+    },
+    {
+     "finding": "Clarification form and interpretation constrain answer form: sluices were normally answered with fragments and not polar particles, conventional clarifications tended toward full sentences, while reprise fragments could receive fragments or yes-no responses.",
+     "evidence_type": "supported",
+     "section": "3.2.1 Response Type"
+    },
+    {
+     "finding": "When clarification requests were answered, the linkage was highly local: 94% of the 289 answered cases received their answer in the immediately following BNC sentence, and none in the analyzed set were more than three sentences away.",
+     "evidence_type": "supported",
+     "section": "3.2.2 Answer Distance"
+    },
+    {
+     "finding": "In the controlled chat experiment, 50% of 215 inserted reprise clarifications received no response, and the authors observed that simultaneous typing could displace some replies until the end of an in-progress turn or a later turn.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "Grounding status affected response probability: 58% of reprise clarifications of first mentions received a response compared with 33% of reprises of second mentions.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "The experiment contradicted the prediction that function-word reprise fragments would normally receive clausal readings: function-word reprises were almost exclusively assigned Other readings, whereas content-word reprises were interpreted as clausal in 53% of cases and constituent in 29%.",
+     "evidence_type": "contradicted",
+     "section": "4.1 Manipulating Chat Interactions; 4.3 Results"
+    },
+    {
+     "finding": "Constituent clarification readings were about twice as likely to receive a response as clausal or lexical readings in the BNC analysis, with the reported difference statistically significant.",
+     "evidence_type": "supported",
+     "section": "3.2.1 Response Type"
+    }
+   ],
+   "limitations": [
+    "Reliability of the newly added BNC response-type and distance markup was not directly evaluated in this paper.",
+    "BNC transcription omits visual and other non-verbal responses and contains unclear spans, so apparent unanswered rates can overestimate true non-response.",
+    "When an initial response was followed by additional information, the reported corpus analysis used only the initial response, limiting analysis of distributed or multi-part answers.",
+    "The controlled experiment involved only 28 mostly young computer-science and IT students and artificially inserted clarification turns.",
+    "Synchronous chat differs from both spoken interaction and asynchronous workplace email, especially because simultaneous typing can reorder response sequences.",
+    "The automatic part-of-speech tagger was wrong in approximately 30% of experimental cases and required manual correction.",
+    "The study focuses mainly on clarification of a single source element rather than explicit response coverage over several questions or propositions.",
+    "The re-annotated BNC labels and experimental chat logs are not identified as a separately released research dataset."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "unanswered clarification prevalence": 0.99,
+    "answer-form dependence": 0.98,
+    "immediate response locality": 0.99,
+    "experimental non-response": 0.99,
+    "grounding affects response probability": 0.99,
+    "function-word hypothesis contradicted": 0.98,
+    "constituent clarifications answered more": 0.97
+   },
+   "raw_claims": [
+    "Clarification requests can target different aspects of an earlier utterance and can be highly elliptical.",
+    "The corpus annotation distinguishes no answer, possible unclear answer, requester continuation, fragment answer, full-sentence answer, polar answer, and queried clarification.",
+    "A substantial share of clarification requests in the BNC appear not to receive a verbal answer.",
+    "Different clarification forms have different distributions of answer types.",
+    "Different clarification readings also differ in their likelihood of receiving a response.",
+    "Almost all answered clarification requests in the BNC are answered immediately.",
+    "The controlled chat system inserted clarification requests without revealing the intervention to participants until debriefing.",
+    "Half of the generated reprise fragments in the chat experiment received no response.",
+    "Concurrent text production can cause a reply to be delayed past intervening material.",
+    "Reprises of first mentions were more likely to receive responses than reprises of second mentions.",
+    "Word category and grounding both influenced how reprise fragments were interpreted.",
+    "The experimental evidence did not support the predicted clausal preference for function-word reprises."
+   ],
+   "source_url": "https://aclanthology.org/W03-2103.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

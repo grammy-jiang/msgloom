@@ -1,0 +1,609 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "TerminologyAnalysis",
+ "description": "Academic terminology refinement performed before bulk discovery: each seed keyword is audited, the product problem is translated into academic task families, and query families are built with an explicit DIRECT or TRANSFER role.",
+ "topic": "direct empirical studies of proposition-level partial reply scope in workplace email or enterprise dialogue, especially multi-question messages, unanswered subquestions, scoped approval/rejection, and responses linked jointly to multiple antecedent propositions",
+ "seed_audit": [
+  {
+   "seed": "discourse deixis",
+   "academic_meaning": "Reference by demonstratives or related expressions to prior or forthcoming discourse segments or to abstract objects such as propositions, facts, events, states, or situations evoked by discourse.",
+   "fit": "STRONG",
+   "main_risk": "The term includes metalinguistic reference to textual form and discourse segments, not only semantic reference to propositions targeted by replies.",
+   "false_positive_literature": "General deixis, spatial deixis, temporal deixis, demonstrative choice, metalinguistic reference, and descriptive linguistic work without antecedent identification."
+  },
+  {
+   "seed": "discourse-deictic reference",
+   "academic_meaning": "Reference in which a deictic expression such as this or that targets a discourse segment and thereby accesses an abstract discourse referent.",
+   "fit": "STRONG",
+   "main_risk": "Much of the literature focuses on demonstratives rather than elliptical reply acts such as yes, approved, agreed, or no.",
+   "false_positive_literature": "Demonstrative semantics, deixis typology, spatial demonstratives, and text-reference studies that do not resolve exact semantic antecedents."
+  },
+  {
+   "seed": "abstract anaphora",
+   "academic_meaning": "Anaphoric reference whose antecedent is non-nominal and typically denotes an event, fact, proposition, state, situation, or other abstract object.",
+   "fit": "STRONG",
+   "main_risk": "Most datasets concern pronouns or demonstratives in prose rather than pragmatic response acts in workplace interaction.",
+   "false_positive_literature": "Nominal coreference, shell nouns without antecedent resolution, abstract noun semantics, and general anaphora surveys."
+  },
+  {
+   "seed": "propositional anaphora",
+   "academic_meaning": "Anaphoric reference to proposition-like content expressed or implied by an earlier clause, sentence, or discourse unit.",
+   "fit": "STRONG",
+   "main_risk": "Terminology is less consistently used than abstract anaphora or non-nominal antecedent anaphora, reducing recall if used alone.",
+   "false_positive_literature": "Formal propositional semantics without reference resolution and nominal anaphora involving proposition-denoting noun phrases."
+  },
+  {
+   "seed": "event anaphora",
+   "academic_meaning": "Anaphoric reference to an event or eventuality introduced by previous discourse.",
+   "fit": "MODERATE",
+   "main_risk": "Event identity and event coreference are related but do not by themselves capture approval, answer, or rejection of propositional content.",
+   "false_positive_literature": "Event extraction, event identity clustering, temporal event coreference, and cross-document event coreference."
+  },
+  {
+   "seed": "anaphora resolution",
+   "academic_meaning": "Determining the antecedent or interpretation of an anaphoric expression.",
+   "fit": "WEAK",
+   "main_risk": "The unqualified term is dominated by nominal pronoun and noun-phrase antecedent resolution.",
+   "false_positive_literature": "Pronoun resolution, nominal coreference, zero anaphora, bridging anaphora, and entity-centric benchmarks."
+  },
+  {
+   "seed": "coreference resolution",
+   "academic_meaning": "Clustering or linking expressions that refer to the same discourse entity.",
+   "fit": "WEAK",
+   "main_risk": "Mainstream coreference is overwhelmingly entity-centric and often assumes mention-to-entity identity rather than response-to-proposition relations.",
+   "false_positive_literature": "Person, organization, object, and named-entity coreference; within-document mention clustering; pronoun resolution."
+  },
+  {
+   "seed": "coreference to events",
+   "academic_meaning": "Identification of event mentions that denote the same event or event instance.",
+   "fit": "MODERATE",
+   "main_risk": "Identity between event mentions is not the same relation as a reply approving, rejecting, clarifying, or answering an event-related proposition.",
+   "false_positive_literature": "Event coreference clustering, event identity, temporal event linking, and cross-document event resolution."
+  },
+  {
+   "seed": "coreference to propositions",
+   "academic_meaning": "Reference or identity relations involving proposition-denoting discourse content rather than ordinary entities.",
+   "fit": "STRONG",
+   "main_risk": "The exact phrase is not a dominant standardized task name; relevant work may instead use abstract anaphora, discourse deixis, non-nominal antecedents, or discourse reference.",
+   "false_positive_literature": "Formal logical work on proposition identity without empirical antecedent resolution."
+  },
+  {
+   "seed": "conversational coreference",
+   "academic_meaning": "Coreference or reference resolution performed in dialogue or conversational data, often incorporating speakers, turns, and discourse context.",
+   "fit": "MODERATE",
+   "main_risk": "Most conversational coreference still resolves people and objects rather than propositions or reply scope.",
+   "false_positive_literature": "Speaker coreference, addressee resolution, entity linking in dialogue, and dialogue-state entity tracking."
+  },
+  {
+   "seed": "dialogue reference resolution",
+   "academic_meaning": "Resolution of referring expressions in dialogue using conversational context, discourse structure, speaker information, and sometimes multimodal context.",
+   "fit": "STRONG",
+   "main_risk": "The task may target physical or nominal entities instead of propositional content.",
+   "false_positive_literature": "Situated object reference, multimodal pointing, slot reference, speaker identification, and entity tracking."
+  },
+  {
+   "seed": "dialogue discourse parsing",
+   "academic_meaning": "Recovery of discourse attachment structure and relation labels among utterances or elementary discourse units in dialogue.",
+   "fit": "STRONG",
+   "main_risk": "Many parsers link whole EDUs or turns and do not explicitly represent exact intra-message proposition scope, unanswered propositions, or partial applicability.",
+   "false_positive_literature": "Monologic discourse parsing, relation classification with gold endpoints, and dialogue-act tagging without attachment prediction."
+  },
+  {
+   "seed": "conversational discourse relations",
+   "academic_meaning": "Semantic or pragmatic coherence relations connecting utterances or discourse units in conversation, such as question-answer, acknowledgment, correction, continuation, explanation, or contrast.",
+   "fit": "STRONG",
+   "main_risk": "Relation labels may be coarse and endpoints may be turns rather than exact proposition spans.",
+   "false_positive_literature": "General coherence classification, monologic rhetorical relations, and discourse-marker classification."
+  },
+  {
+   "seed": "discourse relation recognition",
+   "academic_meaning": "Identification or classification of semantic-pragmatic relations between discourse units.",
+   "fit": "MODERATE",
+   "main_risk": "Many benchmarks provide both argument spans in advance, so they do not test antecedent selection or reply scope.",
+   "false_positive_literature": "PDTB-style relation classification with gold Arg1/Arg2, connective classification, and monologue-only discourse relation tasks."
+  },
+  {
+   "seed": "response-to discourse relation",
+   "academic_meaning": "A family of discourse attachments in which a current utterance functions as a response to an earlier utterance or discourse unit; terminology varies across frameworks.",
+   "fit": "STRONG",
+   "main_risk": "The phrase itself is not a single stable canonical label and can retrieve technical uses of reply-to structure rather than semantic response scope.",
+   "false_positive_literature": "Message threading, social-media reply trees, addressee recognition without semantic relation, and response-generation datasets."
+  },
+  {
+   "seed": "adjacency pairs",
+   "academic_meaning": "Conversation-analysis concept for paired sequential actions such as question-answer, proposal-acceptance/rejection, request-compliance/refusal, or greeting-greeting.",
+   "fit": "MODERATE",
+   "main_risk": "Adjacency is a sequential-organizational concept and often does not identify exact proposition spans when one turn contains several actions.",
+   "false_positive_literature": "Conversation-analysis studies with no computational annotation, turn-taking research, and adjacent-turn heuristics."
+  },
+  {
+   "seed": "dialogue act",
+   "academic_meaning": "Functional classification of an utterance or segment according to communicative action such as question, request, inform, accept, reject, acknowledge, or answer.",
+   "fit": "WEAK",
+   "main_risk": "A dialogue-act label says what a response does but normally not which earlier proposition it applies to.",
+   "false_positive_literature": "Dialogue-act classification, intent classification, speech-act recognition, and ISO/DAMSL tag prediction without antecedent links."
+  },
+  {
+   "seed": "question answer alignment",
+   "academic_meaning": "Identification or matching of an answer utterance or span to the question it answers in a conversation or thread.",
+   "fit": "STRONG",
+   "main_risk": "Some work assumes exactly one question per context or evaluates only answer retrieval after the question is already given.",
+   "false_positive_literature": "Open-domain QA, answer correctness, retrieval QA, reading comprehension, and FAQ matching with no conversational antecedent-selection problem."
+  },
+  {
+   "seed": "question resolution",
+   "academic_meaning": "A broad term used for determining how discourse resolves questions, including answerhood, questions under discussion, dialogue-state resolution, or whether an issue has been settled.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase spans formal semantics, dialogue management, and issue tracking and is not a reliably specific name for reply-to-question alignment.",
+   "false_positive_literature": "Formal question semantics, dialogue-state tracking, conversational search, and clarification-question generation."
+  },
+  {
+   "seed": "answer scope",
+   "academic_meaning": "Potentially the portion, alternatives, or subquestions of a question that an answer resolves; the phrase is conceptually relevant but not a highly standardized computational task name.",
+   "fit": "STRONG",
+   "main_risk": "Queries may retrieve scope in formal semantics or answer extraction rather than empirical alignment of replies to prior subquestions.",
+   "false_positive_literature": "Semantic scope theory, extractive QA answer spans, scope ambiguity, and database query answering."
+  },
+  {
+   "seed": "partial answer detection",
+   "academic_meaning": "Determining that an utterance provides only part of the information required to completely resolve a question or issue.",
+   "fit": "STRONG",
+   "main_risk": "The exact phrase is not consistently used; partial-answer research may be theoretical, QA-oriented, or concern incomplete generated answers rather than conversational scope.",
+   "false_positive_literature": "Answer completeness scoring for generated QA, partial credit grading, incomplete knowledge-base answers, and survey-response completion."
+  },
+  {
+   "seed": "multi-question answering in dialogue",
+   "academic_meaning": "Handling several questions associated with a conversational context, potentially producing or selecting answers for each.",
+   "fit": "MODERATE",
+   "main_risk": "Recent 'multi-question answering' often means asking an LLM several externally supplied questions about one transcript, not determining which naturally occurring subquestion a reply answers.",
+   "false_positive_literature": "Batch QA over transcripts, multi-hop QA, multi-turn QA where each question is supplied explicitly, and synthetic question sets."
+  },
+  {
+   "seed": "agreement detection",
+   "academic_meaning": "Recognition of utterances expressing agreement, acceptance, support, or related positive response toward prior conversational content.",
+   "fit": "MODERATE",
+   "main_risk": "Many classifiers detect the presence of agreement without identifying its precise target.",
+   "false_positive_literature": "Message-level agreement classification, sentiment classification, grammatical agreement, and social-media stance without target linkage."
+  },
+  {
+   "seed": "disagreement detection",
+   "academic_meaning": "Recognition of utterances expressing disagreement, rejection, correction, opposition, or related negative response.",
+   "fit": "MODERATE",
+   "main_risk": "Detection alone does not establish which clause or proposition is rejected.",
+   "false_positive_literature": "Sentiment polarity, toxicity, argument mining, grammatical disagreement, and whole-turn disagreement labels without targets."
+  },
+  {
+   "seed": "agreement target identification",
+   "academic_meaning": "Identification of the prior speaker, utterance, segment, or proposition that an agreement expression is directed toward.",
+   "fit": "STRONG",
+   "main_risk": "Some work identifies only an agreed-with speaker or turn rather than an exact proposition or subspan.",
+   "false_positive_literature": "Agreement detection without target annotation, addressee recognition, stance classification with fixed targets, and grammatical agreement."
+  },
+  {
+   "seed": "agreement scope",
+   "academic_meaning": "The semantic extent of prior content over which an agreement expression holds; highly relevant conceptually but not a widely standardized task label.",
+   "fit": "STRONG",
+   "main_risk": "Low lexical standardization may cause poor recall, while generic 'scope' searches attract unrelated semantic-scope literature.",
+   "false_positive_literature": "Quantifier scope, negation scope, grammatical agreement domains, and whole-message agreement labels."
+  },
+  {
+   "seed": "stance with target identification",
+   "academic_meaning": "Joint identification of a stance-bearing expression and the entity, claim, proposition, topic, or span toward which the stance is directed.",
+   "fit": "MODERATE",
+   "main_risk": "Most stance datasets use preselected topics or entities rather than antecedent propositions occurring in the preceding dialogue.",
+   "false_positive_literature": "Topic-level political stance, sentiment-target extraction, aspect-based sentiment, and stance where the target is supplied as input."
+  },
+  {
+   "seed": "entailment relative to a proposition",
+   "academic_meaning": "Judging whether one textual statement semantically entails another proposition.",
+   "fit": "MODERATE",
+   "main_risk": "NLI normally assumes the premise-hypothesis pair is already selected and therefore does not solve antecedent discovery or scope.",
+   "false_positive_literature": "Generic NLI, textual entailment benchmarks, fact verification, and whole-message pair classification."
+  },
+  {
+   "seed": "contradiction detection",
+   "academic_meaning": "Detection that one statement is semantically incompatible with another.",
+   "fit": "WEAK",
+   "main_risk": "It can model rejection-like semantics only after a target proposition has been selected and does not represent approval, clarification, or unanswered content.",
+   "false_positive_literature": "NLI contradiction classification, misinformation detection, inconsistency detection in documents, and database contradiction."
+  },
+  {
+   "seed": "business email",
+   "academic_meaning": "Email used for professional, organizational, commercial, or workplace communication; primarily a domain qualifier rather than a task.",
+   "fit": "MODERATE",
+   "main_risk": "The term retrieves pragmatics, pedagogy, politeness, genre, marketing, and writing-quality research unrelated to reply scope.",
+   "false_positive_literature": "Business-English pedagogy, email-writing instruction, marketing email, phishing, spam, politeness, and genre studies without response alignment."
+  },
+  {
+   "seed": "email reply",
+   "academic_meaning": "A message responding to another email, including technical threading, reply behavior, response generation, and conversational analysis.",
+   "fit": "MODERATE",
+   "main_risk": "Most retrievals concern whether, when, or how someone replies rather than what exact proposition the reply semantically targets.",
+   "false_positive_literature": "Reply-time prediction, reply likelihood, email threading, Smart Reply, response generation, and sender-recipient behavior."
+  },
+  {
+   "seed": "approval scope",
+   "academic_meaning": "The portion of a proposal, request, plan, amount, condition, or other content to which an approval applies; directly matches the product need but is not an established broad academic task name.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase retrieves legal authorization, access-control scope, workflow systems, procurement, or policy approval rather than linguistic response scope.",
+   "false_positive_literature": "Access-control approval, regulatory approval, workflow authorization, legal approval clauses, and governance processes."
+  },
+  {
+   "seed": "workplace communication",
+   "academic_meaning": "Communication occurring in organizational work settings across email, meetings, chat, messaging, and other channels; a domain qualifier rather than a computational task.",
+   "fit": "MODERATE",
+   "main_risk": "Very broad interdisciplinary literature with little proposition-level annotation.",
+   "false_positive_literature": "Organizational behavior, communication effectiveness, workplace discourse pedagogy, sociolinguistics, and management studies without response-target annotation."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "F1",
+   "name": "non-nominal antecedent and abstract-anaphora resolution",
+   "description": "Resolve an anaphoric or discourse-deictic expression to clausal, sentential, eventive, factual, situational, or propositional antecedent spans rather than ordinary nominal entities.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest established reference-resolution literature for expressions whose referents are prior propositions or discourse content. It supplies terminology for exact antecedent spans, non-nominal antecedents, antecedent ambiguity, and cases with no identifiable linguistic antecedent.",
+   "seed_papers": [
+    "Robin Lakoff. 1974. Remarks on This and That.",
+    "Bonnie Lynn Webber. 1991. Structure and Ostension in the Interpretation of Discourse Deixis.",
+    "Miriam Eckert and Michael Strube. 2000. Dialogue Acts, Synchronizing Units, and Anaphora Resolution.",
+    "Costanza Navarretta. 2004. Resolving Individual and Abstract Anaphora in Texts and Dialogues.",
+    "Ana Marasovic, Leo Born, Juri Opitz, and Anette Frank. 2017. A Mention-Ranking Model for Abstract Anaphora Resolution.",
+    "Varada Kolhatkar, Adam Roussel, Stefanie Dipper, and Heike Zinsmeister. 2018. Anaphora With Non-nominal Antecedents in Computational Linguistics: a Survey."
+   ]
+  },
+  {
+   "id": "F2",
+   "name": "dialogue discourse attachment and response-relation parsing",
+   "description": "Predict which prior discourse unit a current conversational unit attaches to and classify the semantic-pragmatic relation between them.",
+   "role": "DIRECT",
+   "why_it_matters": "Unlike ordinary dialogue-act classification, discourse parsing jointly addresses antecedent selection and relation type. It is therefore a major source for answer, acknowledgment, correction, continuation, question-answer, and related response links, although granularity is often EDU-level rather than proposition-span-level.",
+   "seed_papers": [
+    "Nicholas Asher, Julie Hunter, Mathieu Morey, Farah Benamara, and Stergos Afantenos. 2016. Discourse Structure and Dialogue Acts in Multiparty Dialogue: the STAC Corpus.",
+    "Zhouxing Shi and Minlie Huang. 2019. A Deep Sequential Model for Discourse Parsing on Multi-Party Dialogues.",
+    "Jiaqi Li, Ming Liu, Min-Yen Kan, Zihao Zheng, Zekun Wang, Wenqiang Lei, Ting Liu, and Bing Qin. 2020. Molweni: A Challenge Multiparty Dialogues-based Machine Reading Comprehension Dataset with Discourse Structure.",
+    "Yaxin Fan, Feng Jiang, Peifeng Li, Fang Kong, and Qiaoming Zhu. 2023. Improving Dialogue Discourse Parsing via Reply-to Structures of Addressee Recognition."
+   ]
+  },
+  {
+   "id": "F3",
+   "name": "question-answer pair extraction and alignment in email or dialogue",
+   "description": "Detect naturally occurring questions and link each question to the answer utterance or span that responds to it within an email thread or dialogue.",
+   "role": "DIRECT",
+   "why_it_matters": "This family directly tests whether a response corresponds to a particular prior question rather than merely answering a supplied QA benchmark question. Enterprise-email work is especially high-value because it matches the product domain.",
+   "seed_papers": [
+    "Xiao Yang, Ahmed Hassan Awadallah, Madian Khabsa, Wei Wang, and Miaosen Wang. 2018. Characterizing and Supporting Question Answering in Human-to-Human Communication.",
+    "Qi Jia, Mengxue Zhang, Shengyao Zhang, and Kenny Q. Zhu. 2020. Matching Questions and Answers in Dialogues from Online Forums."
+   ]
+  },
+  {
+   "id": "F4",
+   "name": "partial answers, answer completeness, and multi-question resolution",
+   "description": "Determine which components of a question set or multi-part issue are resolved by an answer, which receive only partial information, and which remain unresolved.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the task family required for multiple questions, unanswered subquestions, alternatives, and short replies that resolve only part of a previous message. Search must distinguish naturally occurring reply alignment from generic multi-question QA.",
+   "seed_papers": []
+  },
+  {
+   "id": "F5",
+   "name": "agreement, disagreement, acceptance, and rejection target identification",
+   "description": "Detect agreement-like or disagreement-like conversational acts and identify the preceding utterance, speaker, discourse unit, or proposition they target.",
+   "role": "DIRECT",
+   "why_it_matters": "This family is the closest empirical analogue for scoped approval and rejection. The critical admission criterion is target identification; agreement classification alone is insufficient.",
+   "seed_papers": [
+    "Michel Galley, Kathleen McKeown, Julia Hirschberg, and Elizabeth Shriberg. 2004. Identifying Agreement and Disagreement in Conversational Speech: Use of Bayesian Networks to Model Pragmatic Dependencies.",
+    "Sebastian Germesin and Theresa Wilson. 2009. Agreement Detection in Multiparty Conversation."
+   ]
+  },
+  {
+   "id": "F6",
+   "name": "multi-antecedent and composite discourse antecedents",
+   "description": "Represent cases where a response or referring expression relates to more than one antecedent discourse unit or to a complex discourse object constructed from multiple propositions.",
+   "role": "DIRECT",
+   "why_it_matters": "The product must not force a one-response-to-one-proposition model if natural discourse supports links to several propositions jointly. Relevant terminology includes multiple antecedents, split antecedents, complex discourse units, discourse segments, and abstract discourse referents, but direct workplace validation is expected to be sparse.",
+   "seed_papers": [
+    "Bonnie Lynn Webber. 1991. Structure and Ostension in the Interpretation of Discourse Deixis.",
+    "Nicholas Asher, Julie Hunter, Mathieu Morey, Farah Benamara, and Stergos Afantenos. 2016. Discourse Structure and Dialogue Acts in Multiparty Dialogue: the STAC Corpus."
+   ]
+  },
+  {
+   "id": "F7",
+   "name": "workplace email speech acts and utterance-level action annotation",
+   "description": "Identify requests, commitments, proposals, acceptances, and other communicative actions in authentic workplace email, preferably at utterance or sentence level.",
+   "role": "TRANSFER",
+   "why_it_matters": "This literature supplies authentic workplace data and segmentation of action-bearing propositions, but usually classifies the current utterance without resolving the exact earlier proposition to which a reply applies.",
+   "seed_papers": [
+    "William W. Cohen, Vitor R. Carvalho, and Tom M. Mitchell. 2004. Learning to Classify Email into Speech Acts.",
+    "Vitor Carvalho and William Cohen. 2006. Improving Email Speech Acts Analysis via N-gram Selection.",
+    "Andrew Lampert, Robert Dale, and Cecile Paris. 2008. The Nature of Requests and Commitments in Email Messages."
+   ]
+  },
+  {
+   "id": "F8",
+   "name": "targeted stance and claim-target relation extraction",
+   "description": "Identify both a stance-bearing expression and the claim, proposition, argument, entity, or span toward which positive, negative, supporting, or opposing stance is expressed.",
+   "role": "TRANSFER",
+   "why_it_matters": "Target extraction offers useful modeling and evaluation patterns for separating response polarity from response target, but most stance datasets do not require antecedent discovery in preceding workplace dialogue.",
+   "seed_papers": []
+  },
+  {
+   "id": "F9",
+   "name": "proposition-pair entailment, contradiction, and semantic relation classification",
+   "description": "Classify whether one proposition entails, contradicts, supports, weakens, or is neutral with respect to another already selected proposition.",
+   "role": "TRANSFER",
+   "why_it_matters": "These methods can help distinguish agreement-like from rejection-like semantics after candidate antecedents have been identified, but they do not solve antecedent selection or partial scope by themselves.",
+   "seed_papers": []
+  },
+  {
+   "id": "F10",
+   "name": "antecedent selection with ambiguity, no-link, and abstention",
+   "description": "Select an antecedent from candidate discourse units while allowing ambiguous, multiple, non-linguistic, absent, or explicit no-antecedent outcomes rather than forcing a single link.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family is central to the engineering contract for uncertainty and unsupported antecedents. Abstract-anaphora mention ranking, discourse attachment, and coreference evaluation can contribute techniques, but the complete msgloom policy remains an engineering validation problem.",
+   "seed_papers": [
+    "Miriam Eckert and Michael Strube. 2000. Dialogue Acts, Synchronizing Units, and Anaphora Resolution.",
+    "Ana Marasovic, Leo Born, Juri Opitz, and Anette Frank. 2017. A Mention-Ranking Model for Abstract Anaphora Resolution."
+   ]
+  },
+  {
+   "id": "F11",
+   "name": "adjacency-pair and conversational sequence analysis",
+   "description": "Model how actions such as questions, requests, proposals, invitations, acceptances, refusals, and answers create expectations for paired or sequentially related responses.",
+   "role": "TRANSFER",
+   "why_it_matters": "Adjacency-pair research explains why the nearest preceding proposition is often but not always a plausible response target and provides terminology for missing expected responses. It does not by itself define proposition-level scope when a turn contains several actions.",
+   "seed_papers": [
+    "Harvey Sacks, Emanuel A. Schegloff, and Gail Jefferson. 1974. A Simplest Systematics for the Organization of Turn-Taking for Conversation."
+   ]
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "F1",
+   "role": "DIRECT",
+   "queries": [
+    "\"non-nominal antecedent\" anaphora resolution dialogue proposition",
+    "\"non-nominal antecedent anaphora\" dialogue",
+    "\"abstract anaphora\" dialogue antecedent resolution proposition",
+    "\"abstract anaphora\" conversation antecedent span",
+    "\"discourse deixis\" dialogue antecedent proposition",
+    "\"discourse-deictic\" dialogue antecedent resolution",
+    "\"propositional anaphora\" dialogue antecedent",
+    "\"sentential antecedent\" dialogue anaphora",
+    "\"clausal antecedent\" dialogue anaphora",
+    "\"abstract anaphora\" email"
+   ]
+  },
+  {
+   "family_id": "F2",
+   "role": "DIRECT",
+   "queries": [
+    "\"dialogue discourse parsing\" response relation antecedent",
+    "\"dialogue discourse parsing\" question answer acknowledgment correction",
+    "\"multiparty dialogue discourse parsing\" attachment relation",
+    "\"discourse attachment\" dialogue response antecedent",
+    "\"reply-to structure\" dialogue discourse relation",
+    "\"response relation\" dialogue discourse attachment",
+    "\"conversational discourse relations\" response antecedent",
+    "\"discourse dependency\" dialogue question answer relation",
+    "\"complex discourse unit\" dialogue response",
+    "SDRT dialogue response relation antecedent"
+   ]
+  },
+  {
+   "family_id": "F3",
+   "role": "DIRECT",
+   "queries": [
+    "\"question answer pairs\" enterprise email",
+    "\"question answer pair\" workplace email thread",
+    "\"question answer alignment\" email thread",
+    "\"question answer matching\" email conversation",
+    "\"question answer extraction\" enterprise email",
+    "\"question answer pairs\" threaded email conversations",
+    "\"matching questions and answers\" dialogue conversation",
+    "\"QA matching\" dialogue antecedent question",
+    "\"answer selection\" dialogue previous question",
+    "\"question-answer relation\" workplace email"
+   ]
+  },
+  {
+   "family_id": "F4",
+   "role": "DIRECT",
+   "queries": [
+    "\"partial answer\" dialogue question",
+    "\"partial answers\" conversation question",
+    "\"answer completeness\" dialogue question",
+    "\"incomplete answer\" dialogue question",
+    "\"unanswered question\" dialogue discourse",
+    "\"unanswered questions\" email thread",
+    "\"unanswered subquestion\" dialogue",
+    "\"multiple questions\" dialogue answer alignment",
+    "\"multiple questions\" email answer",
+    "\"multi-part question\" dialogue answer",
+    "\"multi-question\" conversation answer alignment -\"questions about a transcript\"",
+    "\"question resolution\" dialogue unanswered",
+    "\"question under discussion\" partial answer dialogue",
+    "\"answerhood\" partial answer conversation"
+   ]
+  },
+  {
+   "family_id": "F5",
+   "role": "DIRECT",
+   "queries": [
+    "\"agreement target\" dialogue",
+    "\"agreement target identification\" conversation",
+    "\"agreement detection\" target utterance conversation",
+    "\"agreement detection\" addressee target dialogue",
+    "\"disagreement target\" dialogue",
+    "\"agreement disagreement\" adjacency pair target",
+    "\"agreement\" \"target utterance\" multiparty conversation",
+    "\"acceptance\" \"target\" dialogue proposition",
+    "\"rejection\" \"target\" dialogue proposition",
+    "\"acceptance rejection\" discourse relation dialogue",
+    "\"agreement scope\" conversation",
+    "\"partial agreement\" dialogue target"
+   ]
+  },
+  {
+   "family_id": "F6",
+   "role": "DIRECT",
+   "queries": [
+    "\"multiple antecedents\" discourse anaphora proposition",
+    "\"multi-antecedent\" discourse reference dialogue",
+    "\"split antecedent\" abstract anaphora",
+    "\"split antecedents\" discourse reference proposition",
+    "\"complex antecedent\" abstract anaphora",
+    "\"composite antecedent\" discourse anaphora",
+    "\"complex discourse unit\" antecedent response dialogue",
+    "\"complex discourse unit\" question answer dialogue",
+    "\"discourse segment\" demonstrative \"one or more clauses\"",
+    "\"multiple discourse units\" response relation dialogue"
+   ]
+  },
+  {
+   "family_id": "F7",
+   "role": "TRANSFER",
+   "queries": [
+    "\"email speech acts\" Enron request commitment",
+    "\"requests and commitments\" email messages annotation",
+    "\"utterance level\" workplace email request commitment",
+    "\"business email\" acceptance rejection corpus",
+    "\"workplace email\" agreement disagreement corpus",
+    "\"enterprise email\" speech act annotation",
+    "\"workplace email\" proposal acceptance rejection",
+    "\"email\" request commitment response annotation"
+   ]
+  },
+  {
+   "family_id": "F8",
+   "role": "TRANSFER",
+   "queries": [
+    "\"stance target identification\" claim span",
+    "\"targeted stance\" proposition target extraction",
+    "\"stance target extraction\" argument claim",
+    "\"stance\" \"target span\" conversation",
+    "\"claim target\" agreement disagreement dialogue",
+    "\"target-specific stance\" conversation claim"
+   ]
+  },
+  {
+   "family_id": "F9",
+   "role": "TRANSFER",
+   "queries": [
+    "\"textual entailment\" dialogue response proposition",
+    "\"natural language inference\" dialogue agreement disagreement",
+    "\"contradiction\" dialogue response proposition",
+    "\"entailment\" \"target proposition\" dialogue",
+    "\"semantic relation\" response antecedent proposition",
+    "\"NLI\" conversation agreement disagreement target"
+   ]
+  },
+  {
+   "family_id": "F10",
+   "role": "TRANSFER",
+   "queries": [
+    "\"abstract anaphora\" \"no antecedent\"",
+    "\"abstract anaphora\" ambiguous antecedent annotation",
+    "\"non-nominal antecedent\" ambiguous multiple antecedents",
+    "\"anaphora resolution\" \"no identifiable antecedent\" dialogue",
+    "\"discourse attachment\" \"no link\" dialogue",
+    "\"dialogue discourse parsing\" no-link antecedent",
+    "\"antecedent selection\" abstention anaphora",
+    "\"antecedent selection\" multiple candidates discourse",
+    "\"anaphora\" unresolved antecedent annotation guidelines",
+    "\"discourse deixis\" ambiguous antecedent corpus"
+   ]
+  },
+  {
+   "family_id": "F11",
+   "role": "TRANSFER",
+   "queries": [
+    "\"adjacency pairs\" question answer conversation",
+    "\"adjacency pair\" proposal acceptance rejection",
+    "\"adjacency pair\" request compliance refusal",
+    "\"conditional relevance\" unanswered question conversation",
+    "\"sequence organization\" question answer acceptance rejection",
+    "\"adjacency pair identification\" dialogue computational"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "non-nominal antecedent anaphora",
+  "non-nominal antecedent",
+  "abstract anaphora resolution",
+  "discourse-deictic anaphora",
+  "sentential antecedent",
+  "clausal antecedent",
+  "abstract discourse referent",
+  "antecedent identification",
+  "antecedent selection",
+  "discourse attachment",
+  "dialogue discourse parsing",
+  "discourse dependency",
+  "response relation",
+  "reply-to structure",
+  "question-answer pair extraction",
+  "question-answer matching",
+  "question-answer relation",
+  "partial answer",
+  "answer completeness",
+  "unanswered question",
+  "question under discussion",
+  "agreement target",
+  "target utterance",
+  "acceptance/rejection relation",
+  "complex discourse unit",
+  "multiple antecedents",
+  "split antecedents",
+  "complex antecedent",
+  "no antecedent",
+  "ambiguous antecedent"
+ ],
+ "demoted_terms": [
+  "anaphora resolution",
+  "coreference resolution",
+  "dialogue act",
+  "contradiction detection",
+  "email reply",
+  "business email",
+  "workplace communication",
+  "multi-question answering in dialogue",
+  "question resolution",
+  "approval scope"
+ ],
+ "downgrade_rules": [
+  "Downgrade entity-only coreference or pronoun resolution unless non-nominal, clausal, sentential, eventive, factual, situational, or propositional antecedents are explicitly modeled.",
+  "Downgrade agreement or disagreement detection when the system predicts only a polarity or dialogue-act label and does not identify the prior target.",
+  "Downgrade agreement-target work that identifies only the target speaker if it cannot identify the target utterance, discourse unit, clause, proposition, or span.",
+  "Downgrade dialogue-act or speech-act classification when the current utterance is labeled request, answer, accept, reject, acknowledge, or approve but no antecedent link is annotated or predicted.",
+  "Downgrade whole-message intent or email-act classification when one message may contain several propositions but the method cannot represent different reply scopes for them.",
+  "Downgrade generic QA and reading-comprehension papers when the antecedent question is already supplied as gold input and no question-to-reply alignment is required.",
+  "Downgrade multi-question QA where several externally supplied questions are answered from one transcript or document; this is not evidence that a natural reply can be mapped to one of several preceding conversational questions.",
+  "Downgrade answer-generation, Smart Reply, response-generation, and next-utterance prediction unless evaluation explicitly measures which antecedent proposition the response addresses.",
+  "Downgrade answer-correctness or answer-quality scoring when it does not determine which prior question or subquestion the answer resolves.",
+  "Downgrade email threading, Message-ID/In-Reply-To reconstruction, reply-tree induction, and reply-likelihood prediction unless semantic relation endpoints below message level are studied.",
+  "Downgrade addressee recognition when it predicts only which person is addressed and not which proposition or discourse unit is answered, accepted, rejected, or clarified.",
+  "Downgrade discourse-relation classification when relation endpoints are supplied as gold and the task never chooses the antecedent; retain only as TRANSFER evidence for relation labeling.",
+  "Downgrade monologic discourse parsing unless its annotation or evaluation contains mechanisms directly reusable for non-adjacent, multiple, complex, ambiguous, or no-link antecedents.",
+  "Downgrade stance or sentiment work when the stance target is a fixed topic, entity, politician, product, or aspect rather than a preceding conversational proposition selected from context.",
+  "Downgrade NLI, textual entailment, and contradiction work when the proposition pair is supplied in advance; such work is TRANSFER evidence only.",
+  "Downgrade event coreference when it clusters mentions of the same event but does not model a response relation to eventive or propositional content.",
+  "Downgrade grammatical agreement literature despite lexical overlap with agreement detection.",
+  "Downgrade 'approval scope' literature from access control, governance, regulation, procurement, legal authorization, or workflow permissions unless linguistic reply scope is explicitly studied.",
+  "Downgrade business-email pragmatics, politeness, genre, pedagogy, move analysis, or writing-quality studies when they contain no response-to-antecedent annotation.",
+  "Downgrade conversation-analysis papers that discuss adjacency pairs qualitatively but provide no empirical annotation relevant to antecedent granularity; retain foundational terminology but not as direct computational validation.",
+  "Downgrade datasets that permit only one antecedent per response when the paper does not discuss whether multiple or composite antecedents occur naturally.",
+  "Downgrade datasets that delete, collapse, or force-resolve ambiguous or unsupported antecedents instead of preserving uncertainty or explicit no-link cases.",
+  "Downgrade studies that report only turn-level or message-level accuracy when the target capability requires clause-, EDU-, proposition-, or span-level distinctions.",
+  "Downgrade synthetic-only or task-generated dialogue from DIRECT workplace evidence to TRANSFER unless the study also evaluates authentic workplace email or enterprise dialogue.",
+  "Downgrade public forum, game chat, social media, customer-support, and casual conversation evidence to TRANSFER for production-domain claims unless the mechanism being evaluated is domain-independent and this limitation is stated.",
+  "Downgrade enterprise-email question-answer extraction that establishes only one-to-one QA pairs and does not evaluate multi-question messages, partial answers, unanswered subquestions, or one answer linked to several questions; it remains directly relevant but does not close gap-3 by itself.",
+  "Downgrade approval, acceptance, rejection, or agreement papers that assume the entire immediately preceding turn is the target and cannot distinguish acceptance of one clause from rejection or non-response to another.",
+  "Downgrade any paper that infers a missing antecedent rather than allowing unresolved, unsupported, exophoric, or unavailable-context outcomes when the evidence is absent.",
+  "Exclude visual, table, document-cell, screenshot, page, or attachment-object grounding as primary Topic 04 evidence; hand those cases to Topic 08 unless the paper also evaluates propositional response scope.",
+  "Do not treat paper count, benchmark scale, or model accuracy as closure of a direct-evidence gap when the evaluated annotation contract lacks partial, ambiguous, multiple-antecedent, discontinuous, or explicit no-link cases."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1974,
+  "rationale": "Discovery must reach at least 1974. The conceptual foundations relevant to this topic predate modern NLP benchmarks: Lakoff's 1974 work on demonstratives is a recognized precursor to later discourse-deixis work, and conversation-analysis work from the same period establishes adjacency-pair and sequential-response concepts used for question-answer, proposal-acceptance/rejection, and other response relations. Computational treatments of discourse deixis and non-nominal antecedents become especially important in the late 1980s and 1990s, followed by dialogue anaphora, discourse parsing, agreement targeting, and enterprise-email QA in the 2000s and 2010s. A 2000-, 2010-, or recent-only window would therefore silently remove foundational terminology needed to find the later empirical literature. Bulk discovery may prioritize post-1990 empirical NLP after the foundational pass, but it must not hard-cut publications before 1974."
+ }
+}

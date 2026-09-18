@@ -1,0 +1,76 @@
+{
+ "paper_id": "1706.02256",
+ "title": "A Mention-Ranking Model for Abstract Anaphora Resolution",
+ "research_question": "Can a neural mention-ranking model trained largely on automatically generated data learn to rank clause-like antecedents for abstract anaphors and transfer to shell-noun and unrestricted abstract-anaphora benchmarks?",
+ "methodology": "The authors formulate abstract-anaphora resolution as mention ranking with a Siamese bidirectional LSTM that represents an anaphoric context and each syntactically extracted antecedent candidate in a shared neural architecture and assigns candidates ranking scores. Training data are generated automatically from parsed Wall Street Journal text by transforming selected clauses into examples with abstract-anaphoric expressions, while evaluation uses shell-noun data and a 600-instance ARRAU-AA benchmark containing nominal and pronominal anaphors. Performance is measured mainly with success-at-n ranking metrics and compared with preceding-sentence and syntactic-tag baselines, together with feature ablations and hyperparameter variants.",
+ "key_findings": [
+  {
+   "finding": "The mention-ranking LSTM reaches substantially higher success-at-1 results than the compared earlier shell-noun method for the evaluated shell nouns, although the amount of gain varies by noun and tuning condition.",
+   "evidence_type": "supported",
+   "section": "Experiments: shell nouns"
+  },
+  {
+   "finding": "On ARRAU-AA, model variants perform strongly for nominal anaphors, with a reported success-at-1 of 51.89 for the best listed nominal configuration compared with 40.10 for the syntactic-tag baseline.",
+   "evidence_type": "supported",
+   "section": "Experiments: unrestricted abstract anaphora"
+  },
+  {
+   "finding": "Pronominal abstract anaphora remains markedly harder: the neural configurations reach at most about 28.57 success-at-1 in the reported table, below the syntactic-tag baseline's 35.17.",
+   "evidence_type": "supported",
+   "section": "Experiments: unrestricted abstract anaphora"
+  },
+  {
+   "finding": "Explicit syntactic information helps on the shell-noun task but can hurt on the broader ARRAU-AA task; removing or disrupting syntactic information yields substantially better ARRAU-AA ranking results.",
+   "evidence_type": "supported",
+   "section": "Ablation analysis"
+  },
+  {
+   "finding": "Automatically generated training instances can transfer to naturally occurring abstract-anaphora cases despite a substantial mismatch between the artificial training distribution and the unrestricted evaluation data.",
+   "evidence_type": "supported",
+   "section": "Experiments and discussion"
+  },
+  {
+   "finding": "The reported tuning procedure records test performance for each hyperparameter trial and may report the best test success-at-1 result across trials, introducing test-set selection into some reported numbers.",
+   "evidence_type": "supported",
+   "section": "Experimental setup"
+  }
+ ],
+ "limitations": [
+  "Artificial training antecedents are constructed with a restricted syntactic distribution, particularly clause-level S constituents, which differs from the broader distribution of naturally occurring abstract antecedents.",
+  "The artificial training material is pronominal, yet performance on naturally occurring pronominal anaphora remains considerably weaker than on nominal anaphora.",
+  "ARRAU-AA contains only 600 evaluated instances, including 203 pronominal cases, so subgroup conclusions rest on relatively small samples.",
+  "Candidate extraction depends on syntactic parsing and on a predefined sentence region containing the antecedent, so the evaluation does not test unrestricted document-wide antecedent discovery.",
+  "The authors note a potential bias in an existing shell-noun resource because annotators were shown a model-ranked subset of candidate antecedents.",
+  "Hyperparameter trials inspect test performance and the paper may select the best test score across trials, which weakens the independence of the reported test evaluation.",
+  "Different datasets are reused for development when evaluating across task variants, making comparisons sensitive to dataset-specific tuning choices."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "shell_noun_improvement": 0.99,
+  "nominal_ARRAU_improvement": 0.99,
+  "pronominal_gap": 0.99,
+  "syntax_ablation_effect": 0.99,
+  "artificial_transfer": 0.95,
+  "test_selection_issue": 0.99
+ },
+ "raw_claims": [
+  "The paper treats abstract-anaphora resolution as ranking possible antecedent mentions for an anaphoric expression.",
+  "The neural architecture uses recurrent representations of both the anaphoric context and candidate antecedent spans.",
+  "Most training examples are generated automatically rather than manually annotated.",
+  "The artificial-data procedure uses syntactic parses to identify clauses that can serve as antecedents.",
+  "The paper evaluates both shell-noun anaphora and a broader ARRAU-derived abstract-anaphora benchmark.",
+  "The proposed model performs very well on several shell-noun categories relative to the compared earlier method.",
+  "Nominal abstract anaphors in ARRAU-AA are resolved more successfully than pronominal abstract anaphors.",
+  "Removing syntactic signals can improve performance on unrestricted abstract anaphora.",
+  "The authors interpret this contrast as evidence that the model must learn semantic or contextual distinctions beyond coarse syntactic candidate type.",
+  "Artificially generated supervision transfers to natural examples despite differences between the training and evaluation distributions.",
+  "Pronominal abstract anaphora remains an unresolved weakness of the model.",
+  "The experimental tuning procedure consults test-set performance across hyperparameter trials."
+ ],
+ "source_url": "https://arxiv.org/html/1706.02256",
+ "access": "full_text"
+}

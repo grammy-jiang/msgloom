@@ -1,0 +1,77 @@
+{
+ "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+ "title": "End-to-End Neural Discourse Deixis Resolution in Dialogue",
+ "research_question": "Can an end-to-end neural coreference architecture be adapted with dialogue- and discourse-deixis-specific modeling to improve resolution of anaphors whose antecedents denote utterance-level events, propositions, descriptions, or speech acts?",
+ "methodology": "The authors adapt a span-based higher-order coreference model to end-to-end discourse deixis resolution and introduce ten task-specific extensions covering recency, utterance distance, anaphor typing, context, structural penalties, and antecedent features. They train on dialogue portions of ARRAU together with additional ARRAU material and evaluate on four CODI-CRAC 2021 dialogue datasets: LIGHT, AMI, Persuasion, and Switchboard. Resolution is evaluated with the Universal Anaphora Scorer using the CoNLL average of MUC, B3, and CEAFe, while anaphor recognition is evaluated with precision, recall, and F-score; ablations and approximate-randomization significance tests are also reported.",
+ "key_findings": [
+  {
+   "finding": "The proposed dd-utt system achieved a substantially higher average discourse-deixis resolution score than the shared-task system and the two coreference baselines across the four evaluation datasets.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "dd-utt obtained an average CoNLL resolution score of 48.5, compared with 41.2 for coref-hoi-utt, 39.6 for coref-hoi, and 38.3 for the UTD_NLP shared-task system.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "The resolution improvement was attributed primarily to better antecedent selection rather than better anaphor recognition, because recognition performance was statistically indistinguishable among the compared systems while resolution improved significantly.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Discourse-deictic antecedents were strongly local in the evaluated dialogue data: more than 90 percent occurred within four utterances of the anaphor, and the immediately preceding utterance was the most common distance.",
+   "evidence_type": "supported",
+   "section": "5.1 Analysis by Distance"
+  },
+  {
+   "finding": "Among the ten proposed extensions, restricting antecedent candidates using a recency window was the only ablation whose removal produced a statistically significant degradation under the reported test, although several other removals also reduced the numerical score.",
+   "evidence_type": "supported",
+   "section": "5.2 Ablation Experiments"
+  },
+  {
+   "finding": "The pronouns that, it, and this dominate discourse-deictic anaphora in the evaluated dialogue corpora, with that by far the most frequent individual form.",
+   "evidence_type": "supported",
+   "section": "5.1 Analysis by Anaphor"
+  },
+  {
+   "finding": "The system establishes the reported state of the art on the four CODI-CRAC dialogue datasets used in the paper.",
+   "evidence_type": "supported",
+   "section": "6 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The resolver links anaphors to whole utterances even though discourse-deictic antecedents can be clauses or other sub-utterance spans.",
+  "The authors note low inter-annotator agreement for fine-grained clausal antecedent boundaries, making more precise antecedent-span modeling difficult.",
+  "The experiments focus on dialogue, so generalization to narrative or other non-dialogue genres is not established.",
+  "Training data for discourse deixis is comparatively small.",
+  "The available corpora do not represent all language varieties and may encode dataset-specific biases."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dd_utt_improves_resolution": 0.99,
+  "resolution_gain_from_linking": 0.96,
+  "antecedents_are_local": 0.98,
+  "recency_ablation_significant": 0.97,
+  "pronoun_distribution": 0.99,
+  "state_of_the_art_result": 0.97
+ },
+ "raw_claims": [
+  "Discourse deixis links an anaphoric expression to discourse material denoting an event, proposition, description, or speech act.",
+  "The paper treats discourse deixis as a form of generalized event coreference in dialogue.",
+  "dd-utt extends an existing end-to-end span-based coreference architecture with ten discourse-deixis-specific modifications.",
+  "Candidate antecedents are restricted to the current utterance and the preceding ten utterances in one of the model extensions.",
+  "The ten-utterance candidate window covers the large majority of gold antecedent-anaphor links in the development sets.",
+  "That, it, and this account for most discourse-deictic anaphors in the evaluated dialogue data.",
+  "dd-utt reports an average CoNLL resolution score of 48.5 across LIGHT, AMI, Persuasion, and Switchboard.",
+  "The recognition results do not explain the resolution gain, indicating that improved antecedent selection is the main source of improvement.",
+  "More than 90 percent of evaluated antecedents are located within four utterances of their anaphor.",
+  "The authors publicly released source code for the model."
+ ],
+ "source_url": "https://arxiv.org/html/2211.15980",
+ "access": "full_text"
+}
