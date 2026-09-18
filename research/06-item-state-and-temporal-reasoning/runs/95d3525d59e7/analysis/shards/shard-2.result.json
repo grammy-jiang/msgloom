@@ -1,0 +1,298 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-b3703967d3",
+   "title": "Joint Inference for Event Timeline Construction",
+   "research_question": "Can an interval-based globally constrained model that jointly reasons over event-time associations, event-event temporal relations, and event coreference construct more accurate and coherent event timelines than independent local classifiers?",
+   "methodology": "The paper represents each document as a partially ordered timeline of absolute time intervals and predicts event-time associations plus before, after, overlap, or no-relation links between event mentions. Two local averaged-perceptron classifiers are coupled through an Integer Linear Programming formulation that imposes global temporal-consistency constraints, and event coreference is optionally used to group mentions before inference. The main evaluation uses 20 ACE 2005 newswire articles published in March 2003, annotated by one expert and logically saturated; experiments use five-fold cross-validation with precision, recall, and F1. citeturn591258view0turn420993view0",
+   "key_findings": [
+    {
+     "finding": "Global inference achieved overall F1 46.01 versus 42.13 for the local classifiers, a 9.2% relative improvement that was significant at p<0.01.",
+     "evidence_type": "supported",
+     "section": "5.3 Our Systems citeturn991644view1turn420993view1"
+    },
+    {
+     "finding": "Using gold event coreference with global inference raised overall F1 to 52.47, about 14% relatively above global inference without coreference and significantly above the compared systems.",
+     "evidence_type": "supported",
+     "section": "5.3 Our Systems citeturn420993view1"
+    },
+    {
+     "finding": "Automatically learned event coreference produced overall F1 46.42, but its improvement over global inference without coreference was not statistically significant, showing that the benefit depends strongly on coreference quality.",
+     "evidence_type": "supported",
+     "section": "5.3 Our Systems citeturn420993view1"
+    },
+    {
+     "finding": "The interval-based ILP averaged about 21 seconds per article, whereas the corresponding time-point formulation did not finish within five hours before being terminated.",
+     "evidence_type": "supported",
+     "section": "5.4 Discussion of Other Results citeturn991644view2"
+    },
+    {
+     "finding": "The evaluation corpus contains 232 intervals and 324 event mentions; after logical saturation it contains 324 event-time associations and 5,940 annotated or inferred event-event temporal relations.",
+     "evidence_type": "supported",
+     "section": "5.1 Data and Setup citeturn420993view0"
+    }
+   ],
+   "limitations": [
+    "The principal evaluation is small and domain-specific: only 20 ACE 2005 newswire articles from one month in 2003 were used. citeturn420993view0",
+    "Temporal annotations were produced by a single expert annotator, and unannotated relations were subsequently expanded by reflexivity/transitivity saturation rather than independently annotated. citeturn420993view0",
+    "The large improvement from gold coreference did not transfer to a statistically significant gain with learned coreference, limiting the practical benefit of that component. citeturn420993view1",
+    "The relation inventory concerns temporal ordering and association; it does not directly encode semantic revision relations such as correction, supersession, supplementation, contradiction, reopening, or completion status. citeturn591258view0",
+    "The paper does not report a public release of its paper-specific temporal annotations or an implementation of the complete system."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "global_inference_improvement": 0.99,
+    "gold_coreference_gain": 0.99,
+    "learned_coreference_dependency": 0.98,
+    "interval_inference_efficiency": 0.99,
+    "evaluation_corpus_statistics": 0.99
+   },
+   "raw_claims": [
+    "The task maps events mentioned in a document onto a common temporal timeline.",
+    "Events are associated with absolute time intervals rather than only pairwise relative positions.",
+    "Local event-time and event-event classifiers are reconciled with global ILP constraints.",
+    "Coreferent event mentions can share evidence about their temporal placement.",
+    "The main experimental set consists of 20 ACE 2005 newswire documents.",
+    "Global inference performs better than independent local predictions.",
+    "Gold event coreference substantially improves timeline accuracy.",
+    "Automatically predicted coreference provides much less benefit than gold coreference.",
+    "The interval representation makes exact global inference substantially more computationally tractable than the tested point-based formulation."
+   ],
+   "source_url": "https://aclanthology.org/D12-1062.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-acl-long-122",
+   "title": "Factuality Assessment as Modal Dependency Parsing",
+   "research_question": "Can factuality assessment be formulated as modal dependency parsing that jointly identifies events and information sources, links them hierarchically, and predicts the degree of certainty each source asserts toward each event?",
+   "methodology": "The authors crowdsource modal dependency structures for 353 COVID-19 news articles from 11 media sources, yielding 24,016 event mentions and 2,938 conceivers, with expert comparison and adjudication used for quality assessment. Modal dependencies encode an event's or conceiver's parent source together with a four-way modal-strength label after two rare negative categories were merged. A BERT-large-cased joint model shares representations between event/conceiver mention extraction and parent-plus-label prediction, considering candidate parents within a five-sentence window; it is compared with a non-joint pipeline on a 289/32/32 train/dev/test split. citeturn991644view3turn420993view2turn420993view3",
+   "key_findings": [
+    {
+     "finding": "The resulting corpus contains 353 documents, 24,016 events, and 2,938 conceivers; crowd-worker versus expert agreement is 78.6% for unlabeled attachment and 72.1% for labeled attachment.",
+     "evidence_type": "supported",
+     "section": "2.4-2.5 Quality Control and Corpus Statistics citeturn991644view3"
+    },
+    {
+     "finding": "Joint learning does not materially improve event extraction: test F1 is 90.8 for the joint model versus 90.9 for the pipeline.",
+     "evidence_type": "supported",
+     "section": "3.2 Experiments and Discussion citeturn380153view0turn380153view1"
+    },
+    {
+     "finding": "Joint learning significantly improves test conceiver extraction from 67.5 F1 to 70.4 F1.",
+     "evidence_type": "supported",
+     "section": "3.2 Experiments and Discussion citeturn380153view1"
+    },
+    {
+     "finding": "With gold mentions, the pipeline has slightly higher test labeled attachment performance, 80.6 versus 80.1 for the joint model.",
+     "evidence_type": "supported",
+     "section": "3.2 Experiments and Discussion citeturn380153view1"
+    },
+    {
+     "finding": "With automatically extracted mentions, the joint model significantly improves test labeled attachment from 67.5 to 69.0, indicating reduced pipeline error propagation.",
+     "evidence_type": "supported",
+     "section": "3.2 Experiments and Discussion citeturn380153view1"
+    },
+    {
+     "finding": "Cross-sentence source attachment remains difficult: for the 59 evaluated cases whose conceiver is in another sentence, the system disagrees with the expert in 52.5% of cases versus 30.5% for crowd workers.",
+     "evidence_type": "supported",
+     "section": "3.3 Error Analysis citeturn380153view1"
+    }
+   ],
+   "limitations": [
+    "The corpus is restricted to English COVID-19 news from 11 sources, so transfer to workplace communication, dialogue, or other domains is untested. citeturn991644view3",
+    "Partial-negative and neutral-negative modal strengths each occur rarely and are merged into a single negative category, reducing factuality granularity. citeturn420993view2",
+    "The parser restricts candidate parents to a five-sentence window and at most 16 candidates, while its error analysis specifically shows difficulty with distant conceivers. citeturn420993view3turn380153view1",
+    "Only 11 test documents have both expert and crowd-worker annotations for the comparative error analysis. citeturn380153view0",
+    "The formalism models the certainty or commitment that a source asserts about an event, not independently verified truth; therefore an asserted completion and an independently confirmed completion remain conceptually distinct and require additional evidence modeling. citeturn380153view1"
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "corpus_scale_and_agreement": 0.99,
+    "joint_conceiver_gain": 0.99,
+    "event_extraction_no_gain": 0.99,
+    "automatic_parsing_gain": 0.99,
+    "distant_conceiver_weakness": 0.99,
+    "source_commitment_not_external_truth": 0.97
+   },
+   "raw_claims": [
+    "Modal dependency parsing represents events together with the sources responsible for their asserted factuality.",
+    "The dataset contains more than twenty-four thousand event mentions across 353 COVID-19 news articles.",
+    "Most events attach either to the document author or to an explicitly represented conceiver.",
+    "Rare negative modal-strength categories were collapsed to simplify crowdsourcing.",
+    "The joint parser shares BERT representations between mention extraction and dependency construction.",
+    "Joint training helps conceiver extraction but not event extraction.",
+    "Pipeline parsing is slightly stronger when gold mentions are supplied.",
+    "Joint parsing is stronger when it must operate on automatically extracted mentions.",
+    "Attaching an event to a conceiver in another sentence is a substantial system error source.",
+    "The annotations characterize source-specific certainty rather than independently establishing whether an event actually occurred."
+   ],
+   "source_url": "https://aclanthology.org/2021.acl-long.122.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2011.03088",
+   "title": "HoVer: A Dataset for Many-Hop Fact Extraction And Claim Verification",
+   "research_question": "Can a large-scale fact-verification benchmark require models to retrieve evidence across as many as four documents and thereby expose weaknesses in shallow single-hop retrieval and verification methods?",
+   "methodology": "HoVer is constructed from HotpotQA question-answer pairs by rewriting them into claims, extending claims to additional reasoning hops through entity-based transformations, and creating supported or unsupported variants through controlled human and automatic mutations. Claims are labeled by five crowd workers, and examples without at least three agreeing annotators are discarded; because Refuted and NotEnoughInfo proved difficult to distinguish reliably, they are merged into Not-Supported. The baseline pipeline uses TF-IDF pre-retrieval, BERT document reranking, BERT sentence selection, and a BERT textual-entailment verifier, evaluated with retrieval EM/F1, claim accuracy, and the end-to-end HoVer Score. citeturn991644view5turn380153view2turn380153view3",
+   "key_findings": [
+    {
+     "finding": "HoVer contains 26,171 claims whose evidence may span as many as four English Wikipedia articles, creating a substantially longer evidence chain than common earlier fact-verification benchmarks.",
+     "evidence_type": "supported",
+     "section": "Abstract and Dataset Collection citeturn991644view5"
+    },
+    {
+     "finding": "Five-worker claim labeling yielded Fleiss' kappa of 0.63, and 2,222 claims with a 2-2-1 vote split were discarded.",
+     "evidence_type": "supported",
+     "section": "2.3 Claim Labeling citeturn380153view2"
+    },
+    {
+     "finding": "The intended three-way distinction between Refuted and NotEnoughInfo proved ambiguous: an independent 100-claim validation matched the majority three-way label only 63% of the time, while the merged Supported versus Not-Supported labeling matched 90%.",
+     "evidence_type": "supported",
+     "section": "2.3 Not-Supported Claims citeturn380153view2"
+    },
+    {
+     "finding": "TF-IDF retrieval of the top 100 documents recovered all required supporting documents for about 80.02% of 2-hop claims, 39.18% of 3-hop claims, and 15.59% of 4-hop claims, demonstrating sharply increasing retrieval difficulty.",
+     "evidence_type": "supported",
+     "section": "5.2 Document Retrieval Results citeturn380153view3"
+    },
+    {
+     "finding": "With complete oracle evidence the BERT verifier reaches 81.2% accuracy, whereas a claim-only model reaches 63.7%, showing both a meaningful benefit from evidence and residual exploitable claim artifacts.",
+     "evidence_type": "supported",
+     "section": "5.4 Claim Verification Results citeturn380153view3turn380153view4"
+    },
+    {
+     "finding": "The best end-to-end baseline obtains a HoVer Score of 14.9% on development and 15.32% on test, compared with a human HoVer Score of 81% on the sampled development evaluation.",
+     "evidence_type": "supported",
+     "section": "5.5-5.6 Full Pipeline and Human Performance citeturn380153view4"
+    },
+    {
+     "finding": "Both document and sentence retrieval performance generally deteriorate as the required number of reasoning hops increases, identifying evidence retrieval as a central bottleneck.",
+     "evidence_type": "supported",
+     "section": "5.2-5.3 Retrieval Results citeturn380153view3turn380153view4"
+    }
+   ],
+   "limitations": [
+    "The benchmark is derived from HotpotQA and Wikipedia through rewriting, hop extension, and mutation, rather than from naturally occurring longitudinal workplace communication. citeturn991644view5turn380153view2",
+    "Refuted and NotEnoughInfo are deliberately collapsed into Not-Supported, so the benchmark cannot directly evaluate the distinction between explicit contradiction and unresolved or insufficient evidence, which is important for longitudinal work-item revision. citeturn380153view2",
+    "The claim-only model's 63.7% accuracy indicates remaining dataset artifacts or priors that allow above-random prediction without evidence. citeturn380153view4",
+    "Evidence is grounded in a Wikipedia snapshot and the benchmark does not model evolving document versions or later corrections to the underlying evidence.",
+    "The task verifies static claims and evidence chains; it does not explicitly encode supersession, correction, supplementation, reopening, or claimed-versus-confirmed completion states."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "multi_hop_dataset_design": 0.99,
+    "label_ambiguity_and_merge": 0.99,
+    "retrieval_degrades_with_hops": 0.99,
+    "oracle_vs_claim_only_gap": 0.99,
+    "end_to_end_difficulty": 0.99,
+    "contradiction_vs_unresolved_not_separable": 0.99
+   },
+   "raw_claims": [
+    "HoVer requires retrieval and verification across evidence from as many as four Wikipedia documents.",
+    "The dataset is built partly by converting HotpotQA question-answer pairs into declarative claims.",
+    "Additional hops are introduced by linking claims to information in further documents.",
+    "Human and automatic mutations create challenging supported and unsupported claim variants.",
+    "Each labeled claim receives judgments from five crowd workers.",
+    "Ambiguity between refutation and insufficient information motivated a binary label scheme.",
+    "Single-hop TF-IDF retrieval loses recall rapidly as the number of required documents increases.",
+    "Accurate evidence substantially improves BERT claim verification.",
+    "Claims alone still contain enough regularity for substantially above-random verification accuracy.",
+    "End-to-end model performance is far below sampled human performance because complete evidence retrieval is difficult."
+   ],
+   "source_url": "https://arxiv.org/html/2011.03088",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p19-1412",
+   "title": "Do You Know That Florence Is Packed with Visitors? Evaluating State-of-the-art Models of Speaker Commitment",
+   "research_question": "How well do state-of-the-art speaker-commitment models generalize to naturally occurring discourse, and which linguistic constructions systematically explain their errors?",
+   "methodology": "The authors evaluate existing speaker-commitment systems on CommitmentBank, which contains 1,200 naturally occurring English examples involving complements of clause-embedding verbs under negation, modality, questions, and conditionals, drawn from newswire, fiction, and dialogue. At least eight native-English Mechanical Turk annotators rate the speaker's commitment on a graded scale, and a 556-item high-agreement subset is used for detailed analysis. The study compares a linguistically informed rule-based system with linear, tree, and hybrid biLSTM models trained in a multi-task setting on four existing factuality datasets, using Pearson correlation, mean absolute error, and a three-class commitment analysis. citeturn991644view8turn991644view9",
+   "key_findings": [
+    {
+     "finding": "The linguistically informed rule-based model outperforms the evaluated biLSTM models on the full CommitmentBank, but all systems perform substantially worse there than on their original reference datasets.",
+     "evidence_type": "supported",
+     "section": "4 Evaluation citeturn991644view9"
+    },
+    {
+     "finding": "Pearson correlation on the full set is 0.41 for the rule-based model versus 0.24, 0.09, and 0.23 for the linear, tree, and hybrid biLSTMs; on the restricted set the corresponding values are 0.50, 0.31, 0.13, and 0.33.",
+     "evidence_type": "supported",
+     "section": "4 Evaluation, Figure 3 citeturn323813view0"
+    },
+    {
+     "finding": "The rule-based model captures negation relatively well with r=0.45 but performs poorly on modal and question environments, while the hybrid model is more consistent across negation, modality, and questions; both fail on conditionals.",
+     "evidence_type": "supported",
+     "section": "5 Analysis: Embedding Environment citeturn991644view10"
+    },
+    {
+     "finding": "Both models have essentially no useful correlation on neg-raising examples, with r=0.04 for the rule-based model and -0.07 for the hybrid model.",
+     "evidence_type": "supported",
+     "section": "5 Analysis: Neg-raising citeturn991644view10"
+    },
+    {
+     "finding": "In the three-way classification analysis, neither system reliably recognizes the no-commitment class: its F1 is 0 for the rule-based model and 0.11 for the hybrid model.",
+     "evidence_type": "supported",
+     "section": "5 Analysis, Table 4 citeturn991644view11"
+    },
+    {
+     "finding": "The systems are better at recognizing commitment polarity than its graded strength: the rule-based system tends toward extreme predictions while the hybrid model struggles with negative commitment.",
+     "evidence_type": "supported",
+     "section": "5 Analysis and 6 Conclusion citeturn991644view11"
+    },
+    {
+     "finding": "Both systems achieve their strongest correlation on dialogue and their weakest correlation on newswire, demonstrating substantial genre sensitivity.",
+     "evidence_type": "supported",
+     "section": "5 Analysis: Genre citeturn991644view10"
+    }
+   ],
+   "limitations": [
+    "CommitmentBank is English-only and restricted to complements of clause-embedding verbs in four selected entailment-canceling environments, so it does not cover the full range of discourse revision phenomena. citeturn991644view8",
+    "Detailed error analysis focuses on a 556-item high-agreement subset, which intentionally excludes many ambiguous judgments and contains only a subset of the original corpus.",
+    "The evaluated systems are transferred from other factuality datasets rather than optimized directly for CommitmentBank, making the experiment primarily a test of linguistic generalization rather than the best achievable in-domain performance. citeturn991644view9",
+    "Speaker commitment represents what a speaker presents as true, false, or uncertain; it does not independently establish objective truth, so it cannot by itself distinguish a claimed completion from externally confirmed completion.",
+    "The dataset does not explicitly label longitudinal relations such as supersession, correction, supplementation, reopening, or conflict resolution."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "rule_based_outperforms_bilstm": 0.99,
+    "conditional_generalization_failure": 0.99,
+    "neg_raising_failure": 0.99,
+    "no_commitment_failure": 0.99,
+    "polarity_vs_gradience": 0.98,
+    "genre_sensitivity": 0.97,
+    "speaker_commitment_not_external_truth": 0.97
+   },
+   "raw_claims": [
+    "CommitmentBank contains 1,200 naturally occurring examples of speaker commitment.",
+    "Its examples cover negation, modal, question, and conditional environments.",
+    "The corpus includes newswire, fiction, and conversational dialogue.",
+    "Speaker commitment is annotated as a graded judgment rather than only a binary truth label.",
+    "The rule-based system generalizes better overall than the tested biLSTM systems.",
+    "Negation is the strongest environment for the rule-based system.",
+    "Both evaluated model families perform poorly on conditional inferences.",
+    "Neg-raising is difficult for both systems.",
+    "Neither system reliably recognizes cases where the speaker has no clear commitment.",
+    "Current models capture commitment polarity better than fine-grained commitment strength.",
+    "Performance varies substantially across discourse genres."
+   ],
+   "source_url": "https://aclanthology.org/P19-1412.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

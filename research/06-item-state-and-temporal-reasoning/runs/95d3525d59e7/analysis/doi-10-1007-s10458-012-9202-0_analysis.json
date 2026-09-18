@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-1007-s10458-012-9202-0",
+ "title": "Representing and monitoring social commitments using the event calculus",
+ "research_question": "How can social commitments, their temporal conditions, and their changing lifecycle states be represented declaratively and monitored online as events occur?",
+ "methodology": "The paper defines a commitment language and gives its operations an axiomatization in first-order Event Calculus, including support for data and metric time. Commitments are modeled as fluents whose states change in response to operations such as creation, discharge, cancellation, violation, release, replacement, detachment, and expiration. The formal semantics is implemented using Reactive Event Calculus with constraint logic programming, with both Java and Prolog implementations for incremental monitoring. Performance is explored with a car-rental scenario while varying event volume, contract clauses, and the size of the modeled world.",
+ "key_findings": [
+  {
+   "finding": "The Event Calculus formalization gives an explicit lifecycle in which conditional commitments can be active and base-level commitments can be active, satisfied, canceled, or violated, with event-triggered operations moving commitments between states.",
+   "evidence_type": "supported",
+   "section": "2.4 Commitment operations and life cycle / 3 Commitment semantics"
+  },
+  {
+   "finding": "Cancellation and violation are semantically distinct: cancellation results from an action, whereas violation results from failure to bring about or maintain a required temporal property.",
+   "evidence_type": "supported",
+   "section": "2.2 Commitment fulfillment, cancelation, and violation"
+  },
+  {
+   "finding": "Reactive Event Calculus provides an executable semantics for updating commitment state incrementally as an event narrative grows, supporting online monitoring rather than only static verification.",
+   "evidence_type": "supported",
+   "section": "4 Monitoring social commitments"
+  },
+  {
+   "finding": "In the reported car-rental experiment with 15 contract clauses and 6000 events, total processing time was below five minutes and the longest single-event processing time was 294 ms.",
+   "evidence_type": "supported",
+   "section": "4.3 Experiments"
+  },
+  {
+   "finding": "Increasing the number of contract clauses by factors of 5, 10, and 50 while holding 6000 events and 200 customers fixed did not produce a statistically significant change in total processing time in the reported experiment.",
+   "evidence_type": "supported",
+   "section": "4.3 Experiments"
+  },
+  {
+   "finding": "The framework deliberately leaves simultaneous conflicting commitment operations unresolved in the implementation and prohibits concurrent event occurrences rather than imposing a universal precedence rule.",
+   "evidence_type": "supported",
+   "section": "Discussion of limitations"
+  }
+ ],
+ "limitations": [
+  "The implementation prohibits concurrent event occurrences because simultaneous operations can create unresolved conflicts, such as a commitment being canceled and satisfied at the same time.",
+  "The formalization requires a commitment's property to be brought about strictly after creation, so commitments whose antecedent and consequent overlap cannot be expressed directly.",
+  "The constraint-logic-programming treatment of time does not easily express periodic commitments such as daily recurring obligations.",
+  "The performance study is illustrative rather than a standardized benchmark comparison, and the paper notes the lack of comparable commitment-monitoring benchmarks.",
+  "The experiments use modeled contract scenarios rather than natural workplace communication containing uncertain, implicit, or linguistically contradictory revisions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "explicit_commitment_lifecycle": 0.99,
+  "cancel_violate_distinction": 0.99,
+  "online_event_monitoring": 0.99,
+  "reported_runtime_scaling": 0.98,
+  "concurrent_conflict_unresolved": 0.99,
+  "periodicity_limitation": 0.99
+ },
+ "raw_claims": [
+  "The commitment model defines eight operations that can alter commitment state.",
+  "A newly created commitment enters an active state.",
+  "Discharging an active base-level commitment moves it to a satisfied state.",
+  "Cancellation and violation are represented as different outcomes.",
+  "A temporal commitment can become violated when its deadline passes without the required property being achieved.",
+  "Conditional commitments can detach into base-level commitments when their conditions are met.",
+  "Conditional commitments can expire when their condition deadline passes.",
+  "Reactive Event Calculus processes an incrementally growing event narrative for monitoring.",
+  "Public Java and Prolog implementations of the monitor are described by the paper.",
+  "The car-rental evaluation processes 6000 events with 15 contract clauses in less than five minutes.",
+  "The current implementation avoids concurrent event occurrences because conflicting simultaneous operations lack a universally appropriate resolution.",
+  "Periodic obligations are difficult to represent with the temporal constraint machinery used in the implementation."
+ ],
+ "source_url": "https://www.researchgate.net/publication/235736562_Representing_and_Monitoring_Social_Commitments_using_the_Event_Calculus",
+ "access": "full_text"
+}

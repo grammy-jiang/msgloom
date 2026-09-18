@@ -1,0 +1,66 @@
+{
+ "paper_id": "2007.14864",
+ "title": "How and Why is An Answer (Still) Correct? Maintaining Provenance in Dynamic Knowledge Graphs",
+ "research_question": "Can the validity and derivational provenance of standing-query answers over large knowledge graphs be maintained efficiently as underlying facts are inserted or deleted, rather than recomputed from scratch?",
+ "methodology": "The authors introduce HUKA, which represents the how-provenance of each standing-query answer as a provenance polynomial whose monomials encode alternative sets of graph edges capable of deriving that answer. HUKA stores query results, one-edge-missing potential matches and subquery results, combines overlapping subplans into a global execution tree, and incrementally updates these structures after fact insertions or deletions. The system is evaluated in a single-threaded Java implementation over YAGO2 and DBpedia using SPARQL workloads and randomly generated insertion/deletion workloads, with GProM, ProvSQL, and Neo4j-based recomputation as baselines.",
+ "key_findings": [
+  {
+   "finding": "Provenance polynomials retain the individual graph facts and alternative derivations responsible for each query answer, allowing the system to explain both why an answer exists and how it was derived.",
+   "evidence_type": "supported",
+   "section": "4 The HUKA Framework; 4.1 Why and How Provenance"
+  },
+  {
+   "finding": "After a fact deletion, an answer can remain valid when at least one provenance monomial still evaluates nonzero, so alternative derivations act as explicit independently surviving evidence paths.",
+   "evidence_type": "supported",
+   "section": "6.2 Deletion; 6.3 Proof of Correctness"
+  },
+  {
+   "finding": "Average update time was 0.119 seconds on YAGO2 and 1.252 seconds on DBpedia, and the authors report HUKA as roughly 4 to 48 times faster than the nearest compared baselines for update processing.",
+   "evidence_type": "supported",
+   "section": "7.3.1 Baseline Comparison"
+  },
+  {
+   "finding": "Combining common subquery work into a global execution plan reduced the number of intermediate expressions by close to 70%.",
+   "evidence_type": "supported",
+   "section": "7.2.2 Global Execution Plan"
+  },
+  {
+   "finding": "HUKA supports both insertion and deletion of graph facts and treats a factual update as a deletion followed by an insertion, enabling provenance to evolve with the underlying knowledge graph.",
+   "evidence_type": "supported",
+   "section": "1.1 Contributions; 4 The HUKA Framework; 6 Update Processing"
+  }
+ ],
+ "limitations": [
+  "The method operates on structured knowledge graphs and SPARQL queries rather than natural-language workplace communication.",
+  "The query language is restricted to core basic graph-pattern conjunctive queries corresponding to select-project-join operations, with full SPARQL left for future work.",
+  "Path-expression queries are excluded because enumerating their derivational provenance can be intractable.",
+  "Evaluation updates are randomly generated graph insertions and deletions rather than naturally observed longitudinal revisions.",
+  "Provenance establishes which database facts derive an answer but does not itself classify natural-language semantic relations such as correction, supersession, supplementation, reopening, or conflict.",
+  "A surviving derivation demonstrates database-level support under the modeled facts, not the epistemic reliability or independence of the real-world sources that originally supplied those facts."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "provenance_polynomials": 0.99,
+  "alternative_derivations": 0.99,
+  "update_performance": 0.99,
+  "global_plan_reduction": 0.99,
+  "dynamic_maintenance": 0.99
+ },
+ "raw_claims": [
+  "HUKA maintains provenance for answers to standing graph-pattern queries as the knowledge graph changes.",
+  "Each provenance monomial represents one derivation of a query answer through a particular combination of graph edges.",
+  "Multiple monomials can provide alternative derivations for the same answer.",
+  "Deleting one supporting fact does not invalidate an answer if another complete derivation remains.",
+  "The framework handles graph-fact insertions as well as deletions.",
+  "The experiments use YAGO2 and DBpedia with standing SPARQL query workloads.",
+  "The global execution tree reuses common computation among related subqueries.",
+  "The HUKA implementation is publicly available."
+ ],
+ "source_url": "https://arxiv.org/pdf/2007.14864",
+ "source_ref": "citeturn405402view0turn568003view0turn568003view1turn568003view2",
+ "access": "full_text"
+}

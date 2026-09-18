@@ -1,0 +1,66 @@
+{
+ "paper_id": "2210.15067",
+ "title": "arXivEdits: Understanding the Human Revision Process in Scientific Writing",
+ "research_question": "How can revisions across successive versions of full scientific papers be aligned, decomposed into fine-grained edits, and automatically classified by the authors' revision intentions?",
+ "methodology": "The authors construct arXivEdits from 751 multi-version arXiv article groups containing 1,790 versions and manually annotate sentence alignment across 1,039 adjacent-version pairs, including 13,008 candidate sentence pairs. They additionally annotate fine-grained span edits and revision intentions for 1,000 sentence pairs using a seven-category intention taxonomy. Their automatic pipeline performs neural sentence alignment, span-alignment-based edit extraction, and edit-intention classification using models including semi-CRF alignment, QA-Align, PURE, and T5. Performance is measured with alignment F1, edit-extraction precision/recall/F1 and exact match, and intention-classification accuracy and weighted F1.",
+ "key_findings": [
+  {
+   "finding": "The corpus provides longitudinal full-document revision data for 751 papers and 1,790 versions, with manually annotated sentence alignment covering 13,008 sentence pairs.",
+   "evidence_type": "supported",
+   "section": "2 Constructing arXivEdits Corpus"
+  },
+  {
+   "finding": "The neural sentence-alignment model trained on arXivEdits achieved 93.8 F1, supporting automated linkage of corresponding sentences across document versions.",
+   "evidence_type": "supported",
+   "section": "Introduction; 4 Automatic Edit Extraction and Intention Identification"
+  },
+  {
+   "finding": "Span-alignment methods extracted finer-grained edits than latexdiff; QA-align with parse-based heuristics achieved 88.1 F1 on all revisions compared with 75.3 for latexdiff.",
+   "evidence_type": "supported",
+   "section": "4.1 Edits Extraction via Span Alignment"
+  },
+  {
+   "finding": "A T5-large intention classifier achieved 79.3 accuracy and 78.9 weighted F1 in the fine-grained eight-class experimental setup, while the collapsed four-class setup reached 84.4 accuracy and 84.6 weighted F1 when trained directly on four classes.",
+   "evidence_type": "supported",
+   "section": "4.2 Intention Classification"
+  },
+  {
+   "finding": "The annotated document-level alignments explicitly capture insertions, deletions, rephrasings, splits, merges, fusions, and unchanged copying across successive versions.",
+   "evidence_type": "supported",
+   "section": "2.2 Paragraph and Sentence Alignment; Table 1"
+  }
+ ],
+ "limitations": [
+  "The corpus represents scientific-paper revision rather than workplace messages, tickets, incident reports, or operational work items.",
+  "Only 751 of 1,000 randomly selected multi-version article groups yielded complete usable plain text; groups without suitable LaTeX source or with overwhelming mathematical content were excluded.",
+  "The alignment procedure skips 5.8% of sentences that are too short or dominated by special tokens, although they remain marked in the dataset.",
+  "Fine-grained edit intentions are manually annotated for only 1,000 sentence pairs, much less than the full document-level corpus.",
+  "The intention taxonomy describes scientific-writing edits rather than explicit longitudinal operational relations such as supersession, supplementation, reopening, or work-item conflict.",
+  "The work does not distinguish an author's assertion that an external task has been completed from independently corroborating evidence of that completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "corpus_scale": 0.99,
+  "sentence_alignment": 0.99,
+  "span_edit_extraction": 0.99,
+  "intent_classification": 0.99,
+  "revision_operations": 0.98
+ },
+ "raw_claims": [
+  "arXivEdits follows adjacent versions of the same paper as longitudinal revisions.",
+  "The corpus contains 751 complete article groups and 1,790 paper versions.",
+  "Crowdworkers annotated sentence correspondence for 13,008 sentence pairs.",
+  "The fine-grained subset assigns intentions to span-level insertions, deletions, substitutions, and related edits.",
+  "The corpus defines seven semantic categories of revision intention.",
+  "Semantic span alignment produces substantially better fine-grained edit extraction than a conventional string-diff baseline.",
+  "T5-large is the strongest reported intention classifier in the evaluated configurations.",
+  "The released repository contains both data and pipeline code for revision analysis."
+ ],
+ "source_url": "https://arxiv.org/html/2210.15067",
+ "source_ref": "citeturn840292view0turn840292view1turn840292view2turn840292view3turn840292view4",
+ "access": "full_text"
+}

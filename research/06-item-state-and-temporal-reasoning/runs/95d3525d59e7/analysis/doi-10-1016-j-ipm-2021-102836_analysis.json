@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-1016-j-ipm-2021-102836",
+ "title": "End-to-end event factuality prediction using directional labeled graph recurrent network",
+ "research_question": "Can event anchors and their factuality scores be predicted jointly from plain sentences while improving factuality estimation through directional and labeled syntactic graph information?",
+ "methodology": "The paper formulates end-to-end event factuality prediction as joint Event Anchor Detection and Factuality Induction rather than assuming gold event-anchor positions. DLGRN constructs a graph over sentence words using directional labeled dependency edges together with sequential edges and self-loops, initializes contextual representations with BERT, and performs recurrent graph message passing using edge-tied weights and edge-aware attention. Shared representations feed separate anchor-detection and factuality-regression heads in a multi-task objective, with factuality represented on a continuous scale from -3 to +3. The model is evaluated on the publicly accessible FactBank, Meantime, UW, and UDS-IH2 benchmarks using anchor-detection metrics plus MAE and Pearson correlation for factuality.",
+ "key_findings": [
+  {
+   "finding": "Across the four benchmarks, DLGRN is reported to reduce MAE by an average of 17.12% and increase Pearson correlation by 5.40% relative to the strongest baseline.",
+   "evidence_type": "supported",
+   "section": "Abstract and Section 6.2 Main results"
+  },
+  {
+   "finding": "DLGRN achieved the best factuality-induction values in the reported comparison on all four datasets, including MAE/correlation pairs of 0.240/0.912 on FactBank, 0.279/0.516 on Meantime, 0.346/0.863 on UW, and 0.722/0.912 on UDS-IH2.",
+   "evidence_type": "supported",
+   "section": "Table 3"
+  },
+  {
+   "finding": "The UW ablation shows labeled syntactic information as the most consequential tested graph component: removing it changes F1 from 0.91 to 0.89, MCC from 0.883 to 0.745, MAE from 0.346 to 0.422, and correlation from 0.863 to 0.788.",
+   "evidence_type": "supported",
+   "section": "Section 6.3, Table 4"
+  },
+  {
+   "finding": "Removing multi-task learning and reverting toward a pipeline setup degrades both event-anchor detection and factuality induction, supporting shared learning between the two subtasks.",
+   "evidence_type": "supported",
+   "section": "Section 6.3, Table 4"
+  },
+  {
+   "finding": "DLGRN outperforms the compared GCN and GAT-LSTM systems across sentence-length buckets, with larger correlation gaps in the longest buckets.",
+   "evidence_type": "supported",
+   "section": "Section 6.5"
+  },
+  {
+   "finding": "The narrative claim that DLGRN has fewer parameters than all baselines is contradicted by the paper's own tables, which list BERT at 109.5M parameters and DLGRN at 119.7M.",
+   "evidence_type": "contradicted",
+   "section": "Section 6.2 versus Tables 2-3"
+  }
+ ],
+ "limitations": [
+  "The model operates on individual sentences and therefore does not track factuality revisions across messages, sentences, or document versions.",
+  "Dependency parses are part of graph construction, so syntactic parsing errors can propagate into factuality predictions.",
+  "Only factuality scores for correctly identified event anchors are included in the factuality-induction evaluation, making that evaluation conditional on successful anchor detection.",
+  "Predicted factuality ranges are narrower than the gold ranges, and the paper reports difficulty producing scores near the extremes.",
+  "The authors note biased factuality distributions in the smaller FactBank and Meantime datasets.",
+  "A scalar factuality score does not explicitly distinguish workflow states such as planned, confirmed, canceled, completed, or superseded.",
+  "The evaluation benchmarks do not establish performance on workplace communication."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "average_performance_gain": 0.99,
+  "four_dataset_results": 0.99,
+  "labeled_syntax_ablation": 0.99,
+  "multitask_benefit": 0.98,
+  "long_sentence_advantage": 0.97,
+  "parameter_claim_contradiction": 1.0
+ },
+ "raw_claims": [
+  "End-to-end EFP takes plain text rather than gold event-anchor positions as input.",
+  "DLGRN jointly performs Event Anchor Detection and Factuality Induction.",
+  "The graph preserves dependency direction and dependency labels.",
+  "Sequential edges and self-loops are added to the syntactic graph.",
+  "BERT contextual embeddings initialize the word representations.",
+  "Factuality induction is formulated as regression over scores from -3 to +3.",
+  "Experiments use FactBank, Meantime, UW, and UDS-IH2.",
+  "DLGRN reports lower MAE and higher Pearson correlation than the compared methods on all four datasets.",
+  "Removing labeled edge information produces the largest degradation among the reported graph-information ablations on UW.",
+  "The model's predicted score ranges are narrower than the gold-score ranges.",
+  "DLGRN performs comparatively well on longer sentences.",
+  "The paper's parameter-count table contradicts its prose claim that DLGRN is smaller than every baseline."
+ ],
+ "source_url": "https://frcchang.github.io/pub/end-to-end-xiao-liu.pdf",
+ "access": "full_text"
+}

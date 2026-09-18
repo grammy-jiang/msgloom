@@ -1,0 +1,374 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1016-j-knosys-2016-07-032",
+   "title": "Cross-document event ordering through temporal, lexical and distributional knowledge",
+   "research_question": "Can temporal compatibility, lexical-semantic knowledge, and distributional-semantic knowledge be combined to improve cross-document event coreference and chronological timeline construction from multiple texts?",
+   "methodology": "The system constructs entity-centered event timelines from multiple English news documents by combining event extraction, temporal information processing, target-entity filtering, and cross-document event coreference. It clusters event mentions using temporal compatibility and then semantic compatibility derived from lexical-semantic and distributional-semantic knowledge, treating word meaning and contextual usage as complementary signals. System variants are evaluated using the SemEval-2015 Task 4 TimeLine framework, with an additional experiment using manual MEANTIME entity-coreference annotations to analyze error propagation from entity resolution.",
+   "key_findings": [
+    {
+     "finding": "Combining temporal, lexical-semantic, and distributional-semantic knowledge improved the cross-document event-ordering results over previously evaluated systems, with gains reported as high as eight F1 points.",
+     "evidence_type": "supported",
+     "section": "Abstract and Evaluation"
+    },
+    {
+     "finding": "The best configuration continued to be the combination of temporal, lexical, and distributional semantics when manual entity-coreference annotations were substituted for automatic entity coreference.",
+     "evidence_type": "supported",
+     "section": "Evaluation, Table 4"
+    },
+    {
+     "finding": "With manual MEANTIME entity coreference, the combined configuration reached micro-F1 30.09, precision 25.37, and recall 36.98; relative to the best automatic-entity-coreference setup, the paper reports gains of 3.5 F1 points, 1.7 precision points, and 6.61 recall points.",
+     "evidence_type": "supported",
+     "section": "Evaluation, Table 4"
+    },
+    {
+     "finding": "Entity-coreference quality is an important upstream bottleneck because correcting it manually particularly increases event recall in the resulting timelines.",
+     "evidence_type": "supported",
+     "section": "Evaluation and error analysis"
+    },
+    {
+     "finding": "Nominal event mentions such as deverbal nouns remain difficult to match with verbal mentions, creating cross-document event-coreference errors.",
+     "evidence_type": "supported",
+     "section": "Error analysis, Example 13"
+    }
+   ],
+   "limitations": [
+    "The experiments focus on written English news, so transfer to workplace email, chat, and conversational communication is not evaluated.",
+    "The model orders and corefers events but does not explicitly represent factuality states such as planned, uncertain, confirmed, revoked, completed, or contradicted.",
+    "The pipeline is vulnerable to upstream errors in event extraction, temporal anchoring, named-entity recognition, and entity coreference.",
+    "Nominal events and lexical variation can prevent mentions of the same real-world event from being clustered together.",
+    "The approach does not model chronological revisions of an event's asserted status, such as a plan later being canceled or corrected."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "combined_knowledge_improves_ordering": 0.99,
+    "combined_model_best_with_manual_coreference": 0.98,
+    "manual_coreference_gain": 0.99,
+    "entity_coreference_bottleneck": 0.98,
+    "nominal_event_problem": 0.97
+   },
+   "raw_claims": [
+    "Cross-document event ordering requires event extraction, temporal relation processing, and cross-document event coreference.",
+    "The system uses temporal, lexical-semantic, and distributional-semantic information when constructing timelines.",
+    "Temporal compatibility is treated as necessary evidence when deciding whether event mentions may corefer.",
+    "Lexical semantics and distributional semantics supply complementary notions of semantic compatibility.",
+    "The approach was evaluated in the SemEval-2015 TimeLine cross-document event-ordering framework.",
+    "The reported system improves the previously evaluated systems by as much as eight F1 points.",
+    "Using manually annotated entity coreference substantially improves recall.",
+    "The combined temporal, lexical, and distributional configuration remains the best configuration with manual entity coreference.",
+    "The manual-coreference version of the combined model obtains micro-F1 30.09.",
+    "Deverbal nominal events are identified as a source of coreference errors."
+   ],
+   "source_url": "https://rua.ua.es/server/api/core/bitstreams/34915b7c-1b35-4684-b298-eff8bb439446/content",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-s10579-009-9089-9",
+   "title": "FactBank: a corpus annotated with event factuality",
+   "research_question": "How can event factuality be represented and reliably annotated as source-relative combinations of polarity and epistemic certainty in text?",
+   "methodology": "The authors define event factuality as the commitment of relevant discourse sources toward the factual status of events and construct a discrete annotation framework combining polarity with degrees of epistemic certainty. FactBank adds this semantic layer to TimeBank and a subset of the AQUAINT TimeML corpus, yielding 208 documents and 9,488 manually annotated events. Annotation is decomposed into identifying source-introducing predicates, identifying relevant sources, and assigning factuality values, with copredication-based diagnostic tests used to distinguish modality levels. Inter-annotator agreement is measured separately for the three annotation tasks.",
+   "key_findings": [
+    {
+     "finding": "FactBank contains 208 documents and 9,488 manually annotated events drawn from TimeBank and a subset of the AQUAINT TimeML corpus.",
+     "evidence_type": "supported",
+     "section": "Section 5.2 Corpus selection"
+    },
+    {
+     "finding": "The factuality representation combines positive, negative, or underspecified polarity with certain, probable, possible, or underspecified modality, thereby distinguishing facts, counterfacts, uncertainty, and non-commitment.",
+     "evidence_type": "supported",
+     "section": "Section 5.1 Factuality values"
+    },
+    {
+     "finding": "Inter-annotator agreement was high for the annotation decomposition: Cohen's kappa was 0.88 for source-introducing predicates, 0.95 for source identification, and 0.81 for factuality-value assignment.",
+     "evidence_type": "supported",
+     "section": "Sections 7.1-7.3"
+    },
+    {
+     "finding": "The corpus explicitly represents factuality relative to relevant sources rather than treating factuality as a single source-independent truth value.",
+     "evidence_type": "supported",
+     "section": "Section 2.2 and Section 5"
+    },
+    {
+     "finding": "The annotation deliberately excludes factuality changes that require multiple sentences, even though the authors note that an initially uncommitted event may later be presented as a fact.",
+     "evidence_type": "supported",
+     "section": "Section 6.1 Annotation methodology"
+    },
+    {
+     "finding": "The AQUAINT portion is strongly skewed: 58.1% of annotated values are certain-positive and 36.6% are fully underspecified, while lower-certainty or non-positive categories are comparatively rare.",
+     "evidence_type": "supported",
+     "section": "Section 7, Table 6"
+    }
+   ],
+   "limitations": [
+    "Factuality judgments are intentionally constrained to sentence-level information, so cross-sentence revisions and state changes are not annotated.",
+    "FactBank contains English news-style material rather than workplace email or dialogue.",
+    "The annotation represents textual source commitment, not independent verification that an event actually occurred.",
+    "Rare probable, possible, and negative factuality categories produce a highly imbalanced label distribution.",
+    "The framework does not directly encode operational lifecycle states such as planned, scheduled, completed, revoked, superseded, or reopened.",
+    "A discourse model for tracking changing factuality across sentences is identified as necessary but is outside the corpus annotation design."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "corpus_size": 0.99,
+    "factuality_value_scheme": 0.99,
+    "annotation_agreement": 0.99,
+    "source_relative_factuality": 0.99,
+    "sentence_level_revision_limit": 1.0,
+    "label_skew": 0.99
+   },
+   "raw_claims": [
+    "Event factuality is defined in terms of a source's commitment toward the factual nature of an event.",
+    "Factuality varies along polarity and certainty dimensions.",
+    "The scheme distinguishes certain, probable, possible, and underspecified modality.",
+    "FactBank contains 208 documents and 9,488 manually annotated events.",
+    "FactBank is layered on top of existing TimeML-annotated material.",
+    "Annotation first identifies source-introducing predicates and relevant sources before assigning factuality.",
+    "Cohen's kappa for factuality-value assignment is 0.81.",
+    "An event can be introduced without commitment and later be characterized as factual in subsequent discourse.",
+    "The released annotation nevertheless restricts factuality judgments to the containing sentence.",
+    "Certain-positive and fully underspecified values dominate the AQUAINT portion of the corpus.",
+    "The authors state that FactBank is to be made available through the Linguistic Data Consortium."
+   ],
+   "source_url": "https://www.researchgate.net/publication/220147734_FactBank_A_corpus_annotated_with_event_factuality",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1016-j-ipm-2021-102836",
+   "title": "End-to-end event factuality prediction using directional labeled graph recurrent network",
+   "research_question": "Can event anchors and their factuality scores be predicted jointly from plain sentences while improving factuality estimation through directional and labeled syntactic graph information?",
+   "methodology": "The paper formulates end-to-end event factuality prediction as joint Event Anchor Detection and Factuality Induction rather than assuming gold event-anchor positions. DLGRN constructs a graph over sentence words using directional labeled dependency edges together with sequential edges and self-loops, initializes contextual representations with BERT, and performs recurrent graph message passing using edge-tied weights and edge-aware attention. Shared representations feed separate anchor-detection and factuality-regression heads in a multi-task objective, with factuality represented on a continuous scale from -3 to +3. The model is evaluated on the publicly accessible FactBank, Meantime, UW, and UDS-IH2 benchmarks using anchor-detection metrics plus MAE and Pearson correlation for factuality.",
+   "key_findings": [
+    {
+     "finding": "Across the four benchmarks, DLGRN is reported to reduce MAE by an average of 17.12% and increase Pearson correlation by 5.40% relative to the strongest baseline.",
+     "evidence_type": "supported",
+     "section": "Abstract and Section 6.2 Main results"
+    },
+    {
+     "finding": "DLGRN achieved the best factuality-induction values in the reported comparison on all four datasets, including MAE/correlation pairs of 0.240/0.912 on FactBank, 0.279/0.516 on Meantime, 0.346/0.863 on UW, and 0.722/0.912 on UDS-IH2.",
+     "evidence_type": "supported",
+     "section": "Table 3"
+    },
+    {
+     "finding": "The UW ablation shows labeled syntactic information as the most consequential tested graph component: removing it changes F1 from 0.91 to 0.89, MCC from 0.883 to 0.745, MAE from 0.346 to 0.422, and correlation from 0.863 to 0.788.",
+     "evidence_type": "supported",
+     "section": "Section 6.3, Table 4"
+    },
+    {
+     "finding": "Removing multi-task learning and reverting toward a pipeline setup degrades both event-anchor detection and factuality induction, supporting shared learning between the two subtasks.",
+     "evidence_type": "supported",
+     "section": "Section 6.3, Table 4"
+    },
+    {
+     "finding": "DLGRN outperforms the compared GCN and GAT-LSTM systems across sentence-length buckets, with larger correlation gaps in the longest buckets.",
+     "evidence_type": "supported",
+     "section": "Section 6.5"
+    },
+    {
+     "finding": "The narrative claim that DLGRN has fewer parameters than all baselines is contradicted by the paper's own tables, which list BERT at 109.5M parameters and DLGRN at 119.7M.",
+     "evidence_type": "contradicted",
+     "section": "Section 6.2 versus Tables 2-3"
+    }
+   ],
+   "limitations": [
+    "The model operates on individual sentences and therefore does not track factuality revisions across messages, sentences, or document versions.",
+    "Dependency parses are part of graph construction, so syntactic parsing errors can propagate into factuality predictions.",
+    "Only factuality scores for correctly identified event anchors are included in the factuality-induction evaluation, making that evaluation conditional on successful anchor detection.",
+    "Predicted factuality ranges are narrower than the gold ranges, and the paper reports difficulty producing scores near the extremes.",
+    "The authors note biased factuality distributions in the smaller FactBank and Meantime datasets.",
+    "A scalar factuality score does not explicitly distinguish workflow states such as planned, confirmed, canceled, completed, or superseded.",
+    "The evaluation benchmarks do not establish performance on workplace communication."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "average_performance_gain": 0.99,
+    "four_dataset_results": 0.99,
+    "labeled_syntax_ablation": 0.99,
+    "multitask_benefit": 0.98,
+    "long_sentence_advantage": 0.97,
+    "parameter_claim_contradiction": 1.0
+   },
+   "raw_claims": [
+    "End-to-end EFP takes plain text rather than gold event-anchor positions as input.",
+    "DLGRN jointly performs Event Anchor Detection and Factuality Induction.",
+    "The graph preserves dependency direction and dependency labels.",
+    "Sequential edges and self-loops are added to the syntactic graph.",
+    "BERT contextual embeddings initialize the word representations.",
+    "Factuality induction is formulated as regression over scores from -3 to +3.",
+    "Experiments use FactBank, Meantime, UW, and UDS-IH2.",
+    "DLGRN reports lower MAE and higher Pearson correlation than the compared methods on all four datasets.",
+    "Removing labeled edge information produces the largest degradation among the reported graph-information ablations on UW.",
+    "The model's predicted score ranges are narrower than the gold-score ranges.",
+    "DLGRN performs comparatively well on longer sentences.",
+    "The paper's parameter-count table contradicts its prose claim that DLGRN is smaller than every baseline."
+   ],
+   "source_url": "https://frcchang.github.io/pub/end-to-end-xiao-liu.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-s11390-024-2655-1",
+   "title": "Document-Level Event Factuality Identification via Reinforced Semantic Learning Network",
+   "research_question": "Can document-level event factuality be identified end to end by jointly encoding event and document semantics while learning to select the sentences and tokens most relevant to the target event?",
+   "methodology": "The paper formulates document-level event factuality identification as assigning a document-wide factuality value to a target event even when sentences mentioning or discussing it carry differing local factuality. RSLN uses multi-granularity hierarchical semantic encoding together with hierarchical reinforcement learning to select event-relevant sentences and tokens while filtering irrelevant or noisy text. Its encoders combine event information, intra-sentence semantics, and document-topic information before producing the document-level prediction. The model is evaluated on the newly annotated English and Chinese ExDLEF corpus and compared with multiple neural baselines, with additional component ablations and text-selection analyses.",
+   "key_findings": [
+    {
+     "finding": "The paper explicitly observes that sentence-level factualities concerning an event may differ within a document while defining the document-level factuality as a single value.",
+     "evidence_type": "supported",
+     "section": "Research background and problem definition"
+    },
+    {
+     "finding": "On ExDLEF, RSLN reports macro/micro F1 of 67.42/77.48 for English and 75.74/78.29 for Chinese, outperforming the reported comparison systems.",
+     "evidence_type": "supported",
+     "section": "Results, Table 4"
+    },
+    {
+     "finding": "Ablation results identify the event encoder and topic-context encoder as two of the most important components: removing them produces substantial macro- and micro-F1 losses in both languages.",
+     "evidence_type": "supported",
+     "section": "Ablation study, Table 6"
+    },
+    {
+     "finding": "Sentence selection has a larger measured effect than token selection: removing SPNet reduces macro-F1 by 4.07 points in English and 4.64 in Chinese, compared with 1.35 and 0.85 points when TPNet is removed.",
+     "evidence_type": "supported",
+     "section": "Ablation study, Table 6"
+    },
+    {
+     "finding": "ExDLEF contains 5,030 English instances and 5,150 Chinese instances across Uu, CT-, PS-, PS+, and CT+ factuality categories.",
+     "evidence_type": "supported",
+     "section": "Table 2"
+    },
+    {
+     "finding": "The paper identifies insufficient direct evaluation of selected-sentence quality and limited deep interpretability of the model as an experimental limitation.",
+     "evidence_type": "supported",
+     "section": "Results and limitations"
+    }
+   ],
+   "limitations": [
+    "The model assigns one document-level factuality value, so differing local mentions are collapsed rather than preserved as an explicit temporal revision trajectory.",
+    "The authors identify inadequate direct evaluation of selected sentences and limited deep interpretability as limitations.",
+    "Multi-event document-level factuality and cross-document factuality are left for future work.",
+    "ExDLEF is highly imbalanced; for example, the English portion contains 3,532 CT+ instances but only 42 Uu and 51 PS- instances.",
+    "The main reported per-class F1 comparisons emphasize CT-, PS+, and CT+, giving much less empirical evidence about the rare factuality categories.",
+    "The formulation does not explicitly encode workflow transitions such as planned-to-confirmed, planned-to-canceled, completed-to-corrected, or superseded-by-later-message.",
+    "Performance on workplace email and dialogue is not evaluated."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "document_level_unique_state": 0.99,
+    "main_f1_results": 0.99,
+    "event_topic_encoder_importance": 0.99,
+    "sentence_selection_effect": 0.99,
+    "exdlef_size": 0.99,
+    "interpretability_limitation": 0.99
+   },
+   "raw_claims": [
+    "Document-level event factuality is defined from the perspective of the whole document.",
+    "Sentence-level factuality values for the same target event may differ within a document.",
+    "RSLN selects relevant sentences and tokens using hierarchical reinforcement learning.",
+    "The representation combines event, sentence-level, and document-level semantic information.",
+    "ExDLEF contains both English and Chinese sub-corpora.",
+    "The English ExDLEF portion contains 5,030 instances and the Chinese portion contains 5,150.",
+    "RSLN reaches macro-F1 67.42 and micro-F1 77.48 on the English ExDLEF evaluation.",
+    "RSLN reaches macro-F1 75.74 and micro-F1 78.29 on the Chinese ExDLEF evaluation.",
+    "Event and topic-context encoders make large contributions in the ablation study.",
+    "Sentence selection has a larger ablation effect than token selection.",
+    "The paper does not precisely evaluate the performance of its selected sentences or provide deep model interpretability.",
+    "The authors identify multi-event, evidential, and cross-document event factuality as future research directions."
+   ],
+   "source_url": "https://jcst.ict.ac.cn/cn/article/doi/10.1007/s11390-024-2655-1",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-emnlp-main-815",
+   "title": "Utilizing Relative Event Time to Enhance Event-Event Temporal Relation Extraction",
+   "research_question": "Can latent relative event times learned from temporal-relation supervision improve event-event temporal relation extraction when explicit event-time expressions are sparse?",
+   "methodology": "The model starts with RoBERTa-based contextual representations for a pair of supplied event mentions and jointly learns temporal-relation classification and an auxiliary relative-event-time prediction task. Each event receives a learned real-valued relative timestamp, and relation-specific objectives encourage BEFORE events to be ordered in one direction, AFTER events in the reverse direction, and EQUAL events to receive similar times. Stack-Propagation feeds the predicted relative times back into the relation classifier while retaining differentiability so relation-classification gradients also update the timing component. Evaluation uses MATRES with TimeBank and AQUAINT for training, a 21-document development split, Platinum for testing, five random seeds, and F1 as the primary relation-extraction metric.",
+   "key_findings": [
+    {
+     "finding": "The Stack-Propagation model reaches precision 78.4, recall 85.2, and F1 81.7 on MATRES, compared with F1 80.2 for the vanilla RoBERTa classifier; the paper reports p<0.05 for the comparison.",
+     "evidence_type": "supported",
+     "section": "Sections 3.3-3.4, Tables 2-3"
+    },
+    {
+     "finding": "The proposed model slightly exceeds the reported 81.6 F1 of the self-training baseline while not using that baseline's additional annotated and raw training resources.",
+     "evidence_type": "supported",
+     "section": "Section 3.3, Table 2"
+    },
+    {
+     "finding": "Relative-time prediction alone in the multi-task configuration improves F1 from 80.2 to 80.6, while explicitly propagating predicted times into classification raises F1 further to 81.7.",
+     "evidence_type": "supported",
+     "section": "Section 3.4, Table 3"
+    },
+    {
+     "finding": "Deriving relations by directly comparing predicted timestamps yields the highest recall, 86.8, but only F1 80.7 because this strategy cannot adequately handle VAGUE relations.",
+     "evidence_type": "supported",
+     "section": "Section 3.4, Table 3"
+    },
+    {
+     "finding": "Predicted relative-time differences correlate with BEFORE and AFTER decisions, while VAGUE and EQUAL pairs tend to have relative-time differences near zero.",
+     "evidence_type": "supported",
+     "section": "Section 3.5 Qualitative Analysis"
+    },
+    {
+     "finding": "The paper releases a public implementation and resources repository for the method.",
+     "evidence_type": "supported",
+     "section": "Introduction footnote / accompanying resource"
+    }
+   ],
+   "limitations": [
+    "The experiments use MATRES, whose documents are news-derived, and do not test workplace email or dialogue.",
+    "The model extracts temporal relations rather than factuality or operational states, so it cannot by itself distinguish planned, confirmed, revoked, completed, or contradicted events.",
+    "Event mentions are supplied to the relation model rather than detected as part of a fully end-to-end event-tracking pipeline.",
+    "The relative timestamps are latent bounded values rather than calibrated calendar times.",
+    "VAGUE is treated as no relation in evaluation and receives no direct relative-time ordering constraint comparable to BEFORE, AFTER, or EQUAL.",
+    "Cross-document temporal reasoning is explicitly left for future work.",
+    "Pairwise temporal ordering does not itself resolve conflicting factual revisions about whether an event will or did occur."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "stack_propagation_gain": 0.99,
+    "comparison_with_self_training": 0.98,
+    "auxiliary_vs_stack_propagation": 0.99,
+    "time_comparison_vague_limit": 0.99,
+    "relative_time_relation_correlation": 0.98,
+    "public_code": 1.0
+   },
+   "raw_claims": [
+    "Explicit event-time links are sparse in temporal corpora.",
+    "The paper learns a real-valued relative time for each event.",
+    "Relative-event-time prediction is trained jointly with event-event temporal relation classification.",
+    "Stack-Propagation supplies predicted event times directly to the temporal-relation classifier.",
+    "MATRES is used for the main evaluation.",
+    "The reported MATRES split contains 260 training documents, 21 development documents, and 20 test documents.",
+    "The proposed model obtains 81.7 F1 averaged over five random seeds.",
+    "The vanilla classifier obtains 80.2 F1 in the ablation comparison.",
+    "Direct timestamp comparison has high recall but has difficulty representing VAGUE relations.",
+    "BEFORE and AFTER predictions correlate with the sign and magnitude of predicted relative-time differences.",
+    "VAGUE and EQUAL predictions tend to lie near zero relative-time difference.",
+    "The authors propose cross-document relative-time prediction and temporal-relation extraction as future work.",
+    "A public GitHub repository contains code and data resources for the paper."
+   ],
+   "source_url": "https://aclanthology.org/anthology-files/pdf/emnlp/2021.emnlp-main.815.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

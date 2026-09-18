@@ -1,0 +1,357 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-eef7a0219f",
+   "title": "More than Classification: A Unified Framework for Event Temporal Relation Extraction",
+   "research_question": "Can event temporal relation extraction be improved and made more transferable by representing relation labels as logical constraints over event start and end points rather than as independent one-hot classes?",
+   "methodology": "The authors first construct a strong pretrained-language-model baseline using event markers, extended sentence context, label-symmetry augmentation, an MLP classifier, and cross-entropy training. Their unified framework instead interprets each temporal label as a logical expression over four cross-event endpoint pairs and predicts endpoint relations by answering two binary ordering questions for each pair. Soft logic makes the rule-based conversion differentiable so that the whole framework can be trained from event-relation labels. Experiments use TB-Dense and MATRES with BERT-Base and RoBERTa-Large, followed by error, low-resource, and cross-definition transfer analyses.",
+   "key_findings": [
+    {
+     "finding": "The unified endpoint framework consistently improves over the enhanced direct-classification baseline and reaches 68.1 micro-F1 on TB-Dense and 82.6 on MATRES with RoBERTa-Large, reported as 0.3 F1 above the previous state of the art on both benchmarks.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    },
+    {
+     "finding": "Explicit logical treatment of the Vague relation substantially reduces confusion with Vague: the number of Vague-associated errors falls by 95 on TB-Dense and 22 on MATRES, although non-Vague errors increase slightly.",
+     "evidence_type": "supported",
+     "section": "6.1 Better Comprehension of Relations"
+    },
+    {
+     "finding": "The unified representation is more data-efficient in low-resource TB-Dense experiments, averaging gains of 2.9 micro-F1 and 1.8 macro-F1 over the baseline across training subsets from 1% to 30%.",
+     "evidence_type": "supported",
+     "section": "6.2 Capability of Capturing Dependency"
+    },
+    {
+     "finding": "When trained on TB-Dense and evaluated under MATRES relation definitions, the unified model obtains 70.4 micro-F1 versus 63.1 and 64.3 for two baseline label-mapping strategies.",
+     "evidence_type": "supported",
+     "section": "6.3 Adaptation to Different Definitions"
+    },
+    {
+     "finding": "Gains occur with both BERT-Base and RoBERTa-Large, suggesting that the endpoint decomposition contributes beyond the choice of text encoder.",
+     "evidence_type": "supported",
+     "section": "5.1 Main Results"
+    }
+   ],
+   "limitations": [
+    "The authors explicitly evaluate only TB-Dense and MATRES and state that more relation inventories and datasets are needed to establish generalization and robustness.",
+    "The experiments concern event-pair temporal relations rather than end-to-end detection of evolving work-item states.",
+    "The framework does not directly represent factuality distinctions such as planned, confirmed, revoked, completed, or contradicted; such distinctions would require additional semantics beyond endpoint ordering.",
+    "The evaluated input context is local text around supplied event mentions, leaving cross-document or long-running communication histories outside the demonstrated setting."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "endpoint_framework_improves_f1": 0.99,
+    "vague_errors_reduced": 0.99,
+    "low_resource_improvement": 0.99,
+    "cross_definition_transfer": 0.99,
+    "gains_across_encoders": 0.97
+   },
+   "raw_claims": [
+    "Standard temporal-relation classification discards semantic structure by treating relation labels as independent categories.",
+    "The framework represents event intervals through their start and end points.",
+    "Four cross-event endpoint pairs are sufficient for the temporal interpretations used by the framework.",
+    "Two binary questions are used to distinguish before, after, equal, and vague relations between time points.",
+    "Soft logic provides a differentiable mapping from endpoint judgments to event-level temporal labels.",
+    "TB-Dense uses six evaluated relation types while MATRES focuses on four start-point relations.",
+    "The unified model improves over its matched enhanced baseline on both evaluated datasets.",
+    "Logical interpretation reduces many errors in which non-Vague instances are predicted as Vague.",
+    "Sharing endpoint structure among relation labels improves performance when training data are limited.",
+    "Changing the logical conversion rules permits transfer between different temporal-relation definitions without learning a new one-to-one label mapping."
+   ],
+   "source_url": "https://arxiv.org/html/2305.17607",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1007-s10458-012-9202-0",
+   "title": "Representing and monitoring social commitments using the event calculus",
+   "research_question": "How can social commitments, their temporal conditions, and their changing lifecycle states be represented declaratively and monitored online as events occur?",
+   "methodology": "The paper defines a commitment language and gives its operations an axiomatization in first-order Event Calculus, including support for data and metric time. Commitments are modeled as fluents whose states change in response to operations such as creation, discharge, cancellation, violation, release, replacement, detachment, and expiration. The formal semantics is implemented using Reactive Event Calculus with constraint logic programming, with both Java and Prolog implementations for incremental monitoring. Performance is explored with a car-rental scenario while varying event volume, contract clauses, and the size of the modeled world.",
+   "key_findings": [
+    {
+     "finding": "The Event Calculus formalization gives an explicit lifecycle in which conditional commitments can be active and base-level commitments can be active, satisfied, canceled, or violated, with event-triggered operations moving commitments between states.",
+     "evidence_type": "supported",
+     "section": "2.4 Commitment operations and life cycle / 3 Commitment semantics"
+    },
+    {
+     "finding": "Cancellation and violation are semantically distinct: cancellation results from an action, whereas violation results from failure to bring about or maintain a required temporal property.",
+     "evidence_type": "supported",
+     "section": "2.2 Commitment fulfillment, cancelation, and violation"
+    },
+    {
+     "finding": "Reactive Event Calculus provides an executable semantics for updating commitment state incrementally as an event narrative grows, supporting online monitoring rather than only static verification.",
+     "evidence_type": "supported",
+     "section": "4 Monitoring social commitments"
+    },
+    {
+     "finding": "In the reported car-rental experiment with 15 contract clauses and 6000 events, total processing time was below five minutes and the longest single-event processing time was 294 ms.",
+     "evidence_type": "supported",
+     "section": "4.3 Experiments"
+    },
+    {
+     "finding": "Increasing the number of contract clauses by factors of 5, 10, and 50 while holding 6000 events and 200 customers fixed did not produce a statistically significant change in total processing time in the reported experiment.",
+     "evidence_type": "supported",
+     "section": "4.3 Experiments"
+    },
+    {
+     "finding": "The framework deliberately leaves simultaneous conflicting commitment operations unresolved in the implementation and prohibits concurrent event occurrences rather than imposing a universal precedence rule.",
+     "evidence_type": "supported",
+     "section": "Discussion of limitations"
+    }
+   ],
+   "limitations": [
+    "The implementation prohibits concurrent event occurrences because simultaneous operations can create unresolved conflicts, such as a commitment being canceled and satisfied at the same time.",
+    "The formalization requires a commitment's property to be brought about strictly after creation, so commitments whose antecedent and consequent overlap cannot be expressed directly.",
+    "The constraint-logic-programming treatment of time does not easily express periodic commitments such as daily recurring obligations.",
+    "The performance study is illustrative rather than a standardized benchmark comparison, and the paper notes the lack of comparable commitment-monitoring benchmarks.",
+    "The experiments use modeled contract scenarios rather than natural workplace communication containing uncertain, implicit, or linguistically contradictory revisions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "explicit_commitment_lifecycle": 0.99,
+    "cancel_violate_distinction": 0.99,
+    "online_event_monitoring": 0.99,
+    "reported_runtime_scaling": 0.98,
+    "concurrent_conflict_unresolved": 0.99,
+    "periodicity_limitation": 0.99
+   },
+   "raw_claims": [
+    "The commitment model defines eight operations that can alter commitment state.",
+    "A newly created commitment enters an active state.",
+    "Discharging an active base-level commitment moves it to a satisfied state.",
+    "Cancellation and violation are represented as different outcomes.",
+    "A temporal commitment can become violated when its deadline passes without the required property being achieved.",
+    "Conditional commitments can detach into base-level commitments when their conditions are met.",
+    "Conditional commitments can expire when their condition deadline passes.",
+    "Reactive Event Calculus processes an incrementally growing event narrative for monitoring.",
+    "Public Java and Prolog implementations of the monitor are described by the paper.",
+    "The car-rental evaluation processes 6000 events with 15 contract clauses in less than five minutes.",
+    "The current implementation avoids concurrent event occurrences because conflicting simultaneous operations lack a universally appropriate resolution.",
+    "Periodic obligations are difficult to represent with the temporal constraint machinery used in the implementation."
+   ],
+   "source_url": "https://www.researchgate.net/publication/235736562_Representing_and_Monitoring_Social_Commitments_using_the_Event_Calculus",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1909.05360",
+   "title": "Joint Event and Temporal Relation Extraction with Shared Representations and Structured Prediction",
+   "research_question": "Can event identification and temporal-relation extraction be learned jointly with shared representations and global structural constraints to reduce pipeline error propagation?",
+   "methodology": "The authors formulate a document as a graph whose nodes are candidate events and whose edges carry temporal-relation labels, including NONE when a candidate pair does not contain two events. BERT-based contextual representations and a shared neural encoder support single-task, multi-task, pipeline-joint, and structured-joint variants. The structured model performs joint inference with integer linear programming and neural structured-SVM training while enforcing event-relation consistency, symmetry, and temporal transitivity constraints. Models are evaluated end-to-end on TB-Dense and MATRES using micro-averaged event and temporal-relation metrics.",
+   "key_findings": [
+    {
+     "finding": "The structured joint model improves end-to-end temporal-relation F1 over the reported baselines by 10.0 points on TB-Dense and 6.8 points on MATRES, reaching 49.4 and 59.6 F1 respectively.",
+     "evidence_type": "supported",
+     "section": "6.1 End-to-End Relation Extraction"
+    },
+    {
+     "finding": "The same structured model improves event-extraction F1 over the baselines by 3.5 points on TB-Dense and 2.6 points on MATRES.",
+     "evidence_type": "supported",
+     "section": "6.2 Event Extraction"
+    },
+    {
+     "finding": "Sharing representations between event and relation tasks provides more benefit on heterogeneous TB-Dense events than on MATRES, where all annotated events are verbs and multi-task gains are smaller.",
+     "evidence_type": "supported",
+     "section": "6.2 Event Extraction / 6.3 Relation Extraction with Gold Events"
+    },
+    {
+     "finding": "The event-relation consistency constraint accounts for most of the measured structural-inference gain, adding 0.9 F1 on TB-Dense and 1.0 on MATRES, while the added transitivity constraint contributes no gain on TB-Dense and only 0.1 on MATRES.",
+     "evidence_type": "supported",
+     "section": "6.4 Discussion - Global Constraints"
+    },
+    {
+     "finding": "Severe class imbalance remains problematic: the neural model concentrates on dominant relations and fails to make any correct SIMULTANEOUS predictions in the class-weight experiment even when that class is weighted up to ten times.",
+     "evidence_type": "supported",
+     "section": "6.4 Discussion - Label Imbalance"
+    }
+   ],
+   "limitations": [
+    "Rare temporal labels remain difficult to learn, with especially poor results for SIMULTANEOUS and other minority relations.",
+    "Global transitivity constraints provide little additional benefit in the reported structured model, partly because NONE predictions can prevent transitivity rules from applying.",
+    "Event-detection mistakes still propagate into relation decisions despite joint inference because missed true events force associated candidate relations to NONE.",
+    "The structured model relies on ILP and the Gurobi optimizer, adding inference and deployment complexity.",
+    "The task predicts event existence and pairwise temporal order but does not distinguish workplace lifecycle states such as planned, confirmed, revoked, or completed, nor does it model explicit contradictory revisions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "joint_relation_f1_gain": 0.99,
+    "event_f1_gain": 0.99,
+    "shared_representation_effect": 0.96,
+    "consistency_constraint_gain": 0.99,
+    "transitivity_gain_marginal": 0.99,
+    "minority_label_problem": 0.99
+   },
+   "raw_claims": [
+    "The model jointly predicts whether tokens are events and which temporal relations hold between event pairs.",
+    "Candidate relations involving a predicted non-event are constrained to NONE.",
+    "BERT contextual representations are shared across event and relation prediction components.",
+    "The structured model uses global integer-linear-programming inference.",
+    "Symmetry and transitivity are encoded as global constraints over temporal relations.",
+    "The structured joint system reaches 49.4 end-to-end relation F1 on TB-Dense.",
+    "The structured joint system reaches 59.6 end-to-end relation F1 on MATRES.",
+    "Event-relation consistency contributes substantially more than the transitivity constraint in the ablation study.",
+    "All MATRES events in the experimental setup are verbs.",
+    "Class imbalance makes minority temporal relations difficult for the neural model.",
+    "Incorrect event decisions remain a major source of end-to-end temporal-relation errors.",
+    "A public repository provides the code and processed TB-Dense and MATRES data used by the implementation."
+   ],
+   "source_url": "https://arxiv.org/html/1909.05360",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1162-tacl-a-00182",
+   "title": "Dense Event Ordering with a Multi-Pass Architecture",
+   "research_question": "How should temporal-ordering systems and evaluation change when they must label densely connected event graphs rather than only a sparse set of preselected event pairs?",
+   "methodology": "The paper introduces TimeBank-Dense, which densely annotates local temporal relations among events, time expressions, and document creation time, and uses it to evaluate a multi-pass system called CAEVO. CAEVO is a precision-ranked cascade of twelve rule-based and machine-learned sieves, with each sieve receiving the graph produced by earlier sieves. Transitive closure is applied after successive passes so earlier high-precision decisions constrain later decisions and infer additional edges. The system is compared with retrained TempEval-3 systems and is analyzed through component, edge-type, and relation-type ablations.",
+   "key_findings": [
+    {
+     "finding": "TimeBank-Dense contains 12,715 labeled temporal relations over 36 TimeBank newspaper articles and produces strongly connected local event-time graphs by requiring annotation of all relevant pairs within the same or neighboring sentences plus document-time links.",
+     "evidence_type": "supported",
+     "section": "3 TimeBank-Dense: A Dense Ordering"
+    },
+    {
+     "finding": "CAEVO achieves 50.7 F1 on the dense test setting, a 14% relative improvement over the retrained top TempEval-3 systems used for comparison.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "finding": "Global transitive inference is a major contributor: adding transitivity raises the ablated CAEVO configuration from 32.1 to 39.8 F1, and the authors estimate that transitive inference alone contributes about ten percent performance improvement.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results / 6 Discussion"
+    },
+    {
+     "finding": "Edges produced through transitive inference have higher precision than edges directly classified by sieves, approximately 54.4-54.5% versus 49.8%.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "finding": "Time-time relations constitute only 2.6% of the evaluated edges, yet removing the time-time sieve reduces overall performance by almost five percent because those relations affect other decisions through transitive closure.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "finding": "Dense annotation reveals substantial uncertainty: VAGUE constitutes 46% of the annotated graph and can arise from genuine vagueness or annotator disagreement.",
+     "evidence_type": "supported",
+     "section": "3 TimeBank-Dense: A Dense Ordering"
+    }
+   ],
+   "limitations": [
+    "TimeBank-Dense covers only 36 newspaper articles, so the empirical setting is small and domain-specific.",
+    "The graph is locally dense rather than fully complete: explicit relations spanning two or more sentence boundaries are not annotated.",
+    "The relation inventory deliberately collapses finer Allen-style distinctions to improve annotation reliability.",
+    "VAGUE remains semantically ambiguous because it may indicate that no specific relation can be established or that several relations remain possible.",
+    "Annotator agreement is imperfect, with average pairwise precision of 65.1% and kappa values from 0.56 to 0.64.",
+    "The ordering experiments use gold event attributes for controlled analysis, and the temporal relation labels do not encode factuality or workflow states such as planned, canceled, or completed."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "dense_corpus_size": 0.99,
+    "caevo_f1_gain": 0.99,
+    "transitive_inference_important": 0.99,
+    "transitive_edges_precision": 0.99,
+    "time_time_global_effect": 0.99,
+    "vague_annotation_share": 0.99
+   },
+   "raw_claims": [
+    "TimeBank-Dense was created to reduce the missing-relation ambiguity present in sparse temporal corpora.",
+    "The corpus labels temporal pairs within the same sentence and across immediately neighboring sentences.",
+    "The corpus contains 12,715 labeled relations across 36 newspaper documents.",
+    "Its relation inventory consists of BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, and VAGUE.",
+    "VAGUE accounts for 46% of the annotated temporal graph.",
+    "CAEVO processes temporal decisions through a precision-ordered sequence of twelve sieves.",
+    "Transitive closure is applied so that earlier temporal decisions constrain later ones.",
+    "CAEVO obtains 50.7 F1 in the dense evaluation.",
+    "The reported improvement over retrained TempEval-3 comparison systems is 14% relative F1.",
+    "Transitivity-derived edges are more precise than directly classified sieve edges.",
+    "Removing the time-time sieve materially harms global performance despite the small number of time-time edges.",
+    "CAEVO code and the TimeBank-Dense corpus were made publicly available."
+   ],
+   "source_url": "https://aclanthology.org/anthology-files/pdf/Q/Q14/Q14-1022.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1909.00429",
+   "title": "An Improved Neural Baseline for Temporal Relation Extraction",
+   "research_question": "Can a comparatively standard neural architecture become a substantially stronger temporal-relation baseline when paired with higher-quality temporal annotations, contextual embeddings, temporal commonsense knowledge, and global consistency inference?",
+   "methodology": "The paper builds an LSTM temporal-relation classifier that assumes event positions are known and compares position-indicator markup with direct concatenation of the two event representations. It evaluates conventional and contextualized word embeddings and adds a Siamese Common Sense Encoder trained on the TemProb temporal-commonsense resource, while integer linear programming enforces global temporal consistency. Models are trained on MATRES and evaluated on its Platinum test section, with an additional evaluation on TCR. Accuracy, F1, temporal-awareness F1, and their average are reported.",
+   "key_findings": [
+    {
+     "finding": "The best Concat+CSE variants improve over CogCompTime on MATRES by roughly ten absolute points in accuracy and F1, about five points in temporal-awareness score, and about eight points in the average of the three metrics.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Discussion"
+    },
+    {
+     "finding": "Adding the TemProb-based Common Sense Encoder improves the Concat model under every reported metric for both ELMo and BERT, with the paper reporting statistical significance for the CSE improvement.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Discussion / Appendix B"
+    },
+    {
+     "finding": "Direct concatenation of the two event-position hidden states is significantly better overall than the position-indicator approach across the embedding and metric comparisons.",
+     "evidence_type": "supported",
+     "section": "3.1 Handling Event Positions / Appendix B"
+    },
+    {
+     "finding": "Contextualized ELMo and BERT representations significantly outperform conventional embeddings, while the difference between ELMo and BERT is not statistically significant in these experiments.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Discussion / Appendix B"
+    },
+    {
+     "finding": "The advantage generalizes to the separate TCR test set: Concat+CSE reaches a three-metric average of 76.4 with ELMo and 74.9 with BERT versus 66.8 for CogCompTime.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Discussion"
+    }
+   ],
+   "limitations": [
+    "The model assumes that event positions are already known, so the reported system is not an end-to-end raw-text event and relation extractor.",
+    "MATRES and TCR are relatively small datasets dominated by news-style text, leaving workplace-domain transfer untested.",
+    "The relation inventory focuses on temporal ordering such as before, after, equal, and vague rather than event factuality or lifecycle states.",
+    "The approach therefore cannot by itself distinguish whether a workplace event is merely planned, confirmed, revoked, completed, or contradicted by a later message.",
+    "The reported gains depend partly on high-quality event annotations and an external temporal-commonsense resource."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "large_gain_over_cogcomptime": 0.99,
+    "cse_improves_results": 0.99,
+    "concat_beats_position_indicator": 0.98,
+    "contextual_embeddings_help": 0.99,
+    "elmo_bert_not_significantly_different": 0.99,
+    "tcr_transfer_gain": 0.99
+   },
+   "raw_claims": [
+    "The neural temporal-relation model assumes the locations of both events are supplied.",
+    "Global integer-linear-programming inference is used to enforce temporal transitivity.",
+    "Simple concatenation generally performs better than explicit position-indicator markup.",
+    "Contextualized embeddings outperform the conventional embeddings tested in the paper.",
+    "The Common Sense Encoder learns from temporal tendencies represented in TemProb.",
+    "Adding the Common Sense Encoder improves both ELMo- and BERT-based models.",
+    "On MATRES, Concat+CSE with ELMo reaches 71.7 accuracy and 76.7 F1.",
+    "On MATRES, Concat+CSE with BERT reaches 71.3 accuracy and 76.3 F1.",
+    "CogCompTime obtains 61.6 accuracy and 66.6 F1 in the paper's MATRES comparison.",
+    "No statistically significant performance difference is reported between ELMo and BERT.",
+    "The proposed system also substantially outperforms CogCompTime on the TCR test set.",
+    "The paper argues that improved temporal annotation quality makes standard neural models much more effective."
+   ],
+   "source_url": "https://arxiv.org/html/1909.00429",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1007-3-540-44503-x-20",
+ "title": "Why and Where: A Characterization of Data Provenance",
+ "research_question": "How can the provenance of query-produced data be formally characterized and computed in terms of both why an output exists and where its values originated, while remaining meaningful under query rewriting and view composition?",
+ "methodology": "The paper uses a formal database-theory methodology based on a deterministic semistructured data model with explicit source locations and a query language called DQL. It defines normal forms and a rewrite system, then formalizes why-provenance through witnesses and witness bases and where-provenance through source paths and derivation bases. The authors prove normalization, soundness, completeness, invariance, and query-composition results and use worked relational and hierarchical-data examples rather than empirical experiments.",
+ "key_findings": [
+  {
+   "finding": "The paper distinguishes why-provenance, which identifies source data responsible for an output's existence, from where-provenance, which identifies source locations from which particular output values were obtained.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 4, Introduction and Two Meanings of Provenance"
+  },
+  {
+   "finding": "Every well-formed query in the defined language has an equivalent normal form reachable through a strongly normalizing rewrite system.",
+   "evidence_type": "supported",
+   "section": "Section 3, A Query Language, Theorem 1"
+  },
+  {
+   "finding": "For a normal-form query and singular output value, the proposed Why procedure computes the same witness basis as the formal provenance definition.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Witness Basis, Theorem 2"
+  },
+  {
+   "finding": "Although a query-dependent witness basis is not invariant under all equivalent formulations, its minimal witness basis is invariant for equivalent well-formed queries restricted to equality conditions, with stated extensions to some inequality subclasses.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Minimal Witness Basis, Theorem 3"
+  },
+  {
+   "finding": "Why-provenance can be propagated through materialized views so that recursively tracing witnesses through views agrees with composing the views out of the query.",
+   "evidence_type": "supported",
+   "section": "Section 5.3, Cascaded Witnesses, Theorem 4"
+  },
+  {
+   "finding": "Where-provenance is not generally invariant under equivalent query rewritings, but the paper identifies a restricted class of traceable queries whose derivation basis is preserved by its rewrite system.",
+   "evidence_type": "supported",
+   "section": "Section 6, Where-Provenance, Propositions 1 and 2"
+  }
+ ],
+ "limitations": [
+  "The analysis is restricted to well-formed and well-defined queries under the paper's DQL assumptions.",
+  "Variables are restricted to singular values, and DQL is explicitly less expressive than XML-QL in several respects, including lack of Kleene-star path patterns and limitations on nested-query and Skolem-function forms.",
+  "A general semantic characterization of where-provenance is not established; rewrite invariance is obtained only for the restricted traceable-query class.",
+  "The strongest minimal-witness invariance result is stated for equality conditions, with only some subclasses involving inequalities covered.",
+  "Some XML translation and comparison details are deferred to a fuller version.",
+  "The paper establishes formal properties but provides no empirical performance or scalability evaluation.",
+  "The framework explains derivation provenance of query results rather than temporal version histories of corrections, supersessions, or reopened records."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "why_where_distinction": 0.99,
+  "strong_normalization": 0.99,
+  "why_sound_complete": 0.99,
+  "minimal_witness_invariance": 0.99,
+  "view_composition": 0.98,
+  "traceable_where_invariance": 0.99
+ },
+ "raw_claims": [
+  "Why-provenance concerns the source data whose presence accounts for an output's existence.",
+  "Where-provenance concerns the source location or locations from which a particular output value was extracted.",
+  "The deterministic data model gives every represented node a uniquely describable path.",
+  "DQL can express positive select-project-join-union relational queries and positive nested relational algebra under the paper's restrictions.",
+  "The rewrite system reaches a normal form from every well-formed query in finitely many rewrite steps.",
+  "A witness is a source substructure sufficient for producing the output under the query.",
+  "The Why procedure is sound and complete for the witness basis of normal-form queries and singular output values.",
+  "Minimal witness bases are invariant across equivalent well-formed queries using equality conditions.",
+  "Provenance traced through materialized views agrees with provenance after the views are composed out of the query.",
+  "Where-provenance is more sensitive than why-provenance to the syntactic form of equivalent queries.",
+  "For traceable queries, derivation bases used for where-provenance are preserved by the specified rewrite system."
+ ],
+ "source_url": "https://homepages.inf.ed.ac.uk/opb/papers/ICDT2001.pdf",
+ "access": "full_text"
+}

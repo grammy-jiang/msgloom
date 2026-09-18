@@ -1,0 +1,77 @@
+{
+ "paper_id": "2011.03088",
+ "title": "HoVer: A Dataset for Many-Hop Fact Extraction And Claim Verification",
+ "research_question": "Can a large-scale fact-verification benchmark require models to retrieve evidence across as many as four documents and thereby expose weaknesses in shallow single-hop retrieval and verification methods?",
+ "methodology": "HoVer is constructed from HotpotQA question-answer pairs by rewriting them into claims, extending claims to additional reasoning hops through entity-based transformations, and creating supported or unsupported variants through controlled human and automatic mutations. Claims are labeled by five crowd workers, and examples without at least three agreeing annotators are discarded; because Refuted and NotEnoughInfo proved difficult to distinguish reliably, they are merged into Not-Supported. The baseline pipeline uses TF-IDF pre-retrieval, BERT document reranking, BERT sentence selection, and a BERT textual-entailment verifier, evaluated with retrieval EM/F1, claim accuracy, and the end-to-end HoVer Score. citeturn991644view5turn380153view2turn380153view3",
+ "key_findings": [
+  {
+   "finding": "HoVer contains 26,171 claims whose evidence may span as many as four English Wikipedia articles, creating a substantially longer evidence chain than common earlier fact-verification benchmarks.",
+   "evidence_type": "supported",
+   "section": "Abstract and Dataset Collection citeturn991644view5"
+  },
+  {
+   "finding": "Five-worker claim labeling yielded Fleiss' kappa of 0.63, and 2,222 claims with a 2-2-1 vote split were discarded.",
+   "evidence_type": "supported",
+   "section": "2.3 Claim Labeling citeturn380153view2"
+  },
+  {
+   "finding": "The intended three-way distinction between Refuted and NotEnoughInfo proved ambiguous: an independent 100-claim validation matched the majority three-way label only 63% of the time, while the merged Supported versus Not-Supported labeling matched 90%.",
+   "evidence_type": "supported",
+   "section": "2.3 Not-Supported Claims citeturn380153view2"
+  },
+  {
+   "finding": "TF-IDF retrieval of the top 100 documents recovered all required supporting documents for about 80.02% of 2-hop claims, 39.18% of 3-hop claims, and 15.59% of 4-hop claims, demonstrating sharply increasing retrieval difficulty.",
+   "evidence_type": "supported",
+   "section": "5.2 Document Retrieval Results citeturn380153view3"
+  },
+  {
+   "finding": "With complete oracle evidence the BERT verifier reaches 81.2% accuracy, whereas a claim-only model reaches 63.7%, showing both a meaningful benefit from evidence and residual exploitable claim artifacts.",
+   "evidence_type": "supported",
+   "section": "5.4 Claim Verification Results citeturn380153view3turn380153view4"
+  },
+  {
+   "finding": "The best end-to-end baseline obtains a HoVer Score of 14.9% on development and 15.32% on test, compared with a human HoVer Score of 81% on the sampled development evaluation.",
+   "evidence_type": "supported",
+   "section": "5.5-5.6 Full Pipeline and Human Performance citeturn380153view4"
+  },
+  {
+   "finding": "Both document and sentence retrieval performance generally deteriorate as the required number of reasoning hops increases, identifying evidence retrieval as a central bottleneck.",
+   "evidence_type": "supported",
+   "section": "5.2-5.3 Retrieval Results citeturn380153view3turn380153view4"
+  }
+ ],
+ "limitations": [
+  "The benchmark is derived from HotpotQA and Wikipedia through rewriting, hop extension, and mutation, rather than from naturally occurring longitudinal workplace communication. citeturn991644view5turn380153view2",
+  "Refuted and NotEnoughInfo are deliberately collapsed into Not-Supported, so the benchmark cannot directly evaluate the distinction between explicit contradiction and unresolved or insufficient evidence, which is important for longitudinal work-item revision. citeturn380153view2",
+  "The claim-only model's 63.7% accuracy indicates remaining dataset artifacts or priors that allow above-random prediction without evidence. citeturn380153view4",
+  "Evidence is grounded in a Wikipedia snapshot and the benchmark does not model evolving document versions or later corrections to the underlying evidence.",
+  "The task verifies static claims and evidence chains; it does not explicitly encode supersession, correction, supplementation, reopening, or claimed-versus-confirmed completion states."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "multi_hop_dataset_design": 0.99,
+  "label_ambiguity_and_merge": 0.99,
+  "retrieval_degrades_with_hops": 0.99,
+  "oracle_vs_claim_only_gap": 0.99,
+  "end_to_end_difficulty": 0.99,
+  "contradiction_vs_unresolved_not_separable": 0.99
+ },
+ "raw_claims": [
+  "HoVer requires retrieval and verification across evidence from as many as four Wikipedia documents.",
+  "The dataset is built partly by converting HotpotQA question-answer pairs into declarative claims.",
+  "Additional hops are introduced by linking claims to information in further documents.",
+  "Human and automatic mutations create challenging supported and unsupported claim variants.",
+  "Each labeled claim receives judgments from five crowd workers.",
+  "Ambiguity between refutation and insufficient information motivated a binary label scheme.",
+  "Single-hop TF-IDF retrieval loses recall rapidly as the number of required documents increases.",
+  "Accurate evidence substantially improves BERT claim verification.",
+  "Claims alone still contain enough regularity for substantially above-random verification accuracy.",
+  "End-to-end model performance is far below sampled human performance because complete evidence retrieval is difficult."
+ ],
+ "source_url": "https://arxiv.org/html/2011.03088",
+ "access": "full_text"
+}

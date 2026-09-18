@@ -1,0 +1,84 @@
+{
+ "paper_id": "doi-10-1016-j-artint-2003-08-003",
+ "title": "Weakening conflicting information for iterated revision and knowledge integration",
+ "research_question": "Can conflicts in prioritized knowledge bases be resolved with less information loss by weakening conflicting formulas rather than deleting them, while retaining practical computational behavior and desirable revision semantics?",
+ "methodology": "The paper develops Disjunctive Maxi-Adjustment (DMA) for stratified propositional knowledge bases, replacing conflicting formulas at a priority level by progressively larger disjunctions until consistency is restored. It develops several logically related implementations, including DMA, Whole-DMA, and Iterative-DMA, and proves connections between the method and lexicographical inference. The authors compare the approaches theoretically with Adjustment and Maxi-Adjustment and experimentally on eight inconsistent DIMACS knowledge bases. Experiments measure retained/generated clauses and computation time, while a complexity analysis examines compilation size and query costs.",
+ "key_findings": [
+  {
+   "finding": "DMA resolves inconsistency by weakening formulas involved in conflicts through disjunction rather than simply discarding all conflicting formulas at the affected priority level.",
+   "evidence_type": "supported",
+   "section": "4 Disjunctive Maxi-Adjustment"
+  },
+  {
+   "finding": "DMA can preserve strictly more information than Maxi-Adjustment because information lost by removal can survive in weaker disjunctive form.",
+   "evidence_type": "supported",
+   "section": "4 Disjunctive Maxi-Adjustment"
+  },
+  {
+   "finding": "DMA inference is shown to be equivalent to lexicographical inference, providing a compiled consistent base without explicitly enumerating the potentially exponential set of lexicographically preferred subbases.",
+   "evidence_type": "supported",
+   "section": "6 DMA as a compilation of the lexicographical system"
+  },
+  {
+   "finding": "In the eight reported DIMACS examples, standard Adjustment retained no clauses from the inconsistent second stratum, while DMA retained or generated at least as much information as Maxi-Adjustment and substantially more on several instances.",
+   "evidence_type": "supported",
+   "section": "7 Experimental results"
+  },
+  {
+   "finding": "Whole-DMA was dramatically faster than kernel-computing MA, DMA, and IDMA on the eight reported examples, taking about 0.1 seconds per instance while some kernel-based runs required hundreds of seconds.",
+   "evidence_type": "supported",
+   "section": "7 Experimental results"
+  },
+  {
+   "finding": "The speed advantage of Whole-DMA comes with potentially large compiled representations and weaker syntactic traceability to the original formulas.",
+   "evidence_type": "supported",
+   "section": "7 Experimental results"
+  },
+  {
+   "finding": "Whole-DMA may require exponentially more space than the original stratified knowledge base in the worst case because it can generate combinatorially many disjunctions.",
+   "evidence_type": "supported",
+   "section": "8 Complexity issues"
+  }
+ ],
+ "limitations": [
+  "The formal treatment assumes stratified propositional knowledge bases with explicit priority ranks; the paper does not address extraction of such propositions or priorities from natural-language communication.",
+  "The experimental study uses only eight randomly selected inconsistent DIMACS bases, each with 50 variables and 80 or 100 clauses.",
+  "In the reported benchmarks, conflicts happened in the second stratum and no additional conflicts appeared later, limiting the diversity of revision patterns tested.",
+  "Kernel computation makes MA, DMA, and IDMA costly on larger knowledge bases.",
+  "Whole-DMA can produce exponentially large knowledge bases in the worst case.",
+  "Whole-DMA may obscure provenance and justification because original formulas can disappear syntactically from the compiled base.",
+  "The paper's treatment of revision is logical and priority-based rather than explicitly temporal; applying it to changing workplace event states would require a separate representation of time, source identity, and revision events."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "weakening_instead_of_deletion": 0.99,
+  "more_information_than_MA": 0.98,
+  "equivalent_to_lexicographical_inference": 0.99,
+  "experimental_information_retention": 0.98,
+  "WDMA_speed_advantage": 0.99,
+  "provenance_tradeoff": 0.97,
+  "exponential_space_risk": 0.99
+ },
+ "raw_claims": [
+  "Conflict resolution is treated as constructing a consistent knowledge base from ranked propositional information and new information.",
+  "Adjustment stops retaining lower-ranked material once it reaches an inconsistent stratum.",
+  "Maxi-Adjustment handles conflicts rank by rank but deletes formulas participating in conflicts.",
+  "DMA instead weakens conflicting formulas by replacing them with disjunctions of increasing size.",
+  "The DMA construction can preserve consequences that Maxi-Adjustment loses.",
+  "The paper proves that DMA and lexicographical inference produce equivalent consequences.",
+  "This equivalence avoids explicitly enumerating all lexicographically preferred consistent subbases.",
+  "The experiments use eight inconsistent DIMACS aim-50-no instances that were divided into strata of twenty clauses.",
+  "Whole-DMA avoids explicit conflict-kernel computation and was much faster on the reported experiments.",
+  "Kernel-based approaches were slow on some test instances because identifying formulas involved in conflicts is expensive.",
+  "Whole-DMA generated many more clauses than the other approaches in the experimental second strata.",
+  "Iterative-DMA preserves a representation closer to the original knowledge base but pays a larger computational cost.",
+  "Whole-DMA can require exponential compilation space in the worst case.",
+  "The proposed strategies are intended for iterated belief revision and integration of information from multiple sources."
+ ],
+ "source_url": "https://www.cril.univ-artois.fr/~leberre/hdr.pdf",
+ "access": "full_text"
+}

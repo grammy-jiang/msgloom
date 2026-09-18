@@ -1,0 +1,87 @@
+{
+ "paper_id": "2406.00197",
+ "title": "Re3: A Holistic Framework and Dataset for Modeling Collaborative Document Revision",
+ "research_question": "How can document revisions, peer-review requests, and revision summaries be represented and annotated jointly so that collaborative revision behavior and NLP systems can be studied across edit granularity, action, intent, and cross-document relationships?",
+ "methodology": "Re3 represents successive document versions, reviews, and revision summaries as structured graphs connected by cross-document relations. Edits are labeled by granularity, operation, and intent, while review requests can be linked to one or more realized edits and summary sentences can be linked back to the edits they describe. The authors build the dataset from scientific-paper revision resources, use automatic prealignment followed by human annotation, and report inter-annotator agreement for edit labels and several relation tasks. They then analyze revision patterns and evaluate illustrative automation tasks including edit-intent classification, edit summarization, revision alignment, and review-request extraction.",
+ "key_findings": [
+  {
+   "finding": "Re3 explicitly links a review request to the concrete edits that address it and allows one request to correspond to multiple edits, providing a direct representation of requested versus realized revision.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "The dataset contains 314 document-revision pairs and annotations at section, paragraph, sentence, and subsentence granularity, allowing revision history to be analyzed hierarchically rather than as a flat diff.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  },
+  {
+   "finding": "Modify and Add are the dominant edit operations, and Fact/Evidence is the most common edit intent, showing that many revisions change substantive content rather than only surface form.",
+   "evidence_type": "supported",
+   "section": "Section 5, edit-distribution analysis"
+  },
+  {
+   "finding": "More than half of explicit review suggestions are implemented, while 18.47% of implemented review requests are realized through multiple sentence edits, demonstrating that request-to-revision alignment is frequently one-to-many.",
+   "evidence_type": "supported",
+   "section": "Section 5, review-revision analysis"
+  },
+  {
+   "finding": "Automatic intent classification remains imperfect: the best reported joint classification result reaches 0.70 accuracy and 0.69 macro F1, with Claim and Fact/Evidence among the difficult distinctions.",
+   "evidence_type": "supported",
+   "section": "Section 6, edit-intent classification"
+  },
+  {
+   "finding": "GPT-4 revision summaries are less comprehensive than the human reference summaries, with reported comprehensiveness of 79.09 versus 98.82, and the analysis estimates that GPT-4 misses about 21% of edits.",
+   "evidence_type": "supported",
+   "section": "Section 6, document edit summarization"
+  },
+  {
+   "finding": "The paper demonstrates high automatic revision-alignment performance, with the reported Llama 2 alignment experiment reaching 0.97 accuracy, suggesting that many version-to-version edit links can be recovered reliably in this dataset.",
+   "evidence_type": "supported",
+   "section": "Section 6, revision alignment"
+  },
+  {
+   "finding": "The response-summary component does not establish whether real authors' textual claims of completion match their edits because the dataset substitutes human-generated edit summaries for unavailable authentic author responses.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "The data comes from English-language scientific publishing rather than workplace email, chat, operational incidents, tickets, or project-management systems.",
+  "Generalization to new languages, domains, and revision workflows is not evaluated.",
+  "Because authentic author response summaries were unavailable, annotators generated edit summaries; therefore the dataset cannot directly measure discrepancies between a real author's claimed completion and independently observed changes.",
+  "The demonstrated NLP tasks are illustrative rather than a comprehensive implementation of every relation in the framework.",
+  "The model comparison is selective and does not exhaustively compare smaller fine-tuned models or all contemporary language models.",
+  "Although Re3 models requested and realized revisions, it does not supply a dedicated semantic taxonomy for supersession, contradiction, reopening, or unresolved conflict across arbitrary work-item histories."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "review_edit_linkage": 0.99,
+  "hierarchical_revision_structure": 0.99,
+  "edit_distribution": 0.98,
+  "one_to_many_realization": 0.98,
+  "intent_classification": 0.99,
+  "summary_coverage_gap": 0.99,
+  "revision_alignment": 0.98,
+  "synthetic_response_limitation": 0.99
+ },
+ "raw_claims": [
+  "Re3 jointly represents an original document, its revision, review material, and a revision summary.",
+  "Its edit taxonomy includes Add, Delete, Modify, Merge, Split, and Fusion operations.",
+  "Edit intent labels include Grammar, Clarity, Fact/Evidence, Claim, and Other.",
+  "The dataset contains 314 document-revision pairs.",
+  "The authors report 11,648 sentence-level edits and additional annotations at subsentence, paragraph, and section levels.",
+  "Fact/Evidence is the largest reported intent category, at 45.02% of edits.",
+  "More than half of explicit review suggestions are reported as implemented.",
+  "The authors report that 18.47% of realized review requests require multiple sentence edits.",
+  "The best reported joint edit-intent classification result is 0.70 accuracy and 0.69 macro F1.",
+  "GPT-4 summaries receive 79.09 for comprehensiveness versus 98.82 for the human summaries, and the authors estimate that the model omits about 21% of edits.",
+  "The revision-alignment experiment reports accuracy of 0.97.",
+  "Human-generated summaries are used in place of authentic author revision responses because the required response data was unavailable."
+ ],
+ "source_url": "https://arxiv.org/html/2406.00197",
+ "access": "full_text"
+}

@@ -1,0 +1,96 @@
+{
+ "run_id": "8096ea3adc6c",
+ "round": 1,
+ "topic": "work-item state, event factuality, temporal reasoning, and conflicting revisions in workplace communication: tracking whether an event is planned, confirmed, revoked, completed, or contradicted",
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "No admitted paper directly evaluates longitudinal state tracking across workplace messages in which one work item moves among requested, proposed, planned, approved, completed, revoked, superseded, disputed, conditional, and unresolved states while retaining historical assessments.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "longitudinal event state tracking dialogue email requested planned approved completed revoked superseded"
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus does not establish natural-language semantics or evaluated methods for distinguishing supersession, correction, supplementation, contradiction, reopening, and unresolved conflict across successive communications.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "natural language supersession correction contradiction revision reopening dialogue event state"
+  },
+  {
+   "id": "gap-3",
+   "description": "No admitted paper jointly evaluates source-relative factuality, temporal ordering, lifecycle state, contradiction, and provenance as one longitudinal model; the papers validate separate components and their combination remains untested.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"event factuality\" temporal relation contradiction provenance longitudinal state tracking"
+  },
+  {
+   "id": "gap-4",
+   "description": "Direct evidence for workplace email, Teams-like dialogue, or comparable operational communication is absent; the empirical NLP evidence is predominantly news-derived, while the commitment and belief-revision papers use formal or modeled settings.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "workplace email dialogue event factuality temporal revision commitment status tracking"
+  },
+  {
+   "id": "gap-5",
+   "description": "The admitted factuality literature models textual source commitment but does not establish how to distinguish an author's assertion that work is complete from independent confirmation or stronger evidential verification of completion.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "event factuality evidentiality source attribution independent confirmation verification reported completion"
+  },
+  {
+   "id": "gap-6",
+   "description": "Evaluation is needed on adversarial longitudinal sequences such as plan-to-cancel, approve-to-revoke, deadline changes, contradictory same-time updates, out-of-order ingestion, stale messages arriving late, and completion claims later corrected.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Construct a controlled benchmark containing hand-authored and replayed longitudinal message sequences for each transition and conflict pattern. Define expected state histories and current-state outputs, then measure transition accuracy, contradiction handling, order robustness, stale-update rejection, and provenance retention under chronological and deliberately shuffled ingestion."
+  },
+  {
+   "id": "gap-7",
+   "description": "The combined representation of message time, event/effective time, deadline or constraint time, and observed collection/version time has not been benchmarked for this product's state-resolution tasks.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Define an explicit multi-time data model and benchmark alternative representations on product-specific cases. Include message timestamp, asserted event/effective interval, deadline or constraint time, ingestion/observation time, and source-version time; test temporal queries, retroactive corrections, late arrivals, deadline changes, and current-state derivation against labelled expected results."
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus does not evaluate a provenance-preserving implementation that stores immutable source observations and successive assessments while exposing a separately derived current-state view.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Prototype an append-only observation and assessment store with immutable source references, versioned derived assessments, and a materialized current-state projection. Test replayability, auditability, deterministic recomputation, rollback, correction without source mutation, historical-state queries, and consistency between the event log and derived current view."
+  },
+  {
+   "id": "gap-9",
+   "description": "Topic 05's inherited uncertainty about owner or assignee extraction, deadline binding, and attachment of conditions, negation, and modality remains unresolved by this Topic 06 corpus; these uncertainties concern the utterance-time event supplied to state tracking rather than the later state-transition problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH",
+   "resolution_notes": "This concerns extraction and semantic binding within an individual communication before longitudinal state resolution begins. It should be handled by the upstream event/proposition extraction topic rather than expanding this state-transition review."
+  },
+  {
+   "id": "gap-10",
+   "description": "Reliable cross-thread and cross-source identity of the event or work item being revised remains an upstream dependency; this synthesis does not establish the product's Topic-identity mechanism.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH",
+   "resolution_notes": "Entity, topic, and work-item identity resolution is an upstream linkage problem. Longitudinal state tracking can consume an established work-item identifier, but determining whether two messages refer to the same underlying item belongs to the cross-thread identity topic."
+  },
+  {
+   "id": "gap-11",
+   "description": "Resolving an uncertain state by retrieving missing historical evidence is not answered by the admitted state/factuality papers and remains a separate evidence-retrieval problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM",
+   "resolution_notes": "This gap concerns evidence discovery and retrieval rather than state semantics or transition resolution. The state tracker may expose uncertainty and evidence requirements, while historical search, ranking, and retrieval should be evaluated in a dedicated evidence-retrieval topic."
+  },
+  {
+   "id": "gap-12",
+   "description": "State-changing evidence contained in attachment versions, tables, images, or screenshots is not covered by this corpus's longitudinal state models and remains a separate multimodal/document-evidence problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM",
+   "resolution_notes": "This is a multimodal and document-understanding dependency involving extraction, structural preservation, attachment versioning, and grounding to cells, regions, pages, or image evidence. Once such evidence is converted into provenance-bearing observations, it can feed the state-tracking model."
+  }
+ ],
+ "convergence": {
+  "should_continue": true,
+  "reason": "open_gaps_remain",
+  "next_round_topic": "Longitudinal event and work-item state transitions in dialogue and operational communication, with emphasis on supersession, correction, contradiction, reopening, source-relative factuality, evidential confirmation, and preservation of historical state."
+ }
+}

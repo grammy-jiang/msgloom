@@ -1,0 +1,66 @@
+{
+ "paper_id": "doi-10-1016-j-knosys-2016-07-032",
+ "title": "Cross-document event ordering through temporal, lexical and distributional knowledge",
+ "research_question": "Can temporal compatibility, lexical-semantic knowledge, and distributional-semantic knowledge be combined to improve cross-document event coreference and chronological timeline construction from multiple texts?",
+ "methodology": "The system constructs entity-centered event timelines from multiple English news documents by combining event extraction, temporal information processing, target-entity filtering, and cross-document event coreference. It clusters event mentions using temporal compatibility and then semantic compatibility derived from lexical-semantic and distributional-semantic knowledge, treating word meaning and contextual usage as complementary signals. System variants are evaluated using the SemEval-2015 Task 4 TimeLine framework, with an additional experiment using manual MEANTIME entity-coreference annotations to analyze error propagation from entity resolution.",
+ "key_findings": [
+  {
+   "finding": "Combining temporal, lexical-semantic, and distributional-semantic knowledge improved the cross-document event-ordering results over previously evaluated systems, with gains reported as high as eight F1 points.",
+   "evidence_type": "supported",
+   "section": "Abstract and Evaluation"
+  },
+  {
+   "finding": "The best configuration continued to be the combination of temporal, lexical, and distributional semantics when manual entity-coreference annotations were substituted for automatic entity coreference.",
+   "evidence_type": "supported",
+   "section": "Evaluation, Table 4"
+  },
+  {
+   "finding": "With manual MEANTIME entity coreference, the combined configuration reached micro-F1 30.09, precision 25.37, and recall 36.98; relative to the best automatic-entity-coreference setup, the paper reports gains of 3.5 F1 points, 1.7 precision points, and 6.61 recall points.",
+   "evidence_type": "supported",
+   "section": "Evaluation, Table 4"
+  },
+  {
+   "finding": "Entity-coreference quality is an important upstream bottleneck because correcting it manually particularly increases event recall in the resulting timelines.",
+   "evidence_type": "supported",
+   "section": "Evaluation and error analysis"
+  },
+  {
+   "finding": "Nominal event mentions such as deverbal nouns remain difficult to match with verbal mentions, creating cross-document event-coreference errors.",
+   "evidence_type": "supported",
+   "section": "Error analysis, Example 13"
+  }
+ ],
+ "limitations": [
+  "The experiments focus on written English news, so transfer to workplace email, chat, and conversational communication is not evaluated.",
+  "The model orders and corefers events but does not explicitly represent factuality states such as planned, uncertain, confirmed, revoked, completed, or contradicted.",
+  "The pipeline is vulnerable to upstream errors in event extraction, temporal anchoring, named-entity recognition, and entity coreference.",
+  "Nominal events and lexical variation can prevent mentions of the same real-world event from being clustered together.",
+  "The approach does not model chronological revisions of an event's asserted status, such as a plan later being canceled or corrected."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "combined_knowledge_improves_ordering": 0.99,
+  "combined_model_best_with_manual_coreference": 0.98,
+  "manual_coreference_gain": 0.99,
+  "entity_coreference_bottleneck": 0.98,
+  "nominal_event_problem": 0.97
+ },
+ "raw_claims": [
+  "Cross-document event ordering requires event extraction, temporal relation processing, and cross-document event coreference.",
+  "The system uses temporal, lexical-semantic, and distributional-semantic information when constructing timelines.",
+  "Temporal compatibility is treated as necessary evidence when deciding whether event mentions may corefer.",
+  "Lexical semantics and distributional semantics supply complementary notions of semantic compatibility.",
+  "The approach was evaluated in the SemEval-2015 TimeLine cross-document event-ordering framework.",
+  "The reported system improves the previously evaluated systems by as much as eight F1 points.",
+  "Using manually annotated entity coreference substantially improves recall.",
+  "The combined temporal, lexical, and distributional configuration remains the best configuration with manual entity coreference.",
+  "The manual-coreference version of the combined model obtains micro-F1 30.09.",
+  "Deverbal nominal events are identified as a source of coreference errors."
+ ],
+ "source_url": "https://rua.ua.es/server/api/core/bitstreams/34915b7c-1b35-4684-b298-eff8bb439446/content",
+ "access": "full_text"
+}

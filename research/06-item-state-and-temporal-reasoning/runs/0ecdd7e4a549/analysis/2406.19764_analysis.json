@@ -1,0 +1,73 @@
+{
+ "paper_id": "2406.19764",
+ "title": "Belief Revision: The Adaptability of Large Language Models Reasoning",
+ "research_question": "How reliably can language models decide whether a previously inferred conclusion should be updated or maintained when a new premise changes the conditions governing that conclusion?",
+ "methodology": "The authors introduce the delta-reasoning framework, which evaluates a model at two consecutive stages: an initial two-premise inference at time t and a revised inference at time t+1 after adding a third premise. Belief-R is synthetically generated from ATOMIC with GPT-4-assisted construction and then human-annotated to determine whether the third premise creates an additional condition requiring a belief update or an alternative condition allowing the prior belief to be maintained. The dataset contains modus ponens and modus tollens cases, with separate Belief Update and Belief Maintain subsets. Roughly 30 language models are tested using zero-shot classification and, for larger generative models, direct, chain-of-thought, and plan-and-solve prompting, with BU-Acc, BM-Acc, and the balanced BREU measure reported.",
+ "key_findings": [
+  {
+   "finding": "Belief-R contains 1,912 basic two-premise cases and 1,744 three-premise revision cases, comprising 1,074 Belief Update and 670 Belief Maintain examples.",
+   "evidence_type": "supported",
+   "section": "4 The Belief-R Dataset"
+  },
+  {
+   "finding": "Models that perform well on the initial basic inference still perform poorly on belief revision; most non-API models have near-zero Belief Update accuracy, and the larger open and commercial models reach only about 50% at best on the balanced BREU measure.",
+   "evidence_type": "supported",
+   "section": "6 Result and Analysis"
+  },
+  {
+   "finding": "The experiments reveal a trade-off between updating and maintaining prior conclusions, with models that improve on Belief Update often performing worse on Belief Maintain.",
+   "evidence_type": "supported",
+   "section": "6 Result and Analysis"
+  },
+  {
+   "finding": "Belief revision is harder in the modus-tollens subset, where the models show lower balanced revision performance and a stronger imbalance between updating and maintaining.",
+   "evidence_type": "supported",
+   "section": "7 Discussion"
+  },
+  {
+   "finding": "Chain-of-thought prompting does not significantly improve average belief revision, and plan-and-solve prompting yields only about a one-percentage-point improvement in BREU overall.",
+   "evidence_type": "supported",
+   "section": "7 Discussion; Appendix C.2"
+  },
+  {
+   "finding": "The delta-reasoning formulation provides a direct sequential test of whether new evidence should revise or preserve a prior conclusion rather than evaluating reasoning only in a static information state.",
+   "evidence_type": "supported",
+   "section": "3.2 Evaluating Belief Revision with Delta R"
+  }
+ ],
+ "limitations": [
+  "Belief-R focuses on modus ponens and modus tollens and therefore covers only a narrow subset of real-world revision phenomena.",
+  "Revision is primarily triggered by introduction of a new premise, not by reinterpretation of existing evidence without new information.",
+  "The paper operationalizes a model's belief as what it currently treats as true in context rather than measuring an internal cognitive state.",
+  "The authors note that measured reasoning performance can be entangled with the model's stored knowledge or recall ability.",
+  "The examples are synthetic commonsense reasoning scenarios derived from ATOMIC rather than observed workplace or operational communication.",
+  "The update-versus-maintain distinction does not separately label supersession, correction, supplementation, reopening, or conflict.",
+  "The framework does not distinguish a participant's claim of task completion from independent source evidence corroborating that completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dataset_composition": 0.99,
+  "revision_difficulty": 0.99,
+  "update_maintain_tradeoff": 0.99,
+  "modus_tollens_effect": 0.98,
+  "prompting_effect": 0.99,
+  "sequential_revision_framework": 0.99
+ },
+ "raw_claims": [
+  "Delta reasoning compares a model's conclusion before and after a new premise is introduced.",
+  "Belief-R explicitly separates cases where the old conclusion should be revised from cases where it should be retained.",
+  "The corpus contains 1,074 update cases and 670 maintain cases with three premises.",
+  "Human majority voting is used to establish the significance of the added premise and the target conclusion.",
+  "Strong performance on simple logical inference does not imply strong performance when evidence changes.",
+  "Models exhibit a measurable tension between sensitivity to updates and stability when no update is warranted.",
+  "Modus-tollens revision cases are more difficult than corresponding modus-ponens cases.",
+  "More elaborate zero-shot reasoning prompts provide little overall improvement in balanced belief-revision performance."
+ ],
+ "source_url": "https://arxiv.org/html/2406.19764",
+ "source_ref": "citeturn289759view0turn289759view1turn225199view0turn225199view1turn225199view3turn736599view1",
+ "access": "full_text"
+}

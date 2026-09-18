@@ -1,0 +1,65 @@
+{
+ "paper_id": "2103.08541",
+ "title": "Get Your Vitamin C! Robust Fact Verification with Contrastive Evidence",
+ "research_question": "Can fact-verification models be made more sensitive and robust to factual changes in evolving evidence by training on contrastive revisions where small textual edits alter a claim's truth status?",
+ "methodology": "The authors mine successive revisions of English Wikipedia, use a classifier to preselect likely substantive edits, and have annotators identify factual revisions and construct symmetric claims whose support status changes across versions. They augment these naturally occurring revisions with synthetic revisions derived from FEVER, producing contrastive claim-evidence examples. They train and evaluate transformer models on factual-revision flagging, support/refute/NEI fact verification, word-level rationale prediction, and factually consistent text generation. Evaluation includes VitaminC, FEVER, adversarial fact-verification and NLI datasets, contrast sensitivity, token-level rationale metrics, and generation metrics with manual checks.",
+ "key_findings": [
+  {
+   "finding": "An ALBERT model using the full before-and-after sentences achieved 83.18 F1 and 91.97 AUC for factual-revision flagging, outperforming edit-distance, bag-of-words, and edited-span-only baselines.",
+   "evidence_type": "supported",
+   "section": "5.2 Factual Revision Flagging"
+  },
+  {
+   "finding": "Contrastive training substantially increased sensitivity to changed evidence: the ALBERT-base FEVER-only model flipped its verdict on 55.53% of contrastive cases, whereas VitaminC plus FEVER training reached 85.89%, and the corresponding ALBERT-xlarge model reached 90.94%.",
+   "evidence_type": "supported",
+   "section": "5.3 Fact Verification"
+  },
+  {
+   "finding": "Adding VitaminC training improved performance on adversarial evaluations while largely preserving in-domain FEVER or MNLI accuracy, indicating that revision-aware examples reduced reliance on static or lexical shortcuts.",
+   "evidence_type": "supported",
+   "section": "5.3 Fact Verification"
+  },
+  {
+   "finding": "Distant token-level supervision derived from revision edits raised word-level rationale F1 from 37.33 to 47.36 and edit-prediction F1 from 31.23 to 59.11.",
+   "evidence_type": "supported",
+   "section": "5.4 Word-level Rationales"
+  },
+  {
+   "finding": "For factually consistent generation, the BART claim generator received an 85.83 verifier score and the BART revision generator received 76.26, with manual evaluation additionally checking grammaticality and support.",
+   "evidence_type": "supported",
+   "section": "5.5 Factually Consistent Generation"
+  }
+ ],
+ "limitations": [
+  "The empirical domain is English Wikipedia rather than workplace or operational communication.",
+  "Fact verification assumes an oracle retriever, so the experiments do not evaluate end-to-end discovery of corroborating evidence.",
+  "The longitudinal relation model is primarily whether an edit changes support/refute/NEI status; it does not distinguish supersession, correction, supplementation, reopening, or work-item conflict as separate relation labels.",
+  "Candidate revisions were preselected from a much larger revision pool using a learned factual-change classifier before human annotation, so the corpus reflects that selection process.",
+  "The paper does not model the distinction between a participant claiming that a task is complete and independent evidence corroborating that completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "revision_flagging": 0.99,
+  "contrastive_sensitivity": 0.99,
+  "adversarial_robustness": 0.98,
+  "rationale_supervision": 0.99,
+  "generation_consistency": 0.97
+ },
+ "raw_claims": [
+  "The dataset is built around factual changes between successive versions of Wikipedia sentences.",
+  "Annotators examined 304,671 revised sentences and identified 107,056 as factual modifications.",
+  "The natural revision process yielded 325,724 claim-evidence pairs, with another 163,180 pairs produced synthetically.",
+  "A factual revision is operationalized as an edit capable of changing a claim's verification label.",
+  "Full sentence context performs better than edit magnitude or edited tokens alone for factual-revision detection.",
+  "Models trained only on conventional fact-verification data frequently fail to reverse their prediction when evidence changes subtly.",
+  "Revision-derived token supervision improves identification of evidence spans that determine a verdict.",
+  "The before-and-after structure can also supervise generation of claims or sentences consistent with updated facts."
+ ],
+ "source_url": "https://arxiv.org/html/2103.08541",
+ "source_ref": "citeturn867123view0turn245500view0turn245500view1turn245500view2",
+ "access": "full_text"
+}

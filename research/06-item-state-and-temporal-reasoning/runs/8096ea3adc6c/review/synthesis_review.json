@@ -1,0 +1,40 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/06-item-state-and-temporal-reasoning/runs/8096ea3adc6c/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Gap G06-09 introduces project-external evidence by asserting \"Topic 05's inherited uncertainty\" about owner/assignee extraction, deadline binding, conditions, negation, and modality. Those inherited Topic 05 findings are not present in the supplied 13 analyses, so that portion cannot be independently verified from the admitted corpus.",
+  "Gap G06-10 is partly supported by doi-10-1016-j-knosys-2016-07-032 because cross-document event identity/coreference is an upstream dependency, but the statement about the product's \"Topic-identity mechanism\" is project-specific and not established by the supplied analyses.",
+  "Gap G06-11 correctly observes that the admitted papers do not solve retrieval of missing historical evidence, but characterizing this as a distinct project evidence-retrieval problem is an architectural boundary judgment not supported by the literature analyses themselves.",
+  "Actionable insight 2 recommends storing message/utterance time, event/effective time, deadline/constraint time, and collection/version time as four distinct fields. The corpus supports distinctions among temporal relations, deadlines, and relative versus absolute time, but no supplied paper evaluates this four-field schema, especially collection/version time. It should remain explicitly labeled as an engineering design hypothesis rather than a literature-supported design principle.",
+  "Actionable insight 4 recommends separate relations for contradiction, supplementation, correction, and supersession and rejects latest-message-wins as a generic strategy. The corpus establishes that conflict resolution requires assumptions and that longitudinal revision is untested, but none of the supplied papers empirically evaluates these four natural-language revision relations or a latest-message-wins baseline.",
+  "Actionable insight 7 includes uncertainty from owner and deadline extraction. Event-detection and entity/coreference error propagation are directly supported, and conditions/deadlines occur in the commitment formalism, but owner/assignee extraction is not evaluated by any supplied paper.",
+  "Actionable insight 8 refers to \"existing project ownership boundaries\" for Topic identity, evidence retrieval, and multimodal interpretation. Those ownership boundaries are project metadata outside the admitted analyses and therefore are not literature-derived.",
+  "Gap G06-07 is correctly open, but its classification as purely ENGINEERING understates an academic evidence gap: the supplied literature also does not establish natural-language extraction and normalization of the proposed multiple time axes, particularly effective time, deadline/constraint time, and collection/version time in workplace communication."
+ ],
+ "unsupported_claims": [
+  "G06-09: the specific assertion that Topic 05 already established uncertainties about owner/assignee extraction, deadline binding, and attachment of conditions, negation, and modality.",
+  "G06-10: the existence or unresolved status of the product's specific \"Topic-identity mechanism\".",
+  "G06-11: the project-level assertion that missing-historical-evidence resolution belongs to a separate evidence-retrieval problem, beyond the narrower supported claim that the admitted corpus does not address it.",
+  "Actionable insight 2: the specific four-field temporal storage design, especially collection/version time, as though implied by the reviewed literature.",
+  "Actionable insight 4: the recommendation that contradiction, supplementation, correction, and supersession must be represented as four separate relations and that latest-message-wins should generically be rejected; this is reasonable engineering guidance but not directly evaluated by the admitted papers.",
+  "Actionable insight 7: uncertainty propagation from owner/assignee extraction, which is not covered in the supplied analyses.",
+  "Actionable insight 8: the claimed existing project ownership boundaries."
+ ],
+ "required_fixes": [
+  "Rephrase G06-09 so it states only what this corpus establishes, for example that owner/assignee extraction, deadline binding, condition attachment, negation, and modality extraction are not evaluated here; remove the unverifiable claim about inherited Topic 05 findings unless that evidence is supplied.",
+  "Rephrase G06-10 to retain the supported upstream event/work-item identity dependency while removing the unsupported project-specific statement about a Topic-identity mechanism.",
+  "Rephrase G06-11 and actionable insight 8 as scope decisions or project assumptions rather than literature-derived findings.",
+  "Mark actionable insights 2 and 4 explicitly as proposed engineering hypotheses motivated by the gaps, not validated design principles from the reviewed papers.",
+  "Narrow actionable insight 7 to supported upstream uncertainties such as event detection and entity/event coreference, or separately label owner/assignee and deadline extraction as unvalidated project concerns.",
+  "Consider splitting G06-07 into an ACADEMIC gap for extraction/normalization and semantics of multiple time axes in workplace communication and an ENGINEERING gap for benchmarking a chosen product representation."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.9,
+  "coherence": 0.98,
+  "gap_completeness": 0.94,
+  "citation_integrity": true
+ },
+ "notes": "The core cross-paper synthesis is strong and does not warrant rejection. All paper_id citations used in the findings and contradiction section belong to the permitted set, and the substantive paper-level findings are traceable to the supplied analyses without material inflation. The synthesis correctly preserves the major empirical disagreement over global transitivity, explicitly distinguishes the FactBank/RSLN representational tension from a head-to-head contradiction, retains the DLGRN paper's internal parameter-count contradiction, and does not present formal or news-domain evidence as direct workplace validation. The principal weakness is not the scientific synthesis itself but leakage of project-specific context and prescriptive engineering choices into gaps and actionable insights without evidence in the admitted corpus. No major gap is falsely presented as closed: the synthesis repeatedly and correctly states that integrated longitudinal workplace-state tracking, cross-message revision semantics, provenance-preserving state histories, and workplace-domain effectiveness remain unvalidated."
+}

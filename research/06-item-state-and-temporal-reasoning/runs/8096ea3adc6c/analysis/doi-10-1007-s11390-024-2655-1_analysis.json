@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-1007-s11390-024-2655-1",
+ "title": "Document-Level Event Factuality Identification via Reinforced Semantic Learning Network",
+ "research_question": "Can document-level event factuality be identified end to end by jointly encoding event and document semantics while learning to select the sentences and tokens most relevant to the target event?",
+ "methodology": "The paper formulates document-level event factuality identification as assigning a document-wide factuality value to a target event even when sentences mentioning or discussing it carry differing local factuality. RSLN uses multi-granularity hierarchical semantic encoding together with hierarchical reinforcement learning to select event-relevant sentences and tokens while filtering irrelevant or noisy text. Its encoders combine event information, intra-sentence semantics, and document-topic information before producing the document-level prediction. The model is evaluated on the newly annotated English and Chinese ExDLEF corpus and compared with multiple neural baselines, with additional component ablations and text-selection analyses.",
+ "key_findings": [
+  {
+   "finding": "The paper explicitly observes that sentence-level factualities concerning an event may differ within a document while defining the document-level factuality as a single value.",
+   "evidence_type": "supported",
+   "section": "Research background and problem definition"
+  },
+  {
+   "finding": "On ExDLEF, RSLN reports macro/micro F1 of 67.42/77.48 for English and 75.74/78.29 for Chinese, outperforming the reported comparison systems.",
+   "evidence_type": "supported",
+   "section": "Results, Table 4"
+  },
+  {
+   "finding": "Ablation results identify the event encoder and topic-context encoder as two of the most important components: removing them produces substantial macro- and micro-F1 losses in both languages.",
+   "evidence_type": "supported",
+   "section": "Ablation study, Table 6"
+  },
+  {
+   "finding": "Sentence selection has a larger measured effect than token selection: removing SPNet reduces macro-F1 by 4.07 points in English and 4.64 in Chinese, compared with 1.35 and 0.85 points when TPNet is removed.",
+   "evidence_type": "supported",
+   "section": "Ablation study, Table 6"
+  },
+  {
+   "finding": "ExDLEF contains 5,030 English instances and 5,150 Chinese instances across Uu, CT-, PS-, PS+, and CT+ factuality categories.",
+   "evidence_type": "supported",
+   "section": "Table 2"
+  },
+  {
+   "finding": "The paper identifies insufficient direct evaluation of selected-sentence quality and limited deep interpretability of the model as an experimental limitation.",
+   "evidence_type": "supported",
+   "section": "Results and limitations"
+  }
+ ],
+ "limitations": [
+  "The model assigns one document-level factuality value, so differing local mentions are collapsed rather than preserved as an explicit temporal revision trajectory.",
+  "The authors identify inadequate direct evaluation of selected sentences and limited deep interpretability as limitations.",
+  "Multi-event document-level factuality and cross-document factuality are left for future work.",
+  "ExDLEF is highly imbalanced; for example, the English portion contains 3,532 CT+ instances but only 42 Uu and 51 PS- instances.",
+  "The main reported per-class F1 comparisons emphasize CT-, PS+, and CT+, giving much less empirical evidence about the rare factuality categories.",
+  "The formulation does not explicitly encode workflow transitions such as planned-to-confirmed, planned-to-canceled, completed-to-corrected, or superseded-by-later-message.",
+  "Performance on workplace email and dialogue is not evaluated."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "document_level_unique_state": 0.99,
+  "main_f1_results": 0.99,
+  "event_topic_encoder_importance": 0.99,
+  "sentence_selection_effect": 0.99,
+  "exdlef_size": 0.99,
+  "interpretability_limitation": 0.99
+ },
+ "raw_claims": [
+  "Document-level event factuality is defined from the perspective of the whole document.",
+  "Sentence-level factuality values for the same target event may differ within a document.",
+  "RSLN selects relevant sentences and tokens using hierarchical reinforcement learning.",
+  "The representation combines event, sentence-level, and document-level semantic information.",
+  "ExDLEF contains both English and Chinese sub-corpora.",
+  "The English ExDLEF portion contains 5,030 instances and the Chinese portion contains 5,150.",
+  "RSLN reaches macro-F1 67.42 and micro-F1 77.48 on the English ExDLEF evaluation.",
+  "RSLN reaches macro-F1 75.74 and micro-F1 78.29 on the Chinese ExDLEF evaluation.",
+  "Event and topic-context encoders make large contributions in the ablation study.",
+  "Sentence selection has a larger ablation effect than token selection.",
+  "The paper does not precisely evaluate the performance of its selected sentences or provide deep model interpretability.",
+  "The authors identify multi-event, evidential, and cross-document event factuality as future research directions."
+ ],
+ "source_url": "https://jcst.ict.ac.cn/cn/article/doi/10.1007/s11390-024-2655-1",
+ "access": "full_text"
+}

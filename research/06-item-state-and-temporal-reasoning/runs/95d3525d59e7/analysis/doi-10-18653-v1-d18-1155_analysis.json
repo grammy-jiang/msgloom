@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-18653-v1-d18-1155",
+ "title": "Temporal Information Extraction by Predicting Relative Time-lines",
+ "research_question": "Can temporal information be extracted more efficiently and consistently by directly predicting relative event time-lines instead of first predicting pairwise temporal relations?",
+ "methodology": "The authors represent each temporal entity by a predicted start point and duration, yielding a relative time-line whose start and end points imply temporal relations. They introduce two direct models, a context-independent S-TLM and a contextual BiRNN-based C-TLM, plus TL2RTL, an indirect method that converts predicted TLinks into a consistent time-line. Three losses translate TimeML interval annotations into point-algebra constraints and are used to train the models. Evaluation uses TempEval-3-derived and TimeBank-Dense-derived splits and reports precision, recall, and F-score over temporal relations recovered from the predicted time-lines.",
+ "key_findings": [
+  {
+   "finding": "Direct relative time-line prediction can avoid pairwise temporal-relation extraction while producing temporally consistent outputs with linear prediction complexity in the number of entities.",
+   "evidence_type": "supported",
+   "section": "1 Introduction; 3 Models; 8 Conclusions"
+  },
+  {
+   "finding": "On the TE3 evaluation split, contextual C-TLM with the regular time-line loss achieved F=56.1, exceeding all reported TL2RTL variants, whose best F-score was 52.8.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "On the smaller TimeBank-Dense-derived split, indirect TL2RTL performed better than C-TLM, with the best TL2RTL result reaching F=62.3 while the best C-TLM result was F=58.4.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "The regular time-line loss was the most robust of the tested losses and was also cheaper and more directly interpretable than losses requiring scores for every relation type.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "The contextual direct model appears better than TL2RTL at correctly positioning temporally related entities that are farther apart in the text, consistent with reduced dependence on locally pruned pairwise TLink extraction.",
+   "evidence_type": "supported",
+   "section": "6 Error Analysis"
+  },
+  {
+   "finding": "The single-time-line representation does not explicitly separate actual, negated, hypothetical, expected, and opinionated events, which the discussion identifies as potentially belonging on separate temporal axes.",
+   "evidence_type": "supported",
+   "section": "7 Discussion"
+  },
+  {
+   "finding": "The proposed models produce relative ordering and inclusion information but do not yet map event positions or durations to absolute calendar times or physical durations.",
+   "evidence_type": "supported",
+   "section": "1 Introduction; 8 Conclusions"
+  }
+ ],
+ "limitations": [
+  "The models assume temporal entities have already been detected; entity-recognition errors are not evaluated end to end.",
+  "The output is a relative time-line and cannot yet be mapped directly to calendar dates or absolute durations.",
+  "All events are placed on one time-line, although factual, negated, hypothetical, expected, and opinionated events may require separate time axes.",
+  "The smaller TimeBank-Dense-derived training split appears insufficient for C-TLM to exploit contextual parameters fully.",
+  "Simultaneous relations are particularly difficult, partly because they often involve event coreference.",
+  "The paper does not directly benchmark wall-clock prediction speed between direct and indirect implementations because implementation differences would make such a comparison unfair.",
+  "Evaluation against conventional temporal-relation systems is indirect because complete time-lines and sparse pairwise TLink predictions have different output structures."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "linear_direct_timeline_prediction": 0.99,
+  "C-TLM_outperforms_TL2RTL_on_TE3": 0.99,
+  "TL2RTL_better_on_small_TD_split": 0.99,
+  "regular_timeline_loss_robust": 0.96,
+  "better_long_distance_positioning": 0.9,
+  "single_axis_factuality_limitation": 0.99,
+  "relative_not_absolute_time": 0.99
+ },
+ "raw_claims": [
+  "Temporal information extraction is commonly decomposed into entity detection, temporal-relation extraction, and time-line construction.",
+  "The proposed direct paradigm skips explicit temporal-relation extraction and predicts entity start points and durations from text.",
+  "S-TLM predicts each entity's placement without contextual sequence encoding.",
+  "C-TLM uses bidirectional recurrent networks to incorporate textual context when predicting starts and durations.",
+  "The proposed losses convert TimeML-style interval relations into constraints over interval endpoints.",
+  "TL2RTL optimizes entity positions so that a predicted set of temporal links is satisfied as closely as possible.",
+  "More than 96 percent of the extracted TLinks were satisfied by the optimized TL2RTL time-lines despite some inconsistent input graphs.",
+  "C-TLM with the regular loss reached an F-score of 56.1 on TE3, compared with 52.3 for the corresponding TL2RTL variant.",
+  "The authors attribute some of the higher scores on the TimeBank-Dense-derived split to its denser annotation and different class balance.",
+  "Simultaneous relations were the most frequently violated relation type in the error analysis.",
+  "Correct relations unique to C-TLM involved event pairs farther apart in the text on average than relations correctly handled by both approaches.",
+  "The current system represents temporal entities on one relative axis rather than explicitly modeling factuality or modality-specific axes.",
+  "Code for the proposed methods is stated to be available."
+ ],
+ "source_url": "https://arxiv.org/html/1808.09401",
+ "access": "full_text"
+}

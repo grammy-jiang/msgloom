@@ -1,0 +1,408 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-2362cbe877",
+   "title": "ProPara-CRTS: Canonical Referent Tracking for Reliable Evaluation of Entity State Tracking in Process Narratives",
+   "research_question": "Can a canonical referent-tracking representation and targeted reannotation make ProPara a more reliable benchmark for longitudinal entity-state tracking while improving model training and evaluation without changing model architectures?",
+   "methodology": "The authors define Canonical Referent Tracking for States (CRTS) around unique immutable discourse referents, temporally atomic transitions, and complete state accounting at every process step. They manually reannotate ProPara using minimal paraphrasing to disambiguate referents, split or merge temporally problematic steps, add missing implicit transitions, and remove non-process paragraphs. Quality control uses trained graduate annotators and a dual-annotation sample, after which the authors compare prompt-based GPT models, a fine-tuned Llama model, and supervised state-tracking systems on the original and revised annotations, including cross-dataset training tests.",
+   "key_findings": [
+    {
+     "finding": "The CRTS representation separates surface mentions from immutable underlying referents and requires an explicit state for each referent at each process step, directly reducing ambiguity in longitudinal state chains.",
+     "evidence_type": "supported",
+     "section": "Sections 3 and 4.1"
+    },
+    {
+     "finding": "The reannotation identified 789 errors, with incomplete state accounting accounting for 357 cases and referent-uniqueness problems for 311, showing that missing transitions and referential ambiguity were major sources of label noise.",
+     "evidence_type": "supported",
+     "section": "Section 4.3, Table 1"
+    },
+    {
+     "finding": "On a 100-paragraph dual-annotation sample, state-label agreement reached Cohen's kappa of 0.72 and location agreement reached pairwise F1 of 0.56, indicating meaningful but nontrivial residual annotation difficulty.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Across the main model comparisons, CRTS generally increased sentence-level or document-level F1, including improvements for fine-tuned Llama 3.1, MeeT, and CGLI.",
+     "evidence_type": "supported",
+     "section": "Section 5, Tables 2 and 3"
+    },
+    {
+     "finding": "The paper's broad statement that CRTS improves F1 in all settings except GPT-4o-mini sentence-level evaluation is not fully consistent with Table 2, where GPT-4o direct prompting has document-level F1 of 58.8 on CRTS versus 59.6 on original ProPara.",
+     "evidence_type": "contradicted",
+     "section": "Section 5, Table 2"
+    },
+    {
+     "finding": "Models trained on CRTS annotations also outperform counterparts trained on original ProPara when both are evaluated on CRTS, including on the shared test-paragraph subset, supporting the claim that benefits are not merely an artifact of changed test composition.",
+     "evidence_type": "supported",
+     "section": "Section 7.1, Tables 4 and 5"
+    },
+    {
+     "finding": "Qualitative examples show that erroneous or incomplete original gold annotations can reward predictions that are factually wrong or miss implicit state changes, whereas canonicalized annotations better preserve process continuity.",
+     "evidence_type": "supported",
+     "section": "Section 7.2"
+    }
+   ],
+   "limitations": [
+    "Only 100 paragraphs were independently reannotated by multiple annotators for the reported agreement analysis; most of the corpus did not receive the same dual-annotation treatment.",
+    "The same annotation effort revised both paragraph wording and state labels, which the authors identify as a possible source of annotation bias.",
+    "Referent resolution, implicit transitions, and locations still require subjective judgments, so residual annotation errors are possible.",
+    "The benchmark consists of procedural process narratives rather than workplace messages, work-item discussions, or explicit revision histories, so distinctions such as reopening, supersession, or claimed completion are not directly modeled.",
+    "CRTS represents state evolution of entities but does not provide a general discourse taxonomy for correction, supplementation, contradiction, or independently verified completion."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "canonical_referent_schema": 0.99,
+    "error_taxonomy": 0.99,
+    "annotation_agreement": 0.99,
+    "general_model_improvement": 0.98,
+    "table_prose_mismatch": 0.99,
+    "cross_dataset_generalization": 0.98,
+    "gold_label_failure_examples": 0.96
+   },
+   "raw_claims": [
+    "CRTS maps each surface mention to a unique immutable discourse referent.",
+    "The revised corpus contains 452 process paragraphs and 13,417 state annotations.",
+    "The authors report 789 corrected annotation errors across their error taxonomy.",
+    "Missing implicit transitions are the largest single error subtype reported in Table 1.",
+    "The dual-annotation sample yields state-label kappa of 0.72 and location-agreement F1 of 0.56.",
+    "Fine-tuned Llama 3.1, MeeT, and CGLI obtain higher reported scores on CRTS than on the original benchmark in the main comparison.",
+    "CGLI sentence-level F1 rises from 65.4 to 69.5 and document-level F1 from 72.4 to 75.1 in the reported comparison.",
+    "GPT-4o direct prompting has lower document-level F1 on CRTS than on original ProPara despite the paper's broader summary of gains.",
+    "Training on CRTS improves performance on the shared test-paragraph subset for all three cross-dataset model comparisons.",
+    "Qualitative cases demonstrate that omissions in the original gold states can make incorrect state predictions appear correct."
+   ],
+   "source_url": "https://aclanthology.org/2025.iwcs-main.22.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1805.06975",
+   "title": "Tracking State Changes in Procedural Text: A Challenge Dataset and Models for Process Paragraph Comprehension",
+   "research_question": "Can models reliably infer when entities are created, destroyed, or moved and where they are located across natural procedural paragraphs, and does global process modeling outperform approaches developed for shorter or synthetic reasoning tasks?",
+   "methodology": "The authors construct ProPara from 488 human-written paragraphs covering 183 process prompts and annotate entity existence and location over successive sentences. Expert annotators establish participant and creation/destruction grids, while multiple crowd workers provide location annotations; train, development, and test partitions are separated by process prompt. They compare prior neural reasoning baselines and feature/rule systems with ProLocal, which predicts sentence-local transitions followed by symbolic propagation, and ProGlobal, which jointly models the paragraph and recurrent entity state. Evaluation decomposes performance into whether a state changes, when it changes, and where the entity is located.",
+   "key_findings": [
+    {
+     "finding": "ProPara provides dense longitudinal annotations of entity existence and location over natural process descriptions, enabling evaluation of complete state trajectories rather than isolated sentence classification.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "ProGlobal substantially outperforms ProLocal and the earlier baselines on the aggregate state-tracking metrics, with reported macro scores of 45.08 for ProGlobal and 34.50 for ProLocal.",
+     "evidence_type": "supported",
+     "section": "Section 5, Table 3"
+    },
+    {
+     "finding": "The largest gap between global and local modeling appears on locating entities after changes: ProGlobal scores 35.9 on the location category versus 10.35 for ProLocal.",
+     "evidence_type": "supported",
+     "section": "Section 5, Table 3"
+    },
+    {
+     "finding": "About 30% of final locations are not explicitly stated in the sentence where the state change occurs, providing a structural reason that sentence-local extraction is insufficient for many examples.",
+     "evidence_type": "supported",
+     "section": "Section 5, error analysis"
+    },
+    {
+     "finding": "Human performance remains far above the evaluated models, with a reported macro score of 80.76 compared with 45.08 for ProGlobal, showing substantial remaining difficulty.",
+     "evidence_type": "supported",
+     "section": "Section 5, Table 3"
+    },
+    {
+     "finding": "In a manual analysis of 100 ProGlobal development errors, implicit creation or destruction accounts for 37% and location errors for 27%, highlighting the importance of implicit and cross-sentence state transitions.",
+     "evidence_type": "supported",
+     "section": "Section 5, error analysis"
+    },
+    {
+     "finding": "A quarter of the test vocabulary is unseen in train or development data, making lexical generalization an explicit challenge in the benchmark.",
+     "evidence_type": "supported",
+     "section": "Section 5, analysis"
+    }
+   ],
+   "limitations": [
+    "The represented state is centered on entity existence and location rather than the richer lifecycle of workplace work items, decisions, assignments, or completion claims.",
+    "The corpus is composed of science-oriented process descriptions rather than conversational or operational communication, so transfer to email, chat, incident logs, or ticket histories is not demonstrated.",
+    "Average pairwise agreement for location annotation is reported as 0.67, and the human upper-bound results indicate substantial ambiguity remains.",
+    "Twenty-five percent of test-set vocabulary is unseen in training and development data, increasing lexical generalization difficulty.",
+    "ProLocal can accumulate cascading prediction errors through its symbolic propagation, while the forward recurrent approaches do not naturally exploit backward temporal inference.",
+    "The dataset does not explicitly label discourse relations such as correction, supersession, contradiction, reopening, or claimed versus independently confirmed completion."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "longitudinal_dataset": 0.99,
+    "global_beats_local": 0.99,
+    "location_advantage": 0.99,
+    "nonlocal_location_evidence": 0.98,
+    "human_model_gap": 0.99,
+    "error_distribution": 0.98,
+    "unseen_vocabulary": 0.98
+   },
+   "raw_claims": [
+    "ProPara contains 488 paragraphs describing 183 different processes.",
+    "The corpus contains 81,345 annotations concerning entity existence and location.",
+    "Process prompts are separated across train, development, and test partitions so test processes are unseen during training.",
+    "ProGlobal obtains a reported macro score of 45.08, compared with 34.50 for ProLocal.",
+    "ProGlobal's reported score for predicting where changes occur is 35.9, compared with 10.35 for ProLocal.",
+    "Roughly 30% of end locations are not explicitly mentioned in the sentence containing the corresponding state change.",
+    "Human macro performance is reported as 80.76 on the benchmark.",
+    "Among 100 analyzed ProGlobal errors, 37% involve implicit creation or destruction and 27% involve location.",
+    "The authors report that 25% of test vocabulary is unseen in the training and development partitions.",
+    "The results indicate that maintaining a global representation of process state is more effective than relying only on sentence-local decisions plus propagation."
+   ],
+   "source_url": "https://arxiv.org/html/1805.06975",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2608.20116",
+   "title": "When Text and Numbers Disagree: Evidence Arbitration in Large Language Models",
+   "research_question": "How do instruction-tuned language models arbitrate between conflicting textual, numerical, temporally recent, reliability-marked, and tool-generated evidence when exactly one source is correct?",
+   "methodology": "The authors create a controlled synthetic binary forecasting benchmark in which a latent trajectory determines whether future risk is above or below a threshold. Evidence can be presented as a numerical time series, a natural-language summary, or an additional simulated tool forecast, and conflict conditions are constructed so exactly one source agrees with ground truth. Four experiments isolate modality preference, temporal recency, explicit reliability cues, and disagreement with an external tool, while presentation order is varied. Seven instruction-tuned models from the Qwen, Gemma, Llama, and Mistral families are evaluated primarily by classification accuracy across three seeds.",
+   "key_findings": [
+    {
+     "finding": "Models exhibit model-specific modality priors even when textual and numerical evidence are designed to be equally reliable: Qwen models tend toward numerical evidence, while Llama and Mistral show stronger textual preferences and Gemma is more balanced.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "Evidence presentation order materially affects arbitration, with later evidence frequently exerting greater influence and textual evidence benefiting especially from being placed last.",
+     "evidence_type": "supported",
+     "section": "Sections 4.1 and 4.2"
+    },
+    {
+     "finding": "Temporal recency is a stronger and more consistently used arbitration cue than an explicit indication that one source is unreliable.",
+     "evidence_type": "supported",
+     "section": "Sections 4.2 and 4.3"
+    },
+    {
+     "finding": "Conflicting tool forecasts produce the strongest degradation among the tested conflict types, and some model configurations follow the tool despite the observed context being perfectly informative.",
+     "evidence_type": "supported",
+     "section": "Section 4.4"
+    },
+    {
+     "finding": "Increasing model size does not monotonically improve conflict arbitration in the principal experiments; larger Qwen variants can still make systematic source-selection errors under conflict.",
+     "evidence_type": "supported",
+     "section": "Sections 4.1 and 4.5"
+    },
+    {
+     "finding": "Changes to answer labels and task domain can alter conflict behavior, indicating that arbitration is not entirely invariant to superficial task formulation.",
+     "evidence_type": "supported",
+     "section": "Section 4.5"
+    },
+    {
+     "finding": "The combined experiments support the authors' interpretation that current models often use heuristic source arbitration rather than consistently integrating evidence according to explicit reliability and provenance.",
+     "evidence_type": "supported",
+     "section": "Section 5"
+    }
+   ],
+   "limitations": [
+    "All principal experiments use synthetically generated trajectories and templated textual summaries rather than naturally occurring workplace or operational records.",
+    "The task is binary forecasting, so it does not directly represent multi-state work-item lifecycles or open-ended revision semantics.",
+    "The benchmark guarantees that exactly one conflicting source is correct, whereas real operational conflicts may contain partial truth, unresolved ambiguity, or multiple compatible interpretations.",
+    "No real-world high-stakes deployment study is presented, and the authors explicitly caution against treating the results as deployment guidance.",
+    "The study evaluates evidence arbitration rather than longitudinal discourse relations such as supersession, correction, supplementation, reopening, or completion verification.",
+    "No public release of the experiment code or generated benchmark dataset was identified in the paper text that was read."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "modality_priors": 0.98,
+    "position_effect": 0.97,
+    "recency_over_reliability": 0.98,
+    "tool_overreliance": 0.99,
+    "nonmonotonic_scale": 0.96,
+    "formulation_sensitivity": 0.94,
+    "heuristic_arbitration": 0.95
+   },
+   "raw_claims": [
+    "The benchmark deliberately creates cases in which textual and numerical evidence disagree while exactly one source matches the ground truth.",
+    "The main experiments distinguish modality preference, temporal recency, explicit reliability, and conflicting tool forecasts.",
+    "The evaluated models generally perform well when only one evidence source is presented.",
+    "Different model families exhibit different preferences for text versus numerical sequences under direct conflict.",
+    "Placing a source later in the prompt can make the model more likely to follow it.",
+    "Recency is used more consistently than explicit reliability warnings when sources disagree.",
+    "A conflicting simulated tool forecast can dominate otherwise informative evidence for some models.",
+    "Several Qwen and Gemma conditions show very large accuracy degradation in the presence of a conflicting tool forecast.",
+    "Larger parameter count does not guarantee better evidence arbitration in the main conflict experiments.",
+    "Changing answer choices or domain framing can change conflict accuracy, revealing sensitivity beyond the substantive evidence."
+   ],
+   "source_url": "https://arxiv.org/html/2608.20116",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2406.00197",
+   "title": "Re3: A Holistic Framework and Dataset for Modeling Collaborative Document Revision",
+   "research_question": "How can document revisions, peer-review requests, and revision summaries be represented and annotated jointly so that collaborative revision behavior and NLP systems can be studied across edit granularity, action, intent, and cross-document relationships?",
+   "methodology": "Re3 represents successive document versions, reviews, and revision summaries as structured graphs connected by cross-document relations. Edits are labeled by granularity, operation, and intent, while review requests can be linked to one or more realized edits and summary sentences can be linked back to the edits they describe. The authors build the dataset from scientific-paper revision resources, use automatic prealignment followed by human annotation, and report inter-annotator agreement for edit labels and several relation tasks. They then analyze revision patterns and evaluate illustrative automation tasks including edit-intent classification, edit summarization, revision alignment, and review-request extraction.",
+   "key_findings": [
+    {
+     "finding": "Re3 explicitly links a review request to the concrete edits that address it and allows one request to correspond to multiple edits, providing a direct representation of requested versus realized revision.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "The dataset contains 314 document-revision pairs and annotations at section, paragraph, sentence, and subsentence granularity, allowing revision history to be analyzed hierarchically rather than as a flat diff.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "Modify and Add are the dominant edit operations, and Fact/Evidence is the most common edit intent, showing that many revisions change substantive content rather than only surface form.",
+     "evidence_type": "supported",
+     "section": "Section 5, edit-distribution analysis"
+    },
+    {
+     "finding": "More than half of explicit review suggestions are implemented, while 18.47% of implemented review requests are realized through multiple sentence edits, demonstrating that request-to-revision alignment is frequently one-to-many.",
+     "evidence_type": "supported",
+     "section": "Section 5, review-revision analysis"
+    },
+    {
+     "finding": "Automatic intent classification remains imperfect: the best reported joint classification result reaches 0.70 accuracy and 0.69 macro F1, with Claim and Fact/Evidence among the difficult distinctions.",
+     "evidence_type": "supported",
+     "section": "Section 6, edit-intent classification"
+    },
+    {
+     "finding": "GPT-4 revision summaries are less comprehensive than the human reference summaries, with reported comprehensiveness of 79.09 versus 98.82, and the analysis estimates that GPT-4 misses about 21% of edits.",
+     "evidence_type": "supported",
+     "section": "Section 6, document edit summarization"
+    },
+    {
+     "finding": "The paper demonstrates high automatic revision-alignment performance, with the reported Llama 2 alignment experiment reaching 0.97 accuracy, suggesting that many version-to-version edit links can be recovered reliably in this dataset.",
+     "evidence_type": "supported",
+     "section": "Section 6, revision alignment"
+    },
+    {
+     "finding": "The response-summary component does not establish whether real authors' textual claims of completion match their edits because the dataset substitutes human-generated edit summaries for unavailable authentic author responses.",
+     "evidence_type": "supported",
+     "section": "Limitations"
+    }
+   ],
+   "limitations": [
+    "The data comes from English-language scientific publishing rather than workplace email, chat, operational incidents, tickets, or project-management systems.",
+    "Generalization to new languages, domains, and revision workflows is not evaluated.",
+    "Because authentic author response summaries were unavailable, annotators generated edit summaries; therefore the dataset cannot directly measure discrepancies between a real author's claimed completion and independently observed changes.",
+    "The demonstrated NLP tasks are illustrative rather than a comprehensive implementation of every relation in the framework.",
+    "The model comparison is selective and does not exhaustively compare smaller fine-tuned models or all contemporary language models.",
+    "Although Re3 models requested and realized revisions, it does not supply a dedicated semantic taxonomy for supersession, contradiction, reopening, or unresolved conflict across arbitrary work-item histories."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "review_edit_linkage": 0.99,
+    "hierarchical_revision_structure": 0.99,
+    "edit_distribution": 0.98,
+    "one_to_many_realization": 0.98,
+    "intent_classification": 0.99,
+    "summary_coverage_gap": 0.99,
+    "revision_alignment": 0.98,
+    "synthetic_response_limitation": 0.99
+   },
+   "raw_claims": [
+    "Re3 jointly represents an original document, its revision, review material, and a revision summary.",
+    "Its edit taxonomy includes Add, Delete, Modify, Merge, Split, and Fusion operations.",
+    "Edit intent labels include Grammar, Clarity, Fact/Evidence, Claim, and Other.",
+    "The dataset contains 314 document-revision pairs.",
+    "The authors report 11,648 sentence-level edits and additional annotations at subsentence, paragraph, and section levels.",
+    "Fact/Evidence is the largest reported intent category, at 45.02% of edits.",
+    "More than half of explicit review suggestions are reported as implemented.",
+    "The authors report that 18.47% of realized review requests require multiple sentence edits.",
+    "The best reported joint edit-intent classification result is 0.70 accuracy and 0.69 macro F1.",
+    "GPT-4 summaries receive 79.09 for comprehensiveness versus 98.82 for the human summaries, and the authors estimate that the model omits about 21% of edits.",
+    "The revision-alignment experiment reports accuracy of 0.97.",
+    "Human-generated summaries are used in place of authentic author revision responses because the required response data was unavailable."
+   ],
+   "source_url": "https://arxiv.org/html/2406.00197",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1016-0004-3702-86-90080-9",
+   "title": "An assumption-based TMS",
+   "research_question": "How can a truth-maintenance system represent and reason over many mutually incompatible assumption contexts simultaneously while preserving derivational support and avoiding repeated backtracking, context switching, and retraction?",
+   "methodology": "The paper develops the Assumption-based Truth Maintenance System as a formal reasoning architecture rather than conducting a controlled empirical benchmark. Each derived datum is associated with a label containing minimal consistent assumption environments under which it holds, while inconsistent assumption combinations are recorded as nogoods. The author explains the algorithms through formal definitions and worked examples, analyzes computational behavior and worst cases, and discusses implementation techniques such as bit-vector environment representations, hashing, specialized contradiction processing, caching, and garbage collection.",
+   "key_findings": [
+    {
+     "finding": "An ATMS label records minimal consistent assumption environments supporting a datum, thereby preserving explicit provenance for which combinations of assumptions make each conclusion valid.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "Contradictory assumption combinations are stored as nogoods, and conclusions depending on those combinations are invalidated without forcing unrelated conclusions or alternative contexts to disappear.",
+     "evidence_type": "supported",
+     "section": "Sections 4 and 5"
+    },
+    {
+     "finding": "Mutually contradictory candidate solutions can coexist in separate consistent environments, allowing reasoning to continue without selecting a single global current belief state.",
+     "evidence_type": "supported",
+     "section": "Section 5"
+    },
+    {
+     "finding": "Context membership can be determined from assumption-set inclusion, making repeated context switching unnecessary for applications that need to explore multiple alternatives.",
+     "evidence_type": "supported",
+     "section": "Sections 4 and 5"
+    },
+    {
+     "finding": "Directly retracting justifications is described as correct but very inefficient because it can trigger recursive recomputation of labels and previously recorded nogoods; representing defeasibility through assumptions is preferred.",
+     "evidence_type": "supported",
+     "section": "Section 4.9"
+    },
+    {
+     "finding": "The formalism does not eliminate combinatorial worst cases: with n independent assumptions there can be 2^n possible environments, so practical efficiency depends on storing only minimal environments and aggressively pruning inconsistent supersets.",
+     "evidence_type": "supported",
+     "section": "Section 4.8"
+    },
+    {
+     "finding": "A straightforward implementation is too expensive because of repeated set-union and subset operations, motivating specialized representations and caching strategies discussed in the implementation section.",
+     "evidence_type": "supported",
+     "section": "Section 6"
+    }
+   ],
+   "limitations": [
+    "The paper is a symbolic truth-maintenance architecture, not a natural-language model, and it does not identify discourse acts such as correction, supplementation, supersession, reopening, or completion claims from text.",
+    "Its logical notion of contradiction is defined over assumptions and justifications; mapping messy workplace statements into those structures is outside the paper's scope.",
+    "The number of possible assumption environments is exponential in the worst case.",
+    "Direct justification retraction can be computationally expensive and is explicitly discouraged as a routine mechanism.",
+    "Naive implementations incur substantial set-operation overhead and require specialized data structures and caching for practical use.",
+    "The paper provides worked examples and implementation experience rather than a modern large-scale empirical benchmark with standardized predictive metrics.",
+    "The guarantees provided by labels are relative to the current justification network; adding new justifications can change the set of relevant contexts."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "minimal_environment_provenance": 0.99,
+    "nogood_conflict_localization": 0.99,
+    "coexisting_alternatives": 0.99,
+    "context_switching": 0.97,
+    "retraction_cost": 0.99,
+    "exponential_worst_case": 0.99,
+    "implementation_optimization": 0.98
+   },
+   "raw_claims": [
+    "An ATMS associates each datum with the minimal assumption environments in which that datum is derivable.",
+    "A consistent environment together with everything derivable from it defines a context.",
+    "An inconsistent assumption environment is represented as a nogood, and any superset of that environment is also inconsistent.",
+    "Different mutually incompatible solutions can remain represented simultaneously rather than forcing one global choice.",
+    "The system can test whether a datum holds in a context by checking whether a supporting environment is contained in the context's assumptions.",
+    "Contradictions invalidate conclusions that depend on the conflicting assumptions without requiring unrelated information to be discarded.",
+    "Direct retraction of a justification can require expensive recursive label recomputation.",
+    "A defeasible justification can instead be conditioned on an assumption that is later contradicted.",
+    "With n assumptions, as many as 2^n environments are conceivable in the worst case.",
+    "Efficient implementations use compact environment encodings, uniqueness tables, nogood handling, caches, and garbage collection rather than naive set manipulation."
+   ],
+   "source_url": "https://www.researchgate.net/profile/Johan-Kleer/publication/220546361_An_assumption-based_TMS/links/5c0df74b4585157ac1b6bf72/An-assumption-based-TMS.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

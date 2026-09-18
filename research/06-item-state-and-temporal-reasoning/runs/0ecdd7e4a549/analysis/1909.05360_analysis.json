@@ -1,0 +1,69 @@
+{
+ "paper_id": "1909.05360",
+ "title": "Joint Event and Temporal Relation Extraction with Shared Representations and Structured Prediction",
+ "research_question": "Can event identification and temporal-relation extraction be learned jointly with shared representations and global structural constraints to reduce pipeline error propagation?",
+ "methodology": "The authors formulate a document as a graph whose nodes are candidate events and whose edges carry temporal-relation labels, including NONE when a candidate pair does not contain two events. BERT-based contextual representations and a shared neural encoder support single-task, multi-task, pipeline-joint, and structured-joint variants. The structured model performs joint inference with integer linear programming and neural structured-SVM training while enforcing event-relation consistency, symmetry, and temporal transitivity constraints. Models are evaluated end-to-end on TB-Dense and MATRES using micro-averaged event and temporal-relation metrics.",
+ "key_findings": [
+  {
+   "finding": "The structured joint model improves end-to-end temporal-relation F1 over the reported baselines by 10.0 points on TB-Dense and 6.8 points on MATRES, reaching 49.4 and 59.6 F1 respectively.",
+   "evidence_type": "supported",
+   "section": "6.1 End-to-End Relation Extraction"
+  },
+  {
+   "finding": "The same structured model improves event-extraction F1 over the baselines by 3.5 points on TB-Dense and 2.6 points on MATRES.",
+   "evidence_type": "supported",
+   "section": "6.2 Event Extraction"
+  },
+  {
+   "finding": "Sharing representations between event and relation tasks provides more benefit on heterogeneous TB-Dense events than on MATRES, where all annotated events are verbs and multi-task gains are smaller.",
+   "evidence_type": "supported",
+   "section": "6.2 Event Extraction / 6.3 Relation Extraction with Gold Events"
+  },
+  {
+   "finding": "The event-relation consistency constraint accounts for most of the measured structural-inference gain, adding 0.9 F1 on TB-Dense and 1.0 on MATRES, while the added transitivity constraint contributes no gain on TB-Dense and only 0.1 on MATRES.",
+   "evidence_type": "supported",
+   "section": "6.4 Discussion - Global Constraints"
+  },
+  {
+   "finding": "Severe class imbalance remains problematic: the neural model concentrates on dominant relations and fails to make any correct SIMULTANEOUS predictions in the class-weight experiment even when that class is weighted up to ten times.",
+   "evidence_type": "supported",
+   "section": "6.4 Discussion - Label Imbalance"
+  }
+ ],
+ "limitations": [
+  "Rare temporal labels remain difficult to learn, with especially poor results for SIMULTANEOUS and other minority relations.",
+  "Global transitivity constraints provide little additional benefit in the reported structured model, partly because NONE predictions can prevent transitivity rules from applying.",
+  "Event-detection mistakes still propagate into relation decisions despite joint inference because missed true events force associated candidate relations to NONE.",
+  "The structured model relies on ILP and the Gurobi optimizer, adding inference and deployment complexity.",
+  "The task predicts event existence and pairwise temporal order but does not distinguish workplace lifecycle states such as planned, confirmed, revoked, or completed, nor does it model explicit contradictory revisions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "joint_relation_f1_gain": 0.99,
+  "event_f1_gain": 0.99,
+  "shared_representation_effect": 0.96,
+  "consistency_constraint_gain": 0.99,
+  "transitivity_gain_marginal": 0.99,
+  "minority_label_problem": 0.99
+ },
+ "raw_claims": [
+  "The model jointly predicts whether tokens are events and which temporal relations hold between event pairs.",
+  "Candidate relations involving a predicted non-event are constrained to NONE.",
+  "BERT contextual representations are shared across event and relation prediction components.",
+  "The structured model uses global integer-linear-programming inference.",
+  "Symmetry and transitivity are encoded as global constraints over temporal relations.",
+  "The structured joint system reaches 49.4 end-to-end relation F1 on TB-Dense.",
+  "The structured joint system reaches 59.6 end-to-end relation F1 on MATRES.",
+  "Event-relation consistency contributes substantially more than the transitivity constraint in the ablation study.",
+  "All MATRES events in the experimental setup are verbs.",
+  "Class imbalance makes minority temporal relations difficult for the neural model.",
+  "Incorrect event decisions remain a major source of end-to-end temporal-relation errors.",
+  "A public repository provides the code and processed TB-Dense and MATRES data used by the implementation."
+ ],
+ "source_url": "https://arxiv.org/html/1909.05360",
+ "access": "full_text"
+}

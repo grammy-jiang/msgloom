@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1162-tacl-a-00182",
+ "title": "Dense Event Ordering with a Multi-Pass Architecture",
+ "research_question": "How should temporal-ordering systems and evaluation change when they must label densely connected event graphs rather than only a sparse set of preselected event pairs?",
+ "methodology": "The paper introduces TimeBank-Dense, which densely annotates local temporal relations among events, time expressions, and document creation time, and uses it to evaluate a multi-pass system called CAEVO. CAEVO is a precision-ranked cascade of twelve rule-based and machine-learned sieves, with each sieve receiving the graph produced by earlier sieves. Transitive closure is applied after successive passes so earlier high-precision decisions constrain later decisions and infer additional edges. The system is compared with retrained TempEval-3 systems and is analyzed through component, edge-type, and relation-type ablations.",
+ "key_findings": [
+  {
+   "finding": "TimeBank-Dense contains 12,715 labeled temporal relations over 36 TimeBank newspaper articles and produces strongly connected local event-time graphs by requiring annotation of all relevant pairs within the same or neighboring sentences plus document-time links.",
+   "evidence_type": "supported",
+   "section": "3 TimeBank-Dense: A Dense Ordering"
+  },
+  {
+   "finding": "CAEVO achieves 50.7 F1 on the dense test setting, a 14% relative improvement over the retrained top TempEval-3 systems used for comparison.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "Global transitive inference is a major contributor: adding transitivity raises the ablated CAEVO configuration from 32.1 to 39.8 F1, and the authors estimate that transitive inference alone contributes about ten percent performance improvement.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results / 6 Discussion"
+  },
+  {
+   "finding": "Edges produced through transitive inference have higher precision than edges directly classified by sieves, approximately 54.4-54.5% versus 49.8%.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "Time-time relations constitute only 2.6% of the evaluated edges, yet removing the time-time sieve reduces overall performance by almost five percent because those relations affect other decisions through transitive closure.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "Dense annotation reveals substantial uncertainty: VAGUE constitutes 46% of the annotated graph and can arise from genuine vagueness or annotator disagreement.",
+   "evidence_type": "supported",
+   "section": "3 TimeBank-Dense: A Dense Ordering"
+  }
+ ],
+ "limitations": [
+  "TimeBank-Dense covers only 36 newspaper articles, so the empirical setting is small and domain-specific.",
+  "The graph is locally dense rather than fully complete: explicit relations spanning two or more sentence boundaries are not annotated.",
+  "The relation inventory deliberately collapses finer Allen-style distinctions to improve annotation reliability.",
+  "VAGUE remains semantically ambiguous because it may indicate that no specific relation can be established or that several relations remain possible.",
+  "Annotator agreement is imperfect, with average pairwise precision of 65.1% and kappa values from 0.56 to 0.64.",
+  "The ordering experiments use gold event attributes for controlled analysis, and the temporal relation labels do not encode factuality or workflow states such as planned, canceled, or completed."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dense_corpus_size": 0.99,
+  "caevo_f1_gain": 0.99,
+  "transitive_inference_important": 0.99,
+  "transitive_edges_precision": 0.99,
+  "time_time_global_effect": 0.99,
+  "vague_annotation_share": 0.99
+ },
+ "raw_claims": [
+  "TimeBank-Dense was created to reduce the missing-relation ambiguity present in sparse temporal corpora.",
+  "The corpus labels temporal pairs within the same sentence and across immediately neighboring sentences.",
+  "The corpus contains 12,715 labeled relations across 36 newspaper documents.",
+  "Its relation inventory consists of BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, and VAGUE.",
+  "VAGUE accounts for 46% of the annotated temporal graph.",
+  "CAEVO processes temporal decisions through a precision-ordered sequence of twelve sieves.",
+  "Transitive closure is applied so that earlier temporal decisions constrain later ones.",
+  "CAEVO obtains 50.7 F1 in the dense evaluation.",
+  "The reported improvement over retrained TempEval-3 comparison systems is 14% relative F1.",
+  "Transitivity-derived edges are more precise than directly classified sieve edges.",
+  "Removing the time-time sieve materially harms global performance despite the small number of time-time edges.",
+  "CAEVO code and the TimeBank-Dense corpus were made publicly available."
+ ],
+ "source_url": "https://aclanthology.org/anthology-files/pdf/Q/Q14/Q14-1022.pdf",
+ "access": "full_text"
+}
