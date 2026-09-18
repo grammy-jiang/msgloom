@@ -144,6 +144,28 @@ the mandate never met.
 **Recommendation.** Assign an owner at planning time, not at closure. The same
 check would have caught IG11.
 
+### STILL OPEN 2026-09-18 — the justification is void, the gap is not
+
+**The `blocks` field above is wrong as written.** It names DP-10 and the
+Raspberry Pi 5 host constraint. Both are gone:
+
+| What it named | What happened |
+| --- | --- |
+| The Raspberry Pi 5 host constraint | **Void.** D-8 — the deployment target is x86 plus cloud services |
+| Cost as a first-class design concern | **Void at this stage.** D-9 — there is no cost or token budget while correctness is being established |
+
+**What survives, and why the gap stays open.** D-8 removed an *arm64 and 16 GB*
+constraint. It did not make throughput, latency and peak memory irrelevant.
+`docs/tech-stack.md` still requires representative attachments to be
+benchmarked on the deployment hardware, and that sentence was already
+hardware-neutral. D-8 says it plainly: a parser that needs 40 GB to open a
+spreadsheet is still a defect.
+
+**The gap is therefore narrower and unchanged in kind: these three still have no
+owner.** Do not close it because its original reasons expired. Assign it at
+`architecture-design`, which is the first stage with a component list to hang
+it on.
+
 ---
 
 ## IG5 — The cost function nobody could write
@@ -270,6 +292,21 @@ recorded the same remedy for its own equivalent case.
 register.** Topic 06 does not know its gap may be closed; Topic 10 does not
 know it closed one. This is the only candidate cross-topic resolution in 92
 gaps, and the merge found it, not the research.
+
+### NARROWED 2026-09-17 — the question is answered, the gap stays open
+
+**The reading was done.** The answer is *partly*, which is why this is not a
+closure.
+
+| | |
+| --- | --- |
+| **Overlap** | Topic 10's Recommendation 4 covers three of the four time dimensions and five overlapping cases |
+| **Not covered** | Deadline and constraint time, and the ablation `[06: gap-7]` actually asks for |
+
+**So the gap is materially narrower and still open.** See
+`research/06-item-state-and-temporal-reasoning/gap-7-triage.md`. The uncovered half meets
+`msgloom-topic-definition-proposal.md §4`, which records deadline time as the
+weakest of the four kinds a Topic must carry.
 
 ---
 

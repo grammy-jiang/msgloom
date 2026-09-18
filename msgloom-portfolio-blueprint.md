@@ -62,14 +62,15 @@ difficulty D3, and the design's refusal to treat a thread as a Topic. Almost
 everything else is transfer evidence, correctly labelled as such by every
 topic.
 
-**Three findings move lines the design drew.** Reply threading belongs on the
+**Two findings move lines the design drew.** Reply threading belongs on the
 AI side of DP-01, not the deterministic side — transport metadata is
 insufficient as a semantic scope rule. The report contract's requirement to
 reference every source message is right in intent and too coarse in
-granularity: reply scope has to be represented below message level. And the
-best-evidenced permission-aware retrieval mechanism is RBAC over a vector
-database, which the phase roadmap classes as an implementation option rather
-than a deliverable.
+granularity: reply scope has to be represented below message level.
+
+**A third was withdrawn on 2026-09-17.** Permission-aware retrieval was carried
+across from multi-user enterprise RBAC and does not apply to a single-owner
+mailbox. §6 records the withdrawal and the invariant that replaces it.
 
 **Two things the programme could not do, and said so.** No cost function
 exists: four topics independently reached the point where a threshold cannot
@@ -586,19 +587,23 @@ Seventy-seven, each written as `<topic>: <id>`, because two topics share
 Eleven, from walking all 26 recorded seams. Six seams came back clean. Full
 entries in the companion register `msgloom-integration-gaps.md`.
 
-| id | Gap | Seam | Class | Severity | Blocks |
-| --- | --- | --- | --- | --- | --- |
-| **IG1** | What "already told the user" means | 07 ↔ 09, **no sender, no receiver** | ENGINEERING | HIGH | Goal 2 — reduce reading, without breaking DP-06 |
-| **IG2** | A claimed completion is not a corroborated one | 06 → 07, 09, 10 — **three receivers, zero uptake** | ENGINEERING | HIGH | **Goal 1** — a false "completed" hides live work |
-| **IG3** | Attribution and accuracy on separate denominators | 01, 06, 08 → 10 | ENGINEERING | HIGH | The evaluation strategy, and every readiness claim |
-| **IG4** | Cost and scale are owned by nobody | 07, 08 → 10 | ENGINEERING | HIGH | DP-10 and the Raspberry Pi host constraint |
-| **IG5** | The cost function nobody could write | `[seam none: four topics, no cost function]` | ENGINEERING | HIGH | Makes C3's two measured abstention results unjudgeable |
-| **IG6** | A retrieved span may carry no usable address | 08 → 07 | ENGINEERING | HIGH | The report contract's source references; DP-02 |
-| **IG7** | Structured evidence a briefing must not flatten | 08 → 09, **on time, zero uptake** | ENGINEERING | HIGH | DP-06 at the delivery end |
-| **IG8** | Topic 06's benchmark may already exist in Topic 10 | 06 → 10 | ENGINEERING | MEDIUM | Nothing, if they match — worth an hour before a research round |
-| **IG9** | Authored versus quoted text, re-opened three times | 01 → 02, 05, 06 | ENGINEERING | MEDIUM | False obligations from quoted history |
-| **IG10** | A failed abstention result never reached the methodology owner | 02 → 10, **absent from its file** | ENGINEERING | MEDIUM | `[10: gap-6]` |
-| **IG11** | Attachment security has no owner | none recorded | ENGINEERING | MEDIUM | DP-09 where content arrives inside an attachment |
+**Status as of 2026-09-18.** The gap statements below are as first filed. The
+companion register owns the current status; this column repeats it so that no
+stage inherits a gap that is already closed.
+
+| id | Gap | Seam | Class | Severity | Blocks | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| **IG1** | What "already told the user" means | 07 ↔ 09, **no sender, no receiver** | ENGINEERING | HIGH | Goal 2 — reduce reading, without breaking DP-06 | **Open.** D-12 constrains the eventual answer: a Topic may reopen after months, so "already told" cannot be permanent |
+| **IG2** | A claimed completion is not a corroborated one | 06 → 07, 09, 10 — **three receivers, zero uptake** | ENGINEERING | HIGH | **Goal 1** — a false "completed" hides live work | **Resolved 2026-09-17 (D-7)** |
+| **IG3** | Attribution and accuracy on separate denominators | 01, 06, 08 → 10 | ENGINEERING | HIGH | The evaluation strategy, and every readiness claim | **Open** |
+| **IG4** | Cost and scale are owned by nobody | 07, 08 → 10 | ENGINEERING | HIGH | DP-10 and the Raspberry Pi host constraint | **Open, and its stated justification is void.** D-8 removes the Raspberry Pi constraint and D-9 removes the spend constraint. Throughput and peak memory still have no owner |
+| **IG5** | The cost function nobody could write | `[seam none: four topics, no cost function]` | ENGINEERING | HIGH | Makes C3's two measured abstention results unjudgeable | **Open, deferred to measurement.** R1–R3 in §22 are binding now |
+| **IG6** | A retrieved span may carry no usable address | 08 → 07 | ENGINEERING | HIGH | The report contract's source references; DP-02 | **Resolved 2026-09-17 (D-6)** |
+| **IG7** | Structured evidence a briefing must not flatten | 08 → 09, **on time, zero uptake** | ENGINEERING | HIGH | DP-06 at the delivery end | **Open** |
+| **IG8** | Topic 06's benchmark may already exist in Topic 10 | 06 → 10 | ENGINEERING | MEDIUM | Nothing, if they match — worth an hour before a research round | **Open and materially narrower, 2026-09-17.** The two overlap on three of four time dimensions. Deadline time and the `gap-7` ablation are not covered |
+| **IG9** | Authored versus quoted text, re-opened three times | 01 → 02, 05, 06 | ENGINEERING | MEDIUM | False obligations from quoted history | **Owned as of 2026-09-17** through R-A…R-M |
+| **IG10** | A failed abstention result never reached the methodology owner | 02 → 10, **absent from its file** | ENGINEERING | MEDIUM | `[10: gap-6]` | **Open** |
+| **IG11** | Attachment security has no owner | none recorded | ENGINEERING | MEDIUM | DP-09 where content arrives inside an attachment | **Owned as of 2026-09-17** through R-A…R-M |
 
 **Nine of eleven are ENGINEERING.** Agreeing an interface is not a fact to
 discover, and routing these to a literature search would spend weeks confirming
@@ -680,11 +685,11 @@ belong to the architecture stage.
 
 | Seam | What crosses | What the receiver may assume | Status |
 | --- | --- | --- | --- |
-| Parse → Group | Source records with preserved bytes, parent, version, location | Every extracted region can be traced to a version and a place within it | **IG6** — no validated representation exists; Topic 07 cannot assume a retrieved span carries a usable address |
+| Parse → Group | Source records with preserved bytes, parent, version, location | Every extracted region can be traced to a version and a place within it | **IG6 resolved 2026-09-17 (D-6)** — the source system's own permalink plus a plain-text locator. The product derives no address; this becomes an acceptance condition on every connector |
 | Group → Topic assignment | Members, method, evidence, `Confirmed`/`Uncertain`/`None` | Group membership is evidence, never identity | Agreed both sides `[03: F1]` |
 | Topic assignment → Action extraction | Spans with set-valued Topic membership | Which Topic a span belongs to; **not** which proposition a reply answers | Agreed `[05: boundary-1]`; the substance stays open `[04: gap-1]` |
 | Action extraction → State tracking | The utterance-time event with owner, object, deadline, conditions, provenance, any field unresolved | An event arriving without a confident owner, deadline or condition is **the normal case, not an error** | Agreed both sides — the cleanest seam in the programme |
-| State tracking → Briefing | Work-item state as new / open / resolved / superseded | The vocabulary. **Not** whether a "completed" state was claimed or corroborated | **IG2** — three receivers, zero uptake |
+| State tracking → Briefing | Work-item state as new / open / resolved / superseded | The vocabulary, **and** whether a "completed" state was claimed or corroborated | **IG2 resolved 2026-09-17 (D-7)** — a claim is recorded as a claim and never reported as fact. The receiver may now rely on the distinction |
 | Attachment understanding → Briefing | Structured evidence that must not be flattened | Which non-text evidence is decision-relevant | **IG7** — arrived on time, zero uptake |
 | Retrieval ↔ Briefing | What the reader has already been shown | Nothing — neither side defined it | **IG1** — no sender, no receiver |
 | Everything → Evaluation | Measured outcomes | Attribution errors and accuracy errors counted separately | **IG3** — the only measured trade-off never reached the methodology owner |
@@ -714,11 +719,15 @@ direction of the reader:
 - Topic 09 (HIGH confidence) "do not equate 'not new' with 'safe to omit'" — unchanged but
   unresolved work is its own content class.
 
-**So the interface must show at least four states the design currently collapses
-into two:** *this is the answer* · *we looked and there is nothing* · *we
-could not look* · *we are not allowed to tell you*. The last is the one no
-design document mentions and `[07: gap-4]` says must not leak the existence of
-what it hides.
+**So the interface must show at least three states the design currently
+collapses into two:** *this is the answer* · *we looked and there is nothing* ·
+*we could not look, and here is the reason*.
+
+**A fourth state — *we are not allowed to tell you* — was withdrawn on
+2026-09-17.** It came from `[07: gap-4]`, a multi-user setting. This product has
+one reader, and nothing in their own mailbox is withheld from them. Owner
+decision D-1 settles the case that survives: an item that could not be read is
+always reported with its reason, and permission is one of the reasons. §6.
 
 **Trust and control.** `[10: F8]` an LLM judge is data, not authority.
 `[design.md §8.2]` AI cannot approve its own proposal. The reader must be able
@@ -769,15 +778,23 @@ lineage, temporal validity, calibrated stopping, abstention and cost budgeting.
 Topic 06, Topic 07 and Topic 10 each state that no production architecture was
 approved by their research.
 
-**Three structural constraints the research does establish:**
+**Two structural constraints the research does establish:**
 
-- **Permission filtering happens before evidence enters the reasoning context**
-  Topic 07 (HIGH confidence), not after, and not as citation hiding.
 - **Preserved observations, interpreted assessments and the derived
   current-state view are three separate things** `[06: Recommendation 1]`, and
   the third is recomputed, never stored as truth.
 - **Responsibilities stay independent** (DP-07): adding a source or a report
   format must not create a second interpretation of shared data.
+
+**A third was withdrawn on 2026-09-17.** "Permission filtering before evidence
+enters the reasoning context" was carried across from multi-user RBAC. What
+replaces it is a collection-scope rule, not a retrieval layer:
+
+> The index contains only what the owner can already see in the source system.
+> Permission is enforced at ingestion by the source, never re-implemented in
+> retrieval.
+
+**So the architecture builds no permission-aware retrieval component.** §6.
 
 ---
 
@@ -792,7 +809,7 @@ The project's own terms, with what the research says each must be able to carry.
 | **Topic** | A work matter described by information from one or more sources | A stable identity independent of any generated title; links to superseding assessments; **set-valued, non-contiguous span membership** `[02: G2-E2]`; **non-transitive continuity relations** `[03: gap-5]`; **multiple parents permitted** `[04: contradiction 3]` |
 | **Stage result** | The saved outcome of one processing attempt | Inputs and the versions of code, configuration, rules, prompt, model and working context that affected it; a terminal outcome never rewritten |
 | **Triage result** | Topics with priority, developments, actions, deadlines, risks | Each action's owner, object, deadline and conditions, **any of which may be unresolved**, with three provenance kinds: explicit span, supporting context, inferred value `[05: F8]` |
-| **Assessment** | An interpretation of state at a point in time | Whether a "completed" state was *claimed* or *independently corroborated* — **IG2, currently carried by nobody** |
+| **Assessment** | An interpretation of state at a point in time | Whether a "completed" state was *claimed* or *independently corroborated* — **owner decision D-7**, which resolved IG2 |
 | **Evidence need** | A recorded question a decision is blocked on | The blocked decision, the permission scope, the budget; and on a hard stop it **stays open** rather than resolving Topic 07 (HIGH confidence) |
 | **Report** | A saved selection of Topic information | Every due Topic; per-policy, per-version reporting state rather than a global sent flag |
 
@@ -830,8 +847,8 @@ truth, and it needs a project name before the architecture stage.
 | **A false obligation** — claiming the user owes a response the source does not support | `[05]` names five production routes: invented owner, a mentioned date promoted to a deadline, lost condition scope, quoted-history duplication, forced completion of uncertain fields | Unresolved fields stay unresolved; author/quoted/forwarded zoning with provenance | `[05: gap-9]` — the value of doing this is **unmeasured**; must be counted against missed obligations, never traded silently |
 | **A missed obligation** — the first goal failing | The product's own success criterion | Coverage protected end to end; pending never silently Low-value | **`[10: gap-5]` — no established detector.** The project cannot measure this |
 | **A confident wrong citation** | `[01: E4]` measured attribution error rising 0.000 → 0.222 when recall was bought | Score attribution and accuracy on separate denominators | **IG3** — the contract does not exist |
-| **A false "completed"** hiding live work | `[06: gap-5]` stated impact | Carry whether a completion was claimed or corroborated | **IG2** — three receivers, none carries it |
-| **Unauthorised evidence reaching the model** | Topic 07 (HIGH confidence) | Filter permissions before evidence enters the reasoning context | `[07: gap-4]` — the leak-free replenishment loop is untested |
+| **A false "completed"** hiding live work | `[06: gap-5]` stated impact | Carry whether a completion was claimed or corroborated | **IG2 resolved (D-7).** The residual is that the distinction must survive into the report wording, which `ux-design` owns |
+| ~~**Unauthorised evidence reaching the model**~~ | Topic 07 (HIGH confidence) — **withdrawn 2026-09-17** | Not a retrieval filter. The source enforces permission at ingestion, and the product collects only what the owner's own credentials already return (§6) | A wrongly declared collection scope still collects nothing the owner cannot see. `[07: gap-4]`'s leak-free loop does not apply to this product |
 | **Source content acting as authority** — in a body or an attachment | DP-09; `msgloom-security-review.md` F1 | One trust rule (D-2): source bytes are data, configuration is instruction. A channel-separated AI input envelope, every span carrying a trust class | **IG11 now has an owner** — R-A…R-M. **Injection's damage in Phase 1 is a silent miss**, which `[10: gap-5]` says the project cannot detect |
 | **A message sent to someone other than the owner** | Owner decision D-3/D-4 | **No code path may exist**, not merely no enabled configuration | New constraint, 2026-09-17. Binding on `architecture-design` |
 | **Acceptance criteria overfit to the development evaluator** | `[10: gap-7]` | Independent human holdout | Unresolved; an engineering problem the project must solve |
@@ -943,7 +960,7 @@ what it produced is the acceptance apparatus for whatever Phase 1 ships.
 | Q3 | Does Topic-scoped retrieval avoid the context degradation Topic 05 measured? | `[05: gap-7]`'s ablation | One controlled comparison — resolves C1 |
 | Q4 | Is Topic 01's synthetic quotation result transferable? | Apply it to real mail under the same gold contract | Unblocks IG9 and stops three topics re-opening the same problem |
 | Q5 | ~~Who owns cost, and who owns attachment security?~~ | **Both answered 2026-09-17** | Attachment security: R-A…R-M in the security review. Cost: **there is no cost or token budget at this stage** — owner decision D-9. Correctness first |
-| Q6 | What does the reader see when the system is not allowed to tell them? | Design decision informed by `[07: gap-4]` | §12's fourth state — no design document mentions it |
+| Q6 | ~~What does the reader see when the system is not allowed to tell them?~~ | **Void 2026-09-17** | Constructed from a multi-user finding. One owner, one mailbox, nothing withheld. D-1 settles what survives: report the item and state the reason. §6, §12 |
 
 **The validation plan is Topic 01's method, applied outward.** Executable gold
 contract first; adversarial rather than representative cases; gold authored
@@ -962,19 +979,19 @@ The contracts in §11 and the information model in §14 are conceptual. Field
 types, encodings, identifiers and storage are architecture decisions and are
 deliberately absent here.
 
-**Decisions this blueprint defers to you, with the evidence attached:**
+**One decision this blueprint still defers to you:**
 
-- **The permission mechanism.** `[07: HONEYBEE]` is the best-evidenced option
-  and is RBAC over a vector database, which `phase-roadmap.md` classes as an
-  implementation option. §6 row 17 records this as CHALLENGED against DP-10.
-  The lattice says build for the permission guarantee; the tension is real and
-  stays on the record.
-- **How a Topic identity is made stable** independently of generated titles
-  `[03: gap-3]` — mechanisms exist, msgloom's history semantics do not.
-- **The provenance address format** — IG6. `[08: gap-4]` says no validated
-  representation jointly identifies version, page, element, region and span.
 - **Where the derived current-state projection lives** and how it is
-  recomputed — §14 names the concept the project has not.
+  recomputed — §14 names the concept the project has not. **Still open.**
+
+**Three more were deferred here and have since been settled. Inherit them; do
+not reopen them.**
+
+| Was deferred to you | Settled by | What you inherit |
+| --- | --- | --- |
+| **The permission mechanism** | The §6 withdrawal, 2026-09-17, and owner decision D-1 | **No permission-aware retrieval component.** The source enforces permission at ingestion. An item that could not be read is reported with its reason |
+| **How a Topic identity is made stable** `[03: gap-3]` | Owner decisions D-12 and D-20; `msgloom-topic-definition-proposal.md §3.4` and `§3.8` | A persistent identifier held separate from the mutable description, and multi-valued identifier fields that do not drift and that the model may not rewrite |
+| **The provenance address format** — IG6 | Owner decision D-6 | The source system's own permalink plus a plain-text locator. The product derives no address. This becomes an acceptance condition on every connector |
 
 **What you must not do:** claim an evidence-validated end-to-end reliability
 framework `[10: gap-1]`, transfer benchmark accuracy from news, scientific
@@ -989,10 +1006,10 @@ hypothesis composed from supported modules.
 | Stage | Decision | Depends On | Confidence | Reason | Blocks Next Step? | Revisit Trigger |
 | --- | --- | --- | --- | --- | --- | --- |
 | **decision: cost function** | **DEFER** | MVP-0 running for a few days | HIGH | Q1. Four topics stopped here. **The number is not knowable before the tool runs** — it is a count of how many false obligations a week the product actually produces, and nothing produces it yet. Deferred to measurement, not to convenience | **No longer** — see R1–R3 below | When MVP-0 has produced a few days of counts |
-| **architecture-design** | **RUN** | R1–R3 and `msgloom-owner-decisions.md` | MEDIUM | §11, §13, §14 and §21 give it contracts, a hypothesis architecture and four named decisions. `[07: gap-8]` means it designs a hypothesis, which is legitimate and must be labelled | Yes — tech stack and UX both wait on it | If IG1 or IG6 is resolved differently than assumed |
-| **tech-stack-selection** | **DEFER** | architecture-design | MEDIUM | DP-10 and the CHALLENGED DP-10 row make this a real decision, not a formality. Premature selection would pre-empt §6 row 17 | No | When architecture-design declares it needs a stack |
-| **ux-design** | **RUN** | architecture-design | MEDIUM | §12 states intent and the research creates a specific obligation: four reader-visible states where the design has two. The fourth — *not allowed to tell you* — appears in no design document | No | If §12's interaction modes change |
-| **security-review** | **RUN** | architecture-design | HIGH | **IG11 — attachment security has no owner**, Topic 08 marked it ❌ Missing and no topic took it. DP-09 is a fixed boundary and the programme never tested it | Yes for Phase 2 | Immediately, if attachment handling enters MVP-0 |
+| **architecture-design** | **RUN** | R1–R3, `msgloom-owner-decisions.md`, and the Topic definition | MEDIUM | §11, §13, §14 and §21 give it contracts, a hypothesis architecture and **one** remaining named decision — §21's other three are settled. `[07: gap-8]` means it designs a hypothesis, which is legitimate and must be labelled | Yes — tech stack and UX both wait on it | If IG1 is resolved differently than assumed. IG6 is resolved (D-6) |
+| **tech-stack-selection** | **DEFER** | architecture-design | MEDIUM | Still a real decision, for a different reason than this table first gave. The DP-10 challenge was withdrawn, so no permission-aware store is needed. **D-20 replaces it**: the Topic store must return which fields matched, not a score, and at one mailbox's scale lexical matching may beat a vector database | No | When architecture-design declares it needs a stack |
+| **ux-design** | **RUN** | architecture-design | MEDIUM | §12 states intent and the research creates a specific obligation: three reader-visible states where the design has two. *We could not look* must carry its reason, D-1 | No | If §12's interaction modes change |
+| **security-review** | **RUN** | architecture-design | HIGH | Already run once, 2026-09-17, producing R-A…R-M and giving IG11 an owner. **What is outstanding is the second pass**: check the architecture against R-A…R-M, and answer D-16's open scope-binding problem before Phase 2 | Yes for Phase 2 | Immediately, if attachment handling enters MVP-0 |
 | **test-design** | **DEFER** | the cost function, architecture-design | MEDIUM | §17 has the method (Topic 01's ten steps) and `[10: gap-6]` says the review protocol is undefined. Test design without the cost function would fix thresholds arbitrarily | No | When the cost function exists |
 | **research-pipeline** | **SKIP** | — | HIGH | All three tests fail. See below | No | If an authorized workplace corpus becomes available |
 
@@ -1090,7 +1107,7 @@ deterministic script. One repair pass was run; what it changed is recorded.
 | G5 Contradictions named, not averaged | PASS | Three, each with both sides, an explanation, and either a stated condition or an open record. None reported as "the evidence is mixed" | — | No |
 | G6 Integration gaps are real seams | PASS | 11 gaps, each citing a seam; 26 seams walked; **6 recorded as clean** | — | No |
 | G7 Traceability | **PASS, with a stated limitation** | Every capability traces to evidence, a frame element, or is marked "design hypothesis — requires validation" (K9, K10). But the citation density to paper ids is low — see below | Repaired: 15 pseudo-citations of the form `[NN: HIGH]` named a confidence grade rather than a source, and were rewritten as prose | **Yes** — a reader cannot check most claims without opening the topic reports |
-| G8 Implementation neutrality | PASS | The deterministic scan reports no technology named outside §21 and §22. §6 row 17 and §21 name RBAC-over-a-vector-database because it is the subject of a CHALLENGED verdict against DP-10, which is the one place naming it is the point | — | No |
+| G8 Implementation neutrality | PASS | The deterministic scan reports no technology named outside §21 and §22. **§6 alone** now names RBAC-over-a-vector-database, in the record of why that verdict was withdrawn on 2026-09-17. §21 no longer names it, because the decision it belonged to no longer exists | — | No |
 | G9 Vocabulary discipline | PASS | The project's terms keep the project's definitions. §14 names a concept the project has not — the derived current-state projection — rather than inventing a term for it | — | No |
 | G10 Authority respected | PASS | The header states that research does not rewrite the design; all three CHALLENGED rows end in "a human decides" | — | No |
 | G11 Routing honesty | PASS | Seven stages, each with Depends On, Blocks Next Step and a Revisit Trigger naming an event. RESEARCH is SKIP against all three tests, and the third is stated with the condition that makes it valid here rather than as a blanket claim | — | No |
