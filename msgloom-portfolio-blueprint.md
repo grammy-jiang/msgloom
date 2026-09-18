@@ -1013,6 +1013,12 @@ hypothesis composed from supported modules.
 | **test-design** | **DEFER** | the cost function, architecture-design | MEDIUM | §17 has the method (Topic 01's ten steps) and `[10: gap-6]` says the review protocol is undefined. Test design without the cost function would fix thresholds arbitrarily | No | When the cost function exists |
 | **research-pipeline** | **SKIP** | — | HIGH | All three tests fail. See below | No | If an authorized workplace corpus becomes available |
 
+**Stage status, 2026-09-18.** `architecture-design` has run. Its output is
+`msgloom-architecture-design.md`, which names the Current view, answers §21's
+one open decision and gives the error exchange rate a home. It is labelled a
+hypothesis, as `[07: gap-8]` requires. `tech-stack-selection` and `ux-design` are
+now unblocked.
+
 **ASK_USER rationale:** none of the seven is ASK_USER. Q1 was put to the
 product owner directly and the answer was *not yet, and not from intuition* —
 which is correct, and better than a guess. It is recorded as DEFER with its
