@@ -143,7 +143,11 @@ Topics, which is the outcome D-11's granularity rule exists to prevent.
 recorded where it is observed and is never chained from two other edges.
 
 **No edge may be inferred from two other edges.** A relates to B and B to C does
-not give A to C. This binds the consolidation pass in §7 and every retrieval path.
+not give A to C. **This binds what the §7 consolidation pass may write and what a
+report may assert. It does not prohibit reading or showing a chain of observed
+edges** — *A is `member of` B; B `supersedes` C* is a report of two facts and is
+simply true. `§3.2.3`'s wording rule already governs the difference: name exactly
+what matched and assert nothing beyond it.
 
 ---
 
@@ -235,7 +239,7 @@ a stack decision and is not made here.**
 | 6 | No access-control layer — one owner, no roles |
 | 7 | Adding an element to §3.2 is cheap |
 | 8 | **Typed edges with properties**, and one-hop queries in both directions |
-| 9 | **Fixed-depth reads, not unbounded traversal.** Reading two edge sets for a report is fine; path-finding is not needed |
+| 9 | **Fixed-depth reads are sufficient.** Nothing in the definition requires path-finding, so unbounded traversal is not a requirement on the store |
 | 10 | Adding an edge type is cheap |
 
 **Requirement 3 is the one that rules designs out.** D-18 cannot apply its
@@ -253,14 +257,17 @@ because `member of` did not exist when they were written. §3.3's edge set is
 where the relationships live, and a store requirement that ignores them is
 incomplete.
 
-**Requirement 9 states a prohibition as a requirement on purpose.** §3.5 forbids
-inferring an edge from two other edges. **It does not forbid reading two edge
-sets** — a report that shows a budget, its items and each item's people is a
-fixed-depth read, not an inference. What is forbidden is concluding a relation
-that was never observed. A store offering unbounded traversal makes that
-prohibition a matter of discipline; a store without it makes the prohibition
-structural. **The difference matters most in the consolidation pass**, which runs
-unattended.
+**Requirement 9 was overstated in the first draft and is corrected here.** It had
+said that traversal must not be available, on the ground that §3.5 forbids it.
+**§3.5 forbids no such thing.** It forbids *concluding a relation* between
+endpoints from a chain; computing or displaying the chain is permitted, and
+`§3.2.3`'s wording rule is what keeps the display honest.
+
+**What the requirement actually says is weaker and true:** no query the approved
+definition calls for exceeds a fixed depth, so a store need not offer unbounded
+traversal to be sufficient. **If a use for path-finding later appears, it is
+allowed**, and what binds it is the wording rule rather than a storage
+restriction.
 
 **Against over-building:** at one person's mailbox scale lexical matching may be
 enough, and `DP-10` says avoid custom infrastructure. This is a real choice with

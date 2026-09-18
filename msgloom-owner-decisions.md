@@ -381,23 +381,35 @@ what was missing.
 ### The argument the owner should weigh before deciding the engine
 
 **A graph database earns its keep on variable-depth queries** — shortest path,
-everything within N hops, find how these two things connect. **msgloom needs
-none of them, and `§3.5` forbids the conclusion they would be used to draw.**
+everything within N hops, find how these two things connect.
 
-**The distinction that matters is not one hop against two.** It is a *bounded
-read at a fixed depth* against an *unbounded traversal*.
+### What `§3.5` actually forbids — corrected 2026-09-18
 
-| Query msgloom needs | Shape |
+**An earlier version of this section said `§3.5` forbids path-finding. That was
+wrong, and the owner caught it.** The correction matters, because that claim was
+doing most of the work in the argument.
+
+`§3.5` says that exact identity, subevent membership and evolving continuity are
+different relations and that some are not transitive: *A relates to B, and B
+relates to C, does not imply A relates to C.*
+
+| | |
+| --- | --- |
+| **What it forbids** | **Concluding a relation between the endpoints** from a chain. A is `member of` B and B `supersedes` C does not put A and C in any relation |
+| **What it does not forbid** | Computing a path, storing one, or showing one. *A is `member of` B; B `supersedes` C* is a report of two observed edges and is simply true |
+| **What constrains the display** | `§3.2.3`'s wording rule, already in force: name exactly what matched and assert nothing more. A shown chain names each edge; it never summarises them as a relation between the ends |
+
+**So the argument against a second engine is weaker than it was stated.** What
+survives is only this: **no requirement in the approved definition calls for
+path-finding.** *Not currently needed* is a much weaker claim than *prohibited*,
+and the case now rests on the three costs below rather than on `§3.5`.
+
+| Query msgloom needs today | Shape |
 | --- | --- |
 | What is `member of` the Q3 budget | One hop |
 | Every Topic sharing this invoice number | An indexed lookup, not a traversal at all |
-| The Q3 budget, its items, and each item's people and actions | **Two hops, fixed depth.** Reading two edge sets for a report is not inferring a relation, and a relational store does it with two joins |
-| Find how Topic A connects to Topic C | **Not needed, and `§3.5` forbids acting on the answer** |
-
-**So the capability that distinguishes a graph store is the one this design has
-no use for.** A store that does not offer unbounded traversal makes `§3.5`
-structural rather than a matter of discipline — which matters most in the D-23
-pass, because it runs unattended.
+| The Q3 budget, its items, and each item's people and actions | **Two hops, fixed depth.** Reading two edge sets for a report is not inferring a relation |
+| Find how Topic A connects to Topic C | **Not required by anything in the definition.** Permitted, if a use for it appears |
 
 **Three more costs of a second engine**, all from rules already in force:
 
@@ -423,9 +435,57 @@ and Q1 — by measurement rather than by intuition.
 that cannot be answered in one hop. **If one exists, it is worth more than this
 whole argument**, because it would also mean `§3.5` needs revisiting.
 
-**Status: OPEN.** The owner's position is recorded above. This is theirs to
-decide, and `tech-stack-selection` is the stage that carries it. It is now
-triggered, because architecture design is complete.
+### Investigation — can SQLite do this without a second engine?
+
+**Asked by the owner on 2026-09-18. Findings from published documentation and
+current practice, not from measurement on this product's data.**
+
+**SQLite needs no extension for graph traversal.** `WITH RECURSIVE` has been in
+SQLite since 3.8.3 and performs breadth-first traversal, transitive closure,
+N-hop and path queries in standard SQL. SQLite's own tree also ships
+`ext/misc/closure.c`, a transitive-closure virtual table, for cases where the
+visited-set bookkeeping is worth pushing down.
+
+**SQLAlchemy reaches it directly.** `select(...).cte("name", recursive=True)`
+renders `WITH RECURSIVE`, and it is documented in Core rather than being a
+workaround. **So the stack already selected — SQLAlchemy async ORM over
+aiosqlite — can express every query in the table above with no new dependency.**
+
+| Question | Finding | Confidence |
+| --- | --- | --- |
+| Is there a SQLite graph extension? | **The question does not arise.** Recursive CTEs are built in. Projects like `simple-graph` are a schema and a query set over ordinary tables, not a new engine | **High** — documented behaviour |
+| Does SQLAlchemy help? | **Yes, in Core.** One known limit: a recursive CTE cannot be used as an ORM relationship `secondary`, so traversal is Core-level query building | **High** |
+| Does that satisfy `tech-stack.md`'s "no handwritten application SQL"? | **Yes.** A recursive CTE composed through SQLAlchemy Core is generated SQL, not handwritten | **High** |
+| Where does it stop scaling? | Deep traversal over large graphs — the figures discussed publicly are in the hundreds of thousands of nodes at depth 6. **One person's mailbox is not that**, which is `DP-10`'s point | **Medium** — no measurement on this product's data |
+
+**A finding for D-20 requirement 2 as well.** FTS5 is built into SQLite and gives
+BM25 lexical search over description and keywords; `sqlite-vec` adds dense
+vectors, and combining the two with reciprocal rank fusion is an established
+pattern. **FTS5 can report which column matched. A vector index returns a
+distance and cannot.** D-20 requirement 3 — the store must return which fields
+matched, not a bare score — is therefore satisfied by the lexical path and not by
+a vector-only one, which is exactly what D-20 predicted.
+
+**Sources:** SQLite FTS5 documentation and the SQLite user forum on breadth-first
+traversal; SQLAlchemy Core selectable documentation; `sqlite-vec` hybrid-search
+write-ups from 2024 onward. Recorded as published-documentation evidence, and
+none of it is a measurement of msgloom.
+
+**What this does not answer.** Whether recursive-CTE traversal is fast enough on
+this product's real data, because that needs data this product has not produced.
+It joins IG4's unowned throughput question rather than forming a new one.
+
+### Status
+
+**OPEN, and deferred by the owner on 2026-09-18:**
+
+> "For the current stage we do not need to make the decision about the storage
+> engine."
+
+**Nothing is blocked by leaving it open.** The requirements in
+`msgloom-architecture-design.md §6` are written, and they are what a later
+comparison would be run against. `tech-stack-selection` carries the decision and
+is triggered, because architecture design is complete.
 
 ## D-17 — Anchors are configured, not built in
 
