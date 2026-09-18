@@ -235,7 +235,7 @@ a stack decision and is not made here.**
 | 6 | No access-control layer — one owner, no roles |
 | 7 | Adding an element to §3.2 is cheap |
 | 8 | **Typed edges with properties**, and one-hop queries in both directions |
-| 9 | **Multi-hop traversal is not a default operation** |
+| 9 | **Fixed-depth reads, not unbounded traversal.** Reading two edge sets for a report is fine; path-finding is not needed |
 | 10 | Adding an edge type is cheap |
 
 **Requirement 3 is the one that rules designs out.** D-18 cannot apply its
@@ -254,10 +254,13 @@ where the relationships live, and a store requirement that ignores them is
 incomplete.
 
 **Requirement 9 states a prohibition as a requirement on purpose.** §3.5 forbids
-inferring an edge from two other edges. A store that offers traversal as an
-ordinary query makes that prohibition a matter of discipline; a store that does
-not offer it makes the prohibition structural. **The difference matters most in
-the consolidation pass**, which runs unattended.
+inferring an edge from two other edges. **It does not forbid reading two edge
+sets** — a report that shows a budget, its items and each item's people is a
+fixed-depth read, not an inference. What is forbidden is concluding a relation
+that was never observed. A store offering unbounded traversal makes that
+prohibition a matter of discipline; a store without it makes the prohibition
+structural. **The difference matters most in the consolidation pass**, which runs
+unattended.
 
 **Against over-building:** at one person's mailbox scale lexical matching may be
 enough, and `DP-10` says avoid custom infrastructure. This is a real choice with

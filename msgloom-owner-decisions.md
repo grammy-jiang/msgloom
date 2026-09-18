@@ -380,18 +380,22 @@ what was missing.
 
 ### The argument the owner should weigh before deciding the engine
 
-**A graph database's distinctive capability is multi-hop traversal.** `§3.5`
-forbids exactly that operation: no edge may be inferred from two other edges.
+**A graph database earns its keep on variable-depth queries** — shortest path,
+everything within N hops, find how these two things connect. **msgloom needs
+none of them, and `§3.5` forbids the conclusion they would be used to draw.**
 
-| Query msgloom actually needs | Hops |
+**The distinction that matters is not one hop against two.** It is a *bounded
+read at a fixed depth* against an *unbounded traversal*.
+
+| Query msgloom needs | Shape |
 | --- | --- |
-| What is `member of` the Q3 budget | **One** |
-| What is this Topic a `member of` | **One** |
-| Everything this person appears in, and in what role | **One** |
-| Every Topic sharing this invoice number | **One**, and it is an indexed lookup, not a traversal |
+| What is `member of` the Q3 budget | One hop |
+| Every Topic sharing this invoice number | An indexed lookup, not a traversal at all |
+| The Q3 budget, its items, and each item's people and actions | **Two hops, fixed depth.** Reading two edge sets for a report is not inferring a relation, and a relational store does it with two joins |
+| Find how Topic A connects to Topic C | **Not needed, and `§3.5` forbids acting on the answer** |
 
-**So the one thing that distinguishes a graph store is the one operation this
-design prohibits.** A store that cannot traverse makes the prohibition
+**So the capability that distinguishes a graph store is the one this design has
+no use for.** A store that does not offer unbounded traversal makes `§3.5`
 structural rather than a matter of discipline — which matters most in the D-23
 pass, because it runs unattended.
 
