@@ -956,7 +956,7 @@ what it produced is the acceptance apparatus for whatever Phase 1 ships.
 | # | Question | Who can answer | Cost |
 | --- | --- | --- | --- |
 | Q1 | **What does an over-broad link cost against a missed one?** | The product owner — **after MVP-0 has run for a few days.** Asked and answered 2026-09-17: the number is not knowable before the tool produces the counts | Deferred to measurement. R1–R3 in §22 are binding now so the answer has one place to land |
-| Q2 | Do `[06: gap-7]` and Topic 10's F4 describe the same benchmark? | Read both | **An hour.** IG8 — worth doing before anything else on this list |
+| Q2 | ~~Do `[06: gap-7]` and Topic 10's F4 describe the same benchmark?~~ | **Answered 2026-09-17** | Partly. They overlap on three of four time dimensions. Deadline time and the `gap-7` ablation are not covered, so IG8 is narrower and still open |
 | Q3 | Does Topic-scoped retrieval avoid the context degradation Topic 05 measured? | `[05: gap-7]`'s ablation | One controlled comparison — resolves C1 |
 | Q4 | Is Topic 01's synthetic quotation result transferable? | Apply it to real mail under the same gold contract | Unblocks IG9 and stops three topics re-opening the same problem |
 | Q5 | ~~Who owns cost, and who owns attachment security?~~ | **Both answered 2026-09-17** | Attachment security: R-A…R-M in the security review. Cost: **there is no cost or token budget at this stage** — owner decision D-9. Correctness first |

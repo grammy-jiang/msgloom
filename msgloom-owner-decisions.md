@@ -20,7 +20,7 @@ architecture stage needs one list.
 | **D-7** | Record that a person made a claim; never report the claim as fact | 2026-09-17 | `msgloom-integration-gaps.md` IG2 — **resolves IG2** |
 | **D-8** | The deployment target is x86 plus cloud services, not a Raspberry Pi | 2026-09-17 | below |
 | **D-9** | There is no cost or token budget at this stage | 2026-09-17 | below |
-| **D-10** | "Topic" must be defined explicitly. The owner is asking for help | 2026-09-17 | `msgloom-topic-definition-proposal.md` — **proposal delivered** |
+| **D-10** | "Topic" must be defined explicitly. The owner is asking for help | 2026-09-17 | `msgloom-topic-definition-proposal.md` — **closed by D-21** |
 | **D-11** | A Topic sits at the level at which an action is owed | 2026-09-17 | proposal §7 Q-A |
 | **D-12** | A Topic is permanent. `resolved` stops reporting; it reopens as the same Topic and inherits everything | 2026-09-17 | proposal §7 Q-B |
 | **D-13** | The system names a Topic; the owner may rename it | 2026-09-17 | proposal §7 Q-C |
@@ -78,7 +78,7 @@ two are unrelated and IG5 stays deferred to measurement on its own terms.
 this stage. `design-principles.md §2` already ranks speed, brevity and token
 saving last; D-9 says that for now they carry no weight at all.
 
-## D-10 — "Topic" needs an explicit definition — OPEN
+## D-10 — "Topic" needs an explicit definition — CLOSED by D-21
 
 > "The topic is a key concept in this project and I think we should figure out a
 > way to explicitly define it… I don't have a clear idea now. I definitely need
