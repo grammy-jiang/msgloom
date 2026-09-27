@@ -54,6 +54,7 @@ AUTOTHROTTLE_MAX_DELAY = 60.0
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 AUTOTHROTTLE_DEBUG = False
 
+MS_GRAPH_AUTH_ENABLED = False
 MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
     "MSGLOOM_MS_ERROR_MIDDLEWARE_ENABLED", True
 )
@@ -79,8 +80,8 @@ DOWNLOADER_MIDDLEWARES = {
     # priority. Diagnostics therefore sees each Graph response before auth can
     # replace a 401 with a retry Request. Provider retries still run after auth.
     "message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware": 555,
-    "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
-    "message_ingest.middlewares.auth.MicrosoftGraphInteractiveAuthMiddleware": 951,
+    "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
+    "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware": 951,
     "message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
 }
 
@@ -197,7 +198,8 @@ MS_GRAPH_CLIENT_ID = os.getenv("MSGLOOM_MS_CLIENT_ID", "")
 MS_GRAPH_AUTHORITY = os.getenv(
     "MSGLOOM_MS_AUTHORITY", "https://login.microsoftonline.com/common"
 )
-MS_GRAPH_SCOPES = ["Mail.Read"]
+# Resource spiders declare least-privilege Graph scopes with custom_settings.
+MS_GRAPH_SCOPES: list[str] = []
 MS_GRAPH_ACCOUNT_USERNAME = os.getenv("MSGLOOM_MS_USERNAME", "")
 MS_GRAPH_ERROR_MAX_RETRIES = int(os.getenv("MSGLOOM_MS_ERROR_MAX_RETRIES", "8"))
 MS_GRAPH_ERROR_FALLBACK_BASE_SECONDS = int(

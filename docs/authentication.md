@@ -23,6 +23,25 @@ implementation participates in the request/response chain, while command-line
 or project-level setting overrides can select the flow without changing Spider
 code.
 
+## Resource-owned Graph scopes
+
+Authentication is provider infrastructure, but delegated permissions belong to
+the resource being acquired. Project defaults keep `MS_GRAPH_AUTH_ENABLED`
+false and `MS_GRAPH_SCOPES` empty. A Microsoft Graph resource opts into the
+provider and declares its least-privilege scope set through Spider settings
+before downloader middleware is constructed. Non-Graph resources therefore
+do not bootstrap Microsoft authentication at all.
+
+Outlook Mail currently declares:
+
+`MS_GRAPH_SCOPES = ["Mail.Read"]`
+
+Scrapy command-line settings have higher priority than Spider settings, so an
+explicit `-s MS_GRAPH_SCOPES=...` override remains available. The auth
+middleware fails fast when it is selected for a Graph resource that forgot to
+configure any scopes. Future Calendar or Teams resources must declare their
+own permissions instead of expanding a provider-wide union of permissions.
+
 ## Device code
 
 `device_code` is the default for Raspberry Pi, SSH, CLI, and other headless

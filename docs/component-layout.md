@@ -13,7 +13,7 @@ remains `msgloom`.
 | --- | --- |
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
 | `message_ingest/extensions/delta_checkpoint.py` | Commit complete delta rounds after Scrapy becomes idle. |
-| `message_ingest/middlewares/auth.py` | Device-code and browser authentication, token caching, and one 401 refresh retry. |
+| `message_ingest/providers/microsoft_graph/auth.py` | Device-code and browser authentication, token caching, and one 401 refresh retry. |
 | `message_ingest/middlewares/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
 | `message_ingest/middlewares/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |

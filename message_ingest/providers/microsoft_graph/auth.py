@@ -72,13 +72,20 @@ class MicrosoftGraphDelegatedAuthMiddleware(ABC):
         :exc:`~scrapy.exceptions.NotConfigured` contract.
         """
         settings = crawler.settings
+        if not settings.getbool("MS_GRAPH_AUTH_ENABLED"):
+            raise NotConfigured("Microsoft Graph authentication disabled")
         selected = settings.get("MS_GRAPH_AUTH_METHOD", "device_code").strip().lower()
         if selected != cls.auth_method:
             raise NotConfigured
+        scopes = settings.getlist("MS_GRAPH_SCOPES")
+        if not scopes:
+            raise RuntimeError(
+                "Microsoft Graph resource must configure MS_GRAPH_SCOPES"
+            )
         return cls(
             client_id=settings["MS_GRAPH_CLIENT_ID"],
             authority=settings["MS_GRAPH_AUTHORITY"],
-            scopes=settings.getlist("MS_GRAPH_SCOPES"),
+            scopes=scopes,
             token_cache_path=settings["MS_GRAPH_TOKEN_CACHE"],
             account_username=settings["MS_GRAPH_ACCOUNT_USERNAME"],
             stats=crawler.stats,

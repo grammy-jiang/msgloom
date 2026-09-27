@@ -6,13 +6,17 @@ contracts.
 from __future__ import annotations
 
 import pytest
+from scrapy import Spider
+from scrapy.crawler import Crawler
 from scrapy.extensions.periodic_log import PeriodicLog
 from scrapy.settings import Settings, default_settings
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
 import message_ingest.settings as project_settings
+from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.outlook_full import OutlookFullSpider
 
 
 def _settings() -> Settings:
@@ -65,12 +69,12 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
         ]
         != 950
     ):
         pytest.fail(
-            'Expected: middlewares[ "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware" ] == 950'
+            'Expected: middlewares[ "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware" ] == 950'
         )
     if any("evidence" in key.lower() for key in middlewares):
         pytest.fail(
@@ -190,6 +194,55 @@ def test_project_registers_custom_outlook_commands() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "spider_cls",
+    [OutlookDiscoverSpider, OutlookDeltaSpider, OutlookFullSpider],
+)
+def test_outlook_mail_resource_owns_graph_scope(spider_cls) -> None:
+    if project_settings.MS_GRAPH_AUTH_ENABLED is not False:
+        pytest.fail("Expected project-wide Graph auth to be disabled")
+    if project_settings.MS_GRAPH_SCOPES != []:
+        pytest.fail("Expected project-wide MS_GRAPH_SCOPES to be empty")
+    crawler = get_crawler(spider_cls)
+    if crawler.settings.getbool("MS_GRAPH_AUTH_ENABLED") is not True:
+        pytest.fail("Expected Outlook Mail spider to enable Graph auth")
+    if crawler.settings.getlist("MS_GRAPH_SCOPES") != ["Mail.Read"]:
+        pytest.fail(
+            'Expected Outlook Mail spider to own MS_GRAPH_SCOPES=["Mail.Read"]'
+        )
+
+
+class NonGraphSpider(Spider):
+    """Fixture resource that must not inherit Microsoft Graph auth."""
+
+    name = "non_graph"
+
+
+def test_non_graph_resource_does_not_inherit_microsoft_auth() -> None:
+    crawler = Crawler(NonGraphSpider, _settings())
+    if crawler.settings.getbool("MS_GRAPH_AUTH_ENABLED") is not False:
+        pytest.fail("Expected non-Graph resource to leave Graph auth disabled")
+    if crawler.settings.getlist("MS_GRAPH_SCOPES") != []:
+        pytest.fail("Expected non-Graph resource to have no Graph scopes")
+
+
+def test_command_line_scope_override_wins_over_mail_default() -> None:
+    settings = _settings()
+    settings.set(
+        "MS_GRAPH_SCOPES",
+        "User.Read,Mail.ReadBasic",
+        priority="cmdline",
+    )
+    crawler = Crawler(OutlookDiscoverSpider, settings)
+    if crawler.settings.getlist("MS_GRAPH_SCOPES") != [
+        "User.Read",
+        "Mail.ReadBasic",
+    ]:
+        pytest.fail(
+            "Expected command-line scope setting to override spider default"
+        )
+
+
 def test_default_auth_method_is_device_code_and_both_components_are_registered() -> (
     None
 ):
@@ -199,21 +252,21 @@ def test_default_auth_method_is_device_code_and_both_components_are_registered()
     middlewares = settings.getdict("DOWNLOADER_MIDDLEWARES")
     if (
         middlewares[
-            "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
         ]
         != 950
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"] == 950'
+            'Expected: middlewares["message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"] == 950'
         )
     if (
         middlewares[
-            "message_ingest.middlewares.auth.MicrosoftGraphInteractiveAuthMiddleware"
+            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware"
         ]
         != 951
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.auth.MicrosoftGraphInteractiveAuthMiddleware"] == 951'
+            'Expected: middlewares["message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware"] == 951'
         )
 
 

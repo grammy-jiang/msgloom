@@ -8,11 +8,13 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+from scrapy import Spider
+from scrapy.exceptions import NotConfigured
 from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.middlewares.auth import (
+from message_ingest.providers.microsoft_graph.auth import (
     MicrosoftGraphDeviceCodeAuthMiddleware,
     MicrosoftGraphInteractiveAuthMiddleware,
 )
@@ -22,6 +24,7 @@ def _settings(
     tmp_path, *, username: str = "", auth_method: str = "device_code"
 ) -> dict:
     return {
+        "MS_GRAPH_AUTH_ENABLED": True,
         "MS_GRAPH_AUTH_METHOD": auth_method,
         "MS_GRAPH_CLIENT_ID": "test-client-id",
         "MS_GRAPH_AUTHORITY": "https://login.microsoftonline.com/common",
@@ -40,6 +43,73 @@ def _middleware(cls, tmp_path, *, username: str = ""):
         )
     )
     return build_from_crawler(cls, crawler)
+
+
+@pytest.mark.parametrize(
+    "middleware_cls",
+    [
+        MicrosoftGraphDeviceCodeAuthMiddleware,
+        MicrosoftGraphInteractiveAuthMiddleware,
+    ],
+)
+def test_outlook_resource_scope_reaches_selected_auth_middleware(
+    tmp_path,
+    middleware_cls,
+) -> None:
+    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "MS_GRAPH_AUTH_METHOD": middleware_cls.auth_method,
+            "MS_GRAPH_CLIENT_ID": "test-client-id",
+            "MS_GRAPH_AUTHORITY": "https://login.microsoftonline.com/common",
+            "MS_GRAPH_TOKEN_CACHE": str(tmp_path / "token-cache.json"),
+            "MS_GRAPH_ACCOUNT_USERNAME": "",
+        },
+    )
+    middleware = build_from_crawler(middleware_cls, crawler)
+    if middleware.scopes != ["Mail.Read"]:
+        pytest.fail('Expected: middleware.scopes == ["Mail.Read"]')
+
+
+class NonGraphSpider(Spider):
+    """Fixture spider for provider applicability."""
+
+    name = "non_graph"
+
+
+def test_non_graph_resource_disables_graph_auth(tmp_path) -> None:
+    crawler = get_crawler(
+        NonGraphSpider,
+        settings_dict={
+            "MS_GRAPH_AUTH_METHOD": "device_code",
+            "MS_GRAPH_CLIENT_ID": "test-client-id",
+            "MS_GRAPH_AUTHORITY": "https://login.microsoftonline.com/common",
+            "MS_GRAPH_TOKEN_CACHE": str(tmp_path / "token-cache.json"),
+            "MS_GRAPH_ACCOUNT_USERNAME": "",
+        },
+    )
+    with pytest.raises(NotConfigured):
+        build_from_crawler(MicrosoftGraphDeviceCodeAuthMiddleware, crawler)
+
+
+@pytest.mark.parametrize(
+    "middleware_cls",
+    [
+        MicrosoftGraphDeviceCodeAuthMiddleware,
+        MicrosoftGraphInteractiveAuthMiddleware,
+    ],
+)
+def test_auth_method_none_disables_components_before_scope_validation(
+    tmp_path,
+    middleware_cls,
+) -> None:
+    settings = _settings(tmp_path, auth_method="none")
+    settings["MS_GRAPH_SCOPES"] = []
+    crawler = get_crawler(settings_dict=settings)
+    with pytest.raises(NotConfigured):
+        build_from_crawler(middleware_cls, crawler)
 
 
 def test_device_code_auth_removes_authorization_before_native_cache(tmp_path) -> None:
@@ -250,3 +320,16 @@ def test_auth_rejects_non_string_tokens_before_setting_authorization(
 
     if b"Authorization" in request.headers:
         pytest.fail('Expected: b"Authorization" not in request.headers')
+
+
+
+def test_selected_graph_auth_requires_resource_scopes(tmp_path) -> None:
+    settings = _settings(tmp_path)
+    settings["MS_GRAPH_SCOPES"] = []
+    crawler = get_crawler(settings_dict=settings)
+
+    with pytest.raises(
+        RuntimeError,
+        match="Microsoft Graph resource must configure MS_GRAPH_SCOPES",
+    ):
+        build_from_crawler(MicrosoftGraphDeviceCodeAuthMiddleware, crawler)

@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import scrapy
 from scrapy.http import Response
+from scrapy.settings import BaseSettings
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.python.failure import Failure
 
@@ -33,6 +34,13 @@ class OutlookMailSpider(scrapy.Spider, ABC):
 
     allowed_domains: ClassVar[list[str]] = ["graph.microsoft.com"]
     graph_root = "https://graph.microsoft.com/v1.0"
+
+    @classmethod
+    def update_settings(cls, settings: BaseSettings) -> None:
+        """Enable Graph auth and Mail scopes before crawler components build."""
+        settings.set("MS_GRAPH_AUTH_ENABLED", True, priority="spider")
+        settings.set("MS_GRAPH_SCOPES", ["Mail.Read"], priority="spider")
+        super().update_settings(settings)
 
     discovery_fields = (
         "id",
