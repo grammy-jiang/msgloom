@@ -61,6 +61,40 @@ class OutlookCalendarEventItem:
 
 
 @dataclass(slots=True)
+class OutlookCalendarDeltaObservationItem:
+    """One ordered event entry from a fixed Calendar delta window."""
+
+    event_id: str
+    kind: str
+    raw: dict[str, Any]
+    observed_at: str
+    evidence_id: str
+    run_id: str
+    attempt: int
+    page_number: int
+    entry_index: int
+    start_datetime: str
+    end_datetime: str
+    removed_reason: str | None = None
+    calendar_scope: str = "default"
+
+
+@dataclass(slots=True)
+class OutlookCalendarDeltaCheckpointCandidateItem:
+    """Terminal Calendar delta cursor pending idle-time promotion."""
+
+    run_id: str
+    attempt: int
+    base_revision: int | None
+    delta_link: str
+    observed_at: str
+    evidence_id: str
+    start_datetime: str
+    end_datetime: str
+    calendar_scope: str = "default"
+
+
+@dataclass(slots=True)
 class OutlookMailItem:
     """One discovery, delta, or reconciliation observation of a message."""
 

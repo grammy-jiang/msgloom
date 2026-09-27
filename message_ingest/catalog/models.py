@@ -124,6 +124,92 @@ class CalendarEventObservation(Base):
     raw: Mapped[dict[str, object]] = mapped_column(JSON)
 
 
+class CalendarDeltaCheckpoint(Base):
+    """Committed delta cursor for one fixed default-calendar time window."""
+
+    __tablename__ = "calendar_delta_checkpoints"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "calendar_scope",
+            "start_datetime",
+            "end_datetime",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    calendar_scope: Mapped[str] = mapped_column(String(80), index=True)
+    start_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    end_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    delta_link: Mapped[str] = mapped_column(Text)
+    revision: Mapped[int] = mapped_column(Integer)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    attempt: Mapped[int] = mapped_column(Integer)
+    committed_at: Mapped[str] = mapped_column(String(40))
+
+
+class CalendarDeltaCheckpointCandidate(Base):
+    """Uncommitted terminal cursor for one Calendar delta attempt."""
+
+    __tablename__ = "calendar_delta_checkpoint_candidates"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "calendar_scope",
+            "start_datetime",
+            "end_datetime",
+            "run_id",
+            "attempt",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    calendar_scope: Mapped[str] = mapped_column(String(80), index=True)
+    start_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    end_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    attempt: Mapped[int] = mapped_column(Integer)
+    base_revision: Mapped[int | None] = mapped_column(Integer)
+    delta_link: Mapped[str] = mapped_column(Text)
+    evidence_id: Mapped[str] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40))
+    committed_at: Mapped[str | None] = mapped_column(String(40))
+
+
+class CalendarDeltaObservation(Base):
+    """One scoped event entry observed during a Calendar delta attempt."""
+
+    __tablename__ = "calendar_delta_observations"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "calendar_scope",
+            "start_datetime",
+            "end_datetime",
+            "evidence_id",
+            "entry_index",
+        ),
+    )
+
+    observation_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    calendar_scope: Mapped[str] = mapped_column(String(80), index=True)
+    start_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    end_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    attempt: Mapped[int] = mapped_column(Integer)
+    page_number: Mapped[int] = mapped_column(Integer)
+    entry_index: Mapped[int] = mapped_column(Integer)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    kind: Mapped[str] = mapped_column(String(32), index=True)
+    removed_reason: Mapped[str | None] = mapped_column(String(80))
+    evidence_id: Mapped[str] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    raw: Mapped[dict[str, object]] = mapped_column(JSON)
+
+
 class MessageRecord(Base):
     """
     Latest known message projection, keyed by source and provider message ID.

@@ -3,6 +3,9 @@
 from message_ingest.catalog.models import (
     AttachmentRecord,
     Base,
+    CalendarDeltaCheckpoint,
+    CalendarDeltaCheckpointCandidate,
+    CalendarDeltaObservation,
     CalendarEventObservation,
     CalendarEventRecord,
     CalendarRecord,
@@ -20,6 +23,9 @@ from message_ingest.catalog.store import Catalog
 __all__ = [
     "AttachmentRecord",
     "Base",
+    "CalendarDeltaCheckpoint",
+    "CalendarDeltaCheckpointCandidate",
+    "CalendarDeltaObservation",
     "CalendarEventObservation",
     "CalendarEventRecord",
     "CalendarRecord",
