@@ -10,7 +10,7 @@ from message_ingest.commands._common import (
     non_negative_int,
     page_size,
     require_no_positional_args,
-    run_outlook,
+    run_graph,
 )
 
 
@@ -64,7 +64,7 @@ class Command(ScrapyCommand):
         Validate input and start the named spider with serialized CLI values.
         """
         require_no_positional_args(args)
-        run_outlook(
+        run_graph(
             self,
             "outlook_discover",
             {

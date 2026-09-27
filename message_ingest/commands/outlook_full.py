@@ -9,7 +9,7 @@ import argparse
 from scrapy.commands import ScrapyCommand
 from scrapy.exceptions import UsageError
 
-from message_ingest.commands._common import run_outlook
+from message_ingest.commands._common import run_graph
 from message_ingest.profiles import FULL_V1
 
 
@@ -61,7 +61,7 @@ class Command(ScrapyCommand):
         )
         if not message_ids:
             raise UsageError("at least one MESSAGE_ID is required")
-        run_outlook(
+        run_graph(
             self,
             "outlook_full",
             {

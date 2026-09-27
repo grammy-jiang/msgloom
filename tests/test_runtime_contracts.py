@@ -11,7 +11,7 @@ from scrapy import Request
 from scrapy.http import TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.commands._common import run_outlook
+from message_ingest.commands._common import run_graph
 from message_ingest.commands.outlook_delta import Command
 from message_ingest.providers.microsoft_graph.errors import MicrosoftGraphErrorMiddleware
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
@@ -20,7 +20,7 @@ from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 def test_command_requires_an_initialized_crawler_process() -> None:
     """Direct command invocation must not hide a missing Scrapy process."""
     with pytest.raises(RuntimeError, match="initialize the crawler process"):
-        run_outlook(Command(), "outlook_delta", {})
+        run_graph(Command(), "outlook_delta", {})
 
 
 def test_evidence_requires_the_original_request() -> None:

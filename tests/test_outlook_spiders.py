@@ -12,6 +12,7 @@ from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft_profile import MicrosoftProfileSpider
 from message_ingest.spiders.outlook_calendar import OutlookCalendarSpider
 from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
@@ -22,6 +23,7 @@ from message_ingest.spiders.outlook_mail import OutlookMailSpider
 def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
+        "microsoft_profile": MicrosoftProfileSpider,
         "outlook_calendar": OutlookCalendarSpider,
         "outlook_discover": OutlookDiscoverSpider,
         "outlook_delta": OutlookDeltaSpider,

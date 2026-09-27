@@ -9,6 +9,7 @@ from scrapy.exceptions import UsageError
 
 if TYPE_CHECKING:
     from scrapy.commands import ScrapyCommand
+    from scrapy.crawler import Crawler
 
 
 def page_size(value: str) -> int:
@@ -39,9 +40,9 @@ def require_no_positional_args(args: list[str]) -> None:
         raise UsageError("this command does not accept positional arguments")
 
 
-def run_outlook(
+def run_graph(
     command: ScrapyCommand, spider_name: str, spider_args: dict[str, Any]
-) -> None:
+) -> Crawler:
     """
     Schedule the selected spider once and propagate bootstrap failure to the
     CLI exit code.
@@ -55,7 +56,7 @@ def run_outlook(
     process.start()
     if process.bootstrap_failed:
         command.exitcode = 1
-        return
+        return crawler
     final_status = crawler.stats.get_value("msgloom/final/status")
     identity_gate_failed = bool(
         crawler.stats.get_value("msgloom/source_identity/gate_failed_count", 0)
@@ -63,3 +64,4 @@ def run_outlook(
     spider_failed = bool(getattr(crawler.spider, "run_failed", False))
     if final_status == "failed" or identity_gate_failed or spider_failed:
         command.exitcode = 1
+    return crawler

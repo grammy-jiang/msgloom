@@ -17,9 +17,10 @@ Set `MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH=false` for unattended jobs so missing
 silent credentials fail closed instead of opening an authentication prompt.
 
 Authentication is provider infrastructure, but scopes belong to resources.
-Project defaults keep Graph auth/scopes disabled; Outlook Mail enables Graph
-auth and declares only `Mail.Read`. Calendar and Teams must declare their own
-least-privilege scopes.
+Project defaults keep Graph auth/scopes disabled. Outlook Mail declares only
+`Mail.Read`, Calendar declares `Calendars.ReadBasic`, and the one-shot
+Microsoft profile command declares `User.Read`. Future Graph resources must
+continue to own their least-privilege scopes.
 
 ## Logical source identity
 
