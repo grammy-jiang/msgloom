@@ -51,12 +51,13 @@ def _opts(
     start: str | None = None,
     end: str | None = None,
     calendar: str | None = None,
+    resource_ids: list[str] | None = None,
 ) -> argparse.Namespace:
     return argparse.Namespace(
         section="outlook",
         resource_or_action="calendar",
         action=action,
-        message_ids=[],
+        message_ids=resource_ids or [],
         json=False,
         yes=False,
         folder=None,
@@ -109,6 +110,84 @@ def test_calendar_window_maps_declared_scope() -> None:
         )
     ]:
         pytest.fail(f"Unexpected calendar window mapping: {process.calls!r}")
+
+
+def test_calendar_delta_maps_fixed_primary_calendar_scope() -> None:
+    process = _run(
+        _opts(
+            action="delta",
+            start="2026-09-27T00:00:00+10:00",
+            end="2026-10-04T00:00:00+10:00",
+            page_size=250,
+        )
+    )
+    if process.calls != [
+        (
+            "outlook_calendar_delta",
+            {
+                "start_datetime": "2026-09-27T00:00:00+10:00",
+                "end_datetime": "2026-10-04T00:00:00+10:00",
+                "page_size": "250",
+            },
+        )
+    ]:
+        pytest.fail(f"Unexpected calendar delta mapping: {process.calls!r}")
+
+
+def test_calendar_delta_rejects_named_calendar_scope() -> None:
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+    with pytest.raises(UsageError, match="--calendar"):
+        command.run(
+            [],
+            _opts(
+                action="delta",
+                start="2026-09-27T00:00:00+10:00",
+                end="2026-10-04T00:00:00+10:00",
+                calendar="calendar-1",
+            ),
+        )
+
+
+def test_calendar_full_maps_event_ids_calendar_and_page_size() -> None:
+    process = _run(
+        _opts(
+            action="full",
+            calendar="calendar-1",
+            page_size=25,
+            resource_ids=["event-1", "event-2", "event-1"],
+        )
+    )
+    if process.calls != [
+        (
+            "outlook_calendar_full",
+            {
+                "event_ids": ["event-1", "event-2"],
+                "calendar_id": "calendar-1",
+                "page_size": "25",
+            },
+        )
+    ]:
+        pytest.fail(f"Unexpected calendar full mapping: {process.calls!r}")
+
+
+def test_calendar_full_requires_event_id() -> None:
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+    with pytest.raises(UsageError, match="EVENT_ID"):
+        command.run([], _opts(action="full"))
+
+
+def test_full_keeps_opaque_positional_ids() -> None:
+    process = _run(_opts(action="full", resource_ids=["opaque,id"]))
+    if process.calls[0][1]["event_ids"] != ["opaque,id"]:
+        pytest.fail("An opaque event ID must not be split into targets")
+
+
+@pytest.mark.parametrize("calendar", ["", " ", " calendar-1"])
+def test_calendar_rejects_ambiguous_explicit_scope(calendar: str) -> None:
+    with pytest.raises(UsageError, match="--calendar"):
+        _run(_opts(action="full", resource_ids=["event"], calendar=calendar))
 
 
 def test_calendar_window_rejects_reversed_range() -> None:

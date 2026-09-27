@@ -15,6 +15,7 @@ from message_ingest.commands._common import (
     require_no_positional_args,
     run_graph,
 )
+from message_ingest.commands._microsoft_calendar import dispatch_calendar
 from message_ingest.profiles import FULL_V1
 from message_ingest.providers.microsoft_graph.auth_management import (
     MicrosoftAuthStatus,
@@ -41,11 +42,6 @@ def _aware_datetime(value: str) -> str:
     return cleaned
 
 
-def _parsed(value: str) -> datetime:
-    """Parse a value already validated by _aware_datetime."""
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
-
-
 class Command(ScrapyCommand):
     """Expose every Microsoft product below one public command namespace."""
 
@@ -55,7 +51,7 @@ class Command(ScrapyCommand):
     def syntax(self) -> str:
         return (
             "{profile,auth,outlook} [RESOURCE_OR_ACTION] [ACTION] "
-            "[MESSAGE_ID ...] [options]"
+            "[RESOURCE_ID ...] [options]"
         )
 
     def short_desc(self) -> str:
@@ -92,8 +88,11 @@ class Command(ScrapyCommand):
         parser.add_argument(
             "message_ids",
             nargs="*",
-            metavar="MESSAGE_ID",
-            help="message IDs for 'outlook mail full'",
+            metavar="RESOURCE_ID",
+            help=(
+                "message IDs for 'outlook mail full' or event IDs for "
+                "'outlook calendar full'"
+            ),
         )
         parser.add_argument(
             "--json",
@@ -290,42 +289,8 @@ class Command(ScrapyCommand):
         )
 
     def _outlook_calendar(self, opts: argparse.Namespace) -> None:
-        """Map Outlook Calendar actions to existing spiders."""
-        if opts.message_ids:
-            raise UsageError("Outlook Calendar does not accept MESSAGE_ID values")
-        if opts.action == "discover":
-            self._reject_options(opts, allowed={"page_size"})
-            run_graph(
-                self,
-                "outlook_calendar_discover",
-                {"page_size": str(opts.page_size or 100)},
-            )
-            return
-        if opts.action == "window":
-            self._reject_options(
-                opts,
-                allowed={"start", "end", "calendar", "page_size"},
-            )
-            if opts.start is None or opts.end is None:
-                raise UsageError(
-                    "calendar window requires --start and --end"
-                )
-            if _parsed(opts.start) >= _parsed(opts.end):
-                raise UsageError("--start must be earlier than --end")
-            run_graph(
-                self,
-                "outlook_calendar_window",
-                {
-                    "start_datetime": opts.start,
-                    "end_datetime": opts.end,
-                    "calendar_id": opts.calendar or "",
-                    "page_size": str(opts.page_size or 100),
-                },
-            )
-            return
-        raise UsageError(
-            "use 'microsoft outlook calendar {discover,window}'"
-        )
+        """Map Outlook Calendar actions to their resource-specific dispatcher."""
+        dispatch_calendar(self, opts, self._reject_options)
 
     def _auth_status(self, opts: argparse.Namespace) -> None:
         """Print privacy-safe local authentication diagnostics."""

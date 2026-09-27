@@ -59,6 +59,7 @@ MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
     "MSGLOOM_MS_ERROR_MIDDLEWARE_ENABLED", True
 )
 MSGLOOM_DELTA_CHECKPOINT_ENABLED = _env_bool("MSGLOOM_DELTA_CHECKPOINT_ENABLED", True)
+MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CRAWL_STATUS_ENABLED = _env_bool("MSGLOOM_CRAWL_STATUS_ENABLED", True)
 MSGLOOM_CATALOG_ENABLED = _env_bool("MSGLOOM_CATALOG_ENABLED", True)
 MSGLOOM_RAW_EVIDENCE_ENABLED = _env_bool("MSGLOOM_RAW_EVIDENCE_ENABLED", True)
@@ -91,6 +92,7 @@ EXTENSIONS = {
     "message_ingest.providers.microsoft_graph.identity_gate.MicrosoftGraphSourceIdentityExtension": 425,
     "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
     "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension": 500,
+    "message_ingest.extensions.calendar_delta_checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native

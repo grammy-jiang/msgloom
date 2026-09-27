@@ -16,6 +16,7 @@ from message_ingest.catalog import (
     CalendarDeltaCheckpointCandidate,
     Catalog,
 )
+from message_ingest.calendar_delta_state import apply_calendar_delta_state
 from message_ingest.extensions.catalog import CatalogService
 
 
@@ -193,8 +194,9 @@ class CalendarDeltaCheckpointStore:
 
         The caller owns lifecycle correctness: before calling this method it
         must prove that traversal reached its terminal delta link and that all
-        required evidence and semantic writes completed successfully. This
-        store validates only candidate identity and checkpoint revision.
+        required evidence and semantic writes completed successfully. After
+        revision CAS succeeds, this same transaction materializes the winning
+        attempt's fixed-window membership before advancing the candidate marker.
         """
         checkpoint_table = cast(Table, CalendarDeltaCheckpoint.__table__)
         candidate_table = cast(
@@ -260,6 +262,18 @@ class CalendarDeltaCheckpointStore:
                         committed_at=committed_at,
                     )
                 )
+
+            apply_calendar_delta_state(
+                connection,
+                scope=scope,
+                run_id=run_id,
+                attempt=attempt,
+                revision=revision,
+                rebaseline=(
+                    base_revision is None
+                    or int(candidate["attempt"]) > 0
+                ),
+            )
 
             connection.execute(
                 update(candidate_table)

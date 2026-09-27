@@ -124,6 +124,37 @@ class CalendarEventObservation(Base):
     raw: Mapped[dict[str, object]] = mapped_column(JSON)
 
 
+class CalendarEventAttachmentRecord(Base):
+    """Latest known attachment metadata for one Calendar event."""
+
+    __tablename__ = "calendar_event_attachments"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "event_id",
+            "attachment_id",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    attachment_id: Mapped[str] = mapped_column(Text, index=True)
+    calendar_id: Mapped[str] = mapped_column(Text, index=True)
+    attachment_type: Mapped[str | None] = mapped_column(String(96), index=True)
+    name: Mapped[str | None] = mapped_column(Text)
+    content_type: Mapped[str | None] = mapped_column(String(255))
+    size: Mapped[int | None] = mapped_column(Integer)
+    is_inline: Mapped[bool | None] = mapped_column(Boolean)
+    content_bytes_present: Mapped[bool] = mapped_column(Boolean, default=False)
+    content_status: Mapped[str] = mapped_column(String(32), index=True)
+    content_observed_at: Mapped[str | None] = mapped_column(String(40), index=True)
+    content_evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    latest_observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    latest_evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    raw: Mapped[dict[str, object]] = mapped_column(JSON)
+
+
 class CalendarDeltaCheckpoint(Base):
     """Committed delta cursor for one fixed default-calendar time window."""
 
@@ -207,6 +238,37 @@ class CalendarDeltaObservation(Base):
     removed_reason: Mapped[str | None] = mapped_column(String(80))
     evidence_id: Mapped[str] = mapped_column(String(32), index=True)
     observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    raw: Mapped[dict[str, object]] = mapped_column(JSON)
+
+
+class CalendarDeltaEventState(Base):
+    """Committed membership state for one fixed Calendar delta window."""
+
+    __tablename__ = "calendar_delta_event_states"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_id",
+            "calendar_scope",
+            "start_datetime",
+            "end_datetime",
+            "event_id",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    calendar_scope: Mapped[str] = mapped_column(String(80), index=True)
+    start_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    end_datetime: Mapped[str] = mapped_column(String(40), index=True)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    is_present: Mapped[bool] = mapped_column(Boolean, index=True)
+    last_kind: Mapped[str] = mapped_column(String(32), index=True)
+    removed_reason: Mapped[str | None] = mapped_column(String(80))
+    latest_run_id: Mapped[str] = mapped_column(String(32), index=True)
+    latest_attempt: Mapped[int] = mapped_column(Integer)
+    latest_revision: Mapped[int] = mapped_column(Integer, index=True)
+    latest_observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    latest_evidence_id: Mapped[str] = mapped_column(String(32), index=True)
     raw: Mapped[dict[str, object]] = mapped_column(JSON)
 
 

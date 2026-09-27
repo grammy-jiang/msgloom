@@ -2,8 +2,9 @@
 
 `message_ingest` is the Scrapy project within the `msgloom` repository. It owns
 message acquisition from external providers. Outlook Mail is the mature resource,
-and Microsoft Calendar now has explicit inventory and bounded-window modes that
-reuse the shared Graph provider and evidence components.
+and Microsoft Calendar now has explicit inventory, bounded-window, incremental
+delta, and targeted full-content modes that reuse the shared Graph provider and
+evidence components.
 
 The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and lockfile
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
@@ -13,13 +14,14 @@ remains `msgloom`.
 | Package | Responsibility |
 | --- | --- |
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
-| `message_ingest/extensions/delta_checkpoint.py` | Commit complete delta rounds after Scrapy becomes idle. |
+| `message_ingest/extensions/delta_checkpoint.py` | Commit complete Mail delta rounds after Scrapy becomes idle. |
+| `message_ingest/extensions/calendar_delta_checkpoint.py` | Promote complete fixed-window Calendar delta candidates after Scrapy becomes idle. |
 | `message_ingest/providers/microsoft_graph/accounts.py` | Select opaque MSAL account identities without resource semantics. |
 | `message_ingest/providers/microsoft_graph/auth_session.py` | Own crawler-scoped MSAL token/account state and source pinning. |
 | `message_ingest/providers/microsoft_graph/auth.py` | Attach/remove source-pinned credentials at the downloader boundary. |
 | `message_ingest/providers/microsoft_graph/identity_gate.py` | Verify persisted source identity before Scheduler requests execute. |
 | `message_ingest/providers/microsoft_graph/spider.py` | Graph request construction, raw evidence, terminal request failures, and logical run integrity. |
-| `message_ingest/providers/microsoft_graph/fingerprints.py` | Keep Graph representation headers in scheduler/cache request identity. |
+| `message_ingest/providers/microsoft_graph/fingerprints.py` | Keep source, Graph representation, and Calendar reset attempts in request identity. |
 | `message_ingest/providers/microsoft_graph/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
 | `message_ingest/providers/microsoft_graph/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
 | `message_ingest/providers/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
@@ -32,7 +34,13 @@ remains `msgloom`.
 | `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
 | `message_ingest/spiders/outlook_calendar_discover.py` | Inventory visible calendars through paginated Graph callbacks. |
 | `message_ingest/spiders/outlook_calendar_window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
-| `message_ingest/pipelines/calendar.py` | Store Calendar event observations after evidence linking. |
+| `message_ingest/spiders/outlook_calendar_delta.py` | Incrementally synchronize one exact primary-calendar window. |
+| `message_ingest/spiders/outlook_calendar_full.py` | Acquire rich detail and attachments for selected events. |
+| `message_ingest/pipelines/calendar.py` | Store Calendar/event/delta items after evidence linking. |
+| `message_ingest/pipelines/calendar_attachments.py` | Store Calendar attachment metadata and raw-content evidence links. |
+| `message_ingest/calendar_checkpoints.py` | Stage and atomically promote fixed-window Calendar delta cursors. |
+| `message_ingest/calendar_delta_state.py` | Apply winning delta observations to committed fixed-window membership. |
+| `message_ingest/spiders/_calendar_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
 | `message_ingest/catalog/store.py` | Perform catalog queries and transactions. |
 | `message_ingest/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
@@ -76,22 +84,78 @@ continues to serialize SQL writes across overlapping response callbacks.
 
 ## Calendar acquisition modes
 
+Calendar acquisition is intentionally split by user intent instead of making
+one Spider carry unrelated traversal and lifecycle rules.
+
 `outlook_calendar_discover` inventories calendars visible to the signed-in
 account through `/me/calendars`. Absence from one inventory is not interpreted
 as deletion.
 
 `outlook_calendar_window` requires explicit timezone-aware start/end bounds and
-uses `calendarView`, which lets Microsoft Graph expand recurring occurrences and
-exceptions inside that declared range. The window may target the default calendar
-or one explicit calendar ID. Raw evidence precedes semantic event items.
+uses `calendarView`, which expands recurring occurrences and exceptions inside
+that range. The window may target the default calendar or one explicit calendar
+ID. This is the bounded history/future-view mode and retains raw evidence before
+semantic event items.
 
-`CalendarPipeline` maintains latest calendar/event state and append-only event
-observations. Re-fetching the same Graph `changeKey` updates capture provenance
-without creating another semantic event version.
+`outlook_calendar_delta` tracks changes for one exact start/end window of the
+signed-in user's primary calendar. It follows provider next/delta links as
+opaque URLs, bypasses HTTP cache, and stores every delta entry before staging a
+terminal cursor candidate. `CalendarDeltaCheckpointExtension` promotes that
+candidate only at Scrapy idle after item processing succeeds. The checkpoint is
+scoped by logical source, primary-calendar scope, start, and end. A Graph 410
+restarts the exact window once without advancing the old committed checkpoint.
+Attempt-specific request fingerprints allow the reset to replay earlier URLs
+while retaining native duplicate filtering inside each attempt. The winning
+attempt's membership and checkpoint revision commit in one SQLite transaction.
+An expired-token reset replaces previous membership only after successful
+completion. Failed and stale competing attempts cannot change committed
+membership.
 
-Calendar delta synchronization, removal semantics, durable checkpoints, targeted
-full/detail enrichment, and JOBDIR resume remain separate Calendar work. They are
-not generalized through the Outlook Mail checkpoint machinery.
+Calendar delta supports clean JOBDIR resume with native SpiderState serialization
+and Scrapy's persistent Scheduler. `CalendarDeltaSpiderState` loads and validates
+execution facts in one `spider_opened` handler, before queued downloads start.
+The source/catalog ownership guard remains separate. A rejected window leaves
+the saved execution facts intact. Use the same Scrapy version and exact bounds
+to resume a paused job. Use a new JOBDIR for each independent delta round;
+reopening a completed job does not poll the provider again. Abrupt termination
+is outside Scrapy's clean-resume guarantee.
+
+A Calendar delta `@removed` marker is scoped to the tracked view. It is stored
+as an immutable delta observation but does not set
+`CalendarEventRecord.is_removed`, because an event that moves outside the fixed
+window is also removed from that view.
+
+`outlook_calendar_full` is targeted enrichment for one or more event IDs. It
+uses `Calendars.Read`, requests a text body, and inventories event attachments.
+File and item attachments receive a separate raw-content request; item
+attachments also receive expanded Graph item detail. Reference/unknown
+attachments remain visible in semantic metadata without an invalid raw-content
+request. Binary/base64 content is not duplicated into the attachment table:
+raw HTTP evidence owns the exact provider bytes and the semantic row stores the
+content evidence link.
+Expanded item attachments also keep nested `contentBytes` only in raw evidence.
+Attachment rows use the parent event's resolved calendar ID within the same
+source. Full acquisition currently rejects JOBDIR; rerun the target IDs to
+refresh an interrupted acquisition.
+
+`CalendarPipeline` maintains latest calendar/event state and append-only semantic
+event versions. Graph `changeKey` remains the semantic version boundary. When a
+basic view and a richer detail response share one `changeKey`, their current
+JSON projections are merged so a later basic capture cannot erase richer fields
+such as body or organizer; no extra semantic version is invented.
+If a delta page repeats an event, every entry remains in the delta observations.
+Only the final upsert on that page updates the source-wide event projection.
+
+The practical Calendar coverage is therefore:
+
+1. discover available calendars;
+2. acquire an occurrence-expanded bounded window from default or named calendar;
+3. incrementally synchronize a durable fixed primary-calendar window;
+4. enrich selected events with body and attachment content.
+
+These modes share Graph authentication, evidence capture, request fingerprinting,
+retry/privacy infrastructure, and source identity, but retain resource-specific
+state and lifecycle rules.
 
 ## Simplifications
 
@@ -152,14 +216,15 @@ resource persistence starts at priority 300. Pipeline priority orders stages for
 each item; `CONCURRENT_ITEMS` does not provide a global lock.
 See the [2.19.0 pipeline contract](https://github.com/scrapy/scrapy/blob/2.19.0/docs/topics/item-pipeline.rst).
 
-The checkpoint extension checks explicit completion state on `spider_idle`, when
-no items remain in processing. It keeps the commit synchronous because that signal
-does not support asynchronous handlers. Catalog disposal stays on `spider_closed`.
+The checkpoint extensions check explicit completion state on `spider_idle`, when
+no items remain in processing. They keep commits synchronous because that signal
+does not support asynchronous handlers. Persistence pipelines dispose the shared
+catalog in `close_spider`, after item processing and idle-time promotion.
 See the [2.19.0 signal contract](https://github.com/scrapy/scrapy/blob/2.19.0/docs/topics/signals.rst).
 
 ## Validation
 
 Run `.venv/bin/python -m pytest -q` and `.venv/bin/python -m scrapy check`.
-The tests include local Graph crawls for all three commands, authentication and
+The tests include local Graph crawls for Mail and Calendar commands, authentication and
 retry boundaries, evidence replay, checkpoint failure handling, and JOBDIR resume.
 Run Python LSP diagnostics on both `message_ingest/` and `tests/` after changing imports.

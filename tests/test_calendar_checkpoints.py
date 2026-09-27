@@ -10,52 +10,18 @@ import pytest
 from sqlalchemy import create_engine, insert, inspect, select
 from sqlalchemy.exc import DBAPIError
 
-from message_ingest.catalog import Base, CalendarRecord, Catalog
+from message_ingest.catalog import (
+    Base,
+    CalendarDeltaEventState,
+    CalendarRecord,
+    Catalog,
+)
 from message_ingest.calendar_checkpoints import (
     CalendarDeltaCheckpointConflict,
     CalendarDeltaCheckpointStore,
 )
 
-START = "2026-10-01T00:00:00+00:00"
-END = "2026-11-01T00:00:00+00:00"
-
-
-def _url(tmp_path: Path) -> str:
-    return f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
-
-
-def _store(
-    tmp_path: Path,
-    *,
-    source_id: str = "source-1",
-    start: str = START,
-    end: str = END,
-) -> CalendarDeltaCheckpointStore:
-    return CalendarDeltaCheckpointStore(
-        _url(tmp_path),
-        source_id=source_id,
-        start_datetime=start,
-        end_datetime=end,
-    )
-
-
-def _candidate(
-    store: CalendarDeltaCheckpointStore,
-    *,
-    run_id: str,
-    attempt: int,
-    base_revision: int | None,
-    delta_link: str,
-    evidence_id: str,
-) -> None:
-    store.write_candidate(
-        run_id=run_id,
-        attempt=attempt,
-        base_revision=base_revision,
-        delta_link=delta_link,
-        evidence_id=evidence_id,
-        observed_at="2026-10-02T00:00:00+00:00",
-    )
+from calendar_checkpoint_helpers import _candidate, _observation, _store, _url
 
 
 def test_candidate_does_not_advance_committed_cursor(tmp_path: Path) -> None:
@@ -297,6 +263,17 @@ def test_promotion_failure_rolls_back_checkpoint_and_candidate_marker(
         connect_args={"autocommit": True},
     )
     try:
+        _observation(
+            store,
+            run_id="run-failure",
+            attempt=0,
+            event_id="event-failure",
+            kind="upsert",
+            page_number=1,
+            entry_index=0,
+            evidence_id="event-evidence-failure",
+            raw={"id": "event-failure"},
+        )
         _candidate(
             store,
             run_id="run-failure",
@@ -322,6 +299,11 @@ def test_promotion_failure_rolls_back_checkpoint_and_candidate_marker(
 
         if store.get_checkpoint() is not None:
             pytest.fail("Expected failed promotion to roll back checkpoint")
+        with store.catalog.Session() as session:
+            if session.scalar(select(CalendarDeltaEventState)) is not None:
+                pytest.fail(
+                    "Expected failed promotion to roll back committed view state"
+                )
         candidate = store.load_candidate(
             run_id="run-failure",
             attempt=0,
@@ -336,6 +318,12 @@ def test_promotion_failure_rolls_back_checkpoint_and_candidate_marker(
         state = store.commit(run_id="run-failure", attempt=0)
         if state.revision != 1:
             pytest.fail("Expected promotion to succeed after rollback recovery")
+        with store.catalog.Session() as session:
+            view = session.scalar(select(CalendarDeltaEventState))
+            if view is None or view.event_id != "event-failure":
+                pytest.fail(
+                    "Expected recovered promotion to materialize view state"
+                )
     finally:
         engine.dispose()
         store.close()
@@ -422,6 +410,7 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
     delta_tables = {
         "calendar_delta_checkpoints",
         "calendar_delta_checkpoint_candidates",
+        "calendar_delta_event_states",
         "calendar_delta_observations",
     }
     previous_tables = [

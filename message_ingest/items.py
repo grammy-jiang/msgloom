@@ -61,6 +61,32 @@ class OutlookCalendarEventItem:
 
 
 @dataclass(slots=True)
+class OutlookCalendarAttachmentItem:
+    """One attachment metadata/content observation for a Calendar event."""
+
+    event_id: str
+    attachment_id: str
+    attachment_type: str | None
+    raw: dict[str, Any]
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+    calendar_id: str = "default"
+    content_bytes_present: bool = False
+
+
+@dataclass(slots=True)
+class OutlookCalendarAttachmentContentItem:
+    """Successful raw-content acquisition for one Calendar attachment."""
+
+    event_id: str
+    attachment_id: str
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+
+
+@dataclass(slots=True)
 class OutlookCalendarDeltaObservationItem:
     """One ordered event entry from a fixed Calendar delta window."""
 

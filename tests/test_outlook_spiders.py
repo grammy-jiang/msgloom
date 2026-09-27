@@ -13,8 +13,14 @@ from scrapy.utils.project import get_project_settings
 
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft_profile import MicrosoftProfileSpider
+from message_ingest.spiders.outlook_calendar_delta import (
+    OutlookCalendarDeltaSpider,
+)
 from message_ingest.spiders.outlook_calendar_discover import (
     OutlookCalendarDiscoverSpider,
+)
+from message_ingest.spiders.outlook_calendar_full import (
+    OutlookCalendarFullSpider,
 )
 from message_ingest.spiders.outlook_calendar_window import (
     OutlookCalendarWindowSpider,
@@ -29,7 +35,9 @@ def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
         "microsoft_profile": MicrosoftProfileSpider,
+        "outlook_calendar_delta": OutlookCalendarDeltaSpider,
         "outlook_calendar_discover": OutlookCalendarDiscoverSpider,
+        "outlook_calendar_full": OutlookCalendarFullSpider,
         "outlook_calendar_window": OutlookCalendarWindowSpider,
         "outlook_discover": OutlookDiscoverSpider,
         "outlook_delta": OutlookDeltaSpider,
@@ -56,6 +64,8 @@ def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
         (OutlookDiscoverSpider, {"page_size": "0"}, "page_size"),
         (OutlookDiscoverSpider, {"max_pages": "-1"}, "max_pages"),
         (OutlookDeltaSpider, {"page_size": "1001"}, "page_size"),
+        (OutlookCalendarFullSpider, {"event_ids": " , "}, "event ID"),
+        (OutlookCalendarFullSpider, {"event_ids": "e1", "page_size": "0"}, "page_size"),
         (OutlookFullSpider, {"message_ids": " , "}, "message ID"),
         (OutlookFullSpider, {"message_ids": "m1", "operation": "other"}, "operation"),
         (OutlookFullSpider, {"message_ids": "m1", "profile": "other"}, "profile"),

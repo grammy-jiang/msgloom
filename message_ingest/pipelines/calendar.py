@@ -9,13 +9,25 @@ from uuid import uuid4
 from scrapy.exceptions import NotConfigured
 from sqlalchemy import select
 
+from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.catalog import (
+    CalendarDeltaObservation,
     CalendarEventObservation,
     CalendarEventRecord,
     CalendarRecord,
 )
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import OutlookCalendarEventItem, OutlookCalendarItem
+from message_ingest.items import (
+    OutlookCalendarAttachmentContentItem,
+    OutlookCalendarAttachmentItem,
+    OutlookCalendarDeltaCheckpointCandidateItem,
+    OutlookCalendarDeltaObservationItem,
+    OutlookCalendarEventItem,
+    OutlookCalendarItem,
+)
+from message_ingest.pipelines.calendar_attachments import (
+    CalendarAttachmentStore,
+)
 
 
 class CalendarPipeline:
@@ -41,6 +53,10 @@ class CalendarPipeline:
         self.source_id = source_id
         self.stats = stats
         self._write_lock = service.write_lock
+        self._attachments = CalendarAttachmentStore(
+            self.catalog,
+            source_id=source_id,
+        )
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -77,6 +93,49 @@ class CalendarPipeline:
                 )
             self._inc("msgloom/calendar/event_item_processed_count")
             self._inc(f"msgloom/calendar/event_{outcome}_count")
+            return item
+
+        if isinstance(item, OutlookCalendarAttachmentItem):
+            async with self._write_lock:
+                outcome = await asyncio.to_thread(
+                    self._attachments.persist_metadata,
+                    item,
+                )
+            self._inc("msgloom/calendar/attachment_item_processed_count")
+            self._inc(f"msgloom/calendar/attachment_{outcome}_count")
+            return item
+
+        if isinstance(item, OutlookCalendarAttachmentContentItem):
+            async with self._write_lock:
+                outcome = await asyncio.to_thread(
+                    self._attachments.persist_content,
+                    item,
+                )
+            self._inc("msgloom/calendar/attachment_content_processed_count")
+            self._inc(
+                f"msgloom/calendar/attachment_content_{outcome}_count"
+            )
+            return item
+
+        if isinstance(item, OutlookCalendarDeltaObservationItem):
+            async with self._write_lock:
+                outcome = await asyncio.to_thread(
+                    self._persist_delta_observation_sync,
+                    item,
+                )
+            self._inc("msgloom/calendar/delta_observation_processed_count")
+            self._inc(
+                f"msgloom/calendar/delta_observation_{outcome}_count"
+            )
+            return item
+
+        if isinstance(item, OutlookCalendarDeltaCheckpointCandidateItem):
+            async with self._write_lock:
+                await asyncio.to_thread(
+                    self._persist_delta_candidate_sync,
+                    item,
+                )
+            self._inc("msgloom/calendar/delta_candidate_processed_count")
             return item
 
         return item
@@ -197,14 +256,31 @@ class CalendarPipeline:
                 )
                 session.add(record)
 
-            self._apply_event(record, item, calendar_id=calendar_id)
+            same_version = (
+                not created
+                and self._same_semantic_version(
+                    previous_change_key,
+                    self._string(raw.get("changeKey")),
+                    previous_raw,
+                    raw,
+                )
+            )
+            effective_raw = raw
+            if same_version and previous_raw is not None:
+                # A richer detail response and a basic calendarView response
+                # can share one Graph changeKey. Preserve fields learned from
+                # either representation instead of letting a later basic
+                # capture downgrade current state.
+                effective_raw = {**previous_raw, **raw}
 
-            if not created and self._same_semantic_version(
-                previous_change_key,
-                record.change_key,
-                previous_raw,
-                raw,
-            ):
+            self._apply_event(
+                record,
+                item,
+                calendar_id=calendar_id,
+                raw=effective_raw,
+            )
+
+            if same_version:
                 return "unchanged"
 
             session.add(
@@ -224,15 +300,83 @@ class CalendarPipeline:
             )
             return "created" if created else "changed"
 
+    def _persist_delta_observation_sync(
+        self,
+        item: OutlookCalendarDeltaObservationItem,
+    ) -> str:
+        """
+        Append one exact-window delta entry without inferring global deletion.
+
+        Graph can emit @removed when an event leaves the tracked date range, so
+        scoped removals are retained as delta observations rather than setting
+        the global CalendarEventRecord.is_removed flag.
+        """
+        with self.catalog.Session() as session, session.begin():
+            replay = session.scalar(
+                select(CalendarDeltaObservation.observation_id).filter_by(
+                    source_id=self.source_id,
+                    calendar_scope=item.calendar_scope,
+                    start_datetime=item.start_datetime,
+                    end_datetime=item.end_datetime,
+                    evidence_id=item.evidence_id,
+                    entry_index=item.entry_index,
+                )
+            )
+            if replay is not None:
+                return "replay"
+            session.add(
+                CalendarDeltaObservation(
+                    observation_id=uuid4().hex,
+                    source_id=self.source_id,
+                    calendar_scope=item.calendar_scope,
+                    start_datetime=item.start_datetime,
+                    end_datetime=item.end_datetime,
+                    run_id=item.run_id,
+                    attempt=item.attempt,
+                    page_number=item.page_number,
+                    entry_index=item.entry_index,
+                    event_id=item.event_id,
+                    kind=item.kind,
+                    removed_reason=item.removed_reason,
+                    evidence_id=item.evidence_id,
+                    observed_at=item.observed_at,
+                    raw=item.raw,
+                )
+            )
+        return "created"
+
+    def _persist_delta_candidate_sync(
+        self,
+        item: OutlookCalendarDeltaCheckpointCandidateItem,
+    ) -> None:
+        """Stage one terminal cursor; idle-time validation owns promotion."""
+        store = CalendarDeltaCheckpointStore(
+            self.catalog,
+            source_id=self.source_id,
+            start_datetime=item.start_datetime,
+            end_datetime=item.end_datetime,
+            calendar_scope=item.calendar_scope,
+        )
+        store.write_candidate(
+            run_id=item.run_id,
+            attempt=item.attempt,
+            base_revision=item.base_revision,
+            delta_link=item.delta_link,
+            evidence_id=item.evidence_id,
+            observed_at=item.observed_at,
+        )
+
     def _apply_event(
         self,
         record: CalendarEventRecord,
         item: OutlookCalendarEventItem,
         *,
         calendar_id: str,
+        raw: dict[str, object] | None = None,
     ) -> None:
-        """Copy searchable projections while retaining the raw provider JSON."""
-        raw = item.raw
+        """Copy searchable projections while retaining the richest current JSON."""
+        if raw is None:
+            raw = item.raw
         start = raw.get("start")
         end = raw.get("end")
         record.calendar_id = calendar_id
@@ -277,6 +421,7 @@ class CalendarPipeline:
                 "Calendar observed_at must include a timezone offset"
             )
         return parsed
+
     @staticmethod
     def _same_semantic_version(
         old_change_key: str | None,
