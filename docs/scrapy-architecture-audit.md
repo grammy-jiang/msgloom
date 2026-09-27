@@ -80,23 +80,17 @@ Downloader.
 
 Verdict: correct component.
 
-Current implementations:
+Current components:
 
-- `MicrosoftGraphDeviceCodeAuthMiddleware`
-- `MicrosoftGraphInteractiveAuthMiddleware`
+- `MicrosoftGraphAuthSession` owns one crawler MSAL cache, account pin and token;
+- device-code/interactive downloader middleware are selectable thin adapters;
+- `MicrosoftGraphSourceIdentityExtension` verifies persisted source identity
+  before Scheduler requests execute.
 
-Both are registered as Scrapy components. Each evaluates final crawler settings
-in `from_crawler()` and raises `NotConfigured` unless selected by
-`MS_GRAPH_AUTH_METHOD`. This allows command-line/project setting overrides to
-select the authentication method without changing Spider code.
-
-Authentication middleware is limited to authentication concerns:
-
-- token acquisition and MSAL token cache;
-- cached-account selection;
-- adding `Authorization` only for `graph.microsoft.com`;
-- one authentication-specific 401 refresh retry;
-- removing `Authorization` before Scrapy HttpCache can persist request headers.
+Account selection and token acquisition therefore remain provider
+authentication concerns, while provider-independent source binding lives in
+`message_ingest/acquisition/source_identity.py`. The downloader boundary still
+owns Bearer injection/removal and the one authentication-specific 401 retry.
 
 ### Downloader Middleware — Microsoft Graph throttling
 
@@ -341,4 +335,4 @@ burden.
 - Progressive Enrichment policy on top of the implemented Enrich versus Refresh
   semantics;
 - request-priority policy once enrichment is automatic;
-- multi-account source identity and configuration.
+- explicit migration tooling before existing V1 tables require in-place schema changes.

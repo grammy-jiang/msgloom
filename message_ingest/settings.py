@@ -85,8 +85,10 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 EXTENSIONS = {
+    "message_ingest.acquisition.source_context.SourceContextExtension": 50,
     # These priorities do not order signal handlers. Checkpoint safety depends
     # on Scrapy's idle condition and explicit completed-work sets.
+    "message_ingest.providers.microsoft_graph.identity_gate.MicrosoftGraphSourceIdentityExtension": 425,
     "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
     "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension": 500,
     "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 525,
@@ -112,6 +114,8 @@ PERIODIC_LOG_STATS = {
         "msgloom/graph_error/",
         "msgloom/graph_error_retry/",
         "msgloom/auth/",
+        "msgloom/source_identity/",
+        "msgloom/source_context/",
         "msgloom/persistence/",
         "msgloom/lifecycle/",
         "msgloom/final/",
@@ -194,6 +198,10 @@ MSGLOOM_DATABASE_URL = os.getenv(
 )
 MSGLOOM_RAW_EVIDENCE_DIR = os.getenv("MSGLOOM_RAW_EVIDENCE_DIR", "var/acquisition/raw")
 MSGLOOM_SOURCE_ID = os.getenv("MSGLOOM_SOURCE_ID", "microsoft-outlook-default")
+MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
+# Legacy identity bootstrap must be an explicit invocation-scoped Scrapy
+# setting (for example ``-s ...``), never a sticky environment default.
+MSGLOOM_SOURCE_IDENTITY_BOOTSTRAP_CONFIRM = ""
 
 MS_GRAPH_CLIENT_ID = os.getenv("MSGLOOM_MS_CLIENT_ID", "")
 MS_GRAPH_AUTHORITY = os.getenv(
@@ -202,6 +210,9 @@ MS_GRAPH_AUTHORITY = os.getenv(
 # Resource spiders declare least-privilege Graph scopes with custom_settings.
 MS_GRAPH_SCOPES: list[str] = []
 MS_GRAPH_ACCOUNT_USERNAME = os.getenv("MSGLOOM_MS_USERNAME", "")
+MS_GRAPH_AUTH_ALLOW_INTERACTIVE = _env_bool(
+    "MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH", True
+)
 MS_GRAPH_ERROR_MAX_RETRIES = int(os.getenv("MSGLOOM_MS_ERROR_MAX_RETRIES", "8"))
 MS_GRAPH_ERROR_FALLBACK_BASE_SECONDS = int(
     os.getenv("MSGLOOM_MS_ERROR_FALLBACK_BASE_SECONDS", "1")

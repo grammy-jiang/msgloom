@@ -116,6 +116,12 @@ scrapy crawl outlook_delta -a page_size=100 -a reconcile_global=1
 scrapy crawl outlook_full -a message_ids=MESSAGE_ID_1,MESSAGE_ID_2 -a operation=enrich
 ```
 
+The low-level `scrapy crawl` entry points are for debugging. A controlled
+`CloseSpider`, including a source-identity gate close, does not by itself map
+to a nonzero native `scrapy crawl` exit code. Operational scripts should use
+the Outlook-specific commands, which convert bootstrap, identity-gate, and
+final failed status into exit code 1.
+
 `outlook_mail` is now an abstract base and is no longer a crawl target.
 Replace old `scrapy crawl outlook_mail` invocations with the matching command
 above. The `sync_mode` argument is no longer needed.

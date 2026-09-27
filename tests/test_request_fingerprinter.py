@@ -6,12 +6,25 @@ from __future__ import annotations
 
 import pytest
 from scrapy import Request
+from scrapy.utils.test import get_crawler
 
 from message_ingest.providers.microsoft_graph.fingerprints import RepresentationAwareRequestFingerprinter
+from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+
+def _fingerprinter() -> RepresentationAwareRequestFingerprinter:
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "MSGLOOM_SOURCE_ID": "fingerprint-test-source",
+            "MSGLOOM_DATABASE_URL": "sqlite:///:memory:",
+        },
+    )
+    return RepresentationAwareRequestFingerprinter.from_crawler(crawler)
 
 
 def test_graph_accept_header_changes_request_identity() -> None:
-    fingerprinter = RepresentationAwareRequestFingerprinter()
+    fingerprinter = _fingerprinter()
     json_request = Request(
         "https://graph.microsoft.com/v1.0/me/messages/1/$value",
         headers={"Accept": "application/json"},
@@ -29,7 +42,7 @@ def test_graph_accept_header_changes_request_identity() -> None:
 
 
 def test_graph_prefer_header_changes_request_identity() -> None:
-    fingerprinter = RepresentationAwareRequestFingerprinter()
+    fingerprinter = _fingerprinter()
     ordinary = Request("https://graph.microsoft.com/v1.0/me/messages")
     immutable = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
@@ -42,7 +55,7 @@ def test_graph_prefer_header_changes_request_identity() -> None:
 
 
 def test_authorization_token_does_not_change_request_identity() -> None:
-    fingerprinter = RepresentationAwareRequestFingerprinter()
+    fingerprinter = _fingerprinter()
     one = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
         headers={"Accept": "application/json", "Authorization": "Bearer one"},
@@ -55,3 +68,8 @@ def test_authorization_token_does_not_change_request_identity() -> None:
         pytest.fail(
             "Expected: fingerprinter.fingerprint(one) == fingerprinter.fingerprint(two)"
         )
+
+
+def test_direct_fingerprinter_construction_requires_source_context() -> None:
+    with pytest.raises(ValueError, match="requires source context"):
+        RepresentationAwareRequestFingerprinter(b"")

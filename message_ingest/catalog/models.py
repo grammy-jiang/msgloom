@@ -12,6 +12,19 @@ class Base(DeclarativeBase):
     """
 
 
+class SourceBinding(Base):
+    """Stable logical source bound to one hashed external provider account."""
+
+    __tablename__ = "source_bindings"
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(64), index=True)
+    key_scheme: Mapped[str] = mapped_column(String(96))
+    account_key_sha256: Mapped[str] = mapped_column(String(64), index=True)
+    binding_method: Mapped[str] = mapped_column(String(32))
+    bound_at: Mapped[str] = mapped_column(String(40))
+
+
 class RawHttpEvidence(Base):
     """
     One captured exchange, with credential-free headers and digest-named

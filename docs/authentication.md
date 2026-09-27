@@ -1,99 +1,111 @@
-# Microsoft Graph authentication
+# Microsoft Graph authentication and source identity
 
-msgloom keeps Microsoft Graph authentication inside dedicated Scrapy downloader
-middleware. Spiders do not acquire tokens and Item Pipelines do not handle
-credentials.
+msgloom separates three concerns:
 
-## Authentication selection
+- `MicrosoftGraphAuthSession` owns crawler-scoped MSAL account/token state.
+- downloader auth middleware only attaches/removes Graph credentials.
+- `MicrosoftGraphSourceIdentityExtension` verifies the persisted logical source
+  before Scrapy begins executing Scheduler requests.
 
-Select the authentication flow per crawl through:
+Spiders never acquire tokens and Item Pipelines never handle credentials.
 
-`MSGLOOM_MS_AUTH_METHOD`
+## Authentication and resource scopes
 
-Supported values today:
+`MSGLOOM_MS_AUTH_METHOD` selects `device_code` (default) or `interactive`.
+Both thin downloader adapters borrow the same crawler-scoped auth session.
+Set `MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH=false` for unattended jobs so missing
+silent credentials fail closed instead of opening an authentication prompt.
 
-- `device_code` (default)
-- `interactive`
+Authentication is provider infrastructure, but scopes belong to resources.
+Project defaults keep Graph auth/scopes disabled; Outlook Mail enables Graph
+auth and declares only `Mail.Read`. Calendar and Teams must declare their own
+least-privilege scopes.
 
-Both authentication middleware classes are registered in Scrapy's downloader
-middleware component list. During component construction each reads the final
-crawler settings and raises Scrapy `NotConfigured` unless its `auth_method`
-matches `MS_GRAPH_AUTH_METHOD`. Consequently exactly one authentication
-implementation participates in the request/response chain, while command-line
-or project-level setting overrides can select the flow without changing Spider
-code.
+## Logical source identity
 
-## Resource-owned Graph scopes
+`MSGLOOM_SOURCE_ID` is a stable msgloom namespace, not a username or token
+cache account ID. A `source_bindings` row binds that source to:
 
-Authentication is provider infrastructure, but delegated permissions belong to
-the resource being acquired. Project defaults keep `MS_GRAPH_AUTH_ENABLED`
-false and `MS_GRAPH_SCOPES` empty. A Microsoft Graph resource opts into the
-provider and declares its least-privilege scope set through Spider settings
-before downloader middleware is constructed. Non-Graph resources therefore
-do not bootstrap Microsoft authentication at all.
+- provider (`microsoft_graph` today);
+- key scheme (`msal_home_account_id/sha256-v1`);
+- domain-separated SHA-256 of the opaque provider account key;
+- binding method (`auto_empty` or `bootstrap_attested`);
+- original binding timestamp.
 
-Outlook Mail currently declares:
+The raw Microsoft account key and username are not copied into the catalog.
+The MSAL credential cache remains a private credential file and still contains
+the account data MSAL needs.
 
-`MS_GRAPH_SCOPES = ["Mail.Read"]`
+For MSAL 1.39, msgloom treats `home_account_id` as an opaque stable account
+key and never parses or normalizes it. This binds the signed-in home account;
+it does not prove a tenant-specific target such as a shared mailbox.
 
-Scrapy command-line settings have higher priority than Spider settings, so an
-explicit `-s MS_GRAPH_SCOPES=...` override remains available. The auth
-middleware fails fast when it is selected for a Graph resource that forgot to
-configure any scopes. Future Calendar or Teams resources must declare their
-own permissions instead of expanding a provider-wide union of permissions.
+## Startup identity gate
 
-## Device code
+For catalog-backed live Graph crawls, the async `spider_opened` gate completes
+before the engine executes Scheduler requests. Therefore:
 
-`device_code` is the default for Raspberry Pi, SSH, CLI, and other headless
-execution environments.
+- HTTP-cache hits cannot bypass source verification;
+- queued JOBDIR requests cannot execute first;
+- externally supplied Authorization cannot select another persisted account;
+- gate failures cannot become normal request errbacks/evidence rows.
 
-The flow is:
+A failure marks the run failed and closes with `source_identity_failed`.
+Outlook custom commands convert final `status=failed` into exit code 1.
+Catalog-disabled diagnostics do not persist identity. Tests or controlled
+fixtures that intentionally bypass external identity must explicitly set
+`MSGLOOM_SOURCE_IDENTITY_REQUIRED=False`; endpoint hostnames never disable the
+gate implicitly.
 
-1. Try MSAL silent token acquisition from the local token cache.
-2. If no usable cached token or refresh token can satisfy the request, start
-   Microsoft device-code authentication.
-3. The user signs in and grants consent in a browser on any device.
-4. MSAL stores the resulting account/token state in the local token cache.
-5. Later runs normally use silent acquisition.
+## Account and token pinning
 
-## Interactive authorization code + PKCE
+The account being verified must own the token sent to Graph. Existing bindings
+select cached accounts by the hashed opaque account key, not username.
 
-`interactive` is intended for a desktop environment with a browser.
+For first binding, one cached account may be selected. `MSGLOOM_MS_USERNAME`
+can narrow the initial choice, but duplicate matches are rejected. Multiple
+cached accounts without a selector are rejected.
 
-MSAL's `acquire_token_interactive` opens browser-based sign-in and performs the
-public-client authorization-code flow with PKCE. The app registration must
-include the public-client redirect URI required by Microsoft (normally
-`http://localhost`).
+When interaction is needed, msgloom deliberately discards the token returned
+directly by device-code/browser interaction. It re-reads MSAL account state,
+selects one account, and uses `acquire_token_silent_with_error(account=...)`
+for that exact account. Only that silently reacquired token is pinned and sent
+to Graph. A 401 forced refresh follows the same pinned-account rule.
 
-Like device code, later runs first attempt silent token acquisition from the
-same MSAL token cache.
+## Legacy source bootstrap
 
-## App registration
+An empty source auto-binds. A source with historical rows but no binding is
+refused because its owner cannot be inferred safely.
 
-For a msgloom public-client app intended to support work/school and personal
-Microsoft accounts:
+Bootstrap is an operator attestation and is not environment-backed. Confirm
+the exact source for one invocation, for example:
 
-1. Register an application in Microsoft Entra.
-2. Supported account types: accounts in any organizational directory and
-   personal Microsoft accounts.
-3. Enable public client flows.
-4. Add the Microsoft Graph delegated permissions required by the enabled
-   msgloom capabilities. Outlook mail currently requires `Mail.Read`.
-5. Do not create or embed a client secret for these public-client flows.
+`-s MSGLOOM_SOURCE_IDENTITY_BOOTSTRAP_CONFIRM=microsoft-outlook-default`
 
-Default authority:
+The current historical default database uses `microsoft-outlook-default`.
+Confirm the selected Microsoft account owns that data before bootstrap.
+Bootstrap never overwrites a binding or rewrites historical rows/checkpoints.
 
-`https://login.microsoftonline.com/common`
+## Cache and JOBDIR isolation
 
-A personal-account-only installation may use `consumers` instead.
+Graph request fingerprints include a digest of the logical source plus the
+normalized catalog context, together with the representation-changing
+`Accept`/`Prefer` headers. Authorization remains excluded. Different
+source/catalog contexts therefore cannot share Graph cache or duplicate-filter
+identity; old unscoped Graph cache keys naturally miss.
+
+When JOBDIR is configured, `SourceContextExtension` creates a private marker
+before Scheduler construction. It contains only a digest of logical source
+plus normalized catalog location. Reusing a JOBDIR with another source/catalog
+fails. A non-empty legacy JOBDIR without a marker is refused.
 
 ## Configuration
 
-Required for live Microsoft Graph acquisition:
+Required for live acquisition:
 
 `MSGLOOM_MS_CLIENT_ID=<application-client-id>`
 
-Optional:
+Common optional settings:
 
 `MSGLOOM_MS_AUTH_METHOD=device_code`
 
@@ -103,72 +115,46 @@ Optional:
 
 `MSGLOOM_MS_TOKEN_CACHE=var/auth/msal-token-cache.json`
 
-`MSGLOOM_MS_USERNAME` is only a selector for an account already known to MSAL
-and a login hint for interactive browser authentication. It is not a password
-credential.
+`MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH=false`
 
-## Shared delegated-authentication behavior
+`MSGLOOM_SOURCE_IDENTITY_REQUIRED` defaults to true as a Scrapy setting.
+For a controlled fixture or diagnostic that deliberately skips provider-account
+binding, override it only for that invocation:
 
-Both current authentication middleware share only authentication concerns:
+`-s MSGLOOM_SOURCE_IDENTITY_REQUIRED=False`
 
-- acquire and cache delegated tokens with MSAL;
-- select the configured cached account;
-- attach a Bearer token only to `graph.microsoft.com` requests;
-- remove the transient `Authorization` header on the response path before
-  Scrapy's optional filesystem HTTP cache persists request headers;
-- on the first Graph HTTP 401, clear the in-memory token and retry once with a
-  forced silent refresh;
-- allow a second 401 to pass through instead of creating an authentication
-  retry loop.
+`MSGLOOM_MS_USERNAME` is only a first-binding selector/login hint. It is not
+the persisted source identity and is not a password.
 
-Authentication retries are separate from Microsoft Graph 429 throttling. The
-Graph throttling middleware and Scrapy's generic RetryMiddleware remain distinct
-components.
+## Credential and evidence boundary
 
-HTTP 401 and 403 are excluded if the development HTTP cache is explicitly
-enabled. HTTP cache is disabled by default for normal Outlook operation.
+Access/refresh tokens, provider account keys, and interactive auth state are
+not evidence. The MSAL cache is replaced atomically through a same-directory
+temporary file created as mode `0600`; a failed replacement keeps the old
+cache and leaves the in-memory cache dirty for a later retry.
 
-The serialized MSAL token cache is written with user-only file permissions
-(`0600`).
+The downloader auth middleware sends bearer credentials only to HTTPS requests
+for `graph.microsoft.com`. HTTPS-to-HTTP downgrade requests are rejected.
+`Authorization` is removed on both response and downloader-exception paths
+before Scrapy's native HTTP-cache recovery or RetryMiddleware can copy/store
+the request.
 
-## Evidence boundary
+The current cache writer does not merge simultaneous changes from independent
+processes. Until cross-process cache locking/merge is added, crawls sharing the
+same `MSGLOOM_MS_TOKEN_CACHE` should be scheduled serially or use distinct cache
+paths. Source identity still prevents a wrong account from being persisted.
 
-Access tokens and authentication request state are never evidence. The raw
-network-evidence downloader middleware persists response representation but does
-not persist the transient `Authorization` request header.
+When source identity is required for catalog-backed acquisition, an externally
+supplied Authorization header is replaced by the source-pinned token. If source
+identity is explicitly disabled, or catalog persistence is disabled, a
+diagnostic acquisition may supply its own Authorization header.
 
-## Other Microsoft authentication flows
+Authentication retry is separate from Graph throttling. The first Graph 401
+gets one forced refresh; a second 401 passes through normally.
 
-The middleware selection model is intentionally extensible, but additional
-flows should only be added when their Microsoft-supported scenario matches a
-msgloom source.
+## Future providers/resources
 
-### Legacy ROPC / username-password
-
-Not implemented today. Microsoft currently deprecates ROPC, recommends more
-secure flows, and documents that ROPC does not support personal Microsoft
-accounts. If msgloom later needs legacy work/school-account compatibility, it
-can be added as a separate explicitly selected middleware rather than changing
-the supported public-client middleware.
-
-### Client credentials
-
-Not implemented for the current personal Outlook collector. Client credentials
-is an app-only daemon flow for organizational tenants. It has no signed-in user,
-so it is not a drop-in replacement for the current `/me` delegated-mail path.
-If msgloom later supports organization-wide app-only acquisition, it should use
-its own authentication middleware and source semantics.
-
-### Integrated Windows authentication / broker
-
-These are platform- and account-environment-specific and are not useful for the
-current Raspberry Pi target. They can be added later without changing the
-Spider because authentication is isolated behind downloader middleware.
-
-## Microsoft first-party client IDs
-
-Microsoft-owned public-client IDs can be useful for diagnostics and historical
-compatibility testing. The current live development smoke tests use the
-Microsoft Graph Command Line Tools public client id, but msgloom's long-term
-deployment model should use its own app registration so application identity,
-permissions, and consent remain under the owner's control.
+Calendar and delegated Teams can share the same Microsoft home-account binding
+while owning their own scopes. App-only Teams acquisition needs a different
+key scheme because it has no user home account. A future Google provider can
+reuse `SourceIdentityService` while supplying its own stable key scheme.

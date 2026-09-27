@@ -113,16 +113,14 @@ custom middleware stack contains only HTTP-level cross-cutting concerns.
 
 ### Microsoft Graph authentication
 
-Authentication middleware only handles delegated authentication:
+`MicrosoftGraphAuthSession` owns crawler-scoped MSAL token/account state.
+The selectable downloader middleware classes are thin adapters that attach and
+remove the source-pinned credential and own one 401 replacement Request.
 
-- MSAL token acquisition/cache;
-- Bearer injection for `graph.microsoft.com`;
-- cached account selection;
-- one 401 forced-refresh replacement Request;
-- removal of Authorization before Scrapy HTTP cache persistence.
-
-Device-code and interactive-browser authentication are separate selectable
-middleware classes.
+`MicrosoftGraphSourceIdentityExtension` gates catalog-backed live Graph crawls
+from `spider_opened` before Scheduler requests execute. It binds/verifies the
+logical source against the selected opaque MSAL account identity, so HTTP cache
+and JOBDIR cannot bypass persisted account verification.
 
 ### Raw network evidence
 

@@ -10,6 +10,7 @@ from message_ingest.catalog.models import (
     MessageRecord,
     MessageSurface,
     RawHttpEvidence,
+    SourceBinding,
 )
 from message_ingest.catalog.store import Catalog
 
@@ -24,4 +25,5 @@ __all__ = [
     "MessageRecord",
     "MessageSurface",
     "RawHttpEvidence",
+    "SourceBinding",
 ]

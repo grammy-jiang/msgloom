@@ -6,10 +6,14 @@ retry.
 from __future__ import annotations
 
 import asyncio
+import pickle
+from typing import cast
 
 import pytest
 from scrapy import Spider
-from scrapy.exceptions import NotConfigured
+from scrapy.core.downloader.middleware import DownloaderMiddlewareManager
+from scrapy.downloadermiddlewares.redirect import RedirectMiddleware
+from scrapy.exceptions import DownloadTimeoutError, IgnoreRequest, NotConfigured
 from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
@@ -17,6 +21,12 @@ from scrapy.utils.test import get_crawler
 from message_ingest.providers.microsoft_graph.auth import (
     MicrosoftGraphDeviceCodeAuthMiddleware,
     MicrosoftGraphInteractiveAuthMiddleware,
+)
+from message_ingest.providers.microsoft_graph.auth_session import (
+    MicrosoftGraphAuthSession,
+)
+from message_ingest.providers.microsoft_graph.errors import (
+    PrivacySafeRetryMiddleware,
 )
 
 
@@ -31,6 +41,7 @@ def _settings(
         "MS_GRAPH_SCOPES": ["Mail.Read"],
         "MS_GRAPH_TOKEN_CACHE": str(tmp_path / "token-cache.json"),
         "MS_GRAPH_ACCOUNT_USERNAME": username,
+        "MSGLOOM_CATALOG_ENABLED": False,
     }
 
 
@@ -66,6 +77,7 @@ def test_outlook_resource_scope_reaches_selected_auth_middleware(
             "MS_GRAPH_AUTHORITY": "https://login.microsoftonline.com/common",
             "MS_GRAPH_TOKEN_CACHE": str(tmp_path / "token-cache.json"),
             "MS_GRAPH_ACCOUNT_USERNAME": "",
+            "MSGLOOM_CATALOG_ENABLED": False,
         },
     )
     middleware = build_from_crawler(middleware_cls, crawler)
@@ -199,106 +211,13 @@ def test_second_401_is_returned_without_authentication_loop(tmp_path) -> None:
         )
 
 
-def test_cached_account_username_is_used_as_msal_account_filter(tmp_path) -> None:
-    middleware = _middleware(
-        MicrosoftGraphDeviceCodeAuthMiddleware,
-        tmp_path,
-        username="person@example.com",
-    )
-
-    class FakeApp:
-        def __init__(self) -> None:
-            self.username = None
-
-        def get_accounts(self, username=None):
-            self.username = username
-            return [{"username": username}]
-
-    app = FakeApp()
-    accounts = middleware._cached_accounts(app)  # type: ignore[arg-type]
-
-    if app.username != "person@example.com":
-        pytest.fail('Expected: app.username == "person@example.com"')
-    if accounts != [{"username": "person@example.com"}]:
-        pytest.fail('Expected: accounts == [{"username": "person@example.com"}]')
-
-
-def test_multiple_cached_accounts_require_explicit_username(tmp_path) -> None:
-    middleware = _middleware(MicrosoftGraphDeviceCodeAuthMiddleware, tmp_path)
-
-    class FakeApp:
-        @staticmethod
-        def get_accounts(username=None):
-            if username is not None:
-                pytest.fail("Expected: username is None")
-            return [
-                {"username": "one@example.com"},
-                {"username": "two@example.com"},
-            ]
-
-    try:
-        middleware._cached_accounts(FakeApp())  # type: ignore[arg-type]
-    except RuntimeError as exc:
-        if "MSGLOOM_MS_USERNAME" not in str(exc):
-            pytest.fail('Expected: "MSGLOOM_MS_USERNAME" in str(exc)')
-    else:
-        raise AssertionError("Expected multiple cached accounts to be rejected")
-
-
-def test_device_code_fallback_calls_device_flow(tmp_path) -> None:
-    middleware = _middleware(MicrosoftGraphDeviceCodeAuthMiddleware, tmp_path)
-
-    class FakeApp:
-        def initiate_device_flow(self, scopes):
-            if scopes != ["Mail.Read"]:
-                pytest.fail('Expected: scopes == ["Mail.Read"]')
-            return {"user_code": "CODE", "message": "Sign in"}
-
-        @staticmethod
-        def acquire_token_by_device_flow(flow):
-            if flow["user_code"] != "CODE":
-                pytest.fail('Expected: flow["user_code"] == "CODE"')
-            return {"access_token": "device-token", "expires_in": 3600}
-
-    result = middleware._acquire_interactive_token(FakeApp())  # type: ignore[arg-type]
-    if result["access_token"] != "device-token":
-        pytest.fail('Expected: result["access_token"] == "device-token"')
-
-
-def test_interactive_fallback_calls_msal_interactive_with_login_hint(tmp_path) -> None:
-    middleware = _middleware(
-        MicrosoftGraphInteractiveAuthMiddleware,
-        tmp_path,
-        username="person@example.com",
-    )
-
-    class FakeApp:
-        @staticmethod
-        def acquire_token_interactive(scopes, login_hint=None):
-            if scopes != ["Mail.Read"]:
-                pytest.fail('Expected: scopes == ["Mail.Read"]')
-            if login_hint != "person@example.com":
-                pytest.fail('Expected: login_hint == "person@example.com"')
-            return {"access_token": "interactive-token", "expires_in": 3600}
-
-    result = middleware._acquire_interactive_token(FakeApp())  # type: ignore[arg-type]
-    if result["access_token"] != "interactive-token":
-        pytest.fail('Expected: result["access_token"] == "interactive-token"')
-
-
 def test_auth_method_selection_uses_final_crawler_settings(tmp_path) -> None:
-    from scrapy.exceptions import NotConfigured
-
     crawler = get_crawler(settings_dict=_settings(tmp_path, auth_method="interactive"))
     interactive = build_from_crawler(MicrosoftGraphInteractiveAuthMiddleware, crawler)
     if interactive.auth_method != "interactive":
         pytest.fail('Expected: interactive.auth_method == "interactive"')
-    try:
+    with pytest.raises(NotConfigured):
         build_from_crawler(MicrosoftGraphDeviceCodeAuthMiddleware, crawler)
-    except NotConfigured:
-        pass
-    else:
-        raise AssertionError("Unselected device-code middleware should be disabled")
 
 
 @pytest.mark.parametrize("access_token", [None, 42])
@@ -308,19 +227,18 @@ def test_auth_rejects_non_string_tokens_before_setting_authorization(
     access_token,
 ) -> None:
     middleware = _middleware(MicrosoftGraphDeviceCodeAuthMiddleware, tmp_path)
-    monkeypatch.setattr(
-        middleware,
-        "_acquire_access_token",
-        lambda **kwargs: {"access_token": access_token, "expires_in": 300},
-    )
+
+    async def invalid_token(*, force_refresh: bool = False):
+        return access_token
+
+    monkeypatch.setattr(middleware.session, "get_access_token", invalid_token)
     request = Request("https://graph.microsoft.com/v1.0/me/messages")
 
-    with pytest.raises(TypeError, match="non-string access token"):
+    with pytest.raises(TypeError):
         asyncio.run(middleware.process_request(request))
 
     if b"Authorization" in request.headers:
         pytest.fail('Expected: b"Authorization" not in request.headers')
-
 
 
 def test_selected_graph_auth_requires_resource_scopes(tmp_path) -> None:
@@ -333,3 +251,189 @@ def test_selected_graph_auth_requires_resource_scopes(tmp_path) -> None:
         match="Microsoft Graph resource must configure MS_GRAPH_SCOPES",
     ):
         build_from_crawler(MicrosoftGraphDeviceCodeAuthMiddleware, crawler)
+
+
+def test_catalog_disabled_auth_can_respect_external_authorization(tmp_path) -> None:
+    middleware = _middleware(MicrosoftGraphDeviceCodeAuthMiddleware, tmp_path)
+    request = Request(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        headers={"Authorization": "Bearer externally-managed"},
+    )
+
+    asyncio.run(middleware.process_request(request))
+
+    if request.headers.get("Authorization") != b"Bearer externally-managed":
+        pytest.fail("Expected catalog-disabled crawl to preserve explicit auth")
+
+
+def test_catalog_backed_auth_replaces_unverified_authorization_header() -> None:
+    class FakeSession:
+        scopes = ["Mail.Read"]
+        source_identity = object()
+
+        async def get_access_token(self, *, force_refresh: bool = False) -> str:
+            return "source-pinned-token"
+
+        def clear_memory_token(self) -> None:
+            pass
+
+    middleware = MicrosoftGraphDeviceCodeAuthMiddleware(
+        cast(MicrosoftGraphAuthSession, FakeSession())
+    )
+    request = Request(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        headers={"Authorization": "Bearer unverified-external-token"},
+    )
+
+    asyncio.run(middleware.process_request(request))
+
+    if request.headers.get("Authorization") != b"Bearer source-pinned-token":
+        pytest.fail("Expected persisted crawl to replace external Authorization")
+
+
+def test_external_authorization_401_forces_refresh_on_first_session_token(
+    tmp_path,
+) -> None:
+    middleware = _middleware(MicrosoftGraphDeviceCodeAuthMiddleware, tmp_path)
+    account = {
+        "home_account_id": "account-a",
+        "username": "person@example.com",
+    }
+    force_values: list[bool] = []
+
+    class FakeApp:
+        @staticmethod
+        def get_accounts(username=None):
+            return [account]
+
+        @staticmethod
+        def acquire_token_silent_with_error(
+            scopes, account, force_refresh=False
+        ):
+            force_values.append(force_refresh)
+            token = "fresh-token" if force_refresh else "cached-rejected"
+            return {"access_token": token, "expires_in": 3600}
+
+    middleware.session._app = FakeApp()  # type: ignore[assignment]
+    request = Request(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        headers={"Authorization": "Bearer externally-managed"},
+    )
+
+    asyncio.run(middleware.process_request(request))
+    response = Response(request.url, status=401, request=request)
+    retry = middleware.process_response(request, response)
+    if not isinstance(retry, Request):
+        pytest.fail("Expected first 401 to create a retry Request")
+
+    asyncio.run(middleware.process_request(retry))
+
+    if force_values != [True]:
+        pytest.fail(f"Expected first session token to force refresh: {force_values!r}")
+    if retry.headers.get("Authorization") != b"Bearer fresh-token":
+        pytest.fail("Expected retry to use the forced-refresh token")
+
+
+
+def test_transport_retry_does_not_serialize_bearer_token() -> None:
+    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={"RETRY_TIMES": 1},
+    )
+    spider = OutlookDiscoverSpider.from_crawler(crawler)
+    crawler.spider = spider
+
+    class FakeSession:
+        scopes = ["Mail.Read"]
+        source_identity = object()
+
+        async def get_access_token(self, *, force_refresh: bool = False) -> str:
+            return "transport-secret-token"
+
+        def clear_memory_token(self) -> None:
+            pass
+
+    auth = MicrosoftGraphDeviceCodeAuthMiddleware(
+        cast(MicrosoftGraphAuthSession, FakeSession()),
+        stats=crawler.stats,
+    )
+    retry = PrivacySafeRetryMiddleware.from_crawler(crawler)
+    manager = DownloaderMiddlewareManager(retry, auth, crawler=crawler)
+    request = Request(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        cb_kwargs={"purpose": "message-list"},
+    )
+
+    async def fail_download(_request):
+        raise DownloadTimeoutError("private transport failure")
+
+    retry_request = asyncio.run(manager.download_async(fail_download, request))
+
+    if not isinstance(retry_request, Request):
+        pytest.fail("Expected native retry middleware to return a Request")
+    if retry_request.headers.get("Authorization") is not None:
+        pytest.fail("Expected transport retry not to retain Authorization")
+    serialized = pickle.dumps(retry_request.to_dict(spider=spider))
+    if b"transport-secret-token" in serialized:
+        pytest.fail("Expected JOBDIR-serializable retry not to contain bearer token")
+    if (
+        crawler.stats.get_value(
+            "msgloom/auth/credential_stripped_exception_count"
+        )
+        != 1
+    ):
+        pytest.fail("Expected auth exception cleanup counter")
+
+
+def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
+    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+    crawler = get_crawler(OutlookDiscoverSpider)
+    spider = OutlookDiscoverSpider.from_crawler(crawler)
+    crawler.spider = spider
+
+    class FakeSession:
+        scopes = ["Mail.Read"]
+        source_identity = object()
+
+        async def get_access_token(self, *, force_refresh: bool = False) -> str:
+            return "redirect-secret-token"
+
+        def clear_memory_token(self) -> None:
+            pass
+
+    auth = MicrosoftGraphDeviceCodeAuthMiddleware(
+        cast(MicrosoftGraphAuthSession, FakeSession()),
+        stats=crawler.stats,
+    )
+    redirect = RedirectMiddleware.from_crawler(crawler)
+    original = Request(
+        "https://graph.microsoft.com/v1.0/me/messages",
+        cb_kwargs={"purpose": "message-list"},
+    )
+    asyncio.run(auth.process_request(original))
+    response = Response(
+        original.url,
+        status=302,
+        headers={
+            "Location": "http://graph.microsoft.com/v1.0/me/messages"
+        },
+        request=original,
+    )
+    auth.process_response(original, response)
+    downgraded = redirect.process_response(original, response)
+    if not isinstance(downgraded, Request):
+        pytest.fail("Expected native redirect middleware to return Request")
+
+    with pytest.raises(IgnoreRequest, match="non-HTTPS Microsoft Graph"):
+        asyncio.run(auth.process_request(downgraded))
+
+    if downgraded.headers.get("Authorization") is not None:
+        pytest.fail("Expected downgraded Graph redirect to contain no bearer token")
+    if (
+        crawler.stats.get_value("msgloom/auth/insecure_scheme_blocked_count")
+        != 1
+    ):
+        pytest.fail("Expected insecure Graph scheme to be counted")

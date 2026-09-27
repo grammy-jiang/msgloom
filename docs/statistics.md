@@ -35,6 +35,30 @@ The project replaces only the built-in RetryMiddleware class with
 retry construction, settings, metadata, and native `retry/*` stats while
 suppressing log messages that would include full Request URLs.
 
+## Source identity and execution context
+
+Source/account verification uses bounded identifier-free stats. It never
+places usernames, provider account keys, hashes, source IDs, or catalog paths
+into stat-key labels.
+
+Useful fields include:
+
+- `msgloom/source_identity/provider`
+- `msgloom/source_identity/state`: `bound|verified`
+- `msgloom/source_identity/binding_method`: `auto_empty|bootstrap_attested`
+- `msgloom/source_identity/bound_count`
+- `msgloom/source_identity/verified_count`
+- `msgloom/source_identity/mismatch_count`
+- `msgloom/source_identity/bootstrap_required_count`
+- `msgloom/source_identity/bind_error_count`
+- `msgloom/source_identity/gate_failed_count`
+- `msgloom/source_identity/gate_state`: `verified|failed|disabled|contract_check_skipped`
+- `msgloom/source_context/jobdir_verified`
+
+A source-identity gate failure happens before Scheduler requests execute and
+marks the Outlook logical run failed. JOBDIR context verification happens
+even earlier, while extensions are constructed and before Scheduler opens.
+
 ## Final execution status
 
 `OutlookCrawlStatusExtension` publishes one attempt-scoped terminal status

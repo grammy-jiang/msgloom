@@ -15,7 +15,10 @@ remains `msgloom`.
 | --- | --- |
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
 | `message_ingest/extensions/delta_checkpoint.py` | Commit complete delta rounds after Scrapy becomes idle. |
-| `message_ingest/providers/microsoft_graph/auth.py` | Device-code and browser authentication, token caching, and one 401 refresh retry. |
+| `message_ingest/providers/microsoft_graph/accounts.py` | Select opaque MSAL account identities without resource semantics. |
+| `message_ingest/providers/microsoft_graph/auth_session.py` | Own crawler-scoped MSAL token/account state and source pinning. |
+| `message_ingest/providers/microsoft_graph/auth.py` | Attach/remove source-pinned credentials at the downloader boundary. |
+| `message_ingest/providers/microsoft_graph/identity_gate.py` | Verify persisted source identity before Scheduler requests execute. |
 | `message_ingest/providers/microsoft_graph/spider.py` | Graph request construction, raw evidence, terminal request failures, and logical run integrity. |
 | `message_ingest/providers/microsoft_graph/fingerprints.py` | Keep Graph representation headers in scheduler/cache request identity. |
 | `message_ingest/providers/microsoft_graph/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
@@ -24,6 +27,8 @@ remains `msgloom`.
 | `message_ingest/providers/microsoft_graph/log_privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
 | `message_ingest/acquisition/contracts.py` | Define provider-independent structural contracts for evidence-linked items. |
+| `message_ingest/acquisition/source_identity.py` | Bind logical sources to hashed opaque provider identities. |
+| `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
 | `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
@@ -44,6 +49,12 @@ string identifiers in failure context. `OutlookMailSpider` adds `Mail.Read`,
 the immutable-ID preference, and Mail item projection. Provider integrity and
 privacy extensions apply to every Graph resource; Outlook status/checkpoint
 extensions remain resource-specific.
+
+`MSGLOOM_SOURCE_ID` remains an internal namespace. Source identity binding,
+Graph account selection, and source-context isolation are provider/acquisition
+infrastructure rather than Mail semantics. Graph fingerprints include source
+context so cache/dupefilter state cannot cross sources. JOBDIR ownership is
+validated before Scheduler construction.
 
 ## Acquisition pipeline contract
 
@@ -69,7 +80,10 @@ continues to serialize SQL writes across overlapping response callbacks.
 - Observation replay detection is shared by messages and folder removals.
 - The evidence pipeline passes one SQLAlchemy record to the catalog, removing a
   second copy of the same long argument list.
-- The database schema is separated from query code. No migration is required.
+- The database schema is separated from query code. For this V1-only additive
+  change, `source_bindings` is created from current SQLAlchemy metadata; legacy
+  source ownership still requires one explicit operator bootstrap. Changes to
+  existing tables/columns require a future explicit migration mechanism.
 - Checkpoint SQL lives directly in `OutlookDeltaCheckpointStore`, removing the
   forwarding layer through `Catalog`.
 - Enrichment reads only the state it uses and streams its output. Small forwarding

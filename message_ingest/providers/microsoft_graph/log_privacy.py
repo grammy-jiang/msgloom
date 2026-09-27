@@ -5,7 +5,10 @@ from __future__ import annotations
 import logging
 
 from scrapy import signals
-from message_ingest.providers.microsoft_graph.logfilters import MicrosoftGraphScrapyPrivacyFilter
+
+from message_ingest.providers.microsoft_graph.logfilters import (
+    MicrosoftGraphScrapyPrivacyFilter,
+)
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 
 
@@ -20,6 +23,7 @@ class MicrosoftGraphLogPrivacyExtension:
             logging.getLogger("scrapy.core.engine"),
             logging.getLogger("scrapy.core.scraper"),
             logging.getLogger("scrapy.utils.signal"),
+            logging.getLogger("scrapy.downloadermiddlewares.httpcache"),
         )
         self._installed = False
 
@@ -27,8 +31,12 @@ class MicrosoftGraphLogPrivacyExtension:
     def from_crawler(cls, crawler):
         """Enable Graph privacy filtering independently of status reporting."""
         extension = cls(crawler)
-        crawler.signals.connect(extension.spider_opened, signal=signals.spider_opened)
-        crawler.signals.connect(extension.engine_stopped, signal=signals.engine_stopped)
+        crawler.signals.connect(
+            extension.spider_opened, signal=signals.spider_opened
+        )
+        crawler.signals.connect(
+            extension.engine_stopped, signal=signals.engine_stopped
+        )
         return extension
 
     def spider_opened(self, spider) -> None:

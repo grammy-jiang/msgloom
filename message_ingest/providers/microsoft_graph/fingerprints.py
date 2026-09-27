@@ -4,17 +4,34 @@ Keep Graph representation choices distinct in the scheduler and HTTP cache.
 
 from __future__ import annotations
 
+import hashlib
 from urllib.parse import urlsplit
 
 from scrapy.utils.request import fingerprint
 
+from message_ingest.acquisition.source_context import source_catalog_context_digest
 from message_ingest.providers.microsoft_graph import GRAPH_HOST
 
 _GRAPH_REPRESENTATION_HEADERS = ("Accept", "Prefer")
 
 
 class RepresentationAwareRequestFingerprinter:
-    """Include Graph representation headers in Scrapy request identity."""
+    """Include source and Graph representation choices in request identity."""
+
+    def __init__(self, source_digest: bytes) -> None:
+        """Require an already-derived source/catalog digest."""
+        if not source_digest:
+            raise ValueError("Graph request fingerprinting requires source context")
+        self._source_digest = source_digest
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        """Build a source-scoped fingerprinter from final crawler settings."""
+        digest = source_catalog_context_digest(
+            crawler.settings["MSGLOOM_SOURCE_ID"],
+            crawler.settings["MSGLOOM_DATABASE_URL"],
+        )
+        return cls(bytes.fromhex(digest))
 
     def fingerprint(self, request) -> bytes:
         """
@@ -26,8 +43,14 @@ class RepresentationAwareRequestFingerprinter:
         intentionally excluded.
         """
         if urlsplit(request.url).hostname == GRAPH_HOST:
-            return fingerprint(
+            base = fingerprint(
                 request,
                 include_headers=_GRAPH_REPRESENTATION_HEADERS,
             )
+            return hashlib.sha256(
+                b"msgloom-graph-fingerprint-v1\0"
+                + self._source_digest
+                + b"\0"
+                + base
+            ).digest()
         return fingerprint(request)

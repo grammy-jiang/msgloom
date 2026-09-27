@@ -72,6 +72,12 @@ Scrapy `JOBDIR` is used only for execution-resume state: Scheduler Requests,
 DupeFilter state and `Spider.state`. It is not the durable Microsoft delta
 checkpoint.
 
+Before Scrapy constructs the Scheduler, `SourceContextExtension` creates or
+verifies a private JOBDIR marker containing only a digest of the logical
+source and normalized catalog location. A different source/catalog is
+rejected. A non-empty legacy JOBDIR without the marker is also rejected
+because queued requests cannot be safely attributed after this upgrade.
+
 For a delta job `Spider.state` records:
 
 - run id;

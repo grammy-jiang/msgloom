@@ -140,6 +140,7 @@ def test_outlook_command_crawls_local_graph_with_native_components(
         "MSGLOOM_DATABASE_URL": database_url,
         "MSGLOOM_RAW_EVIDENCE_DIR": str(tmp_path / "raw"),
         "MSGLOOM_SOURCE_ID": "fixture",
+        "MSGLOOM_SOURCE_IDENTITY_REQUIRED": "False",
         "MSGLOOM_CATALOG_ENABLED": "True",
         "MSGLOOM_RAW_EVIDENCE_ENABLED": "True",
         "MSGLOOM_DELTA_CHECKPOINT_ENABLED": "True",

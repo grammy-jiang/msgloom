@@ -3,24 +3,26 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import QueuePool
 
 from message_ingest.catalog.models import (
     AttachmentRecord,
-    Base,
     MailFolderRecord,
     MessageObservation,
     MessageRecord,
     MessageSurface,
     RawHttpEvidence,
 )
+from message_ingest.catalog.schema import initialize_schema
 
 
 class Catalog:
@@ -38,7 +40,9 @@ class Catalog:
         """
         Create the SQLite schema and restrict local file permissions.
 
-        The one-connection pool serializes database access.
+        Schema creation takes SQLite's writer lock before inspecting tables,
+        so independent catalogs can safely add missing tables at startup.
+        The one-connection pool serializes access within this catalog.
         ``expire_on_commit=False`` keeps returned ORM values readable after a
         session closes; do not return lazy relations.
         """
@@ -47,24 +51,43 @@ class Catalog:
         if url.get_backend_name() != "sqlite":
             raise ValueError("The current local catalog implementation requires SQLite")
         database = url.database
-        if database and database != ":memory:":
+        in_memory = not database or database == ":memory:"
+        if database and not in_memory:
             path = Path(database)
             path.parent.mkdir(parents=True, exist_ok=True)
             os.chmod(path.parent, 0o700)
 
+        schema_image = initialize_schema(database_url, in_memory=in_memory)
         self.engine = create_engine(
             database_url,
-            connect_args={"autocommit": False, "timeout": 30.0},
+            connect_args={
+                "autocommit": False,
+                "timeout": 30.0,
+                **({"check_same_thread": False} if in_memory else {}),
+            },
+            **({"poolclass": QueuePool} if in_memory else {}),
             pool_size=1,
             max_overflow=0,
             pool_timeout=30.0,
         )
+        if schema_image is not None:
+            # Retain one private database across checkouts and worker threads.
+            # Only the schema image crosses from startup to runtime; no driver
+            # connection or transaction state is reused.
+            try:
+                with self.engine.connect() as connection:
+                    driver = cast(
+                        sqlite3.Connection, connection.connection.driver_connection
+                    )
+                    driver.deserialize(schema_image)
+            except BaseException:
+                self.engine.dispose()
+                raise
         self.Session: sessionmaker[Session] = sessionmaker(
             bind=self.engine,
             expire_on_commit=False,
         )
-        Base.metadata.create_all(self.engine)
-        if database and database != ":memory:":
+        if database and not in_memory:
             os.chmod(Path(database), 0o600)
 
     def close(self) -> None:

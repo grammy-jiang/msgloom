@@ -50,7 +50,16 @@ def run_outlook(
         raise RuntimeError(
             "Scrapy must initialize the crawler process before running a command"
         )
-    process.crawl(spider_name, **spider_args)
+    crawler = process.create_crawler(spider_name)
+    process.crawl(crawler, **spider_args)
     process.start()
     if process.bootstrap_failed:
+        command.exitcode = 1
+        return
+    final_status = crawler.stats.get_value("msgloom/final/status")
+    identity_gate_failed = bool(
+        crawler.stats.get_value("msgloom/source_identity/gate_failed_count", 0)
+    )
+    spider_failed = bool(getattr(crawler.spider, "run_failed", False))
+    if final_status == "failed" or identity_gate_failed or spider_failed:
         command.exitcode = 1

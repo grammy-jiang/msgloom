@@ -49,6 +49,8 @@ class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):
             self._sanitize_engine_record(record, error_type)
         elif record.name == "scrapy.utils.signal":
             self._sanitize_signal_record(record, error_type)
+        elif record.name == "scrapy.downloadermiddlewares.httpcache":
+            self._sanitize_httpcache_record(record, error_type)
 
         if record.exc_info:
             record.exc_info = None
@@ -97,6 +99,20 @@ class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):
 
         if message.startswith("Error while reading start items and requests:"):
             record.msg = "Error while reading start items and requests: error_type=%s"
+            record.args = (error_type,)
+
+    @staticmethod
+    def _sanitize_httpcache_record(
+        record: logging.LogRecord,
+        error_type: str,
+    ) -> None:
+        """Redact native cache-read failures that embed the full Request."""
+        message = str(record.msg)
+        if message.startswith("Could not read the cache entry for "):
+            record.msg = (
+                "Could not read Microsoft Graph cache entry; "
+                "treating it as a cache miss: error_type=%s"
+            )
             record.args = (error_type,)
 
     def _sanitize_signal_record(

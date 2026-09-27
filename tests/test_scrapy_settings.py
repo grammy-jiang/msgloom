@@ -142,6 +142,20 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
     extensions = settings.getdict("EXTENSIONS")
     if (
         extensions[
+            "message_ingest.acquisition.source_context.SourceContextExtension"
+        ]
+        != 50
+    ):
+        pytest.fail("Expected source-context extension priority == 50")
+    if (
+        extensions[
+            "message_ingest.providers.microsoft_graph.identity_gate.MicrosoftGraphSourceIdentityExtension"
+        ]
+        != 425
+    ):
+        pytest.fail("Expected Graph source-identity gate priority == 425")
+    if (
+        extensions[
             "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension"
         ]
         != 450
@@ -209,6 +223,12 @@ def test_outlook_mail_resource_owns_graph_scope(spider_cls) -> None:
         pytest.fail("Expected project-wide Graph auth to be disabled")
     if project_settings.MS_GRAPH_SCOPES != []:
         pytest.fail("Expected project-wide MS_GRAPH_SCOPES to be empty")
+    if project_settings.MSGLOOM_SOURCE_IDENTITY_REQUIRED is not True:
+        pytest.fail("Expected source identity required by default")
+    if project_settings.MSGLOOM_SOURCE_IDENTITY_BOOTSTRAP_CONFIRM != "":
+        pytest.fail("Expected source identity bootstrap confirmation default empty")
+    if project_settings.MS_GRAPH_AUTH_ALLOW_INTERACTIVE is not True:
+        pytest.fail("Expected interactive auth allowed by default for manual crawls")
     crawler = get_crawler(spider_cls)
     if crawler.settings.getbool("MS_GRAPH_AUTH_ENABLED") is not True:
         pytest.fail("Expected Outlook Mail spider to enable Graph auth")

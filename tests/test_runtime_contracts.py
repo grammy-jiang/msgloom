@@ -45,3 +45,16 @@ def test_graph_retry_requires_an_active_spider() -> None:
     response = TextResponse(request.url, request=request, status=429)
     with pytest.raises(RuntimeError, match="active Scrapy spider"):
         asyncio.run(middleware.process_response(request, response))
+
+
+def test_msal_runtime_matches_source_identity_contract() -> None:
+    """Pin the observed MSAL account metadata contract used by source identity."""
+    import inspect
+
+    import msal
+
+    if msal.__version__ != "1.39.0":
+        pytest.fail('Expected: msal.__version__ == "1.39.0"')
+    source = inspect.getsource(msal.PublicClientApplication._find_msal_accounts)
+    if '"home_account_id"' not in source:
+        pytest.fail("Expected MSAL account enumeration to expose home_account_id")
