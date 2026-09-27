@@ -17,7 +17,6 @@ from message_ingest.items import (
     OutlookMailItem,
     OutlookMailRemovalItem,
     OutlookMessageSurfaceItem,
-    RawHttpEvidenceItem,
 )
 from message_ingest.profiles import FULL_V1
 
@@ -26,11 +25,12 @@ logger = logging.getLogger(__name__)
 
 class CatalogPipeline:
     """
-    Persist semantic items only after their raw evidence is committed.
+    Persist Outlook Mail semantic items after evidence linking.
 
-    All SQL writes complete before :meth:`process_item` returns. The shared
-    lock serializes writes from different response callbacks; pipeline priority
-    alone does not.
+    ``EvidenceLinkPipeline`` must run earlier in ``ITEM_PIPELINES`` and owns
+    canonical evidence validation. All SQL writes complete before
+    :meth:`process_item` returns. The shared lock serializes writes from
+    different response callbacks; pipeline priority alone does not.
     """
 
     def __init__(
@@ -70,31 +70,19 @@ class CatalogPipeline:
         self.service.close()
 
     async def process_item(self, item):
-        """
-        Resolve cache aliases, validate evidence, and await the semantic
-        transaction.
-
-        Raw evidence passes through because the earlier pipeline owns it.
-        Unknown item types also pass through unchanged, including acquisition
-        failure reports.
-        """
-        if isinstance(item, RawHttpEvidenceItem):
+        """Await one Outlook Mail domain transaction for supported items."""
+        supported = (
+            OutlookMailItem,
+            OutlookMailDetailItem,
+            OutlookAttachmentItem,
+            OutlookMailFolderItem,
+            OutlookMailRemovalItem,
+            OutlookMessageSurfaceItem,
+            OutlookDeltaCheckpointCandidateItem,
+        )
+        if not isinstance(item, supported):
             return item
-        if hasattr(item, "evidence_id") and hasattr(item, "observed_at"):
-            canonical_id, observed_at = self.service.resolve_evidence(
-                item.evidence_id, item.observed_at
-            )
-            item.evidence_id = canonical_id
-            item.observed_at = observed_at
-            if canonical_id is not None:
-                exists = await asyncio.to_thread(
-                    self.catalog.has_raw_http_evidence, canonical_id
-                )
-                if not exists:
-                    raise RuntimeError(
-                        "Semantic item references raw HTTP evidence that has not "
-                        "been persisted by RawEvidencePipeline"
-                    )
+
         async with self._write_lock:
             stat_keys = await asyncio.to_thread(self._process_item_sync, item)
         for stat_key in stat_keys:

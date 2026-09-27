@@ -166,6 +166,7 @@ PERIODIC_LOG_TIMING_ENABLED = False
 ITEM_PIPELINES = {
     # Per-item stage order is independent of concurrency between callbacks.
     "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+    "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
     "message_ingest.pipelines.catalog.CatalogPipeline": 300,
 }
 

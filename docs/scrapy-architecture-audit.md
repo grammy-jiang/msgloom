@@ -291,8 +291,9 @@ A real integration audit verified clean pause/resume:
 SQLite is used as the local database backend through SQLAlchemy 2.x only.
 
 One `CatalogService` Extension owns one SQLAlchemy Engine per Crawler and a
-shared async write lock. Raw-evidence middleware, CatalogPipeline and checkpoint
-logic share that service. This replaced an earlier design where separate
+shared async write lock. RawEvidencePipeline, EvidenceLinkPipeline,
+CatalogPipeline and checkpoint logic share that service. This replaced an
+earlier design where separate
 components created separate Engines, which real testing proved could produce
 `database is locked` errors.
 

@@ -15,7 +15,7 @@ from typing import Any
 
 @dataclass(slots=True)
 class RawHttpEvidenceItem:
-    """Complete Spider-visible HTTP request/response evidence for Graph."""
+    """Complete Spider-visible HTTP request/response evidence for a provider."""
 
     evidence_id: str
     run_id: str | None

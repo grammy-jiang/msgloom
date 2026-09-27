@@ -192,7 +192,11 @@ before a semantic Item would not establish a durability ordering guarantee.
 Scrapy Item Pipelines are for processing/validating/persisting Items, not for
 controlling crawl progression.
 
-msgloom uses two sequential pipeline components:
+msgloom uses three sequential pipeline stages:
 
-1. `CatalogPipeline` (priority 300) persists queryable identity/state through
-   SQLAlchemy.
+1. `RawEvidencePipeline` (priority 200) durably stores spider-visible HTTP
+   evidence and publishes cache aliases.
+2. `EvidenceLinkPipeline` (priority 250) resolves aliases and verifies any
+   evidence-linked acquisition item against committed raw evidence.
+3. `CatalogPipeline` (priority 300) persists Outlook Mail domain state through
+   SQLAlchemy; it no longer owns provider-independent evidence validation.

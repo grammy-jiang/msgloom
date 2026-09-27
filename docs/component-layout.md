@@ -23,7 +23,9 @@ remains `msgloom`.
 | `message_ingest/providers/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
 | `message_ingest/providers/microsoft_graph/log_privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
-| `message_ingest/pipelines/catalog.py` | Store semantic items and checkpoint candidates. |
+| `message_ingest/acquisition/contracts.py` | Define provider-independent structural contracts for evidence-linked items. |
+| `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
+| `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
 | `message_ingest/catalog/store.py` | Perform catalog queries and transactions. |
 | `message_ingest/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
@@ -42,6 +44,22 @@ string identifiers in failure context. `OutlookMailSpider` adds `Mail.Read`,
 the immutable-ID preference, and Mail item projection. Provider integrity and
 privacy extensions apply to every Graph resource; Outlook status/checkpoint
 extensions remain resource-specific.
+
+## Acquisition pipeline contract
+
+Scrapy remains the pipeline engine. The enabled item stages are:
+
+1. `RawEvidencePipeline` (200) persists raw HTTP evidence and publishes any
+   cache-replay alias from the provisional evidence ID to its canonical capture.
+2. `EvidenceLinkPipeline` (250) applies that alias to any item satisfying
+   `EvidenceLinkedItem` and verifies that a non-null evidence reference exists.
+3. Resource pipelines at 300 and above persist only their own domain item types.
+   The current `CatalogPipeline` is the Outlook Mail resource pipeline.
+
+Pipeline priorities define stage order for one item. Cross-item dependency still
+relies on the existing `CONCURRENT_ITEMS=1` callback-output contract: a callback
+emits raw evidence before semantic items that reference it. The catalog write lock
+continues to serialize SQL writes across overlapping response callbacks.
 
 ## Simplifications
 
@@ -93,8 +111,10 @@ throttling, and scheduling remain in use. See the
 [2.19.0 middleware contract](https://github.com/scrapy/scrapy/blob/2.19.0/docs/topics/downloader-middleware.rst).
 
 Pipelines await storage operations and share a write lock. Raw evidence means the
-HTTP exchanges visible to the spider, including cache replay. Pipeline priority
-orders stages for each item; `CONCURRENT_ITEMS` does not provide a global lock.
+HTTP exchanges visible to the spider, including cache replay. Priority 200
+persists raw evidence, priority 250 canonicalizes/validates evidence links, and
+resource persistence starts at priority 300. Pipeline priority orders stages for
+each item; `CONCURRENT_ITEMS` does not provide a global lock.
 See the [2.19.0 pipeline contract](https://github.com/scrapy/scrapy/blob/2.19.0/docs/topics/item-pipeline.rst).
 
 The checkpoint extension checks explicit completion state on `spider_idle`, when

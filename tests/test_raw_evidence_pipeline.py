@@ -9,10 +9,17 @@ import asyncio
 from pathlib import Path
 
 import pytest
+from scrapy.pipelines import ItemPipelineManager
 from scrapy.utils.test import get_crawler
 from sqlalchemy import func, select
 
-from message_ingest.catalog import MessageRecord, RawHttpEvidence
+from message_ingest.acquisition.contracts import EvidenceLinkedItem
+from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
+from message_ingest.catalog import (
+    MessageObservation,
+    MessageRecord,
+    RawHttpEvidence,
+)
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items import OutlookMailItem, RawHttpEvidenceItem
 from message_ingest.pipelines.catalog import CatalogPipeline
@@ -162,15 +169,21 @@ def test_http_cache_replay_links_to_existing_source_evidence(tmp_path: Path) -> 
     CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
 
 
-def test_catalog_pipeline_rejects_semantic_item_without_persisted_raw_evidence(
+def test_evidence_link_pipeline_rejects_item_without_persisted_raw_evidence(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path)
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = EvidenceLinkPipeline.from_crawler(crawler)
+    item = _mail("missing-evidence")
+    original_observed_at = item.observed_at
 
     with pytest.raises(RuntimeError, match="raw HTTP evidence"):
-        asyncio.run(pipeline.process_item(_mail("missing-evidence")))
+        asyncio.run(pipeline.process_item(item))
 
+    if item.evidence_id != "missing-evidence":
+        pytest.fail("Expected failed validation not to mutate evidence_id")
+    if item.observed_at != original_observed_at:
+        pytest.fail("Expected failed validation not to mutate observed_at")
     with pipeline.catalog.Session() as session:
         if session.scalar(select(func.count()).select_from(MessageRecord)) != 0:
             pytest.fail(
@@ -179,16 +192,18 @@ def test_catalog_pipeline_rejects_semantic_item_without_persisted_raw_evidence(
     CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
 
 
-def test_raw_pipeline_then_catalog_pipeline_resolves_canonical_evidence(
+def test_raw_link_and_catalog_pipelines_preserve_canonical_evidence(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path)
     raw_pipeline = RawEvidencePipeline.from_crawler(crawler)
+    link_pipeline = EvidenceLinkPipeline.from_crawler(crawler)
     catalog_pipeline = CatalogPipeline.from_crawler(crawler)
 
     raw = _raw_item(evidence_id="provisional")
     semantic = _mail("provisional")
     asyncio.run(raw_pipeline.process_item(raw))
+    asyncio.run(link_pipeline.process_item(semantic))
     asyncio.run(catalog_pipeline.process_item(semantic))
 
     if semantic.evidence_id != raw.evidence_id:
@@ -200,3 +215,140 @@ def test_raw_pipeline_then_catalog_pipeline_resolves_canonical_evidence(
         if message.latest_evidence_id != raw.evidence_id:
             pytest.fail("Expected: message.latest_evidence_id == raw.evidence_id")
     CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
+
+
+def test_evidence_link_contract_covers_current_semantic_item_types() -> None:
+    from message_ingest.items import (
+        AcquisitionFailureItem,
+        OutlookAttachmentItem,
+        OutlookDeltaCheckpointCandidateItem,
+        OutlookMailDetailItem,
+        OutlookMailFolderItem,
+        OutlookMailRemovalItem,
+        OutlookMessageSurfaceItem,
+    )
+
+    item_types = (
+        OutlookMailItem,
+        OutlookMailDetailItem,
+        OutlookAttachmentItem,
+        OutlookMailFolderItem,
+        OutlookMailRemovalItem,
+        OutlookMessageSurfaceItem,
+        OutlookDeltaCheckpointCandidateItem,
+        AcquisitionFailureItem,
+    )
+    for item_type in item_types:
+        item = object.__new__(item_type)
+        item.evidence_id = None
+        item.observed_at = "2026-09-27T00:00:00+00:00"
+        if not isinstance(item, EvidenceLinkedItem):
+            pytest.fail(f"Expected {item_type.__name__} to satisfy EvidenceLinkedItem")
+
+
+def test_evidence_link_pipeline_passes_unknown_item_through(tmp_path: Path) -> None:
+    crawler = _crawler(tmp_path)
+    pipeline = EvidenceLinkPipeline.from_crawler(crawler)
+    item = object()
+
+    returned = asyncio.run(pipeline.process_item(item))
+
+    if returned is not item:
+        pytest.fail("Expected unknown item to pass through unchanged")
+    CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
+
+
+def test_native_pipeline_manager_orders_raw_link_then_mail_catalog(
+    tmp_path: Path,
+) -> None:
+    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "ITEM_PIPELINES": {
+                "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+                "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
+                "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+            },
+            "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+            "MSGLOOM_SOURCE_ID": "source-1",
+            "MSGLOOM_CATALOG_ENABLED": True,
+            "MSGLOOM_RAW_EVIDENCE_ENABLED": True,
+            "MSGLOOM_RAW_EVIDENCE_DIR": str(tmp_path / "raw"),
+        },
+    )
+    manager = ItemPipelineManager.from_crawler(crawler)
+    names = [type(pipeline).__name__ for pipeline in manager.middlewares]
+    expected = ["RawEvidencePipeline", "EvidenceLinkPipeline", "CatalogPipeline"]
+    if names != expected:
+        pytest.fail(f"Unexpected native pipeline order: {names!r}")
+
+    original = _raw_item(
+        evidence_id="pipeline-original",
+        observed_at="2026-09-26T01:00:00+00:00",
+    )
+    replay = _raw_item(
+        evidence_id="pipeline-provisional",
+        origin="http_cache",
+        observed_at="2026-09-26T02:00:00+00:00",
+    )
+    semantic = _mail("pipeline-provisional")
+    semantic.observed_at = replay.observed_at
+
+    asyncio.run(manager.process_item_async(original))
+    asyncio.run(manager.process_item_async(replay))
+    asyncio.run(manager.process_item_async(semantic))
+
+    if replay.evidence_id != original.evidence_id:
+        pytest.fail("Expected cache replay to resolve to original evidence")
+    if semantic.evidence_id != original.evidence_id:
+        pytest.fail("Expected EvidenceLinkPipeline to canonicalize before catalog")
+    if semantic.observed_at != original.observed_at:
+        pytest.fail("Expected EvidenceLinkPipeline to restore capture timestamp")
+    service = CatalogService.from_crawler(crawler)
+    with service.catalog.Session() as session:
+        message = session.scalar(select(MessageRecord))
+        observation = session.scalar(select(MessageObservation))
+        if message is None or observation is None:
+            pytest.fail("Expected Mail catalog stage to persist the semantic item")
+        if message.latest_evidence_id != original.evidence_id:
+            pytest.fail("Expected catalog row to reference canonical evidence")
+        if observation.evidence_id != original.evidence_id:
+            pytest.fail("Expected observation to reference canonical evidence")
+        if observation.observed_at != original.observed_at:
+            pytest.fail("Expected observation to retain original capture time")
+    asyncio.run(manager.close_spider_async())
+
+
+def test_native_pipeline_manager_blocks_mail_catalog_on_missing_evidence(
+    tmp_path: Path,
+) -> None:
+    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "ITEM_PIPELINES": {
+                "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+                "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
+                "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+            },
+            "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+            "MSGLOOM_SOURCE_ID": "source-1",
+            "MSGLOOM_CATALOG_ENABLED": True,
+            "MSGLOOM_RAW_EVIDENCE_ENABLED": True,
+            "MSGLOOM_RAW_EVIDENCE_DIR": str(tmp_path / "raw"),
+        },
+    )
+    manager = ItemPipelineManager.from_crawler(crawler)
+
+    with pytest.raises(RuntimeError, match="raw HTTP evidence"):
+        asyncio.run(manager.process_item_async(_mail("missing-evidence")))
+
+    service = CatalogService.from_crawler(crawler)
+    with service.catalog.Session() as session:
+        count = session.scalar(select(func.count()).select_from(MessageRecord))
+        if count != 0:
+            pytest.fail("Expected Mail catalog stage not to run after link failure")
+    asyncio.run(manager.close_spider_async())
