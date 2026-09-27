@@ -37,14 +37,27 @@ class RawHttpEvidenceItem:
 
 
 @dataclass(slots=True)
+class OutlookCalendarItem:
+    """One observation of a calendar visible to the signed-in user."""
+
+    calendar_id: str
+    raw: dict[str, Any]
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+
+
+@dataclass(slots=True)
 class OutlookCalendarEventItem:
-    """One observation of an event from the default Microsoft calendar."""
+    """One observation of an event in a declared Calendar scope."""
 
     event_id: str
     raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
+    calendar_id: str = "default"
+    observation_kind: str = "window"
 
 
 @dataclass(slots=True)

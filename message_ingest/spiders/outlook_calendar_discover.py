@@ -1,4 +1,4 @@
-"""Acquire paginated events from the signed-in user's default calendar."""
+"""Discover calendars visible to the signed-in Microsoft account."""
 
 from __future__ import annotations
 
@@ -9,19 +9,30 @@ from urllib.parse import urlencode
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
-from message_ingest.items import OutlookCalendarEventItem
+from message_ingest.items import OutlookCalendarItem
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 
 
-class OutlookCalendarSpider(MicrosoftGraphSpider):
-    """Read default-calendar events through native Scrapy pagination."""
+class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
+    """Inventory visible calendars without inferring deletion from absence."""
 
-    name = "outlook_calendar"
-    page_size = 50
+    name = "outlook_calendar_discover"
+
+    def __init__(
+        self,
+        *args,
+        page_size: str = "100",
+        **kwargs,
+    ) -> None:
+        """Validate Calendar inventory arguments."""
+        super().__init__(*args, **kwargs)
+        self.page_size = self._bounded_int(
+            page_size, name="page_size", minimum=1, maximum=1000
+        )
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
-        """Declare Calendar permissions and resource-specific components."""
+        """Declare Calendar permissions and its persistence pipeline."""
         settings.set(
             "MS_GRAPH_SCOPES",
             ["Calendars.ReadBasic"],
@@ -50,62 +61,62 @@ class OutlookCalendarSpider(MicrosoftGraphSpider):
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        """Reject JOBDIR until Calendar resume semantics are explicitly tested."""
+        """Reject JOBDIR until Calendar resume semantics are tested."""
         if crawler.settings.get("JOBDIR"):
             raise ValueError(
-                "Outlook Calendar acquisition does not support JOBDIR yet"
+                "Calendar discovery does not support JOBDIR yet"
             )
         return super().from_crawler(crawler, *args, **kwargs)
 
     async def start(self) -> AsyncIterator[Any]:
-        """Schedule the first default-calendar event page."""
-        self.crawler.stats.set_value("msgloom/crawl/mode", "calendar")
+        """Schedule the first visible-calendar inventory page."""
         self.crawler.stats.set_value(
-            "msgloom/crawl/calendar/pagination_exhausted",
+            "msgloom/crawl/mode", "calendar_discover"
+        )
+        self.crawler.stats.set_value(
+            "msgloom/crawl/calendar/inventory_exhausted",
             False,
         )
-        query = urlencode(
-            {
-                "$select": "id,subject,start,end,type",
-                "$top": self.page_size,
-            }
-        )
+        query = urlencode({"$top": self.page_size})
         yield self._request(
-            f"{self.graph_root}/me/calendar/events?{query}",
-            callback=self.parse_events,
-            purpose="calendar-event-page",
+            f"{self.graph_root}/me/calendars?{query}",
+            callback=self.parse_calendars,
+            purpose="calendar-inventory-page",
             cb_kwargs={},
             prefer='IdType="ImmutableId"',
         )
 
-    def parse_events(
+    def parse_calendars(
         self,
         response: TextResponse,
         *,
         purpose: str,
     ) -> Iterator[Any]:
-        """Yield evidence, event observations, and an opaque continuation."""
+        """Yield page evidence, calendar inventory items, and continuation."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Calendar response must be a JSON object")
+            raise ValueError("Calendar inventory response must be a JSON object")
         values = payload.get("value")
         if not isinstance(values, list):
-            raise ValueError("Calendar response must contain a value list")
+            raise ValueError("Calendar inventory must contain a value list")
 
-        self.crawler.stats.inc_value("msgloom/crawl/calendar/page_count")
-        for event in values:
-            if not isinstance(event, dict):
-                raise ValueError("Calendar event must be a JSON object")
-            event_id = event.get("id")
-            if not isinstance(event_id, str) or not event_id:
-                raise ValueError("Calendar event must contain a non-empty id")
-            self.crawler.stats.inc_value("msgloom/crawl/calendar/event_count")
-            yield OutlookCalendarEventItem(
-                event_id=event_id,
-                raw=event,
+        self.crawler.stats.inc_value(
+            "msgloom/crawl/calendar/inventory_page_count"
+        )
+        for calendar in values:
+            if not isinstance(calendar, dict):
+                raise ValueError("Calendar inventory entry must be a JSON object")
+            calendar_id = calendar.get("id")
+            if not isinstance(calendar_id, str) or not calendar_id:
+                raise ValueError("Calendar inventory entry requires a non-empty id")
+            self.crawler.stats.inc_value(
+                "msgloom/crawl/calendar/calendar_count"
+            )
+            yield OutlookCalendarItem(
+                calendar_id=calendar_id,
+                raw=calendar,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
                 run_id=self.run_id,
@@ -114,20 +125,21 @@ class OutlookCalendarSpider(MicrosoftGraphSpider):
         next_link = payload.get("@odata.nextLink")
         if next_link is None:
             self.crawler.stats.set_value(
-                "msgloom/crawl/calendar/pagination_exhausted",
+                "msgloom/crawl/calendar/inventory_exhausted",
                 True,
             )
             return
         if not isinstance(next_link, str) or not next_link:
-            raise ValueError("Calendar @odata.nextLink must be a non-empty string")
-
+            raise ValueError(
+                "Calendar inventory @odata.nextLink must be a non-empty string"
+            )
         self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/continuation_count"
+            "msgloom/crawl/calendar/inventory_continuation_count"
         )
         yield self._request(
             next_link,
-            callback=self.parse_events,
-            purpose="calendar-event-page",
+            callback=self.parse_calendars,
+            purpose="calendar-inventory-page",
             cb_kwargs={},
             verbatim_url=True,
             prefer='IdType="ImmutableId"',

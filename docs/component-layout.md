@@ -2,8 +2,8 @@
 
 `message_ingest` is the Scrapy project within the `msgloom` repository. It owns
 message acquisition from external providers. Outlook Mail is the mature resource,
-and a minimal Microsoft Calendar event slice validates reuse of the shared Graph
-provider and evidence components without generalizing Mail traversal.
+and Microsoft Calendar now has explicit inventory and bounded-window modes that
+reuse the shared Graph provider and evidence components.
 
 The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and lockfile
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
@@ -30,7 +30,8 @@ remains `msgloom`.
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
 | `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
-| `message_ingest/spiders/outlook_calendar.py` | Traverse paginated default-calendar events with native Scrapy callbacks. |
+| `message_ingest/spiders/outlook_calendar_discover.py` | Inventory visible calendars through paginated Graph callbacks. |
+| `message_ingest/spiders/outlook_calendar_window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
 | `message_ingest/pipelines/calendar.py` | Store Calendar event observations after evidence linking. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
 | `message_ingest/catalog/store.py` | Perform catalog queries and transactions. |
@@ -38,7 +39,7 @@ remains `msgloom`.
 
 `message_ingest/settings.py` uses the component paths above. Custom settings and Python
 imports should also use these module paths. `Catalog` and its models remain
-available from `message_ingest.catalog`. Commands and spider names are unchanged.
+available from `message_ingest.catalog`. Commands remain thin intent/argument mapping over named Scrapy spiders.
 
 Configuration keeps the existing `MSGLOOM_*` settings and environment variables.
 Database and evidence paths, `msgloom/*` statistics, and persisted state keys also
@@ -73,16 +74,24 @@ relies on the existing `CONCURRENT_ITEMS=1` callback-output contract: a callback
 emits raw evidence before semantic items that reference it. The catalog write lock
 continues to serialize SQL writes across overlapping response callbacks.
 
-## Calendar validation slice
+## Calendar acquisition modes
 
-`OutlookCalendarSpider` reuses `MicrosoftGraphSpider`, delegated Graph auth,
-retry/diagnostics, source identity, raw evidence, and evidence linking. It reads
-the signed-in user's default calendar through `/me/calendar/events`, follows
-opaque `@odata.nextLink` values, and stores append-only event observations.
+`outlook_calendar_discover` inventories calendars visible to the signed-in
+account through `/me/calendars`. Absence from one inventory is not interpreted
+as deletion.
 
-This first slice deliberately does not implement Calendar delta, recurrence
-expansion, multiple calendars, or JOBDIR resume. Those remain resource-specific
-work and are not prerequisites for validating the provider/resource boundary.
+`outlook_calendar_window` requires explicit timezone-aware start/end bounds and
+uses `calendarView`, which lets Microsoft Graph expand recurring occurrences and
+exceptions inside that declared range. The window may target the default calendar
+or one explicit calendar ID. Raw evidence precedes semantic event items.
+
+`CalendarPipeline` maintains latest calendar/event state and append-only event
+observations. Re-fetching the same Graph `changeKey` updates capture provenance
+without creating another semantic event version.
+
+Calendar delta synchronization, removal semantics, durable checkpoints, targeted
+full/detail enrichment, and JOBDIR resume remain separate Calendar work. They are
+not generalized through the Outlook Mail checkpoint machinery.
 
 ## Simplifications
 
