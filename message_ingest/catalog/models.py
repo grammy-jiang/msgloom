@@ -1,4 +1,4 @@
-"""SQLAlchemy schema for evidence, Outlook entities, and delta checkpoints."""
+"""SQLAlchemy schema for evidence and resource-specific observations."""
 
 from __future__ import annotations
 
@@ -57,6 +57,27 @@ class RawHttpEvidence(Base):
     response_flags: Mapped[list[str]] = mapped_column(JSON)
     error_type: Mapped[str | None] = mapped_column(String(160))
     error_message: Mapped[str | None] = mapped_column(Text)
+
+
+class CalendarEventObservation(Base):
+    """Immutable observed Calendar event linked to raw provider evidence."""
+
+    __tablename__ = "calendar_event_observations"
+    __table_args__ = (
+        UniqueConstraint("source_id", "event_id", "evidence_id"),
+    )
+
+    observation_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    run_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    subject: Mapped[str | None] = mapped_column(Text)
+    start: Mapped[dict[str, object] | None] = mapped_column(JSON)
+    end: Mapped[dict[str, object] | None] = mapped_column(JSON)
+    event_type: Mapped[str | None] = mapped_column(String(40))
+    raw: Mapped[dict[str, object]] = mapped_column(JSON)
 
 
 class MessageRecord(Base):

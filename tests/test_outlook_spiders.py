@@ -1,6 +1,5 @@
 """
-Keep the shared spider abstract and expose exactly the three concrete
-acquisition modes.
+Keep shared bases abstract and expose the concrete acquisition spiders.
 """
 
 from __future__ import annotations
@@ -12,15 +11,18 @@ import pytest
 from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
+from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.outlook_calendar import OutlookCalendarSpider
 from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 from message_ingest.spiders.outlook_full import OutlookFullSpider
 from message_ingest.spiders.outlook_mail import OutlookMailSpider
 
 
-def test_scrapy_discovers_only_the_three_concrete_outlook_spiders() -> None:
+def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
+        "outlook_calendar": OutlookCalendarSpider,
         "outlook_discover": OutlookDiscoverSpider,
         "outlook_delta": OutlookDeltaSpider,
         "outlook_full": OutlookFullSpider,
@@ -30,8 +32,8 @@ def test_scrapy_discovers_only_the_three_concrete_outlook_spiders() -> None:
     for name, spider_cls in expected.items():
         if loader.load(name) is not spider_cls:
             pytest.fail("Expected: loader.load(name) is spider_cls")
-        if not issubclass(spider_cls, OutlookMailSpider):
-            pytest.fail("Expected: issubclass(spider_cls, OutlookMailSpider)")
+        if not issubclass(spider_cls, MicrosoftGraphSpider):
+            pytest.fail("Expected: issubclass(spider_cls, MicrosoftGraphSpider)")
         if inspect.isabstract(spider_cls):
             pytest.fail("Expected: not inspect.isabstract(spider_cls)")
         if not inspect.isasyncgenfunction(spider_cls.start):

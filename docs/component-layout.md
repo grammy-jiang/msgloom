@@ -1,10 +1,9 @@
 # Message ingestion: Scrapy component layout
 
 `message_ingest` is the Scrapy project within the `msgloom` repository. It owns
-message acquisition from external providers. Outlook Mail is the first resource.
-The code now separates Microsoft Graph provider infrastructure from Mail-specific
-traversal so Calendar, Teams, and non-Microsoft resources can be added without
-copying transport behavior.
+message acquisition from external providers. Outlook Mail is the mature resource,
+and a minimal Microsoft Calendar event slice validates reuse of the shared Graph
+provider and evidence components without generalizing Mail traversal.
 
 The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and lockfile
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
@@ -31,6 +30,8 @@ remains `msgloom`.
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
 | `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
+| `message_ingest/spiders/outlook_calendar.py` | Traverse paginated default-calendar events with native Scrapy callbacks. |
+| `message_ingest/pipelines/calendar.py` | Store Calendar event observations after evidence linking. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
 | `message_ingest/catalog/store.py` | Perform catalog queries and transactions. |
 | `message_ingest/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
@@ -64,13 +65,24 @@ Scrapy remains the pipeline engine. The enabled item stages are:
    cache-replay alias from the provisional evidence ID to its canonical capture.
 2. `EvidenceLinkPipeline` (250) applies that alias to any item satisfying
    `EvidenceLinkedItem` and verifies that a non-null evidence reference exists.
-3. Resource pipelines at 300 and above persist only their own domain item types.
-   The current `CatalogPipeline` is the Outlook Mail resource pipeline.
+3. Resource pipelines at 300 persist only their own domain item types. Outlook
+   Mail uses `CatalogPipeline`; Calendar uses `CalendarPipeline`.
 
 Pipeline priorities define stage order for one item. Cross-item dependency still
 relies on the existing `CONCURRENT_ITEMS=1` callback-output contract: a callback
 emits raw evidence before semantic items that reference it. The catalog write lock
 continues to serialize SQL writes across overlapping response callbacks.
+
+## Calendar validation slice
+
+`OutlookCalendarSpider` reuses `MicrosoftGraphSpider`, delegated Graph auth,
+retry/diagnostics, source identity, raw evidence, and evidence linking. It reads
+the signed-in user's default calendar through `/me/calendar/events`, follows
+opaque `@odata.nextLink` values, and stores append-only event observations.
+
+This first slice deliberately does not implement Calendar delta, recurrence
+expansion, multiple calendars, or JOBDIR resume. Those remain resource-specific
+work and are not prerequisites for validating the provider/resource boundary.
 
 ## Simplifications
 
