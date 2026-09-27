@@ -1,129 +1,116 @@
-# Outlook Scrapy commands
+# Microsoft Outlook Scrapy commands
 
-The `message_ingest` Scrapy project in the `msgloom` repository exposes Outlook
-Mail acquisition through project-specific commands.
-Each command translates CLI options into arguments for its matching Spider:
-`outlook_discover`, `outlook_delta`, or `outlook_full`. The commands contain no
-Graph traversal, parsing, or persistence logic.
+All product-facing Microsoft acquisition commands live below one top-level
+Scrapy command:
 
-The three Spiders inherit the abstract `OutlookMailSpider` in
-`message_ingest/spiders/outlook_mail.py`. It provides shared Graph requests,
-evidence, and failure handling. Folder traversal and attachment traversal use separate
-abstract subclasses with explicit contracts. Their callbacks remain bound
-methods for `JOBDIR` serialization. Every module in `message_ingest/spiders`
-is less than 500 lines.
+    scrapy microsoft ...
 
-## Discovery
+Outlook is a Microsoft product, so Outlook Mail and Calendar are resources
+below the Microsoft and Outlook namespaces. The command layer only validates
+CLI input and maps it to existing spiders. Graph traversal, authentication,
+parsing, persistence, resume, and retry behavior remain in their established
+Scrapy components.
 
-```console
-scrapy outlook_discover [options]
-```
+## Outlook Mail discovery
 
-Default behavior is complete mailbox discovery.
+    scrapy microsoft outlook mail discover [options]
 
 Options:
 
-- `--folder FOLDER_ID` — restrict discovery to one Graph mail folder;
-- `--page-size N` — Graph page size, 1 through 1000; default 25;
-- `--max-pages N` — explicit development/test limiter; 0 means unlimited and is
-  the default.
+- --folder FOLDER_ID: restrict discovery to one Graph mail folder;
+- --page-size N: Graph page size, 1 through 1000; default 25;
+- --max-pages N: explicit development/test limiter; 0 means unlimited.
 
 Examples:
 
-```console
-scrapy outlook_discover
-scrapy outlook_discover --page-size 100
-scrapy outlook_discover --folder inbox --page-size 100
-scrapy outlook_discover --page-size 5 --max-pages 1
-```
+    scrapy microsoft outlook mail discover
+    scrapy microsoft outlook mail discover --page-size 100
+    scrapy microsoft outlook mail discover --folder inbox --page-size 100
+    scrapy microsoft outlook mail discover --page-size 5 --max-pages 1
 
-The command runs `OutlookDiscoverSpider`. It needs no mode argument.
+The command delegates to the internal outlook_discover spider.
 
-## Delta synchronization
+## Outlook Mail delta synchronization
 
-```console
-scrapy outlook_delta [options]
-```
+    scrapy microsoft outlook mail delta [options]
 
 Options:
 
-- `--page-size N` — preferred Graph delta page size, 1 through 1000; default 25;
-- `--reconcile` / `--no-reconcile` — enable or disable the whole-mailbox
-  reconciliation safety net; enabled by default.
+- --page-size N: preferred Graph delta page size; default 25;
+- --reconcile / --no-reconcile: enable or disable whole-mailbox
+  reconciliation; enabled by default.
 
 Examples:
 
-```console
-scrapy outlook_delta
-scrapy outlook_delta --page-size 100
-scrapy outlook_delta --no-reconcile
-```
+    scrapy microsoft outlook mail delta
+    scrapy microsoft outlook mail delta --page-size 100
+    scrapy microsoft outlook mail delta --no-reconcile
 
-The command runs `OutlookDeltaSpider`. Checkpoint loading, folder traversal,
-delta continuation, and reconciliation remain Spider responsibilities.
+The command delegates to the internal outlook_delta spider.
 
-## Targeted Full acquisition
+## Outlook Mail targeted full acquisition
 
-```console
-scrapy outlook_full [options] MESSAGE_ID [MESSAGE_ID ...]
-```
+    scrapy microsoft outlook mail full MESSAGE_ID [MESSAGE_ID ...] [options]
 
-One or more message IDs are required. Duplicate IDs on the same command line
-are removed while preserving their first-seen order.
-The command runs `OutlookFullSpider`.
+One or more message IDs are required. Duplicate IDs on one invocation are
+removed while preserving first-seen order.
 
 Options:
 
-- `--operation refresh|enrich` — `refresh` reacquires all current Full-profile
-  surfaces; `enrich` only requests surfaces that are not already terminal in the
-  local catalog; default `refresh`;
-- `--acquisition-profile outlook-mail-full-v1` — versioned acquisition profile.
+- --operation refresh|enrich: default refresh;
+- --acquisition-profile outlook-mail-full-v1: versioned acquisition profile.
 
 Examples:
 
-```console
-scrapy outlook_full MESSAGE_ID
-scrapy outlook_full MESSAGE_ID_1 MESSAGE_ID_2
-scrapy outlook_full --operation enrich MESSAGE_ID_1 MESSAGE_ID_2
-```
+    scrapy microsoft outlook mail full MESSAGE_ID
+    scrapy microsoft outlook mail full MESSAGE_ID_1 MESSAGE_ID_2
+    scrapy microsoft outlook mail full MESSAGE_ID_1 MESSAGE_ID_2 --operation enrich
 
-`--acquisition-profile` intentionally does not use the name `--profile`, because
-Scrapy already defines global `--profile FILE` for Python cProfile output.
+The command delegates to the internal outlook_full spider.
 
-## Standard Scrapy options remain available
+## Outlook Calendar discovery
 
-All three commands inherit Scrapy's normal global command options, including:
+    scrapy microsoft outlook calendar discover [options]
 
-- `-L / --loglevel`;
-- `--logfile`;
-- `--nolog`;
-- `--profile FILE` for cProfile;
-- `--pidfile`;
-- `-s NAME=VALUE` for normal Scrapy setting overrides;
-- `--pdb`.
+Options:
+
+- --page-size N: Graph page size, 1 through 1000; default 100.
+
+The command delegates to the internal outlook_calendar_discover spider.
+
+## Outlook Calendar window acquisition
+
+    scrapy microsoft outlook calendar window --start ISO --end ISO [options]
+
+Both bounds must be timezone-aware ISO-8601 datetimes and start must be earlier
+than end.
+
+Options:
+
+- --calendar CALENDAR_ID: select a specific calendar; omitted uses the default;
+- --page-size N: Graph page size, 1 through 1000; default 100.
+
+The command delegates to the internal outlook_calendar_window spider.
+
+## Standard Scrapy options
+
+The Microsoft command retains Scrapy global options such as -L/--loglevel,
+--logfile, --nolog, --profile for Python cProfile, --pidfile, -s NAME=VALUE,
+and --pdb.
 
 For example:
 
-```console
-scrapy outlook_delta -L INFO -s JOBDIR=var/jobs/outlook-delta
-```
+    scrapy microsoft outlook mail delta -L INFO -s JOBDIR=var/jobs/outlook-delta
 
-The low-level commands are available for development and debugging:
+## Developer-only low-level spider entry points
 
-```console
-scrapy crawl outlook_discover -a folder=inbox -a page_size=100
-scrapy crawl outlook_delta -a page_size=100 -a reconcile_global=1
-scrapy crawl outlook_full -a message_ids=MESSAGE_ID_1,MESSAGE_ID_2 -a operation=enrich
-```
+Scrapy's built-in crawl command still exposes internal spider names for
+framework development and debugging, for example:
 
-The low-level `scrapy crawl` entry points are for debugging. A controlled
-`CloseSpider`, including a source-identity gate close, does not by itself map
-to a nonzero native `scrapy crawl` exit code. Operational scripts should use
-the Outlook-specific commands, which convert bootstrap, identity-gate, and
-final failed status into exit code 1.
+    scrapy crawl outlook_discover -a folder=inbox -a page_size=100
+    scrapy crawl outlook_delta -a page_size=100 -a reconcile_global=1
+    scrapy crawl outlook_full -a message_ids=MESSAGE_ID_1,MESSAGE_ID_2
 
-`outlook_mail` is now an abstract base and is no longer a crawl target.
-Replace old `scrapy crawl outlook_mail` invocations with the matching command
-above. The `sync_mode` argument is no longer needed.
-
-Normal operational use should prefer the Outlook-specific commands.
+These are not msgloom's product CLI. Operational and user-facing workflows
+should use the Microsoft hierarchy so provider/product/resource ownership is
+explicit and command failure handling remains consistent.

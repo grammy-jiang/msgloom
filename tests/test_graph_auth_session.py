@@ -417,3 +417,52 @@ def test_explicit_identity_opt_out_keeps_catalog_but_skips_binding(
         pytest.fail("Expected Graph authentication to remain usable after opt-out")
     if hasattr(crawler, "_msgloom_source_identity_service"):
         pytest.fail("Expected opt-out not to construct source identity service")
+
+
+def test_development_client_logs_application_identity(
+    tmp_path: Path,
+    caplog,
+) -> None:
+    from message_ingest.providers.microsoft_graph.auth_management import (
+        MICROSOFT_GRAPH_CLI_CLIENT_ID,
+    )
+
+    caplog.set_level(logging.INFO)
+    MicrosoftGraphAuthSession(
+        client_id=MICROSOFT_GRAPH_CLI_CLIENT_ID,
+        authority="https://login.microsoftonline.com/common",
+        scopes=["Mail.Read"],
+        token_cache_path=str(tmp_path / "token-cache.json"),
+        auth_method="device_code",
+        account_username="",
+        allow_interactive=True,
+        source_identity=None,
+    )
+
+    if "application_mode=development" not in caplog.text:
+        pytest.fail("Expected application mode in authentication log")
+    if "Microsoft Graph Command Line Tools" not in caplog.text:
+        pytest.fail("Expected development application identity warning")
+    if "development/testing only" not in caplog.text:
+        pytest.fail("Expected development-only guidance")
+
+
+def test_missing_client_id_error_points_to_status_command(tmp_path: Path) -> None:
+    session = MicrosoftGraphAuthSession(
+        client_id="",
+        authority="https://login.microsoftonline.com/common",
+        scopes=["Mail.Read"],
+        token_cache_path=str(tmp_path / "token-cache.json"),
+        auth_method="device_code",
+        account_username="",
+        allow_interactive=True,
+        source_identity=None,
+    )
+
+    with pytest.raises(MicrosoftGraphAuthError) as caught:
+        session._require_client_id()
+    message = str(caught.value)
+    if "microsoft auth status" not in message:
+        pytest.fail("Expected status-command remediation for missing Client ID")
+    if "development" not in message or "real deployments" not in message:
+        pytest.fail("Expected development and production remediation")

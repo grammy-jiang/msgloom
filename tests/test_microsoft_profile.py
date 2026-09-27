@@ -11,7 +11,7 @@ from scrapy import Request
 from scrapy.http import TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.commands import microsoft_profile as profile_command
+from message_ingest.commands import microsoft as microsoft_command
 from message_ingest.items import RawHttpEvidenceItem
 from message_ingest.spiders.microsoft_profile import MicrosoftProfileSpider
 
@@ -132,13 +132,13 @@ def test_profile_command_prints_validated_profile(monkeypatch, capsys) -> None:
         stats = FakeStats({"msgloom/evidence/response_persisted_count": 1})
 
     monkeypatch.setattr(
-        profile_command,
+        microsoft_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )
-    command = profile_command.Command()
+    command = microsoft_command.Command()
     command.exitcode = 0
-    command.run([], argparse.Namespace())
+    command.run([], _profile_opts())
 
     if json.loads(capsys.readouterr().out) != payload:
         pytest.fail("Expected command stdout to contain the profile JSON")
@@ -152,13 +152,13 @@ def test_profile_command_fails_when_no_profile_was_retrieved(
         stats = FakeStats({"msgloom/evidence/response_persisted_count": 1})
 
     monkeypatch.setattr(
-        profile_command,
+        microsoft_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )
-    command = profile_command.Command()
+    command = microsoft_command.Command()
     command.exitcode = 0
-    command.run([], argparse.Namespace())
+    command.run([], _profile_opts())
 
     if command.exitcode != 1:
         pytest.fail("Expected missing profile to fail the command")
@@ -176,15 +176,35 @@ def test_profile_command_fails_when_evidence_did_not_persist(
         stats = FakeStats({})
 
     monkeypatch.setattr(
-        profile_command,
+        microsoft_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )
-    command = profile_command.Command()
+    command = microsoft_command.Command()
     command.exitcode = 0
-    command.run([], argparse.Namespace())
+    command.run([], _profile_opts())
 
     if command.exitcode != 1:
         pytest.fail("Expected missing evidence persistence to fail the command")
     if capsys.readouterr().out:
         pytest.fail("Expected unpersisted profile not to be printed")
+
+
+def _profile_opts() -> argparse.Namespace:
+    return argparse.Namespace(
+        section="profile",
+        resource_or_action=None,
+        action=None,
+        message_ids=[],
+        json=False,
+        yes=False,
+        folder=None,
+        page_size=None,
+        max_pages=None,
+        reconcile=None,
+        operation=None,
+        acquisition_profile=None,
+        start=None,
+        end=None,
+        calendar=None,
+    )

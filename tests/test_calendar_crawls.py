@@ -34,7 +34,7 @@ from message_ingest.spiders.outlook_calendar_discover import (
 
 OutlookCalendarDiscoverSpider.graph_root = sys.argv[1]
 OutlookCalendarDiscoverSpider.allowed_domains = ["127.0.0.1"]
-execute(["scrapy", "outlook_calendar_discover", *sys.argv[2:]])
+execute(["scrapy", "microsoft", "outlook", "calendar", "discover", *sys.argv[2:]])
 """
 
 WINDOW_COMMAND = r"""
@@ -46,7 +46,7 @@ from message_ingest.spiders.outlook_calendar_window import (
 
 OutlookCalendarWindowSpider.graph_root = sys.argv[1]
 OutlookCalendarWindowSpider.allowed_domains = ["127.0.0.1"]
-execute(["scrapy", "outlook_calendar_window", *sys.argv[2:]])
+execute(["scrapy", "microsoft", "outlook", "calendar", "window", *sys.argv[2:]])
 """
 
 

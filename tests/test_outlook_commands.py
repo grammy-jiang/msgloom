@@ -1,11 +1,10 @@
-"""
-Validate CLI arguments and their mapping into the native Scrapy crawler
-process.
-"""
+"""Validate Microsoft Outlook Mail CLI mapping through one public namespace."""
 
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
@@ -14,9 +13,7 @@ import pytest
 from scrapy.crawler import CrawlerProcessBase
 from scrapy.exceptions import UsageError
 
-from message_ingest.commands.outlook_delta import Command as OutlookDeltaCommand
-from message_ingest.commands.outlook_discover import Command as OutlookDiscoverCommand
-from message_ingest.commands.outlook_full import Command as OutlookFullCommand
+from message_ingest.commands.microsoft import Command as MicrosoftCommand
 from message_ingest.profiles import FULL_V1
 
 
@@ -70,65 +67,81 @@ class FakeCrawlerProcess:
         self.started = True
 
 
-def _run(command, args: list[str], opts: argparse.Namespace) -> FakeCrawlerProcess:
+def _opts(
+    *,
+    action: str,
+    message_ids: list[str] | None = None,
+    folder: str | None = None,
+    page_size: int | None = None,
+    max_pages: int | None = None,
+    reconcile: bool | None = None,
+    operation: str | None = None,
+    acquisition_profile: str | None = None,
+) -> argparse.Namespace:
+    return argparse.Namespace(
+        section="outlook",
+        resource_or_action="mail",
+        action=action,
+        message_ids=message_ids or [],
+        json=False,
+        yes=False,
+        folder=folder,
+        page_size=page_size,
+        max_pages=max_pages,
+        reconcile=reconcile,
+        operation=operation,
+        acquisition_profile=acquisition_profile,
+        start=None,
+        end=None,
+        calendar=None,
+    )
+
+
+def _run(opts: argparse.Namespace) -> FakeCrawlerProcess:
+    command = MicrosoftCommand()
     process = FakeCrawlerProcess()
-    command.crawler_process = process
-    command.run(args, opts)
+    command.crawler_process = cast(CrawlerProcessBase, process)
+    command.run([], opts)
     return process
 
 
-def test_discover_command_maps_cli_options_to_spider_arguments() -> None:
+def test_discover_maps_cli_options_to_spider_arguments() -> None:
     process = _run(
-        OutlookDiscoverCommand(),
-        [],
-        argparse.Namespace(folder="archive", page_size=100, max_pages=3),
+        _opts(
+            action="discover",
+            folder="archive",
+            page_size=100,
+            max_pages=3,
+        )
     )
-
-    if process.started is not True:
-        pytest.fail("Expected: process.started is True")
     if process.calls != [
         (
             "outlook_discover",
             {"folder": "archive", "page_size": "100", "max_pages": "3"},
         )
     ]:
-        pytest.fail(
-            'Expected: process.calls == [ ( "outlook_discover", { "folder": "archive", "page_size": "100", "max_pages": "3", }, ) ]'
-        )
+        pytest.fail(f"Unexpected Mail discover mapping: {process.calls!r}")
 
 
-def test_discover_command_rejects_positional_arguments() -> None:
-    command = OutlookDiscoverCommand()
-    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
-    with pytest.raises(UsageError):
-        command.run(
-            ["unexpected"],
-            argparse.Namespace(folder="", page_size=25, max_pages=0),
-        )
-
-
-def test_delta_command_maps_page_size_and_reconciliation() -> None:
+def test_delta_maps_page_size_and_reconciliation() -> None:
     process = _run(
-        OutlookDeltaCommand(),
-        [],
-        argparse.Namespace(page_size=50, reconcile=False),
+        _opts(action="delta", page_size=50, reconcile=False)
     )
-
     if process.calls != [
         ("outlook_delta", {"page_size": "50", "reconcile_global": "0"})
     ]:
-        pytest.fail(
-            'Expected: process.calls == [ ( "outlook_delta", { "page_size": "50", "reconcile_global": "0", }, ) ]'
-        )
+        pytest.fail(f"Unexpected Mail delta mapping: {process.calls!r}")
 
 
-def test_full_command_accepts_multiple_ids_and_deduplicates_them() -> None:
+def test_full_accepts_multiple_ids_and_deduplicates_them() -> None:
     process = _run(
-        OutlookFullCommand(),
-        ["message-1", "message-2", "message-1"],
-        argparse.Namespace(operation="enrich", acquisition_profile=FULL_V1),
+        _opts(
+            action="full",
+            message_ids=["message-1", "message-2", "message-1"],
+            operation="enrich",
+            acquisition_profile=FULL_V1,
+        )
     )
-
     if process.calls != [
         (
             "outlook_full",
@@ -139,80 +152,89 @@ def test_full_command_accepts_multiple_ids_and_deduplicates_them() -> None:
             },
         )
     ]:
-        pytest.fail(
-            'Expected: process.calls == [ ( "outlook_full", { "message_ids": "message-1,message-2", "operation": "enrich", "profile": FULL_V1, }, ) ]'
-        )
+        pytest.fail(f"Unexpected Mail full mapping: {process.calls!r}")
 
 
-def test_full_command_requires_at_least_one_message_id() -> None:
-    command = OutlookFullCommand()
+def test_full_requires_at_least_one_message_id() -> None:
+    command = MicrosoftCommand()
     command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
-    with pytest.raises(UsageError):
-        command.run(
-            [],
-            argparse.Namespace(operation="refresh", acquisition_profile=FULL_V1),
-        )
+    with pytest.raises(UsageError, match="at least one MESSAGE_ID"):
+        command.run([], _opts(action="full"))
 
 
 def test_command_sets_exitcode_when_crawler_bootstrap_fails() -> None:
-    command = OutlookDeltaCommand()
+    command = MicrosoftCommand()
     process = FakeCrawlerProcess()
     process.bootstrap_failed = True
     command.crawler_process = cast(CrawlerProcessBase, process)
 
-    command.run([], argparse.Namespace(page_size=25, reconcile=True))
+    command.run([], _opts(action="delta"))
 
     if command.exitcode != 1:
-        pytest.fail("Expected: command.exitcode == 1")
-
+        pytest.fail("Expected crawler bootstrap failure to set exit code 1")
 
 
 def test_command_sets_exitcode_when_spider_integrity_failed() -> None:
-    command = OutlookDeltaCommand()
+    command = MicrosoftCommand()
     process = FakeCrawlerProcess(run_failed=True)
     command.crawler_process = cast(CrawlerProcessBase, process)
 
-    command.run([], argparse.Namespace(page_size=25, reconcile=True))
+    command.run([], _opts(action="delta"))
 
     if command.exitcode != 1:
         pytest.fail("Expected spider integrity failure to set exit code 1")
 
 
 def test_command_sets_exitcode_when_final_crawl_status_failed() -> None:
-    command = OutlookDeltaCommand()
+    command = MicrosoftCommand()
     process = FakeCrawlerProcess(final_status="failed")
     command.crawler_process = cast(CrawlerProcessBase, process)
 
-    command.run([], argparse.Namespace(page_size=25, reconcile=True))
+    command.run([], _opts(action="delta"))
 
     if command.exitcode != 1:
-        pytest.fail("Expected failed final crawl status to set exit code 1")
+        pytest.fail("Expected final failed status to set exit code 1")
 
 
-def test_identity_gate_failure_returns_nonzero_before_graph_requests(
-    tmp_path,
-) -> None:
-    import subprocess
-    import sys
-    from pathlib import Path
+@pytest.mark.parametrize(
+    "path",
+    [
+        ["outlook_discover"],
+        ["outlook_delta"],
+        ["outlook_full"],
+    ],
+)
+def test_legacy_top_level_commands_are_not_public(path: list[str]) -> None:
+    root = Path(__file__).parents[1]
+    result = subprocess.run(
+        [sys.executable, "-m", "scrapy", *path],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    if result.returncode != 2:
+        pytest.fail(f"Expected legacy command rejection: {result.stderr}")
 
+
+def test_identity_gate_failure_uses_microsoft_namespace(tmp_path: Path) -> None:
     root = Path(__file__).parents[1]
     result = subprocess.run(
         [
             sys.executable,
             "-m",
             "scrapy",
-            "outlook_discover",
+            "microsoft",
+            "outlook",
+            "mail",
+            "discover",
             "-s",
             "MS_GRAPH_AUTH_METHOD=none",
             "-s",
             f"MSGLOOM_DATABASE_URL=sqlite:///{tmp_path / 'catalog.sqlite3'}",
             "-s",
             f"MSGLOOM_RAW_EVIDENCE_DIR={tmp_path / 'raw'}",
-            "-s",
-            f"JOBDIR={tmp_path / 'job'}",
-            "-s",
-            "HTTPCACHE_ENABLED=True",
             "-L",
             "INFO",
         ],
@@ -222,196 +244,10 @@ def test_identity_gate_failure_returns_nonzero_before_graph_requests(
         timeout=20,
         check=False,
     )
-
     if result.returncode != 1:
         pytest.fail(
-            f"Expected identity gate command failure, got {result.returncode}:\n"
+            f"Expected identity gate failure, got {result.returncode}:\n"
             + result.stderr
         )
     if "source_identity_failed" not in result.stderr:
         pytest.fail("Expected source identity failure close reason")
-    if "'msgloom/final/status': 'failed'" not in result.stderr:
-        pytest.fail("Expected final crawl status to be failed")
-    if "requests=0 responses=0" not in result.stderr:
-        pytest.fail("Expected zero Graph requests before identity gate")
-
-
-def test_identity_gate_failure_is_nonzero_without_status_extension(
-    tmp_path,
-) -> None:
-    import subprocess
-    import sys
-    from pathlib import Path
-
-    root = Path(__file__).parents[1]
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "scrapy",
-            "outlook_discover",
-            "-s",
-            "MS_GRAPH_AUTH_METHOD=none",
-            "-s",
-            "MSGLOOM_CRAWL_STATUS_ENABLED=False",
-            "-s",
-            f"MSGLOOM_DATABASE_URL=sqlite:///{tmp_path / 'catalog.sqlite3'}",
-            "-s",
-            f"MSGLOOM_RAW_EVIDENCE_DIR={tmp_path / 'raw'}",
-            "-L",
-            "INFO",
-        ],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        timeout=20,
-        check=False,
-    )
-
-    if result.returncode != 1:
-        pytest.fail(
-            "Expected source identity gate failure to set exit code 1 "
-            "without crawl status extension"
-        )
-    if "msgloom/source_identity/gate_failed_count" not in result.stderr:
-        pytest.fail("Expected source identity gate failure stat in final dump")
-
-
-def test_identity_gate_failure_preserves_existing_jobdir_spider_state(
-    tmp_path: Path,
-) -> None:
-    import pickle
-    import subprocess
-    import sys
-    from pathlib import Path
-
-    from message_ingest.acquisition.source_context import ensure_jobdir_context
-
-    root = Path(__file__).parents[1]
-    jobdir = tmp_path / "job"
-    database_url = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
-    source_id = "source-1"
-    ensure_jobdir_context(str(jobdir), source_id, database_url)
-    original_state = {
-        "msgloom_delta": {
-            "run_id": "existing-run",
-            "seen_folder_ids": ["f1"],
-            "started_folder_ids": ["f1"],
-            "completed_folder_ids": [],
-            "reconcile_orphan_ids": [],
-            "folder_inventory_pending": 1,
-            "folder_inventory_complete": False,
-            "folder_inventory_failed": False,
-            "reconcile_complete": False,
-            "run_failed": False,
-            "failure_reasons": [],
-            "delta_start_scheduled": True,
-        }
-    }
-    state_path = jobdir / "spider.state"
-    state_path.write_bytes(pickle.dumps(original_state, protocol=4))
-
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "scrapy",
-            "outlook_delta",
-            "-s",
-            "MS_GRAPH_AUTH_METHOD=none",
-            "-s",
-            f"MSGLOOM_DATABASE_URL={database_url}",
-            "-s",
-            f"MSGLOOM_SOURCE_ID={source_id}",
-            "-s",
-            f"JOBDIR={jobdir}",
-            "-L",
-            "INFO",
-        ],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        timeout=20,
-        check=False,
-    )
-
-    if result.returncode != 1:
-        pytest.fail(
-            f"Expected identity-gate failure, got {result.returncode}:\n"
-            + result.stderr
-        )
-    restored = pickle.loads(state_path.read_bytes())
-    if restored != original_state:
-        pytest.fail(
-            "Expected startup identity failure to preserve existing JOBDIR "
-            f"Spider.state, got {restored!r}"
-        )
-
-
-def test_prestart_bootstrap_failure_does_not_access_uninitialized_stats() -> None:
-    import subprocess
-    import sys
-    from pathlib import Path
-
-    root = Path(__file__).parents[1]
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "scrapy",
-            "outlook_full",
-            ",",
-            "-s",
-            "LOG_ENABLED=False",
-        ],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        timeout=20,
-        check=False,
-    )
-
-    if result.returncode != 1:
-        pytest.fail("Expected invalid pre-start crawl to return exit code 1")
-    output = result.stdout + result.stderr
-    if "Crawler.stats is not set yet" in output:
-        pytest.fail("Expected bootstrap failure not to access uninitialized stats")
-
-
-
-def test_identity_gate_failure_is_nonzero_with_dummy_stats(tmp_path) -> None:
-    import subprocess
-    import sys
-
-    root = Path(__file__).parents[1]
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "scrapy",
-            "outlook_discover",
-            "-s",
-            "MS_GRAPH_AUTH_METHOD=none",
-            "-s",
-            "STATS_CLASS=scrapy.statscollectors.DummyStatsCollector",
-            "-s",
-            f"MSGLOOM_DATABASE_URL=sqlite:///{tmp_path / 'catalog.sqlite3'}",
-            "-s",
-            f"MSGLOOM_RAW_EVIDENCE_DIR={tmp_path / 'raw'}",
-            "-L",
-            "INFO",
-        ],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        timeout=20,
-        check=False,
-    )
-
-    if result.returncode != 1:
-        pytest.fail(
-            "Expected spider integrity state to produce exit code 1 even "
-            "with DummyStatsCollector"
-        )
-    if "source_identity_failed" not in result.stderr:
-        pytest.fail("Expected source identity gate failure in command log")

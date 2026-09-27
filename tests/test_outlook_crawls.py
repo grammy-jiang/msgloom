@@ -132,7 +132,16 @@ def test_outlook_command_crawls_local_graph_with_native_components(
     mode: str,
 ) -> None:
     database_url = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
-    args = [sys.executable, "-c", RUN_COMMAND, graph_server, f"outlook_{mode}"]
+    args = [
+        sys.executable,
+        "-c",
+        RUN_COMMAND,
+        graph_server,
+        "microsoft",
+        "outlook",
+        "mail",
+        mode,
+    ]
     if mode == "full":
         args.append(MESSAGE_ID)
     settings = {

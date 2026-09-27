@@ -127,6 +127,53 @@ binding, override it only for that invocation:
 `MSGLOOM_MS_USERNAME` is only a first-binding selector/login hint. It is not
 the persisted source identity and is not a password.
 
+## Authentication management commands
+
+The public command namespace is `scrapy microsoft ...`. Commands do not
+implement a second Microsoft authentication flow. Any action that actually
+needs sign-in, consent, token acquisition, refresh, or account verification
+must enter the normal Scrapy Graph lifecycle and reuse
+`MicrosoftGraphAuthSession`, the source-identity gate, and downloader auth
+middleware. For example, `scrapy microsoft profile` delegates to the existing
+`microsoft_profile` spider through the shared `run_graph()` command helper.
+
+`auth-status` is deliberately different: it is an offline, read-only
+inspection of configuration and local cache metadata, so it does not
+authenticate. `auth-clear` only removes the configured local cache after
+explicit confirmation; it does not perform authentication or revoke remote
+consent.
+
+Use `scrapy microsoft auth status` for a read-only local diagnosis. It
+performs no network request, login, consent, or token refresh. The command
+reports the configured application mode, authentication method and authority,
+local token-cache state, cached application identity and resource scopes, plus
+actionable warnings. It never prints access/refresh tokens, usernames, provider
+account IDs, or other credential material.
+
+Use `scrapy microsoft auth status --json` for automation-friendly output.
+
+Development may explicitly use Microsoft's Microsoft Graph Command Line Tools
+public client:
+
+`MSGLOOM_MS_CLIENT_ID=14d82eec-204b-4c2f-b7e8-296a70dab67e`
+
+This is recognized as development mode. It remains supported for local
+development and smoke testing, but runtime logs and status output warn that the
+Microsoft consent screen names Microsoft Graph Command Line Tools, not msgloom.
+Released deployments should use the future msgloom-managed public client or an
+operator-supplied Entra public-client application ID.
+
+Use `scrapy microsoft auth clear --yes` only when local cached credentials
+must be removed. It deletes the configured MSAL token-cache file; it does not
+revoke Microsoft-side consent and does not remove the persisted msgloom
+source-account binding. The next sign-in must therefore still match the bound
+account unless that binding is separately migrated.
+
+If no Client ID is configured, live authentication fails with guidance to run
+`microsoft auth status`. A token cache for another application is reported
+as a mismatch rather than being presented as consent for the configured
+application.
+
 ## Credential and evidence boundary
 
 Access/refresh tokens, provider account keys, and interactive auth state are

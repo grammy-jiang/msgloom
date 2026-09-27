@@ -26,6 +26,10 @@ from message_ingest.providers.microsoft_graph.accounts import (
     select_after_interaction,
     select_unbound_cached_account,
 )
+from message_ingest.providers.microsoft_graph.auth_management import (
+    MICROSOFT_GRAPH_CLI_CLIENT_ID,
+    classify_client_id,
+)
 
 logger = logging.getLogger(__name__)
 _SESSION_ATTR = "_msgloom_microsoft_graph_auth_session"
@@ -50,6 +54,7 @@ class MicrosoftGraphAuthSession:
     ) -> None:
         """Load cache state while deferring application construction."""
         self.client_id = client_id
+        self.application_mode, self.application_name = classify_client_id(client_id)
         self.authority = authority
         self.scopes = scopes
         self.auth_method = auth_method
@@ -72,7 +77,24 @@ class MicrosoftGraphAuthSession:
         self._identity_ready = False
         self._lock = asyncio.Lock()
         self._set("msgloom/auth/method", auth_method)
+        self._set("msgloom/auth/application_mode", self.application_mode)
         self._set("msgloom/auth/token_cache_loaded", cache_exists)
+        logger.info(
+            "Microsoft authentication configured: application_mode=%s "
+            "application=%s auth_method=%s token_cache=%s",
+            self.application_mode,
+            self.application_name,
+            self.auth_method,
+            "present" if cache_exists else "empty",
+        )
+        if self.application_mode == "development":
+            logger.warning(
+                "Microsoft development authentication is active. Consent "
+                "screens will identify %s rather than msgloom. Use this client "
+                "for development/testing only. Run 'scrapy "
+                "microsoft auth status' for details.",
+                self.application_name,
+            )
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -324,6 +346,14 @@ class MicrosoftGraphAuthSession:
             raise MicrosoftGraphAuthError(
                 "Interactive Microsoft auth is disabled"
             )
+        logger.warning(
+            "Microsoft sign-in or consent is required: application_mode=%s "
+            "application=%s auth_method=%s scopes=%s",
+            self.application_mode,
+            self.application_name,
+            self.auth_method,
+            ",".join(sorted(self.scopes)),
+        )
         self._inc("msgloom/auth/user_interaction_count")
         if self.auth_method == "device_code":
             flow = app.initiate_device_flow(scopes=self.scopes)
@@ -389,11 +419,18 @@ class MicrosoftGraphAuthSession:
         )
 
     def _require_client_id(self) -> None:
-        """Reject live auth when the application ID is absent."""
-        if not self.client_id:
-            raise MicrosoftGraphAuthError(
-                "Set MSGLOOM_MS_CLIENT_ID before a live Microsoft Graph crawl"
-            )
+        """Reject live auth with actionable application-identity guidance."""
+        if self.client_id:
+            return
+        raise MicrosoftGraphAuthError(
+            "Microsoft application Client ID is not configured. Run "
+            "'scrapy microsoft auth status' for local diagnostics. During "
+            "development, MSGLOOM_MS_CLIENT_ID may use the documented "
+            "Microsoft Graph Command Line Tools client "
+            f"({MICROSOFT_GRAPH_CLI_CLIENT_ID}); real deployments should use "
+            "the msgloom managed application or an operator-supplied Entra "
+            "public-client application ID."
+        )
 
     def _application(self) -> msal.PublicClientApplication:
         """Lazily construct one MSAL client for this crawler."""
