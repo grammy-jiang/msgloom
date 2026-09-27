@@ -1,12 +1,12 @@
 # Microsoft Graph authentication
 
 msgloom keeps Microsoft Graph authentication inside dedicated Scrapy downloader
-middleware. Spiders do not acquire tokens and item pipelines do not handle
+middleware. Spiders do not acquire tokens and Item Pipelines do not handle
 credentials.
 
 ## Authentication selection
 
-Select one authentication middleware per crawl through:
+Select the authentication flow per crawl through:
 
 `MSGLOOM_MS_AUTH_METHOD`
 
@@ -15,8 +15,13 @@ Supported values today:
 - `device_code` (default)
 - `interactive`
 
-Only the selected middleware is enabled in Scrapy's downloader middleware
-chain. Multiple authentication middleware are never active for the same crawl.
+Both authentication middleware classes are registered in Scrapy's downloader
+middleware component list. During component construction each reads the final
+crawler settings and raises Scrapy `NotConfigured` unless its `auth_method`
+matches `MS_GRAPH_AUTH_METHOD`. Consequently exactly one authentication
+implementation participates in the request/response chain, while command-line
+or project-level setting overrides can select the flow without changing Spider
+code.
 
 ## Device code
 
@@ -65,7 +70,7 @@ A personal-account-only installation may use `consumers` instead.
 
 ## Configuration
 
-Required:
+Required for live Microsoft Graph acquisition:
 
 `MSGLOOM_MS_CLIENT_ID=<application-client-id>`
 
@@ -90,17 +95,28 @@ Both current authentication middleware share only authentication concerns:
 - acquire and cache delegated tokens with MSAL;
 - select the configured cached account;
 - attach a Bearer token only to `graph.microsoft.com` requests;
-- remove the transient `Authorization` header before Scrapy's native filesystem
-  HTTP cache persists request headers;
+- remove the transient `Authorization` header on the response path before
+  Scrapy's optional filesystem HTTP cache persists request headers;
 - on the first Graph HTTP 401, clear the in-memory token and retry once with a
   forced silent refresh;
 - allow a second 401 to pass through instead of creating an authentication
   retry loop.
 
-HTTP 401 and 403 are excluded from the development HTTP cache.
+Authentication retries are separate from Microsoft Graph 429 throttling. The
+Graph throttling middleware and Scrapy's generic RetryMiddleware remain distinct
+components.
+
+HTTP 401 and 403 are excluded if the development HTTP cache is explicitly
+enabled. HTTP cache is disabled by default for normal Outlook operation.
 
 The serialized MSAL token cache is written with user-only file permissions
 (`0600`).
+
+## Evidence boundary
+
+Access tokens and authentication request state are never evidence. The raw
+network-evidence downloader middleware persists response representation but does
+not persist the transient `Authorization` request header.
 
 ## Other Microsoft authentication flows
 
@@ -128,11 +144,12 @@ its own authentication middleware and source semantics.
 
 These are platform- and account-environment-specific and are not useful for the
 current Raspberry Pi target. They can be added later without changing the
-Spider because authentication is isolated behind the downloader middleware.
+Spider because authentication is isolated behind downloader middleware.
 
 ## Microsoft first-party client IDs
 
 Microsoft-owned public-client IDs can be useful for diagnostics and historical
-compatibility testing, but msgloom's long-term deployment model should use its
-own app registration so application identity, permissions, and consent remain
-under the owner's control.
+compatibility testing. The current live development smoke tests use the
+Microsoft Graph Command Line Tools public client id, but msgloom's long-term
+deployment model should use its own app registration so application identity,
+permissions, and consent remain under the owner's control.

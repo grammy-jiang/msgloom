@@ -1,8 +1,18 @@
+"""
+Protect the enabled native components and ordering needed by the acquisition
+contracts.
+"""
+
 from __future__ import annotations
 
+import pytest
+from scrapy.extensions.periodic_log import PeriodicLog
 from scrapy.settings import Settings, default_settings
+from scrapy.utils.misc import build_from_crawler
+from scrapy.utils.test import get_crawler
 
-import msgloom.settings as project_settings
+import message_ingest.settings as project_settings
+from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 
 def _settings() -> Settings:
@@ -11,57 +21,242 @@ def _settings() -> Settings:
     return settings
 
 
-def test_downloader_middleware_order_matches_scrapy_request_response_semantics() -> None:
+def test_downloader_middleware_order_matches_scrapy_request_response_semantics() -> (
+    None
+):
     settings = _settings()
-    middlewares = settings.get_component_priority_dict_with_base("DOWNLOADER_MIDDLEWARES")
-    assert middlewares["scrapy.downloadermiddlewares.retry.RetryMiddleware"] == 550
-    assert middlewares["msgloom.middlewares.MicrosoftGraphThrottleMiddleware"] == 555
-    assert middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] == 850
-    assert middlewares["msgloom.evidence.CachedEvidenceLinkMiddleware"] == 875
-    assert middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] == 900
-    assert middlewares[
-        "msgloom.middlewares.MicrosoftGraphDeviceCodeAuthMiddleware"
-    ] == 950
-    assert middlewares["msgloom.evidence.RawNetworkEvidenceMiddleware"] == 975
+    middlewares = settings.get_component_priority_dict_with_base(
+        "DOWNLOADER_MIDDLEWARES"
+    )
+    if "scrapy.downloadermiddlewares.retry.RetryMiddleware" in middlewares:
+        pytest.fail(
+            'Expected: "scrapy.downloadermiddlewares.retry.RetryMiddleware" not in middlewares'
+        )
+    if (
+        middlewares["message_ingest.middlewares.errors.PrivacySafeRetryMiddleware"]
+        != 550
+    ):
+        pytest.fail(
+            'Expected: middlewares["message_ingest.middlewares.errors.PrivacySafeRetryMiddleware"] == 550'
+        )
+    if (
+        middlewares["message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware"]
+        != 555
+    ):
+        pytest.fail(
+            'Expected: middlewares["message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware"] == 555'
+        )
+    if middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] != 850:
+        pytest.fail(
+            'Expected: middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] == 850'
+        )
+    if (
+        middlewares[
+            "message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
+        ]
+        != 960
+    ):
+        pytest.fail(
+            'Expected: middlewares["message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
+        )
+    if middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] != 900:
+        pytest.fail(
+            'Expected: middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] == 900'
+        )
+    if (
+        middlewares[
+            "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+        ]
+        != 950
+    ):
+        pytest.fail(
+            'Expected: middlewares[ "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware" ] == 950'
+        )
+    if any("evidence" in key.lower() for key in middlewares):
+        pytest.fail(
+            'Expected: not any("evidence" in key.lower() for key in middlewares)'
+        )
 
 
 def test_native_http_cache_and_retry_remain_enabled() -> None:
     settings = _settings()
-    assert settings.getbool("HTTPCACHE_ENABLED") is True
+    if (
+        settings["REQUEST_FINGERPRINTER_CLASS"]
+        != "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
+    ):
+        pytest.fail(
+            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter" )'
+        )
+    if settings.getbool("AUTOTHROTTLE_ENABLED") is not True:
+        pytest.fail('Expected: settings.getbool("AUTOTHROTTLE_ENABLED") is True')
+    if settings.getfloat("AUTOTHROTTLE_TARGET_CONCURRENCY") != 1.0:
+        pytest.fail(
+            'Expected: settings.getfloat("AUTOTHROTTLE_TARGET_CONCURRENCY") == 1.0'
+        )
+    if settings.getbool("HTTPCACHE_ENABLED") is not False:
+        pytest.fail('Expected: settings.getbool("HTTPCACHE_ENABLED") is False')
     ignored = set(settings.getlist("HTTPCACHE_IGNORE_HTTP_CODES"))
-    assert set(default_settings.RETRY_HTTP_CODES) <= ignored
-    assert {401, 403} <= ignored
-    assert settings["HTTPCACHE_STORAGE"] == default_settings.HTTPCACHE_STORAGE
-    assert settings["HTTPCACHE_POLICY"] == default_settings.HTTPCACHE_POLICY
-    assert settings.getbool("COOKIES_ENABLED") is False
-    assert settings.getbool("REFERER_ENABLED") is True
-    assert settings["REFERRER_POLICY"] == "no-referrer"
-    assert settings.getint("URLLENGTH_LIMIT") == 0
-    assert settings.getbool("TELNETCONSOLE_ENABLED") is False
-    assert settings.getbool("REMOTE_CONTROL_ENABLED") is False
+    if set(default_settings.RETRY_HTTP_CODES) > ignored:
+        pytest.fail("Expected: set(default_settings.RETRY_HTTP_CODES) <= ignored")
+    if {401, 403} > ignored:
+        pytest.fail("Expected: {401, 403} <= ignored")
+    if settings["HTTPCACHE_STORAGE"] != default_settings.HTTPCACHE_STORAGE:
+        pytest.fail(
+            'Expected: settings["HTTPCACHE_STORAGE"] == default_settings.HTTPCACHE_STORAGE'
+        )
+    if settings["HTTPCACHE_POLICY"] != default_settings.HTTPCACHE_POLICY:
+        pytest.fail(
+            'Expected: settings["HTTPCACHE_POLICY"] == default_settings.HTTPCACHE_POLICY'
+        )
+    if settings.getbool("COOKIES_ENABLED") is not False:
+        pytest.fail('Expected: settings.getbool("COOKIES_ENABLED") is False')
+    if settings.getbool("REFERER_ENABLED") is not True:
+        pytest.fail('Expected: settings.getbool("REFERER_ENABLED") is True')
+    if settings["REFERRER_POLICY"] != "no-referrer":
+        pytest.fail('Expected: settings["REFERRER_POLICY"] == "no-referrer"')
+    if settings.getbool("METAREFRESH_ENABLED") is not False:
+        pytest.fail('Expected: settings.getbool("METAREFRESH_ENABLED") is False')
+    if settings.getint("URLLENGTH_LIMIT") != 0:
+        pytest.fail('Expected: settings.getint("URLLENGTH_LIMIT") == 0')
+    if settings.getbool("TELNETCONSOLE_ENABLED") is not False:
+        pytest.fail('Expected: settings.getbool("TELNETCONSOLE_ENABLED") is False')
+    if settings.getbool("REMOTE_CONTROL_ENABLED") is not False:
+        pytest.fail('Expected: settings.getbool("REMOTE_CONTROL_ENABLED") is False')
 
 
-def test_project_splits_catalog_jsonl_and_checkpoint_components() -> None:
+def test_project_persists_scraped_data_through_item_pipelines() -> None:
     settings = _settings()
     pipelines = settings.getdict("ITEM_PIPELINES")
-    assert pipelines == {
-        "msgloom.pipelines.CatalogPipeline": 300,
-        "msgloom.pipelines.LocalJsonlPipeline": 400,
-    }
+    if pipelines != {
+        "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+        "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+    }:
+        pytest.fail(
+            'Expected: pipelines == { "message_ingest.pipelines.evidence.RawEvidencePipeline": 200, "message_ingest.pipelines.catalog.CatalogPipeline": 300, }'
+        )
+    if settings.getint("CONCURRENT_ITEMS") != 1:
+        pytest.fail('Expected: settings.getint("CONCURRENT_ITEMS") == 1')
     extensions = settings.getdict("EXTENSIONS")
-    assert extensions["msgloom.services.CatalogService"] == 100
-    assert extensions["msgloom.extensions.OutlookDeltaCheckpointExtension"] == 500
-    assert settings.getbool("MSGLOOM_CATALOG_ENABLED") is True
-    assert settings.getbool("MSGLOOM_JSONL_ENABLED") is True
-    assert settings.getbool("MSGLOOM_RAW_EVIDENCE_ENABLED") is True
-    assert settings.getbool("MS_GRAPH_THROTTLE_ENABLED") is True
+    if (
+        extensions[
+            "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"
+        ]
+        != 500
+    ):
+        pytest.fail(
+            'Expected: extensions["message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"] == 500'
+        )
+    if (
+        extensions["message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension"]
+        != 525
+    ):
+        pytest.fail(
+            'Expected: extensions["message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension"] == 525'
+        )
+    if (
+        extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"]
+        != 550
+    ):
+        pytest.fail(
+            'Expected: extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"] == 550'
+        )
+    if extensions["scrapy.extensions.periodic_log.PeriodicLog"] != 600:
+        pytest.fail(
+            'Expected: extensions["scrapy.extensions.periodic_log.PeriodicLog"] == 600'
+        )
+    if settings.getbool("MSGLOOM_CATALOG_ENABLED") is not True:
+        pytest.fail('Expected: settings.getbool("MSGLOOM_CATALOG_ENABLED") is True')
+    if settings.getbool("MSGLOOM_RAW_EVIDENCE_ENABLED") is not True:
+        pytest.fail(
+            'Expected: settings.getbool("MSGLOOM_RAW_EVIDENCE_ENABLED") is True'
+        )
+    if settings.getbool("MS_GRAPH_ERROR_MIDDLEWARE_ENABLED") is not True:
+        pytest.fail(
+            'Expected: settings.getbool("MS_GRAPH_ERROR_MIDDLEWARE_ENABLED") is True'
+        )
+    if settings.getbool("MSGLOOM_CRAWL_STATUS_ENABLED") is not True:
+        pytest.fail(
+            'Expected: settings.getbool("MSGLOOM_CRAWL_STATUS_ENABLED") is True'
+        )
+    if settings.getbool("MSGLOOM_LOG_PRIVACY_ENABLED") is not True:
+        pytest.fail('Expected: settings.getbool("MSGLOOM_LOG_PRIVACY_ENABLED") is True')
 
 
-def test_default_auth_method_is_device_code() -> None:
-    assert project_settings.MS_GRAPH_AUTH_METHOD == "device_code"
-    assert project_settings.MS_GRAPH_AUTH_MIDDLEWARES["device_code"].endswith(
-        "MicrosoftGraphDeviceCodeAuthMiddleware"
+def test_project_registers_custom_outlook_commands() -> None:
+    settings = _settings()
+    if settings["COMMANDS_MODULE"] != "message_ingest.commands":
+        pytest.fail(
+            'Expected: settings["COMMANDS_MODULE"] == "message_ingest.commands"'
+        )
+
+
+def test_default_auth_method_is_device_code_and_both_components_are_registered() -> (
+    None
+):
+    if project_settings.MS_GRAPH_AUTH_METHOD != "device_code":
+        pytest.fail('Expected: project_settings.MS_GRAPH_AUTH_METHOD == "device_code"')
+    settings = _settings()
+    middlewares = settings.getdict("DOWNLOADER_MIDDLEWARES")
+    if (
+        middlewares[
+            "message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+        ]
+        != 950
+    ):
+        pytest.fail(
+            'Expected: middlewares["message_ingest.middlewares.auth.MicrosoftGraphDeviceCodeAuthMiddleware"] == 950'
+        )
+    if (
+        middlewares[
+            "message_ingest.middlewares.auth.MicrosoftGraphInteractiveAuthMiddleware"
+        ]
+        != 951
+    ):
+        pytest.fail(
+            'Expected: middlewares["message_ingest.middlewares.auth.MicrosoftGraphInteractiveAuthMiddleware"] == 951'
+        )
+
+
+def test_periodic_log_uses_native_extension_with_safe_filters() -> None:
+    """Build Scrapy 2.19 PeriodicLog with both dict settings enabled."""
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "LOGSTATS_INTERVAL": project_settings.LOGSTATS_INTERVAL,
+            "PERIODIC_LOG_STATS": project_settings.PERIODIC_LOG_STATS,
+            "PERIODIC_LOG_DELTA": project_settings.PERIODIC_LOG_DELTA,
+            "PERIODIC_LOG_TIMING_ENABLED": (
+                project_settings.PERIODIC_LOG_TIMING_ENABLED
+            ),
+        },
     )
-    assert project_settings.MS_GRAPH_AUTH_MIDDLEWARES["interactive"].endswith(
-        "MicrosoftGraphInteractiveAuthMiddleware"
+    extension = build_from_crawler(PeriodicLog, crawler)
+    if not isinstance(extension, PeriodicLog):
+        pytest.fail("Expected: isinstance(extension, PeriodicLog)")
+    stats_include = set(project_settings.PERIODIC_LOG_STATS["include"])
+    if "msgloom/catalog/" not in stats_include:
+        pytest.fail('Expected: "msgloom/catalog/" in stats_include')
+    if "msgloom/graph_error_retry/" not in stats_include:
+        pytest.fail('Expected: "msgloom/graph_error_retry/" in stats_include')
+    if "msgloom/final/" not in stats_include:
+        pytest.fail('Expected: "msgloom/final/" in stats_include')
+
+    crawler.stats.set_value(
+        "msgloom/catalog/surface_item_processed_count/attachment_raw/acquired",
+        1,
     )
+    crawler.stats.set_value("msgloom/graph_error_retry/count", 2)
+    crawler.stats.set_value("private/provider-id-secret", 1)
+    selected = extension.log_crawler_stats()["stats"]
+    if (
+        "msgloom/catalog/surface_item_processed_count/attachment_raw/acquired"
+        not in selected
+    ):
+        pytest.fail("Expected: normalized catalog surface stat in PeriodicLog")
+    if "msgloom/graph_error_retry/count" not in selected:
+        pytest.fail("Expected: Graph retry helper stat in PeriodicLog")
+    if "private/provider-id-secret" in selected:
+        pytest.fail("Expected: unreviewed stat excluded from PeriodicLog")
+
+    if project_settings.PERIODIC_LOG_TIMING_ENABLED is not False:
+        pytest.fail("Expected: project_settings.PERIODIC_LOG_TIMING_ENABLED is False")

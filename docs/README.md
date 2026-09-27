@@ -2,6 +2,10 @@
 
 Start with the complete product, then read the Phase 1 design. The English documents are authoritative; the Chinese documents are corresponding translations.
 
+The implemented Scrapy project is named `message_ingest`. It is the message
+acquisition component within this repository. See its
+[component layout](component-layout.md) and [Outlook commands](outlook-commands.md).
+
 ```mermaid
 flowchart TD
     B[Design Brief] --> L[Logical Design]

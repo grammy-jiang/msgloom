@@ -18,34 +18,79 @@ A delta run:
 3. starts or resumes message delta independently for every unique folder;
 4. follows every `@odata.nextLink` verbatim;
 5. treats the final `@odata.deltaLink` as a checkpoint candidate;
-6. commits all candidates only after Scrapy becomes idle and the entire run is
-   known to be complete.
+6. performs whole-mailbox reconciliation;
+7. commits all candidates only after Scrapy becomes idle and the complete round
+   is known to be safe.
 
-Delta and folder-inventory requests set `dont_cache=True`. Scrapy's permanent
-HTTP development cache must never substitute an old response for a current
-change-tracking request.
+Folder inventory, message delta and reconciliation requests set
+`dont_cache=True`. Even when the development HTTP cache is explicitly enabled,
+an old cached response must never substitute for current change tracking.
 
-## Checkpoint safety
+## SQLAlchemy checkpoint state
 
-The spider emits checkpoint-candidate items but never commits checkpoint state.
-The item pipeline persists candidates under a per-run staging directory.
+Committed per-folder delta links and per-run candidates live in the shared
+SQLAlchemy catalog. The older JSON checkpoint file is a legacy development
+backup only and is not a runtime authority.
 
-`OutlookDeltaCheckpointExtension` handles `spider_idle`, at which point Scrapy
-has no pending downloader requests, scheduled requests, or items still being
-processed by the item pipeline.
+At delta start the Spider loads the committed delta-link map once through the
+crawler-scoped catalog service, then uses the in-memory map during traversal.
+The Spider never commits checkpoint state directly.
 
-The extension commits the checkpoint set only if:
+For every folder whose final Graph response contains `@odata.deltaLink`, the
+Spider emits an `OutlookDeltaCheckpointCandidateItem`. `CatalogPipeline`
+persists that candidate through SQLAlchemy.
 
-- folder inventory completed;
-- global reconciliation completed (when enabled);
-- every started folder delta completed;
-- exactly one durable candidate exists for every completed folder;
-- no acquisition failure or spider exception was recorded.
+## Checkpoint safety at `spider_idle`
 
-Otherwise the current checkpoint file is left unchanged and the crawl closes
-with a specific incomplete/checkpoint-failure reason.
+`OutlookDeltaCheckpointExtension` handles Scrapy's `spider_idle` signal. Scrapy
+2.19 defines this state as having no Requests waiting to download, no Requests
+scheduled, and no Items still being processed by the Item Pipeline.
 
-The committed checkpoint file is written atomically with mode `0600`.
+Correctness is not inferred from Stats. The extension compares two sources:
+
+- the Spider's execution snapshot;
+- durable SQLAlchemy checkpoint candidates for the current run id.
+
+A checkpoint round is committed only if:
+
+- the run has no acquisition-failure flag;
+- folder inventory completed and did not fail;
+- reconciliation completed;
+- the set of started folders equals the set of completed folders;
+- the set of completed folders equals the set of durable candidate folders.
+
+If any condition fails, the existing committed checkpoints remain unchanged and
+the crawl closes with `delta_incomplete` or `checkpoint_commit_failed` as
+appropriate.
+
+The SQLAlchemy catalog database is a private local file. Runtime database access
+uses SQLAlchemy only; application code does not query SQLite with `sqlite3`.
+
+## JOBDIR and business checkpoint separation
+
+Scrapy `JOBDIR` is used only for execution-resume state: Scheduler Requests,
+DupeFilter state and `Spider.state`. It is not the durable Microsoft delta
+checkpoint.
+
+For a delta job `Spider.state` records:
+
+- run id;
+- seen, started and completed folder ids;
+- folder-inventory pending/completion/failure state;
+- reconciliation orphan ids and completion state;
+- run-failure state;
+- whether the initial delta start request was already scheduled.
+
+This allows a cleanly paused Scrapy job to resume the same acquisition round
+without generating a new run id or re-emitting its root traversal request.
+
+A real integration test verified this against Microsoft Graph: a deliberately
+slowed crawl was interrupted once with SIGINT, closed with
+`finish_reason=shutdown`, left one reconciliation Request in the persistent
+Scheduler and retained twelve durable candidates. Running the same spider with
+the same JOBDIR logged `Resuming crawl (1 requests scheduled)`, restored the
+same run id, executed only reconciliation/orphan recovery, and then committed
+the original twelve candidate checkpoints.
 
 ## Whole-mailbox reconciliation
 
@@ -55,46 +100,47 @@ present in the recursively enumerated folder tree. Pure per-folder delta would
 therefore silently miss that message.
 
 To protect the completeness goal, after folder inventory finishes msgloom makes
-one lightweight whole-mailbox request selecting only:
+a lightweight whole-mailbox pass selecting only:
 
 - `id`
 - `parentFolderId`
 - `lastModifiedDateTime`
 
-Messages whose parent folder is part of the enumerated tree need no additional
-request. A message whose parent folder is not enumerable is treated as an
-orphan and receives one targeted discovery request so the observation is still
-preserved.
+The reconciliation callback processes each page as it arrives. It does not
+accumulate the entire mailbox index in Spider memory. Messages whose parent
+folder belongs to the enumerated tree need no additional request. A message
+whose parent folder is not enumerable is treated as an orphan and receives one
+targeted discovery request.
 
-This keeps normal incremental sync efficient while retaining a safety net for
-Graph/container edge cases.
+The tested personal mailbox currently has 232 visible messages, 12 enumerable
+folders and one such orphan message.
 
 ## Throttling
 
-Delta and folder traversal can create short request bursts. Microsoft Graph may
-respond with HTTP 429 and a `Retry-After` header.
+Microsoft Graph may return HTTP 429 with `Retry-After`.
 
 `MicrosoftGraphThrottleMiddleware` is independent of authentication and runs
-before Scrapy's generic retry handling on the response path. It:
+before Scrapy's generic RetryMiddleware on the response path. It:
 
 - honors `Retry-After` when present;
-- uses bounded exponential backoff when it is absent;
-- prevents immediate generic retries of a throttled request;
-- records throttle counters in Scrapy Stats;
-- stops after a configured maximum rather than retrying forever.
+- understands both numeric seconds and HTTP-date forms;
+- uses bounded exponential backoff when the header is absent;
+- uses Scrapy's public `get_retry_request()` helper for retry construction;
+- keeps a Graph-throttle retry counter separate from Scrapy's generic
+  `retry_times`, so quota waits do not consume transport retry budget;
+- prevents the generic RetryMiddleware from starting a second retry loop after
+  Graph-throttle retries are exhausted.
 
-The Graph domain concurrency is also intentionally conservative. Real mailbox
-testing showed that reducing per-domain concurrency to 2 and avoiding pointless
-`childFolders` requests for leaf folders eliminated observed 429 responses in
-the tested mailbox.
+Scrapy AutoThrottle is also enabled. It provides latency-based pacing, while the
+custom Graph middleware handles Microsoft-specific 429 semantics. The hard
+per-domain concurrency cap remains 2.
 
-## SQLAlchemy checkpoint state
+## HTTP cache
 
-Committed per-folder delta links and per-run candidates now live in the shared
-SQLAlchemy catalog rather than a JSON checkpoint file. The earlier JSON file is
-retained only as a legacy development backup and is not the runtime authority.
+Scrapy HttpCache is a development/replay facility, not a normal synchronization
+mechanism. It is disabled by default because Scrapy's default DummyPolicy does
+not expire cached responses. Enable it explicitly with
+`MSGLOOM_HTTP_CACHE_ENABLED=1` when deterministic local replay is useful.
 
-The Spider loads all committed delta links once in `start()` and keeps them in
-memory for the run. This avoids repeated synchronous database reads in folder
-callbacks. Candidate persistence is performed by `CatalogPipeline`; final
-promotion remains the responsibility of the `spider_idle` checkpoint extension.
+Cached replay is not a new Microsoft source observation. Cached responses are
+relinked to their original raw-evidence id and acquisition timestamp.

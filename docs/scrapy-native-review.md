@@ -23,23 +23,23 @@ Items and additional Requests.
 
 ### msgloom usage
 
-`OutlookMailSpider` owns Microsoft Outlook mail traversal:
+Three concrete Spiders inherit the abstract `OutlookMailSpider` and own
+Microsoft Outlook mail traversal:
 
-- whole-mailbox discovery and paging;
-- folder-tree traversal;
-- per-folder message delta traversal;
-- whole-mailbox reconciliation for Graph folder-coverage gaps;
-- targeted detail/MIME/attachment enrichment;
+- `OutlookDiscoverSpider`: whole-mailbox or single-folder discovery and paging;
+- `OutlookDeltaSpider`: folder-tree traversal, per-folder message delta, and
+  whole-mailbox reconciliation for Graph folder-coverage gaps;
+- `OutlookFullSpider`: targeted detail/MIME/attachment enrichment;
 - translation from Graph continuation links and resource relationships into
   new Scrapy Requests.
 
-The Spider does **not** authenticate, throttle HTTP, persist raw HTTP evidence,
-or write SQL/JSONL storage directly.
+The Spiders do **not** authenticate, throttle HTTP, persist raw HTTP evidence,
+or write persistence storage directly.
 
 ### `start()`
 
-Scrapy 2.19 requires `Spider.start()` to be an asynchronous generator. msgloom
-uses it to express the starting Requests for one run intent:
+Scrapy 2.19 requires `Spider.start()` to be an asynchronous generator. Each
+concrete Spider implements its own `start()` for one acquisition intent:
 
 - discovery;
 - delta;
@@ -52,8 +52,9 @@ off the reactor thread.
 ### Spider arguments
 
 Scrapy documents spider arguments as strings. msgloom parses `page_size`,
-`max_pages`, `sync_mode`, `message_ids`, and reconciliation options explicitly.
+`max_pages`, `message_ids`, and reconciliation options explicitly.
 They are run-specific inputs, not Scrapy global settings.
+The Spider name selects the acquisition mode.
 
 ### `cb_kwargs` versus `Request.meta`
 
@@ -195,103 +196,3 @@ msgloom uses two sequential pipeline components:
 
 1. `CatalogPipeline` (priority 300) persists queryable identity/state through
    SQLAlchemy.
-2. `LocalJsonlPipeline` (priority 400) keeps append-only semantic logs for
-   inspection/recovery.
-
-Both use coroutine `process_item()` methods for blocking local IO. SQLite and
-JSONL writes run in worker threads and are serialized with async locks rather
-than blocking the Scrapy reactor.
-
-The JSONL pipeline is intentionally not a generic feed export. Its role is an
-append-only local semantic audit stream with specific per-item-type files and
-private permissions, while SQLAlchemy is the query/state store.
-
-## SQLAlchemy catalog service
-
-`CatalogService` is a crawler-scoped Scrapy Extension (priority 100). It owns:
-
-- one SQLAlchemy Engine per Crawler;
-- one shared async SQLite write lock;
-- database lifecycle through `spider_closed`.
-
-Raw Evidence Middleware, CatalogPipeline, and checkpoint logic share this
-service. This is necessary for SQLite's single-writer behavior; an earlier
-prototype with one Engine per component produced real `database is locked`
-errors under Scrapy's concurrent Item processing.
-
-Application code does not call `sqlite3` directly.
-
-## Checkpoint Extension and signals
-
-`OutlookDeltaCheckpointExtension` uses Scrapy's `spider_idle` signal. Scrapy
-2.19 explicitly documents `spider_idle` as the place to assess final crawl
-results and optionally provide a custom closing reason.
-
-At `spider_idle`, Scrapy has no pending/scheduled downloads and no Items still
-being processed. The extension commits delta candidates only when:
-
-- folder inventory completed;
-- reconciliation completed;
-- every started folder delta completed;
-- the durable candidate count matches the completed folder count;
-- no acquisition/spider exception occurred;
-- no Item Pipeline error/drop occurred.
-
-Candidates are committed in one SQLAlchemy transaction. Otherwise the previous
-committed delta state remains authoritative.
-
-## Stats
-
-msgloom uses Scrapy's built-in Stats Collector. It does not create a parallel
-run-statistics framework.
-
-Components add namespaced keys:
-
-- `msgloom/crawl/*` from the Spider;
-- `msgloom/auth/*` from authentication middleware;
-- `msgloom/evidence/*` from evidence middleware;
-- `msgloom/throttle/*` from throttling middleware;
-- `msgloom/catalog/*` and `msgloom/storage/*` from pipelines;
-- `msgloom/checkpoint/*` / `msgloom/persistence/*` from checkpoint lifecycle.
-
-Scrapy's native downloader/cache/retry/item/finish stats remain authoritative
-for framework behavior.
-
-## Scrapy defaults intentionally disabled
-
-These Scrapy web-crawling/debug defaults do not fit this authenticated API
-collector and are disabled:
-
-- cookies;
-- Referer middleware;
-- URL length limit;
-- Telnet console;
-- Remote Control.
-
-Robots.txt obedience is also disabled because Microsoft Graph is an
-authenticated API, not a website being crawled.
-
-Depth tracking remains enabled; its default depth limit is unlimited and its
-stats remain useful.
-
-## JOBDIR
-
-Scrapy JOBDIR remains execution-resume state for one crawl only. It is not used
-as Microsoft Graph business checkpoint state.
-
-Current delta business checkpoints are SQLAlchemy rows and survive independent
-crawl runs. Clean pause/resume through JOBDIR has **not yet been validated** for
-all in-memory Spider traversal state and is a remaining task before claiming
-pause/resume support.
-
-## Remaining Scrapy-native work
-
-1. Validate JOBDIR pause/resume and decide which Spider crawl-graph fields must
-   use `Spider.state` when JOBDIR is enabled.
-2. Define explicit Refresh behavior that bypasses HTTP cache.
-3. Review request fingerprints when representation-affecting headers can create
-   two legitimate representations at the same URL.
-4. Use Request priorities when user-triggered enrichment and background work
-   coexist in the same crawl.
-5. Revisit shared provider settings once a second Graph Spider (Calendar) is
-   introduced; avoid abstracting before real reuse exists.
