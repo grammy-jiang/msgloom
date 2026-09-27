@@ -9,7 +9,7 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.middlewares.errors import PrivacySafeRetryMiddleware
+from message_ingest.providers.microsoft_graph.errors import PrivacySafeRetryMiddleware
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 SECRET_URL = (
@@ -46,7 +46,7 @@ def test_generic_retry_schedule_keeps_native_stats_without_url_log(caplog) -> No
     middleware = _middleware(1)
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     retry = middleware.process_response(request, response)
 
@@ -66,7 +66,7 @@ def test_generic_retry_exhaustion_logs_safe_reason_only(caplog) -> None:
     middleware = _middleware(0)
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     returned = middleware.process_response(request, response)
 
@@ -87,7 +87,7 @@ def test_generic_retry_exhaustion_logs_safe_reason_only(caplog) -> None:
 def test_generic_retry_exception_text_is_not_logged(caplog) -> None:
     middleware = _middleware(0)
     request = _request()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     retry = middleware._retry(
         request,
@@ -106,14 +106,14 @@ def test_generic_retry_honors_configured_give_up_log_level(caplog) -> None:
     middleware = _middleware(0, give_up_log_level="WARNING")
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     middleware.process_response(request, response)
 
     records = [
         record
         for record in caplog.records
-        if record.name == "message_ingest.middlewares.errors"
+        if record.name == "message_ingest.providers.microsoft_graph.errors"
         and "Scrapy retry limit reached" in record.getMessage()
     ]
     if len(records) != 1:
@@ -127,14 +127,14 @@ def test_generic_retry_honors_request_give_up_log_level_override(caplog) -> None
     request = _request()
     request.meta["give_up_log_level"] = "INFO"
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     middleware.process_response(request, response)
 
     records = [
         record
         for record in caplog.records
-        if record.name == "message_ingest.middlewares.errors"
+        if record.name == "message_ingest.providers.microsoft_graph.errors"
         and "Scrapy retry limit reached" in record.getMessage()
     ]
     if len(records) != 1:
@@ -150,7 +150,7 @@ def test_generic_retry_none_give_up_override_falls_back_to_setting(
     request = _request()
     request.meta["give_up_log_level"] = None
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.errors")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
 
     returned = middleware.process_response(request, response)
 
@@ -159,7 +159,7 @@ def test_generic_retry_none_give_up_override_falls_back_to_setting(
     records = [
         record
         for record in caplog.records
-        if record.name == "message_ingest.middlewares.errors"
+        if record.name == "message_ingest.providers.microsoft_graph.errors"
         and "Scrapy retry limit reached" in record.getMessage()
     ]
     if len(records) != 1:

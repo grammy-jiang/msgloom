@@ -8,7 +8,8 @@ from urllib.parse import urlsplit
 
 from scrapy.utils.request import fingerprint
 
-_GRAPH_HOST = "graph.microsoft.com"
+from message_ingest.providers.microsoft_graph import GRAPH_HOST
+
 _GRAPH_REPRESENTATION_HEADERS = ("Accept", "Prefer")
 
 
@@ -24,7 +25,7 @@ class RepresentationAwareRequestFingerprinter:
         share cache or duplicate-filter identity. ``Authorization`` is
         intentionally excluded.
         """
-        if urlsplit(request.url).hostname == _GRAPH_HOST:
+        if urlsplit(request.url).hostname == GRAPH_HOST:
             return fingerprint(
                 request,
                 include_headers=_GRAPH_REPRESENTATION_HEADERS,

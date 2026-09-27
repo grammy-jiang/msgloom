@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from scrapy import Request
 
-from message_ingest.fingerprints import RepresentationAwareRequestFingerprinter
+from message_ingest.providers.microsoft_graph.fingerprints import RepresentationAwareRequestFingerprinter
 
 
 def test_graph_accept_header_changes_request_identity() -> None:

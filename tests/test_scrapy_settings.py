@@ -37,18 +37,18 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
             'Expected: "scrapy.downloadermiddlewares.retry.RetryMiddleware" not in middlewares'
         )
     if (
-        middlewares["message_ingest.middlewares.errors.PrivacySafeRetryMiddleware"]
+        middlewares["message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"]
         != 550
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.errors.PrivacySafeRetryMiddleware"] == 550'
+            'Expected: middlewares["message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"] == 550'
         )
     if (
-        middlewares["message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware"]
+        middlewares["message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"]
         != 555
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware"] == 555'
+            'Expected: middlewares["message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"] == 555'
         )
     if middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] != 850:
         pytest.fail(
@@ -56,12 +56,12 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
+            "message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
         ]
         != 960
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
+            'Expected: middlewares["message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
         )
     if middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] != 900:
         pytest.fail(
@@ -86,10 +86,10 @@ def test_native_http_cache_and_retry_remain_enabled() -> None:
     settings = _settings()
     if (
         settings["REQUEST_FINGERPRINTER_CLASS"]
-        != "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
+        != "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
     ):
         pytest.fail(
-            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter" )'
+            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter" )'
         )
     if settings.getbool("AUTOTHROTTLE_ENABLED") is not True:
         pytest.fail('Expected: settings.getbool("AUTOTHROTTLE_ENABLED") is True')

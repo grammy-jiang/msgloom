@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 import msal
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.middlewares import GRAPH_HOST
+from message_ingest.providers.microsoft_graph import GRAPH_HOST
 
 logger = logging.getLogger(__name__)
 _AUTH_RETRY_META = "_msgloom_ms_auth_retry"

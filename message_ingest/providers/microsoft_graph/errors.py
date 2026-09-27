@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from scrapy.downloadermiddlewares.retry import RetryMiddleware, get_retry_request
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.middlewares import GRAPH_HOST
+from message_ingest.providers.microsoft_graph import GRAPH_HOST
 
 logger = logging.getLogger(__name__)
 _SAFE_GRAPH_CODE = re.compile(r"[A-Za-z0-9_.-]{1,64}")

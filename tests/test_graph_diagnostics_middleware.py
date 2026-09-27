@@ -12,7 +12,7 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.middlewares.diagnostics import MicrosoftGraphDiagnosticsMiddleware
+from message_ingest.providers.microsoft_graph.diagnostics import MicrosoftGraphDiagnosticsMiddleware
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 
@@ -24,7 +24,7 @@ def _middleware():
 
 def test_graph_request_gets_unique_client_request_id_and_debug_log(caplog) -> None:
     middleware = _middleware()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph")
     request = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
         cb_kwargs={"purpose": "message-list"},
@@ -62,7 +62,7 @@ def test_graph_request_gets_unique_client_request_id_and_debug_log(caplog) -> No
 
 def test_graph_response_logs_server_request_id(caplog) -> None:
     middleware = _middleware()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph")
     request = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
         cb_kwargs={"purpose": "message-list"},
@@ -170,7 +170,7 @@ def test_cached_graph_response_is_counted_as_replay_not_transport(caplog) -> Non
         status=200,
         flags=["cached"],
     )
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares")
+    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph")
 
     returned = middleware.process_response(request, response)
 

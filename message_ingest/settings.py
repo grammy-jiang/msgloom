@@ -44,7 +44,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 2
 CONCURRENT_ITEMS = 1
 
 REQUEST_FINGERPRINTER_CLASS = (
-    "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
+    "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
 )
 LOG_FORMATTER = "message_ingest.logformatter.MessageIngestLogFormatter"
 
@@ -75,14 +75,14 @@ DOWNLOADER_MIDDLEWARES = {
     # Preserve Scrapy generic retries through a privacy-safe subclass that
     # suppresses Request reprs containing Graph continuation URLs.
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-    "message_ingest.middlewares.errors.PrivacySafeRetryMiddleware": 550,
+    "message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware": 550,
     # Request hooks run in ascending priority and response hooks in descending
     # priority. Diagnostics therefore sees each Graph response before auth can
     # replace a 401 with a retry Request. Provider retries still run after auth.
-    "message_ingest.middlewares.errors.MicrosoftGraphErrorMiddleware": 555,
+    "message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware": 555,
     "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
     "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware": 951,
-    "message_ingest.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
+    "message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
 }
 
 EXTENSIONS = {
