@@ -1,4 +1,4 @@
-"""Sanitize Scrapy core LogRecords for Outlook acquisition runs."""
+"""Sanitize Scrapy core LogRecords for Microsoft Graph acquisition runs."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ import logging
 from scrapy.http import Request
 
 from message_ingest.logformatter import MessageIngestLogFormatter
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 
 
-class OutlookScrapyPrivacyFilter(logging.Filter):
+class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):
     """
     Redact Scrapy core records that bypass LogFormatter safeguards.
 
@@ -36,7 +36,7 @@ class OutlookScrapyPrivacyFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         """Sanitize one Scrapy engine/scraper record in place."""
         spider = self.crawler.spider
-        if not isinstance(spider, OutlookMailSpider):
+        if not isinstance(spider, MicrosoftGraphSpider):
             return True
         record_spider = getattr(record, "spider", None)
         if record_spider is not None and record_spider is not spider:
@@ -89,6 +89,8 @@ class OutlookScrapyPrivacyFilter(logging.Filter):
             self.crawler.stats.inc_value(
                 f"msgloom/lifecycle/close_error_stage_count/{stage}"
             )
+            if isinstance((spider := self.crawler.spider), MicrosoftGraphSpider):
+                spider.mark_run_failed("framework_close_error")
             record.msg = f"{message}: error_type=%s"
             record.args = (error_type,)
             return
@@ -106,7 +108,7 @@ class OutlookScrapyPrivacyFilter(logging.Filter):
         stats = self.crawler.stats
         stats.inc_value("msgloom/lifecycle/signal_error_count")
         spider = self.crawler.spider
-        if isinstance(spider, OutlookMailSpider):
+        if isinstance(spider, MicrosoftGraphSpider):
             spider.mark_run_failed("signal_handler_error")
             current = stats.get_value("msgloom/final/status")
             if current not in {None, "running", "failed"}:

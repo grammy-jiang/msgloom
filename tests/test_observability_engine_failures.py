@@ -79,7 +79,7 @@ else:
     Catalog.close = fail_catalog_close
 
 extensions = {
-    "message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension": 90,
+    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 90,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 100,
 }
 if kind == "signal":
@@ -91,7 +91,6 @@ process = CrawlerProcess(
         "ITEM_PIPELINES": {pipeline: 100},
         "EXTENSIONS": extensions,
         "MSGLOOM_CRAWL_STATUS_ENABLED": True,
-        "MSGLOOM_LOG_PRIVACY_ENABLED": True,
         "MSGLOOM_CATALOG_ENABLED": kind == "catalog",
         "MSGLOOM_DATABASE_URL": f"sqlite:///{tmpdir.name}/catalog.sqlite3",
         "LOG_FORMATTER": "message_ingest.logformatter.MessageIngestLogFormatter",
@@ -191,3 +190,123 @@ def test_signal_handler_exception_is_redacted_and_counted() -> None:
         pytest.fail("Expected: signal handler failure reason in final stats")
     if "error_type=RuntimeError" not in output:
         pytest.fail("Expected: bounded signal-handler error type log")
+
+
+GRAPH_SECRET = "private-graph-provider-payload-c31f"
+
+GRAPH_RUN = r"""
+import sys
+
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+
+
+class ProcessFailingPipeline:
+    def process_item(self, item, spider):
+        raise RuntimeError("private-graph-provider-payload-c31f")
+
+
+class CloseFailingPipeline:
+    def process_item(self, item, spider):
+        return item
+
+    def close_spider(self, spider):
+        raise RuntimeError("private-graph-provider-payload-c31f")
+
+
+class SignalFailingExtension:
+    @classmethod
+    def from_crawler(cls, crawler):
+        extension = cls()
+        crawler.signals.connect(
+            extension.spider_closed,
+            signal=scrapy.signals.spider_closed,
+        )
+        return extension
+
+    def spider_closed(self, spider, reason):
+        raise RuntimeError("private-graph-provider-payload-c31f")
+
+
+class GraphFailureSpider(MicrosoftGraphSpider):
+    name = "graph_failure_fixture"
+
+    def __init__(self, *args, kind="process", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kind = kind
+
+    async def start(self):
+        if self.kind == "start":
+            raise RuntimeError("private-graph-provider-payload-c31f")
+        if self.kind == "callback":
+            yield scrapy.Request(
+                "data:text/plain,ok",
+                callback=self.parse_failure,
+                dont_filter=True,
+            )
+            return
+        yield {"private": "private-graph-provider-payload-c31f"}
+
+    def parse_failure(self, response):
+        raise RuntimeError("private-graph-provider-payload-c31f")
+
+
+kind = sys.argv[1]
+pipelines = {}
+extensions = {
+    "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 80,
+    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 90,
+}
+if kind == "process":
+    pipelines[ProcessFailingPipeline] = 100
+if kind == "close":
+    pipelines[CloseFailingPipeline] = 100
+if kind == "signal":
+    extensions[SignalFailingExtension] = 110
+
+process = CrawlerProcess(
+    {
+        "BOT_NAME": "graph_privacy_fixture",
+        "ITEM_PIPELINES": pipelines,
+        "EXTENSIONS": extensions,
+        "LOG_FORMATTER": "message_ingest.logformatter.MessageIngestLogFormatter",
+        "LOG_LEVEL": "INFO",
+        "STATS_DUMP": True,
+        "TELNETCONSOLE_ENABLED": False,
+        "REMOTE_CONTROL_ENABLED": False,
+        "ROBOTSTXT_OBEY": False,
+    }
+)
+process.crawl(GraphFailureSpider, kind=kind)
+process.start()
+"""
+
+
+@pytest.mark.parametrize("kind", ["start", "callback", "process", "close", "signal"])
+def test_graph_provider_failures_are_private_and_mark_integrity(kind: str) -> None:
+    result = subprocess.run(
+        [sys.executable, "-c", GRAPH_RUN, kind],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    output = result.stdout + result.stderr
+    if result.returncode != 0:
+        pytest.fail(output)
+    if GRAPH_SECRET in output:
+        pytest.fail("Expected Graph provider failure payload to be redacted")
+
+    reason = {
+        "start": "spider_error",
+        "callback": "spider_error",
+        "process": "item_error",
+        "close": "framework_close_error",
+        "signal": "signal_handler_error",
+    }[kind]
+    expected = f"'msgloom/crawl/integrity_failure_reason_count/{reason}': 1"
+    if expected not in output:
+        pytest.fail(f"Expected Graph integrity reason in stats: {reason}")

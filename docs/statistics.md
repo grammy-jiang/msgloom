@@ -132,7 +132,7 @@ Ordinary Scrapy counters remain per process attempt, so the final
 ## Lifecycle failure observation
 
 Scrapy 2.19 logs downloader, scraper/pipeline, scheduler, and slot close
-failures and continues shutdown. `OutlookScrapyPrivacyFilter` observes these
+failures and continues shutdown. `MicrosoftGraphScrapyPrivacyFilter` observes these
 core engine records before `spider_closed`, strips traceback text, and records
 `msgloom/lifecycle/close_error_count` plus a bounded stage counter. Any such
 failure makes the final status `failed`, even when Scrapy closes with

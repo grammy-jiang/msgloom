@@ -56,8 +56,8 @@ def test_each_spider_validates_its_own_arguments(spider_cls, kwargs, error) -> N
         spider_cls(**kwargs)
 
 
-def test_all_spider_modules_stay_below_500_lines() -> None:
-    directory = Path(__file__).parents[1] / "msgloom" / "spiders"
+def test_all_message_ingest_modules_stay_below_500_lines() -> None:
+    directory = Path(__file__).parents[1] / "message_ingest"
     oversized = {
         path.name: line_count
         for path in directory.rglob("*.py")

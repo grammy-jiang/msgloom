@@ -5,19 +5,17 @@ from __future__ import annotations
 import logging
 
 from scrapy import signals
-from scrapy.exceptions import NotConfigured
-
-from message_ingest.logfilters import OutlookScrapyPrivacyFilter
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.providers.microsoft_graph.logfilters import MicrosoftGraphScrapyPrivacyFilter
+from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 
 
-class OutlookLogPrivacyExtension:
-    """Keep Scrapy core exception records privacy-safe for Outlook crawls."""
+class MicrosoftGraphLogPrivacyExtension:
+    """Keep Scrapy core exception records privacy-safe for Graph crawls."""
 
     def __init__(self, crawler) -> None:
         """Prepare one crawler-scoped filter and its target loggers."""
         self.crawler = crawler
-        self._filter = OutlookScrapyPrivacyFilter(crawler)
+        self._filter = MicrosoftGraphScrapyPrivacyFilter(crawler)
         self._targets = (
             logging.getLogger("scrapy.core.engine"),
             logging.getLogger("scrapy.core.scraper"),
@@ -27,17 +25,15 @@ class OutlookLogPrivacyExtension:
 
     @classmethod
     def from_crawler(cls, crawler):
-        """Enable privacy filtering independently of final-status reporting."""
-        if not crawler.settings.getbool("MSGLOOM_LOG_PRIVACY_ENABLED"):
-            raise NotConfigured("msgloom log privacy extension disabled")
+        """Enable Graph privacy filtering independently of status reporting."""
         extension = cls(crawler)
         crawler.signals.connect(extension.spider_opened, signal=signals.spider_opened)
         crawler.signals.connect(extension.engine_stopped, signal=signals.engine_stopped)
         return extension
 
     def spider_opened(self, spider) -> None:
-        """Install filters only for the shared Outlook spider hierarchy."""
-        if not isinstance(spider, OutlookMailSpider) or self._installed:
+        """Install filters only for the Microsoft Graph spider hierarchy."""
+        if not isinstance(spider, MicrosoftGraphSpider) or self._installed:
             return
         for target in self._targets:
             target.addFilter(self._filter)

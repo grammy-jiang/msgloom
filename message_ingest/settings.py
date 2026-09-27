@@ -60,7 +60,6 @@ MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
 )
 MSGLOOM_DELTA_CHECKPOINT_ENABLED = _env_bool("MSGLOOM_DELTA_CHECKPOINT_ENABLED", True)
 MSGLOOM_CRAWL_STATUS_ENABLED = _env_bool("MSGLOOM_CRAWL_STATUS_ENABLED", True)
-MSGLOOM_LOG_PRIVACY_ENABLED = _env_bool("MSGLOOM_LOG_PRIVACY_ENABLED", True)
 MSGLOOM_CATALOG_ENABLED = _env_bool("MSGLOOM_CATALOG_ENABLED", True)
 MSGLOOM_RAW_EVIDENCE_ENABLED = _env_bool("MSGLOOM_RAW_EVIDENCE_ENABLED", True)
 
@@ -88,8 +87,9 @@ DOWNLOADER_MIDDLEWARES = {
 EXTENSIONS = {
     # These priorities do not order signal handlers. Checkpoint safety depends
     # on Scrapy's idle condition and explicit completed-work sets.
+    "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
     "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension": 500,
-    "message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension": 525,
+    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native
     # implementation explicitly instead of maintaining another timer.

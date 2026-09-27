@@ -233,7 +233,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 "@odata.nextLink nor @odata.deltaLink"
             ),
             observed_at=evidence.observed_at,
-            folder_id=folder_id,
+            context={"folder_id": folder_id},
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
         )

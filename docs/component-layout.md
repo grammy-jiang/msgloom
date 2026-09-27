@@ -1,8 +1,10 @@
 # Message ingestion: Scrapy component layout
 
 `message_ingest` is the Scrapy project within the `msgloom` repository. It owns
-message acquisition from external providers. Outlook mail is implemented; Teams
-and Gmail are possible future providers.
+message acquisition from external providers. Outlook Mail is the first resource.
+The code now separates Microsoft Graph provider infrastructure from Mail-specific
+traversal so Calendar, Teams, and non-Microsoft resources can be added without
+copying transport behavior.
 
 The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and lockfile
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
@@ -14,8 +16,12 @@ remains `msgloom`.
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
 | `message_ingest/extensions/delta_checkpoint.py` | Commit complete delta rounds after Scrapy becomes idle. |
 | `message_ingest/providers/microsoft_graph/auth.py` | Device-code and browser authentication, token caching, and one 401 refresh retry. |
+| `message_ingest/providers/microsoft_graph/spider.py` | Graph request construction, raw evidence, terminal request failures, and logical run integrity. |
+| `message_ingest/providers/microsoft_graph/fingerprints.py` | Keep Graph representation headers in scheduler/cache request identity. |
 | `message_ingest/providers/microsoft_graph/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
 | `message_ingest/providers/microsoft_graph/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
+| `message_ingest/providers/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
+| `message_ingest/providers/microsoft_graph/log_privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
 | `message_ingest/pipelines/catalog.py` | Store semantic items and checkpoint candidates. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
@@ -29,6 +35,13 @@ available from `message_ingest.catalog`. Commands and spider names are unchanged
 Configuration keeps the existing `MSGLOOM_*` settings and environment variables.
 Database and evidence paths, `msgloom/*` statistics, and persisted state keys also
 keep their existing names so the package rename does not reset operational state.
+
+`MicrosoftGraphSpider` is deliberately resource-neutral: it does not add Mail's
+`Prefer: IdType="ImmutableId"` header and it accepts only explicitly allowlisted
+string identifiers in failure context. `OutlookMailSpider` adds `Mail.Read`,
+the immutable-ID preference, and Mail item projection. Provider integrity and
+privacy extensions apply to every Graph resource; Outlook status/checkpoint
+extensions remain resource-specific.
 
 ## Simplifications
 

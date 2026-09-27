@@ -9,7 +9,7 @@ evidence IDs/timestamps during cache replay.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
@@ -151,7 +151,7 @@ class OutlookDeltaCheckpointCandidateItem:
 @dataclass(slots=True)
 class AcquisitionFailureItem:
     """
-    An exhausted acquisition error linked to its raw request/response evidence.
+    An exhausted acquisition error linked to raw evidence and resource context.
     """
 
     url: str
@@ -159,8 +159,6 @@ class AcquisitionFailureItem:
     error_type: str
     error_message: str
     observed_at: str
-    message_id: str | None = None
-    attachment_id: str | None = None
-    folder_id: str | None = None
+    context: dict[str, str] = field(default_factory=dict)
     evidence_id: str | None = None
     run_id: str | None = None

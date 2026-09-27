@@ -143,6 +143,15 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
     extensions = settings.getdict("EXTENSIONS")
     if (
         extensions[
+            "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension"
+        ]
+        != 450
+    ):
+        pytest.fail(
+            'Expected: Graph integrity extension priority == 450'
+        )
+    if (
+        extensions[
             "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"
         ]
         != 500
@@ -151,11 +160,11 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
             'Expected: extensions["message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"] == 500'
         )
     if (
-        extensions["message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension"]
+        extensions["message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"]
         != 525
     ):
         pytest.fail(
-            'Expected: extensions["message_ingest.extensions.log_privacy.OutlookLogPrivacyExtension"] == 525'
+            'Expected: extensions["message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"] == 525'
         )
     if (
         extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"]
@@ -182,8 +191,6 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         pytest.fail(
             'Expected: settings.getbool("MSGLOOM_CRAWL_STATUS_ENABLED") is True'
         )
-    if settings.getbool("MSGLOOM_LOG_PRIVACY_ENABLED") is not True:
-        pytest.fail('Expected: settings.getbool("MSGLOOM_LOG_PRIVACY_ENABLED") is True')
 
 
 def test_project_registers_custom_outlook_commands() -> None:
