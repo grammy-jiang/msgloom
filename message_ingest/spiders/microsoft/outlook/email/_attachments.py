@@ -10,11 +10,14 @@ from urllib.parse import quote, urlencode
 import scrapy
 from scrapy.http import Response, TextResponse
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import (
+    FULL_V1,
+    attachment_type_name,
+)
 from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookMessageSurfaceItem,
 )
-from message_ingest.profiles import FULL_V1, attachment_type_name
 
 from ._base import OutlookMailSpider
 

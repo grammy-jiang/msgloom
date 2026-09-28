@@ -11,12 +11,12 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.items.acquisition import (
     AcquisitionFailureItem,
     RawHttpEvidenceItem,
 )
 from message_ingest.items.microsoft.outlook.email import OutlookMessageSurfaceItem
-from message_ingest.profiles import FULL_V1
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 

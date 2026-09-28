@@ -13,8 +13,8 @@ import pytest
 from scrapy.crawler import CrawlerProcessBase
 from scrapy.exceptions import UsageError
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.commands.microsoft import Command as MicrosoftCommand
-from message_ingest.profiles import FULL_V1
 
 
 class FakeStats:

@@ -12,9 +12,9 @@ import pytest
 from scrapy import Request
 from scrapy.utils.test import get_crawler
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.catalog import Catalog
 from message_ingest.items.microsoft.outlook.email import OutlookMessageSurfaceItem
-from message_ingest.profiles import FULL_V1
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 

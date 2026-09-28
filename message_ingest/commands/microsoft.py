@@ -9,6 +9,7 @@ from datetime import datetime
 from scrapy.commands import ScrapyCommand
 from scrapy.exceptions import UsageError
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.commands._common import (
     non_negative_int,
     page_size,
@@ -16,7 +17,6 @@ from message_ingest.commands._common import (
     run_graph,
 )
 from message_ingest.commands._microsoft_calendar import dispatch_calendar
-from message_ingest.profiles import FULL_V1
 from microsoft_graph.auth.management import (
     MicrosoftAuthStatus,
     clear_local_token_cache,

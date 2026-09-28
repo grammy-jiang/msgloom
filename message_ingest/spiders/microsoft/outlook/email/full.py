@@ -10,16 +10,16 @@ import scrapy
 from scrapy.http import Response, TextResponse
 from twisted.python.failure import Failure
 
-from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items.microsoft.outlook.email import (
-    OutlookMailDetailItem,
-    OutlookMessageSurfaceItem,
-)
-from message_ingest.profiles import (
+from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1,
     attachment_required_surfaces,
     attachment_type_name,
     surface_is_complete,
+)
+from message_ingest.extensions.catalog import CatalogService
+from message_ingest.items.microsoft.outlook.email import (
+    OutlookMailDetailItem,
+    OutlookMessageSurfaceItem,
 )
 
 from ._attachments import OutlookAttachmentTraversal

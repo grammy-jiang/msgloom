@@ -37,6 +37,7 @@ remains `msgloom`.
 | `message_ingest/acquisition/source_identity.py` | Bind logical sources to hashed opaque provider identities. |
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
+| `message_ingest/acquisition/microsoft/outlook/email/profile.py` | Define versioned Outlook Mail full-acquisition completion policy and attachment surface requirements. |
 | `message_ingest/pipelines/catalog.py` | Store Outlook Mail semantic items and checkpoint candidates after evidence linking. |
 | `message_ingest/spiders/microsoft/outlook/calendar/discover.py` | Inventory visible calendars through paginated Graph callbacks. |
 | `message_ingest/spiders/microsoft/outlook/calendar/window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
@@ -191,7 +192,7 @@ state and lifecycle rules.
 - Enrichment reads only the state it uses and streams its output. Small forwarding
   methods and the unused profile object were removed.
 - Attachment type normalization and profile completion rules live in
-  `message_ingest/profiles.py` and are shared by discovery of attachments and enrichment.
+  `message_ingest/acquisition/microsoft/outlook/email/profile.py` and are shared by attachment discovery and enrichment.
 
 ## Code documentation and style
 

@@ -7,6 +7,7 @@ import logging
 
 from scrapy.exceptions import NotConfigured
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
@@ -17,7 +18,6 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMailRemovalItem,
     OutlookMessageSurfaceItem,
 )
-from message_ingest.profiles import FULL_V1
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )

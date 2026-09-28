@@ -12,6 +12,7 @@ import pytest
 from scrapy.utils.test import get_crawler
 from sqlalchemy import select
 
+from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.catalog import MessageObservation, MessageRecord, MessageSurface
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import RawHttpEvidenceItem
@@ -23,7 +24,6 @@ from message_ingest.items.microsoft.outlook.email import (
 )
 from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
-from message_ingest.profiles import FULL_V1
 
 
 def _raw(evidence_id: str, observed_at: str) -> RawHttpEvidenceItem:
