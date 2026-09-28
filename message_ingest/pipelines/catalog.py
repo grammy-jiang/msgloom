@@ -141,8 +141,10 @@ class CatalogPipeline:
             )
             surface_kind = item.surface.split(":", maxsplit=1)[0]
             return (
-                "msgloom/catalog/surface_item_processed_count/"
-                f"{surface_kind}/{item.status}",
+                (
+                    "msgloom/catalog/surface_item_processed_count/"
+                    f"{surface_kind}/{item.status}"
+                ),
             )
         if isinstance(item, OutlookDeltaCheckpointCandidateItem):
             self.checkpoints.write_candidate(

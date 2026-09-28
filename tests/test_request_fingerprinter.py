@@ -8,7 +8,9 @@ import pytest
 from scrapy import Request
 from scrapy.utils.test import get_crawler
 
-from message_ingest.providers.microsoft_graph.fingerprints import RepresentationAwareRequestFingerprinter
+from message_ingest.providers.microsoft_graph.fingerprints import (
+    RepresentationAwareRequestFingerprinter,
+)
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 

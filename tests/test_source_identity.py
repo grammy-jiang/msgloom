@@ -85,8 +85,7 @@ def test_new_source_auto_binds_hashed_provider_identity(tmp_path: Path) -> None:
     material = (
         b"msgloom-source-binding-v1\0"
         b"microsoft_graph\0"
-        b"msal_home_account_id/sha256-v1\0"
-        + raw_account_key.encode()
+        b"msal_home_account_id/sha256-v1\0" + raw_account_key.encode()
     )
     expected_digest = hashlib.sha256(material).hexdigest()
     if binding.provider != "microsoft_graph":
@@ -176,12 +175,7 @@ def test_legacy_source_with_data_requires_explicit_bootstrap(tmp_path: Path) -> 
 
     if _binding(crawler, "legacy-source") is not None:
         pytest.fail("Expected no implicit binding for legacy persisted data")
-    if (
-        crawler.stats.get_value(
-            "msgloom/source_identity/bootstrap_required_count"
-        )
-        != 1
-    ):
+    if crawler.stats.get_value("msgloom/source_identity/bootstrap_required_count") != 1:
         pytest.fail("Expected one bootstrap-required counter")
     _close(crawler)
 

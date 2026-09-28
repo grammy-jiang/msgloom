@@ -7,21 +7,20 @@ from pathlib import Path
 from threading import Barrier
 
 import pytest
+from calendar_checkpoint_helpers import _candidate, _observation, _store, _url
 from sqlalchemy import create_engine, insert, inspect, select
 from sqlalchemy.exc import DBAPIError
 
+from message_ingest.calendar_checkpoints import (
+    CalendarDeltaCheckpointConflict,
+    CalendarDeltaCheckpointStore,
+)
 from message_ingest.catalog import (
     Base,
     CalendarDeltaEventState,
     CalendarRecord,
     Catalog,
 )
-from message_ingest.calendar_checkpoints import (
-    CalendarDeltaCheckpointConflict,
-    CalendarDeltaCheckpointStore,
-)
-
-from calendar_checkpoint_helpers import _candidate, _observation, _store, _url
 
 
 def test_candidate_does_not_advance_committed_cursor(tmp_path: Path) -> None:
@@ -312,18 +311,14 @@ def test_promotion_failure_rolls_back_checkpoint_and_candidate_marker(
             pytest.fail("Expected failed promotion to retain pending candidate")
 
         with engine.connect() as connection:
-            connection.exec_driver_sql(
-                "DROP TRIGGER fail_calendar_candidate_commit"
-            )
+            connection.exec_driver_sql("DROP TRIGGER fail_calendar_candidate_commit")
         state = store.commit(run_id="run-failure", attempt=0)
         if state.revision != 1:
             pytest.fail("Expected promotion to succeed after rollback recovery")
         with store.catalog.Session() as session:
             view = session.scalar(select(CalendarDeltaEventState))
             if view is None or view.event_id != "event-failure":
-                pytest.fail(
-                    "Expected recovered promotion to materialize view state"
-                )
+                pytest.fail("Expected recovered promotion to materialize view state")
     finally:
         engine.dispose()
         store.close()
@@ -414,9 +409,7 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
         "calendar_delta_observations",
     }
     previous_tables = [
-        table
-        for table in Base.metadata.sorted_tables
-        if table.name not in delta_tables
+        table for table in Base.metadata.sorted_tables if table.name not in delta_tables
     ]
     engine = create_engine(url)
     try:
@@ -435,9 +428,7 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
 
     catalog = Catalog(url)
     try:
-        if set(inspect(catalog.engine).get_table_names()) != set(
-            Base.metadata.tables
-        ):
+        if set(inspect(catalog.engine).get_table_names()) != set(Base.metadata.tables):
             pytest.fail("Expected additive Calendar delta schema initialization")
         with catalog.Session() as session:
             row = session.scalar(

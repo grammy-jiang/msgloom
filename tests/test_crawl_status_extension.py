@@ -207,7 +207,9 @@ def test_delta_stuck_in_checkpoint_evaluation_is_failed() -> None:
 def test_late_signal_handler_failure_overrides_completed_final_stats() -> None:
     import sys
 
-    from message_ingest.providers.microsoft_graph.logfilters import MicrosoftGraphScrapyPrivacyFilter
+    from message_ingest.providers.microsoft_graph.logfilters import (
+        MicrosoftGraphScrapyPrivacyFilter,
+    )
 
     crawler, spider, extension = _extension(OutlookDiscoverSpider)
     crawler.stats.set_value("msgloom/crawl/discovery/pagination_exhausted", True)

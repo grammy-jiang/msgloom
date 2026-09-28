@@ -12,7 +12,9 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.providers.microsoft_graph.diagnostics import MicrosoftGraphDiagnosticsMiddleware
+from message_ingest.providers.microsoft_graph.diagnostics import (
+    MicrosoftGraphDiagnosticsMiddleware,
+)
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 

@@ -56,9 +56,7 @@ def apply_calendar_delta_state(
     for observation in observations:
         kind = str(observation["kind"])
         if kind not in {"upsert", "removed"}:
-            raise ValueError(
-                f"Unsupported Calendar delta observation kind: {kind!r}"
-            )
+            raise ValueError(f"Unsupported Calendar delta observation kind: {kind!r}")
         event_id = str(observation["event_id"])
         values: dict[str, Any] = {
             "is_present": kind == "upsert",

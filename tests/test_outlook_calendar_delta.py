@@ -187,9 +187,7 @@ def test_delta_page_emits_ordered_changes_upserts_and_opaque_continuation(
         pytest.fail(f"Unexpected Calendar delta observations: {observations!r}")
     if observations[1].removed_reason != "deleted":
         pytest.fail("Expected removed reason to be retained")
-    events = [
-        value for value in output if isinstance(value, OutlookCalendarEventItem)
-    ]
+    events = [value for value in output if isinstance(value, OutlookCalendarEventItem)]
     if [value.event_id for value in events] != ["event-1"]:
         pytest.fail("Expected only upserts to update global event state")
     continuation = next(value for value in output if isinstance(value, Request))
@@ -205,8 +203,7 @@ def test_terminal_page_stages_candidate_without_committing(
     spider = _spider(tmp_path)
     request = spider._initial_delta_request(reset_count=0)
     delta_link = (
-        "https://graph.microsoft.com/v1.0/me/calendarView/delta?"
-        "$deltatoken=terminal"
+        "https://graph.microsoft.com/v1.0/me/calendarView/delta?$deltatoken=terminal"
     )
     output = list(
         spider.parse_delta(
@@ -271,9 +268,7 @@ def test_reset_replays_initial_and_continuation_with_native_dupefilter(
     tmp_path: Path,
 ) -> None:
     spider = _spider(tmp_path)
-    dupefilter = RFPDupeFilter(
-        fingerprinter=spider.crawler.request_fingerprinter
-    )
+    dupefilter = RFPDupeFilter(fingerprinter=spider.crawler.request_fingerprinter)
     for reset_count in (0, 1):
         requests = [
             spider._initial_delta_request(reset_count=reset_count),
@@ -297,20 +292,25 @@ def test_repeated_event_keeps_all_entries_and_projects_last_upsert(
 ) -> None:
     spider = _spider(tmp_path)
     request = spider._initial_delta_request(reset_count=0)
-    output = list(spider.parse_delta(_response(request, {
-        "value": [
-            {"id": "event-1", "changeKey": "v1", "subject": "First"},
-            {"id": "event-1", "changeKey": "v2", "subject": "Last"},
-        ],
-        "@odata.deltaLink": "https://graph.microsoft.com/delta/terminal",
-    }), **request.cb_kwargs))
+    output = list(
+        spider.parse_delta(
+            _response(
+                request,
+                {
+                    "value": [
+                        {"id": "event-1", "changeKey": "v1", "subject": "First"},
+                        {"id": "event-1", "changeKey": "v2", "subject": "Last"},
+                    ],
+                    "@odata.deltaLink": "https://graph.microsoft.com/delta/terminal",
+                },
+            ),
+            **request.cb_kwargs,
+        )
+    )
     observations = [
-        item for item in output
-        if isinstance(item, OutlookCalendarDeltaObservationItem)
+        item for item in output if isinstance(item, OutlookCalendarDeltaObservationItem)
     ]
-    events = [
-        item for item in output if isinstance(item, OutlookCalendarEventItem)
-    ]
+    events = [item for item in output if isinstance(item, OutlookCalendarEventItem)]
     if len(observations) != 2 or len(events) != 1:
         pytest.fail("Expected both delta entries and one current event")
     if events[0].raw["subject"] != "Last":

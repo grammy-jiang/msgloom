@@ -48,10 +48,7 @@ class RepresentationAwareRequestFingerprinter:
                 include_headers=_GRAPH_REPRESENTATION_HEADERS,
             )
             return hashlib.sha256(
-                b"msgloom-graph-fingerprint-v1\0"
-                + self._source_digest
-                + b"\0"
-                + base
+                b"msgloom-graph-fingerprint-v1\0" + self._source_digest + b"\0" + base
             ).digest()
         return fingerprint(request)
 

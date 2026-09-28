@@ -33,9 +33,7 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
         self.start_datetime = self._window_datetime(
             start_datetime, name="start_datetime"
         )
-        self.end_datetime = self._window_datetime(
-            end_datetime, name="end_datetime"
-        )
+        self.end_datetime = self._window_datetime(end_datetime, name="end_datetime")
         start = self._parsed_datetime(self.start_datetime)
         end = self._parsed_datetime(self.end_datetime)
         if start >= end:
@@ -80,9 +78,7 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         """Reject JOBDIR until Calendar resume semantics are tested."""
         if crawler.settings.get("JOBDIR"):
-            raise ValueError(
-                "Calendar window acquisition does not support JOBDIR yet"
-            )
+            raise ValueError("Calendar window acquisition does not support JOBDIR yet")
         return super().from_crawler(crawler, *args, **kwargs)
 
     async def start(self) -> AsyncIterator[Any]:
@@ -134,15 +130,15 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
 
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Calendar response must be a JSON object")
+            raise TypeError("Calendar response must be a JSON object")
         values = payload.get("value")
         if not isinstance(values, list):
-            raise ValueError("Calendar response must contain a value list")
+            raise TypeError("Calendar response must contain a value list")
 
         self.crawler.stats.inc_value("msgloom/crawl/calendar/page_count")
         for event in values:
             if not isinstance(event, dict):
-                raise ValueError("Calendar event must be a JSON object")
+                raise TypeError("Calendar event must be a JSON object")
             event_id = event.get("id")
             if not isinstance(event_id, str) or not event_id:
                 raise ValueError("Calendar event must contain a non-empty id")
@@ -167,9 +163,7 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
         if not isinstance(next_link, str) or not next_link:
             raise ValueError("Calendar @odata.nextLink must be a non-empty string")
 
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/continuation_count"
-        )
+        self.crawler.stats.inc_value("msgloom/crawl/calendar/continuation_count")
         yield self._request(
             next_link,
             callback=self.parse_events,
@@ -194,7 +188,7 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
     def _parsed_datetime(value: str) -> datetime:
         """Parse one ISO-8601 value while accepting the common Z suffix."""
         try:
-            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            parsed = datetime.fromisoformat(value)
         except ValueError as exc:
             raise ValueError(
                 "Calendar window values must be valid ISO-8601 datetimes"

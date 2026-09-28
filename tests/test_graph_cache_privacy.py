@@ -36,8 +36,7 @@ def test_native_http_cache_read_failure_redacts_graph_request_and_exception(
 
     cache.storage = UnreadableCache()
     request = Request(
-        "https://graph.microsoft.com/v1.0/me/messages?"
-        "$skiptoken=private-cache-cursor"
+        "https://graph.microsoft.com/v1.0/me/messages?$skiptoken=private-cache-cursor"
     )
     caplog.set_level(
         logging.WARNING,

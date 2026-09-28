@@ -124,9 +124,7 @@ def test_discover_maps_cli_options_to_spider_arguments() -> None:
 
 
 def test_delta_maps_page_size_and_reconciliation() -> None:
-    process = _run(
-        _opts(action="delta", page_size=50, reconcile=False)
-    )
+    process = _run(_opts(action="delta", page_size=50, reconcile=False))
     if process.calls != [
         ("outlook_delta", {"page_size": "50", "reconcile_global": "0"})
     ]:

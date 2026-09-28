@@ -12,6 +12,7 @@ END = "2026-11-01T00:00:00+00:00"
 def _url(tmp_path: Path) -> str:
     return f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
 
+
 def _store(
     tmp_path: Path,
     *,
@@ -25,6 +26,7 @@ def _store(
         start_datetime=start,
         end_datetime=end,
     )
+
 
 def _candidate(
     store: CalendarDeltaCheckpointStore,
@@ -44,6 +46,7 @@ def _candidate(
         observed_at="2026-10-02T00:00:00+00:00",
     )
 
+
 def _observation(
     store: CalendarDeltaCheckpointStore,
     *,
@@ -60,9 +63,7 @@ def _observation(
     with store.catalog.Session() as session, session.begin():
         session.add(
             CalendarDeltaObservation(
-                observation_id=(
-                    f"{run_id}-{attempt}-{page_number}-{entry_index}"
-                ),
+                observation_id=(f"{run_id}-{attempt}-{page_number}-{entry_index}"),
                 source_id=store.source_id,
                 calendar_scope=store.calendar_scope,
                 start_datetime=store.start_datetime,

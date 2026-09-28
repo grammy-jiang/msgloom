@@ -16,7 +16,9 @@ from scrapy.http import Request, TextResponse
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.providers.microsoft_graph.errors import MicrosoftGraphErrorMiddleware
+from message_ingest.providers.microsoft_graph.errors import (
+    MicrosoftGraphErrorMiddleware,
+)
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
 
@@ -79,7 +81,9 @@ def test_429_honors_retry_after_and_uses_scrapy_retry_request(
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
     caplog.set_level(logging.WARNING, logger="message_ingest.providers.microsoft_graph")
     request = _request()
     response = _response(request, 429, code="TooManyRequests", retry_after="7")
@@ -129,7 +133,9 @@ def test_503_uses_graph_backoff_instead_of_immediate_generic_retry(monkeypatch) 
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
     request = _request(retry_times=1)
     response = _response(request, 503, code="serviceUnavailable", retry_after="5")
     retry = asyncio.run(middleware.process_response(request, response))
@@ -153,7 +159,9 @@ def test_509_without_retry_after_uses_exponential_backoff(monkeypatch) -> None:
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
     request = _request(**{middleware.retry_meta_key: 2})
     response = _response(request, 509, code="BandwidthLimitExceeded")
     retry = asyncio.run(middleware.process_response(request, response))
@@ -173,7 +181,9 @@ def test_directory_concurrency_violation_409_is_retryable(monkeypatch) -> None:
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
     request = _request()
     response = _response(
         request,
@@ -217,7 +227,9 @@ def test_http_date_retry_after_is_supported(monkeypatch) -> None:
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
     retry_at = format_datetime(datetime.now(UTC) + timedelta(seconds=2), usegmt=True)
     request = _request()
     response = _response(request, 503, code="serviceUnavailable", retry_after=retry_at)
@@ -290,8 +302,12 @@ def test_provider_error_code_is_bounded_before_log_and_stat_key(
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
     request = _request()
     secret_code = "TooManyRequests/secret-provider-value?" + ("x" * 80)
     response = _response(
@@ -327,8 +343,12 @@ def test_provider_error_code_is_sanitized_in_logs_and_stat_keys(
     async def fake_sleep(delay):
         delays.append(delay)
 
-    monkeypatch.setattr("message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    monkeypatch.setattr(
+        "message_ingest.providers.microsoft_graph.errors.asyncio.sleep", fake_sleep
+    )
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
     request = _request()
     private_code = "TooManyRequests/secret-token?$cursor=private"
     response = _response(

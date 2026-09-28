@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 
 from scrapy.http import Request
 
@@ -21,7 +22,7 @@ class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):
     exception text from reaching handlers.
     """
 
-    _close_failures = {
+    _close_failures: ClassVar[dict[str, str]] = {
         "Slot close failure": "slot",
         "Downloader close failure": "downloader",
         "Scraper close failure": "scraper",

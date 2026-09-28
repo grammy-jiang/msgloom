@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 import pytest
+from scrapy.utils.test import get_crawler
 
 from message_ingest.acquisition.source_identity import (
     SourceIdentity,
@@ -17,8 +18,6 @@ from message_ingest.providers.microsoft_graph.auth_session import (
     MicrosoftGraphAuthSession,
 )
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from scrapy.utils.test import get_crawler
-
 
 KEY_SCHEME = "msal_home_account_id/sha256-v1"
 
@@ -112,9 +111,7 @@ def test_interactive_token_is_discarded_then_reacquired_for_selected_account(
             self.signed_in = True
             return {"access_token": "interactive-token", "expires_in": 3600}
 
-        def acquire_token_silent_with_error(
-            self, scopes, account, force_refresh=False
-        ):
+        def acquire_token_silent_with_error(self, scopes, account, force_refresh=False):
             self.silent_calls += 1
             return {"access_token": "silent-for-b", "expires_in": 3600}
 
@@ -329,9 +326,7 @@ def test_browser_interactive_result_is_discarded_before_token_use(
             self.signed_in = True
             return {"access_token": "discard-me", "expires_in": 3600}
 
-        def acquire_token_silent_with_error(
-            self, scopes, account, force_refresh=False
-        ):
+        def acquire_token_silent_with_error(self, scopes, account, force_refresh=False):
             self.silent_calls += 1
             if account["home_account_id"] != "browser-account":
                 pytest.fail("Expected silent reacquire for browser-selected account")

@@ -182,17 +182,17 @@ def test_window_final_page_marks_pagination_exhausted() -> None:
     )
     if len(output) != 1 or not isinstance(output[0], RawHttpEvidenceItem):
         pytest.fail("Expected final empty page evidence")
-    if spider.crawler.stats.get_value(
-        "msgloom/crawl/calendar/pagination_exhausted"
-    ) is not True:
+    if (
+        spider.crawler.stats.get_value("msgloom/crawl/calendar/pagination_exhausted")
+        is not True
+    ):
         pytest.fail("Expected Calendar window traversal completion")
 
 
 def test_window_continuation_round_trips_scrapy_serialization() -> None:
     spider = _spider()
     next_link = (
-        "https://graph.microsoft.com/v1.0/me/calendar/calendarView?"
-        "$skiptoken=opaque"
+        "https://graph.microsoft.com/v1.0/me/calendar/calendarView?$skiptoken=opaque"
     )
     response = _response(
         spider,

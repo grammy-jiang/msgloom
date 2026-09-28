@@ -30,9 +30,7 @@ class EvidenceLinkPipeline:
     def from_crawler(cls, crawler):
         """Enable evidence linking only with the shared SQL catalog."""
         if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
-            raise NotConfigured(
-                "Evidence linking requires the SQLAlchemy catalog"
-            )
+            raise NotConfigured("Evidence linking requires the SQLAlchemy catalog")
         return cls(CatalogService.from_crawler(crawler))
 
     async def process_item(self, item):

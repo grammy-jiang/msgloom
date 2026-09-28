@@ -27,7 +27,7 @@ class CalendarDeltaExecutionState:
         end_datetime: str,
         calendar_scope: str,
         default_run_id: str,
-    ) -> "CalendarDeltaExecutionState":
+    ) -> CalendarDeltaExecutionState:
         """Validate fixed scope before accepting persisted SpiderState."""
         saved_scope = (
             saved.get("start_datetime"),
@@ -61,16 +61,12 @@ class CalendarDeltaExecutionState:
             run_id=run_id,
             attempt=max(0, int(saved.get("attempt", 0))),
             base_revision=base_revision,
-            terminal_delta_seen=bool(
-                saved.get("terminal_delta_seen", False)
-            ),
+            terminal_delta_seen=bool(saved.get("terminal_delta_seen", False)),
             run_failed=bool(saved.get("run_failed", False)),
             failure_reasons=frozenset(
                 value for value in reasons if isinstance(value, str)
             ),
-            delta_start_scheduled=bool(
-                saved.get("delta_start_scheduled", False)
-            ),
+            delta_start_scheduled=bool(saved.get("delta_start_scheduled", False)),
         )
 
 

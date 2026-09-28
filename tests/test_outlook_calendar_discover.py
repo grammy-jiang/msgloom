@@ -59,10 +59,7 @@ def test_discover_start_lists_visible_calendars() -> None:
 
 def test_discover_emits_inventory_and_opaque_continuation() -> None:
     spider = _spider()
-    next_link = (
-        "https://graph.microsoft.com/v1.0/me/calendars?"
-        "$skiptoken=opaque"
-    )
+    next_link = "https://graph.microsoft.com/v1.0/me/calendars?$skiptoken=opaque"
     response = _response(
         spider,
         {
@@ -116,9 +113,10 @@ def test_discover_does_not_infer_deletion_from_missing_calendar() -> None:
     )
     if len(output) != 1 or not isinstance(output[0], RawHttpEvidenceItem):
         pytest.fail("Expected empty inventory to emit only evidence")
-    if spider.crawler.stats.get_value(
-        "msgloom/crawl/calendar/inventory_exhausted"
-    ) is not True:
+    if (
+        spider.crawler.stats.get_value("msgloom/crawl/calendar/inventory_exhausted")
+        is not True
+    ):
         pytest.fail("Expected inventory traversal completion")
 
 

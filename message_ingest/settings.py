@@ -43,9 +43,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 2
 # mechanism.
 CONCURRENT_ITEMS = 1
 
-REQUEST_FINGERPRINTER_CLASS = (
-    "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
-)
+REQUEST_FINGERPRINTER_CLASS = "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
 LOG_FORMATTER = "message_ingest.logformatter.MessageIngestLogFormatter"
 
 AUTOTHROTTLE_ENABLED = True
@@ -212,9 +210,7 @@ MS_GRAPH_AUTHORITY = os.getenv(
 # Resource spiders declare least-privilege Graph scopes with custom_settings.
 MS_GRAPH_SCOPES: list[str] = []
 MS_GRAPH_ACCOUNT_USERNAME = os.getenv("MSGLOOM_MS_USERNAME", "")
-MS_GRAPH_AUTH_ALLOW_INTERACTIVE = _env_bool(
-    "MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH", True
-)
+MS_GRAPH_AUTH_ALLOW_INTERACTIVE = _env_bool("MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH", True)
 MS_GRAPH_ERROR_MAX_RETRIES = int(os.getenv("MSGLOOM_MS_ERROR_MAX_RETRIES", "8"))
 MS_GRAPH_ERROR_FALLBACK_BASE_SECONDS = int(
     os.getenv("MSGLOOM_MS_ERROR_FALLBACK_BASE_SECONDS", "1")

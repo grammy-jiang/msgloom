@@ -20,7 +20,7 @@ _SAFE_GRAPH_CODE = re.compile(r"[A-Za-z0-9_.-]{1,64}")
 # Scrapy's retry helper formats the full Request repr. Use an unregistered
 # logger above CRITICAL so helper messages cannot expose Graph URLs; the
 # middleware emits its own bounded replacement records.
-_retry_helper_logger = logging.Logger(
+_retry_helper_logger = logging.Logger(  # noqa: LOG001
     "message_ingest.retry_helper.silent",
     level=logging.CRITICAL + 1,
 )

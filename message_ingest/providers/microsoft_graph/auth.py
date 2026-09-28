@@ -62,10 +62,10 @@ class MicrosoftGraphDelegatedAuthMiddleware:
     def process_exception(self, request, exception):
         """Strip bearer credentials before native retry/error recovery."""
         if urlsplit(request.url).hostname != GRAPH_HOST:
-            return None
+            return
         if request.headers.pop("Authorization", None) is not None:
             self._inc("msgloom/auth/credential_stripped_exception_count")
-        return None
+        return
 
     def process_response(self, request, response):
         """Strip credentials before cache storage and retry one rejected token."""
@@ -90,8 +90,7 @@ class MicrosoftGraphDelegatedAuthMiddleware:
         if response.status == 401:
             self._inc("msgloom/auth/401_final_count")
             logger.error(
-                "Microsoft Graph authentication failed after refresh retry: "
-                "purpose=%s",
+                "Microsoft Graph authentication failed after refresh retry: purpose=%s",
                 request.cb_kwargs.get("purpose", "unknown"),
             )
         return response

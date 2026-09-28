@@ -89,8 +89,7 @@ def select_unbound_cached_account(
         matches = list(app.get_accounts(username=username))
         if len(matches) > 1:
             raise MicrosoftGraphAuthError(
-                "Configured Microsoft username matches multiple "
-                "cached accounts"
+                "Configured Microsoft username matches multiple cached accounts"
             )
         if len(matches) == 1:
             account_key(matches[0])
@@ -117,8 +116,7 @@ def select_after_interaction(
         matches = list(app.get_accounts(username=username))
         if len(matches) != 1:
             raise MicrosoftGraphAuthError(
-                "Interactive sign-in did not yield exactly one configured "
-                "account"
+                "Interactive sign-in did not yield exactly one configured account"
             )
         account_key(matches[0])
         return matches[0]
@@ -133,6 +131,5 @@ def select_after_interaction(
         account_key(after[0])
         return after[0]
     raise MicrosoftGraphAuthError(
-        "Interactive sign-in did not identify one unambiguous Microsoft "
-        "account"
+        "Interactive sign-in did not identify one unambiguous Microsoft account"
     )

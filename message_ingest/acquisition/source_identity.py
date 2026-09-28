@@ -84,9 +84,7 @@ class SourceIdentityService:
     def from_crawler(cls, crawler):
         """Return the crawler-scoped service when persistence is enabled."""
         if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
-            raise NotConfigured(
-                "Source identity binding requires the SQL catalog"
-            )
+            raise NotConfigured("Source identity binding requires the SQL catalog")
         if (existing := getattr(crawler, _SERVICE_ATTR, None)) is not None:
             return existing
         service = cls(
@@ -123,11 +121,15 @@ class SourceIdentityService:
                     .where(SourceBinding.source_id == self.source_id)
                     .values(bound_at=SourceBinding.bound_at)
                 )
-                existing = connection.execute(
-                    select(SourceBinding.__table__).where(
-                        SourceBinding.source_id == self.source_id
+                existing = (
+                    connection.execute(
+                        select(SourceBinding.__table__).where(
+                            SourceBinding.source_id == self.source_id
+                        )
                     )
-                ).mappings().first()
+                    .mappings()
+                    .first()
+                )
                 if existing is not None:
                     outcome = self._verify_values(
                         provider=provider,
@@ -142,9 +144,7 @@ class SourceIdentityService:
 
                 has_data = self._source_has_persisted_data(connection)
                 if has_data and self.bootstrap_confirm != self.source_id:
-                    self._inc(
-                        "msgloom/source_identity/bootstrap_required_count"
-                    )
+                    self._inc("msgloom/source_identity/bootstrap_required_count")
                     raise SourceIdentityBootstrapRequired(
                         f"Source {self.source_id!r} already contains "
                         "acquisition data but has no provider identity "
@@ -154,9 +154,7 @@ class SourceIdentityService:
                         "selected account owns the existing data."
                     )
 
-                binding_method = (
-                    "bootstrap_attested" if has_data else "auto_empty"
-                )
+                binding_method = "bootstrap_attested" if has_data else "auto_empty"
                 connection.execute(
                     insert(SourceBinding).values(
                         source_id=self.source_id,

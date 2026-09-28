@@ -95,8 +95,7 @@ def test_named_calendar_scopes_detail_and_attachment_paths() -> None:
         page_number=1,
     )
     if urlsplit(attachments.url).path != (
-        "/v1.0/me/calendars/calendar%2Fone/events/"
-        "event%2Fwith%20space/attachments"
+        "/v1.0/me/calendars/calendar%2Fone/events/event%2Fwith%20space/attachments"
     ):
         pytest.fail(f"Unexpected attachment path: {attachments.url!r}")
     if parse_qs(urlsplit(attachments.url).query).get("$top") != ["7"]:
@@ -179,23 +178,17 @@ def test_attachment_page_keeps_content_in_evidence_only_and_follows_nextlink() -
     if not isinstance(output[0], RawHttpEvidenceItem):
         pytest.fail("Expected attachment page evidence first")
     attachment = next(
-        value
-        for value in output
-        if isinstance(value, OutlookCalendarAttachmentItem)
+        value for value in output if isinstance(value, OutlookCalendarAttachmentItem)
     )
     if attachment.content_bytes_present is not True:
         pytest.fail("Expected attachment content-presence marker")
     if "contentBytes" in attachment.raw:
         pytest.fail("Expected contentBytes to remain only in raw HTTP evidence")
     requests = [value for value in output if isinstance(value, Request)]
-    raw_request = next(
-        value for value in requests if value.url.endswith("/$value")
-    )
+    raw_request = next(value for value in requests if value.url.endswith("/$value"))
     if raw_request.cb_kwargs["attachment_id"] != "attachment-1":
         pytest.fail("Expected raw file-attachment request")
-    continuation = next(
-        value for value in requests if value.url == next_link
-    )
+    continuation = next(value for value in requests if value.url == next_link)
     if continuation.meta.get("verbatim_url") is not True:
         pytest.fail("Expected attachment continuation to remain opaque")
 
@@ -223,10 +216,7 @@ def test_raw_attachment_content_emits_link_item() -> None:
     content = output[1]
     if not isinstance(content, OutlookCalendarAttachmentContentItem):
         pytest.fail("Expected Calendar attachment content link item")
-    if (
-        content.event_id != "event-1"
-        or content.attachment_id != "attachment-1"
-    ):
+    if content.event_id != "event-1" or content.attachment_id != "attachment-1":
         pytest.fail("Expected attachment content identity")
 
 
@@ -257,9 +247,9 @@ def test_expanded_item_keeps_nested_bytes_in_evidence_only() -> None:
             "attachments": [{"name": "nested.txt", "contentBytes": "SGVsbG8="}],
         },
     }
-    output = list(spider.parse_attachment_detail(
-        _response(request, payload), **request.cb_kwargs
-    ))
+    output = list(
+        spider.parse_attachment_detail(_response(request, payload), **request.cb_kwargs)
+    )
     evidence, metadata = output
     if not isinstance(evidence, RawHttpEvidenceItem):
         pytest.fail("Expected raw evidence first")
@@ -278,6 +268,15 @@ def test_full_rejects_non_boolean_attachment_flags(value) -> None:
     spider = _spider()
     request = spider._event_detail_request("event-1")
     with pytest.raises(ValueError, match="must be a boolean"):
-        list(spider.parse_event_detail(_response(request, {
-            "id": "event-1", "hasAttachments": value,
-        }), **request.cb_kwargs))
+        list(
+            spider.parse_event_detail(
+                _response(
+                    request,
+                    {
+                        "id": "event-1",
+                        "hasAttachments": value,
+                    },
+                ),
+                **request.cb_kwargs,
+            )
+        )

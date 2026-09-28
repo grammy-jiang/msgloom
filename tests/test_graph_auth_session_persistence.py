@@ -66,9 +66,7 @@ def test_verified_token_cache_write_is_atomic_and_private(
     if session.token_cache_path.stat().st_mode & 0o777 != 0o600:
         pytest.fail("Expected token cache mode 0600 after atomic replace")
     leftovers = list(
-        session.token_cache_path.parent.glob(
-            f".{session.token_cache_path.name}.*.tmp"
-        )
+        session.token_cache_path.parent.glob(f".{session.token_cache_path.name}.*.tmp")
     )
     if leftovers:
         pytest.fail(f"Expected no token cache temp files, found {leftovers!r}")
@@ -105,13 +103,10 @@ def test_failed_token_cache_replace_rearms_dirty_state(
     if session.token_cache_path.read_text(encoding="utf-8") != "old":
         pytest.fail("Expected failed replacement to preserve old cache")
     leftovers = list(
-        session.token_cache_path.parent.glob(
-            f".{session.token_cache_path.name}.*.tmp"
-        )
+        session.token_cache_path.parent.glob(f".{session.token_cache_path.name}.*.tmp")
     )
     if leftovers:
         pytest.fail(f"Expected failed save to clean temp files: {leftovers!r}")
-
 
 
 def test_catalog_backed_token_is_blocked_until_identity_gate(
@@ -161,15 +156,13 @@ def test_bound_account_identifiers_do_not_enter_stats_or_logs(
     binding = SourceIdentityService.from_crawler(crawler).get_binding()
     if binding is None:
         pytest.fail("Expected persisted source binding")
-    exposed = (
-        repr(crawler.stats.get_stats())
-        + caplog.text
-        + repr(binding)
-    )
+    exposed = repr(crawler.stats.get_stats()) + caplog.text + repr(binding)
     for secret in (
         "private-account-key",
         "private-person@example.com",
         "private-access-token",
     ):
         if secret in exposed:
-            pytest.fail(f"Expected provider identity secret not to be exposed: {secret}")
+            pytest.fail(
+                f"Expected provider identity secret not to be exposed: {secret}"
+            )

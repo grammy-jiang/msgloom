@@ -94,8 +94,7 @@ def calendar_server():
                             },
                         ],
                         "@odata.nextLink": (
-                            f"{graph_root}/me/calendars?"
-                            "$skiptoken=calendar-page-2"
+                            f"{graph_root}/me/calendars?$skiptoken=calendar-page-2"
                         ),
                     }
                 self._json(payload)
@@ -323,8 +322,6 @@ def test_calendar_inventory_then_window_persist_real_usage_state(
                 select(func.count()).select_from(RawHttpEvidence)
             )
             if evidence_count != 4:
-                pytest.fail(
-                    f"Expected one raw capture per page, got {evidence_count}"
-                )
+                pytest.fail(f"Expected one raw capture per page, got {evidence_count}")
     finally:
         catalog.close()

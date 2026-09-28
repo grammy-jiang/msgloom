@@ -96,10 +96,7 @@ def calendar_full_server():
                 )
                 return
 
-            if (
-                parsed.path
-                == "/v1.0/me/events/event-1/attachments/attachment-1/$value"
-            ):
+            if parsed.path == "/v1.0/me/events/event-1/attachments/attachment-1/$value":
                 body = b"Hello"
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain")
@@ -133,9 +130,7 @@ def calendar_full_server():
                     {
                         "value": [
                             {
-                                "@odata.type": (
-                                    "#microsoft.graph.fileAttachment"
-                                ),
+                                "@odata.type": ("#microsoft.graph.fileAttachment"),
                                 "id": "attachment-1",
                                 "name": "agenda.txt",
                                 "contentType": "text/plain",
@@ -264,17 +259,14 @@ def test_calendar_full_persists_rich_event_and_attachment_metadata(
             if attachments[1].content_status != "reference":
                 pytest.fail("Expected reference attachment without raw request")
             if "contentBytes" in attachments[0].raw:
-                pytest.fail(
-                    "Expected attachment bytes only in raw HTTP evidence"
-                )
+                pytest.fail("Expected attachment bytes only in raw HTTP evidence")
 
             evidence_count = session.scalar(
                 select(func.count()).select_from(RawHttpEvidence)
             )
             if evidence_count != 4:
                 pytest.fail(
-                    f"Expected four Calendar full evidence rows, got "
-                    f"{evidence_count}"
+                    f"Expected four Calendar full evidence rows, got {evidence_count}"
                 )
     finally:
         catalog.close()

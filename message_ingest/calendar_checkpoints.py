@@ -11,12 +11,12 @@ from sqlalchemy import Table, create_engine, insert, select, update
 from sqlalchemy.engine import make_url
 from sqlalchemy.pool import NullPool
 
+from message_ingest.calendar_delta_state import apply_calendar_delta_state
 from message_ingest.catalog import (
     CalendarDeltaCheckpoint,
     CalendarDeltaCheckpointCandidate,
     Catalog,
 )
-from message_ingest.calendar_delta_state import apply_calendar_delta_state
 from message_ingest.extensions.catalog import CatalogService
 
 
@@ -68,12 +68,8 @@ class CalendarDeltaCheckpointStore:
             else catalog_or_url
         )
         self.source_id = self._scope_value(source_id, "source_id")
-        self.calendar_scope = self._scope_value(
-            calendar_scope, "calendar_scope"
-        )
-        self.start_datetime = self._scope_value(
-            start_datetime, "start_datetime"
-        )
+        self.calendar_scope = self._scope_value(calendar_scope, "calendar_scope")
+        self.start_datetime = self._scope_value(start_datetime, "start_datetime")
         self.end_datetime = self._scope_value(end_datetime, "end_datetime")
 
     @classmethod
@@ -199,28 +195,32 @@ class CalendarDeltaCheckpointStore:
         attempt's fixed-window membership before advancing the candidate marker.
         """
         checkpoint_table = cast(Table, CalendarDeltaCheckpoint.__table__)
-        candidate_table = cast(
-            Table, CalendarDeltaCheckpointCandidate.__table__
-        )
+        candidate_table = cast(Table, CalendarDeltaCheckpointCandidate.__table__)
         committed_at = datetime.now(UTC).isoformat()
         scope = self._scope()
 
         with self._promotion_connection() as connection:
-            candidate = connection.execute(
-                select(candidate_table).filter_by(
-                    **scope,
-                    run_id=run_id,
-                    attempt=attempt,
+            candidate = (
+                connection.execute(
+                    select(candidate_table).filter_by(
+                        **scope,
+                        run_id=run_id,
+                        attempt=attempt,
+                    )
                 )
-            ).mappings().one_or_none()
+                .mappings()
+                .one_or_none()
+            )
             if candidate is None:
                 raise LookupError(
                     "Calendar delta candidate is missing for this attempt"
                 )
 
-            current = connection.execute(
-                select(checkpoint_table).filter_by(**scope)
-            ).mappings().one_or_none()
+            current = (
+                connection.execute(select(checkpoint_table).filter_by(**scope))
+                .mappings()
+                .one_or_none()
+            )
 
             if candidate["committed_at"] is not None:
                 return self._idempotent_committed_state(
@@ -269,10 +269,7 @@ class CalendarDeltaCheckpointStore:
                 run_id=run_id,
                 attempt=attempt,
                 revision=revision,
-                rebaseline=(
-                    base_revision is None
-                    or int(candidate["attempt"]) > 0
-                ),
+                rebaseline=(base_revision is None or int(candidate["attempt"]) > 0),
             )
 
             connection.execute(
@@ -379,15 +376,12 @@ class CalendarDeltaCheckpointStore:
                 raise ValueError(f"{name} must be a non-empty string")
         if isinstance(attempt, bool) or not isinstance(attempt, int) or attempt < 0:
             raise ValueError("attempt must be an integer >= 0")
-        if base_revision is not None:
-            if (
-                isinstance(base_revision, bool)
-                or not isinstance(base_revision, int)
-                or base_revision <= 0
-            ):
-                raise ValueError(
-                    "base_revision must be a positive integer or None"
-                )
+        if base_revision is not None and (
+            isinstance(base_revision, bool)
+            or not isinstance(base_revision, int)
+            or base_revision <= 0
+        ):
+            raise ValueError("base_revision must be a positive integer or None")
 
     @staticmethod
     def _checkpoint_state(row: CalendarDeltaCheckpoint) -> CalendarDeltaCheckpointState:

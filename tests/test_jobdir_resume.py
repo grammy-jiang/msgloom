@@ -9,17 +9,17 @@ import pickle
 from pathlib import Path
 
 import pytest
-from scrapy.extensions.spiderstate import SpiderState
 from scrapy.exceptions import CloseSpider
+from scrapy.extensions.spiderstate import SpiderState
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
-from message_ingest.spiders.outlook_calendar_delta import (
-    OutlookCalendarDeltaSpider,
-)
 from message_ingest.extensions.calendar_delta_checkpoint import (
     CalendarDeltaSpiderState,
+)
+from message_ingest.spiders.outlook_calendar_delta import (
+    OutlookCalendarDeltaSpider,
 )
 from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
 from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
@@ -255,8 +255,7 @@ def test_calendar_delta_requests_serialize_for_persistent_scheduler(
     requests = [
         spider._initial_delta_request(reset_count=0),
         spider._delta_request(
-            "https://graph.microsoft.com/v1.0/me/calendarView/delta?"
-            "$skiptoken=opaque",
+            "https://graph.microsoft.com/v1.0/me/calendarView/delta?$skiptoken=opaque",
             page_number=2,
             from_checkpoint=False,
             reset_count=0,

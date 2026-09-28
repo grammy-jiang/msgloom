@@ -112,9 +112,7 @@ class CalendarPipeline:
                     item,
                 )
             self._inc("msgloom/calendar/attachment_content_processed_count")
-            self._inc(
-                f"msgloom/calendar/attachment_content_{outcome}_count"
-            )
+            self._inc(f"msgloom/calendar/attachment_content_{outcome}_count")
             return item
 
         if isinstance(item, OutlookCalendarDeltaObservationItem):
@@ -124,9 +122,7 @@ class CalendarPipeline:
                     item,
                 )
             self._inc("msgloom/calendar/delta_observation_processed_count")
-            self._inc(
-                f"msgloom/calendar/delta_observation_{outcome}_count"
-            )
+            self._inc(f"msgloom/calendar/delta_observation_{outcome}_count")
             return item
 
         if isinstance(item, OutlookCalendarDeltaCheckpointCandidateItem):
@@ -167,11 +163,8 @@ class CalendarPipeline:
                 )
                 session.add(record)
 
-            if (
-                not created
-                and self._is_older_capture(
-                    item.observed_at, record.latest_observed_at
-                )
+            if not created and self._is_older_capture(
+                item.observed_at, record.latest_observed_at
             ):
                 return "stale"
 
@@ -179,14 +172,10 @@ class CalendarPipeline:
             previous_raw = record.raw
             record.name = self._string(raw.get("name"))
             record.change_key = self._string(raw.get("changeKey"))
-            record.is_default_calendar = self._bool(
-                raw.get("isDefaultCalendar")
-            )
+            record.is_default_calendar = self._bool(raw.get("isDefaultCalendar"))
             record.can_edit = self._bool(raw.get("canEdit"))
             record.can_share = self._bool(raw.get("canShare"))
-            record.can_view_private_items = self._bool(
-                raw.get("canViewPrivateItems")
-            )
+            record.can_view_private_items = self._bool(raw.get("canViewPrivateItems"))
             record.latest_observed_at = item.observed_at
             record.latest_evidence_id = item.evidence_id
             record.raw = raw
@@ -224,11 +213,8 @@ class CalendarPipeline:
                 )
             )
             created = record is None
-            if (
-                record is not None
-                and self._is_older_capture(
-                    item.observed_at, record.latest_observed_at
-                )
+            if record is not None and self._is_older_capture(
+                item.observed_at, record.latest_observed_at
             ):
                 return "stale"
 
@@ -256,14 +242,11 @@ class CalendarPipeline:
                 )
                 session.add(record)
 
-            same_version = (
-                not created
-                and self._same_semantic_version(
-                    previous_change_key,
-                    self._string(raw.get("changeKey")),
-                    previous_raw,
-                    raw,
-                )
+            same_version = not created and self._same_semantic_version(
+                previous_change_key,
+                self._string(raw.get("changeKey")),
+                previous_raw,
+                raw,
             )
             effective_raw = raw
             if same_version and previous_raw is not None:
@@ -415,11 +398,9 @@ class CalendarPipeline:
     @staticmethod
     def _capture_time(value: str) -> datetime:
         """Parse one msgloom evidence capture timestamp."""
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value)
         if parsed.tzinfo is None or parsed.utcoffset() is None:
-            raise ValueError(
-                "Calendar observed_at must include a timezone offset"
-            )
+            raise ValueError("Calendar observed_at must include a timezone offset")
         return parsed
 
     @staticmethod

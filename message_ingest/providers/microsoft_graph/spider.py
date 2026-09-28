@@ -104,12 +104,8 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
         )
         self.mark_run_failed(f"request_failure:{purpose}")
         self.crawler.stats.inc_value("msgloom/crawl/failure_count")
-        self.crawler.stats.inc_value(
-            f"msgloom/crawl/failure_purpose_count/{purpose}"
-        )
-        self.crawler.stats.inc_value(
-            f"msgloom/crawl/failure_type_count/{error_type}"
-        )
+        self.crawler.stats.inc_value(f"msgloom/crawl/failure_purpose_count/{purpose}")
+        self.crawler.stats.inc_value(f"msgloom/crawl/failure_type_count/{error_type}")
         return AcquisitionFailureItem(
             url=request.url,
             purpose=purpose,

@@ -107,9 +107,7 @@ class CalendarEventObservation(Base):
     """Immutable observed Calendar event linked to raw provider evidence."""
 
     __tablename__ = "calendar_event_observations"
-    __table_args__ = (
-        UniqueConstraint("source_id", "event_id", "evidence_id"),
-    )
+    __table_args__ = (UniqueConstraint("source_id", "event_id", "evidence_id"),)
 
     observation_id: Mapped[str] = mapped_column(String(32), primary_key=True)
     source_id: Mapped[str] = mapped_column(String(200), index=True)

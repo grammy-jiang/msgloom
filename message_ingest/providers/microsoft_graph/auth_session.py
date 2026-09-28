@@ -104,15 +104,9 @@ class MicrosoftGraphAuthSession:
         settings = crawler.settings
         if not settings.getbool("MS_GRAPH_AUTH_ENABLED"):
             raise NotConfigured("Microsoft Graph authentication disabled")
-        method = (
-            settings.get("MS_GRAPH_AUTH_METHOD", "device_code")
-            .strip()
-            .lower()
-        )
+        method = settings.get("MS_GRAPH_AUTH_METHOD", "device_code").strip().lower()
         if method not in {"device_code", "interactive"}:
-            raise NotConfigured(
-                "Microsoft Graph delegated authentication disabled"
-            )
+            raise NotConfigured("Microsoft Graph delegated authentication disabled")
         scopes = settings.getlist("MS_GRAPH_SCOPES")
         if not scopes:
             raise RuntimeError(
@@ -133,9 +127,7 @@ class MicrosoftGraphAuthSession:
             token_cache_path=settings["MS_GRAPH_TOKEN_CACHE"],
             auth_method=method,
             account_username=settings["MS_GRAPH_ACCOUNT_USERNAME"],
-            allow_interactive=settings.getbool(
-                "MS_GRAPH_AUTH_ALLOW_INTERACTIVE"
-            ),
+            allow_interactive=settings.getbool("MS_GRAPH_AUTH_ALLOW_INTERACTIVE"),
             source_identity=source_identity,
             stats=crawler.stats,
         )
@@ -208,9 +200,7 @@ class MicrosoftGraphAuthSession:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Pin a token-owning account and persist/verify its source binding."""
         if self.source_identity is None:
-            raise MicrosoftGraphAuthError(
-                "Source identity service is unavailable"
-            )
+            raise MicrosoftGraphAuthError("Source identity service is unavailable")
         app = self._application()
         binding = self.source_identity.get_binding()
         before = all_accounts(app)
@@ -231,9 +221,7 @@ class MicrosoftGraphAuthSession:
                     )
                 result = self._require_silent_token(app, account)
         else:
-            account = select_unbound_cached_account(
-                app, before, self.account_username
-            )
+            account = select_unbound_cached_account(app, before, self.account_username)
             result = self._silent_result(app, account) if account else None
             if not self._has_token(result):
                 self._require_interaction(result)
@@ -256,9 +244,7 @@ class MicrosoftGraphAuthSession:
         self._require_client_id()
         app = self._application()
         before = all_accounts(app)
-        account = select_unbound_cached_account(
-            app, before, self.account_username
-        )
+        account = select_unbound_cached_account(app, before, self.account_username)
         result = (
             self._silent_result(
                 app,
@@ -272,20 +258,14 @@ class MicrosoftGraphAuthSession:
             self._require_interaction(result)
             before_keys = account_key_set(before)
             self._perform_interaction(app)
-            account = select_after_interaction(
-                app, before_keys, self.account_username
-            )
+            account = select_after_interaction(app, before_keys, self.account_username)
             result = self._require_silent_token(app, account)
         if account is None or result is None:
-            raise MicrosoftGraphAuthError(
-                "Unable to select a Microsoft account"
-            )
+            raise MicrosoftGraphAuthError("Unable to select a Microsoft account")
         self._save_token_cache()
         return account, result
 
-    def _token_for_pinned_account_sync(
-        self, force_refresh: bool
-    ) -> dict[str, Any]:
+    def _token_for_pinned_account_sync(self, force_refresh: bool) -> dict[str, Any]:
         """Refresh only the pinned account, optionally reauthenticating it."""
         if self._pinned_account is None or self._pinned_account_key is None:
             raise MicrosoftGraphAuthError("No Microsoft account is pinned")
@@ -298,13 +278,10 @@ class MicrosoftGraphAuthSession:
             return result or {}
         self._require_interaction(result)
         self._perform_interaction(app)
-        account = find_account_by_key(
-            all_accounts(app), self._pinned_account_key
-        )
+        account = find_account_by_key(all_accounts(app), self._pinned_account_key)
         if account is None:
             raise MicrosoftGraphAuthError(
-                "Interactive sign-in did not restore the pinned Microsoft "
-                "account"
+                "Interactive sign-in did not restore the pinned Microsoft account"
             )
         result = self._require_silent_token(app, account)
         self._pinned_account = account
@@ -335,17 +312,13 @@ class MicrosoftGraphAuthSession:
         """Require cache to return a token for the selected account."""
         result = self._silent_result(app, account)
         if not self._has_token(result):
-            raise self._result_error(
-                result, "No token for selected Microsoft account"
-            )
+            raise self._result_error(result, "No token for selected Microsoft account")
         return result or {}
 
     def _perform_interaction(self, app: msal.PublicClientApplication) -> None:
         """Run configured interaction but discard its returned token."""
         if not self.allow_interactive:
-            raise MicrosoftGraphAuthError(
-                "Interactive Microsoft auth is disabled"
-            )
+            raise MicrosoftGraphAuthError("Interactive Microsoft auth is disabled")
         logger.warning(
             "Microsoft sign-in or consent is required: application_mode=%s "
             "application=%s auth_method=%s scopes=%s",
@@ -358,9 +331,7 @@ class MicrosoftGraphAuthSession:
         if self.auth_method == "device_code":
             flow = app.initiate_device_flow(scopes=self.scopes)
             if "user_code" not in flow:
-                raise MicrosoftGraphAuthError(
-                    "Unable to start device-code auth"
-                )
+                raise MicrosoftGraphAuthError("Unable to start device-code auth")
             logger.warning("Microsoft sign-in required: %s", flow["message"])
             self._inc("msgloom/auth/device_code_count")
             result = app.acquire_token_by_device_flow(flow)
@@ -371,9 +342,7 @@ class MicrosoftGraphAuthSession:
                 login_hint=self.account_username or None,
             )
         if not self._has_token(result):
-            raise self._result_error(
-                result, "Microsoft interactive sign-in failed"
-            )
+            raise self._result_error(result, "Microsoft interactive sign-in failed")
 
     def _require_interaction(self, result: dict[str, Any] | None) -> None:
         """Fail closed in unattended mode instead of starting a prompt."""
@@ -402,9 +371,7 @@ class MicrosoftGraphAuthSession:
         """Pin account metadata and cache its validated token in memory."""
         token = result.get("access_token")
         if not isinstance(token, str):
-            raise TypeError(
-                "Microsoft authentication returned a non-string token"
-            )
+            raise TypeError("Microsoft authentication returned a non-string token")
         self._pinned_account = dict(account)
         self._pinned_account_key = account_key(account)
         self._access_token = token
@@ -413,9 +380,7 @@ class MicrosoftGraphAuthSession:
     def _memory_token_valid(self, now: float, force_refresh: bool) -> bool:
         """Return whether memory token is outside the refresh margin."""
         return bool(
-            not force_refresh
-            and self._access_token
-            and now < self._expires_at - 60
+            not force_refresh and self._access_token and now < self._expires_at - 60
         )
 
     def _require_client_id(self) -> None:

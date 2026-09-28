@@ -50,18 +50,14 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         targets = event_ids.split(",") if isinstance(event_ids, str) else event_ids
         self.event_ids = tuple(
             dict.fromkeys(
-                cleaned
-                for event_id in targets
-                if (cleaned := event_id.strip())
+                cleaned for event_id in targets if (cleaned := event_id.strip())
             )
         )
         if not self.event_ids:
             raise ValueError("at least one event ID is required")
         self.calendar_id = calendar_id.strip()
         if calendar_id != self.calendar_id:
-            raise ValueError(
-                "calendar_id must not contain surrounding whitespace"
-            )
+            raise ValueError("calendar_id must not contain surrounding whitespace")
         self.page_size = self._bounded_int(
             page_size,
             name="page_size",
@@ -107,9 +103,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         """Reject JOBDIR until targeted Calendar resume is explicitly tested."""
         if crawler.settings.get("JOBDIR"):
-            raise ValueError(
-                "Calendar full acquisition does not support JOBDIR yet"
-            )
+            raise ValueError("Calendar full acquisition does not support JOBDIR yet")
         return super().from_crawler(crawler, *args, **kwargs)
 
     async def start(self) -> AsyncIterator[Any]:
@@ -136,19 +130,15 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
 
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Calendar event detail must be a JSON object")
+            raise TypeError("Calendar event detail must be a JSON object")
         provider_id = payload.get("id")
         if not isinstance(provider_id, str) or not provider_id:
-            raise ValueError(
-                "Calendar event detail must contain a non-empty id"
-            )
+            raise ValueError("Calendar event detail must contain a non-empty id")
         if provider_id != event_id:
             raise ValueError("Calendar event detail ID changed in flight")
 
         calendar_key = self.calendar_id or "default"
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/full/event_detail_count"
-        )
+        self.crawler.stats.inc_value("msgloom/crawl/calendar/full/event_detail_count")
         yield OutlookCalendarEventItem(
             event_id=event_id,
             raw=payload,
@@ -185,14 +175,10 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
 
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError(
-                "Calendar attachment response must be a JSON object"
-            )
+            raise TypeError("Calendar attachment response must be a JSON object")
         values = payload.get("value")
         if not isinstance(values, list):
-            raise ValueError(
-                "Calendar attachment response must contain a value list"
-            )
+            raise TypeError("Calendar attachment response must contain a value list")
 
         calendar_key = self.calendar_id or "default"
         self.crawler.stats.inc_value(
@@ -200,14 +186,10 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         )
         for attachment in values:
             if not isinstance(attachment, dict):
-                raise ValueError(
-                    "Calendar attachment entry must be a JSON object"
-                )
+                raise TypeError("Calendar attachment entry must be a JSON object")
             attachment_id = attachment.get("id")
             if not isinstance(attachment_id, str) or not attachment_id:
-                raise ValueError(
-                    "Calendar attachment must contain a non-empty id"
-                )
+                raise ValueError("Calendar attachment must contain a non-empty id")
             raw = _metadata_without_content(attachment)
             content_bytes_present = "contentBytes" in attachment
             attachment_type = raw.get("@odata.type")
@@ -215,13 +197,9 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
                 attachment_type,
                 str,
             ):
-                raise ValueError(
-                    "Calendar attachment @odata.type must be a string"
-                )
+                raise ValueError("Calendar attachment @odata.type must be a string")
 
-            self.crawler.stats.inc_value(
-                "msgloom/crawl/calendar/full/attachment_count"
-            )
+            self.crawler.stats.inc_value("msgloom/crawl/calendar/full/attachment_count")
             yield OutlookCalendarAttachmentItem(
                 event_id=event_id,
                 attachment_id=attachment_id,
@@ -303,14 +281,10 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         yield evidence
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError(
-                "Calendar item attachment detail must be a JSON object"
-            )
+            raise TypeError("Calendar item attachment detail must be a JSON object")
         provider_id = payload.get("id")
         if provider_id != attachment_id:
-            raise ValueError(
-                "Calendar item attachment detail ID changed in flight"
-            )
+            raise ValueError("Calendar item attachment detail ID changed in flight")
         raw = _metadata_without_content(payload)
         content_bytes_present = "contentBytes" in payload
         attachment_type = raw.get("@odata.type")
@@ -318,9 +292,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
             attachment_type,
             str,
         ):
-            raise ValueError(
-                "Calendar attachment @odata.type must be a string"
-            )
+            raise ValueError("Calendar attachment @odata.type must be a string")
         self.crawler.stats.inc_value(
             "msgloom/crawl/calendar/full/item_attachment_detail_count"
         )
@@ -344,10 +316,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
             callback=self.parse_event_detail,
             purpose="calendar-event-detail",
             cb_kwargs={"event_id": event_id},
-            prefer=(
-                'IdType="ImmutableId", '
-                'outlook.body-content-type="text"'
-            ),
+            prefer=('IdType="ImmutableId", outlook.body-content-type="text"'),
         )
 
     def _attachments_request(
@@ -379,8 +348,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         event_path = self._event_path(event_id)
         encoded_attachment = quote(attachment_id, safe="")
         return self._request(
-            f"{self.graph_root}{event_path}/attachments/"
-            f"{encoded_attachment}/$value",
+            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}/$value",
             callback=self.parse_attachment_content,
             purpose="calendar-attachment-raw",
             cb_kwargs={
@@ -399,12 +367,9 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         """Expand an embedded Graph item separately from its raw bytes."""
         event_path = self._event_path(event_id)
         encoded_attachment = quote(attachment_id, safe="")
-        query = urlencode(
-            {"$expand": "microsoft.graph.itemattachment/item"}
-        )
+        query = urlencode({"$expand": "microsoft.graph.itemattachment/item"})
         return self._request(
-            f"{self.graph_root}{event_path}/attachments/"
-            f"{encoded_attachment}?{query}",
+            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}?{query}",
             callback=self.parse_attachment_detail,
             purpose="calendar-item-attachment-detail",
             cb_kwargs={
@@ -429,7 +394,4 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         if not self.calendar_id:
             return f"/me/events/{encoded_event}"
         encoded_calendar = quote(self.calendar_id, safe="")
-        return (
-            f"/me/calendars/{encoded_calendar}/events/"
-            f"{encoded_event}"
-        )
+        return f"/me/calendars/{encoded_calendar}/events/{encoded_event}"

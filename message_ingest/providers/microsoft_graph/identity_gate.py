@@ -38,9 +38,7 @@ class MicrosoftGraphSourceIdentityExtension:
         if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
             raise NotConfigured("Source identity persistence is disabled")
         extension = cls(crawler)
-        crawler.signals.connect(
-            extension.spider_opened, signal=signals.spider_opened
-        )
+        crawler.signals.connect(extension.spider_opened, signal=signals.spider_opened)
         return extension
 
     async def spider_opened(self, spider) -> None:
@@ -53,17 +51,17 @@ class MicrosoftGraphSourceIdentityExtension:
                 "contract_check_skipped",
             )
             return
-        if not self.crawler.settings.getbool(
-            "MSGLOOM_SOURCE_IDENTITY_REQUIRED"
-        ):
+        if not self.crawler.settings.getbool("MSGLOOM_SOURCE_IDENTITY_REQUIRED"):
             self.crawler.stats.set_value(
                 "msgloom/source_identity/gate_state", "disabled"
             )
             return
 
-        method = self.crawler.settings.get(
-            "MS_GRAPH_AUTH_METHOD", "device_code"
-        ).strip().lower()
+        method = (
+            self.crawler.settings.get("MS_GRAPH_AUTH_METHOD", "device_code")
+            .strip()
+            .lower()
+        )
         if method not in {"device_code", "interactive"}:
             self._fail(spider, "AuthenticationDisabled")
 
@@ -91,7 +89,8 @@ class MicrosoftGraphSourceIdentityExtension:
                 type(exc).__name__,
                 detail=str(exc),
             )
-        except Exception as exc:
+        # Fail closed on unexpected startup failures without logging provider data.
+        except Exception as exc:  # noqa: BLE001
             self._fail(spider, type(exc).__name__)
 
     def _fail(
@@ -108,16 +107,11 @@ class MicrosoftGraphSourceIdentityExtension:
         # failure may happen before SpiderState has restored the JOBDIR state.
         # Calling the base avoids overwriting a valid resume snapshot.
         MicrosoftGraphSpider.mark_run_failed(spider, "source_identity_failed")
-        self.crawler.stats.inc_value(
-            "msgloom/source_identity/gate_failed_count"
-        )
-        self.crawler.stats.set_value(
-            "msgloom/source_identity/gate_state", "failed"
-        )
+        self.crawler.stats.inc_value("msgloom/source_identity/gate_failed_count")
+        self.crawler.stats.set_value("msgloom/source_identity/gate_state", "failed")
         if log_error and detail is not None:
             logger.error(
-                "Microsoft Graph source identity gate failed: "
-                "error_type=%s detail=%s",
+                "Microsoft Graph source identity gate failed: error_type=%s detail=%s",
                 error_type,
                 detail,
                 extra={"spider": spider},

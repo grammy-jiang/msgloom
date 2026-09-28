@@ -143,7 +143,9 @@ def test_non_evidence_item_passes_through_without_catalog_lookup(
     CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
 
 
-def test_none_evidence_reference_is_valid_for_terminal_semantics(tmp_path: Path) -> None:
+def test_none_evidence_reference_is_valid_for_terminal_semantics(
+    tmp_path: Path,
+) -> None:
     crawler = _crawler(tmp_path)
     pipeline = EvidenceLinkPipeline.from_crawler(crawler)
     item = CalendarEventFixture(
@@ -157,7 +159,6 @@ def test_none_evidence_reference_is_valid_for_terminal_semantics(tmp_path: Path)
     if item.evidence_id is not None:
         pytest.fail("Expected: item.evidence_id is None")
     CatalogService.from_crawler(crawler).spider_closed(None, "test-finished")
-
 
 
 ROOT = Path(__file__).parents[1]
@@ -283,9 +284,7 @@ def test_feed_export_sees_only_successful_canonicalized_items(
         pytest.fail(result.stdout + result.stderr)
 
     rows = [
-        json.loads(line)
-        for line in feed_path.read_text().splitlines()
-        if line.strip()
+        json.loads(line) for line in feed_path.read_text().splitlines() if line.strip()
     ]
     if rows != [
         {

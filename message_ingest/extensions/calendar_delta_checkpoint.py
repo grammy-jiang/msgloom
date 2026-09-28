@@ -48,9 +48,7 @@ class CalendarDeltaCheckpointExtension:
     @classmethod
     def from_crawler(cls, crawler):
         """Enable only for the Calendar delta spider's explicit setting."""
-        if not crawler.settings.getbool(
-            "MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED"
-        ):
+        if not crawler.settings.getbool("MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED"):
             raise NotConfigured("Calendar delta checkpoint extension disabled")
         if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
             raise NotConfigured(
@@ -132,13 +130,10 @@ class CalendarDeltaCheckpointExtension:
                 "msgloom/calendar/checkpoint/outcome",
                 "error",
             )
-            stats.inc_value(
-                "msgloom/calendar/checkpoint/candidate_read_error_count"
-            )
+            stats.inc_value("msgloom/calendar/checkpoint/candidate_read_error_count")
             spider.mark_run_failed("calendar_checkpoint_candidate_load_failed")
             logger.error(
-                "Unable to load Calendar delta checkpoint candidate: "
-                "error_type=%s",
+                "Unable to load Calendar delta checkpoint candidate: error_type=%s",
                 type(exc).__name__,
                 extra={"spider": spider},
             )
@@ -159,9 +154,7 @@ class CalendarDeltaCheckpointExtension:
                 "msgloom/calendar/checkpoint/outcome",
                 "skipped",
             )
-            stats.inc_value(
-                "msgloom/calendar/checkpoint/commit_skipped_count"
-            )
+            stats.inc_value("msgloom/calendar/checkpoint/commit_skipped_count")
             spider.mark_run_failed("calendar_delta_incomplete")
             logger.warning(
                 "Calendar delta checkpoint commit skipped: run_id=%s "
@@ -185,18 +178,14 @@ class CalendarDeltaCheckpointExtension:
                 "msgloom/calendar/checkpoint/outcome",
                 "error",
             )
-            stats.inc_value(
-                "msgloom/calendar/checkpoint/commit_error_count"
-            )
+            stats.inc_value("msgloom/calendar/checkpoint/commit_error_count")
             spider.mark_run_failed("calendar_checkpoint_commit_failed")
             logger.error(
                 "Unable to commit Calendar delta checkpoint: error_type=%s",
                 type(exc).__name__,
                 extra={"spider": spider},
             )
-            raise CloseSpider(
-                reason="calendar_checkpoint_commit_failed"
-            ) from exc
+            raise CloseSpider(reason="calendar_checkpoint_commit_failed") from exc
 
         stats.set_value(
             "msgloom/calendar/checkpoint/outcome",
@@ -208,8 +197,7 @@ class CalendarDeltaCheckpointExtension:
         )
         stats.inc_value("msgloom/calendar/checkpoint/commit_count")
         logger.info(
-            "Calendar delta checkpoint committed: run_id=%s attempt=%s "
-            "revision=%s",
+            "Calendar delta checkpoint committed: run_id=%s attempt=%s revision=%s",
             run_id,
             attempt,
             state.revision,

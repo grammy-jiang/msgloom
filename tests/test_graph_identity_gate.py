@@ -134,7 +134,6 @@ def test_scrapy_contract_check_skips_live_identity_gate(
         pytest.fail("Expected contract check skip not to fail logical run")
 
 
-
 def test_safe_auth_gate_error_detail_is_logged(
     tmp_path: Path,
     monkeypatch,

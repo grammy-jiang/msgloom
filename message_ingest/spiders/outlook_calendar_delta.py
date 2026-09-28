@@ -47,9 +47,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         self.start_datetime = self._window_datetime(
             start_datetime, name="start_datetime"
         )
-        self.end_datetime = self._window_datetime(
-            end_datetime, name="end_datetime"
-        )
+        self.end_datetime = self._window_datetime(end_datetime, name="end_datetime")
         if self._parsed_datetime(self.start_datetime) >= self._parsed_datetime(
             self.end_datetime
         ):
@@ -174,32 +172,28 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         end_datetime: str,
     ) -> Iterator[Any]:
         """Emit ordered changes and stage only a terminal delta cursor."""
-        if (
-            start_datetime != self.start_datetime
-            or end_datetime != self.end_datetime
-        ):
+        if start_datetime != self.start_datetime or end_datetime != self.end_datetime:
             raise ValueError("Calendar delta callback scope changed in flight")
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
 
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Calendar delta response must be a JSON object")
+            raise TypeError("Calendar delta response must be a JSON object")
         values = payload.get("value")
         if not isinstance(values, list):
-            raise ValueError("Calendar delta response must contain a value list")
+            raise TypeError("Calendar delta response must contain a value list")
         # Graph may repeat an event in one page. Keep every delta entry, but
         # project only its last upsert into the source-wide event record.
         last_upserts = {
             event["id"]: index
             for index, event in enumerate(values)
-            if isinstance(event, dict) and isinstance(event.get("id"), str)
+            if isinstance(event, dict)
+            and isinstance(event.get("id"), str)
             and event.get("@removed") is None
         }
 
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/delta/page_count"
-        )
+        self.crawler.stats.inc_value("msgloom/crawl/calendar/delta/page_count")
         self.crawler.stats.inc_value(
             "msgloom/crawl/calendar/delta/entry_count",
             count=len(values),
@@ -207,12 +201,10 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
 
         for entry_index, event in enumerate(values):
             if not isinstance(event, dict):
-                raise ValueError("Calendar delta event must be a JSON object")
+                raise TypeError("Calendar delta event must be a JSON object")
             event_id = event.get("id")
             if not isinstance(event_id, str) or not event_id:
-                raise ValueError(
-                    "Calendar delta event must contain a non-empty id"
-                )
+                raise ValueError("Calendar delta event must contain a non-empty id")
 
             removed = event.get("@removed")
             if removed is not None and not isinstance(removed, dict):
@@ -272,9 +264,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
 
         if next_link is not None:
             if not isinstance(next_link, str) or not next_link:
-                raise ValueError(
-                    "Calendar @odata.nextLink must be a non-empty string"
-                )
+                raise ValueError("Calendar @odata.nextLink must be a non-empty string")
             self.crawler.stats.inc_value(
                 "msgloom/crawl/calendar/delta/continuation_count"
             )
@@ -288,9 +278,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
 
         if delta_link is not None:
             if not isinstance(delta_link, str) or not delta_link:
-                raise ValueError(
-                    "Calendar @odata.deltaLink must be a non-empty string"
-                )
+                raise ValueError("Calendar @odata.deltaLink must be a non-empty string")
             self._terminal_delta_seen = True
             self.crawler.stats.set_value(
                 "msgloom/crawl/calendar/delta/terminal_seen", True
@@ -367,7 +355,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
             self._persist_execution_state()
             return
         if not isinstance(saved, dict):
-            raise ValueError("JOBDIR has no valid Calendar delta state")
+            raise TypeError("JOBDIR has no valid Calendar delta state")
         restored = CalendarDeltaExecutionState.restore(
             saved,
             start_datetime=self.start_datetime,
@@ -435,10 +423,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
             },
             dont_cache=True,
             verbatim_url=page_number > 1 or from_checkpoint,
-            prefer=(
-                'IdType="ImmutableId", '
-                f"odata.maxpagesize={self.page_size}"
-            ),
+            prefer=(f'IdType="ImmutableId", odata.maxpagesize={self.page_size}'),
         )
 
     def _state_failure(
@@ -453,9 +438,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         self.crawler.stats.inc_value(
             "msgloom/crawl/failure_purpose_count/calendar-delta-page"
         )
-        self.crawler.stats.inc_value(
-            f"msgloom/crawl/failure_type_count/{error_type}"
-        )
+        self.crawler.stats.inc_value(f"msgloom/crawl/failure_type_count/{error_type}")
         return AcquisitionFailureItem(
             url=response.url,
             purpose="calendar-delta-page",
@@ -477,9 +460,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         if not value:
             raise ValueError(f"{name} is required")
         if raw != value:
-            raise ValueError(
-                f"{name} must not contain surrounding whitespace"
-            )
+            raise ValueError(f"{name} must not contain surrounding whitespace")
         cls._parsed_datetime(value)
         return value
 
@@ -487,13 +468,11 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
     def _parsed_datetime(value: str) -> datetime:
         """Parse a Calendar window boundary, accepting a Z suffix."""
         try:
-            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            parsed = datetime.fromisoformat(value)
         except ValueError as exc:
             raise ValueError(
                 "Calendar delta values must be valid ISO-8601 datetimes"
             ) from exc
         if parsed.tzinfo is None or parsed.utcoffset() is None:
-            raise ValueError(
-                "Calendar delta datetimes must include a timezone offset"
-            )
+            raise ValueError("Calendar delta datetimes must include a timezone offset")
         return parsed

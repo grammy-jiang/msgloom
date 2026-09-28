@@ -46,7 +46,9 @@ def test_generic_retry_schedule_keeps_native_stats_without_url_log(caplog) -> No
     middleware = _middleware(1)
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     retry = middleware.process_response(request, response)
 
@@ -66,7 +68,9 @@ def test_generic_retry_exhaustion_logs_safe_reason_only(caplog) -> None:
     middleware = _middleware(0)
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     returned = middleware.process_response(request, response)
 
@@ -87,7 +91,9 @@ def test_generic_retry_exhaustion_logs_safe_reason_only(caplog) -> None:
 def test_generic_retry_exception_text_is_not_logged(caplog) -> None:
     middleware = _middleware(0)
     request = _request()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     retry = middleware._retry(
         request,
@@ -106,7 +112,9 @@ def test_generic_retry_honors_configured_give_up_log_level(caplog) -> None:
     middleware = _middleware(0, give_up_log_level="WARNING")
     request = _request()
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     middleware.process_response(request, response)
 
@@ -127,7 +135,9 @@ def test_generic_retry_honors_request_give_up_log_level_override(caplog) -> None
     request = _request()
     request.meta["give_up_log_level"] = "INFO"
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     middleware.process_response(request, response)
 
@@ -150,7 +160,9 @@ def test_generic_retry_none_give_up_override_falls_back_to_setting(
     request = _request()
     request.meta["give_up_log_level"] = None
     response = Response(request.url, request=request, status=500)
-    caplog.set_level(logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors")
+    caplog.set_level(
+        logging.DEBUG, logger="message_ingest.providers.microsoft_graph.errors"
+    )
 
     returned = middleware.process_response(request, response)
 

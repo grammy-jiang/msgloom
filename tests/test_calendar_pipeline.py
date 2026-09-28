@@ -6,8 +6,8 @@ import asyncio
 from pathlib import Path
 
 import pytest
-from sqlalchemy import func, select
 from scrapy.utils.test import get_crawler
+from sqlalchemy import func, select
 
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.catalog import (
@@ -366,25 +366,16 @@ def test_older_canonical_capture_cannot_roll_current_event_state_back(
         )
         if current is None:
             pytest.fail("Expected Calendar current state")
-        if (
-            current.change_key != "event-v2"
-            or current.subject != "Current version"
-        ):
-            pytest.fail(
-                "Expected older cache capture not to roll current state back"
-            )
+        if current.change_key != "event-v2" or current.subject != "Current version":
+            pytest.fail("Expected older cache capture not to roll current state back")
         if current.latest_evidence_id != "capture-c":
-            pytest.fail(
-                "Expected latest evidence to remain the newest capture"
-            )
+            pytest.fail("Expected latest evidence to remain the newest capture")
         if count != 2:
             pytest.fail(f"Expected two semantic versions, got {count}")
     stale = crawler.stats.get_value("msgloom/calendar/event_stale_count", 0)
     replayed = crawler.stats.get_value("msgloom/calendar/event_replay_count", 0)
     if stale + replayed != 1:
-        pytest.fail(
-            "Expected old canonical capture to be classified stale or replay"
-        )
+        pytest.fail("Expected old canonical capture to be classified stale or replay")
     service.close()
 
 

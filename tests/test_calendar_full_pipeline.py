@@ -4,17 +4,20 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy import func, select
+from test_calendar_pipeline import _crawler, _event, _process, _raw
 
 from message_ingest.catalog import (
-    CalendarEventAttachmentRecord, CalendarEventObservation, CalendarEventRecord,
+    CalendarEventAttachmentRecord,
+    CalendarEventObservation,
+    CalendarEventRecord,
     Catalog,
 )
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items import (
-    OutlookCalendarAttachmentContentItem, OutlookCalendarAttachmentItem,
+    OutlookCalendarAttachmentContentItem,
+    OutlookCalendarAttachmentItem,
 )
 from message_ingest.pipelines.calendar_attachments import CalendarAttachmentStore
-from test_calendar_pipeline import _crawler, _event, _process, _raw
 
 
 def test_same_change_key_merges_richer_detail_without_later_downgrade(
@@ -35,9 +38,7 @@ def test_same_change_key_merges_richer_detail_without_later_downgrade(
         "contentType": "text",
         "content": "Detailed agenda",
     }
-    detail.raw["organizer"] = {
-        "emailAddress": {"address": "owner@example.test"}
-    }
+    detail.raw["organizer"] = {"emailAddress": {"address": "owner@example.test"}}
     _process(crawler, detail_raw, detail)
 
     later_basic_raw = _raw(
@@ -66,9 +67,7 @@ def test_same_change_key_merges_richer_detail_without_later_downgrade(
             select(func.count()).select_from(CalendarEventObservation)
         )
         if count != 1:
-            pytest.fail(
-                "Expected one semantic version for one unchanged changeKey"
-            )
+            pytest.fail("Expected one semantic version for one unchanged changeKey")
     service.close()
 
 
@@ -146,23 +145,36 @@ def test_calendar_attachment_metadata_avoids_content_bytes_duplication(
     ],
 )
 def test_attachment_calendar_resolution_stays_within_source(
-    tmp_path: Path, source_id: str, calendar_id: str, expected: str,
+    tmp_path: Path,
+    source_id: str,
+    calendar_id: str,
+    expected: str,
 ) -> None:
     catalog = Catalog(f"sqlite:///{tmp_path / 'attachments.sqlite3'}")
     try:
         with catalog.Session() as session, session.begin():
-            session.add(CalendarEventRecord(
-                source_id="source-1", event_id="event-1",
-                calendar_id="calendar-1",
-                latest_observed_at="2026-09-27T00:00:00+00:00", raw={},
-            ))
+            session.add(
+                CalendarEventRecord(
+                    source_id="source-1",
+                    event_id="event-1",
+                    calendar_id="calendar-1",
+                    latest_observed_at="2026-09-27T00:00:00+00:00",
+                    raw={},
+                )
+            )
         store = CalendarAttachmentStore(catalog, source_id=source_id)
-        store.persist_metadata(OutlookCalendarAttachmentItem(
-            event_id="event-1", attachment_id="attachment-1",
-            attachment_type="#microsoft.graph.itemAttachment", raw={},
-            observed_at="2026-09-27T00:00:00+00:00",
-            evidence_id=None, run_id="run-1", calendar_id=calendar_id,
-        ))
+        store.persist_metadata(
+            OutlookCalendarAttachmentItem(
+                event_id="event-1",
+                attachment_id="attachment-1",
+                attachment_type="#microsoft.graph.itemAttachment",
+                raw={},
+                observed_at="2026-09-27T00:00:00+00:00",
+                evidence_id=None,
+                run_id="run-1",
+                calendar_id=calendar_id,
+            )
+        )
         with catalog.Session() as session:
             row = session.scalar(select(CalendarEventAttachmentRecord))
             if row is None or row.calendar_id != expected:

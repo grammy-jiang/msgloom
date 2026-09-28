@@ -32,11 +32,9 @@ def _aware_datetime(value: str) -> str:
             "datetime must be non-empty with no surrounding whitespace"
         )
     try:
-        parsed = datetime.fromisoformat(cleaned.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(cleaned)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            "datetime must be valid ISO-8601"
-        ) from exc
+        raise argparse.ArgumentTypeError("datetime must be valid ISO-8601") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise argparse.ArgumentTypeError("datetime must include a timezone offset")
     return cleaned
@@ -237,9 +235,7 @@ class Command(ScrapyCommand):
                 {
                     "folder": opts.folder or "",
                     "page_size": str(opts.page_size or 25),
-                    "max_pages": str(
-                        0 if opts.max_pages is None else opts.max_pages
-                    ),
+                    "max_pages": str(0 if opts.max_pages is None else opts.max_pages),
                 },
             )
             return
@@ -267,9 +263,7 @@ class Command(ScrapyCommand):
             )
             message_ids = tuple(
                 dict.fromkeys(
-                    cleaned
-                    for value in opts.message_ids
-                    if (cleaned := value.strip())
+                    cleaned for value in opts.message_ids if (cleaned := value.strip())
                 )
             )
             if not message_ids:
@@ -284,9 +278,7 @@ class Command(ScrapyCommand):
                 },
             )
             return
-        raise UsageError(
-            "use 'microsoft outlook mail {discover,delta,full}'"
-        )
+        raise UsageError("use 'microsoft outlook mail {discover,delta,full}'")
 
     def _outlook_calendar(self, opts: argparse.Namespace) -> None:
         """Map Outlook Calendar actions to their resource-specific dispatcher."""
@@ -363,9 +355,7 @@ class Command(ScrapyCommand):
             if name not in allowed and value not in (None, False, "")
         ]
         if used:
-            rendered = ", ".join(
-                f"--{name.replace('_', '-')}" for name in used
-            )
+            rendered = ", ".join(f"--{name.replace('_', '-')}" for name in used)
             raise UsageError(
                 f"option(s) not valid for this Microsoft command: {rendered}"
             )
@@ -375,9 +365,7 @@ def _format_status(status: MicrosoftAuthStatus) -> str:
     """Render concise operator-facing diagnostics without secret material."""
     scopes = ", ".join(status.cached_scopes) if status.cached_scopes else "none"
     applications = (
-        ", ".join(status.cached_applications)
-        if status.cached_applications
-        else "none"
+        ", ".join(status.cached_applications) if status.cached_applications else "none"
     )
     lines = [
         "Microsoft authentication status",

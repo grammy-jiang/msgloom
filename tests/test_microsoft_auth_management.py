@@ -148,7 +148,9 @@ def test_status_command_never_prints_token_or_username(tmp_path: Path, capsys) -
 def test_status_command_json_is_machine_readable(tmp_path: Path, capsys) -> None:
     command = MicrosoftCommand()
     command.settings = _settings(tmp_path)
-    command.run([], _command_opts(section="auth", resource_or_action="status", json_output=True))
+    command.run(
+        [], _command_opts(section="auth", resource_or_action="status", json_output=True)
+    )
 
     payload = json.loads(capsys.readouterr().out)
     if payload["status"] != "unconfigured":

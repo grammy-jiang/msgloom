@@ -24,9 +24,7 @@ def dispatch_calendar(
         raise UsageError("--calendar must be non-empty without surrounding whitespace")
     if opts.action == "discover":
         if opts.message_ids:
-            raise UsageError(
-                "Calendar discover does not accept RESOURCE_ID values"
-            )
+            raise UsageError("Calendar discover does not accept RESOURCE_ID values")
         reject_options(opts, allowed={"page_size"})
         run_graph(
             command,
@@ -37,9 +35,7 @@ def dispatch_calendar(
 
     if opts.action == "window":
         if opts.message_ids:
-            raise UsageError(
-                "Calendar window does not accept RESOURCE_ID values"
-            )
+            raise UsageError("Calendar window does not accept RESOURCE_ID values")
         reject_options(
             opts,
             allowed={"start", "end", "calendar", "page_size"},
@@ -59,9 +55,7 @@ def dispatch_calendar(
 
     if opts.action == "delta":
         if opts.message_ids:
-            raise UsageError(
-                "Calendar delta does not accept RESOURCE_ID values"
-            )
+            raise UsageError("Calendar delta does not accept RESOURCE_ID values")
         reject_options(
             opts,
             allowed={"start", "end", "page_size"},
@@ -85,9 +79,7 @@ def dispatch_calendar(
         )
         event_ids = tuple(
             dict.fromkeys(
-                cleaned
-                for value in opts.message_ids
-                if (cleaned := value.strip())
+                cleaned for value in opts.message_ids if (cleaned := value.strip())
             )
         )
         if not event_ids:
@@ -103,21 +95,17 @@ def dispatch_calendar(
         )
         return
 
-    raise UsageError(
-        "use 'microsoft outlook calendar {discover,window,delta,full}'"
-    )
+    raise UsageError("use 'microsoft outlook calendar {discover,window,delta,full}'")
 
 
 def _require_window(opts: argparse.Namespace, *, action: str) -> None:
     """Require an ordered timezone-aware range already parsed by argparse."""
     if opts.start is None or opts.end is None:
-        raise UsageError(
-            f"calendar {action} requires --start and --end"
-        )
+        raise UsageError(f"calendar {action} requires --start and --end")
     if _parsed(opts.start) >= _parsed(opts.end):
         raise UsageError("--start must be earlier than --end")
 
 
 def _parsed(value: str) -> datetime:
     """Parse a value already validated by the public command parser."""
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return datetime.fromisoformat(value)

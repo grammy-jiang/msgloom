@@ -9,6 +9,16 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy import select
+from test_calendar_delta_crawl import (
+    DELTA_COMMAND,
+    END,
+    ROOT,
+    START,
+    _settings,
+)
+from test_calendar_delta_crawl import (
+    calendar_delta_server as calendar_delta_server,  # noqa: PLC0414
+)
 
 from message_ingest.catalog import (
     CalendarDeltaCheckpoint,
@@ -16,16 +26,8 @@ from message_ingest.catalog import (
     CalendarDeltaObservation,
     Catalog,
 )
-from test_calendar_delta_crawl import (
-    DELTA_COMMAND,
-    END,
-    ROOT,
-    START,
-    _settings,
-    calendar_delta_server as calendar_delta_server,
-)
 
-PAUSE_SETUP = r'''
+PAUSE_SETUP = r"""
 import asyncio
 from scrapy import signals
 
@@ -43,9 +45,9 @@ def factory(cls, crawler, *args, **kwargs):
     return spider
 
 OutlookCalendarDeltaSpider.from_crawler = classmethod(factory)
-'''
+"""
 
-FAILURE_SETUP = r'''
+FAILURE_SETUP = r"""
 import asyncio
 from scrapy.exceptions import DropItem
 from message_ingest.items import OutlookCalendarEventItem
@@ -60,19 +62,32 @@ async def process(self, item):
     return await original_process(self, item)
 
 CalendarPipeline.process_item = process
-'''
+"""
 
 
 def _run(graph_root: str, tmp_path: Path, *, setup="", start=START):
     script = DELTA_COMMAND.replace("execute([", setup + "\nexecute([")
     return subprocess.run(
         [
-            sys.executable, "-c", script, graph_root,
-            "--start", start, "--end", END,
-            "-s", f"JOBDIR={tmp_path / 'job'}",
-            "-s", "SCHEDULER_DEBUG=True", *_settings(tmp_path),
+            sys.executable,
+            "-c",
+            script,
+            graph_root,
+            "--start",
+            start,
+            "--end",
+            END,
+            "-s",
+            f"JOBDIR={tmp_path / 'job'}",
+            "-s",
+            "SCHEDULER_DEBUG=True",
+            *_settings(tmp_path),
         ],
-        cwd=ROOT, capture_output=True, text=True, timeout=30, check=False,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
     )
 
 
@@ -98,7 +113,8 @@ def _pause(graph_root: str, tmp_path: Path, seen: list[str]) -> str:
 
 
 def test_clean_pause_resumes_queued_page_and_promotes_once(
-    tmp_path: Path, calendar_delta_server,
+    tmp_path: Path,
+    calendar_delta_server,
 ) -> None:
     graph_root, seen = calendar_delta_server
     run_id = _pause(graph_root, tmp_path, seen)
@@ -125,7 +141,8 @@ def test_clean_pause_resumes_queued_page_and_promotes_once(
 
 
 def test_changed_window_cannot_dequeue_or_destroy_a_saved_job(
-    tmp_path: Path, calendar_delta_server,
+    tmp_path: Path,
+    calendar_delta_server,
 ) -> None:
     graph_root, seen = calendar_delta_server
     _pause(graph_root, tmp_path, seen)
@@ -143,11 +160,14 @@ def test_changed_window_cannot_dequeue_or_destroy_a_saved_job(
 
 @pytest.mark.parametrize("failure_type", ["RuntimeError", "DropItem"])
 def test_delayed_pipeline_failure_blocks_durable_candidate(
-    tmp_path: Path, calendar_delta_server, failure_type: str,
+    tmp_path: Path,
+    calendar_delta_server,
+    failure_type: str,
 ) -> None:
     graph_root, _seen = calendar_delta_server
     result = _run(
-        graph_root, tmp_path,
+        graph_root,
+        tmp_path,
         setup=FAILURE_SETUP.replace("FAILURE_TYPE", failure_type),
     )
     if result.returncode == 0:

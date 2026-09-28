@@ -3,11 +3,11 @@
 from pathlib import Path
 
 import pytest
+from calendar_checkpoint_helpers import _candidate, _observation, _store
 from sqlalchemy import select
 
 from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointConflict
 from message_ingest.catalog import CalendarDeltaEventState
-from calendar_checkpoint_helpers import _candidate, _observation, _store
 
 
 def test_commit_materializes_only_winning_fixed_window_state(
@@ -93,9 +93,7 @@ def test_commit_materializes_only_winning_fixed_window_state(
         with store.catalog.Session() as session:
             states = {
                 row.event_id: row
-                for row in session.scalars(
-                    select(CalendarDeltaEventState)
-                ).all()
+                for row in session.scalars(select(CalendarDeltaEventState)).all()
             }
             event1 = states["event-1"]
             event2 = states["event-2"]
@@ -104,19 +102,16 @@ def test_commit_materializes_only_winning_fixed_window_state(
                 or event1.raw.get("subject") != "Moved"
                 or event1.latest_revision != second.revision
             ):
-                pytest.fail(
-                    f"Unexpected committed Calendar event-1 state: {event1!r}"
-                )
+                pytest.fail(f"Unexpected committed Calendar event-1 state: {event1!r}")
             if (
                 event2.is_present is not False
                 or event2.removed_reason != "deleted"
                 or event2.latest_revision != second.revision
             ):
-                pytest.fail(
-                    f"Unexpected committed Calendar event-2 state: {event2!r}"
-                )
+                pytest.fail(f"Unexpected committed Calendar event-2 state: {event2!r}")
     finally:
         store.close()
+
 
 def test_stale_candidate_cannot_mutate_committed_view_state(
     tmp_path: Path,
@@ -171,20 +166,17 @@ def test_stale_candidate_cannot_mutate_committed_view_state(
 
         with store.catalog.Session() as session:
             state = session.scalar(
-                select(CalendarDeltaEventState).filter_by(
-                    event_id="event-1"
-                )
+                select(CalendarDeltaEventState).filter_by(event_id="event-1")
             )
             if (
                 state is None
                 or state.raw.get("subject") != "Winner"
                 or state.latest_revision != winner.revision
             ):
-                pytest.fail(
-                    "Stale Calendar candidate changed committed view state"
-                )
+                pytest.fail("Stale Calendar candidate changed committed view state")
     finally:
         store.close()
+
 
 def test_reset_attempt_rebaselines_fixed_window_membership(
     tmp_path: Path,

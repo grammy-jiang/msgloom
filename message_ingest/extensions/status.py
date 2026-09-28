@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import ClassVar
 from uuid import uuid4
 
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
+
 from message_ingest.spiders.outlook_mail import OutlookMailSpider
 
 logger = logging.getLogger(__name__)
@@ -24,7 +26,7 @@ class OutlookCrawlStatusExtension:
     committed.
     """
 
-    _mode_by_spider = {
+    _mode_by_spider: ClassVar[dict[str, str]] = {
         "outlook_discover": "discovery",
         "outlook_delta": "delta",
         "outlook_full": "full",

@@ -23,9 +23,7 @@ def source_context_digest(source_id: str) -> bytes:
     if not isinstance(source_id, str) or not source_id.strip():
         raise ValueError("MSGLOOM_SOURCE_ID must not be empty")
     if source_id != source_id.strip():
-        raise ValueError(
-            "MSGLOOM_SOURCE_ID must not contain surrounding whitespace"
-        )
+        raise ValueError("MSGLOOM_SOURCE_ID must not contain surrounding whitespace")
     return hashlib.sha256(_SOURCE_DOMAIN + source_id.encode("utf-8")).digest()
 
 
@@ -33,15 +31,11 @@ def source_catalog_context_digest(source_id: str, database_url: str) -> str:
     """Hash source plus normalized catalog identity for persistent context."""
     source_digest = source_context_digest(source_id)
     catalog_key = _catalog_context_key(database_url)
-    material = (
-        _JOB_DOMAIN + source_digest + b"\0" + catalog_key.encode("utf-8")
-    )
+    material = _JOB_DOMAIN + source_digest + b"\0" + catalog_key.encode("utf-8")
     return hashlib.sha256(material).hexdigest()
 
 
-def ensure_jobdir_context(
-    jobdir: str, source_id: str, database_url: str
-) -> None:
+def ensure_jobdir_context(jobdir: str, source_id: str, database_url: str) -> None:
     """
     Create or verify a private JOBDIR ownership marker before Scheduler opens.
 

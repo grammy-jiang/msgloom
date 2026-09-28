@@ -37,14 +37,18 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
             'Expected: "scrapy.downloadermiddlewares.retry.RetryMiddleware" not in middlewares'
         )
     if (
-        middlewares["message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"]
+        middlewares[
+            "message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"
+        ]
         != 550
     ):
         pytest.fail(
             'Expected: middlewares["message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"] == 550'
         )
     if (
-        middlewares["message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"]
+        middlewares[
+            "message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"
+        ]
         != 555
     ):
         pytest.fail(
@@ -141,9 +145,7 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         pytest.fail('Expected: settings.getint("CONCURRENT_ITEMS") == 1')
     extensions = settings.getdict("EXTENSIONS")
     if (
-        extensions[
-            "message_ingest.acquisition.source_context.SourceContextExtension"
-        ]
+        extensions["message_ingest.acquisition.source_context.SourceContextExtension"]
         != 50
     ):
         pytest.fail("Expected source-context extension priority == 50")
@@ -160,9 +162,7 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         ]
         != 450
     ):
-        pytest.fail(
-            'Expected: Graph integrity extension priority == 450'
-        )
+        pytest.fail("Expected: Graph integrity extension priority == 450")
     if (
         extensions[
             "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"
@@ -173,7 +173,9 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
             'Expected: extensions["message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"] == 500'
         )
     if (
-        extensions["message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"]
+        extensions[
+            "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"
+        ]
         != 525
     ):
         pytest.fail(
@@ -233,9 +235,7 @@ def test_outlook_mail_resource_owns_graph_scope(spider_cls) -> None:
     if crawler.settings.getbool("MS_GRAPH_AUTH_ENABLED") is not True:
         pytest.fail("Expected Outlook Mail spider to enable Graph auth")
     if crawler.settings.getlist("MS_GRAPH_SCOPES") != ["Mail.Read"]:
-        pytest.fail(
-            'Expected Outlook Mail spider to own MS_GRAPH_SCOPES=["Mail.Read"]'
-        )
+        pytest.fail('Expected Outlook Mail spider to own MS_GRAPH_SCOPES=["Mail.Read"]')
 
 
 class NonGraphSpider(Spider):
@@ -264,9 +264,7 @@ def test_command_line_scope_override_wins_over_mail_default() -> None:
         "User.Read",
         "Mail.ReadBasic",
     ]:
-        pytest.fail(
-            "Expected command-line scope setting to override spider default"
-        )
+        pytest.fail("Expected command-line scope setting to override spider default")
 
 
 def test_default_auth_method_is_device_code_and_both_components_are_registered() -> (

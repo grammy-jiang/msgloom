@@ -94,9 +94,7 @@ def test_profile_parse_emits_evidence_before_retaining_profile() -> None:
         next(output)
     if spider.profile != payload:
         pytest.fail("Expected validated Graph profile retained for command output")
-    if spider.crawler.stats.get_value(
-        "msgloom/crawl/profile/retrieved_count"
-    ) != 1:
+    if spider.crawler.stats.get_value("msgloom/crawl/profile/retrieved_count") != 1:
         pytest.fail("Expected one profile retrieval stat")
 
 

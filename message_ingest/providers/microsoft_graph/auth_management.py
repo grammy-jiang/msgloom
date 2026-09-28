@@ -77,13 +77,19 @@ def inspect_auth_status(settings: BaseSettings) -> MicrosoftAuthStatus:
     if mode == "unconfigured":
         remediation.extend(
             (
-                "Development: set MSGLOOM_MS_CLIENT_ID to the documented "
-                "Microsoft Graph Command Line Tools development client ID.",
-                "Production: use the msgloom-managed Microsoft application "
-                "when available, or configure your own Entra public-client "
-                "application ID.",
-                "Run 'scrapy microsoft auth status' after changing the "
-                "configuration.",
+                (
+                    "Development: set MSGLOOM_MS_CLIENT_ID to the documented "
+                    "Microsoft Graph Command Line Tools development client ID."
+                ),
+                (
+                    "Production: use the msgloom-managed Microsoft application "
+                    "when available, or configure your own Entra public-client "
+                    "application ID."
+                ),
+                (
+                    "Run 'scrapy microsoft auth status' after changing the "
+                    "configuration."
+                ),
             )
         )
     elif mode == "development":
@@ -101,7 +107,7 @@ def inspect_auth_status(settings: BaseSettings) -> MicrosoftAuthStatus:
             cache_mode = oct(cache_path.stat().st_mode & 0o777)
             payload = json.loads(cache_path.read_text(encoding="utf-8"))
             if not isinstance(payload, dict):
-                raise ValueError("cache root is not an object")
+                raise TypeError("cache root is not an object")
             cache_valid = True
             cached_account_count = _mapping_count(payload.get("Account"))
             for section in ("AccessToken", "RefreshToken", "AppMetadata"):
@@ -227,9 +233,7 @@ def _collect_scopes(raw: Any, target: set[str]) -> None:
     if not isinstance(raw, str):
         return
     target.update(
-        scope
-        for scope in raw.split()
-        if scope and scope.lower() not in _OIDC_SCOPES
+        scope for scope in raw.split() if scope and scope.lower() not in _OIDC_SCOPES
     )
 
 

@@ -63,16 +63,12 @@ class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         """Reject JOBDIR until Calendar resume semantics are tested."""
         if crawler.settings.get("JOBDIR"):
-            raise ValueError(
-                "Calendar discovery does not support JOBDIR yet"
-            )
+            raise ValueError("Calendar discovery does not support JOBDIR yet")
         return super().from_crawler(crawler, *args, **kwargs)
 
     async def start(self) -> AsyncIterator[Any]:
         """Schedule the first visible-calendar inventory page."""
-        self.crawler.stats.set_value(
-            "msgloom/crawl/mode", "calendar_discover"
-        )
+        self.crawler.stats.set_value("msgloom/crawl/mode", "calendar_discover")
         self.crawler.stats.set_value(
             "msgloom/crawl/calendar/inventory_exhausted",
             False,
@@ -97,23 +93,19 @@ class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
         yield evidence
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Calendar inventory response must be a JSON object")
+            raise TypeError("Calendar inventory response must be a JSON object")
         values = payload.get("value")
         if not isinstance(values, list):
-            raise ValueError("Calendar inventory must contain a value list")
+            raise TypeError("Calendar inventory must contain a value list")
 
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/inventory_page_count"
-        )
+        self.crawler.stats.inc_value("msgloom/crawl/calendar/inventory_page_count")
         for calendar in values:
             if not isinstance(calendar, dict):
-                raise ValueError("Calendar inventory entry must be a JSON object")
+                raise TypeError("Calendar inventory entry must be a JSON object")
             calendar_id = calendar.get("id")
             if not isinstance(calendar_id, str) or not calendar_id:
                 raise ValueError("Calendar inventory entry requires a non-empty id")
-            self.crawler.stats.inc_value(
-                "msgloom/crawl/calendar/calendar_count"
-            )
+            self.crawler.stats.inc_value("msgloom/crawl/calendar/calendar_count")
             yield OutlookCalendarItem(
                 calendar_id=calendar_id,
                 raw=calendar,

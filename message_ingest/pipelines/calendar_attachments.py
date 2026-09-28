@@ -64,9 +64,7 @@ class CalendarAttachmentStore:
                     size=None,
                     is_inline=None,
                     content_bytes_present=item.content_bytes_present,
-                    content_status=self._initial_content_status(
-                        item.attachment_type
-                    ),
+                    content_status=self._initial_content_status(item.attachment_type),
                     content_observed_at=None,
                     content_evidence_id=None,
                     latest_observed_at=item.observed_at,
@@ -82,9 +80,7 @@ class CalendarAttachmentStore:
             record.content_type = self._string(raw.get("contentType"))
             size = raw.get("size")
             record.size = (
-                size
-                if isinstance(size, int) and not isinstance(size, bool)
-                else None
+                size if isinstance(size, int) and not isinstance(size, bool) else None
             )
             record.is_inline = self._bool(raw.get("isInline"))
             record.content_bytes_present = item.content_bytes_present
@@ -113,12 +109,9 @@ class CalendarAttachmentStore:
                 raise RuntimeError(
                     "Calendar attachment content arrived before metadata"
                 )
-            if (
-                record.content_observed_at is not None
-                and self._is_older_capture(
-                    item.observed_at,
-                    record.content_observed_at,
-                )
+            if record.content_observed_at is not None and self._is_older_capture(
+                item.observed_at,
+                record.content_observed_at,
             ):
                 return "stale"
             previous_evidence = record.content_evidence_id
@@ -152,7 +145,7 @@ class CalendarAttachmentStore:
 
     @staticmethod
     def _capture_time(value: str) -> datetime:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value)
         if parsed.tzinfo is None or parsed.utcoffset() is None:
             raise ValueError(
                 "Calendar attachment observed_at must include a timezone offset"

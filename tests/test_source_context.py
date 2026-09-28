@@ -83,7 +83,9 @@ def test_fresh_jobdir_gets_private_source_context_marker(tmp_path: Path) -> None
     ensure_jobdir_context(str(jobdir), "source-1", database_url)
 
     marker = jobdir / ".msgloom-source-context-v1"
-    if marker.read_text().strip() != source_catalog_context_digest("source-1", database_url):
+    if marker.read_text().strip() != source_catalog_context_digest(
+        "source-1", database_url
+    ):
         pytest.fail("Expected JOBDIR marker to contain only context digest")
     if marker.stat().st_mode & 0o777 != 0o600:
         pytest.fail("Expected JOBDIR context marker mode 0600")
@@ -119,7 +121,9 @@ def test_legacy_nonempty_jobdir_without_marker_is_rejected(tmp_path: Path) -> No
         )
 
 
-def test_source_context_extension_validates_before_scheduler_use(tmp_path: Path) -> None:
+def test_source_context_extension_validates_before_scheduler_use(
+    tmp_path: Path,
+) -> None:
     jobdir = tmp_path / "job"
     crawler = _crawler(tmp_path, source_id="source-1", jobdir=str(jobdir))
 
@@ -131,7 +135,9 @@ def test_source_context_extension_validates_before_scheduler_use(tmp_path: Path)
         pytest.fail("Expected JOBDIR context verification stat")
 
 
-def test_context_digest_is_domain_separated_from_plain_source_hash(tmp_path: Path) -> None:
+def test_context_digest_is_domain_separated_from_plain_source_hash(
+    tmp_path: Path,
+) -> None:
     database_url = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
     digest = source_catalog_context_digest("source-1", database_url)
     plain = hashlib.sha256(b"source-1").hexdigest()
@@ -173,7 +179,6 @@ def test_source_context_rejects_surrounding_whitespace(tmp_path: Path) -> None:
         )
 
 
-
 @pytest.mark.parametrize("change", ["source", "catalog"])
 def test_real_cli_rejects_jobdir_from_other_context_before_download(
     tmp_path: Path,
@@ -185,9 +190,7 @@ def test_real_cli_rejects_jobdir_from_other_context_before_download(
 
     source_id = "source-two" if change == "source" else "source-one"
     database_url = (
-        f"sqlite:///{tmp_path / 'two.sqlite3'}"
-        if change == "catalog"
-        else first_db
+        f"sqlite:///{tmp_path / 'two.sqlite3'}" if change == "catalog" else first_db
     )
     result = subprocess.run(
         [
@@ -224,7 +227,6 @@ def test_real_cli_rejects_jobdir_from_other_context_before_download(
         pytest.fail("Expected JOBDIR rejection before any downloader request")
 
 
-
 def test_sqlite_tilde_path_does_not_alias_expanded_home_path(
     tmp_path: Path,
 ) -> None:
@@ -241,7 +243,6 @@ def test_sqlite_tilde_path_does_not_alias_expanded_home_path(
         pytest.fail(
             "Expected source context to follow SQLAlchemy literal-tilde path semantics"
         )
-
 
 
 def test_native_filesystem_cache_does_not_cross_graph_sources(

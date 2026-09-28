@@ -31,12 +31,8 @@ class MicrosoftGraphLogPrivacyExtension:
     def from_crawler(cls, crawler):
         """Enable Graph privacy filtering independently of status reporting."""
         extension = cls(crawler)
-        crawler.signals.connect(
-            extension.spider_opened, signal=signals.spider_opened
-        )
-        crawler.signals.connect(
-            extension.engine_stopped, signal=signals.engine_stopped
-        )
+        crawler.signals.connect(extension.spider_opened, signal=signals.spider_opened)
+        crawler.signals.connect(extension.engine_stopped, signal=signals.engine_stopped)
         return extension
 
     def spider_opened(self, spider) -> None:

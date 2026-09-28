@@ -51,9 +51,6 @@ def _close(crawler) -> None:
 def test_concurrent_catalogs_serialize_same_identity_first_bind(
     tmp_path: Path,
 ) -> None:
-    from queue import Queue
-    from threading import Barrier, Thread
-
     one = _crawler(tmp_path)
     two = _crawler(tmp_path)
     services = [
@@ -67,7 +64,7 @@ def test_concurrent_catalogs_serialize_same_identity_first_bind(
         barrier.wait()
         try:
             results.put(service.bind_or_verify(_identity()))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - thread outcome under test
             results.put(exc)
 
     threads = [Thread(target=bind, args=(service,)) for service in services]
@@ -89,9 +86,6 @@ def test_concurrent_catalogs_serialize_same_identity_first_bind(
 def test_concurrent_catalogs_fail_closed_for_different_first_identities(
     tmp_path: Path,
 ) -> None:
-    from queue import Queue
-    from threading import Barrier, Thread
-
     one = _crawler(tmp_path)
     two = _crawler(tmp_path)
     services = [
@@ -106,7 +100,7 @@ def test_concurrent_catalogs_fail_closed_for_different_first_identities(
         barrier.wait()
         try:
             results.put(service.bind_or_verify(identity))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - thread outcome under test
             results.put(exc)
 
     threads = [
@@ -226,7 +220,9 @@ def test_upgrade_adds_binding_table_without_changing_legacy_rows(
     Base.metadata.create_all(engine, tables=legacy_tables)
     with engine.begin() as connection:
         connection.execute(
-            Base.metadata.tables["messages"].insert().values(
+            Base.metadata.tables["messages"]
+            .insert()
+            .values(
                 source_id="legacy-source",
                 message_id="m1",
                 is_removed=False,

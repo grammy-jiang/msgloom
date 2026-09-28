@@ -6,8 +6,8 @@ import asyncio
 from pathlib import Path
 
 import pytest
-from sqlalchemy import select
 from scrapy.utils.test import get_crawler
+from sqlalchemy import select
 
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
@@ -106,9 +106,7 @@ def test_delta_observation_is_scoped_and_replay_safe(tmp_path: Path) -> None:
             or row.end_datetime != END
         ):
             pytest.fail(f"Unexpected persisted Calendar delta row: {row!r}")
-    if crawler.stats.get_value(
-        "msgloom/calendar/delta_observation_replay_count"
-    ) != 1:
+    if crawler.stats.get_value("msgloom/calendar/delta_observation_replay_count") != 1:
         pytest.fail("Expected Calendar delta replay counter")
     service.close()
 
@@ -186,7 +184,5 @@ def test_scoped_removal_does_not_claim_global_event_deletion(
     with service.catalog.Session() as session:
         current = session.scalar(select(CalendarEventRecord))
         if current is None or current.is_removed is not False:
-            pytest.fail(
-                "Scoped Calendar delta removal must not imply global deletion"
-            )
+            pytest.fail("Scoped Calendar delta removal must not imply global deletion")
     service.close()

@@ -94,8 +94,7 @@ def calendar_delta_server():
                             },
                         ],
                         "@odata.deltaLink": (
-                            f"{graph_root}/me/calendarView/delta?"
-                            "$deltatoken=round2"
+                            f"{graph_root}/me/calendarView/delta?$deltatoken=round2"
                         ),
                     }
                 )
@@ -126,8 +125,7 @@ def calendar_delta_server():
                             }
                         ],
                         "@odata.deltaLink": (
-                            f"{graph_root}/me/calendarView/delta?"
-                            "$deltatoken=round1"
+                            f"{graph_root}/me/calendarView/delta?$deltatoken=round1"
                         ),
                     }
                 )
@@ -160,8 +158,7 @@ def calendar_delta_server():
                         }
                     ],
                     "@odata.nextLink": (
-                        f"{graph_root}/me/calendarView/delta?"
-                        "$skiptoken=page2"
+                        f"{graph_root}/me/calendarView/delta?$skiptoken=page2"
                     ),
                 }
             )
@@ -247,10 +244,14 @@ def test_calendar_delta_initial_then_incremental_round(
     if second.returncode != 0:
         pytest.fail(second.stderr)
     if "ERROR" in second.stderr:
-        pytest.fail(f"Expected successful second Calendar delta round:\n{second.stderr}")
+        pytest.fail(
+            f"Expected successful second Calendar delta round:\n{second.stderr}"
+        )
 
     if len(requests_seen) != 3:
-        pytest.fail(f"Expected three Graph requests across two rounds: {requests_seen!r}")
+        pytest.fail(
+            f"Expected three Graph requests across two rounds: {requests_seen!r}"
+        )
     first_query = parse_qs(urlsplit(requests_seen[0]).query)
     if first_query.get("startDateTime") != [START]:
         pytest.fail("Expected initial Calendar delta fixed-window request")
@@ -277,14 +278,11 @@ def test_calendar_delta_initial_then_incremental_round(
 
             view_state = {
                 row.event_id: row
-                for row in session.scalars(
-                    select(CalendarDeltaEventState)
-                ).all()
+                for row in session.scalars(select(CalendarDeltaEventState)).all()
             }
             if (
                 view_state["event-1"].is_present is not True
-                or view_state["event-1"].raw.get("subject")
-                != "Meeting moved"
+                or view_state["event-1"].raw.get("subject") != "Meeting moved"
                 or view_state["event-1"].latest_revision != 2
             ):
                 pytest.fail("Expected committed current state for event-1")
@@ -310,9 +308,7 @@ def test_calendar_delta_initial_then_incremental_round(
             if current["event-1"].subject != "Meeting moved":
                 pytest.fail("Expected incremental Calendar event update")
             if current["event-2"].is_removed is not False:
-                pytest.fail(
-                    "Scoped delta removal must not claim global event deletion"
-                )
+                pytest.fail("Scoped delta removal must not claim global event deletion")
 
             raw_count = session.scalar(
                 select(func.count()).select_from(RawHttpEvidence)

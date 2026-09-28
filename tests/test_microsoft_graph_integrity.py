@@ -96,7 +96,10 @@ def test_non_graph_spider_is_ignored() -> None:
 
     extension.spider_error(spider=spider)
 
-    if crawler.stats.get_value(
-        "msgloom/crawl/integrity_failure_reason_count/spider_error"
-    ) is not None:
+    if (
+        crawler.stats.get_value(
+            "msgloom/crawl/integrity_failure_reason_count/spider_error"
+        )
+        is not None
+    ):
         pytest.fail("Expected non-Graph spider to be ignored")

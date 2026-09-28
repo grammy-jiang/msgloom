@@ -12,6 +12,8 @@ from scrapy.exceptions import UsageError
 
 from message_ingest.commands.microsoft import (
     Command as MicrosoftCommand,
+)
+from message_ingest.commands.microsoft import (
     _aware_datetime,
 )
 
@@ -82,9 +84,7 @@ def _run(opts: argparse.Namespace) -> FakeCrawlerProcess:
 
 def test_calendar_discover_maps_page_size() -> None:
     process = _run(_opts(action="discover", page_size=250))
-    if process.calls != [
-        ("outlook_calendar_discover", {"page_size": "250"})
-    ]:
+    if process.calls != [("outlook_calendar_discover", {"page_size": "250"})]:
         pytest.fail(f"Unexpected calendar discover mapping: {process.calls!r}")
 
 

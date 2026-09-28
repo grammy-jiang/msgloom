@@ -73,12 +73,10 @@ class MicrosoftProfileSpider(MicrosoftGraphSpider):
 
         payload = response.json()
         if not isinstance(payload, dict):
-            raise ValueError("Microsoft profile response must be a JSON object")
+            raise TypeError("Microsoft profile response must be a JSON object")
         user_id = payload.get("id")
         if not isinstance(user_id, str) or not user_id:
-            raise ValueError(
-                "Microsoft profile response must contain a non-empty id"
-            )
+            raise ValueError("Microsoft profile response must contain a non-empty id")
 
         self.profile = payload
         self.crawler.stats.inc_value("msgloom/crawl/profile/retrieved_count")

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import pickle
-from typing import cast
+from typing import ClassVar, cast
 
 import pytest
 from scrapy import Spider
@@ -268,7 +268,7 @@ def test_catalog_disabled_auth_can_respect_external_authorization(tmp_path) -> N
 
 def test_catalog_backed_auth_replaces_unverified_authorization_header() -> None:
     class FakeSession:
-        scopes = ["Mail.Read"]
+        scopes: ClassVar[list[str]] = ["Mail.Read"]
         source_identity = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
@@ -307,9 +307,7 @@ def test_external_authorization_401_forces_refresh_on_first_session_token(
             return [account]
 
         @staticmethod
-        def acquire_token_silent_with_error(
-            scopes, account, force_refresh=False
-        ):
+        def acquire_token_silent_with_error(scopes, account, force_refresh=False):
             force_values.append(force_refresh)
             token = "fresh-token" if force_refresh else "cached-rejected"
             return {"access_token": token, "expires_in": 3600}
@@ -334,7 +332,6 @@ def test_external_authorization_401_forces_refresh_on_first_session_token(
         pytest.fail("Expected retry to use the forced-refresh token")
 
 
-
 def test_transport_retry_does_not_serialize_bearer_token() -> None:
     from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
 
@@ -346,7 +343,7 @@ def test_transport_retry_does_not_serialize_bearer_token() -> None:
     crawler.spider = spider
 
     class FakeSession:
-        scopes = ["Mail.Read"]
+        scopes: ClassVar[list[str]] = ["Mail.Read"]
         source_identity = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
@@ -378,12 +375,7 @@ def test_transport_retry_does_not_serialize_bearer_token() -> None:
     serialized = pickle.dumps(retry_request.to_dict(spider=spider))
     if b"transport-secret-token" in serialized:
         pytest.fail("Expected JOBDIR-serializable retry not to contain bearer token")
-    if (
-        crawler.stats.get_value(
-            "msgloom/auth/credential_stripped_exception_count"
-        )
-        != 1
-    ):
+    if crawler.stats.get_value("msgloom/auth/credential_stripped_exception_count") != 1:
         pytest.fail("Expected auth exception cleanup counter")
 
 
@@ -395,7 +387,7 @@ def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
     crawler.spider = spider
 
     class FakeSession:
-        scopes = ["Mail.Read"]
+        scopes: ClassVar[list[str]] = ["Mail.Read"]
         source_identity = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
@@ -417,9 +409,7 @@ def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
     response = Response(
         original.url,
         status=302,
-        headers={
-            "Location": "http://graph.microsoft.com/v1.0/me/messages"
-        },
+        headers={"Location": "http://graph.microsoft.com/v1.0/me/messages"},
         request=original,
     )
     auth.process_response(original, response)
@@ -432,8 +422,5 @@ def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
 
     if downgraded.headers.get("Authorization") is not None:
         pytest.fail("Expected downgraded Graph redirect to contain no bearer token")
-    if (
-        crawler.stats.get_value("msgloom/auth/insecure_scheme_blocked_count")
-        != 1
-    ):
+    if crawler.stats.get_value("msgloom/auth/insecure_scheme_blocked_count") != 1:
         pytest.fail("Expected insecure Graph scheme to be counted")
