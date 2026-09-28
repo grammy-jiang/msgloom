@@ -8,7 +8,7 @@ from scrapy.exceptions import NotConfigured
 
 from message_ingest.acquisition.contracts import EvidenceLinkedItem
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
 
 
 class EvidenceLinkPipeline:

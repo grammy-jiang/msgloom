@@ -8,7 +8,8 @@ from __future__ import annotations
 import pytest
 from scrapy import Spider
 
-from message_ingest.items import OutlookMailItem, RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.logformatter import MessageIngestLogFormatter
 
 

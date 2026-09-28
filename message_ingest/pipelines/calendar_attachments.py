@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import select
 
 from message_ingest.catalog import CalendarEventAttachmentRecord, CalendarEventRecord
-from message_ingest.items import (
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
 )

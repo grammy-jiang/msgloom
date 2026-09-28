@@ -50,7 +50,7 @@ OutlookCalendarDeltaSpider.from_crawler = classmethod(factory)
 FAILURE_SETUP = r"""
 import asyncio
 from scrapy.exceptions import DropItem
-from message_ingest.items import OutlookCalendarEventItem
+from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarEventItem
 from message_ingest.pipelines.calendar import CalendarPipeline
 
 original_process = CalendarPipeline.process_item

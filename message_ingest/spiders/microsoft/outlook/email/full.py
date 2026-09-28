@@ -11,7 +11,10 @@ from scrapy.http import Response, TextResponse
 from twisted.python.failure import Failure
 
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import OutlookMailDetailItem, OutlookMessageSurfaceItem
+from message_ingest.items.microsoft.outlook.email import (
+    OutlookMailDetailItem,
+    OutlookMessageSurfaceItem,
+)
 from message_ingest.profiles import (
     FULL_V1,
     attachment_required_surfaces,

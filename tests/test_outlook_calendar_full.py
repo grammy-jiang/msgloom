@@ -11,11 +11,11 @@ from scrapy import Request
 from scrapy.http import Response, TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.items import (
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventItem,
-    RawHttpEvidenceItem,
 )
 from message_ingest.spiders.microsoft.outlook.calendar.full import (
     OutlookCalendarFullSpider,

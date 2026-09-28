@@ -9,7 +9,7 @@ from scrapy.exceptions import NotConfigured
 
 from message_ingest.checkpoints import OutlookDeltaCheckpointStore
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import (
+from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailDetailItem,

@@ -21,7 +21,8 @@ from message_ingest.catalog import (
     RawHttpEvidence,
 )
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import OutlookMailItem, RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
 
@@ -218,8 +219,8 @@ def test_raw_link_and_catalog_pipelines_preserve_canonical_evidence(
 
 
 def test_evidence_link_contract_covers_current_semantic_item_types() -> None:
-    from message_ingest.items import (
-        AcquisitionFailureItem,
+    from message_ingest.items.acquisition import AcquisitionFailureItem
+    from message_ingest.items.microsoft.outlook.email import (
         OutlookAttachmentItem,
         OutlookDeltaCheckpointCandidateItem,
         OutlookMailDetailItem,

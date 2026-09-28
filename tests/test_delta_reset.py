@@ -13,7 +13,7 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
-from message_ingest.items import AcquisitionFailureItem
+from message_ingest.items.acquisition import AcquisitionFailureItem
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 
 

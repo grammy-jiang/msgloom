@@ -9,8 +9,11 @@ from typing import Any
 
 from scrapy.logformatter import LogFormatter, LogFormatterResult
 
-from message_ingest.items import (
+from message_ingest.items.acquisition import (
     AcquisitionFailureItem,
+    RawHttpEvidenceItem,
+)
+from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailDetailItem,
@@ -18,7 +21,6 @@ from message_ingest.items import (
     OutlookMailItem,
     OutlookMailRemovalItem,
     OutlookMessageSurfaceItem,
-    RawHttpEvidenceItem,
 )
 
 

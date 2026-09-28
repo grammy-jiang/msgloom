@@ -8,7 +8,7 @@ from urllib.parse import quote, urlencode
 import scrapy
 from scrapy.http import TextResponse
 
-from message_ingest.items import OutlookMailFolderItem
+from message_ingest.items.microsoft.outlook.email import OutlookMailFolderItem
 
 from ._base import OutlookMailSpider
 

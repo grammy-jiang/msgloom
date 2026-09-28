@@ -14,7 +14,10 @@ from scrapy.settings import BaseSettings
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.python.failure import Failure
 
-from message_ingest.items import AcquisitionFailureItem, RawHttpEvidenceItem
+from message_ingest.items.acquisition import (
+    AcquisitionFailureItem,
+    RawHttpEvidenceItem,
+)
 from microsoft_graph import GRAPH_HOST, GRAPH_ROOT
 
 

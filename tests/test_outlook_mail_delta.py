@@ -20,8 +20,8 @@ from twisted.python.failure import Failure
 from message_ingest.checkpoints import OutlookDeltaCheckpointStore
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.extensions.delta_checkpoint import OutlookDeltaCheckpointExtension
-from message_ingest.items import (
-    AcquisitionFailureItem,
+from message_ingest.items.acquisition import AcquisitionFailureItem
+from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailFolderItem,
     OutlookMailItem,

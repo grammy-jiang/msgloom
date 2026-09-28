@@ -17,7 +17,7 @@ import message_ingest.settings as project_settings
 from message_ingest.acquisition.contracts import EvidenceLinkedItem
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
 from message_ingest.pipelines.evidence import RawEvidencePipeline
 
 
@@ -171,7 +171,7 @@ from scrapy import Request, Spider
 from scrapy.crawler import CrawlerProcess
 
 import message_ingest.settings as project_settings
-from message_ingest.items import RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
 
 
 @dataclass(slots=True)

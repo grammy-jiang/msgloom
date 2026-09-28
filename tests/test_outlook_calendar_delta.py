@@ -16,12 +16,14 @@ from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
 from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
-from message_ingest.items import (
+from message_ingest.items.acquisition import (
     AcquisitionFailureItem,
+    RawHttpEvidenceItem,
+)
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaCheckpointCandidateItem,
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
-    RawHttpEvidenceItem,
 )
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,

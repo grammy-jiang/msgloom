@@ -16,10 +16,10 @@ from message_ingest.catalog import (
     CalendarRecord,
 )
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import (
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventItem,
     OutlookCalendarItem,
-    RawHttpEvidenceItem,
 )
 from message_ingest.pipelines.calendar import CalendarPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline

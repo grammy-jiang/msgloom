@@ -13,7 +13,8 @@ from scrapy.http import TextResponse
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
-from message_ingest.items import OutlookCalendarEventItem, RawHttpEvidenceItem
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarEventItem
 from message_ingest.spiders.microsoft.outlook.calendar.window import (
     OutlookCalendarWindowSpider,
 )

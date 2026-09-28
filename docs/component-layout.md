@@ -29,6 +29,9 @@ remains `msgloom`.
 | `message_ingest/middlewares/microsoft_graph/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
 | `message_ingest/extensions/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
 | `message_ingest/extensions/microsoft_graph/privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
+| `message_ingest/items/acquisition.py` | Define provider-independent raw-evidence and exhausted-acquisition failure items. |
+| `message_ingest/items/microsoft/outlook/email.py` | Define Outlook Mail discovery, enrichment, attachment, removal, surface, and delta-candidate items. |
+| `message_ingest/items/microsoft/outlook/calendar.py` | Define Calendar inventory, event, attachment, delta-observation, and checkpoint-candidate items. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
 | `message_ingest/acquisition/contracts.py` | Define provider-independent structural contracts for evidence-linked items. |
 | `message_ingest/acquisition/source_identity.py` | Bind logical sources to hashed opaque provider identities. |

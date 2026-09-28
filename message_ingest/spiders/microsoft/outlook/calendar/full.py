@@ -10,7 +10,7 @@ import scrapy
 from scrapy.http import Response, TextResponse
 from scrapy.settings import BaseSettings
 
-from message_ingest.items import (
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventItem,

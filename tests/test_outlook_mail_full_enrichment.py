@@ -13,7 +13,7 @@ import pytest
 from scrapy.http import Request, TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.items import (
+from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookMailDetailItem,
     OutlookMessageSurfaceItem,

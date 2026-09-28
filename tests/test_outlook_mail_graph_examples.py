@@ -14,7 +14,7 @@ import pytest
 from scrapy.http import Request, TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.items import OutlookMailItem
+from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )

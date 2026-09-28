@@ -7,7 +7,7 @@ from typing import Any, ClassVar
 
 import scrapy
 
-from message_ingest.items import OutlookMailItem
+from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 

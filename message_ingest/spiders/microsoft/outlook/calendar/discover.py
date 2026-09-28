@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
-from message_ingest.items import OutlookCalendarItem
+from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarItem
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 

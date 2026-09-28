@@ -14,12 +14,12 @@ from sqlalchemy import select
 
 from message_ingest.catalog import MessageObservation, MessageRecord, MessageSurface
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import (
+from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.microsoft.outlook.email import (
     OutlookMailDetailItem,
     OutlookMailItem,
     OutlookMailRemovalItem,
     OutlookMessageSurfaceItem,
-    RawHttpEvidenceItem,
 )
 from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
@@ -269,7 +269,7 @@ def test_folder_delta_removal_does_not_imply_global_message_deletion(
 
 def test_catalog_pipeline_persists_attachment_metadata(tmp_path: Path) -> None:
     from message_ingest.catalog import AttachmentRecord
-    from message_ingest.items import OutlookAttachmentItem
+    from message_ingest.items.microsoft.outlook.email import OutlookAttachmentItem
 
     db_url = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
     crawler = get_crawler(

@@ -17,7 +17,7 @@ from message_ingest.catalog import (
     CalendarRecord,
 )
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.items import (
+from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
     OutlookCalendarDeltaCheckpointCandidateItem,
