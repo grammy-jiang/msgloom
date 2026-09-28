@@ -16,6 +16,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaCheckpointCandidateItem,
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
+    OutlookCalendarEventSurfaceItem,
     OutlookCalendarItem,
 )
 from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
@@ -72,6 +73,24 @@ class OutlookCalendarPipeline:
         if isinstance(item, OutlookCalendarAttachmentContentItem):
             outcome = await self._write(self.store.persist_attachment_content, item)
             self._outcome("attachment_content", outcome)
+            return item
+        if isinstance(item, OutlookCalendarEventSurfaceItem):
+            async with self._write_lock:
+                await asyncio.to_thread(
+                    self.store.set_event_surface,
+                    event_id=item.event_id,
+                    surface=item.surface,
+                    status=item.status,
+                    evidence_id=item.evidence_id,
+                    observed_at=item.observed_at,
+                    profile_version=item.profile_version,
+                    resource_version=item.resource_version,
+                )
+            surface_kind = item.surface.split(":", maxsplit=1)[0]
+            self._inc(
+                "msgloom/calendar/surface_item_processed_count/"
+                f"{surface_kind}/{item.status}"
+            )
             return item
         if isinstance(item, OutlookCalendarDeltaObservationItem):
             outcome = await self._write(self.store.persist_delta_observation, item)

@@ -265,6 +265,8 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         if not surface_is_complete(surfaces, "attachments"):
             yield self._attachments_request(message_id, page_number=1)
             return
+        if surfaces["attachments"]["status"] != "acquired":
+            return
 
         for attachment in state["attachments"]:
             attachment_id = attachment["attachment_id"]

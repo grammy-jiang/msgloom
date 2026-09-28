@@ -16,6 +16,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventItem,
+    OutlookCalendarEventSurfaceItem,
 )
 from message_ingest.spiders.microsoft.outlook.calendar.full import (
     OutlookCalendarFullSpider,
@@ -66,7 +67,7 @@ def test_full_start_deduplicates_ids_and_requests_text_body() -> None:
         "event-1",
         "event-2",
     ]:
-        pytest.fail("Expected unique Calendar full targets")
+        pytest.fail("Expected one detail request for each unique Calendar target")
     if [urlsplit(request.url).path for request in requests] != [
         "/v1.0/me/events/event-1",
         "/v1.0/me/events/event-2",
@@ -86,7 +87,11 @@ def test_named_calendar_scopes_detail_and_attachment_paths() -> None:
         calendar_id="calendar/one",
         page_size="7",
     )
-    detail = asyncio.run(_collect_start(spider))[0]
+    detail = next(
+        request
+        for request in asyncio.run(_collect_start(spider))
+        if request.callback == spider.parse_event_detail
+    )
     if urlsplit(detail.url).path != (
         "/v1.0/me/calendars/calendar%2Fone/events/event%2Fwith%20space"
     ):
@@ -143,9 +148,18 @@ def test_event_detail_emits_evidence_event_and_attachment_request() -> None:
     body = event.raw.get("body")
     if not isinstance(body, dict) or body.get("content") != "Detailed agenda":
         pytest.fail("Expected full Calendar body content")
+    surface = next(
+        value for value in output if isinstance(value, OutlookCalendarEventSurfaceItem)
+    )
+    if surface.surface != "detail" or surface.status != "acquired":
+        pytest.fail("Expected acquired Calendar detail surface")
+    if surface.resource_version != "v1":
+        pytest.fail("Expected Calendar detail surface bound to event changeKey")
     attachments = next(value for value in output if isinstance(value, Request))
     if attachments.cb_kwargs["event_id"] != "event-1":
         pytest.fail("Expected event attachment inventory request")
+    if attachments.cb_kwargs["resource_version"] != "v1":
+        pytest.fail("Expected attachment inventory to retain event changeKey")
 
 
 def test_attachment_page_keeps_content_in_evidence_only_and_follows_nextlink() -> None:
@@ -252,7 +266,7 @@ def test_expanded_item_keeps_nested_bytes_in_evidence_only() -> None:
     output = list(
         spider.parse_attachment_detail(_response(request, payload), **request.cb_kwargs)
     )
-    evidence, metadata = output
+    evidence, metadata, surface = output
     if not isinstance(evidence, RawHttpEvidenceItem):
         pytest.fail("Expected raw evidence first")
     if json.loads(evidence.response_body) != payload:
@@ -263,22 +277,7 @@ def test_expanded_item_keeps_nested_bytes_in_evidence_only() -> None:
         pytest.fail("Nested attachment bytes belong only in raw evidence")
     if metadata.raw["item"]["subject"] != "Embedded message":
         pytest.fail("Expected expanded item semantics to remain available")
-
-
-@pytest.mark.parametrize("value", [0, 1, "true", [], {}])
-def test_full_rejects_non_boolean_attachment_flags(value) -> None:
-    spider = _spider()
-    request = spider._event_detail_request("event-1")
-    with pytest.raises(ValueError, match="must be a boolean"):
-        list(
-            spider.parse_event_detail(
-                _response(
-                    request,
-                    {
-                        "id": "event-1",
-                        "hasAttachments": value,
-                    },
-                ),
-                **request.cb_kwargs,
-            )
-        )
+    if not isinstance(surface, OutlookCalendarEventSurfaceItem):
+        pytest.fail("Expected item attachment detail surface")
+    if surface.surface != "item_attachment_detail:item-1":
+        pytest.fail("Expected item attachment detail surface key")

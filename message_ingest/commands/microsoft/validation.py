@@ -26,6 +26,7 @@ def reject_options(opts: argparse.Namespace, *, allowed: set[str]) -> None:
         "reconcile": opts.reconcile,
         "operation": opts.operation,
         "acquisition_profile": opts.acquisition_profile,
+        "max_enrich": getattr(opts, "max_enrich", None),
         "start": opts.start,
         "end": opts.end,
         "calendar": opts.calendar,

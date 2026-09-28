@@ -90,6 +90,7 @@ def _opts(
         max_pages=max_pages,
         reconcile=reconcile,
         operation=operation,
+        max_enrich=None,
         acquisition_profile=acquisition_profile,
         start=None,
         end=None,
@@ -249,3 +250,22 @@ def test_identity_gate_failure_uses_microsoft_namespace(tmp_path: Path) -> None:
         )
     if "source_identity_failed" not in result.stderr:
         pytest.fail("Expected source identity failure close reason")
+
+
+def test_mail_sync_dispatches_user_level_workflow(monkeypatch) -> None:
+    calls = []
+
+    def fake_sync(command, opts) -> None:
+        calls.append((command, opts.page_size, opts.reconcile, opts.max_enrich))
+
+    import message_ingest.commands.microsoft.outlook.mail as mail_command
+
+    monkeypatch.setattr(mail_command, "run_mail_sync", fake_sync)
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+    opts = _opts(action="sync", page_size=40, reconcile=False)
+    opts.max_enrich = 12
+    command.run([], opts)
+
+    if len(calls) != 1 or calls[0][1:] != (40, False, 12):
+        pytest.fail(f"Unexpected Mail sync dispatch: {calls!r}")

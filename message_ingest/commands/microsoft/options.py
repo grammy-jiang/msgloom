@@ -6,7 +6,12 @@ import argparse
 from datetime import datetime
 from typing import Any
 
-from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
+from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
+    FULL_V1 as CALENDAR_FULL_V1,
+)
+from message_ingest.acquisition.microsoft.outlook.email.profile import (
+    FULL_V1 as MAIL_FULL_V1,
+)
 from message_ingest.commands._common import non_negative_int, page_size
 
 
@@ -94,14 +99,23 @@ def add_microsoft_options(command: Any, parser: argparse.ArgumentParser) -> None
         "--operation",
         choices=("enrich", "refresh"),
         default=None,
-        help="Mail full acquisition operation",
+        help="resource-specific full acquisition operation",
     )
     parser.add_argument(
         "--acquisition-profile",
         dest="acquisition_profile",
-        choices=(FULL_V1,),
+        choices=(MAIL_FULL_V1, CALENDAR_FULL_V1),
         default=None,
-        help="Mail full acquisition profile",
+        help="resource-specific full acquisition profile",
+    )
+    parser.add_argument(
+        "--max-enrich",
+        type=non_negative_int,
+        default=None,
+        metavar="N",
+        help=(
+            "limit planner-selected enrichment backlog; 0 or omitted means unlimited"
+        ),
     )
     parser.add_argument(
         "--start",

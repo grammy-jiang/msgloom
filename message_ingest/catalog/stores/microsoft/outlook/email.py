@@ -219,6 +219,37 @@ class OutlookMailStore:
             record.latest_observed_at = observed_at
             record.latest_evidence_id = evidence_id
 
+    def list_message_ids(
+        self,
+        *,
+        run_ids=None,
+        observation_kinds=None,
+    ) -> list[str]:
+        """Return current message IDs, optionally scoped to crawl observations."""
+        with self.catalog.Session() as session:
+            stmt = select(MessageRecord.message_id).where(
+                MessageRecord.source_id == self.source_id,
+                MessageRecord.is_removed.is_(False),
+            )
+            normalized_runs = tuple(dict.fromkeys(run_ids or ()))
+            normalized_kinds = tuple(dict.fromkeys(observation_kinds or ()))
+            if normalized_runs or normalized_kinds:
+                stmt = stmt.join(
+                    MessageObservation,
+                    (MessageObservation.source_id == MessageRecord.source_id)
+                    & (MessageObservation.message_id == MessageRecord.message_id),
+                )
+                if normalized_runs:
+                    stmt = stmt.where(MessageObservation.run_id.in_(normalized_runs))
+                if normalized_kinds:
+                    stmt = stmt.where(MessageObservation.kind.in_(normalized_kinds))
+                stmt = stmt.distinct()
+            stmt = stmt.order_by(
+                MessageRecord.latest_observed_at.desc(),
+                MessageRecord.message_id,
+            )
+            return list(session.scalars(stmt).all())
+
     def get_message_state(self, *, message_id: str) -> dict[str, Any] | None:
         """Return detached message state, or ``None`` for an unknown message."""
         with self.catalog.Session() as session:

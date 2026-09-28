@@ -8,6 +8,8 @@ from .calendar import (
     CalendarEventAttachmentRecord,
     CalendarEventObservation,
     CalendarEventRecord,
+    CalendarEventSighting,
+    CalendarEventSurface,
     CalendarRecord,
 )
 from .email import (
@@ -29,6 +31,8 @@ __all__ = [
     "CalendarEventAttachmentRecord",
     "CalendarEventObservation",
     "CalendarEventRecord",
+    "CalendarEventSighting",
+    "CalendarEventSurface",
     "CalendarRecord",
     "DeltaCheckpoint",
     "DeltaCheckpointCandidate",

@@ -1,6 +1,6 @@
-"""Outlook Mail acquisition policies."""
+"""Outlook Calendar acquisition policies and planning."""
 
-from .planner import pending_full_v1_message_ids
+from .planner import CalendarEnrichmentTarget, pending_full_v1_targets
 from .profile import (
     FULL_V1,
     TERMINAL_SURFACE_STATUSES,
@@ -12,8 +12,9 @@ from .profile import (
 __all__ = [
     "FULL_V1",
     "TERMINAL_SURFACE_STATUSES",
+    "CalendarEnrichmentTarget",
     "attachment_required_surfaces",
     "attachment_type_name",
-    "pending_full_v1_message_ids",
+    "pending_full_v1_targets",
     "surface_is_complete",
 ]

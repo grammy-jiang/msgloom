@@ -52,6 +52,21 @@ class CalendarEventRecord(Base):
     raw: Mapped[dict[str, object]] = mapped_column(JSON)
 
 
+class CalendarEventSighting(Base):
+    """One crawl-run sighting without implying a new semantic event version."""
+
+    __tablename__ = "calendar_event_sightings"
+
+    sighting_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    calendar_id: Mapped[str] = mapped_column(Text, index=True)
+    run_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    observation_kind: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+
+
 class CalendarEventObservation(Base):
     """Immutable observed Calendar event linked to raw provider evidence."""
 
@@ -69,6 +84,23 @@ class CalendarEventObservation(Base):
     end: Mapped[dict[str, object] | None] = mapped_column(JSON)
     event_type: Mapped[str | None] = mapped_column(String(40))
     raw: Mapped[dict[str, object]] = mapped_column(JSON)
+
+
+class CalendarEventSurface(Base):
+    """Latest versioned full-acquisition status for one event surface."""
+
+    __tablename__ = "calendar_event_surfaces"
+    __table_args__ = (UniqueConstraint("source_id", "event_id", "surface"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    event_id: Mapped[str] = mapped_column(Text, index=True)
+    surface: Mapped[str] = mapped_column(String(96), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    profile_version: Mapped[str | None] = mapped_column(String(40), index=True)
+    resource_version: Mapped[str | None] = mapped_column(Text, index=True)
 
 
 class CalendarEventAttachmentRecord(Base):
@@ -227,5 +259,7 @@ __all__ = [
     "CalendarEventAttachmentRecord",
     "CalendarEventObservation",
     "CalendarEventRecord",
+    "CalendarEventSighting",
+    "CalendarEventSurface",
     "CalendarRecord",
 ]

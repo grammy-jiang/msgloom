@@ -57,6 +57,19 @@ class OutlookCalendarAttachmentContentItem:
 
 
 @dataclass(slots=True)
+class OutlookCalendarEventSurfaceItem:
+    """Versioned acquisition outcome for one Calendar event surface."""
+
+    event_id: str
+    surface: str
+    status: str
+    observed_at: str
+    evidence_id: str | None
+    profile_version: str | None = None
+    resource_version: str | None = None
+
+
+@dataclass(slots=True)
 class OutlookCalendarDeltaObservationItem:
     """One ordered event entry from a fixed Calendar delta window."""
 
@@ -96,5 +109,6 @@ __all__ = [
     "OutlookCalendarDeltaCheckpointCandidateItem",
     "OutlookCalendarDeltaObservationItem",
     "OutlookCalendarEventItem",
+    "OutlookCalendarEventSurfaceItem",
     "OutlookCalendarItem",
 ]

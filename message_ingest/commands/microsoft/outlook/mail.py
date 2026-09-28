@@ -9,6 +9,7 @@ from scrapy.exceptions import UsageError
 
 from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.commands._common import run_graph
+from message_ingest.commands.microsoft.outlook.sync import run_mail_sync
 from message_ingest.commands.microsoft.validation import reject_options
 
 
@@ -42,6 +43,12 @@ def dispatch_mail(command: Any, opts: argparse.Namespace) -> None:
             },
         )
         return
+    if opts.action == "sync":
+        if opts.message_ids:
+            raise UsageError("Mail sync does not accept MESSAGE_ID values")
+        reject_options(opts, allowed={"page_size", "reconcile", "max_enrich"})
+        run_mail_sync(command, opts)
+        return
     if opts.action == "full":
         reject_options(opts, allowed={"operation", "acquisition_profile"})
         message_ids = tuple(
@@ -51,17 +58,20 @@ def dispatch_mail(command: Any, opts: argparse.Namespace) -> None:
         )
         if not message_ids:
             raise UsageError("at least one MESSAGE_ID is required")
+        profile = opts.acquisition_profile or FULL_V1
+        if profile != FULL_V1:
+            raise UsageError("Mail full requires the Outlook Mail acquisition profile")
         run_graph(
             command,
             "outlook_full",
             {
                 "message_ids": ",".join(message_ids),
                 "operation": opts.operation or "refresh",
-                "profile": opts.acquisition_profile or FULL_V1,
+                "profile": profile,
             },
         )
         return
-    raise UsageError("use 'microsoft outlook mail {discover,delta,full}'")
+    raise UsageError("use 'microsoft outlook mail {discover,delta,full,sync}'")
 
 
 __all__ = ["dispatch_mail"]

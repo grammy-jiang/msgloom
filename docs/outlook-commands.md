@@ -48,6 +48,32 @@ Examples:
 
 The command delegates to the internal outlook_delta spider.
 
+## Outlook Mail synchronized acquisition
+
+    scrapy microsoft outlook mail sync [options]
+
+This is the normal user-level Mail workflow. It composes the existing Scrapy
+spiders instead of implementing another traversal engine:
+
+1. run per-folder delta synchronization and whole-mailbox reconciliation;
+2. refresh every message changed or recovered by that delta run;
+3. query the catalog for older messages whose `outlook-mail-full-v1` surfaces
+   are still incomplete and run targeted `enrich` acquisition for that backlog.
+
+Options:
+
+- --page-size N: delta page size, 1 through 1000; default 25;
+- --reconcile / --no-reconcile: whole-mailbox reconciliation, enabled by default;
+- --max-enrich N: cap only planner-selected historical backlog; 0 or omitted is
+  unlimited. Messages changed by the current delta run are never dropped by
+  this backlog limit.
+
+The phases run sequentially inside one Scrapy process. A delta phase must reach
+terminal status `completed` before enrichment starts. `sync` rejects a shared
+`JOBDIR`: JOBDIR belongs to one Scrapy crawl's Scheduler/SpiderState, not a
+multi-spider workflow. Use `mail delta` directly when resumable single-phase
+execution is required.
+
 ## Outlook Mail targeted full acquisition
 
     scrapy microsoft outlook mail full MESSAGE_ID [MESSAGE_ID ...] [options]
@@ -125,6 +151,34 @@ Checkpoint promotion uses a revision comparison, so concurrent runs cannot
 overwrite a newer committed cursor. A failed or dropped item blocks promotion
 and causes the public command to exit with failure.
 
+## Outlook Calendar synchronized acquisition
+
+    scrapy microsoft outlook calendar sync --start ISO --end ISO [options]
+
+This is the user-level bounded Calendar workflow:
+
+1. discover all visible calendars;
+2. run fixed-window delta for the primary calendar;
+3. run bounded `calendarView` acquisition for each secondary calendar;
+4. select events sighted by those collection runs whose
+   `outlook-calendar-full-v1` surfaces do not match the current Graph
+   `changeKey`;
+5. group those events by containing calendar and run targeted full enrichment.
+
+This deliberately uses stable v1 primary-calendar delta plus periodic secondary
+calendar windows instead of depending on beta multi-calendar delta endpoints.
+
+Options:
+
+- --start / --end: required timezone-aware fixed window;
+- --page-size N: Graph page size, 1 through 1000; default 100;
+- --max-enrich N: cap planner-selected event enrichment for the invocation;
+  0 or omitted means unlimited.
+
+The command rejects a shared `JOBDIR` for the same reason as Mail sync. Use the
+`calendar delta` primitive when native JOBDIR resume is required for the primary
+calendar phase.
+
 ## Outlook Calendar targeted full acquisition
 
     scrapy microsoft outlook calendar full EVENT_ID [EVENT_ID ...] [options]
@@ -136,14 +190,19 @@ Options:
 
 - --calendar CALENDAR_ID: scope event and attachment paths to a specific
   calendar; omitted uses the default event path;
-- --page-size N: attachment inventory page size, 1 through 1000; default 100.
+- --page-size N: attachment inventory page size, 1 through 1000; default 100;
+- --operation refresh|enrich: default refresh;
+- --acquisition-profile outlook-calendar-full-v1: versioned Calendar full
+  acquisition profile.
 
 Full acquisition uses Calendar read permission to retrieve the rich event
 representation, asks Graph for a text event body, inventories attachments, and
 retrieves raw content for file and item attachments. Reference attachments are
-recorded without issuing an unsupported raw-content request. Large attachment
-content remains in raw HTTP evidence rather than being duplicated in the
-semantic attachment table.
+recorded without issuing an unsupported raw-content request. Versioned event
+surfaces record detail, attachment-inventory, raw-content, and item-detail
+outcomes against the event `changeKey`; a later event version therefore becomes
+pending again automatically. Large attachment content remains in raw HTTP
+evidence rather than being duplicated in the semantic attachment table.
 
 The command delegates to the internal outlook_calendar_full spider.
 Full acquisition currently rejects JOBDIR. To recover an interrupted full

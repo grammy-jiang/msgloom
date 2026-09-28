@@ -2,36 +2,35 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator, Iterator
 from typing import Any, ClassVar
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
 
 import scrapy
-from scrapy.http import Response, TextResponse
+from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
+from twisted.python.failure import Failure
 
-from message_ingest.items.microsoft.outlook.calendar import (
-    OutlookCalendarAttachmentContentItem,
-    OutlookCalendarAttachmentItem,
-    OutlookCalendarEventItem,
+from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
+    FULL_V1,
+    attachment_required_surfaces,
+    attachment_type_name,
+    surface_is_complete,
 )
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from message_ingest.catalog.stores.microsoft.outlook.calendar import (
+    OutlookCalendarStore,
+)
+from message_ingest.extensions.catalog import CatalogService
+from message_ingest.items.microsoft.outlook.calendar import (
+    OutlookCalendarEventItem,
+    OutlookCalendarEventSurfaceItem,
+)
+
+from ._attachments import OutlookCalendarAttachmentTraversal
 
 
-def _metadata_without_content(value: Any) -> Any:
-    """Keep expanded item metadata while evidence owns nested content bytes."""
-    if isinstance(value, dict):
-        return {
-            key: _metadata_without_content(child)
-            for key, child in value.items()
-            if key != "contentBytes"
-        }
-    if isinstance(value, list):
-        return [_metadata_without_content(child) for child in value]
-    return value
-
-
-class OutlookCalendarFullSpider(MicrosoftGraphSpider):
+class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
     """Refresh rich detail for selected Calendar event IDs."""
 
     name = "outlook_calendar_full"
@@ -44,9 +43,11 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         event_ids: str | list[str] = "",
         calendar_id: str = "",
         page_size: str = "100",
+        operation: str = "refresh",
+        profile: str = FULL_V1,
         **kwargs,
     ) -> None:
-        """Normalize target IDs and the optional containing calendar."""
+        """Normalize target IDs, containing calendar, and acquisition policy."""
         super().__init__(*args, **kwargs)
         targets = event_ids.split(",") if isinstance(event_ids, str) else event_ids
         self.event_ids = tuple(
@@ -59,6 +60,12 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         self.calendar_id = calendar_id.strip()
         if calendar_id != self.calendar_id:
             raise ValueError("calendar_id must not contain surrounding whitespace")
+        self.operation = operation.strip().lower()
+        if self.operation not in {"enrich", "refresh"}:
+            raise ValueError("operation must be 'enrich' or 'refresh'")
+        self.profile = profile.strip()
+        if self.profile != FULL_V1:
+            raise ValueError(f"unsupported profile: {self.profile!r}")
         self.page_size = self._bounded_int(
             page_size,
             name="page_size",
@@ -103,15 +110,35 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         return super().from_crawler(crawler, *args, **kwargs)
 
     async def start(self) -> AsyncIterator[Any]:
-        """Schedule one full event-detail request per target."""
+        """Refresh all Full-v1 surfaces or schedule only persisted gaps."""
         self.crawler.stats.set_value("msgloom/crawl/mode", "calendar_full")
         self.crawler.stats.set_value("msgloom/crawl/run_id", self.run_id)
         self.crawler.stats.set_value(
             "msgloom/crawl/calendar/full/target_event_count",
             len(self.event_ids),
         )
+        self.crawler.stats.set_value(
+            "msgloom/crawl/calendar/full/operation",
+            self.operation,
+        )
+        self.crawler.stats.set_value(
+            "msgloom/crawl/calendar/full/profile",
+            self.profile,
+        )
         for event_id in self.event_ids:
-            yield self._event_detail_request(event_id)
+            if self.operation == "refresh":
+                yield self._event_detail_request(event_id)
+                continue
+
+            state = await asyncio.to_thread(self._load_enrichment_state, event_id)
+            emitted = False
+            for output in self._full_enrich_outputs(event_id, state):
+                emitted = True
+                yield output
+            if not emitted:
+                self.crawler.stats.inc_value(
+                    "msgloom/crawl/calendar/full/already_complete_count"
+                )
 
     def parse_event_detail(
         self,
@@ -119,6 +146,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         *,
         purpose: str,
         event_id: str,
+        resource_version: str | None,
     ) -> Iterator[Any]:
         """Persist full event JSON and inventory attachments when present."""
         evidence = self._raw_http_evidence_item(response, purpose)
@@ -133,6 +161,11 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
         if provider_id != event_id:
             raise ValueError("Calendar event detail ID changed in flight")
 
+        provider_version = payload.get("changeKey")
+        if provider_version is not None and not isinstance(provider_version, str):
+            raise ValueError("Calendar event changeKey must be a string")
+        effective_version = provider_version or resource_version
+
         calendar_key = self.calendar_id or "default"
         self.crawler.stats.inc_value("msgloom/crawl/calendar/full/event_detail_count")
         yield OutlookCalendarEventItem(
@@ -144,244 +177,156 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
             calendar_id=calendar_key,
             observation_kind="full",
         )
-
-        has_attachments = payload.get("hasAttachments")
-        if has_attachments is True:
-            yield self._attachments_request(event_id, page_number=1)
-        elif has_attachments is not False and has_attachments is not None:
-            raise ValueError("Calendar hasAttachments must be a boolean")
-
-    def parse_attachments(
-        self,
-        response: TextResponse,
-        *,
-        purpose: str,
-        event_id: str,
-        page_number: int,
-    ) -> Iterator[Any]:
-        """
-        Persist attachment metadata while raw evidence keeps provider content.
-
-        File attachment contentBytes can be large. The semantic attachment row
-        records that content was present and removes that field from its
-        metadata JSON; the preceding raw HTTP evidence retains the exact bytes.
-        """
-        evidence = self._raw_http_evidence_item(response, purpose)
-        yield evidence
-
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar attachment response must be a JSON object")
-        values = payload.get("value")
-        if not isinstance(values, list):
-            raise TypeError("Calendar attachment response must contain a value list")
-
-        calendar_key = self.calendar_id or "default"
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/full/attachment_page_count"
+        yield OutlookCalendarEventSurfaceItem(
+            event_id=event_id,
+            surface="detail",
+            status="acquired",
+            observed_at=evidence.observed_at,
+            evidence_id=evidence.evidence_id,
+            profile_version=FULL_V1,
+            resource_version=effective_version,
         )
-        for attachment in values:
-            if not isinstance(attachment, dict):
-                raise TypeError("Calendar attachment entry must be a JSON object")
-            attachment_id = attachment.get("id")
-            if not isinstance(attachment_id, str) or not attachment_id:
-                raise ValueError("Calendar attachment must contain a non-empty id")
-            raw = _metadata_without_content(attachment)
-            content_bytes_present = "contentBytes" in attachment
-            attachment_type = raw.get("@odata.type")
-            if attachment_type is not None and not isinstance(
-                attachment_type,
-                str,
-            ):
-                raise ValueError("Calendar attachment @odata.type must be a string")
+        yield self._attachments_request(
+            event_id,
+            page_number=1,
+            resource_version=effective_version,
+        )
 
-            self.crawler.stats.inc_value("msgloom/crawl/calendar/full/attachment_count")
-            yield OutlookCalendarAttachmentItem(
+    def errback(self, failure: Failure) -> Iterator[Any]:
+        """Persist terminal Full-v1 surface outcomes; leave transient gaps pending."""
+        callback_data = self._failure_request(failure).cb_kwargs
+        purpose = callback_data.get("purpose", "unknown")
+        evidence = self._failure_evidence_item(failure)
+        yield evidence
+        terminal_status = {
+            401: "unauthorized",
+            403: "unauthorized",
+            404: "unavailable",
+            410: "unavailable",
+            405: "unsupported",
+        }.get(evidence.response_status or 0)
+        surface = self._surface_for_purpose(
+            purpose,
+            callback_data.get("attachment_id"),
+        )
+        if terminal_status and surface and (event_id := callback_data.get("event_id")):
+            yield OutlookCalendarEventSurfaceItem(
                 event_id=event_id,
-                attachment_id=attachment_id,
-                attachment_type=attachment_type,
-                raw=raw,
+                surface=surface,
+                status=terminal_status,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
-                run_id=self.run_id,
-                calendar_id=calendar_key,
-                content_bytes_present=content_bytes_present,
+                profile_version=FULL_V1,
+                resource_version=callback_data.get("resource_version"),
             )
+        yield self._request_failure_item(failure, evidence)
 
-            type_name = self._attachment_type_name(attachment_type)
-            self.crawler.stats.inc_value(
-                f"msgloom/crawl/calendar/full/attachment_type_count/{type_name}"
+    @staticmethod
+    def _surface_for_purpose(
+        purpose: str,
+        attachment_id: str | None,
+    ) -> str | None:
+        if purpose == "calendar-event-detail":
+            return "detail"
+        if purpose == "calendar-event-attachments":
+            return "attachments"
+        if purpose == "calendar-attachment-raw" and attachment_id:
+            return f"attachment_raw:{attachment_id}"
+        if purpose == "calendar-item-attachment-detail" and attachment_id:
+            return f"item_attachment_detail:{attachment_id}"
+        return None
+
+    def _load_enrichment_state(self, event_id: str) -> dict[str, Any]:
+        catalog = CatalogService.from_crawler(self.crawler).catalog
+        store = OutlookCalendarStore(
+            catalog,
+            source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"],
+        )
+        event_state = store.get_event_state(event_id=event_id)
+        return {
+            "resource_version": (
+                event_state.get("resource_version") if event_state is not None else None
+            ),
+            "surfaces": store.get_event_surfaces(event_id=event_id),
+            "attachments": store.get_event_attachments(event_id=event_id),
+        }
+
+    def _full_enrich_outputs(self, event_id: str, state: dict[str, Any]):
+        surfaces = state["surfaces"]
+        resource_version = state["resource_version"]
+        if not surface_is_complete(
+            surfaces,
+            "detail",
+            resource_version=resource_version,
+        ):
+            yield self._event_detail_request(
+                event_id,
+                resource_version=resource_version,
             )
-            if type_name in {"fileAttachment", "itemAttachment"}:
-                yield self._attachment_raw_request(
-                    event_id,
-                    attachment_id,
-                )
-                if type_name == "itemAttachment":
+        if not surface_is_complete(
+            surfaces,
+            "attachments",
+            resource_version=resource_version,
+        ):
+            yield self._attachments_request(
+                event_id,
+                page_number=1,
+                resource_version=resource_version,
+            )
+            return
+        if surfaces["attachments"]["status"] != "acquired":
+            return
+
+        for attachment in state["attachments"]:
+            attachment_id = attachment["attachment_id"]
+            attachment_type = attachment["attachment_type"]
+            for surface in attachment_required_surfaces(
+                attachment_type,
+                attachment_id,
+            ):
+                if surface_is_complete(
+                    surfaces, surface, resource_version=resource_version
+                ):
+                    continue
+                if surface.startswith("attachment_raw:"):
+                    normalized = attachment_type_name(attachment_type)
+                    if normalized in {"fileAttachment", "itemAttachment"}:
+                        yield self._attachment_raw_request(
+                            event_id,
+                            attachment_id,
+                            resource_version=resource_version,
+                        )
+                    else:
+                        yield OutlookCalendarEventSurfaceItem(
+                            event_id=event_id,
+                            surface=surface,
+                            status="unsupported",
+                            observed_at=attachment["latest_observed_at"],
+                            evidence_id=attachment["latest_evidence_id"],
+                            profile_version=FULL_V1,
+                            resource_version=resource_version,
+                        )
+                elif surface.startswith("item_attachment_detail:"):
                     yield self._item_attachment_detail_request(
                         event_id,
                         attachment_id,
+                        resource_version=resource_version,
                     )
 
-        next_link = payload.get("@odata.nextLink")
-        if next_link is None:
-            return
-        if not isinstance(next_link, str) or not next_link:
-            raise ValueError(
-                "Calendar attachment @odata.nextLink must be a non-empty string"
-            )
-        yield self._request(
-            next_link,
-            callback=self.parse_attachments,
-            purpose="calendar-event-attachments",
-            cb_kwargs={
-                "event_id": event_id,
-                "page_number": page_number + 1,
-            },
-            verbatim_url=True,
-            prefer='IdType="ImmutableId"',
-        )
-
-    def parse_attachment_content(
-        self,
-        response: Response,
-        *,
-        purpose: str,
-        event_id: str,
-        attachment_id: str,
-    ) -> Iterator[Any]:
-        """Link one raw file/item attachment response to its metadata."""
-        evidence = self._raw_http_evidence_item(response, purpose)
-        yield evidence
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/full/attachment_content_count"
-        )
-        yield OutlookCalendarAttachmentContentItem(
-            event_id=event_id,
-            attachment_id=attachment_id,
-            observed_at=evidence.observed_at,
-            evidence_id=evidence.evidence_id,
-            run_id=self.run_id,
-        )
-
-    def parse_attachment_detail(
-        self,
-        response: TextResponse,
-        *,
-        purpose: str,
-        event_id: str,
-        attachment_id: str,
-    ) -> Iterator[Any]:
-        """Persist expanded item-attachment detail as richer metadata."""
-        evidence = self._raw_http_evidence_item(response, purpose)
-        yield evidence
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar item attachment detail must be a JSON object")
-        provider_id = payload.get("id")
-        if provider_id != attachment_id:
-            raise ValueError("Calendar item attachment detail ID changed in flight")
-        raw = _metadata_without_content(payload)
-        content_bytes_present = "contentBytes" in payload
-        attachment_type = raw.get("@odata.type")
-        if attachment_type is not None and not isinstance(
-            attachment_type,
-            str,
-        ):
-            raise ValueError("Calendar attachment @odata.type must be a string")
-        self.crawler.stats.inc_value(
-            "msgloom/crawl/calendar/full/item_attachment_detail_count"
-        )
-        yield OutlookCalendarAttachmentItem(
-            event_id=event_id,
-            attachment_id=attachment_id,
-            attachment_type=attachment_type,
-            raw=raw,
-            observed_at=evidence.observed_at,
-            evidence_id=evidence.evidence_id,
-            run_id=self.run_id,
-            calendar_id=self.calendar_id or "default",
-            content_bytes_present=content_bytes_present,
-        )
-
-    def _event_detail_request(self, event_id: str) -> scrapy.Request:
+    def _event_detail_request(
+        self, event_id: str, *, resource_version: str | None = None
+    ) -> scrapy.Request:
         """Request the full event representation with a text body."""
         event_path = self._event_path(event_id)
         return self._request(
             f"{self.graph_root}{event_path}",
             callback=self.parse_event_detail,
             purpose="calendar-event-detail",
-            cb_kwargs={"event_id": event_id},
+            cb_kwargs={
+                "event_id": event_id,
+                "resource_version": resource_version,
+            },
             prefer=('IdType="ImmutableId", outlook.body-content-type="text"'),
-        )
-
-    def _attachments_request(
-        self,
-        event_id: str,
-        *,
-        page_number: int,
-    ) -> scrapy.Request:
-        """Inventory attachments only for events that report attachments."""
-        event_path = self._event_path(event_id)
-        query = urlencode({"$top": self.page_size})
-        return self._request(
-            f"{self.graph_root}{event_path}/attachments?{query}",
-            callback=self.parse_attachments,
-            purpose="calendar-event-attachments",
-            cb_kwargs={
-                "event_id": event_id,
-                "page_number": page_number,
-            },
-            prefer='IdType="ImmutableId"',
-        )
-
-    def _attachment_raw_request(
-        self,
-        event_id: str,
-        attachment_id: str,
-    ) -> scrapy.Request:
-        """Request raw bytes for file and item attachments."""
-        event_path = self._event_path(event_id)
-        encoded_attachment = quote(attachment_id, safe="")
-        return self._request(
-            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}/$value",
-            callback=self.parse_attachment_content,
-            purpose="calendar-attachment-raw",
-            cb_kwargs={
-                "event_id": event_id,
-                "attachment_id": attachment_id,
-            },
-            accept="*/*",
-            prefer='IdType="ImmutableId"',
-        )
-
-    def _item_attachment_detail_request(
-        self,
-        event_id: str,
-        attachment_id: str,
-    ) -> scrapy.Request:
-        """Expand an embedded Graph item separately from its raw bytes."""
-        event_path = self._event_path(event_id)
-        encoded_attachment = quote(attachment_id, safe="")
-        query = urlencode({"$expand": "microsoft.graph.itemattachment/item"})
-        return self._request(
-            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}?{query}",
-            callback=self.parse_attachment_detail,
-            purpose="calendar-item-attachment-detail",
-            cb_kwargs={
-                "event_id": event_id,
-                "attachment_id": attachment_id,
-            },
-            prefer='IdType="ImmutableId"',
-        )
-
-    @staticmethod
-    def _attachment_type_name(attachment_type: str | None) -> str:
-        """Normalize Graph namespace spellings while keeping unknown visible."""
-        return (
-            (attachment_type or "unknown")
-            .removeprefix("#microsoft.graph.")
-            .removeprefix("microsoft.graph.")
         )
 
     def _event_path(self, event_id: str) -> str:

@@ -12,6 +12,7 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarEventAttachmentRecord,
     CalendarEventObservation,
     CalendarEventRecord,
+    CalendarEventSighting,
     CalendarRecord,
 )
 from message_ingest.items.microsoft.outlook.calendar import (
@@ -22,13 +23,11 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarItem,
 )
 
+from ._calendar_planning import CalendarPlanningStore
 
-class OutlookCalendarStore:
+
+class OutlookCalendarStore(CalendarPlanningStore):
     """Own Outlook Calendar persistence for one logical source."""
-
-    def __init__(self, catalog, *, source_id: str) -> None:
-        self.catalog = catalog
-        self.source_id = source_id
 
     def persist_calendar(self, item: OutlookCalendarItem) -> str:
         """Upsert latest calendar metadata without inferring missing deletions."""
@@ -143,6 +142,18 @@ class OutlookCalendarStore:
                 item,
                 calendar_id=calendar_id,
                 raw=effective_raw,
+            )
+            session.add(
+                CalendarEventSighting(
+                    sighting_id=uuid4().hex,
+                    source_id=self.source_id,
+                    event_id=item.event_id,
+                    calendar_id=calendar_id,
+                    run_id=item.run_id,
+                    observation_kind=item.observation_kind,
+                    evidence_id=item.evidence_id,
+                    observed_at=item.observed_at,
+                )
             )
             if same_version:
                 return "unchanged"

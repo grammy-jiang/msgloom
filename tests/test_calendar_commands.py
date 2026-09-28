@@ -65,6 +65,7 @@ def _opts(
         max_pages=None,
         reconcile=None,
         operation=None,
+        max_enrich=None,
         acquisition_profile=None,
         start=start,
         end=end,
@@ -163,6 +164,8 @@ def test_calendar_full_maps_event_ids_calendar_and_page_size() -> None:
                 "event_ids": ["event-1", "event-2"],
                 "calendar_id": "calendar-1",
                 "page_size": "25",
+                "operation": "refresh",
+                "profile": "outlook-calendar-full-v1",
             },
         )
     ]:
@@ -214,3 +217,32 @@ def test_calendar_window_rejects_reversed_range() -> None:
 def test_calendar_window_datetime_validator_rejects_unsafe_scope(value: str) -> None:
     with pytest.raises(argparse.ArgumentTypeError):
         aware_datetime(value)
+
+
+def test_calendar_sync_dispatches_user_level_workflow(monkeypatch) -> None:
+    calls = []
+
+    def fake_sync(command, opts) -> None:
+        calls.append((command, opts.start, opts.end, opts.page_size, opts.max_enrich))
+
+    import message_ingest.commands.microsoft.outlook.calendar as calendar_command
+
+    monkeypatch.setattr(calendar_command, "run_calendar_sync", fake_sync)
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+    opts = _opts(
+        action="sync",
+        start="2026-09-27T00:00:00+10:00",
+        end="2026-10-04T00:00:00+10:00",
+        page_size=60,
+    )
+    opts.max_enrich = 20
+    command.run([], opts)
+
+    if len(calls) != 1 or calls[0][1:] != (
+        "2026-09-27T00:00:00+10:00",
+        "2026-10-04T00:00:00+10:00",
+        60,
+        20,
+    ):
+        pytest.fail(f"Unexpected Calendar sync dispatch: {calls!r}")

@@ -299,6 +299,7 @@ def _command_opts(
         max_pages=None,
         reconcile=None,
         operation=None,
+        max_enrich=None,
         acquisition_profile=None,
         start=None,
         end=None,

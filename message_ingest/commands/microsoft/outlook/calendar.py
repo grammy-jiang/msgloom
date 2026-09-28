@@ -8,7 +8,11 @@ from typing import Any
 
 from scrapy.exceptions import UsageError
 
+from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
+    FULL_V1 as CALENDAR_FULL_V1,
+)
 from message_ingest.commands._common import run_graph
+from message_ingest.commands.microsoft.outlook.sync import run_calendar_sync
 from message_ingest.commands.microsoft.validation import reject_options
 
 
@@ -59,8 +63,18 @@ def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
             },
         )
         return
+    if opts.action == "sync":
+        if opts.message_ids:
+            raise UsageError("Calendar sync does not accept RESOURCE_ID values")
+        reject_options(opts, allowed={"start", "end", "page_size", "max_enrich"})
+        _require_window(opts, action="sync")
+        run_calendar_sync(command, opts)
+        return
     if opts.action == "full":
-        reject_options(opts, allowed={"calendar", "page_size"})
+        reject_options(
+            opts,
+            allowed={"calendar", "page_size", "operation", "acquisition_profile"},
+        )
         event_ids = tuple(
             dict.fromkeys(
                 cleaned for value in opts.message_ids if (cleaned := value.strip())
@@ -68,6 +82,11 @@ def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
         )
         if not event_ids:
             raise UsageError("at least one EVENT_ID is required")
+        profile = opts.acquisition_profile or CALENDAR_FULL_V1
+        if profile != CALENDAR_FULL_V1:
+            raise UsageError(
+                "Calendar full requires the Outlook Calendar acquisition profile"
+            )
         run_graph(
             command,
             "outlook_calendar_full",
@@ -75,10 +94,14 @@ def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
                 "event_ids": list(event_ids),
                 "calendar_id": opts.calendar or "",
                 "page_size": str(opts.page_size or 100),
+                "operation": opts.operation or "refresh",
+                "profile": profile,
             },
         )
         return
-    raise UsageError("use 'microsoft outlook calendar {discover,window,delta,full}'")
+    raise UsageError(
+        "use 'microsoft outlook calendar {discover,window,delta,full,sync}'"
+    )
 
 
 def _require_window(opts: argparse.Namespace, *, action: str) -> None:

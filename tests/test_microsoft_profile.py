@@ -202,6 +202,7 @@ def _profile_opts() -> argparse.Namespace:
         max_pages=None,
         reconcile=None,
         operation=None,
+        max_enrich=None,
         acquisition_profile=None,
         start=None,
         end=None,

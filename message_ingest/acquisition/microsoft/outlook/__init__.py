@@ -1,5 +1,5 @@
 """Outlook acquisition policy domains."""
 
-from . import email
+from . import calendar, email
 
-__all__ = ["email"]
+__all__ = ["calendar", "email"]

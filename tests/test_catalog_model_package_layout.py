@@ -16,6 +16,8 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarEventAttachmentRecord,
     CalendarEventObservation,
     CalendarEventRecord,
+    CalendarEventSighting,
+    CalendarEventSurface,
     CalendarRecord,
 )
 from message_ingest.catalog.models.microsoft.outlook.email import (
@@ -36,6 +38,8 @@ EXPECTED_TABLES = {
     "calendar_delta_observations",
     "calendar_event_attachments",
     "calendar_event_observations",
+    "calendar_event_sightings",
+    "calendar_event_surfaces",
     "calendar_events",
     "calendars",
     "delta_checkpoint_candidates",
@@ -62,6 +66,8 @@ def test_models_live_in_expected_domain_modules() -> None:
         RawHttpEvidence: "message_ingest.catalog.models.acquisition",
         CalendarRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarEventRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
+        CalendarEventSighting: "message_ingest.catalog.models.microsoft.outlook.calendar",
+        CalendarEventSurface: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarEventObservation: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarEventAttachmentRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarDeltaCheckpoint: "message_ingest.catalog.models.microsoft.outlook.calendar",
