@@ -92,10 +92,10 @@ def test_native_http_cache_and_retry_remain_enabled() -> None:
     settings = _settings()
     if (
         settings["REQUEST_FINGERPRINTER_CLASS"]
-        != "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
+        != "message_ingest.fingerprints.microsoft_graph.RepresentationAwareRequestFingerprinter"
     ):
         pytest.fail(
-            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter" )'
+            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.fingerprints.microsoft_graph.RepresentationAwareRequestFingerprinter" )'
         )
     if settings.getbool("AUTOTHROTTLE_ENABLED") is not True:
         pytest.fail('Expected: settings.getbool("AUTOTHROTTLE_ENABLED") is True')

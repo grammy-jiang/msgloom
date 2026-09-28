@@ -43,10 +43,8 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 2
 # mechanism.
 CONCURRENT_ITEMS = 1
 
-REQUEST_FINGERPRINTER_CLASS = (
-    "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
-)
-LOG_FORMATTER = "message_ingest.logformatter.MessageIngestLogFormatter"
+REQUEST_FINGERPRINTER_CLASS = "message_ingest.fingerprints.microsoft_graph.RepresentationAwareRequestFingerprinter"
+LOG_FORMATTER = "message_ingest.observability.formatter.MessageIngestLogFormatter"
 
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 0.25

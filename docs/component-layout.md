@@ -24,11 +24,14 @@ remains `msgloom`.
 | `microsoft_graph/middlewares/authentication.py` | Attach/remove credentials at the downloader boundary and refresh one pinned account after 401. |
 | `message_ingest/extensions/microsoft_graph/identity.py` | Verify persisted source identity before Scheduler requests execute. |
 | `message_ingest/spiders/microsoft/_graph.py` | Graph request construction, raw evidence, terminal request failures, and logical run integrity. |
-| `message_ingest/fingerprints.py` | Keep source, Graph representation, and Calendar reset attempts in request identity. |
+| `message_ingest/fingerprints/microsoft_graph.py` | Keep source context and Graph representation headers in stable request identity. |
+| `message_ingest/fingerprints/microsoft/outlook/calendar.py` | Separate Calendar delta reset attempts while preserving native duplicate filtering within one attempt. |
 | `message_ingest/middlewares/microsoft_graph/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
 | `message_ingest/middlewares/microsoft_graph/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
 | `message_ingest/extensions/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
 | `message_ingest/extensions/microsoft_graph/privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
+| `message_ingest/observability/formatter.py` | Apply provider-neutral Scrapy LogFormatter policy without URLs, payloads, or arbitrary exception text. |
+| `message_ingest/observability/item_summary.py` | Produce public allowlisted summaries for acquisition, Outlook Mail, and Calendar items. |
 | `message_ingest/items/acquisition.py` | Define provider-independent raw-evidence and exhausted-acquisition failure items. |
 | `message_ingest/items/microsoft/outlook/email.py` | Define Outlook Mail discovery, enrichment, attachment, removal, surface, and delta-candidate items. |
 | `message_ingest/items/microsoft/outlook/calendar.py` | Define Calendar inventory, event, attachment, delta-observation, and checkpoint-candidate items. |
@@ -53,6 +56,8 @@ remains `msgloom`.
 | `message_ingest/sync/microsoft/outlook/email/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
 
 Synchronization state and Scrapy lifecycle are intentionally separate. The `message_ingest/sync/` tree owns provider checkpoint/state rules and catalog transactions; `message_ingest/extensions/microsoft/outlook/` only adapts Scrapy signals and SpiderState to those rules. JOBDIR remains a framework resume mechanism rather than the provider checkpoint store.
+
+Request identity and observability are project-level Scrapy policies rather than product Spider concerns. Graph-wide fingerprinting remains source-aware; Calendar delta adds only its reset-attempt identity. The global LogFormatter uses provider-neutral wording, while item summaries expose only allowlisted fields and are shared with Graph LogRecord privacy filtering.
 
 `message_ingest/settings.py` uses the component paths above. Custom settings and Python
 imports should also use these module paths. `Catalog` and its models remain

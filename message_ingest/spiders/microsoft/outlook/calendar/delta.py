@@ -74,7 +74,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         settings.set("EXTENSIONS", extensions, priority="spider")
         settings.set(
             "REQUEST_FINGERPRINTER_CLASS",
-            "message_ingest.fingerprints.CalendarDeltaRequestFingerprinter",
+            "message_ingest.fingerprints.microsoft.outlook.calendar.CalendarDeltaRequestFingerprinter",
             priority="spider",
         )
         settings.set(

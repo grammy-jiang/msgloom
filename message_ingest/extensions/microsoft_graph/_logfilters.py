@@ -7,7 +7,7 @@ from typing import ClassVar
 
 from scrapy.http import Request
 
-from message_ingest.logformatter import MessageIngestLogFormatter
+from message_ingest.observability.item_summary import summarize_item
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
@@ -65,9 +65,7 @@ class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):
     ) -> None:
         """Replace structured item/request fields with bounded summaries."""
         if "item" in record.__dict__:
-            record.__dict__["item"] = MessageIngestLogFormatter._summary(
-                record.__dict__["item"]
-            )
+            record.__dict__["item"] = summarize_item(record.__dict__["item"])
 
         if isinstance(record.args, dict):
             args = dict(record.args)
