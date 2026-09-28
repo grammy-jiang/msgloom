@@ -9,7 +9,6 @@ from uuid import uuid4
 from scrapy.exceptions import NotConfigured
 from sqlalchemy import select
 
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.catalog import (
     CalendarDeltaObservation,
     CalendarEventObservation,
@@ -27,6 +26,9 @@ from message_ingest.items.microsoft.outlook.calendar import (
 )
 from message_ingest.pipelines.calendar_attachments import (
     CalendarAttachmentStore,
+)
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointStore,
 )
 
 

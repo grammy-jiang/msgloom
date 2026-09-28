@@ -16,8 +16,8 @@ remains `msgloom`.
 | Package | Responsibility |
 | --- | --- |
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
-| `message_ingest/extensions/delta_checkpoint.py` | Commit complete Mail delta rounds after Scrapy becomes idle. |
-| `message_ingest/extensions/calendar_delta_checkpoint.py` | Promote complete fixed-window Calendar delta candidates after Scrapy becomes idle. |
+| `message_ingest/extensions/microsoft/outlook/email/checkpoint.py` | Commit complete Mail delta rounds after Scrapy becomes idle. |
+| `message_ingest/extensions/microsoft/outlook/calendar/checkpoint.py` | Promote complete fixed-window Calendar delta candidates after Scrapy becomes idle. |
 | `microsoft_graph/auth/accounts.py` | Select opaque MSAL account identities without resource semantics. |
 | `microsoft_graph/auth/binding.py` | Define the opaque application account-binding protocol with no msgloom dependency. |
 | `microsoft_graph/auth/session.py` | Own crawler-scoped MSAL token/account state; application binding is injected through a protocol. |
@@ -44,12 +44,14 @@ remains `msgloom`.
 | `message_ingest/spiders/microsoft/outlook/calendar/full.py` | Acquire rich detail and attachments for selected events. |
 | `message_ingest/pipelines/calendar.py` | Store Calendar/event/delta items after evidence linking. |
 | `message_ingest/pipelines/calendar_attachments.py` | Store Calendar attachment metadata and raw-content evidence links. |
-| `message_ingest/calendar_checkpoints.py` | Stage and atomically promote fixed-window Calendar delta cursors. |
-| `message_ingest/calendar_delta_state.py` | Apply winning delta observations to committed fixed-window membership. |
+| `message_ingest/sync/microsoft/outlook/calendar/checkpoints.py` | Stage and atomically promote fixed-window Calendar delta cursors. |
+| `message_ingest/sync/microsoft/outlook/calendar/state.py` | Apply winning delta observations to committed fixed-window membership. |
 | `message_ingest/spiders/microsoft/outlook/calendar/_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
 | `message_ingest/catalog/models.py` | Define the existing SQLAlchemy schema. |
 | `message_ingest/catalog/store.py` | Perform catalog queries and transactions. |
-| `message_ingest/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
+| `message_ingest/sync/microsoft/outlook/email/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
+
+Synchronization state and Scrapy lifecycle are intentionally separate. The `message_ingest/sync/` tree owns provider checkpoint/state rules and catalog transactions; `message_ingest/extensions/microsoft/outlook/` only adapts Scrapy signals and SpiderState to those rules. JOBDIR remains a framework resume mechanism rather than the provider checkpoint store.
 
 `message_ingest/settings.py` uses the component paths above. Custom settings and Python
 imports should also use these module paths. `Catalog` and its models remain

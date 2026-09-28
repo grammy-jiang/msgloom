@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.catalog import CalendarDeltaObservation
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointStore,
+)
 
 START = "2026-10-01T00:00:00+00:00"
 END = "2026-11-01T00:00:00+00:00"

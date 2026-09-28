@@ -15,7 +15,7 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
-from message_ingest.extensions.calendar_delta_checkpoint import (
+from message_ingest.extensions.microsoft.outlook.calendar.checkpoint import (
     CalendarDeltaSpiderState,
 )
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (

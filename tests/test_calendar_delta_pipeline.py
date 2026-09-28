@@ -10,7 +10,6 @@ from scrapy.utils.test import get_crawler
 from sqlalchemy import select
 
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.catalog import CalendarDeltaObservation, CalendarEventRecord
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import RawHttpEvidenceItem
@@ -23,6 +22,9 @@ from message_ingest.pipelines.calendar import CalendarPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
+)
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointStore,
 )
 
 START = "2026-09-27T00:00:00+10:00"

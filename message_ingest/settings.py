@@ -91,8 +91,8 @@ EXTENSIONS = {
     # on Scrapy's idle condition and explicit completed-work sets.
     "message_ingest.extensions.microsoft_graph.identity.MicrosoftGraphSourceIdentityExtension": 425,
     "message_ingest.extensions.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
-    "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension": 500,
-    "message_ingest.extensions.calendar_delta_checkpoint.CalendarDeltaCheckpointExtension": 510,
+    "message_ingest.extensions.microsoft.outlook.email.checkpoint.OutlookDeltaCheckpointExtension": 500,
+    "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native

@@ -167,12 +167,12 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         pytest.fail("Expected: Graph integrity extension priority == 450")
     if (
         extensions[
-            "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"
+            "message_ingest.extensions.microsoft.outlook.email.checkpoint.OutlookDeltaCheckpointExtension"
         ]
         != 500
     ):
         pytest.fail(
-            'Expected: extensions["message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension"] == 500'
+            'Expected: extensions["message_ingest.extensions.microsoft.outlook.email.checkpoint.OutlookDeltaCheckpointExtension"] == 500'
         )
     if (
         extensions[

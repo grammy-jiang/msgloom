@@ -11,15 +11,15 @@ from calendar_checkpoint_helpers import _candidate, _observation, _store, _url
 from sqlalchemy import create_engine, insert, inspect, select
 from sqlalchemy.exc import DBAPIError
 
-from message_ingest.calendar_checkpoints import (
-    CalendarDeltaCheckpointConflict,
-    CalendarDeltaCheckpointStore,
-)
 from message_ingest.catalog import (
     Base,
     CalendarDeltaEventState,
     CalendarRecord,
     Catalog,
+)
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointConflict,
+    CalendarDeltaCheckpointStore,
 )
 
 

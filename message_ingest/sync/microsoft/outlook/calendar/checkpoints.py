@@ -11,13 +11,14 @@ from sqlalchemy import Table, create_engine, insert, select, update
 from sqlalchemy.engine import make_url
 from sqlalchemy.pool import NullPool
 
-from message_ingest.calendar_delta_state import apply_calendar_delta_state
 from message_ingest.catalog import (
     CalendarDeltaCheckpoint,
     CalendarDeltaCheckpointCandidate,
     Catalog,
 )
 from message_ingest.extensions.catalog import CatalogService
+
+from .state import apply_calendar_delta_state
 
 
 class CalendarDeltaCheckpointConflict(RuntimeError):

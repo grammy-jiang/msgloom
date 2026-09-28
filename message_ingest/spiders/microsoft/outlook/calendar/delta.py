@@ -13,7 +13,6 @@ from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 from twisted.python.failure import Failure
 
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.items.acquisition import AcquisitionFailureItem
 from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaCheckpointCandidateItem,
@@ -21,6 +20,9 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventItem,
 )
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointStore,
+)
 
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
 
@@ -67,7 +69,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         extensions = settings.getdict("EXTENSIONS")
         extensions["scrapy.extensions.spiderstate.SpiderState"] = None
         extensions[
-            "message_ingest.extensions.calendar_delta_checkpoint.CalendarDeltaSpiderState"
+            "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaSpiderState"
         ] = 0
         settings.set("EXTENSIONS", extensions, priority="spider")
         settings.set(

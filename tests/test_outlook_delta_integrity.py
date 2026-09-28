@@ -13,14 +13,18 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
-from message_ingest.checkpoints import OutlookDeltaCheckpointStore
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.extensions.delta_checkpoint import OutlookDeltaCheckpointExtension
+from message_ingest.extensions.microsoft.outlook.email.checkpoint import (
+    OutlookDeltaCheckpointExtension,
+)
 from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
 )
 from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+    OutlookDeltaCheckpointStore,
+)
 
 
 def _db_url(tmp_path: Path) -> str:

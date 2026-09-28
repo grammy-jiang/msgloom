@@ -8,10 +8,12 @@ from scrapy import signals
 from scrapy.exceptions import CloseSpider, NotConfigured
 from scrapy.extensions.spiderstate import SpiderState
 
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
+)
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointStore,
 )
 
 logger = logging.getLogger(__name__)

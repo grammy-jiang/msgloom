@@ -10,11 +10,13 @@ import scrapy
 from scrapy.http import TextResponse
 from twisted.python.failure import Failure
 
-from message_ingest.checkpoints import OutlookDeltaCheckpointStore
 from message_ingest.items.acquisition import AcquisitionFailureItem
 from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailRemovalItem,
+)
+from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+    OutlookDeltaCheckpointStore,
 )
 
 from ._folders import OutlookFolderTraversal

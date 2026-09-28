@@ -1,1 +1,1 @@
-"""Crawler resources and Outlook delta checkpoint lifecycle."""
+"""Scrapy lifecycle extensions for message ingestion."""

@@ -33,7 +33,7 @@ class Catalog:
     with the crawler's lock. Each method owns a short session/transaction;
     returned values must remain usable after that session closes. Checkpoint
     promotion lives in the source-scoped
-    :class:`~message_ingest.checkpoints.OutlookDeltaCheckpointStore`.
+    :class:`~message_ingest.sync.microsoft.outlook.email.checkpoints.OutlookDeltaCheckpointStore`.
     """
 
     def __init__(self, database_url: str) -> None:

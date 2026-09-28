@@ -6,8 +6,10 @@ import pytest
 from calendar_checkpoint_helpers import _candidate, _observation, _store
 from sqlalchemy import select
 
-from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointConflict
 from message_ingest.catalog import CalendarDeltaEventState
+from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
+    CalendarDeltaCheckpointConflict,
+)
 
 
 def test_commit_materializes_only_winning_fixed_window_state(

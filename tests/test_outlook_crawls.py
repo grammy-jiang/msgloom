@@ -16,7 +16,9 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from message_ingest.catalog import Catalog
-from message_ingest.checkpoints import OutlookDeltaCheckpointStore
+from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+    OutlookDeltaCheckpointStore,
+)
 
 ROOT = Path(__file__).parents[1]
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
