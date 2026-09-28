@@ -1,9 +1,11 @@
 # Message ingestion: Scrapy component layout
 
 `message_ingest` is the consumer Scrapy project in the `msgloom` distribution.
-The sibling `microsoft_graph` package is a reusable Graph acquisition framework.
-It owns protocol parsing, authentication options, transport mechanics, provider
-requests, and optional items. It imports neither `message_ingest` nor SQLAlchemy.
+The sibling `microsoft_graph` package is a reusable Microsoft Graph-over-Scrapy
+framework. Its component packages follow Scrapy's ownership model: spiders own
+traversal, downloader middleware owns transport, and items carry provider data.
+It also owns protocol parsing and authentication support. It imports neither
+`message_ingest` nor SQLAlchemy.
 Msgloom owns evidence, persistence, logical run integrity, source identity,
 checkpoints, JOBDIR application state, enrichment completeness, and workflows.
 
@@ -11,6 +13,58 @@ The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and loc
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
 `message_ingest` as the deployment project name. The root Python distribution
 remains `msgloom`.
+
+## Microsoft Graph framework structure
+
+```text
+microsoft_graph/
+  __init__.py
+  auth/
+    __init__.py
+    accounts.py
+    binding.py
+    management.py
+    session.py
+  middlewares/
+    __init__.py
+    authentication.py
+    errors.py
+    diagnostics.py
+  spiders/
+    __init__.py
+    graph.py
+    resources.py
+    outlook/
+      __init__.py
+      mailbox.py
+      mail.py
+      calendar.py
+      attachments.py
+  items/
+    __init__.py
+    graph.py
+  protocol/
+    __init__.py
+    attachments.py
+  fingerprints.py
+  request.py
+  stats.py
+  addon.py
+```
+
+`microsoft_graph` itself is the Scrapy framework package. `auth/` contains MSAL
+session, account selection, account-binding, and management support code.
+`middlewares/authentication.py` is the Scrapy authentication adapter. It imports
+that support code and sits beside the error and diagnostics downloader
+middleware. `protocol/` contains shared provider parsing and endpoint helpers
+that do not depend on Scrapy.
+
+Reusable configuration lives in `addon.py`, spider declarations, and consumer
+settings. The framework has no `settings.py`, `pipelines/`, or `extensions/`.
+Msgloom supplies its persistence pipelines and lifecycle extensions through the
+consumer Scrapy project.
+
+## Component ownership
 
 | Package | Responsibility |
 | --- | --- |
@@ -21,15 +75,19 @@ remains `msgloom`.
 | `microsoft_graph/auth/accounts.py` | Select opaque MSAL account identities without resource semantics. |
 | `microsoft_graph/auth/binding.py` | Define the opaque application account-binding protocol with no msgloom dependency. |
 | `microsoft_graph/auth/session.py` | Own crawler-scoped MSAL token/account state; application binding is injected through a protocol. |
+| `microsoft_graph/auth/management.py` | Inspect local authentication configuration and clear the local token cache. |
 | `microsoft_graph/middlewares/authentication.py` | Attach/remove credentials at the downloader boundary and refresh one pinned account after 401. |
 | `microsoft_graph/protocol/` | Validate Graph object, collection, delta, error, and attachment protocol structures without Scrapy dependencies. |
-| `microsoft_graph/scrapy/spiders.py` | Construct Graph requests, declare scopes, and preserve opaque continuation URLs. |
-| `microsoft_graph/scrapy/resources.py` | Provide minimal object/collection spiders with replaceable item hooks and native pagination. |
-| `microsoft_graph/scrapy/items.py` | Provide an optional provider-only GraphResourceItem dataclass. |
-| `microsoft_graph/scrapy/middlewares/` | Own Graph-specific retry/backoff and per-attempt diagnostics. |
-| `microsoft_graph/scrapy/fingerprints.py` | Hash Accept/Prefer representations with Scrapy's native fingerprint helper. |
-| `microsoft_graph/scrapy/outlook/` | Own mailbox paths, own/shared scopes, Mail fields/preferences, and attachment requests. |
-| `microsoft_graph/scrapy/addon.py` | Optionally install transport middleware and representation identity defaults. |
+| `microsoft_graph/spiders/graph.py` | Construct Graph requests, declare scopes, and preserve opaque continuation URLs. |
+| `microsoft_graph/spiders/resources.py` | Provide minimal object/collection spiders with replaceable item hooks and native pagination. |
+| `microsoft_graph/items/graph.py` | Provide an optional provider-only GraphResourceItem dataclass. |
+| `microsoft_graph/middlewares/errors.py` | Own Graph-specific retry/backoff through Scrapy's retry helper. |
+| `microsoft_graph/middlewares/diagnostics.py` | Record Graph transport diagnostics for each attempt. |
+| `microsoft_graph/fingerprints.py` | Hash Accept/Prefer representations with Scrapy's native fingerprint helper. |
+| `microsoft_graph/request.py` | Read the configured Graph host and request operation metadata. |
+| `microsoft_graph/stats.py` | Resolve the consumer-selected Graph statistics prefix. |
+| `microsoft_graph/spiders/outlook/` | Own mailbox paths, own/shared scopes, Mail fields/preferences, and attachment requests. |
+| `microsoft_graph/addon.py` | Optionally install transport middleware and representation identity defaults. |
 | `message_ingest/extensions/microsoft_graph/identity.py` | Verify persisted source identity before Scheduler requests execute. |
 | `message_ingest/spiders/microsoft/_graph.py` | Adapt reusable requests to msgloom evidence, failures, auth enablement, and logical run integrity. |
 | `message_ingest/fingerprints/microsoft_graph.py` | Keep source context and Graph representation headers in stable request identity. |
@@ -98,22 +156,37 @@ domain stores own SQL behavior. Commands remain thin intent/argument mapping ove
 Scrapy spiders, and only `message_ingest.commands.microsoft.Command` is a public command.
 
 The root `microsoft_graph.__all__` remains limited to `GRAPH_HOST`, `GRAPH_ROOT`,
-and `PROVIDER_ID`. Import acquisition components from `microsoft_graph.scrapy`
-and its subpackages. Authentication retains its existing import paths and is
-optional. Msgloom connects source identity through `MicrosoftGraphAccountBinding`;
-the reusable auth layer does not own source/catalog bindings.
+and `PROVIDER_ID`. Public component imports use their owning packages:
+
+- `microsoft_graph.spiders`: `MicrosoftGraphSpider`, `GraphObjectSpider`, and
+  `GraphCollectionSpider`.
+- `microsoft_graph.spiders.outlook`: `OutlookMailboxSpider`, `OutlookMailSpider`,
+  and `OutlookCalendarSpider`.
+- `microsoft_graph.middlewares`: `MicrosoftGraphDelegatedAuthMiddleware`,
+  `MicrosoftGraphDeviceCodeAuthMiddleware`,
+  `MicrosoftGraphInteractiveAuthMiddleware`,
+  `MicrosoftGraphErrorMiddleware`, and `MicrosoftGraphDiagnosticsMiddleware`.
+- `microsoft_graph.items`: `GraphResourceItem`.
+- `microsoft_graph.addon`: `MicrosoftGraphAddon`.
+- `microsoft_graph.fingerprints`: `GraphRequestFingerprinter`.
+- `microsoft_graph.request` and `microsoft_graph.stats`: shared transport helpers.
+
+Authentication remains optional and keeps its existing import paths. Msgloom
+connects source identity through `MicrosoftGraphAccountBinding`; the reusable
+auth support code does not own source/catalog bindings.
 
 Configuration keeps the existing `MSGLOOM_*` settings and environment variables.
 Database and evidence paths, `msgloom/*` statistics, and persisted state keys also
 keep their existing names so the package rename does not reset operational state.
 
-The reusable `microsoft_graph.scrapy.MicrosoftGraphSpider` owns request
+The reusable `microsoft_graph.spiders.MicrosoftGraphSpider` owns request
 construction and scope declarations. It does not enable an authentication method.
-The msgloom subclass at the old `_graph` import path retains `MS_GRAPH_AUTH_ENABLED`
-behavior, raw evidence and failure items, `run_id`, run failure state, and raw
-content limits. Outlook provider bases own own/shared scopes and immutable Mail
-IDs. Msgloom bases add item projection and resource failure context. Identity,
-integrity, privacy, checkpoint, and resume extensions remain in `message_ingest`.
+The consumer subclass at `message_ingest.spiders.microsoft._graph` retains
+`MS_GRAPH_AUTH_ENABLED` behavior, raw evidence and failure items, `run_id`, run
+failure state, and raw content limits. Outlook provider bases own own/shared
+scopes and immutable Mail IDs. Msgloom bases add item projection and resource
+failure context. Identity, integrity, privacy, checkpoint, and resume extensions
+remain in `message_ingest`.
 
 `MSGLOOM_SOURCE_ID` remains an internal namespace. Source identity binding,
 Graph account selection, and source-context isolation are provider/acquisition
@@ -130,7 +203,7 @@ User-level `mail sync` and `calendar sync` workflows compose those native spider
 A collection needs no msgloom settings, catalog, or persistence pipeline:
 
 ```python
-from microsoft_graph.scrapy import GraphCollectionSpider
+from microsoft_graph.spiders import GraphCollectionSpider
 
 
 class ContactsSpider(GraphCollectionSpider):
@@ -151,11 +224,12 @@ return a custom dataclass, Scrapy Item, or dict. No pipeline is required.
 Opt into the transport defaults with:
 
 ```python
-ADDONS = {"microsoft_graph.scrapy.MicrosoftGraphAddon": 100}
+ADDONS = {"microsoft_graph.addon.MicrosoftGraphAddon": 100}
 ```
 
 The add-on enables `MicrosoftGraphErrorMiddleware` at 555 and
-`MicrosoftGraphDiagnosticsMiddleware` at 960, plus `GraphRequestFingerprinter`.
+`MicrosoftGraphDiagnosticsMiddleware` at 960, plus
+`microsoft_graph.fingerprints.GraphRequestFingerprinter`.
 It sets defaults at add-on priority and preserves explicit middleware entries
 (including `None`, class keys, and import paths). Consumer fingerprint settings
 win. It installs no auth component, pipeline, lifecycle extension, privacy
@@ -382,7 +456,21 @@ See the [2.19.0 signal contract](https://github.com/scrapy/scrapy/blob/2.19.0/do
 
 ## Validation
 
-Run `.venv/bin/python -m pytest -q` and `.venv/bin/python -m scrapy check`.
+Run these checks from the repository root:
+
+```console
+.venv/bin/pytest -q
+.venv/bin/ruff check microsoft_graph message_ingest tests
+.venv/bin/ruff format --check microsoft_graph message_ingest tests
+pyright microsoft_graph message_ingest
+.venv/bin/scrapy check
+```
+
 The tests include local Graph crawls for Mail and Calendar commands, authentication and
 retry boundaries, evidence replay, checkpoint failure handling, and JOBDIR resume.
-Run Python LSP diagnostics on both `message_ingest/` and `tests/` after changing imports.
+Framework tests verify canonical public imports, the absence of a nested Scrapy
+package, imports without `message_ingest` or SQLAlchemy, and protocol imports
+without Scrapy. They also preserve standalone crawls, add-on precedence, exact
+fingerprint bytes, callback/errback serialization, and delta compatibility.
+Run Python LSP diagnostics on `microsoft_graph/`, `message_ingest/`, and `tests/`
+after changing imports.

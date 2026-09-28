@@ -4,11 +4,12 @@ import pytest
 from scrapy.settings import Settings
 from scrapy.utils.test import get_crawler
 
-from microsoft_graph.scrapy import GraphCollectionSpider, MicrosoftGraphAddon
-from microsoft_graph.scrapy.middlewares import (
+from microsoft_graph.addon import MicrosoftGraphAddon
+from microsoft_graph.middlewares import (
     MicrosoftGraphDiagnosticsMiddleware,
     MicrosoftGraphErrorMiddleware,
 )
+from microsoft_graph.spiders import GraphCollectionSpider
 
 
 def test_addon_sets_only_provider_transport_defaults():
@@ -38,7 +39,7 @@ def test_consumer_can_disable_or_reprioritize_components_and_fingerprint():
     settings = Settings(
         {
             "DOWNLOADER_MIDDLEWARES": {
-                "microsoft_graph.scrapy.middlewares.errors.MicrosoftGraphErrorMiddleware": None,
+                "microsoft_graph.middlewares.errors.MicrosoftGraphErrorMiddleware": None,
                 MicrosoftGraphDiagnosticsMiddleware: 999,
             },
             "REQUEST_FINGERPRINTER_CLASS": "scrapy.utils.request.RequestFingerprinter",
@@ -59,7 +60,7 @@ def test_native_addon_manager_loads_components_without_persistence():
     crawler = get_crawler(
         Contacts,
         settings_dict={
-            "ADDONS": {"microsoft_graph.scrapy.MicrosoftGraphAddon": 100},
+            "ADDONS": {"microsoft_graph.addon.MicrosoftGraphAddon": 100},
         },
     )
     if len(crawler.addons.addons) != 1:

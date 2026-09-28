@@ -4,7 +4,7 @@ from abc import ABC
 from typing import ClassVar
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
-from microsoft_graph.scrapy.outlook.mailbox import OutlookMailboxSpider as GraphMailbox
+from microsoft_graph.spiders.outlook.mailbox import OutlookMailboxSpider as GraphMailbox
 
 
 class OutlookMailboxSpider(GraphMailbox, MicrosoftGraphSpider, ABC):

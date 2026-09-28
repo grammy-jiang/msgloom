@@ -5,7 +5,7 @@ from microsoft_graph.protocol.attachments import (
     attachment_raw_path,
     item_attachment_path,
 )
-from microsoft_graph.scrapy.spiders import MicrosoftGraphSpider
+from microsoft_graph.spiders.graph import MicrosoftGraphSpider
 
 
 class OutlookAttachmentSpider(MicrosoftGraphSpider):

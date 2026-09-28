@@ -5,9 +5,9 @@ from typing import Any
 
 from scrapy.http import TextResponse
 
+from microsoft_graph.items import GraphResourceItem
 from microsoft_graph.protocol import GraphCollectionPage, graph_object
-from microsoft_graph.scrapy.items import GraphResourceItem
-from microsoft_graph.scrapy.spiders import MicrosoftGraphSpider
+from microsoft_graph.spiders.graph import MicrosoftGraphSpider
 
 
 class GraphObjectSpider(MicrosoftGraphSpider):

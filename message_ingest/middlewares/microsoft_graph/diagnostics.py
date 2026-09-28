@@ -2,7 +2,7 @@
 
 import logging
 
-from microsoft_graph.scrapy.middlewares.diagnostics import (
+from microsoft_graph.middlewares.diagnostics import (
     MicrosoftGraphDiagnosticsMiddleware as GraphDiagnosticsMiddleware,
 )
 

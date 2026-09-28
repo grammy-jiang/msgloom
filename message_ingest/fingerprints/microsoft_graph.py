@@ -8,8 +8,8 @@ import hashlib
 
 from message_ingest.acquisition.source_context import source_catalog_context_digest
 from microsoft_graph import GRAPH_HOST
-from microsoft_graph.scrapy.fingerprints import GraphRequestFingerprinter
-from microsoft_graph.scrapy.request import graph_host
+from microsoft_graph.fingerprints import GraphRequestFingerprinter
+from microsoft_graph.request import graph_host
 
 
 class RepresentationAwareRequestFingerprinter(GraphRequestFingerprinter):

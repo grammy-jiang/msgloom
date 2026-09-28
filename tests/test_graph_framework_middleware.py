@@ -9,11 +9,11 @@ from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.http import Request, TextResponse
 from scrapy.utils.test import get_crawler
 
-from microsoft_graph.scrapy.middlewares.diagnostics import (
+from microsoft_graph.middlewares.diagnostics import (
     MicrosoftGraphDiagnosticsMiddleware,
 )
-from microsoft_graph.scrapy.middlewares.errors import MicrosoftGraphErrorMiddleware
-from microsoft_graph.scrapy.request import GRAPH_OPERATION_META_KEY
+from microsoft_graph.middlewares.errors import MicrosoftGraphErrorMiddleware
+from microsoft_graph.request import GRAPH_OPERATION_META_KEY
 
 
 def middleware(settings=None):

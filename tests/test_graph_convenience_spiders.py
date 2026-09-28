@@ -11,9 +11,9 @@ from scrapy.http import TextResponse
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
+from microsoft_graph.items import GraphResourceItem
 from microsoft_graph.protocol import GraphProtocolError
-from microsoft_graph.scrapy import GraphCollectionSpider, GraphObjectSpider
-from microsoft_graph.scrapy.items import GraphResourceItem
+from microsoft_graph.spiders import GraphCollectionSpider, GraphObjectSpider
 
 
 class ContactsSpider(GraphCollectionSpider):

@@ -7,7 +7,7 @@ from typing import Any, ClassVar
 
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
-from microsoft_graph.scrapy.outlook.mail import OutlookMailSpider as GraphMail
+from microsoft_graph.spiders.outlook.mail import OutlookMailSpider as GraphMail
 
 
 class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):

@@ -32,6 +32,6 @@ class MicrosoftGraphAddon:
         )
         settings.set(
             "REQUEST_FINGERPRINTER_CLASS",
-            "microsoft_graph.scrapy.fingerprints.GraphRequestFingerprinter",
+            "microsoft_graph.fingerprints.GraphRequestFingerprinter",
             priority="addon",
         )

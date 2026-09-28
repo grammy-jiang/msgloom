@@ -7,10 +7,10 @@ from scrapy import Request
 from scrapy.utils.request import fingerprint, request_from_dict
 from scrapy.utils.test import get_crawler
 
-from microsoft_graph.scrapy import MicrosoftGraphSpider
-from microsoft_graph.scrapy.fingerprints import GraphRequestFingerprinter
-from microsoft_graph.scrapy.outlook import OutlookCalendarSpider, OutlookMailSpider
-from microsoft_graph.scrapy.request import GRAPH_OPERATION_META_KEY
+from microsoft_graph.fingerprints import GraphRequestFingerprinter
+from microsoft_graph.request import GRAPH_OPERATION_META_KEY
+from microsoft_graph.spiders import MicrosoftGraphSpider
+from microsoft_graph.spiders.outlook import OutlookCalendarSpider, OutlookMailSpider
 
 
 class ExampleSpider(MicrosoftGraphSpider):

@@ -11,7 +11,7 @@ from scrapy.settings import BaseSettings
 from twisted.python.failure import Failure
 
 from microsoft_graph import GRAPH_ROOT
-from microsoft_graph.scrapy.request import GRAPH_OPERATION_META_KEY
+from microsoft_graph.request import GRAPH_OPERATION_META_KEY
 
 
 class DefaultPrefer(Enum):

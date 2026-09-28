@@ -6,8 +6,8 @@ import logging
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from microsoft_graph.scrapy.request import graph_host, graph_operation
-from microsoft_graph.scrapy.stats import stats_prefix
+from microsoft_graph.request import graph_host, graph_operation
+from microsoft_graph.stats import stats_prefix
 
 logger = logging.getLogger(__name__)
 

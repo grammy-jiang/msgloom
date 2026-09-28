@@ -5,9 +5,13 @@ from .authentication import (
     MicrosoftGraphDeviceCodeAuthMiddleware,
     MicrosoftGraphInteractiveAuthMiddleware,
 )
+from .diagnostics import MicrosoftGraphDiagnosticsMiddleware
+from .errors import MicrosoftGraphErrorMiddleware
 
 __all__ = [
     "MicrosoftGraphDelegatedAuthMiddleware",
     "MicrosoftGraphDeviceCodeAuthMiddleware",
+    "MicrosoftGraphDiagnosticsMiddleware",
+    "MicrosoftGraphErrorMiddleware",
     "MicrosoftGraphInteractiveAuthMiddleware",
 ]

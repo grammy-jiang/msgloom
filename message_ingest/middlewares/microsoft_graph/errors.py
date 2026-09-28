@@ -7,7 +7,7 @@ import logging
 
 from scrapy.downloadermiddlewares.retry import RetryMiddleware, get_retry_request
 
-from microsoft_graph.scrapy.middlewares.errors import (
+from microsoft_graph.middlewares.errors import (
     MicrosoftGraphErrorMiddleware as GraphErrorMiddleware,
 )
 

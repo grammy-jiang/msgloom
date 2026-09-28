@@ -18,8 +18,8 @@ from message_ingest.items.acquisition import (
     AcquisitionFailureItem,
     RawHttpEvidenceItem,
 )
-from microsoft_graph.scrapy import MicrosoftGraphSpider as GraphSpider
-from microsoft_graph.scrapy.spiders import DefaultPrefer
+from microsoft_graph.spiders import MicrosoftGraphSpider as GraphSpider
+from microsoft_graph.spiders.graph import DefaultPrefer
 
 
 class MicrosoftGraphSpider(GraphSpider, ABC):

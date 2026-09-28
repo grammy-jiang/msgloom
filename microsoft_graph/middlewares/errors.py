@@ -14,8 +14,8 @@ from scrapy.downloadermiddlewares.retry import get_retry_request
 from scrapy.exceptions import NotConfigured
 
 from microsoft_graph.protocol import GraphError, GraphProtocolError
-from microsoft_graph.scrapy.request import graph_host, graph_operation
-from microsoft_graph.scrapy.stats import stats_prefix
+from microsoft_graph.request import graph_host, graph_operation
+from microsoft_graph.stats import stats_prefix
 
 logger = logging.getLogger(__name__)
 _SAFE_GRAPH_CODE = re.compile(r"[A-Za-z0-9_.-]{1,64}")

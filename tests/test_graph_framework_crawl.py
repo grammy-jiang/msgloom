@@ -64,7 +64,7 @@ import json
 import sys
 from pathlib import Path
 from scrapy.crawler import CrawlerProcess
-from microsoft_graph.scrapy import GraphCollectionSpider
+from microsoft_graph.spiders import GraphCollectionSpider
 
 class Contacts(GraphCollectionSpider):
     name = "standalone_contacts"
@@ -72,7 +72,7 @@ class Contacts(GraphCollectionSpider):
     graph_permissions = ("Contacts.Read",)
 
 process = CrawlerProcess({
-    "ADDONS": {"microsoft_graph.scrapy.MicrosoftGraphAddon": 100},
+    "ADDONS": {"microsoft_graph.addon.MicrosoftGraphAddon": 100},
     "MS_GRAPH_SERVICE_ROOT": sys.argv[1],
     "FEEDS": {sys.argv[2]: {"format": "json", "overwrite": True}},
     "TELNETCONSOLE_ENABLED": False,

@@ -6,7 +6,7 @@ import pytest
 from scrapy.utils.request import request_from_dict
 
 from microsoft_graph.protocol.attachments import attachment_type_name
-from microsoft_graph.scrapy.outlook import OutlookMailSpider
+from microsoft_graph.spiders.outlook import OutlookMailSpider
 
 
 class AttachmentSpider(OutlookMailSpider):

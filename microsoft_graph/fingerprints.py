@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 from scrapy.utils.request import fingerprint
 
 from microsoft_graph import GRAPH_HOST
-from microsoft_graph.scrapy.request import graph_host
+from microsoft_graph.request import graph_host
 
 GRAPH_REPRESENTATION_HEADERS = ("Accept", "Prefer")
 
