@@ -5,82 +5,25 @@ from __future__ import annotations
 from abc import ABC
 from typing import Any, ClassVar
 
-import scrapy
-
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
+from microsoft_graph.scrapy.outlook.mail import OutlookMailSpider as GraphMail
 
 
-class OutlookMailSpider(OutlookMailboxSpider, ABC):
+class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
     """
     Share Outlook Mail representation and item projection across acquisition modes.
 
-    Microsoft Graph request/evidence/failure behavior lives in the provider
-    base. Mail keeps its own delegated scope, immutable-ID preference, semantic
-    fields, and callback context.
+    The framework Mail base owns scopes, fields, and immutable-ID preference.
+    This adapter owns semantic projection and failure callback context, using
+    the msgloom Graph base for evidence and logical run integrity.
     """
 
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
-    shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read.Shared",)
     failure_context_keys: ClassVar[tuple[str, ...]] = (
         "message_id",
         "attachment_id",
         "folder_id",
     )
-
-    discovery_fields = (
-        "id",
-        "subject",
-        "from",
-        "sender",
-        "toRecipients",
-        "ccRecipients",
-        "bccRecipients",
-        "replyTo",
-        "receivedDateTime",
-        "sentDateTime",
-        "createdDateTime",
-        "lastModifiedDateTime",
-        "importance",
-        "isRead",
-        "isDraft",
-        "hasAttachments",
-        "conversationId",
-        "conversationIndex",
-        "inferenceClassification",
-        "flag",
-        "categories",
-        "bodyPreview",
-        "parentFolderId",
-        "webLink",
-        "internetMessageId",
-    )
-
-    def _request(
-        self,
-        url: str,
-        *,
-        callback,
-        purpose: str,
-        cb_kwargs: dict[str, Any],
-        verbatim_url: bool = False,
-        accept: str = "application/json",
-        dont_cache: bool = False,
-        prefer: str | None = 'IdType="ImmutableId"',
-        download_maxsize: int | None = None,
-    ) -> scrapy.Request:
-        """Build a Graph request with Outlook's immutable-ID preference."""
-        return super()._request(
-            url,
-            callback=callback,
-            purpose=purpose,
-            cb_kwargs=cb_kwargs,
-            verbatim_url=verbatim_url,
-            accept=accept,
-            dont_cache=dont_cache,
-            prefer=prefer,
-            download_maxsize=download_maxsize,
-        )
 
     def _message_item(
         self,

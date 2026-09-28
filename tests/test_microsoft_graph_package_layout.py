@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import ast
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -22,7 +24,7 @@ def test_public_package_surfaces_are_explicit() -> None:
 
 def test_graph_package_does_not_depend_on_message_ingest() -> None:
     root = Path(__file__).parents[1] / "microsoft_graph"
-    forbidden = ("message_ingest",)
+    forbidden = ("message_ingest", "sqlalchemy")
     for path in root.rglob("*.py"):
         tree = ast.parse(path.read_text(), filename=str(path))
         for node in ast.walk(tree):
@@ -41,3 +43,31 @@ def test_legacy_message_ingest_provider_package_is_gone() -> None:
     legacy = Path(__file__).parents[1] / "message_ingest" / "providers"
     if legacy.exists():
         pytest.fail(f"Legacy provider package still exists: {legacy}")
+
+
+def test_framework_imports_work_when_consumer_and_sqlalchemy_are_unavailable():
+    code = """
+import importlib
+import importlib.abc
+import pkgutil
+import sys
+
+class ForbidConsumer(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split(".")[0] in {"message_ingest", "sqlalchemy"}:
+            raise ImportError(f"Forbidden framework dependency: {fullname}")
+
+sys.meta_path.insert(0, ForbidConsumer())
+import microsoft_graph
+for module in pkgutil.walk_packages(microsoft_graph.__path__, "microsoft_graph."):
+    importlib.import_module(module.name)
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    if result.returncode:
+        pytest.fail(result.stderr)

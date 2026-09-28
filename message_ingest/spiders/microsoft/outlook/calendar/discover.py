@@ -10,6 +10,7 @@ from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarItem
+from microsoft_graph.protocol import GraphCollectionPage
 
 from ._base import OutlookCalendarSpider
 
@@ -87,12 +88,12 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
         """Yield page evidence, calendar inventory items, and continuation."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar inventory response must be a JSON object")
-        values = payload.get("value")
-        if not isinstance(values, list):
-            raise TypeError("Calendar inventory must contain a value list")
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            context="Calendar inventory",
+            validate_links=False,
+        )
+        values = page.values
 
         self.crawler.stats.inc_value("msgloom/crawl/calendar/inventory_page_count")
         for calendar in values:
@@ -110,17 +111,13 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
                 run_id=self.run_id,
             )
 
-        next_link = payload.get("@odata.nextLink")
+        next_link = page.next_link
         if next_link is None:
             self.crawler.stats.set_value(
                 "msgloom/crawl/calendar/inventory_exhausted",
                 True,
             )
             return
-        if not isinstance(next_link, str) or not next_link:
-            raise ValueError(
-                "Calendar inventory @odata.nextLink must be a non-empty string"
-            )
         self.crawler.stats.inc_value(
             "msgloom/crawl/calendar/inventory_continuation_count"
         )

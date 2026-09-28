@@ -5,7 +5,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Iterator
 from typing import Any
-from urllib.parse import quote, urlencode
 
 import scrapy
 from scrapy.http import Response, TextResponse
@@ -18,6 +17,12 @@ from message_ingest.acquisition.microsoft.outlook.email.profile import (
 from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookMessageSurfaceItem,
+)
+from microsoft_graph.protocol import GraphCollectionPage
+from microsoft_graph.protocol.attachments import (
+    attachment_list_path,
+    attachment_raw_path,
+    item_attachment_path,
 )
 
 from ._base import OutlookMailSpider
@@ -55,8 +60,13 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         """Emit attachment metadata and schedule each supported raw surface."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        attachments = payload.get("value", [])
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        attachments = page.values
         self.logger.debug(
             "Processed Outlook attachment page: message_id=%s page=%s attachments=%s",
             message_id,
@@ -117,7 +127,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                     profile_version=FULL_V1,
                 )
 
-        if next_link := payload.get("@odata.nextLink"):
+        if next_link := page.next_link:
             self.crawler.stats.inc_value(
                 "msgloom/crawl/enrichment/attachment_continuation_count"
             )
@@ -184,12 +194,8 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         List attachment metadata; only the final page marks the inventory
         acquired.
         """
-        encoded_id = quote(message_id, safe="")
         if url is None:
-            query = urlencode(
-                {"$select": ("id,name,contentType,size,isInline,lastModifiedDateTime")}
-            )
-            url = self._mailbox_url(f"/messages/{encoded_id}/attachments?{query}")
+            url = f"{self.graph_root}{attachment_list_path(self._message_path(message_id))}"
         return self._request(
             url,
             callback=self.parse_attachments,
@@ -211,12 +217,9 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         Request raw attachment bytes with a representation-specific ``Accept``
         header.
         """
-        encoded_message_id = quote(message_id, safe="")
-        encoded_attachment_id = quote(attachment_id, safe="")
+        path = attachment_raw_path(self._message_path(message_id), attachment_id)
         return self._request(
-            self._mailbox_url(
-                f"/messages/{encoded_message_id}/attachments/{encoded_attachment_id}/$value"
-            ),
+            f"{self.graph_root}{path}",
             callback=self.parse_raw_evidence,
             purpose="attachment-raw",
             cb_kwargs={
@@ -235,14 +238,9 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         """
         Expand the embedded Graph item separately from its raw content surface.
         """
-        encoded_message_id = quote(message_id, safe="")
-        encoded_attachment_id = quote(attachment_id, safe="")
-        query = urlencode({"$expand": "microsoft.graph.itemattachment/item"})
+        path = item_attachment_path(self._message_path(message_id), attachment_id)
         return self._request(
-            self._mailbox_url(
-                f"/messages/{encoded_message_id}/attachments/"
-                f"{encoded_attachment_id}?{query}"
-            ),
+            f"{self.graph_root}{path}",
             callback=self.parse_attachment_detail,
             purpose="item-attachment-detail",
             cb_kwargs={

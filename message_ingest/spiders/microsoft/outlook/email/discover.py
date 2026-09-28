@@ -7,6 +7,8 @@ from urllib.parse import quote, urlencode
 import scrapy
 from scrapy.http import TextResponse
 
+from microsoft_graph.protocol import GraphCollectionPage
+
 from ._base import OutlookMailSpider
 
 
@@ -92,8 +94,13 @@ class OutlookDiscoverSpider(OutlookMailSpider):
         """
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        messages = payload.get("value", [])
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        messages = page.values
         self.logger.debug(
             "Processed Outlook message-list page: page=%s messages=%s cached=%s",
             page_number,
@@ -115,7 +122,7 @@ class OutlookDiscoverSpider(OutlookMailSpider):
             for message in messages
         )
 
-        next_link = payload.get("@odata.nextLink")
+        next_link = page.next_link
         if not next_link:
             self.crawler.stats.set_value(
                 "msgloom/crawl/discovery/pagination_exhausted", True

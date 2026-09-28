@@ -22,6 +22,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
 from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
     CalendarDeltaCheckpointStore,
 )
+from microsoft_graph.protocol import GraphDeltaPage
 
 from ._base import OutlookCalendarSpider
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
@@ -176,12 +177,13 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
 
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar delta response must be a JSON object")
-        values = payload.get("value")
-        if not isinstance(values, list):
-            raise TypeError("Calendar delta response must contain a value list")
+        page = GraphDeltaPage.from_payload(
+            response.json(),
+            context="Calendar delta response",
+            strict=False,
+            validate_links=False,
+        )
+        values = page.values
         # Graph may repeat an event in one page. Keep every delta entry, but
         # project only its last upsert into the source-wide event record.
         last_upserts = {
@@ -248,9 +250,9 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
                     observation_kind="delta",
                 )
 
-        next_link = payload.get("@odata.nextLink")
-        delta_link = payload.get("@odata.deltaLink")
-        if next_link is not None and delta_link is not None:
+        # Preserve Calendar's failure item after evidence and observations.
+        # Mail/folder consumers instead give nextLink precedence.
+        if page.has_conflicting_state:
             self.mark_run_failed("calendar_delta_conflicting_state")
             yield self._state_failure(
                 response,
@@ -261,9 +263,7 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
             )
             return
 
-        if next_link is not None:
-            if not isinstance(next_link, str) or not next_link:
-                raise ValueError("Calendar @odata.nextLink must be a non-empty string")
+        if (next_link := page.next_link) is not None:
             self.crawler.stats.inc_value(
                 "msgloom/crawl/calendar/delta/continuation_count"
             )
@@ -275,9 +275,7 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
             )
             return
 
-        if delta_link is not None:
-            if not isinstance(delta_link, str) or not delta_link:
-                raise ValueError("Calendar @odata.deltaLink must be a non-empty string")
+        if (delta_link := page.delta_link) is not None:
             self._terminal_delta_seen = True
             self.crawler.stats.set_value(
                 "msgloom/crawl/calendar/delta/terminal_seen", True

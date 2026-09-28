@@ -1,12 +1,11 @@
 # Message ingestion: Scrapy component layout
 
-`message_ingest` is the product acquisition Scrapy project within the `msgloom`
-repository. Shared Microsoft Graph authentication lives in the sibling `microsoft_graph`
-package so account/token handling is independent of the Microsoft product being
-acquired. Outlook Mail is the mature resource,
-and Microsoft Calendar now has explicit inventory, bounded-window, incremental
-delta, and targeted full-content modes that reuse the shared Graph provider and
-evidence components.
+`message_ingest` is the consumer Scrapy project in the `msgloom` distribution.
+The sibling `microsoft_graph` package is a reusable Graph acquisition framework.
+It owns protocol parsing, authentication options, transport mechanics, provider
+requests, and optional items. It imports neither `message_ingest` nor SQLAlchemy.
+Msgloom owns evidence, persistence, logical run integrity, source identity,
+checkpoints, JOBDIR application state, enrichment completeness, and workflows.
 
 The project uses **Scrapy 2.19.0**. The runtime, dependency declaration, and lockfile
 agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
@@ -23,12 +22,20 @@ remains `msgloom`.
 | `microsoft_graph/auth/binding.py` | Define the opaque application account-binding protocol with no msgloom dependency. |
 | `microsoft_graph/auth/session.py` | Own crawler-scoped MSAL token/account state; application binding is injected through a protocol. |
 | `microsoft_graph/middlewares/authentication.py` | Attach/remove credentials at the downloader boundary and refresh one pinned account after 401. |
+| `microsoft_graph/protocol/` | Validate Graph object, collection, delta, error, and attachment protocol structures without Scrapy dependencies. |
+| `microsoft_graph/scrapy/spiders.py` | Construct Graph requests, declare scopes, and preserve opaque continuation URLs. |
+| `microsoft_graph/scrapy/resources.py` | Provide minimal object/collection spiders with replaceable item hooks and native pagination. |
+| `microsoft_graph/scrapy/items.py` | Provide an optional provider-only GraphResourceItem dataclass. |
+| `microsoft_graph/scrapy/middlewares/` | Own Graph-specific retry/backoff and per-attempt diagnostics. |
+| `microsoft_graph/scrapy/fingerprints.py` | Hash Accept/Prefer representations with Scrapy's native fingerprint helper. |
+| `microsoft_graph/scrapy/outlook/` | Own mailbox paths, own/shared scopes, Mail fields/preferences, and attachment requests. |
+| `microsoft_graph/scrapy/addon.py` | Optionally install transport middleware and representation identity defaults. |
 | `message_ingest/extensions/microsoft_graph/identity.py` | Verify persisted source identity before Scheduler requests execute. |
-| `message_ingest/spiders/microsoft/_graph.py` | Graph request construction, raw evidence, terminal request failures, and logical run integrity. |
+| `message_ingest/spiders/microsoft/_graph.py` | Adapt reusable requests to msgloom evidence, failures, auth enablement, and logical run integrity. |
 | `message_ingest/fingerprints/microsoft_graph.py` | Keep source context and Graph representation headers in stable request identity. |
 | `message_ingest/fingerprints/microsoft/outlook/calendar.py` | Separate Calendar delta reset attempts while preserving native duplicate filtering within one attempt. |
-| `message_ingest/middlewares/microsoft_graph/errors.py` | Graph-specific retry decisions and delays through Scrapy's retry helper. |
-| `message_ingest/middlewares/microsoft_graph/diagnostics.py` | Request correlation IDs and protocol diagnostics. |
+| `message_ingest/middlewares/microsoft_graph/errors.py` | Keep global PrivacySafeRetryMiddleware and a thin Graph retry compatibility adapter. |
+| `message_ingest/middlewares/microsoft_graph/diagnostics.py` | Keep legacy diagnostic logger names, stats defaults, and correlation metadata. |
 | `message_ingest/extensions/microsoft_graph/integrity.py` | Mark Graph logical runs failed for callback and item-processing signals. |
 | `message_ingest/extensions/microsoft_graph/privacy.py` | Install Graph-wide Scrapy core LogRecord privacy filtering. |
 | `message_ingest/observability/formatter.py` | Apply provider-neutral Scrapy LogFormatter policy without URLs, payloads, or arbitrary exception text. |
@@ -57,15 +64,15 @@ remains `msgloom`.
 | `message_ingest/spiders/microsoft/outlook/calendar/window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
 | `message_ingest/spiders/microsoft/outlook/calendar/delta.py` | Incrementally synchronize one exact primary-calendar window. |
 | `message_ingest/spiders/microsoft/outlook/calendar/full.py` | Acquire rich detail and attachments for selected events. |
-| `message_ingest/spiders/microsoft/outlook/calendar/_attachments.py` | Own Calendar attachment pagination, raw-content requests, and item expansion. |
+| `message_ingest/spiders/microsoft/outlook/calendar/_attachments.py` | Own attachment traversal, evidence, size omissions, and Full-v1 completion using framework endpoints. |
 | `message_ingest/pipelines/microsoft/outlook/calendar.py` | Route Calendar/event/attachment/delta items through the shared write lock into Calendar/checkpoint stores. |
 | `message_ingest/sync/microsoft/outlook/calendar/checkpoints.py` | Stage and atomically promote fixed-window Calendar delta cursors. |
 | `message_ingest/sync/microsoft/outlook/calendar/state.py` | Apply winning delta observations to committed fixed-window membership. |
 | `message_ingest/spiders/microsoft/outlook/calendar/_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
-| `message_ingest/spiders/microsoft/outlook/calendar/_base.py` | Share Calendar own/delegated permission and mailbox-target behavior. |
+| `message_ingest/spiders/microsoft/outlook/calendar/_base.py` | Compose framework Calendar scopes with msgloom mailbox/evidence behavior. |
 | `message_ingest/extensions/microsoft/outlook/calendar/resume.py` | Validate Calendar window/full JOBDIR scope before saved requests execute. |
 | `message_ingest/spiders/microsoft/outlook/email/_delta_state.py` | Serialize Mail delta execution facts independently of provider cursors. |
-| `message_ingest/spiders/microsoft/outlook/_mailbox.py` | Select signed-in versus delegated mailbox paths and resource scopes. |
+| `message_ingest/spiders/microsoft/outlook/_mailbox.py` | Bind framework mailbox paths/scopes to MSGLOOM_TARGET_MAILBOX and source-target identity. |
 | `message_ingest/spiders/microsoft/outlook/email/folder_delta.py` | Track mailbox folder add/update/remove changes through an independent mailFolder delta cursor. |
 | `message_ingest/catalog/models/base.py` | Own the shared SQLAlchemy declarative metadata. |
 | `message_ingest/catalog/models/acquisition.py` | Define account/target source bindings and provider-independent raw-evidence models. |
@@ -90,25 +97,23 @@ imports should also use these module paths. `Catalog` owns only engine/session l
 domain stores own SQL behavior. Commands remain thin intent/argument mapping over named
 Scrapy spiders, and only `message_ingest.commands.microsoft.Command` is a public command.
 
-The sibling `microsoft_graph` package contains only Microsoft account/token
-handling and the authentication downloader middleware. It imports no msgloom
-module. Msgloom source identity is connected through the
-`MicrosoftGraphAccountBinding` protocol by the source-identity extension, so
-authentication stays reusable across Outlook Mail, Calendar, Teams, and
-future Microsoft resources.
+The root `microsoft_graph.__all__` remains limited to `GRAPH_HOST`, `GRAPH_ROOT`,
+and `PROVIDER_ID`. Import acquisition components from `microsoft_graph.scrapy`
+and its subpackages. Authentication retains its existing import paths and is
+optional. Msgloom connects source identity through `MicrosoftGraphAccountBinding`;
+the reusable auth layer does not own source/catalog bindings.
 
 Configuration keeps the existing `MSGLOOM_*` settings and environment variables.
 Database and evidence paths, `msgloom/*` statistics, and persisted state keys also
 keep their existing names so the package rename does not reset operational state.
 
-`MicrosoftGraphSpider` is deliberately resource-neutral: it does not add Mail's
-`Prefer: IdType="ImmutableId"` header and it accepts only explicitly allowlisted
-string identifiers in failure context. Product Spiders declare only their
-`graph_permissions` resource contract; the shared Graph Spider translates that
-contract into auth settings. `OutlookMailSpider` additionally owns the
-immutable-ID preference and Mail item projection. Provider integrity and
-privacy extensions apply to every Graph resource; Outlook status/checkpoint
-extensions remain resource-specific.
+The reusable `microsoft_graph.scrapy.MicrosoftGraphSpider` owns request
+construction and scope declarations. It does not enable an authentication method.
+The msgloom subclass at the old `_graph` import path retains `MS_GRAPH_AUTH_ENABLED`
+behavior, raw evidence and failure items, `run_id`, run failure state, and raw
+content limits. Outlook provider bases own own/shared scopes and immutable Mail
+IDs. Msgloom bases add item projection and resource failure context. Identity,
+integrity, privacy, checkpoint, and resume extensions remain in `message_ingest`.
 
 `MSGLOOM_SOURCE_ID` remains an internal namespace. Source identity binding,
 Graph account selection, and source-context isolation are provider/acquisition
@@ -119,6 +124,104 @@ validated before Scheduler construction.
 Large Spider modules are not split by line count alone. Pagination, request construction, errbacks, and reset handling remain with their owning Spider state machine. Only independently serializable Mail delta execution state was extracted, matching the existing Calendar delta execution-state boundary.
 
 User-level `mail sync` and `calendar sync` workflows compose those native spiders sequentially through one `CrawlerProcess`. Catalog planners run only after a preceding crawler has fully closed. Mail refreshes resources changed by the current delta run before filling older incomplete Full-v1 backlog. Calendar records non-semantic per-run event sightings, uses primary-calendar delta plus secondary-calendar bounded windows, and enriches only events sighted by those collection phases whose Full-v1 surfaces do not match the current `changeKey`. Multi-phase sync intentionally rejects a shared JOBDIR; JOBDIR remains scoped to one crawler.
+
+## Standalone framework usage
+
+A collection needs no msgloom settings, catalog, or persistence pipeline:
+
+```python
+from microsoft_graph.scrapy import GraphCollectionSpider
+
+
+class ContactsSpider(GraphCollectionSpider):
+    name = "contacts"
+    endpoint = "/me/contacts"
+    graph_permissions = ("Contacts.Read",)
+```
+
+`GraphObjectSpider` has the same declarations and validates a single JSON object.
+`GraphCollectionSpider` validates the collection and each object, emits one item
+per value, and follows opaque `@odata.nextLink` URLs through named callbacks and
+the native scheduler. The optional `GraphResourceItem` dataclass has only
+`resource` (the unchanged provider object) and `url` (its response URL). Scrapy
+feed exporters and `ItemAdapter` accept it directly. Override
+`resource_to_item(resource, response)` or `make_item(resource, response)` to
+return a custom dataclass, Scrapy Item, or dict. No pipeline is required.
+
+Opt into the transport defaults with:
+
+```python
+ADDONS = {"microsoft_graph.scrapy.MicrosoftGraphAddon": 100}
+```
+
+The add-on enables `MicrosoftGraphErrorMiddleware` at 555 and
+`MicrosoftGraphDiagnosticsMiddleware` at 960, plus `GraphRequestFingerprinter`.
+It sets defaults at add-on priority and preserves explicit middleware entries
+(including `None`, class keys, and import paths). Consumer fingerprint settings
+win. It installs no auth component, pipeline, lifecycle extension, privacy
+filter, or concurrency/throttle/cache policy. Select an authentication component
+and its settings explicitly, or provide authentication through another native
+Scrapy middleware. Scope declarations populate `MS_GRAPH_SCOPES` defaults without
+forcing `MS_GRAPH_AUTH_ENABLED`.
+
+Use `graph_request()` for new requests and `continuation_request()` for opaque
+provider URLs. The latter sets Scrapy 2.19's public `meta["verbatim_url"]`; it does
+not parse or rebuild the URL. Both support Accept/Prefer, cache bypass, raw
+response size limits, and named callbacks/errbacks. The neutral operation key is
+`meta["microsoft_graph_operation"]`. Middleware reads that key first and falls
+back to legacy `cb_kwargs["purpose"]`. Callback arguments remain consumer-owned.
+
+`MS_GRAPH_SERVICE_ROOT` or the spider's `service_root` attribute overrides the
+default `https://graph.microsoft.com/v1.0` and its allowed domain. Transport host
+matching follows that root. This is a transport extension point, not a promise
+of national-cloud authentication support. Outlook bases use
+`MS_GRAPH_TARGET_MAILBOX` for `/me` versus `/users/{encoded locator}` and select
+own/shared scopes. The msgloom adapter continues to use `MSGLOOM_TARGET_MAILBOX`.
+Mail defaults to `Prefer: IdType="ImmutableId"`; explicit `prefer=None` suppresses
+that default. Calendar preferences remain request-specific.
+
+Graph retry statuses are configurable with `MS_GRAPH_ERROR_RETRY_HTTP_CODES`.
+Framework defaults are 429/503, with the special transient
+`Directory_ConcurrencyViolation` 409 handled separately by an overridable method.
+Msgloom explicitly retains 429/503/509. Retry-After seconds/date, bounded fallback
+backoff, 503 `Connection: close`, independent provider retry counts, and generic
+retry suppression on exhaustion are unchanged. Retry requests still use
+Scrapy's `get_retry_request`.
+
+`MS_GRAPH_STATS_PREFIX` defaults to `microsoft_graph`; counters keep the `graph`,
+`graph_error`, and `graph_error_retry` families under that prefix. Msgloom sets
+`msgloom` and retains all existing stat keys. Its thin middleware adapters also
+retain legacy loggers and serialized retry/correlation metadata. Existing
+component priorities remain unchanged, including diagnostics before auth on the
+response path. `PrivacySafeRetryMiddleware` remains a msgloom global policy.
+
+The framework fingerprint uses native `scrapy.utils.request.fingerprint` with
+`Accept` and `Prefer` for the configured host. Authorization never enters identity.
+Msgloom composes its existing source/catalog digest and exact
+`msgloom-graph-fingerprint-v1` hash format around the Graph representation hash;
+existing default-host fingerprints remain unchanged. Custom service roots use
+the same source isolation and representation rules. Calendar's reset-attempt
+fingerprinter remains in msgloom.
+
+## Protocol and delta compatibility
+
+`microsoft_graph.protocol` exposes `GraphProtocolError`, `graph_object`,
+`GraphCollectionPage`, `GraphDeltaPage`, and `GraphError`. Parsers consume decoded
+JSON. Collections require an object and a value list; links must be non-empty
+strings when present (JSON null means absent). Error envelopes retain nested
+codes from both `innerError` and `innererror`. Parsing does not interpret cursors,
+store them, promote candidates, or decide whether to restart after HTTP 410.
+
+`GraphDeltaPage.from_payload()` validates exactly one next/delta link by default.
+`strict=False` leaves missing/conflicting-state decisions with the consumer;
+`validate_state()` is available for explicit strict validation. Msgloom defers
+link validation until after evidence and semantic observations. Mail and
+mailFolder delta explicitly retain missing-value-as-empty, falsey-link-as-absent,
+and nextLink precedence, including ignoring an unused deltaLink when nextLink
+exists. Calendar still requires a value list, emits its existing conflict or
+missing-state failure item after observations, and blocks checkpoint promotion.
+No checkpoint storage, CAS revision, 410 reset, DB schema, or JOBDIR application
+state changed during this extraction.
 
 ## Acquisition pipeline contract
 
@@ -227,8 +330,9 @@ state and lifecycle rules.
   forwarding layer through `Catalog`.
 - Enrichment reads only the state it uses and streams its output. Small forwarding
   methods and the unused profile object were removed.
-- Attachment type normalization and profile completion rules live in
-  `message_ingest/acquisition/microsoft/outlook/email/profile.py` and are shared by attachment discovery and enrichment.
+- Attachment type normalization and endpoint construction live in
+  `microsoft_graph/protocol/attachments.py`. Mail and Calendar profiles re-export
+  normalization for compatibility; Full-v1 completion rules remain in msgloom.
 
 ## Code documentation and style
 

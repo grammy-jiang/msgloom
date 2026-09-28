@@ -1,4 +1,4 @@
-"""Reusable Microsoft Graph authentication and transport infrastructure."""
+"""Reusable Graph protocol, authentication, and optional Scrapy components."""
 
 GRAPH_HOST = "graph.microsoft.com"
 GRAPH_ROOT = "https://graph.microsoft.com/v1.0"

@@ -9,6 +9,7 @@ from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from microsoft_graph.protocol import graph_object
 
 
 class MicrosoftProfileSpider(MicrosoftGraphSpider):
@@ -71,9 +72,7 @@ class MicrosoftProfileSpider(MicrosoftGraphSpider):
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
 
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Microsoft profile response must be a JSON object")
+        payload = graph_object(response.json(), context="Microsoft profile response")
         user_id = payload.get("id")
         if not isinstance(user_id, str) or not user_id:
             raise ValueError("Microsoft profile response must contain a non-empty id")

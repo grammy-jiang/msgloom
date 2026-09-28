@@ -20,6 +20,7 @@ from message_ingest.items.microsoft.outlook.email import (
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookFolderDeltaCheckpointStore,
 )
+from microsoft_graph.protocol import GraphDeltaPage
 
 from ._base import OutlookMailSpider
 
@@ -106,10 +107,16 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
     ) -> Iterator[Any]:
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        values = payload.get("value", [])
-        if not isinstance(values, list):
-            raise TypeError("mailFolder delta response must contain a value list")
+        # Compatibility: missing value is empty and nextLink wins. Link
+        # validation stays after observations, before scheduling/promotion.
+        page = GraphDeltaPage.from_payload(
+            response.json(),
+            strict=False,
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        values = page.values
         self.crawler.stats.inc_value("msgloom/crawl/folder_delta/page_count")
         self.crawler.stats.inc_value(
             "msgloom/crawl/folder_delta/change_count", count=len(values)
@@ -146,7 +153,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 run_id=self.run_id,
             )
 
-        if next_link := payload.get("@odata.nextLink"):
+        if next_link := page.next_link:
             yield self._delta_request(
                 next_link,
                 page_number=page_number + 1,
@@ -154,7 +161,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 reset_count=reset_count,
             )
             return
-        if delta_link := payload.get("@odata.deltaLink"):
+        if delta_link := page.delta_link:
             self._terminal_delta_seen = True
             yield OutlookFolderDeltaCheckpointCandidateItem(
                 run_id=self.run_id,

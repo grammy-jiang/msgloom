@@ -5,23 +5,21 @@ Keep Graph representation choices distinct in the scheduler and HTTP cache.
 from __future__ import annotations
 
 import hashlib
-from urllib.parse import urlsplit
-
-from scrapy.utils.request import fingerprint
 
 from message_ingest.acquisition.source_context import source_catalog_context_digest
 from microsoft_graph import GRAPH_HOST
+from microsoft_graph.scrapy.fingerprints import GraphRequestFingerprinter
+from microsoft_graph.scrapy.request import graph_host
 
-_GRAPH_REPRESENTATION_HEADERS = ("Accept", "Prefer")
 
-
-class RepresentationAwareRequestFingerprinter:
+class RepresentationAwareRequestFingerprinter(GraphRequestFingerprinter):
     """Include source and Graph representation choices in request identity."""
 
-    def __init__(self, source_digest: bytes) -> None:
+    def __init__(self, source_digest: bytes, *, host: str = GRAPH_HOST) -> None:
         """Require an already-derived source/catalog digest."""
         if not source_digest:
             raise ValueError("Graph request fingerprinting requires source context")
+        super().__init__(host=host)
         self._source_digest = source_digest
 
     @classmethod
@@ -31,7 +29,7 @@ class RepresentationAwareRequestFingerprinter:
             crawler.settings["MSGLOOM_SOURCE_ID"],
             crawler.settings["MSGLOOM_DATABASE_URL"],
         )
-        return cls(bytes.fromhex(digest))
+        return cls(bytes.fromhex(digest), host=graph_host(crawler))
 
     def fingerprint(self, request) -> bytes:
         """
@@ -42,15 +40,12 @@ class RepresentationAwareRequestFingerprinter:
         share cache or duplicate-filter identity. ``Authorization`` is
         intentionally excluded.
         """
-        if urlsplit(request.url).hostname == GRAPH_HOST:
-            base = fingerprint(
-                request,
-                include_headers=_GRAPH_REPRESENTATION_HEADERS,
-            )
+        base = super().fingerprint(request)
+        if self.is_graph_request(request):
             return hashlib.sha256(
                 b"msgloom-graph-fingerprint-v1\0" + self._source_digest + b"\0" + base
             ).digest()
-        return fingerprint(request)
+        return base
 
 
 __all__ = ["RepresentationAwareRequestFingerprinter"]

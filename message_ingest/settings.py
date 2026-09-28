@@ -53,6 +53,11 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 AUTOTHROTTLE_DEBUG = False
 
 MS_GRAPH_AUTH_ENABLED = False
+# Reusable transport components keep the established msgloom stat families.
+MS_GRAPH_STATS_PREFIX = "msgloom"
+# 509 remains msgloom policy; the framework default is 429/503 plus the
+# transient Directory_ConcurrencyViolation 409 error code.
+MS_GRAPH_ERROR_RETRY_HTTP_CODES = [429, 503, 509]
 MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
     "MSGLOOM_MS_ERROR_MIDDLEWARE_ENABLED", True
 )
@@ -79,6 +84,7 @@ DOWNLOADER_MIDDLEWARES = {
     # Request hooks run in ascending priority and response hooks in descending
     # priority. Diagnostics therefore sees each Graph response before auth can
     # replace a 401 with a retry Request. Provider retries still run after auth.
+    # Thin adapters retain logger names and persisted retry/correlation meta.
     "message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware": 555,
     "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
     "microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware": 951,

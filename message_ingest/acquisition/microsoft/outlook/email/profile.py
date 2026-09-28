@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from microsoft_graph.protocol.attachments import attachment_type_name
+
 FULL_V1 = "outlook-mail-full-v1"
 
 TERMINAL_SURFACE_STATUSES = frozenset(
@@ -30,15 +32,6 @@ def surface_is_complete(surfaces: dict[str, dict[str, Any]], surface: str) -> bo
     return (
         state["status"] in TERMINAL_SURFACE_STATUSES
         and state["profile_version"] == FULL_V1
-    )
-
-
-def attachment_type_name(attachment_type: str | None) -> str:
-    """Normalize both Graph namespace spellings; keep unknown types visible."""
-    return (
-        (attachment_type or "unknown")
-        .removeprefix("#microsoft.graph.")
-        .removeprefix("microsoft.graph.")
     )
 
 

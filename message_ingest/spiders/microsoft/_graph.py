@@ -18,29 +18,23 @@ from message_ingest.items.acquisition import (
     AcquisitionFailureItem,
     RawHttpEvidenceItem,
 )
-from microsoft_graph import GRAPH_HOST, GRAPH_ROOT
+from microsoft_graph.scrapy import MicrosoftGraphSpider as GraphSpider
+from microsoft_graph.scrapy.spiders import DefaultPrefer
 
 
-class MicrosoftGraphSpider(scrapy.Spider, ABC):
+class MicrosoftGraphSpider(GraphSpider, ABC):
     """
-    Provide transport-facing Graph behavior without resource traversal.
+    Adapt reusable Graph acquisition to msgloom evidence and run integrity.
 
     Resource spiders declare required Graph permissions and own pagination,
     semantic items, and completion rules. This base translates permissions
-    into authentication settings and owns Graph request construction, raw evidence,
-    terminal request failures, and logical run integrity.
+    into authentication settings and adds raw evidence, terminal request
+    failures, and logical run integrity to the framework request API.
     """
 
-    allowed_domains: ClassVar[list[str]] = [GRAPH_HOST]
-    graph_root = GRAPH_ROOT
     failure_context_keys: ClassVar[tuple[str, ...]] = ()
     graph_permissions: ClassVar[tuple[str, ...]] = ()
     mailbox_targeted: ClassVar[bool] = False
-
-    @classmethod
-    def required_graph_permissions(cls, settings: BaseSettings) -> tuple[str, ...]:
-        """Return provider scopes after final command/settings targeting is known."""
-        return cls.graph_permissions
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -177,7 +171,7 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
         verbatim_url: bool = False,
         accept: str = "application/json",
         dont_cache: bool = False,
-        prefer: str | None = None,
+        prefer: str | None | DefaultPrefer = DefaultPrefer.VALUE,
         download_maxsize: int | None = None,
     ) -> scrapy.Request:
         """
@@ -187,23 +181,17 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
         headers are opt-in; this provider base does not assume Outlook
         immutable-ID semantics.
         """
-        headers = {"Accept": accept}
-        if prefer is not None:
-            headers["Prefer"] = prefer
-        meta = {}
-        if verbatim_url:
-            meta["verbatim_url"] = True
-        if dont_cache:
-            meta["dont_cache"] = True
-        if download_maxsize is not None:
-            meta["download_maxsize"] = download_maxsize
-        return scrapy.Request(
+        return self.graph_request(
             url,
             callback=callback,
             errback=self.errback,
-            headers=headers,
+            operation=purpose,
             cb_kwargs={**cb_kwargs, "purpose": purpose},
-            meta=meta,
+            verbatim_url=verbatim_url,
+            accept=accept,
+            prefer=prefer,
+            dont_cache=dont_cache,
+            download_maxsize=download_maxsize,
         )
 
     @staticmethod
@@ -319,18 +307,3 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
                 for value in headers.getlist(raw_name)
             ]
         return result
-
-    @staticmethod
-    def _bounded_int(
-        raw: str,
-        *,
-        name: str,
-        minimum: int,
-        maximum: int | None = None,
-    ) -> int:
-        """Validate string Spider arguments before requests are scheduled."""
-        value = int(raw)
-        if value < minimum or (maximum is not None and value > maximum):
-            upper = f" and <= {maximum}" if maximum is not None else ""
-            raise ValueError(f"{name} must be >= {minimum}{upper}")
-        return value

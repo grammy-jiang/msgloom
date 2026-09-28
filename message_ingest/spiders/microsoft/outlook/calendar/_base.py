@@ -1,17 +1,13 @@
-"""Outlook Calendar mailbox target and permission contract."""
-
-from __future__ import annotations
-
-from typing import ClassVar
+"""Calendar provider acquisition bound to msgloom lifecycle and targeting."""
 
 from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
+from microsoft_graph.scrapy.outlook.calendar import (
+    OutlookCalendarSpider as GraphCalendar,
+)
 
 
-class OutlookCalendarSpider(OutlookMailboxSpider):
-    """Share Calendar own/shared scopes and mailbox path behavior."""
-
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
-    shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read.Shared",)
+class OutlookCalendarSpider(GraphCalendar, OutlookMailboxSpider):
+    """Use reusable Calendar scopes with msgloom mailbox and evidence behavior."""
 
 
 __all__ = ["OutlookCalendarSpider"]

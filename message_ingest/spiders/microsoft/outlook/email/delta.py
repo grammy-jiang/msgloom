@@ -18,6 +18,7 @@ from message_ingest.items.microsoft.outlook.email import (
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
+from microsoft_graph.protocol import GraphDeltaPage
 
 from ._delta_state import MailDeltaExecutionState, execution_payload
 from ._folders import OutlookFolderTraversal
@@ -141,8 +142,16 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         """
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        values = payload.get("value", [])
+        # Compatibility: missing value is empty and nextLink wins. Link
+        # validation stays after observations, before scheduling/promotion.
+        page = GraphDeltaPage.from_payload(
+            response.json(),
+            strict=False,
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        values = page.values
         self.logger.debug(
             "Processed Outlook delta page: folder=%s page=%s changes=%s from_checkpoint=%s",
             folder_id,
@@ -185,7 +194,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 evidence_id=evidence.evidence_id,
             )
 
-        if next_link := payload.get("@odata.nextLink"):
+        if next_link := page.next_link:
             self.crawler.stats.inc_value(
                 "msgloom/crawl/delta/message_continuation_count"
             )
@@ -198,7 +207,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
             )
             return
 
-        if delta_link := payload.get("@odata.deltaLink"):
+        if delta_link := page.delta_link:
             self._completed_folder_ids.add(folder_id)
             self._persist_execution_state()
             self.crawler.stats.set_value(

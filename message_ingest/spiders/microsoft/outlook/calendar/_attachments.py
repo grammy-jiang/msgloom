@@ -5,7 +5,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from typing import Any
-from urllib.parse import quote, urlencode
 
 import scrapy
 from scrapy.http import Response, TextResponse
@@ -19,6 +18,12 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventSurfaceItem,
+)
+from microsoft_graph.protocol import GraphCollectionPage
+from microsoft_graph.protocol.attachments import (
+    attachment_list_path,
+    attachment_raw_path,
+    item_attachment_path,
 )
 
 from ._base import OutlookCalendarSpider
@@ -67,12 +72,12 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
 
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar attachment response must be a JSON object")
-        values = payload.get("value")
-        if not isinstance(values, list):
-            raise TypeError("Calendar attachment response must contain a value list")
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            context="Calendar attachment response",
+            validate_links=False,
+        )
+        values = page.values
 
         calendar_key = self.calendar_id or "default"
         self.crawler.stats.inc_value(
@@ -150,7 +155,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
                     resource_version=resource_version,
                 )
 
-        next_link = payload.get("@odata.nextLink")
+        next_link = page.next_link
         if next_link is None:
             yield OutlookCalendarEventSurfaceItem(
                 event_id=event_id,
@@ -162,10 +167,6 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
                 resource_version=resource_version,
             )
             return
-        if not isinstance(next_link, str) or not next_link:
-            raise ValueError(
-                "Calendar attachment @odata.nextLink must be a non-empty string"
-            )
         yield self._request(
             next_link,
             callback=self.parse_attachments,
@@ -269,15 +270,12 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         resource_version: str | None = None,
     ) -> scrapy.Request:
         """Inventory attachments only for events that report attachments."""
-        event_path = self._event_path(event_id)
-        query = urlencode(
-            {
-                "$top": self.page_size,
-                "$select": "id,name,contentType,size,isInline,lastModifiedDateTime",
-            }
+        path = attachment_list_path(
+            self._event_path(event_id),
+            page_size=self.page_size,
         )
         return self._request(
-            f"{self.graph_root}{event_path}/attachments?{query}",
+            f"{self.graph_root}{path}",
             callback=self.parse_attachments,
             purpose="calendar-event-attachments",
             cb_kwargs={
@@ -297,10 +295,9 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         resource_version: str | None = None,
     ) -> scrapy.Request:
         """Request raw bytes for file and item attachments."""
-        event_path = self._event_path(event_id)
-        encoded_attachment = quote(attachment_id, safe="")
+        path = attachment_raw_path(self._event_path(event_id), attachment_id)
         return self._request(
-            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}/$value",
+            f"{self.graph_root}{path}",
             callback=self.parse_attachment_content,
             purpose="calendar-attachment-raw",
             cb_kwargs={
@@ -321,11 +318,9 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         resource_version: str | None = None,
     ) -> scrapy.Request:
         """Expand an embedded Graph item separately from its raw bytes."""
-        event_path = self._event_path(event_id)
-        encoded_attachment = quote(attachment_id, safe="")
-        query = urlencode({"$expand": "microsoft.graph.itemattachment/item"})
+        path = item_attachment_path(self._event_path(event_id), attachment_id)
         return self._request(
-            f"{self.graph_root}{event_path}/attachments/{encoded_attachment}?{query}",
+            f"{self.graph_root}{path}",
             callback=self.parse_attachment_detail,
             purpose="calendar-item-attachment-detail",
             cb_kwargs={

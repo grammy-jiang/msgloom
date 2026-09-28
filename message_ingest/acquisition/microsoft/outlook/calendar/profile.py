@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from microsoft_graph.protocol.attachments import attachment_type_name
+
 FULL_V1 = "outlook-calendar-full-v1"
 
 TERMINAL_SURFACE_STATUSES = frozenset(
@@ -35,15 +37,6 @@ def surface_is_complete(
             resource_version is None
             or state.get("resource_version") == resource_version
         )
-    )
-
-
-def attachment_type_name(attachment_type: str | None) -> str:
-    """Normalize Graph namespace spellings while keeping unknown types visible."""
-    return (
-        (attachment_type or "unknown")
-        .removeprefix("#microsoft.graph.")
-        .removeprefix("microsoft.graph.")
     )
 
 
