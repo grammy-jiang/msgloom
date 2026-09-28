@@ -66,8 +66,8 @@ def _response(
 def test_window_spider_owns_scope_and_resource_pipeline() -> None:
     spider = _spider()
     settings = spider.crawler.settings
-    if settings.getlist("MS_GRAPH_SCOPES") != ["Calendars.ReadBasic"]:
-        pytest.fail("Expected Calendar window to own Calendars.ReadBasic")
+    if settings.getlist("MS_GRAPH_SCOPES") != ["Calendars.Read"]:
+        pytest.fail("Expected Calendar window to share Calendars.Read")
     if settings.getbool("MSGLOOM_DELTA_CHECKPOINT_ENABLED"):
         pytest.fail("Expected Mail delta checkpoint disabled")
     expected = {

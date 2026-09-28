@@ -43,6 +43,8 @@ def _response(spider: OutlookCalendarDiscoverSpider, payload: dict) -> TextRespo
 
 def test_discover_start_lists_visible_calendars() -> None:
     spider = _spider()
+    if spider.crawler.settings.getlist("MS_GRAPH_SCOPES") != ["Calendars.Read"]:
+        pytest.fail("Expected Calendar discovery to share Calendars.Read")
 
     async def first_request() -> Request:
         return await anext(spider.start())

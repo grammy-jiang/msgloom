@@ -18,9 +18,13 @@ silent credentials fail closed instead of opening an authentication prompt.
 
 Authentication is provider infrastructure, but scopes belong to resources.
 Project defaults keep Graph auth/scopes disabled. Outlook Mail declares only
-`Mail.Read`, Calendar declares `Calendars.ReadBasic`, and the one-shot
-Microsoft profile command declares `User.Read`. Future Graph resources must
-continue to own their least-privilege scopes.
+`Mail.Read`, all Calendar acquisition modes share `Calendars.Read`, and the
+one-shot Microsoft profile command declares `User.Read`. Calendar uses one
+read-only product scope because delta/full require `Calendars.Read`; splitting
+discovery/window onto `Calendars.ReadBasic` would force another interactive
+consent when a user switches Calendar modes. Future Graph resources must own
+their least-privilege product scope without creating avoidable mode-level
+consent churn.
 
 ## Logical source identity
 

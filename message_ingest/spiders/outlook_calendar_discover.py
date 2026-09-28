@@ -35,7 +35,7 @@ class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
         """Declare Calendar permissions and its persistence pipeline."""
         settings.set(
             "MS_GRAPH_SCOPES",
-            ["Calendars.ReadBasic"],
+            ["Calendars.Read"],
             priority="spider",
         )
         settings.set(
