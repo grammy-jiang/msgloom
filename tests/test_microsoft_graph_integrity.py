@@ -8,10 +8,10 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
-from message_ingest.providers.microsoft_graph.integrity import (
+from message_ingest.extensions.microsoft_graph.integrity import (
     MicrosoftGraphIntegrityExtension,
 )
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class FixtureGraphSpider(MicrosoftGraphSpider):

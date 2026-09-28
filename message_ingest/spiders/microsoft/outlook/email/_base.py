@@ -6,10 +6,9 @@ from abc import ABC
 from typing import Any, ClassVar
 
 import scrapy
-from scrapy.settings import BaseSettings
 
 from message_ingest.items import OutlookMailItem
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class OutlookMailSpider(MicrosoftGraphSpider, ABC):
@@ -21,17 +20,12 @@ class OutlookMailSpider(MicrosoftGraphSpider, ABC):
     fields, and callback context.
     """
 
+    graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
     failure_context_keys: ClassVar[tuple[str, ...]] = (
         "message_id",
         "attachment_id",
         "folder_id",
     )
-
-    @classmethod
-    def update_settings(cls, settings: BaseSettings) -> None:
-        """Declare the delegated scope required by Outlook Mail."""
-        settings.set("MS_GRAPH_SCOPES", ["Mail.Read"], priority="spider")
-        super().update_settings(settings)
 
     discovery_fields = (
         "id",

@@ -7,8 +7,8 @@ from urllib.parse import urlsplit
 
 from scrapy.exceptions import IgnoreRequest, NotConfigured
 
-from message_ingest.providers.microsoft_graph import GRAPH_HOST
-from message_ingest.providers.microsoft_graph.auth_session import (
+from .. import GRAPH_HOST
+from ..auth.session import (
     MicrosoftGraphAuthSession,
 )
 
@@ -47,7 +47,7 @@ class MicrosoftGraphDelegatedAuthMiddleware:
             raise IgnoreRequest("Refusing non-HTTPS Microsoft Graph request")
         if (
             request.headers.get("Authorization")
-            and self.session.source_identity is None
+            and self.session.account_binding is None
         ):
             return
         force_refresh = bool(request.meta.pop(_FORCE_REFRESH_META, False))

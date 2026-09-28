@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from scrapy.utils.request import fingerprint
 
 from message_ingest.acquisition.source_context import source_catalog_context_digest
-from message_ingest.providers.microsoft_graph import GRAPH_HOST
+from microsoft_graph import GRAPH_HOST
 
 _GRAPH_REPRESENTATION_HEADERS = ("Accept", "Prefer")
 

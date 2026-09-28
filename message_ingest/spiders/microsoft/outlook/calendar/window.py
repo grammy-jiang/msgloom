@@ -4,20 +4,21 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import quote, urlencode
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.items import OutlookCalendarEventItem
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
     """Read one explicit Calendar time window through Graph calendarView."""
 
     name = "outlook_calendar_window"
+    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
 
     def __init__(
         self,
@@ -48,11 +49,6 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
         """Declare Calendar permissions and resource-specific components."""
-        settings.set(
-            "MS_GRAPH_SCOPES",
-            ["Calendars.Read"],
-            priority="spider",
-        )
         settings.set(
             "MSGLOOM_DELTA_CHECKPOINT_ENABLED",
             False,

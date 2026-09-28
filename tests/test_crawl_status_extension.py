@@ -209,7 +209,7 @@ def test_delta_stuck_in_checkpoint_evaluation_is_failed() -> None:
 def test_late_signal_handler_failure_overrides_completed_final_stats() -> None:
     import sys
 
-    from message_ingest.providers.microsoft_graph.logfilters import (
+    from message_ingest.extensions.microsoft_graph._logfilters import (
         MicrosoftGraphScrapyPrivacyFilter,
     )
 

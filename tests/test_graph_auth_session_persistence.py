@@ -7,15 +7,19 @@ import logging
 from pathlib import Path
 
 import pytest
+from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
 from message_ingest.acquisition.source_identity import SourceIdentityService
-from message_ingest.providers.microsoft_graph.auth_session import (
-    MicrosoftGraphAuthError,
-    MicrosoftGraphAuthSession,
+from message_ingest.extensions.microsoft_graph.identity import (
+    MicrosoftGraphSourceIdentityExtension,
 )
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
+)
+from microsoft_graph.auth.session import (
+    MicrosoftGraphAuthError,
+    MicrosoftGraphAuthSession,
 )
 
 
@@ -43,6 +47,22 @@ def _crawler(
 
 def _account(key: str, username: str = "person@example.com") -> dict:
     return {"home_account_id": key, "username": username}
+
+
+class _PendingBinding:
+    """Minimal attached binding used to verify the pre-token gate."""
+
+    def __init__(self) -> None:
+        self.write_lock = asyncio.Lock()
+
+    def has_binding(self) -> bool:
+        return False
+
+    def matches_account_key(self, account_key: str) -> bool:
+        return False
+
+    def bind_or_verify_account_key(self, account_key: str) -> str:
+        return "bound"
 
 
 def test_verified_token_cache_write_is_atomic_and_private(
@@ -93,7 +113,7 @@ def test_failed_token_cache_replace_rearms_dirty_state(
         raise OSError("injected replace failure")
 
     monkeypatch.setattr(
-        "message_ingest.providers.microsoft_graph.auth_session.os.replace",
+        "microsoft_graph.auth.session.os.replace",
         fail_replace,
     )
 
@@ -116,6 +136,7 @@ def test_catalog_backed_token_is_blocked_until_identity_gate(
 ) -> None:
     crawler = _crawler(tmp_path)
     session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session.attach_account_binding(_PendingBinding())
     called = False
 
     class FakeApp:
@@ -127,7 +148,7 @@ def test_catalog_backed_token_is_blocked_until_identity_gate(
 
     session._app = FakeApp()  # type: ignore[assignment]
 
-    with pytest.raises(MicrosoftGraphAuthError, match="gate has not completed"):
+    with pytest.raises(MicrosoftGraphAuthError, match="binding gate has not completed"):
         asyncio.run(session.get_access_token())
 
     if called:
@@ -139,6 +160,8 @@ def test_bound_account_identifiers_do_not_enter_stats_or_logs(
     caplog,
 ) -> None:
     crawler = _crawler(tmp_path)
+    spider = OutlookDiscoverSpider.from_crawler(crawler)
+    crawler.spider = spider
     session = MicrosoftGraphAuthSession.from_crawler(crawler)
     account = _account("private-account-key", "private-person@example.com")
 
@@ -153,7 +176,8 @@ def test_bound_account_identifiers_do_not_enter_stats_or_logs(
 
     session._app = FakeApp()  # type: ignore[assignment]
     caplog.set_level(logging.DEBUG)
-    asyncio.run(session.establish_source_identity())
+    extension = build_from_crawler(MicrosoftGraphSourceIdentityExtension, crawler)
+    asyncio.run(extension.spider_opened(spider))
 
     binding = SourceIdentityService.from_crawler(crawler).get_binding()
     if binding is None:

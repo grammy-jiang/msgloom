@@ -6,10 +6,11 @@ import logging
 
 from scrapy import signals
 
-from message_ingest.providers.microsoft_graph.logfilters import (
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+
+from ._logfilters import (
     MicrosoftGraphScrapyPrivacyFilter,
 )
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
 
 
 class MicrosoftGraphLogPrivacyExtension:

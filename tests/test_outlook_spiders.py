@@ -11,7 +11,7 @@ import pytest
 from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )

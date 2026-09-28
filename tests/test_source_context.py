@@ -20,7 +20,7 @@ from message_ingest.acquisition.source_context import (
     ensure_jobdir_context,
     source_catalog_context_digest,
 )
-from message_ingest.providers.microsoft_graph.fingerprints import (
+from message_ingest.fingerprints import (
     RepresentationAwareRequestFingerprinter,
 )
 from message_ingest.spiders.microsoft.outlook.email.discover import (
@@ -259,8 +259,7 @@ def test_native_filesystem_cache_does_not_cross_graph_sources(
             "MSGLOOM_DATABASE_URL": database_url,
             "HTTPCACHE_DIR": str(cache_dir),
             "REQUEST_FINGERPRINTER_CLASS": (
-                "message_ingest.providers.microsoft_graph.fingerprints."
-                "RepresentationAwareRequestFingerprinter"
+                "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
             ),
         },
     )
@@ -271,8 +270,7 @@ def test_native_filesystem_cache_does_not_cross_graph_sources(
             "MSGLOOM_DATABASE_URL": database_url,
             "HTTPCACHE_DIR": str(cache_dir),
             "REQUEST_FINGERPRINTER_CLASS": (
-                "message_ingest.providers.microsoft_graph.fingerprints."
-                "RepresentationAwareRequestFingerprinter"
+                "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
             ),
         },
     )

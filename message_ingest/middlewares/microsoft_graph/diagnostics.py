@@ -6,7 +6,7 @@ import logging
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from message_ingest.providers.microsoft_graph import GRAPH_HOST
+from microsoft_graph import GRAPH_HOST
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import quote, urlencode
 
 import scrapy
@@ -15,7 +15,7 @@ from message_ingest.items import (
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventItem,
 )
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 def _metadata_without_content(value: Any) -> Any:
@@ -35,6 +35,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
     """Refresh rich detail for selected Calendar event IDs."""
 
     name = "outlook_calendar_full"
+    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
     failure_context_keys = ("event_id", "attachment_id")
 
     def __init__(
@@ -68,11 +69,6 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
         """Require rich Calendar read access and Calendar persistence."""
-        settings.set(
-            "MS_GRAPH_SCOPES",
-            ["Calendars.Read"],
-            priority="spider",
-        )
         settings.set(
             "MSGLOOM_DELTA_CHECKPOINT_ENABLED",
             False,

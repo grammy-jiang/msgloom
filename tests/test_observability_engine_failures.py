@@ -79,7 +79,7 @@ else:
     Catalog.close = fail_catalog_close
 
 extensions = {
-    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 90,
+    "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 90,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 100,
 }
 if kind == "signal":
@@ -200,7 +200,7 @@ import sys
 import scrapy
 from scrapy.crawler import CrawlerProcess
 
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class ProcessFailingPipeline:
@@ -256,8 +256,8 @@ class GraphFailureSpider(MicrosoftGraphSpider):
 kind = sys.argv[1]
 pipelines = {}
 extensions = {
-    "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 80,
-    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 90,
+    "message_ingest.extensions.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 80,
+    "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 90,
 }
 if kind == "process":
     pipelines[ProcessFailingPipeline] = 100

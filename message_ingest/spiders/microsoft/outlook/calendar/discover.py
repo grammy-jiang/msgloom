@@ -3,20 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import urlencode
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.items import OutlookCalendarItem
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
     """Inventory visible calendars without inferring deletion from absence."""
 
     name = "outlook_calendar_discover"
+    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
 
     def __init__(
         self,
@@ -33,11 +34,6 @@ class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
         """Declare Calendar permissions and its persistence pipeline."""
-        settings.set(
-            "MS_GRAPH_SCOPES",
-            ["Calendars.Read"],
-            priority="spider",
-        )
         settings.set(
             "MSGLOOM_DELTA_CHECKPOINT_ENABLED",
             False,

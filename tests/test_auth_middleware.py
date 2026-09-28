@@ -18,15 +18,15 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.providers.microsoft_graph.auth import (
-    MicrosoftGraphDeviceCodeAuthMiddleware,
-    MicrosoftGraphInteractiveAuthMiddleware,
+from message_ingest.middlewares.microsoft_graph.errors import (
+    PrivacySafeRetryMiddleware,
 )
-from message_ingest.providers.microsoft_graph.auth_session import (
+from microsoft_graph.auth.session import (
     MicrosoftGraphAuthSession,
 )
-from message_ingest.providers.microsoft_graph.errors import (
-    PrivacySafeRetryMiddleware,
+from microsoft_graph.middlewares.authentication import (
+    MicrosoftGraphDeviceCodeAuthMiddleware,
+    MicrosoftGraphInteractiveAuthMiddleware,
 )
 
 
@@ -271,7 +271,7 @@ def test_catalog_disabled_auth_can_respect_external_authorization(tmp_path) -> N
 def test_catalog_backed_auth_replaces_unverified_authorization_header() -> None:
     class FakeSession:
         scopes: ClassVar[list[str]] = ["Mail.Read"]
-        source_identity = object()
+        account_binding = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
             return "source-pinned-token"
@@ -348,7 +348,7 @@ def test_transport_retry_does_not_serialize_bearer_token() -> None:
 
     class FakeSession:
         scopes: ClassVar[list[str]] = ["Mail.Read"]
-        source_identity = object()
+        account_binding = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
             return "transport-secret-token"
@@ -394,7 +394,7 @@ def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
 
     class FakeSession:
         scopes: ClassVar[list[str]] = ["Mail.Read"]
-        source_identity = object()
+        account_binding = object()
 
         async def get_access_token(self, *, force_refresh: bool = False) -> str:
             return "redirect-secret-token"

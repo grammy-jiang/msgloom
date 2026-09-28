@@ -43,7 +43,9 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 2
 # mechanism.
 CONCURRENT_ITEMS = 1
 
-REQUEST_FINGERPRINTER_CLASS = "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
+REQUEST_FINGERPRINTER_CLASS = (
+    "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
+)
 LOG_FORMATTER = "message_ingest.logformatter.MessageIngestLogFormatter"
 
 AUTOTHROTTLE_ENABLED = True
@@ -73,25 +75,25 @@ DOWNLOADER_MIDDLEWARES = {
     # Preserve Scrapy generic retries through a privacy-safe subclass that
     # suppresses Request reprs containing Graph continuation URLs.
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-    "message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware": 550,
+    "message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware": 550,
     # Request hooks run in ascending priority and response hooks in descending
     # priority. Diagnostics therefore sees each Graph response before auth can
     # replace a 401 with a retry Request. Provider retries still run after auth.
-    "message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware": 555,
-    "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
-    "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware": 951,
-    "message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
+    "message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware": 555,
+    "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
+    "microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware": 951,
+    "message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
 }
 
 EXTENSIONS = {
     "message_ingest.acquisition.source_context.SourceContextExtension": 50,
     # These priorities do not order signal handlers. Checkpoint safety depends
     # on Scrapy's idle condition and explicit completed-work sets.
-    "message_ingest.providers.microsoft_graph.identity_gate.MicrosoftGraphSourceIdentityExtension": 425,
-    "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
+    "message_ingest.extensions.microsoft_graph.identity.MicrosoftGraphSourceIdentityExtension": 425,
+    "message_ingest.extensions.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
     "message_ingest.extensions.delta_checkpoint.OutlookDeltaCheckpointExtension": 500,
     "message_ingest.extensions.calendar_delta_checkpoint.CalendarDeltaCheckpointExtension": 510,
-    "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension": 525,
+    "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "message_ingest.extensions.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native
     # implementation explicitly instead of maintaining another timer.

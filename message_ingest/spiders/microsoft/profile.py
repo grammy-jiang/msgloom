@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any
+from typing import Any, ClassVar
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class MicrosoftProfileSpider(MicrosoftGraphSpider):
@@ -22,11 +22,11 @@ class MicrosoftProfileSpider(MicrosoftGraphSpider):
     """
 
     name = "microsoft_profile"
+    graph_permissions: ClassVar[tuple[str, ...]] = ("User.Read",)
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
-        """Declare least-privilege profile scope and one-shot components."""
-        settings.set("MS_GRAPH_SCOPES", ["User.Read"], priority="spider")
+        """Configure one-shot profile components."""
         settings.set(
             "MSGLOOM_DELTA_CHECKPOINT_ENABLED",
             False,

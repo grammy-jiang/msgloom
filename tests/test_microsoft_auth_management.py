@@ -13,7 +13,7 @@ from scrapy.settings import Settings
 
 import message_ingest.settings as project_settings
 from message_ingest.commands.microsoft import Command as MicrosoftCommand
-from message_ingest.providers.microsoft_graph.auth_management import (
+from microsoft_graph.auth.management import (
     MICROSOFT_GRAPH_CLI_CLIENT_ID,
     inspect_auth_status,
 )

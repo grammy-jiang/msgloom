@@ -14,19 +14,18 @@ from uuid import uuid4
 import msal
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.acquisition.source_identity import SourceIdentityService
-from message_ingest.providers.microsoft_graph.accounts import (
+from .accounts import (
     MicrosoftGraphAuthError,
     account_key,
     account_key_set,
     all_accounts,
     find_account_by_key,
     find_bound_account,
-    identity_for_account,
     select_after_interaction,
     select_unbound_cached_account,
 )
-from message_ingest.providers.microsoft_graph.auth_management import (
+from .binding import MicrosoftGraphAccountBinding
+from .management import (
     MICROSOFT_GRAPH_CLI_CLIENT_ID,
     classify_client_id,
 )
@@ -49,7 +48,7 @@ class MicrosoftGraphAuthSession:
         auth_method: str,
         account_username: str,
         allow_interactive: bool,
-        source_identity: SourceIdentityService | None,
+        account_binding: MicrosoftGraphAccountBinding | None = None,
         stats=None,
     ) -> None:
         """Load cache state while deferring application construction."""
@@ -60,7 +59,7 @@ class MicrosoftGraphAuthSession:
         self.auth_method = auth_method
         self.account_username = account_username.strip()
         self.allow_interactive = allow_interactive
-        self.source_identity = source_identity
+        self.account_binding = account_binding
         self.stats = stats
         self.token_cache_path = Path(token_cache_path)
         self.token_cache = msal.SerializableTokenCache()
@@ -74,7 +73,7 @@ class MicrosoftGraphAuthSession:
         self._pinned_account_key: str | None = None
         self._access_token: str | None = None
         self._expires_at = 0.0
-        self._identity_ready = False
+        self._account_binding_ready = account_binding is None
         self._lock = asyncio.Lock()
         self._set("msgloom/auth/method", auth_method)
         self._set("msgloom/auth/application_mode", self.application_mode)
@@ -112,14 +111,6 @@ class MicrosoftGraphAuthSession:
             raise RuntimeError(
                 "Microsoft Graph resource must configure MS_GRAPH_SCOPES"
             )
-        source_identity = (
-            SourceIdentityService.from_crawler(crawler)
-            if (
-                settings.getbool("MSGLOOM_CATALOG_ENABLED")
-                and settings.getbool("MSGLOOM_SOURCE_IDENTITY_REQUIRED")
-            )
-            else None
-        )
         session = cls(
             client_id=settings["MS_GRAPH_CLIENT_ID"],
             authority=settings["MS_GRAPH_AUTHORITY"],
@@ -128,39 +119,55 @@ class MicrosoftGraphAuthSession:
             auth_method=method,
             account_username=settings["MS_GRAPH_ACCOUNT_USERNAME"],
             allow_interactive=settings.getbool("MS_GRAPH_AUTH_ALLOW_INTERACTIVE"),
-            source_identity=source_identity,
+            account_binding=None,
             stats=crawler.stats,
         )
         setattr(crawler, _SESSION_ATTR, session)
         return session
 
     @property
-    def identity_ready(self) -> bool:
-        """Return whether source-backed identity passed the startup gate."""
-        return self._identity_ready
+    def account_binding_ready(self) -> bool:
+        """Return whether an attached application account binding is verified."""
+        return self._account_binding_ready
 
-    async def establish_source_identity(self) -> None:
-        """Resolve, authenticate, bind, and pin the source account once."""
-        if self.source_identity is None:
-            self._identity_ready = True
+    def attach_account_binding(
+        self,
+        binding: MicrosoftGraphAccountBinding,
+    ) -> None:
+        """Attach one application binding before the first token is used."""
+        if self._pinned_account is not None or self._access_token is not None:
+            raise MicrosoftGraphAuthError(
+                "Cannot attach a Microsoft account binding after token use"
+            )
+        if self.account_binding is not None and self.account_binding is not binding:
+            raise MicrosoftGraphAuthError(
+                "A different Microsoft account binding is already attached"
+            )
+        self.account_binding = binding
+        self._account_binding_ready = False
+
+    async def establish_account_binding(self) -> None:
+        """Resolve, authenticate, bind, and pin one application account."""
+        if self.account_binding is None:
+            self._account_binding_ready = True
             return
-        if self._identity_ready:
+        if self._account_binding_ready:
             return
         self._require_client_id()
         async with self._lock:
-            if self._identity_ready:
+            if self._account_binding_ready:
                 return
-            if self.source_identity is None:
+            binding = self.account_binding
+            if binding is None:
                 raise MicrosoftGraphAuthError(
-                    "Source identity service disappeared during startup"
+                    "Microsoft account binding disappeared during startup"
                 )
-            async with self.source_identity.service.write_lock:
+            async with binding.write_lock:
                 account, result = await asyncio.to_thread(
-                    self._establish_source_identity_sync
+                    self._establish_bound_session_sync
                 )
             self._pin(account, result)
-            self._identity_ready = True
-            self._set("msgloom/source_identity/gate_state", "verified")
+            self._account_binding_ready = True
 
     async def get_access_token(self, *, force_refresh: bool = False) -> str:
         """Return a token that belongs to the pinned account."""
@@ -173,9 +180,9 @@ class MicrosoftGraphAuthSession:
             if self._memory_token_valid(now, force_refresh):
                 self._inc("msgloom/auth/memory_token_hit_count")
                 return self._access_token or ""
-            if self.source_identity is not None and not self._identity_ready:
+            if self.account_binding is not None and not self._account_binding_ready:
                 raise MicrosoftGraphAuthError(
-                    "Microsoft Graph source identity gate has not completed"
+                    "Microsoft Graph account binding gate has not completed"
                 )
             if self._pinned_account is None:
                 account, result = await asyncio.to_thread(
@@ -195,29 +202,26 @@ class MicrosoftGraphAuthSession:
         self._access_token = None
         self._expires_at = 0.0
 
-    def _establish_source_identity_sync(
+    def _establish_bound_session_sync(
         self,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        """Pin a token-owning account and persist/verify its source binding."""
-        if self.source_identity is None:
-            raise MicrosoftGraphAuthError("Source identity service is unavailable")
+        """Pin a token-owning account and persist/verify its application binding."""
+        binding = self.account_binding
+        if binding is None:
+            raise MicrosoftGraphAuthError("Microsoft account binding is unavailable")
         app = self._application()
-        binding = self.source_identity.get_binding()
         before = all_accounts(app)
-        if binding is not None:
-            account = find_bound_account(before, self.source_identity, binding)
+        if binding.has_binding():
+            account = find_bound_account(before, binding)
             result = self._silent_result(app, account) if account else None
             if not self._has_token(result):
                 self._require_interaction(result)
                 self._perform_interaction(app)
-                account = find_bound_account(
-                    all_accounts(app), self.source_identity, binding
-                )
+                account = find_bound_account(all_accounts(app), binding)
                 if account is None:
                     raise MicrosoftGraphAuthError(
                         "Interactive sign-in did not restore the account "
-                        "bound "
-                        "to this source"
+                        "bound to this source"
                     )
                 result = self._require_silent_token(app, account)
         else:
@@ -233,7 +237,7 @@ class MicrosoftGraphAuthSession:
                 result = self._require_silent_token(app, account)
         if account is None or result is None:
             raise MicrosoftGraphAuthError("No pinned Microsoft account/token")
-        self.source_identity.bind_or_verify(identity_for_account(account))
+        binding.bind_or_verify_account_key(account_key(account))
         self._save_token_cache()
         return account, result
 

@@ -17,7 +17,7 @@ from message_ingest.commands._common import (
 )
 from message_ingest.commands._microsoft_calendar import dispatch_calendar
 from message_ingest.profiles import FULL_V1
-from message_ingest.providers.microsoft_graph.auth_management import (
+from microsoft_graph.auth.management import (
     MicrosoftAuthStatus,
     clear_local_token_cache,
     inspect_auth_status,

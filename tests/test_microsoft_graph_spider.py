@@ -8,11 +8,11 @@ from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
 from message_ingest.items import AcquisitionFailureItem, RawHttpEvidenceItem
-from message_ingest.providers.microsoft_graph import GRAPH_HOST, GRAPH_ROOT
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
+from microsoft_graph import GRAPH_HOST, GRAPH_ROOT
 
 
 class FixtureGraphSpider(MicrosoftGraphSpider):

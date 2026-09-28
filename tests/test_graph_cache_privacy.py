@@ -10,7 +10,7 @@ from scrapy.http import Request
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.providers.microsoft_graph.log_privacy import (
+from message_ingest.extensions.microsoft_graph.privacy import (
     MicrosoftGraphLogPrivacyExtension,
 )
 from message_ingest.spiders.microsoft.outlook.email.discover import (

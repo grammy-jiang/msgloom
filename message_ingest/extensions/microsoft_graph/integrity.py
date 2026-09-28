@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from scrapy import signals
 
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class MicrosoftGraphIntegrityExtension:
@@ -12,7 +12,7 @@ class MicrosoftGraphIntegrityExtension:
     Mark Graph logical runs failed when errors bypass request errbacks.
 
     Request/download terminal failures are marked by
-    :class:`~message_ingest.providers.microsoft_graph.spider.MicrosoftGraphSpider`.
+    :class:`~message_ingest.spiders.microsoft._graph.MicrosoftGraphSpider`.
     Callback exceptions, item-processing exceptions, and dropped items arrive
     through Scrapy signals instead. This extension records only the integrity
     fact; resource-specific checkpoint and status components still own their

@@ -6,12 +6,7 @@ from typing import Any
 
 import msal
 
-from message_ingest.acquisition.source_identity import (
-    SourceBindingSnapshot,
-    SourceIdentity,
-    SourceIdentityService,
-)
-from message_ingest.providers.microsoft_graph import PROVIDER_ID
+from .binding import MicrosoftGraphAccountBinding
 
 ACCOUNT_KEY_SCHEME = "msal_home_account_id/sha256-v1"
 
@@ -28,15 +23,6 @@ def account_key(account: dict[str, Any]) -> str:
             "MSAL account does not expose a stable home_account_id"
         )
     return value
-
-
-def identity_for_account(account: dict[str, Any]) -> SourceIdentity:
-    """Convert MSAL account metadata into provider identity input."""
-    return SourceIdentity(
-        provider=PROVIDER_ID,
-        key_scheme=ACCOUNT_KEY_SCHEME,
-        account_key=account_key(account),
-    )
 
 
 def all_accounts(app: msal.PublicClientApplication) -> list[dict[str, Any]]:
@@ -63,14 +49,13 @@ def find_account_by_key(
 
 def find_bound_account(
     accounts: list[dict[str, Any]],
-    service: SourceIdentityService,
-    binding: SourceBindingSnapshot,
+    binding: MicrosoftGraphAccountBinding,
 ) -> dict[str, Any] | None:
-    """Find exactly one cached account matching a persisted source binding."""
+    """Find exactly one cached account matching an application binding."""
     matches = [
         account
         for account in accounts
-        if service.matches_binding(identity_for_account(account), binding)
+        if binding.matches_account_key(account_key(account))
     ]
     if len(matches) > 1:
         raise MicrosoftGraphAuthError(

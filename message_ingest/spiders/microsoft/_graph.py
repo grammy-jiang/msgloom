@@ -15,26 +15,34 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.python.failure import Failure
 
 from message_ingest.items import AcquisitionFailureItem, RawHttpEvidenceItem
-from message_ingest.providers.microsoft_graph import GRAPH_HOST, GRAPH_ROOT
+from microsoft_graph import GRAPH_HOST, GRAPH_ROOT
 
 
 class MicrosoftGraphSpider(scrapy.Spider, ABC):
     """
     Provide transport-facing Graph behavior without resource traversal.
 
-    Resource spiders own scopes, pagination, semantic items, and completion
-    rules. This base owns only Graph request construction, raw evidence,
+    Resource spiders declare required Graph permissions and own pagination,
+    semantic items, and completion rules. This base translates permissions
+    into authentication settings and owns Graph request construction, raw evidence,
     terminal request failures, and logical run integrity.
     """
 
     allowed_domains: ClassVar[list[str]] = [GRAPH_HOST]
     graph_root = GRAPH_ROOT
     failure_context_keys: ClassVar[tuple[str, ...]] = ()
+    graph_permissions: ClassVar[tuple[str, ...]] = ()
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
-        """Enable Graph authentication before crawler components are built."""
+        """Translate resource permissions into shared Graph auth settings."""
         settings.set("MS_GRAPH_AUTH_ENABLED", True, priority="spider")
+        if cls.graph_permissions:
+            settings.set(
+                "MS_GRAPH_SCOPES",
+                list(cls.graph_permissions),
+                priority="spider",
+            )
         super().update_settings(settings)
 
     def __init__(self, *args, **kwargs) -> None:

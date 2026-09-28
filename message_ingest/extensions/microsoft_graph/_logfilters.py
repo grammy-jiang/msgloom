@@ -8,7 +8,7 @@ from typing import ClassVar
 from scrapy.http import Request
 
 from message_ingest.logformatter import MessageIngestLogFormatter
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 
 class MicrosoftGraphScrapyPrivacyFilter(logging.Filter):

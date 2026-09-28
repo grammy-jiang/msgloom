@@ -9,7 +9,7 @@ from scrapy.exceptions import CloseSpider, NotConfigured
 from scrapy.extensions.spiderstate import SpiderState
 
 from message_ingest.calendar_checkpoints import CalendarDeltaCheckpointStore
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )

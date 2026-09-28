@@ -40,21 +40,21 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"
+            "message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware"
         ]
         != 550
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.providers.microsoft_graph.errors.PrivacySafeRetryMiddleware"] == 550'
+            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware"] == 550'
         )
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"
+            "message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"
         ]
         != 555
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.providers.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"] == 555'
+            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"] == 555'
         )
     if middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] != 850:
         pytest.fail(
@@ -62,12 +62,12 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
+            "message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
         ]
         != 960
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.providers.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
+            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
         )
     if middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] != 900:
         pytest.fail(
@@ -75,12 +75,12 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+            "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware"
         ]
         != 950
     ):
         pytest.fail(
-            'Expected: middlewares[ "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware" ] == 950'
+            'Expected: middlewares[ "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware" ] == 950'
         )
     if any("evidence" in key.lower() for key in middlewares):
         pytest.fail(
@@ -92,10 +92,10 @@ def test_native_http_cache_and_retry_remain_enabled() -> None:
     settings = _settings()
     if (
         settings["REQUEST_FINGERPRINTER_CLASS"]
-        != "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter"
+        != "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter"
     ):
         pytest.fail(
-            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.providers.microsoft_graph.fingerprints.RepresentationAwareRequestFingerprinter" )'
+            'Expected: settings["REQUEST_FINGERPRINTER_CLASS"] == ( "message_ingest.fingerprints.RepresentationAwareRequestFingerprinter" )'
         )
     if settings.getbool("AUTOTHROTTLE_ENABLED") is not True:
         pytest.fail('Expected: settings.getbool("AUTOTHROTTLE_ENABLED") is True')
@@ -153,14 +153,14 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         pytest.fail("Expected source-context extension priority == 50")
     if (
         extensions[
-            "message_ingest.providers.microsoft_graph.identity_gate.MicrosoftGraphSourceIdentityExtension"
+            "message_ingest.extensions.microsoft_graph.identity.MicrosoftGraphSourceIdentityExtension"
         ]
         != 425
     ):
         pytest.fail("Expected Graph source-identity gate priority == 425")
     if (
         extensions[
-            "message_ingest.providers.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension"
+            "message_ingest.extensions.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension"
         ]
         != 450
     ):
@@ -176,12 +176,12 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
         )
     if (
         extensions[
-            "message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"
+            "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension"
         ]
         != 525
     ):
         pytest.fail(
-            'Expected: extensions["message_ingest.providers.microsoft_graph.log_privacy.MicrosoftGraphLogPrivacyExtension"] == 525'
+            'Expected: extensions["message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension"] == 525'
         )
     if (
         extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"]
@@ -278,21 +278,21 @@ def test_default_auth_method_is_device_code_and_both_components_are_registered()
     middlewares = settings.getdict("DOWNLOADER_MIDDLEWARES")
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"
+            "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware"
         ]
         != 950
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.providers.microsoft_graph.auth.MicrosoftGraphDeviceCodeAuthMiddleware"] == 950'
+            'Expected: middlewares["microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware"] == 950'
         )
     if (
         middlewares[
-            "message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware"
+            "microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware"
         ]
         != 951
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.providers.microsoft_graph.auth.MicrosoftGraphInteractiveAuthMiddleware"] == 951'
+            'Expected: middlewares["microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware"] == 951'
         )
 
 

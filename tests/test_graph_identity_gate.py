@@ -11,15 +11,15 @@ from scrapy.exceptions import CloseSpider, NotConfigured
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-import message_ingest.providers.microsoft_graph.identity_gate as gate_module
-from message_ingest.providers.microsoft_graph.accounts import (
-    MicrosoftGraphAuthError,
-)
-from message_ingest.providers.microsoft_graph.identity_gate import (
+import message_ingest.extensions.microsoft_graph.identity as gate_module
+from message_ingest.extensions.microsoft_graph.identity import (
     MicrosoftGraphSourceIdentityExtension,
 )
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
+)
+from microsoft_graph.auth.accounts import (
+    MicrosoftGraphAuthError,
 )
 
 
@@ -92,8 +92,12 @@ def test_successful_gate_awaits_shared_auth_session(
     class FakeSession:
         def __init__(self) -> None:
             self.called = False
+            self.binding = None
 
-        async def establish_source_identity(self) -> None:
+        def attach_account_binding(self, binding) -> None:
+            self.binding = binding
+
+        async def establish_account_binding(self) -> None:
             self.called = True
 
     fake = FakeSession()
@@ -145,7 +149,10 @@ def test_safe_auth_gate_error_detail_is_logged(
     extension = build_from_crawler(MicrosoftGraphSourceIdentityExtension, crawler)
 
     class FakeSession:
-        async def establish_source_identity(self) -> None:
+        def attach_account_binding(self, binding) -> None:
+            pass
+
+        async def establish_account_binding(self) -> None:
             raise MicrosoftGraphAuthError(
                 "Set MSGLOOM_MS_CLIENT_ID before a live Microsoft Graph crawl"
             )
@@ -157,7 +164,7 @@ def test_safe_auth_gate_error_detail_is_logged(
     )
     caplog.set_level(
         logging.ERROR,
-        logger="message_ingest.providers.microsoft_graph.identity_gate",
+        logger="message_ingest.extensions.microsoft_graph.identity",
     )
 
     with pytest.raises(CloseSpider):
@@ -176,7 +183,10 @@ def test_unknown_gate_exception_text_is_not_logged(
     extension = build_from_crawler(MicrosoftGraphSourceIdentityExtension, crawler)
 
     class FakeSession:
-        async def establish_source_identity(self) -> None:
+        def attach_account_binding(self, binding) -> None:
+            pass
+
+        async def establish_account_binding(self) -> None:
             raise RuntimeError("private-provider-secret")
 
     monkeypatch.setattr(
@@ -186,7 +196,7 @@ def test_unknown_gate_exception_text_is_not_logged(
     )
     caplog.set_level(
         logging.ERROR,
-        logger="message_ingest.providers.microsoft_graph.identity_gate",
+        logger="message_ingest.extensions.microsoft_graph.identity",
     )
 
     with pytest.raises(CloseSpider):

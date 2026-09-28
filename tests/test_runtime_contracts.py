@@ -13,7 +13,7 @@ from scrapy.utils.test import get_crawler
 
 from message_ingest.commands._common import run_graph
 from message_ingest.commands.microsoft import Command
-from message_ingest.providers.microsoft_graph.errors import (
+from message_ingest.middlewares.microsoft_graph.errors import (
     MicrosoftGraphErrorMiddleware,
 )
 from message_ingest.spiders.microsoft.outlook.email.discover import (

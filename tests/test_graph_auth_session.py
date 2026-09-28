@@ -9,19 +9,13 @@ from pathlib import Path
 import pytest
 from scrapy.utils.test import get_crawler
 
-from message_ingest.acquisition.source_identity import (
-    SourceIdentity,
-    SourceIdentityService,
-)
-from message_ingest.providers.microsoft_graph.auth_session import (
-    MicrosoftGraphAuthError,
-    MicrosoftGraphAuthSession,
-)
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
-
-KEY_SCHEME = "msal_home_account_id/sha256-v1"
+from microsoft_graph.auth.session import (
+    MicrosoftGraphAuthError,
+    MicrosoftGraphAuthSession,
+)
 
 
 def _crawler(
@@ -54,19 +48,40 @@ def _account(key: str, username: str = "person@example.com") -> dict:
     return {"home_account_id": key, "username": username}
 
 
-def _bind(crawler, key: str) -> None:
-    SourceIdentityService.from_crawler(crawler).bind_or_verify(
-        SourceIdentity(
-            provider="microsoft_graph",
-            key_scheme=KEY_SCHEME,
-            account_key=key,
-        )
-    )
+class _MemoryBinding:
+    """Small auth-only binding fake with no msgloom persistence dependency."""
+
+    def __init__(self, bound_key: str | None = None) -> None:
+        self.bound_key = bound_key
+        self.write_lock = asyncio.Lock()
+
+    def has_binding(self) -> bool:
+        return self.bound_key is not None
+
+    def matches_account_key(self, account_key: str) -> bool:
+        return self.bound_key == account_key
+
+    def bind_or_verify_account_key(self, account_key: str) -> str:
+        if self.bound_key is None:
+            self.bound_key = account_key
+            return "bound"
+        if self.bound_key != account_key:
+            raise MicrosoftGraphAuthError(
+                "Microsoft account does not match the account bound to this source"
+            )
+        return "verified"
+
+
+def _bound_session(crawler, *, bound_key: str | None = None):
+    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    binding = _MemoryBinding(bound_key)
+    session.attach_account_binding(binding)
+    return session, binding
 
 
 def test_silent_token_is_pinned_to_the_bound_account(tmp_path: Path) -> None:
     crawler = _crawler(tmp_path)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, binding = _bound_session(crawler)
     account = _account("account-a")
 
     class FakeApp:
@@ -79,14 +94,13 @@ def test_silent_token_is_pinned_to_the_bound_account(tmp_path: Path) -> None:
             return {"access_token": "silent-a", "expires_in": 3600}
 
     session._app = FakeApp()  # type: ignore[assignment]
-    asyncio.run(session.establish_source_identity())
+    asyncio.run(session.establish_account_binding())
 
-    if session.identity_ready is not True:
+    if session.account_binding_ready is not True:
         pytest.fail("Expected source identity gate to be ready")
     if asyncio.run(session.get_access_token()) != "silent-a":
         pytest.fail("Expected token from the verified account")
-    binding = SourceIdentityService.from_crawler(crawler).get_binding()
-    if binding is None or binding.key_scheme != KEY_SCHEME:
+    if binding.bound_key != "account-a":
         pytest.fail("Expected Microsoft home-account binding")
 
 
@@ -94,7 +108,7 @@ def test_interactive_token_is_discarded_then_reacquired_for_selected_account(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
     account = _account("account-b")
 
     class FakeApp:
@@ -119,7 +133,7 @@ def test_interactive_token_is_discarded_then_reacquired_for_selected_account(
 
     app = FakeApp()
     session._app = app  # type: ignore[assignment]
-    asyncio.run(session.establish_source_identity())
+    asyncio.run(session.establish_account_binding())
 
     if app.silent_calls != 1:
         pytest.fail("Expected post-interaction token to be reacquired silently")
@@ -131,8 +145,7 @@ def test_existing_binding_ignores_username_and_selects_matching_account(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path, username="renamed@example.com")
-    _bind(crawler, "account-a")
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler, bound_key="account-a")
     account_a = _account("account-a", "old@example.com")
     account_b = _account("account-b", "renamed@example.com")
 
@@ -150,7 +163,7 @@ def test_existing_binding_ignores_username_and_selects_matching_account(
             return {"access_token": "token-a", "expires_in": 3600}
 
     session._app = FakeApp()  # type: ignore[assignment]
-    asyncio.run(session.establish_source_identity())
+    asyncio.run(session.establish_account_binding())
 
     if asyncio.run(session.get_access_token()) != "token-a":
         pytest.fail("Expected token for account bound to source")
@@ -158,8 +171,7 @@ def test_existing_binding_ignores_username_and_selects_matching_account(
 
 def test_interactive_login_cannot_switch_existing_binding(tmp_path: Path) -> None:
     crawler = _crawler(tmp_path)
-    _bind(crawler, "account-a")
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler, bound_key="account-a")
     account_b = _account("account-b")
 
     class FakeApp:
@@ -184,14 +196,14 @@ def test_interactive_login_cannot_switch_existing_binding(tmp_path: Path) -> Non
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError, match="bound"):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
 
 def test_duplicate_username_matches_are_rejected_for_first_binding(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path, username="same@example.com")
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
     accounts = [
         _account("account-a", "same@example.com"),
         _account("account-b", "same@example.com"),
@@ -205,14 +217,14 @@ def test_duplicate_username_matches_are_rejected_for_first_binding(
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError, match="multiple cached accounts"):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
 
 def test_multiple_cached_accounts_require_first_binding_selection(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
 
     class FakeApp:
         @staticmethod
@@ -222,12 +234,12 @@ def test_multiple_cached_accounts_require_first_binding_selection(
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError, match="Multiple Microsoft accounts"):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
 
 def test_unattended_mode_never_starts_interaction(tmp_path: Path) -> None:
     crawler = _crawler(tmp_path, allow_interactive=False)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
 
     class FakeApp:
         @staticmethod
@@ -241,12 +253,12 @@ def test_unattended_mode_never_starts_interaction(tmp_path: Path) -> None:
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError, match="Silent Microsoft"):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
 
 def test_missing_home_account_id_fails_closed(tmp_path: Path) -> None:
     crawler = _crawler(tmp_path)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
 
     class FakeApp:
         @staticmethod
@@ -256,12 +268,12 @@ def test_missing_home_account_id_fails_closed(tmp_path: Path) -> None:
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError, match="home_account_id"):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
 
 def test_force_refresh_remains_on_pinned_account(tmp_path: Path) -> None:
     crawler = _crawler(tmp_path)
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
     account = _account("account-a")
     calls: list[bool] = []
 
@@ -277,7 +289,7 @@ def test_force_refresh_remains_on_pinned_account(tmp_path: Path) -> None:
             return {"access_token": token, "expires_in": 3600}
 
     session._app = FakeApp()  # type: ignore[assignment]
-    asyncio.run(session.establish_source_identity())
+    asyncio.run(session.establish_account_binding())
 
     token = asyncio.run(session.get_access_token(force_refresh=True))
 
@@ -311,7 +323,7 @@ def test_browser_interactive_result_is_discarded_before_token_use(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path, auth_method="interactive")
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, _binding = _bound_session(crawler)
     account = _account("browser-account")
 
     class FakeApp:
@@ -337,7 +349,7 @@ def test_browser_interactive_result_is_discarded_before_token_use(
     app = FakeApp()
     session._app = app  # type: ignore[assignment]
 
-    asyncio.run(session.establish_source_identity())
+    asyncio.run(session.establish_account_binding())
 
     if app.interactive_calls != 1 or app.silent_calls != 1:
         pytest.fail("Expected one browser interaction and one silent reacquire")
@@ -349,7 +361,7 @@ def test_first_binding_with_username_cannot_use_different_interactive_token(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path, username="a@example.com")
-    session = MicrosoftGraphAuthSession.from_crawler(crawler)
+    session, binding = _bound_session(crawler)
     account_a = _account("account-a", "a@example.com")
     account_b = _account("account-b", "b@example.com")
 
@@ -384,9 +396,9 @@ def test_first_binding_with_username_cannot_use_different_interactive_token(
     session._app = FakeApp()  # type: ignore[assignment]
 
     with pytest.raises(MicrosoftGraphAuthError):
-        asyncio.run(session.establish_source_identity())
+        asyncio.run(session.establish_account_binding())
 
-    if SourceIdentityService.from_crawler(crawler).get_binding() is not None:
+    if binding.bound_key is not None:
         pytest.fail("Expected wrong interactive account not to become first binding")
 
 
@@ -408,7 +420,7 @@ def test_explicit_identity_opt_out_keeps_catalog_but_skips_binding(
 
     session._app = FakeApp()  # type: ignore[assignment]
 
-    if session.source_identity is not None:
+    if session.account_binding is not None:
         pytest.fail("Expected explicit source identity opt-out to skip binding service")
     if asyncio.run(session.get_access_token()) != "token-a":
         pytest.fail("Expected Graph authentication to remain usable after opt-out")
@@ -420,7 +432,7 @@ def test_development_client_logs_application_identity(
     tmp_path: Path,
     caplog,
 ) -> None:
-    from message_ingest.providers.microsoft_graph.auth_management import (
+    from microsoft_graph.auth.management import (
         MICROSOFT_GRAPH_CLI_CLIENT_ID,
     )
 
@@ -433,7 +445,7 @@ def test_development_client_logs_application_identity(
         auth_method="device_code",
         account_username="",
         allow_interactive=True,
-        source_identity=None,
+        account_binding=None,
     )
 
     if "application_mode=development" not in caplog.text:
@@ -453,7 +465,7 @@ def test_missing_client_id_error_points_to_status_command(tmp_path: Path) -> Non
         auth_method="device_code",
         account_username="",
         allow_interactive=True,
-        source_identity=None,
+        account_binding=None,
     )
 
     with pytest.raises(MicrosoftGraphAuthError) as caught:

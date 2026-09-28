@@ -9,20 +9,60 @@ from scrapy import signals
 from scrapy.exceptions import CloseSpider, NotConfigured
 
 from message_ingest.acquisition.source_identity import (
+    SourceIdentity,
     SourceIdentityBootstrapRequired,
     SourceIdentityError,
+    SourceIdentityService,
 )
-from message_ingest.providers.microsoft_graph.accounts import (
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from microsoft_graph import PROVIDER_ID
+from microsoft_graph.auth.accounts import (
+    ACCOUNT_KEY_SCHEME,
     MicrosoftGraphAuthError,
 )
-from message_ingest.providers.microsoft_graph.auth_session import (
-    MicrosoftGraphAuthSession,
-)
-from message_ingest.providers.microsoft_graph.spider import (
-    MicrosoftGraphSpider,
-)
+from microsoft_graph.auth.session import MicrosoftGraphAuthSession
 
 logger = logging.getLogger(__name__)
+
+
+class _SourceIdentityAccountBinding:
+    """Adapt msgloom source identity storage to the Graph auth protocol."""
+
+    def __init__(self, service: SourceIdentityService) -> None:
+        self.service = service
+        self._binding = service.get_binding()
+
+    @property
+    def write_lock(self):
+        """Reuse the catalog-scoped lock for first-binding serialization."""
+        return self.service.service.write_lock
+
+    def has_binding(self) -> bool:
+        """Refresh and report whether this source already has an account binding."""
+        self._binding = self.service.get_binding()
+        return self._binding is not None
+
+    @staticmethod
+    def _identity(account_key: str) -> SourceIdentity:
+        return SourceIdentity(
+            provider=PROVIDER_ID,
+            key_scheme=ACCOUNT_KEY_SCHEME,
+            account_key=account_key,
+        )
+
+    def matches_account_key(self, account_key: str) -> bool:
+        """Match one opaque account key without exposing it to persistence."""
+        binding = self._binding
+        if binding is None:
+            binding = self.service.get_binding()
+            self._binding = binding
+        return self.service.matches_binding(self._identity(account_key), binding)
+
+    def bind_or_verify_account_key(self, account_key: str) -> str:
+        """Bind or verify one opaque account key through msgloom persistence."""
+        outcome = self.service.bind_or_verify(self._identity(account_key))
+        self._binding = self.service.get_binding()
+        return outcome
 
 
 class MicrosoftGraphSourceIdentityExtension:
@@ -66,8 +106,14 @@ class MicrosoftGraphSourceIdentityExtension:
             self._fail(spider, "AuthenticationDisabled")
 
         try:
+            service = SourceIdentityService.from_crawler(self.crawler)
             session = MicrosoftGraphAuthSession.from_crawler(self.crawler)
-            await session.establish_source_identity()
+            session.attach_account_binding(_SourceIdentityAccountBinding(service))
+            await session.establish_account_binding()
+            self.crawler.stats.set_value(
+                "msgloom/source_identity/gate_state",
+                "verified",
+            )
         except CloseSpider:
             raise
         except SourceIdentityBootstrapRequired:

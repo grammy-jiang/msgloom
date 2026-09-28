@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Iterator
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import urlencode
 
 import scrapy
@@ -20,7 +20,7 @@ from message_ingest.items import (
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
 )
-from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
 
@@ -29,6 +29,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
     """Track changes inside one fixed primary-calendar time window."""
 
     name = "outlook_calendar_delta"
+    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
     failure_context_keys = ("start_datetime", "end_datetime")
     calendar_scope = "default"
 
@@ -62,7 +63,6 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
         """Enable least-privilege Calendar delta components."""
-        settings.set("MS_GRAPH_SCOPES", ["Calendars.Read"], priority="spider")
         settings.set("MSGLOOM_DELTA_CHECKPOINT_ENABLED", False, priority="spider")
         extensions = settings.getdict("EXTENSIONS")
         extensions["scrapy.extensions.spiderstate.SpiderState"] = None
@@ -72,7 +72,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
         settings.set("EXTENSIONS", extensions, priority="spider")
         settings.set(
             "REQUEST_FINGERPRINTER_CLASS",
-            "message_ingest.providers.microsoft_graph.fingerprints.CalendarDeltaRequestFingerprinter",
+            "message_ingest.fingerprints.CalendarDeltaRequestFingerprinter",
             priority="spider",
         )
         settings.set(
