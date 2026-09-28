@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 from typing import Any
 
 from scrapy.exceptions import UsageError
@@ -14,6 +13,7 @@ from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
 from message_ingest.commands._common import run_graph
 from message_ingest.commands.microsoft.outlook.sync import run_calendar_sync
 from message_ingest.commands.microsoft.validation import reject_options
+from microsoft_graph.protocol.calendar import calendar_window
 
 
 def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
@@ -107,8 +107,15 @@ def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
 def _require_window(opts: argparse.Namespace, *, action: str) -> None:
     if opts.start is None or opts.end is None:
         raise UsageError(f"calendar {action} requires --start and --end")
-    if datetime.fromisoformat(opts.start) >= datetime.fromisoformat(opts.end):
-        raise UsageError("--start must be earlier than --end")
+    try:
+        calendar_window(opts.start, opts.end)
+    except ValueError as exc:
+        message = (
+            str(exc)
+            .replace("start_datetime", "--start")
+            .replace("end_datetime", "--end")
+        )
+        raise UsageError(message) from exc
 
 
 __all__ = ["dispatch_calendar"]

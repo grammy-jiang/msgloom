@@ -1,4 +1,10 @@
-"""Outlook attachment type and endpoint mechanics without completion policy."""
+"""
+Outlook attachment type and endpoint mechanics without completion policy.
+
+Paths are the reusable attachment contract. Pass them to the consumer's
+request factory so callbacks, errbacks, representation headers, and traversal
+context keep their normal ownership and Scrapy serialization behavior.
+"""
 
 from urllib.parse import quote, urlencode
 

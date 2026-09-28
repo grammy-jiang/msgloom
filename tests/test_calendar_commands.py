@@ -219,6 +219,35 @@ def test_calendar_window_datetime_validator_rejects_unsafe_scope(value: str) -> 
         aware_datetime(value)
 
 
+@pytest.mark.parametrize(
+    "value,message",
+    [
+        ("", "datetime must be non-empty with no surrounding whitespace"),
+        ("invalid", "datetime must be valid ISO-8601"),
+        ("2026-09-27T00:00:00", "datetime must include a timezone offset"),
+    ],
+)
+def test_datetime_protocol_errors_keep_cli_text(value, message):
+    with pytest.raises(argparse.ArgumentTypeError) as caught:
+        aware_datetime(value)
+    if str(caught.value) != message:
+        pytest.fail("Calendar CLI validation text changed")
+
+
+def test_calendar_cli_preserves_offset_text_and_compares_instants():
+    start, end = "2026-10-04T00:00:00+10:00", "2026-10-04T00:00:00Z"
+    if aware_datetime(start) != start or aware_datetime(end) != end:
+        pytest.fail("CLI validation must preserve exact datetime text")
+    process = _run(_opts(action="window", start=start, end=end))
+    if process.calls[0][1]["start_datetime"] != start:
+        pytest.fail("Calendar request scope changed")
+
+
+def test_calendar_dispatch_translates_provider_validation_errors():
+    with pytest.raises(UsageError, match="include an offset"):
+        _run(_opts(action="window", start="2026-10-04", end="2026-10-05"))
+
+
 def test_calendar_sync_dispatches_user_level_workflow(monkeypatch) -> None:
     calls = []
 

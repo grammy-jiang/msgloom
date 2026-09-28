@@ -1,11 +1,18 @@
-"""Validate basic Graph notifications and reduce them to privacy-safe sync hints."""
+"""Reduce validated Graph notifications to privacy-safe Outlook sync hints."""
 
 from __future__ import annotations
 
-import hmac
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
+
+from microsoft_graph.protocol.notifications import (
+    GraphNotificationAuthenticationError as OutlookNotificationAuthenticationError,
+)
+from microsoft_graph.protocol.notifications import (
+    GraphNotificationError as OutlookNotificationError,
+)
+from microsoft_graph.protocol.notifications import notifications_from_payload
 
 ResourceKind = Literal["mail", "calendar"]
 TriggerReason = Literal[
@@ -22,18 +29,10 @@ _REASON_PRIORITY: dict[TriggerReason, int] = {
     "missed": 3,
 }
 _LIFECYCLE_REASON: dict[str, TriggerReason] = {
-    "reauthorizationrequired": "reauthorization_required",
-    "subscriptionremoved": "subscription_removed",
+    "reauthorizationRequired": "reauthorization_required",
+    "subscriptionRemoved": "subscription_removed",
     "missed": "missed",
 }
-
-
-class OutlookNotificationError(ValueError):
-    """Base error for untrusted or unsupported notification envelopes."""
-
-
-class OutlookNotificationAuthenticationError(OutlookNotificationError):
-    """A notification failed the configured basic-notification clientState check."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,36 +63,18 @@ def sync_triggers_from_notification(
     event IDs, or mailbox locators. They are only scheduling hints; delta/sync
     remains the correctness mechanism.
     """
-    if not expected_client_state:
-        raise ValueError("expected_client_state must not be empty")
-    values = payload.get("value")
-    if not isinstance(values, list):
-        raise OutlookNotificationError("notification payload must contain a value list")
-
     strongest: dict[ResourceKind, TriggerReason] = {}
-    resource_map = subscription_resources or {}
-    for item in values:
-        if not isinstance(item, Mapping):
-            raise OutlookNotificationError("notification entries must be objects")
-        client_state = item.get("clientState")
-        if not isinstance(client_state, str) or not hmac.compare_digest(
-            client_state, expected_client_state
-        ):
-            raise OutlookNotificationAuthenticationError(
-                "Microsoft Graph notification clientState mismatch"
-            )
-
-        resource = item.get("resource")
-        if not isinstance(resource, str) or not resource:
-            subscription_id = item.get("subscriptionId")
-            if isinstance(subscription_id, str):
-                resource = resource_map.get(subscription_id)
-        if not isinstance(resource, str) or not resource:
-            raise OutlookNotificationError(
-                "notification resource is missing and subscription mapping is unavailable"
-            )
-        kind = _resource_kind(resource)
-        reason = _reason(item)
+    for item in notifications_from_payload(
+        payload,
+        expected_client_state=expected_client_state,
+        subscription_resources=subscription_resources,
+    ):
+        kind = _resource_kind(item.resource)
+        reason: TriggerReason = (
+            _LIFECYCLE_REASON[item.lifecycle_event]
+            if item.lifecycle_event is not None
+            else "change"
+        )
         current = strongest.get(kind)
         if current is None or _REASON_PRIORITY[reason] > _REASON_PRIORITY[current]:
             strongest[kind] = reason
@@ -112,21 +93,6 @@ def _resource_kind(resource: str) -> ResourceKind:
     if "/events" in normalized:
         return "calendar"
     raise OutlookNotificationError("unsupported Outlook notification resource")
-
-
-def _reason(item: Mapping[str, Any]) -> TriggerReason:
-    lifecycle = item.get("lifecycleEvent")
-    if lifecycle is None:
-        change_type = item.get("changeType")
-        if change_type not in {"created", "updated", "deleted"}:
-            raise OutlookNotificationError("unsupported Outlook changeType")
-        return "change"
-    if not isinstance(lifecycle, str):
-        raise OutlookNotificationError("lifecycleEvent must be a string")
-    try:
-        return _LIFECYCLE_REASON[lifecycle.replace("_", "").lower()]
-    except KeyError as exc:
-        raise OutlookNotificationError("unsupported Outlook lifecycleEvent") from exc
 
 
 __all__ = [

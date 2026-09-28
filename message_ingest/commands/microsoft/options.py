@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 from typing import Any
 
 from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
@@ -13,6 +12,7 @@ from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1 as MAIL_FULL_V1,
 )
 from message_ingest.commands._common import non_negative_int, page_size
+from microsoft_graph.protocol.calendar import parse_calendar_datetime
 
 
 def aware_datetime(value: str) -> str:
@@ -23,11 +23,20 @@ def aware_datetime(value: str) -> str:
             "datetime must be non-empty with no surrounding whitespace"
         )
     try:
-        parsed = datetime.fromisoformat(cleaned)
+        parse_calendar_datetime(cleaned)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError("datetime must be valid ISO-8601") from exc
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise argparse.ArgumentTypeError("datetime must include a timezone offset")
+        message = (
+            str(exc)
+            .replace(
+                "Calendar window values must be valid ISO-8601 datetimes",
+                "datetime must be valid ISO-8601",
+            )
+            .replace(
+                "Calendar window datetimes must include an offset",
+                "datetime must include a timezone offset",
+            )
+        )
+        raise argparse.ArgumentTypeError(message) from exc
     return cleaned
 
 

@@ -106,3 +106,32 @@ def test_unsupported_resource_is_rejected_without_exposing_provider_ids() -> Non
             },
             expected_client_state=SECRET,
         )
+
+
+@pytest.mark.parametrize(
+    "lifecycle,reason",
+    [
+        ("reauthorizationRequired", "reauthorization_required"),
+        ("subscriptionRemoved", "subscription_removed"),
+        ("missed", "missed"),
+    ],
+)
+def test_each_lifecycle_reason_requests_recovery(lifecycle, reason):
+    triggers = sync_triggers_from_notification(
+        {
+            "value": [
+                {
+                    "resource": "/me/events/event",
+                    "changeType": "created",
+                    "clientState": SECRET,
+                    **extra,
+                }
+                for extra in ({}, {"lifecycleEvent": lifecycle}, {})
+            ]
+        },
+        expected_client_state=SECRET,
+    )
+    if len(triggers) != 1 or triggers[0].reason != reason:
+        pytest.fail("Lifecycle reason must dominate ordinary changes")
+    if not triggers[0].requires_subscription_recovery:
+        pytest.fail("Lifecycle event must request recovery")

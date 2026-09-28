@@ -24,6 +24,8 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarItem,
     OutlookCalendarSeriesTopologyItem,
 )
+from microsoft_graph.items.outlook import OutlookEventItem
+from microsoft_graph.protocol.attachments import attachment_type_name
 
 from ._calendar_planning import CalendarPlanningStore
 
@@ -63,12 +65,13 @@ class OutlookCalendarStore(CalendarPlanningStore):
                 return "stale"
             previous_change_key = record.change_key
             previous_raw = record.raw
-            record.name = self._string(raw.get("name"))
-            record.change_key = self._string(raw.get("changeKey"))
-            record.is_default_calendar = self._bool(raw.get("isDefaultCalendar"))
-            record.can_edit = self._bool(raw.get("canEdit"))
-            record.can_share = self._bool(raw.get("canShare"))
-            record.can_view_private_items = self._bool(raw.get("canViewPrivateItems"))
+            provider = item.provider
+            record.name = self._string(provider.name)
+            record.change_key = self._string(provider.change_key)
+            record.is_default_calendar = self._bool(provider.is_default_calendar)
+            record.can_edit = self._bool(provider.can_edit)
+            record.can_share = self._bool(provider.can_share)
+            record.can_view_private_items = self._bool(provider.can_view_private_items)
             record.latest_observed_at = item.observed_at
             record.latest_evidence_id = item.evidence_id
             record.raw = raw
@@ -132,7 +135,7 @@ class OutlookCalendarStore(CalendarPlanningStore):
                 session.add(record)
             same_version = not created and self._same_semantic_version(
                 previous_change_key,
-                self._string(raw.get("changeKey")),
+                self._string(item.provider.change_key),
                 previous_raw,
                 raw,
             )
@@ -337,13 +340,14 @@ class OutlookCalendarStore(CalendarPlanningStore):
             previous_raw = record.raw
             record.calendar_id = calendar_id
             record.attachment_type = item.attachment_type
-            record.name = self._string(raw.get("name"))
-            record.content_type = self._string(raw.get("contentType"))
-            size = raw.get("size")
+            provider = item.provider
+            record.name = self._string(provider.name)
+            record.content_type = self._string(provider.content_type)
+            size = provider.size
             record.size = (
                 size if isinstance(size, int) and not isinstance(size, bool) else None
             )
-            record.is_inline = self._bool(raw.get("isInline"))
+            record.is_inline = self._bool(provider.is_inline)
             record.content_bytes_present = item.content_bytes_present
             record.latest_observed_at = item.observed_at
             record.latest_evidence_id = item.evidence_id
@@ -392,17 +396,18 @@ class OutlookCalendarStore(CalendarPlanningStore):
     ) -> None:
         if raw is None:
             raw = item.raw
-        start = raw.get("start")
-        end = raw.get("end")
+        # The store owns same-version merging. Project the merged response so
+        # a later basic capture cannot erase fields from a richer response.
+        provider = OutlookEventItem(event_id=item.event_id, raw=raw)
         record.calendar_id = calendar_id
-        record.change_key = self._string(raw.get("changeKey"))
-        record.subject = self._string(raw.get("subject"))
-        record.start = start if isinstance(start, dict) else None
-        record.end = end if isinstance(end, dict) else None
-        record.event_type = self._string(raw.get("type"))
-        record.series_master_id = self._string(raw.get("seriesMasterId"))
-        record.is_all_day = self._bool(raw.get("isAllDay"))
-        record.is_cancelled = self._bool(raw.get("isCancelled"))
+        record.change_key = self._string(provider.change_key)
+        record.subject = self._string(provider.subject)
+        record.start = provider.start if isinstance(provider.start, dict) else None
+        record.end = provider.end if isinstance(provider.end, dict) else None
+        record.event_type = self._string(provider.event_type)
+        record.series_master_id = self._string(provider.series_master_id)
+        record.is_all_day = self._bool(provider.is_all_day)
+        record.is_cancelled = self._bool(provider.is_cancelled)
         record.is_removed = False
         record.latest_observed_at = item.observed_at
         record.latest_evidence_id = item.evidence_id
@@ -443,22 +448,14 @@ class OutlookCalendarStore(CalendarPlanningStore):
             return old_change_key == new_change_key
         return old_raw == new_raw
 
-    @classmethod
-    def _initial_content_status(cls, attachment_type: str | None) -> str:
-        normalized = cls._attachment_type_name(attachment_type)
+    @staticmethod
+    def _initial_content_status(attachment_type: str | None) -> str:
+        normalized = attachment_type_name(attachment_type)
         if normalized in {"fileAttachment", "itemAttachment"}:
             return "pending"
         if normalized == "referenceAttachment":
             return "reference"
         return "unsupported"
-
-    @staticmethod
-    def _attachment_type_name(attachment_type: str | None) -> str:
-        return (
-            (attachment_type or "unknown")
-            .removeprefix("#microsoft.graph.")
-            .removeprefix("microsoft.graph.")
-        )
 
     @staticmethod
     def _string(value: object) -> str | None:

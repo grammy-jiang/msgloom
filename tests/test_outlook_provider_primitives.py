@@ -74,6 +74,10 @@ def test_calendar_paths_preserve_default_named_and_delta_grammar(
     calendar_id, suffix, mailbox, root
 ):
     calendar = spider(OutlookCalendarSpider, mailbox)
+    if calendar.calendars_path() != f"{root}/calendars":
+        pytest.fail("Calendar inventory path changed")
+    if calendar.calendars_path(page_size=100) != f"{root}/calendars?%24top=100":
+        pytest.fail("Calendar inventory query bytes changed")
     start, end = "2026-09-27T00:00:00+10:00", "2026-10-04T00:00:00Z"
     event = f"{root}{suffix}/events/e%2F%2B%3D"
     if calendar.event_path("e/+=", calendar_id=calendar_id) != event:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from microsoft_graph.items.outlook import (
     OutlookCalendarAttachmentItem as GraphOutlookCalendarAttachmentItem,
@@ -17,34 +17,90 @@ from microsoft_graph.items.outlook import (
 
 
 @dataclass(slots=True)
-class OutlookCalendarItem(GraphOutlookCalendarItem):
-    """One observation of a calendar visible to the signed-in user."""
+class OutlookCalendarItem:
+    """Keep the persisted observation schema; compose provider projections."""
 
+    calendar_id: str
+    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
 
+    @property
+    def provider(self) -> GraphOutlookCalendarItem:
+        """Project current raw metadata using the observation's identity."""
+        return GraphOutlookCalendarItem(calendar_id=self.calendar_id, raw=self.raw)
+
+    @classmethod
+    def from_graph(cls, resource: dict[str, Any], **kwargs: Any) -> Self:
+        """Validate a provider calendar and attach application provenance."""
+        provider = GraphOutlookCalendarItem.from_graph(resource)
+        return cls(calendar_id=provider.calendar_id, raw=provider.raw, **kwargs)
+
 
 @dataclass(slots=True)
-class OutlookCalendarEventItem(GraphOutlookEventItem):
+class OutlookCalendarEventItem:
     """One observation of an event in a declared Calendar scope."""
 
+    event_id: str
+    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
     calendar_id: str = "default"
     observation_kind: str = "window"
 
+    @property
+    def provider(self) -> GraphOutlookEventItem:
+        """Project current raw metadata without changing the item schema."""
+        return GraphOutlookEventItem(event_id=self.event_id, raw=self.raw)
+
+    @classmethod
+    def from_graph(cls, resource: dict[str, Any], **kwargs: Any) -> Self:
+        """Validate a provider event and attach application provenance."""
+        provider = GraphOutlookEventItem.from_graph(resource)
+        return cls(event_id=provider.event_id, raw=provider.raw, **kwargs)
+
 
 @dataclass(slots=True)
-class OutlookCalendarAttachmentItem(GraphOutlookCalendarAttachmentItem):
+class OutlookCalendarAttachmentItem:
     """One attachment metadata/content observation for a Calendar event."""
 
+    event_id: str
+    attachment_id: str
+    attachment_type: str | None
+    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
     calendar_id: str = "default"
     content_bytes_present: bool = False
+
+    @property
+    def provider(self) -> GraphOutlookCalendarAttachmentItem:
+        """Project current metadata after application content removal."""
+        return GraphOutlookCalendarAttachmentItem(
+            event_id=self.event_id,
+            attachment_id=self.attachment_id,
+            attachment_type=self.attachment_type,
+            raw=self.raw,
+        )
+
+    @classmethod
+    def from_graph(
+        cls, resource: dict[str, Any], *, event_id: str, **kwargs: Any
+    ) -> Self:
+        """Validate provider metadata without changing content ownership."""
+        provider = GraphOutlookCalendarAttachmentItem.from_graph(
+            resource, event_id=event_id
+        )
+        return cls(
+            event_id=event_id,
+            attachment_id=provider.attachment_id,
+            attachment_type=provider.attachment_type,
+            raw=provider.raw,
+            **kwargs,
+        )
 
 
 @dataclass(slots=True)

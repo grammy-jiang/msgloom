@@ -7,10 +7,10 @@ from urllib.parse import quote
 
 from scrapy.settings import BaseSettings
 
-from .attachments import OutlookAttachmentSpider
+from microsoft_graph.spiders.graph import MicrosoftGraphSpider
 
 
-class OutlookMailboxSpider(OutlookAttachmentSpider):
+class OutlookMailboxSpider(MicrosoftGraphSpider):
     """Target the signed-in mailbox or one explicitly delegated mailbox."""
 
     target_mailbox_setting = "MS_GRAPH_TARGET_MAILBOX"

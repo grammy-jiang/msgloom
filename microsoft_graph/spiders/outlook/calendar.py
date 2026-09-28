@@ -14,6 +14,13 @@ class OutlookCalendarSpider(OutlookMailboxSpider):
     graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
     shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read.Shared",)
 
+    def calendars_path(self, *, page_size: int | None = None) -> str:
+        """List visible calendars with the provider's encoded page-size query."""
+        path = f"{self._mailbox_path()}/calendars"
+        if page_size is None:
+            return path
+        return f"{path}?{urlencode({'$top': page_size})}"
+
     def event_path(self, event_id: str, *, calendar_id: str = "") -> str:
         """Build an event path in the mailbox or one named calendar."""
         path = self._mailbox_path()

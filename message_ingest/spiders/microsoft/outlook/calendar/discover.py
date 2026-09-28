@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
-from urllib.parse import urlencode
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
@@ -70,9 +69,8 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
             "msgloom/crawl/calendar/inventory_exhausted",
             False,
         )
-        query = urlencode({"$top": self.page_size})
         yield self._request(
-            self._mailbox_url(f"/calendars?{query}"),
+            f"{self.graph_root}{self.calendars_path(page_size=self.page_size)}",
             callback=self.parse_calendars,
             purpose="calendar-inventory-page",
             cb_kwargs={},
@@ -97,19 +95,14 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
 
         self.crawler.stats.inc_value("msgloom/crawl/calendar/inventory_page_count")
         for calendar in values:
-            if not isinstance(calendar, dict):
-                raise TypeError("Calendar inventory entry must be a JSON object")
-            calendar_id = calendar.get("id")
-            if not isinstance(calendar_id, str) or not calendar_id:
-                raise ValueError("Calendar inventory entry requires a non-empty id")
-            self.crawler.stats.inc_value("msgloom/crawl/calendar/calendar_count")
-            yield OutlookCalendarItem(
-                calendar_id=calendar_id,
-                raw=calendar,
+            item = OutlookCalendarItem.from_graph(
+                calendar,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
                 run_id=self.run_id,
             )
+            self.crawler.stats.inc_value("msgloom/crawl/calendar/calendar_count")
+            yield item
 
         next_link = page.next_link
         if next_link is None:

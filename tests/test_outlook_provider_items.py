@@ -108,24 +108,35 @@ def test_consumer_item_fields_and_order_are_unchanged():
 
 
 @pytest.mark.parametrize(
-    "provider,consumer,context",
+    "provider,consumer,context,reuse_strategy",
     [
-        (OutlookMessageItem, email.OutlookMailItem, {}),
-        (OutlookMailFolderItem, email.OutlookMailFolderItem, {}),
-        (OutlookAttachmentItem, email.OutlookAttachmentItem, {"message_id": "message"}),
-        (OutlookCalendarItem, calendar.OutlookCalendarItem, {}),
-        (OutlookEventItem, calendar.OutlookCalendarEventItem, {}),
+        (OutlookMessageItem, email.OutlookMailItem, {}, "inheritance"),
+        (OutlookMailFolderItem, email.OutlookMailFolderItem, {}, "inheritance"),
+        (
+            OutlookAttachmentItem,
+            email.OutlookAttachmentItem,
+            {"message_id": "message"},
+            "inheritance",
+        ),
+        (OutlookCalendarItem, calendar.OutlookCalendarItem, {}, "composition"),
+        (OutlookEventItem, calendar.OutlookCalendarEventItem, {}, "composition"),
         (
             OutlookCalendarAttachmentItem,
             calendar.OutlookCalendarAttachmentItem,
             {"event_id": "event"},
+            "composition",
         ),
     ],
 )
-def test_provider_items_work_without_application_fields(provider, consumer, context):
+def test_provider_items_work_without_application_fields(
+    provider, consumer, context, reuse_strategy
+):
+    """Check inheritance here; test_graph_calendar_items checks composition."""
     raw = {"id": "resource", "subject": "Subject", "unknown": {"retained": True}}
     item = provider.from_graph(raw, **context)
-    if not issubclass(consumer, provider):
+    if reuse_strategy not in {"inheritance", "composition"}:
+        pytest.fail(f"Unknown provider reuse strategy: {reuse_strategy}")
+    if reuse_strategy == "inheritance" and not issubclass(consumer, provider):
         pytest.fail("Consumer must reuse the provider item contract")
     if item.raw is not raw or ItemAdapter(item).asdict()["raw"] != raw:
         pytest.fail("Provider item must retain the complete resource")
