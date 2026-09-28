@@ -9,7 +9,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from message_ingest.catalog.models import (
+from message_ingest.catalog.models.microsoft.outlook.email import (
     AttachmentRecord,
     MailFolderRecord,
     MessageObservation,

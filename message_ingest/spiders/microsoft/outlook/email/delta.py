@@ -19,6 +19,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
 
+from ._delta_state import MailDeltaExecutionState, execution_payload
 from ._folders import OutlookFolderTraversal
 
 
@@ -311,24 +312,22 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         if not isinstance(saved, dict):
             self._persist_execution_state()
             return
-        saved_run_id = saved.get("run_id")
-        if isinstance(saved_run_id, str) and saved_run_id:
-            self.run_id = saved_run_id
-        self._seen_folder_ids = set(saved.get("seen_folder_ids", []))
-        self._started_folder_ids = set(saved.get("started_folder_ids", []))
-        self._completed_folder_ids = set(saved.get("completed_folder_ids", []))
-        self._reconcile_orphan_ids = set(saved.get("reconcile_orphan_ids", []))
-        self._folder_inventory_pending = int(saved.get("folder_inventory_pending", 0))
-        self._folder_inventory_complete = bool(
-            saved.get("folder_inventory_complete", False)
+        restored = MailDeltaExecutionState.restore(
+            saved,
+            default_run_id=self.run_id,
         )
-        self._folder_inventory_failed = bool(
-            saved.get("folder_inventory_failed", False)
-        )
-        self._reconcile_complete = bool(saved.get("reconcile_complete", False))
-        self._run_failed = bool(saved.get("run_failed", False))
-        self._failure_reasons = set(saved.get("failure_reasons", []))
-        self._delta_start_scheduled = bool(saved.get("delta_start_scheduled", False))
+        self.run_id = restored.run_id
+        self._seen_folder_ids = set(restored.seen_folder_ids)
+        self._started_folder_ids = set(restored.started_folder_ids)
+        self._completed_folder_ids = set(restored.completed_folder_ids)
+        self._reconcile_orphan_ids = set(restored.reconcile_orphan_ids)
+        self._folder_inventory_pending = restored.folder_inventory_pending
+        self._folder_inventory_complete = restored.folder_inventory_complete
+        self._folder_inventory_failed = restored.folder_inventory_failed
+        self._reconcile_complete = restored.reconcile_complete
+        self._run_failed = restored.run_failed
+        self._failure_reasons = set(restored.failure_reasons)
+        self._delta_start_scheduled = restored.delta_start_scheduled
 
     def _persist_execution_state(self) -> None:
         """
@@ -339,20 +338,20 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         shutdown/resume; it is not a replacement for transactional provider
         checkpoints.
         """
-        self.state["msgloom_delta"] = {
-            "run_id": self.run_id,
-            "seen_folder_ids": sorted(self._seen_folder_ids),
-            "started_folder_ids": sorted(self._started_folder_ids),
-            "completed_folder_ids": sorted(self._completed_folder_ids),
-            "reconcile_orphan_ids": sorted(self._reconcile_orphan_ids),
-            "folder_inventory_pending": self._folder_inventory_pending,
-            "folder_inventory_complete": self._folder_inventory_complete,
-            "folder_inventory_failed": self._folder_inventory_failed,
-            "reconcile_complete": self._reconcile_complete,
-            "run_failed": self._run_failed,
-            "failure_reasons": sorted(self._failure_reasons),
-            "delta_start_scheduled": self._delta_start_scheduled,
-        }
+        self.state["msgloom_delta"] = execution_payload(
+            run_id=self.run_id,
+            seen_folder_ids=self._seen_folder_ids,
+            started_folder_ids=self._started_folder_ids,
+            completed_folder_ids=self._completed_folder_ids,
+            reconcile_orphan_ids=self._reconcile_orphan_ids,
+            folder_inventory_pending=self._folder_inventory_pending,
+            folder_inventory_complete=self._folder_inventory_complete,
+            folder_inventory_failed=self._folder_inventory_failed,
+            reconcile_complete=self._reconcile_complete,
+            run_failed=self._run_failed,
+            failure_reasons=self._failure_reasons,
+            delta_start_scheduled=self._delta_start_scheduled,
+        )
 
     def _message_delta_start_request(self, folder_id: str) -> scrapy.Request:
         """

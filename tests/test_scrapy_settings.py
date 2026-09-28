@@ -184,11 +184,13 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
             'Expected: extensions["message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension"] == 525'
         )
     if (
-        extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"]
+        extensions[
+            "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension"
+        ]
         != 550
     ):
         pytest.fail(
-            'Expected: extensions["message_ingest.extensions.status.OutlookCrawlStatusExtension"] == 550'
+            'Expected: extensions["message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension"] == 550'
         )
     if extensions["scrapy.extensions.periodic_log.PeriodicLog"] != 600:
         pytest.fail(

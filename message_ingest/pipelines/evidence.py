@@ -10,7 +10,7 @@ from pathlib import Path
 
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.catalog.models import RawHttpEvidence
+from message_ingest.catalog.models.acquisition import RawHttpEvidence
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import RawHttpEvidenceItem
 

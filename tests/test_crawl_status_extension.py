@@ -8,7 +8,9 @@ import pytest
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.extensions.status import OutlookCrawlStatusExtension
+from message_ingest.extensions.microsoft.outlook.email.status import (
+    OutlookCrawlStatusExtension,
+)
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
@@ -43,7 +45,9 @@ def test_discovery_finished_after_pagination_exhaustion_is_completed(caplog) -> 
     crawler.stats.set_value("msgloom/crawl/discovery/page_count", 2)
     crawler.stats.set_value("msgloom/crawl/discovery/message_count", 3)
     crawler.stats.set_value("msgloom/catalog/message_item_processed_count", 3)
-    caplog.set_level(logging.INFO, logger="message_ingest.extensions.status")
+    caplog.set_level(
+        logging.INFO, logger="message_ingest.extensions.microsoft.outlook.email.status"
+    )
 
     extension.spider_closed(spider, "finished")
 
@@ -172,7 +176,9 @@ def test_full_completed_reports_execution_not_profile_completeness(caplog) -> No
     crawler.stats.set_value("msgloom/crawl/enrichment/operation", "refresh")
     crawler.stats.set_value("msgloom/crawl/enrichment/profile", spider.profile)
     crawler.stats.set_value("msgloom/crawl/enrichment/target_message_count", 1)
-    caplog.set_level(logging.INFO, logger="message_ingest.extensions.status")
+    caplog.set_level(
+        logging.INFO, logger="message_ingest.extensions.microsoft.outlook.email.status"
+    )
 
     extension.spider_closed(spider, "finished")
 

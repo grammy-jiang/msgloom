@@ -10,7 +10,8 @@ from scrapy.exceptions import NotConfigured
 from sqlalchemy import insert, select, update
 from sqlalchemy.engine import Connection
 
-from message_ingest.catalog.models import Base, SourceBinding
+from message_ingest.catalog.models.acquisition import SourceBinding
+from message_ingest.catalog.models.base import Base
 from message_ingest.extensions.catalog import CatalogService
 
 _SERVICE_ATTR = "_msgloom_source_identity_service"

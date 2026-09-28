@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 
-from message_ingest.catalog.models import RawHttpEvidence
+from message_ingest.catalog.models.acquisition import RawHttpEvidence
 
 
 class RawEvidenceStore:

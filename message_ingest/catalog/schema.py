@@ -6,7 +6,7 @@ from typing import cast
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from message_ingest.catalog.models import Base
+from message_ingest.catalog.models.base import Base
 
 
 def initialize_schema(database_url: str, *, in_memory: bool) -> bytes | None:

@@ -80,7 +80,7 @@ else:
 
 extensions = {
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 90,
-    "message_ingest.extensions.status.OutlookCrawlStatusExtension": 100,
+    "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 100,
 }
 if kind == "signal":
     extensions[SignalFailingExtension] = 110

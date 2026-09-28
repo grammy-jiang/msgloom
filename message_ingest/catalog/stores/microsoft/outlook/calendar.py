@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from sqlalchemy import select
 
-from message_ingest.catalog.models import (
+from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarDeltaObservation,
     CalendarEventAttachmentRecord,
     CalendarEventObservation,

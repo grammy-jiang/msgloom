@@ -45,7 +45,10 @@ def test_checkpoint_extensions_expose_only_framework_adapters() -> None:
         pytest.fail(
             f"Unexpected Outlook extension exports: {extension_outlook.__all__!r}"
         )
-    if email_extensions.__all__ != ["OutlookDeltaCheckpointExtension"]:
+    if email_extensions.__all__ != [
+        "OutlookCrawlStatusExtension",
+        "OutlookDeltaCheckpointExtension",
+    ]:
         pytest.fail(
             f"Unexpected Outlook Mail extension exports: {email_extensions.__all__!r}"
         )
