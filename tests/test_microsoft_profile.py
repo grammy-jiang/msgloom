@@ -13,7 +13,7 @@ from scrapy.utils.test import get_crawler
 
 from message_ingest.commands import microsoft as microsoft_command
 from message_ingest.items import RawHttpEvidenceItem
-from message_ingest.spiders.microsoft_profile import MicrosoftProfileSpider
+from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
 
 
 def _spider() -> MicrosoftProfileSpider:

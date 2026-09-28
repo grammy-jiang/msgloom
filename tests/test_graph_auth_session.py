@@ -17,7 +17,9 @@ from message_ingest.providers.microsoft_graph.auth_session import (
     MicrosoftGraphAuthError,
     MicrosoftGraphAuthSession,
 )
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 KEY_SCHEME = "msal_home_account_id/sha256-v1"
 

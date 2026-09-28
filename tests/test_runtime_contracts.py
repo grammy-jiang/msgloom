@@ -16,7 +16,9 @@ from message_ingest.commands.microsoft import Command
 from message_ingest.providers.microsoft_graph.errors import (
     MicrosoftGraphErrorMiddleware,
 )
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 
 def test_command_requires_an_initialized_crawler_process() -> None:

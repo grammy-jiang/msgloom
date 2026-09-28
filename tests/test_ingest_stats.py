@@ -12,9 +12,11 @@ import pytest
 from scrapy.http import Request, TextResponse
 from scrapy.utils.test import get_crawler
 
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from message_ingest.spiders.outlook_full import OutlookFullSpider
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email._base import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
 

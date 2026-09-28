@@ -25,9 +25,9 @@ MESSAGE_ID = "immutable-message-002"
 RUN_COMMAND = """
 import sys
 from scrapy.cmdline import execute
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from message_ingest.spiders.outlook_full import OutlookFullSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 for spider_cls in (OutlookDiscoverSpider, OutlookDeltaSpider, OutlookFullSpider):
     spider_cls.graph_root = sys.argv[1]

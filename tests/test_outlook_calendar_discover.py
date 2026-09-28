@@ -14,7 +14,7 @@ from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
 from message_ingest.items import OutlookCalendarItem, RawHttpEvidenceItem
-from message_ingest.spiders.outlook_calendar_discover import (
+from message_ingest.spiders.microsoft.outlook.calendar.discover import (
     OutlookCalendarDiscoverSpider,
 )
 

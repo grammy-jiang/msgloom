@@ -12,23 +12,25 @@ from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
-from message_ingest.spiders.microsoft_profile import MicrosoftProfileSpider
-from message_ingest.spiders.outlook_calendar_delta import (
+from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )
-from message_ingest.spiders.outlook_calendar_discover import (
+from message_ingest.spiders.microsoft.outlook.calendar.discover import (
     OutlookCalendarDiscoverSpider,
 )
-from message_ingest.spiders.outlook_calendar_full import (
+from message_ingest.spiders.microsoft.outlook.calendar.full import (
     OutlookCalendarFullSpider,
 )
-from message_ingest.spiders.outlook_calendar_window import (
+from message_ingest.spiders.microsoft.outlook.calendar.window import (
     OutlookCalendarWindowSpider,
 )
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from message_ingest.spiders.outlook_full import OutlookFullSpider
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email._base import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
+from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
 
 
 def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:

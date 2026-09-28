@@ -67,7 +67,9 @@ def test_outlook_resource_scope_reaches_selected_auth_middleware(
     tmp_path,
     middleware_cls,
 ) -> None:
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(
         OutlookDiscoverSpider,
@@ -333,7 +335,9 @@ def test_external_authorization_401_forces_refresh_on_first_session_token(
 
 
 def test_transport_retry_does_not_serialize_bearer_token() -> None:
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(
         OutlookDiscoverSpider,
@@ -380,7 +384,9 @@ def test_transport_retry_does_not_serialize_bearer_token() -> None:
 
 
 def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(OutlookDiscoverSpider)
     spider = OutlookDiscoverSpider.from_crawler(crawler)

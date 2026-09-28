@@ -23,7 +23,7 @@ from scrapy.crawler import CrawlerProcess
 
 from message_ingest.catalog import Catalog
 from message_ingest.pipelines.catalog import CatalogPipeline
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import OutlookDiscoverSpider
 
 
 class ProcessFailingPipeline:

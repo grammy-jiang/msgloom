@@ -10,7 +10,9 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
 from message_ingest.providers.microsoft_graph.errors import PrivacySafeRetryMiddleware
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 SECRET_URL = (
     "https://graph.microsoft.com/v1.0/me/messages/delta?$deltatoken=secret-cursor"

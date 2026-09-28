@@ -13,7 +13,9 @@ from message_ingest.extensions.calendar_delta_checkpoint import (
     CalendarDeltaCheckpointExtension,
 )
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.spiders.outlook_calendar_delta import OutlookCalendarDeltaSpider
+from message_ingest.spiders.microsoft.outlook.calendar.delta import (
+    OutlookCalendarDeltaSpider,
+)
 
 START = "2026-09-27T00:00:00+10:00"
 END = "2026-10-04T00:00:00+10:00"

@@ -8,7 +8,7 @@ from scrapy import signals
 from scrapy.exceptions import CloseSpider, NotConfigured
 
 from message_ingest.checkpoints import OutlookDeltaCheckpointStore
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 
 logger = logging.getLogger(__name__)
 

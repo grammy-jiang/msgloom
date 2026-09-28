@@ -18,7 +18,7 @@ from message_ingest.items import (
     OutlookMailDetailItem,
     OutlookMessageSurfaceItem,
 )
-from message_ingest.spiders.outlook_full import OutlookFullSpider
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
 

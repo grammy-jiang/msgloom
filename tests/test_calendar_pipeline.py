@@ -23,7 +23,7 @@ from message_ingest.items import (
 )
 from message_ingest.pipelines.calendar import CalendarPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
-from message_ingest.spiders.outlook_calendar_window import (
+from message_ingest.spiders.microsoft.outlook.calendar.window import (
     OutlookCalendarWindowSpider,
 )
 

@@ -18,7 +18,7 @@ from message_ingest.extensions.catalog import CatalogService
 from message_ingest.extensions.delta_checkpoint import OutlookDeltaCheckpointExtension
 from message_ingest.items import OutlookDeltaCheckpointCandidateItem
 from message_ingest.pipelines.catalog import CatalogPipeline
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 
 
 def _db_url(tmp_path: Path) -> str:

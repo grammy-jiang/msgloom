@@ -100,7 +100,9 @@ def test_download_error_log_omits_exception_text_and_url() -> None:
     from scrapy.utils.test import get_crawler
     from twisted.python.failure import Failure
 
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(OutlookDiscoverSpider)
     spider = OutlookDiscoverSpider.from_crawler(crawler)
@@ -134,7 +136,9 @@ def test_download_error_log_omits_exception_text_and_url() -> None:
 def test_dropped_log_omits_exception_message() -> None:
     from scrapy.utils.test import get_crawler
 
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(OutlookDiscoverSpider)
     spider = OutlookDiscoverSpider.from_crawler(crawler)

@@ -16,7 +16,8 @@ from message_ingest.items import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailRemovalItem,
 )
-from message_ingest.spiders._outlook_folders import OutlookFolderTraversal
+
+from ._folders import OutlookFolderTraversal
 
 
 class OutlookDeltaSpider(OutlookFolderTraversal):

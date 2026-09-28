@@ -19,8 +19,8 @@ def _env_bool(name: str, default: bool = True) -> bool:
 
 BOT_NAME = "message_ingest"
 
-SPIDER_MODULES = ["message_ingest.spiders"]
-NEWSPIDER_MODULE = "message_ingest.spiders"
+SPIDER_MODULES = ["message_ingest.spiders.microsoft"]
+NEWSPIDER_MODULE = "message_ingest.spiders.microsoft"
 COMMANDS_MODULE = "message_ingest.commands"
 
 

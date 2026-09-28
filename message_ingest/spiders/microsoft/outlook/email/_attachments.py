@@ -12,7 +12,8 @@ from scrapy.http import Response, TextResponse
 
 from message_ingest.items import OutlookAttachmentItem, OutlookMessageSurfaceItem
 from message_ingest.profiles import FULL_V1, attachment_type_name
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+
+from ._base import OutlookMailSpider
 
 
 class OutlookAttachmentTraversal(OutlookMailSpider):

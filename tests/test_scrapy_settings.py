@@ -14,9 +14,11 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
 import message_ingest.settings as project_settings
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from message_ingest.spiders.outlook_full import OutlookFullSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 
 def _settings() -> Settings:

@@ -21,10 +21,8 @@ from message_ingest.items import (
     OutlookCalendarEventItem,
 )
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
-from message_ingest.spiders._calendar_delta_state import (
-    CalendarDeltaExecutionState,
-    execution_payload,
-)
+
+from ._delta_state import CalendarDeltaExecutionState, execution_payload
 
 
 class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):

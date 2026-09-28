@@ -7,7 +7,7 @@ from urllib.parse import quote, urlencode
 import scrapy
 from scrapy.http import TextResponse
 
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from ._base import OutlookMailSpider
 
 
 class OutlookDiscoverSpider(OutlookMailSpider):

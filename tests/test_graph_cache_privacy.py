@@ -13,7 +13,9 @@ from scrapy.utils.test import get_crawler
 from message_ingest.providers.microsoft_graph.log_privacy import (
     MicrosoftGraphLogPrivacyExtension,
 )
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 
 def test_native_http_cache_read_failure_redacts_graph_request_and_exception(

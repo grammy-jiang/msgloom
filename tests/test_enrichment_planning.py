@@ -15,7 +15,7 @@ from scrapy.utils.test import get_crawler
 from message_ingest.catalog import Catalog
 from message_ingest.items import OutlookMessageSurfaceItem
 from message_ingest.profiles import FULL_V1
-from message_ingest.spiders.outlook_full import OutlookFullSpider
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 
 def _settings(tmp_path: Path) -> dict:

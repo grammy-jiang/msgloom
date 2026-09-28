@@ -18,7 +18,9 @@ from message_ingest.providers.microsoft_graph.accounts import (
 from message_ingest.providers.microsoft_graph.identity_gate import (
     MicrosoftGraphSourceIdentityExtension,
 )
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 
 def _crawler(

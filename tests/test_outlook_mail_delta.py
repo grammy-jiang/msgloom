@@ -28,7 +28,7 @@ from message_ingest.items import (
     OutlookMailRemovalItem,
 )
 from message_ingest.pipelines.catalog import CatalogPipeline
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
 

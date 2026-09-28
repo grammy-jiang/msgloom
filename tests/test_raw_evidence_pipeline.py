@@ -261,7 +261,9 @@ def test_evidence_link_pipeline_passes_unknown_item_through(tmp_path: Path) -> N
 def test_native_pipeline_manager_orders_raw_link_then_mail_catalog(
     tmp_path: Path,
 ) -> None:
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(
         OutlookDiscoverSpider,
@@ -324,7 +326,9 @@ def test_native_pipeline_manager_orders_raw_link_then_mail_catalog(
 def test_native_pipeline_manager_blocks_mail_catalog_on_missing_evidence(
     tmp_path: Path,
 ) -> None:
-    from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+    from message_ingest.spiders.microsoft.outlook.email.discover import (
+        OutlookDiscoverSpider,
+    )
 
     crawler = get_crawler(
         OutlookDiscoverSpider,

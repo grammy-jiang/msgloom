@@ -17,7 +17,7 @@ from message_ingest.items import (
     RawHttpEvidenceItem,
 )
 from message_ingest.profiles import FULL_V1
-from message_ingest.spiders.outlook_full import OutlookFullSpider
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 
 def _spider() -> OutlookFullSpider:

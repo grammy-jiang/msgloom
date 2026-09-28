@@ -10,7 +10,7 @@ from uuid import uuid4
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email._base import OutlookMailSpider
 
 logger = logging.getLogger(__name__)
 

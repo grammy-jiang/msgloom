@@ -9,13 +9,14 @@ import scrapy
 from scrapy.http import TextResponse
 
 from message_ingest.items import OutlookMailFolderItem
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+
+from ._base import OutlookMailSpider
 
 
 class OutlookFolderTraversal(OutlookMailSpider):
     """
     Folder inventory and reconciliation callbacks for
-    :class:`~message_ingest.spiders.outlook_delta.OutlookDeltaSpider`.
+    :class:`~message_ingest.spiders.microsoft.outlook.email.delta.OutlookDeltaSpider`.
 
     These stay bound to the spider so Scrapy can serialize their requests. The
     concrete delta spider persists this traversal state.

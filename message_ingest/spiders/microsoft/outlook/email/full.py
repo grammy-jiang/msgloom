@@ -18,8 +18,9 @@ from message_ingest.profiles import (
     attachment_type_name,
     surface_is_complete,
 )
-from message_ingest.spiders._outlook_attachments import OutlookAttachmentTraversal
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+
+from ._attachments import OutlookAttachmentTraversal
+from ._base import OutlookMailSpider
 
 
 class OutlookFullSpider(OutlookAttachmentTraversal):

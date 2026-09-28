@@ -23,7 +23,9 @@ from message_ingest.items import (
     OutlookCalendarEventItem,
     RawHttpEvidenceItem,
 )
-from message_ingest.spiders.outlook_calendar_delta import OutlookCalendarDeltaSpider
+from message_ingest.spiders.microsoft.outlook.calendar.delta import (
+    OutlookCalendarDeltaSpider,
+)
 
 START = "2026-09-27T00:00:00+10:00"
 END = "2026-10-04T00:00:00+10:00"

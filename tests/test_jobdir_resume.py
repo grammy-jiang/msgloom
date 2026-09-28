@@ -18,13 +18,15 @@ from scrapy.utils.test import get_crawler
 from message_ingest.extensions.calendar_delta_checkpoint import (
     CalendarDeltaSpiderState,
 )
-from message_ingest.spiders.outlook_calendar_delta import (
+from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )
-from message_ingest.spiders.outlook_delta import OutlookDeltaSpider
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
-from message_ingest.spiders.outlook_full import OutlookFullSpider
-from message_ingest.spiders.outlook_mail import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email._base import OutlookMailSpider
+from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
+from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 
 def _crawler(

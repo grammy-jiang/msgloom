@@ -28,7 +28,7 @@ END = "2026-10-04T00:00:00+10:00"
 DISCOVER_COMMAND = r"""
 import sys
 from scrapy.cmdline import execute
-from message_ingest.spiders.outlook_calendar_discover import (
+from message_ingest.spiders.microsoft.outlook.calendar.discover import (
     OutlookCalendarDiscoverSpider,
 )
 
@@ -40,7 +40,7 @@ execute(["scrapy", "microsoft", "outlook", "calendar", "discover", *sys.argv[2:]
 WINDOW_COMMAND = r"""
 import sys
 from scrapy.cmdline import execute
-from message_ingest.spiders.outlook_calendar_window import (
+from message_ingest.spiders.microsoft.outlook.calendar.window import (
     OutlookCalendarWindowSpider,
 )
 

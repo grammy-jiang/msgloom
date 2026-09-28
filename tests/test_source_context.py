@@ -23,7 +23,9 @@ from message_ingest.acquisition.source_context import (
 from message_ingest.providers.microsoft_graph.fingerprints import (
     RepresentationAwareRequestFingerprinter,
 )
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 ROOT = Path(__file__).parents[1]
 

@@ -26,7 +26,7 @@ ROOT = Path(__file__).parents[1]
 FULL_COMMAND = r"""
 import sys
 from scrapy.cmdline import execute
-from message_ingest.spiders.outlook_calendar_full import OutlookCalendarFullSpider
+from message_ingest.spiders.microsoft.outlook.calendar.full import OutlookCalendarFullSpider
 
 OutlookCalendarFullSpider.graph_root = sys.argv[1]
 OutlookCalendarFullSpider.allowed_domains = ["127.0.0.1"]

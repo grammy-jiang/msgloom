@@ -17,7 +17,9 @@ from message_ingest.items import (
     OutlookCalendarEventItem,
     RawHttpEvidenceItem,
 )
-from message_ingest.spiders.outlook_calendar_full import OutlookCalendarFullSpider
+from message_ingest.spiders.microsoft.outlook.calendar.full import (
+    OutlookCalendarFullSpider,
+)
 
 
 def _spider(

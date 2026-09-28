@@ -15,7 +15,9 @@ from scrapy.http import Request, TextResponse
 from scrapy.utils.test import get_crawler
 
 from message_ingest.items import OutlookMailItem
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
 

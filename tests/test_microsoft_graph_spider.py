@@ -10,7 +10,9 @@ from twisted.python.failure import Failure
 from message_ingest.items import AcquisitionFailureItem, RawHttpEvidenceItem
 from message_ingest.providers.microsoft_graph import GRAPH_HOST, GRAPH_ROOT
 from message_ingest.providers.microsoft_graph.spider import MicrosoftGraphSpider
-from message_ingest.spiders.outlook_discover import OutlookDiscoverSpider
+from message_ingest.spiders.microsoft.outlook.email.discover import (
+    OutlookDiscoverSpider,
+)
 
 
 class FixtureGraphSpider(MicrosoftGraphSpider):

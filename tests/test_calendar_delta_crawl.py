@@ -30,7 +30,7 @@ END = "2026-10-04T00:00:00+10:00"
 DELTA_COMMAND = r"""
 import sys
 from scrapy.cmdline import execute
-from message_ingest.spiders.outlook_calendar_delta import OutlookCalendarDeltaSpider
+from message_ingest.spiders.microsoft.outlook.calendar.delta import OutlookCalendarDeltaSpider
 
 OutlookCalendarDeltaSpider.graph_root = sys.argv[1]
 OutlookCalendarDeltaSpider.allowed_domains = ["127.0.0.1"]
