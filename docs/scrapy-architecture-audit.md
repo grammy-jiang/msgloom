@@ -191,7 +191,7 @@ Items after Spider extraction.
 
 Verdict: one custom pipeline remains and has a single durable-state role.
 
-`CatalogPipeline` writes the queryable SQLAlchemy catalog/state model. SQLite is
+`OutlookMailPipeline` writes the queryable SQLAlchemy catalog/state model. SQLite is
 only a SQLAlchemy backend; application code does not use `sqlite3` directly.
 
 The pipeline uses Scrapy's coroutine support. SQLite writes are moved to a
@@ -286,7 +286,7 @@ SQLite is used as the local database backend through SQLAlchemy 2.x only.
 
 One `CatalogService` Extension owns one SQLAlchemy Engine per Crawler and a
 shared async write lock. RawEvidencePipeline, EvidenceLinkPipeline,
-CatalogPipeline and checkpoint logic share that service. This replaced an
+OutlookMailPipeline and checkpoint logic share that service. This replaced an
 earlier design where separate
 components created separate Engines, which real testing proved could produce
 `database is locked` errors.

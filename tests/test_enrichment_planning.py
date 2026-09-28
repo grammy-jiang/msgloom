@@ -14,6 +14,7 @@ from scrapy.utils.test import get_crawler
 
 from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.catalog import Catalog
+from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.items.microsoft.outlook.email import OutlookMessageSurfaceItem
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
@@ -34,8 +35,7 @@ def _seed_surface(
     status: str = "acquired",
     profile_version: str | None = FULL_V1,
 ) -> None:
-    catalog.set_message_surface(
-        source_id="source-1",
+    OutlookMailStore(catalog, source_id="source-1").set_surface(
         message_id=message_id,
         surface=surface,
         status=status,
@@ -51,8 +51,7 @@ def _seed_attachment(
     attachment_id: str,
     attachment_type: str,
 ) -> None:
-    catalog.upsert_attachment(
-        source_id="source-1",
+    OutlookMailStore(catalog, source_id="source-1").upsert_attachment(
         message_id=message_id,
         attachment={
             "id": attachment_id,

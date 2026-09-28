@@ -74,7 +74,7 @@ def test_window_spider_owns_scope_and_resource_pipeline() -> None:
     expected = {
         "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
         "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-        "message_ingest.pipelines.calendar.CalendarPipeline": 300,
+        "message_ingest.pipelines.microsoft.outlook.calendar.OutlookCalendarPipeline": 300,
     }
     if settings.getdict("ITEM_PIPELINES") != expected:
         pytest.fail("Expected Calendar-specific native pipeline chain")

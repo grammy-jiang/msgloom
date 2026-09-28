@@ -22,8 +22,8 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMailRemovalItem,
     OutlookMessageSurfaceItem,
 )
-from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
+from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 
 
 def _raw(evidence_id: str, observed_at: str) -> RawHttpEvidenceItem:
@@ -98,7 +98,7 @@ def test_catalog_pipeline_persists_identity_observation_and_surface(
     )
     _persist_raw(crawler, "evidence-1", "2026-09-26T01:02:00+00:00")
     _persist_raw(crawler, "evidence-2", "2026-09-26T01:03:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     try:
         asyncio.run(pipeline.process_item(_message()))
         asyncio.run(
@@ -152,7 +152,7 @@ def test_catalog_reprocessing_same_evidence_does_not_duplicate_source_observatio
         }
     )
     _persist_raw(crawler, "evidence-1", "2026-09-26T01:02:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     item = _message()
     asyncio.run(pipeline.process_item(item))
     asyncio.run(pipeline.process_item(item))
@@ -179,7 +179,7 @@ def test_older_cached_evidence_cannot_overwrite_newer_latest_message_state(
     )
     _persist_raw(crawler, "new-evidence", "2026-09-26T02:00:00+00:00")
     _persist_raw(crawler, "old-evidence", "2026-09-26T01:00:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     newer = _message()
     newer.subject = "Newer subject"
     newer.raw = {**newer.raw, "subject": "Newer subject"}
@@ -228,7 +228,7 @@ def test_folder_delta_removal_does_not_imply_global_message_deletion(
     )
     _persist_raw(crawler, "evidence-1", "2026-09-26T01:02:00+00:00")
     _persist_raw(crawler, "evidence-removal", "2026-09-26T03:00:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     asyncio.run(pipeline.process_item(_message()))
     asyncio.run(
         pipeline.process_item(
@@ -282,7 +282,7 @@ def test_catalog_pipeline_persists_attachment_metadata(tmp_path: Path) -> None:
         }
     )
     _persist_raw(crawler, "ev-a1", "2026-09-26T03:00:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     item = OutlookAttachmentItem(
         message_id="m1",
         attachment_id="a1",
@@ -359,7 +359,7 @@ def test_message_replay_preserves_kind_surface_profile_and_stats(
             run_id=message.run_id,
         )
     _persist_raw(crawler, "evidence-1", message.observed_at)
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     try:
         asyncio.run(pipeline.process_item(item))
         asyncio.run(pipeline.process_item(item))
@@ -425,7 +425,7 @@ def test_surface_stats_use_surface_kind_not_provider_identifier(
         }
     )
     _persist_raw(crawler, "surface-evidence", "2026-09-26T04:00:00+00:00")
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     try:
         asyncio.run(
             pipeline.process_item(

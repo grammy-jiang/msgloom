@@ -134,8 +134,8 @@ def test_non_evidence_item_passes_through_without_catalog_lookup(
         pytest.fail("Expected no catalog lookup for a non-evidence item")
 
     monkeypatch.setattr(
-        pipeline.catalog,
-        "has_raw_http_evidence",
+        pipeline.catalog.evidence,
+        "contains",
         unexpected_lookup,
     )
     if asyncio.run(pipeline.process_item(item)) is not item:

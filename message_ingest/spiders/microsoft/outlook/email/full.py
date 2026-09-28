@@ -16,6 +16,7 @@ from message_ingest.acquisition.microsoft.outlook.email.profile import (
     attachment_type_name,
     surface_is_complete,
 )
+from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.outlook.email import (
     OutlookMailDetailItem,
@@ -236,16 +237,13 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         acquisition.
         """
         catalog = CatalogService.from_crawler(self.crawler).catalog
-        source_id = self.crawler.settings["MSGLOOM_SOURCE_ID"]
+        store = OutlookMailStore(
+            catalog,
+            source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"],
+        )
         return {
-            "surfaces": catalog.get_message_surfaces(
-                source_id=source_id,
-                message_id=message_id,
-            ),
-            "attachments": catalog.get_attachments(
-                source_id=source_id,
-                message_id=message_id,
-            ),
+            "surfaces": store.get_surfaces(message_id=message_id),
+            "attachments": store.get_attachments(message_id=message_id),
         }
 
     def _full_enrich_outputs(self, message_id: str, state: dict[str, Any]):

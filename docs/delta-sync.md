@@ -37,7 +37,7 @@ crawler-scoped catalog service, then uses the in-memory map during traversal.
 The Spider never commits checkpoint state directly.
 
 For every folder whose final Graph response contains `@odata.deltaLink`, the
-Spider emits an `OutlookDeltaCheckpointCandidateItem`. `CatalogPipeline`
+Spider emits an `OutlookDeltaCheckpointCandidateItem`. `OutlookMailPipeline`
 persists that candidate through SQLAlchemy.
 
 ## Checkpoint safety at `spider_idle`

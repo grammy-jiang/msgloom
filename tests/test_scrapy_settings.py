@@ -140,7 +140,7 @@ def test_project_persists_scraped_data_through_item_pipelines() -> None:
     if pipelines != {
         "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
         "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-        "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+        "message_ingest.pipelines.microsoft.outlook.email.OutlookMailPipeline": 300,
     }:
         pytest.fail("Expected raw, evidence-link, then Mail catalog pipelines")
     if settings.getint("CONCURRENT_ITEMS") != 1:

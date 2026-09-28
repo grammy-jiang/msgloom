@@ -196,5 +196,5 @@ msgloom uses three sequential pipeline stages:
    evidence and publishes cache aliases.
 2. `EvidenceLinkPipeline` (priority 250) resolves aliases and verifies any
    evidence-linked acquisition item against committed raw evidence.
-3. `CatalogPipeline` (priority 300) persists Outlook Mail domain state through
+3. `OutlookMailPipeline` (priority 300) persists Outlook Mail domain state through
    SQLAlchemy; it no longer owns provider-independent evidence validation.

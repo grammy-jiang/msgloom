@@ -110,7 +110,7 @@ class RawEvidencePipeline:
         """
         if item.origin == "http_cache":
             response_digest = hashlib.sha256(item.response_body).hexdigest()
-            existing = self.catalog.find_raw_http_evidence(
+            existing = self.catalog.evidence.find_cached_response(
                 source_id=self.source_id,
                 request_fingerprint=item.request_fingerprint,
                 response_body_sha256=response_digest,
@@ -129,7 +129,7 @@ class RawEvidencePipeline:
         response_digest, response_path, response_created = self._store_blob(
             item.response_body
         )
-        self.catalog.record_raw_http_evidence(
+        self.catalog.evidence.record(
             RawHttpEvidence(
                 evidence_id=item.evidence_id,
                 source_id=self.source_id,

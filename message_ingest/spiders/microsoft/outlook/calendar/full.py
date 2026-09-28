@@ -89,7 +89,7 @@ class OutlookCalendarFullSpider(MicrosoftGraphSpider):
             {
                 "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
                 "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-                "message_ingest.pipelines.calendar.CalendarPipeline": 300,
+                "message_ingest.pipelines.microsoft.outlook.calendar.OutlookCalendarPipeline": 300,
             },
             priority="spider",
         )

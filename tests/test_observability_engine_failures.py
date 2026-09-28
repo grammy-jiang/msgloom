@@ -22,7 +22,7 @@ from scrapy import signals
 from scrapy.crawler import CrawlerProcess
 
 from message_ingest.catalog import Catalog
-from message_ingest.pipelines.catalog import CatalogPipeline
+from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 from message_ingest.spiders.microsoft.outlook.email.discover import OutlookDiscoverSpider
 
 
@@ -71,7 +71,7 @@ if kind == "process":
 elif kind == "close":
     pipeline = CloseFailingPipeline
 else:
-    pipeline = CatalogPipeline
+    pipeline = OutlookMailPipeline
 
     def fail_catalog_close(self):
         raise RuntimeError("private-catalog-close-payload-b42c")

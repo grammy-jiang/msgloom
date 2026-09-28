@@ -21,6 +21,11 @@ from message_ingest.catalog.models import (
     SourceBinding,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.evidence import RawEvidenceStore
+from message_ingest.catalog.stores.microsoft.outlook import (
+    OutlookCalendarStore,
+    OutlookMailStore,
+)
 
 __all__ = [
     "AttachmentRecord",
@@ -40,6 +45,9 @@ __all__ = [
     "MessageObservation",
     "MessageRecord",
     "MessageSurface",
+    "OutlookCalendarStore",
+    "OutlookMailStore",
+    "RawEvidenceStore",
     "RawHttpEvidence",
     "SourceBinding",
 ]

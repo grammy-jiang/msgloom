@@ -171,7 +171,7 @@ ITEM_PIPELINES = {
     # Per-item stage order is independent of concurrency between callbacks.
     "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
     "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-    "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+    "message_ingest.pipelines.microsoft.outlook.email.OutlookMailPipeline": 300,
 }
 
 # Development-only cache. Scrapy's default is disabled, which is also the

@@ -20,7 +20,7 @@ from message_ingest.extensions.microsoft.outlook.email.checkpoint import (
 from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
 )
-from message_ingest.pipelines.catalog import CatalogPipeline
+from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
@@ -55,7 +55,7 @@ def test_item_pipeline_error_blocks_delta_checkpoint_commit(tmp_path: Path) -> N
     crawler.stats.set_value("msgloom/crawl/delta/folder_inventory_completed", True)
     crawler.stats.set_value("msgloom/crawl/reconcile/completed", True)
 
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(
@@ -140,7 +140,7 @@ def test_item_pipeline_error_blocks_checkpoint_commit_even_when_candidates_compl
     spider._reconcile_complete = True
     spider._persist_execution_state()
 
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(

@@ -51,9 +51,9 @@ FAILURE_SETUP = r"""
 import asyncio
 from scrapy.exceptions import DropItem
 from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarEventItem
-from message_ingest.pipelines.calendar import CalendarPipeline
+from message_ingest.pipelines.microsoft.outlook.calendar import OutlookCalendarPipeline
 
-original_process = CalendarPipeline.process_item
+original_process = OutlookCalendarPipeline.process_item
 
 async def process(self, item):
     if isinstance(item, OutlookCalendarEventItem):
@@ -61,7 +61,7 @@ async def process(self, item):
         raise FAILURE_TYPE("injected late persistence failure")
     return await original_process(self, item)
 
-CalendarPipeline.process_item = process
+OutlookCalendarPipeline.process_item = process
 """
 
 

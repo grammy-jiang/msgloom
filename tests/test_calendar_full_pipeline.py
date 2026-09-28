@@ -12,12 +12,14 @@ from message_ingest.catalog import (
     CalendarEventRecord,
     Catalog,
 )
+from message_ingest.catalog.stores.microsoft.outlook.calendar import (
+    OutlookCalendarStore,
+)
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
     OutlookCalendarAttachmentItem,
 )
-from message_ingest.pipelines.calendar_attachments import CalendarAttachmentStore
 
 
 def test_same_change_key_merges_richer_detail_without_later_downgrade(
@@ -162,8 +164,8 @@ def test_attachment_calendar_resolution_stays_within_source(
                     raw={},
                 )
             )
-        store = CalendarAttachmentStore(catalog, source_id=source_id)
-        store.persist_metadata(
+        store = OutlookCalendarStore(catalog, source_id=source_id)
+        store.persist_attachment_metadata(
             OutlookCalendarAttachmentItem(
                 event_id="event-1",
                 attachment_id="attachment-1",

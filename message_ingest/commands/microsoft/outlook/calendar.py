@@ -1,22 +1,18 @@
-"""Dispatch Outlook Calendar actions below the unified Microsoft command."""
+"""Outlook Calendar command dispatch."""
 
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
 from scrapy.exceptions import UsageError
 
 from message_ingest.commands._common import run_graph
+from message_ingest.commands.microsoft.validation import reject_options
 
 
-def dispatch_calendar(
-    command: Any,
-    opts: argparse.Namespace,
-    reject_options: Callable[..., None],
-) -> None:
+def dispatch_calendar(command: Any, opts: argparse.Namespace) -> None:
     """Validate one Calendar action and map it to its internal spider."""
     if opts.calendar is not None and (
         not opts.calendar or opts.calendar != opts.calendar.strip()
@@ -32,14 +28,10 @@ def dispatch_calendar(
             {"page_size": str(opts.page_size or 100)},
         )
         return
-
     if opts.action == "window":
         if opts.message_ids:
             raise UsageError("Calendar window does not accept RESOURCE_ID values")
-        reject_options(
-            opts,
-            allowed={"start", "end", "calendar", "page_size"},
-        )
+        reject_options(opts, allowed={"start", "end", "calendar", "page_size"})
         _require_window(opts, action="window")
         run_graph(
             command,
@@ -52,14 +44,10 @@ def dispatch_calendar(
             },
         )
         return
-
     if opts.action == "delta":
         if opts.message_ids:
             raise UsageError("Calendar delta does not accept RESOURCE_ID values")
-        reject_options(
-            opts,
-            allowed={"start", "end", "page_size"},
-        )
+        reject_options(opts, allowed={"start", "end", "page_size"})
         _require_window(opts, action="delta")
         run_graph(
             command,
@@ -71,12 +59,8 @@ def dispatch_calendar(
             },
         )
         return
-
     if opts.action == "full":
-        reject_options(
-            opts,
-            allowed={"calendar", "page_size"},
-        )
+        reject_options(opts, allowed={"calendar", "page_size"})
         event_ids = tuple(
             dict.fromkeys(
                 cleaned for value in opts.message_ids if (cleaned := value.strip())
@@ -94,18 +78,14 @@ def dispatch_calendar(
             },
         )
         return
-
     raise UsageError("use 'microsoft outlook calendar {discover,window,delta,full}'")
 
 
 def _require_window(opts: argparse.Namespace, *, action: str) -> None:
-    """Require an ordered timezone-aware range already parsed by argparse."""
     if opts.start is None or opts.end is None:
         raise UsageError(f"calendar {action} requires --start and --end")
-    if _parsed(opts.start) >= _parsed(opts.end):
+    if datetime.fromisoformat(opts.start) >= datetime.fromisoformat(opts.end):
         raise UsageError("--start must be earlier than --end")
 
 
-def _parsed(value: str) -> datetime:
-    """Parse a value already validated by the public command parser."""
-    return datetime.fromisoformat(value)
+__all__ = ["dispatch_calendar"]

@@ -53,7 +53,7 @@ class EvidenceLinkPipeline:
         )
         if canonical_id is not None:
             exists = await asyncio.to_thread(
-                self.catalog.has_raw_http_evidence,
+                self.catalog.evidence.contains,
                 canonical_id,
             )
             if not exists:

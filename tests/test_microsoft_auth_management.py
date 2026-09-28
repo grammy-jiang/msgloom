@@ -261,9 +261,9 @@ def test_microsoft_command_profile_uses_shared_graph_runner(
         calls.append((spider_name, spider_args))
         return FakeCrawler()
 
-    import message_ingest.commands.microsoft as microsoft_command
+    import message_ingest.commands.microsoft.profile as profile_command
 
-    monkeypatch.setattr(microsoft_command, "run_graph", fake_run_graph)
+    monkeypatch.setattr(profile_command, "run_graph", fake_run_graph)
     command = MicrosoftCommand()
     command.exitcode = 0
     command.settings = _settings(tmp_path)

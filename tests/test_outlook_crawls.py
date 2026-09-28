@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from message_ingest.catalog import Catalog
+from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
@@ -202,6 +203,7 @@ def test_outlook_command_crawls_local_graph_with_native_components(
     catalog = Catalog(database_url)
     try:
         links = OutlookDeltaCheckpointStore(catalog, "fixture").get_delta_links()
+        mail_store = OutlookMailStore(catalog, source_id="fixture")
         if mode == "delta":
             if set(links) != {
                 "folder-inbox",
@@ -216,24 +218,19 @@ def test_outlook_command_crawls_local_graph_with_native_components(
                 pytest.fail(
                     "Expected: all(link.startswith(graph_server) for link in links.values())"
                 )
-            if not catalog.get_message_state(source_id="fixture", message_id="orphan"):
+            if not mail_store.get_message_state(message_id="orphan"):
                 pytest.fail(
-                    'Expected: catalog.get_message_state(source_id="fixture", message_id="orphan")'
+                    'Expected: mail_store.get_message_state(message_id="orphan")'
                 )
         else:
             if links:
                 pytest.fail("Expected: not links")
-            if not catalog.get_message_state(
-                source_id="fixture", message_id=MESSAGE_ID
-            ):
+            if not mail_store.get_message_state(message_id=MESSAGE_ID):
                 pytest.fail(
-                    'Expected: catalog.get_message_state(source_id="fixture", message_id=MESSAGE_ID)'
+                    "Expected: mail_store.get_message_state(message_id=MESSAGE_ID)"
                 )
         if mode == "full":
-            surfaces = catalog.get_message_surfaces(
-                source_id="fixture",
-                message_id=MESSAGE_ID,
-            )
+            surfaces = mail_store.get_surfaces(message_id=MESSAGE_ID)
             if {name: value["status"] for name, value in surfaces.items()} != {
                 "detail": "acquired",
                 "mime": "acquired",

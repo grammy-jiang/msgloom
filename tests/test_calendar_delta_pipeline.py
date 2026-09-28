@@ -18,8 +18,8 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
 )
-from message_ingest.pipelines.calendar import CalendarPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
+from message_ingest.pipelines.microsoft.outlook.calendar import OutlookCalendarPipeline
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )
@@ -68,7 +68,7 @@ def _raw(evidence_id: str, observed_at: str) -> RawHttpEvidenceItem:
 def _persist(crawler, raw: RawHttpEvidenceItem, item) -> None:
     raw_pipeline = RawEvidencePipeline.from_crawler(crawler)
     link_pipeline = EvidenceLinkPipeline.from_crawler(crawler)
-    calendar_pipeline = CalendarPipeline.from_crawler(crawler)
+    calendar_pipeline = OutlookCalendarPipeline.from_crawler(crawler)
     asyncio.run(raw_pipeline.process_item(raw))
     asyncio.run(link_pipeline.process_item(item))
     asyncio.run(calendar_pipeline.process_item(item))
@@ -93,7 +93,7 @@ def test_delta_observation_is_scoped_and_replay_safe(tmp_path: Path) -> None:
     )
     _persist(crawler, raw, item)
 
-    pipeline = CalendarPipeline.from_crawler(crawler)
+    pipeline = OutlookCalendarPipeline.from_crawler(crawler)
     asyncio.run(pipeline.process_item(item))
 
     service = CatalogService.from_crawler(crawler)

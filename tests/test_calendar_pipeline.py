@@ -21,8 +21,8 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventItem,
     OutlookCalendarItem,
 )
-from message_ingest.pipelines.calendar import CalendarPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
+from message_ingest.pipelines.microsoft.outlook.calendar import OutlookCalendarPipeline
 from message_ingest.spiders.microsoft.outlook.calendar.window import (
     OutlookCalendarWindowSpider,
 )
@@ -131,7 +131,7 @@ def _process(
 ) -> None:
     raw_pipeline = RawEvidencePipeline.from_crawler(crawler)
     link_pipeline = EvidenceLinkPipeline.from_crawler(crawler)
-    calendar_pipeline = CalendarPipeline.from_crawler(crawler)
+    calendar_pipeline = OutlookCalendarPipeline.from_crawler(crawler)
     asyncio.run(raw_pipeline.process_item(raw))
     asyncio.run(link_pipeline.process_item(item))
     asyncio.run(calendar_pipeline.process_item(item))
@@ -303,7 +303,7 @@ def test_calendar_pipeline_passes_other_resource_items_through(
     tmp_path: Path,
 ) -> None:
     crawler = _crawler(tmp_path)
-    pipeline = CalendarPipeline.from_crawler(crawler)
+    pipeline = OutlookCalendarPipeline.from_crawler(crawler)
     item = {"mail": "or future resource"}
     returned = asyncio.run(pipeline.process_item(item))
     if returned is not item:

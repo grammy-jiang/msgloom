@@ -28,7 +28,7 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMailItem,
     OutlookMailRemovalItem,
 )
-from message_ingest.pipelines.catalog import CatalogPipeline
+from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
@@ -190,7 +190,7 @@ def test_successful_idle_commits_all_sqlalchemy_candidates_atomically(
     spider._reconcile_complete = True
     spider._persist_execution_state()
 
-    pipeline = CatalogPipeline.from_crawler(crawler)
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(

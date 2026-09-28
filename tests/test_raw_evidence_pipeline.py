@@ -23,8 +23,8 @@ from message_ingest.catalog import (
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import RawHttpEvidenceItem
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
-from message_ingest.pipelines.catalog import CatalogPipeline
 from message_ingest.pipelines.evidence import RawEvidencePipeline
+from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 
 
 def _crawler(tmp_path: Path):
@@ -199,7 +199,7 @@ def test_raw_link_and_catalog_pipelines_preserve_canonical_evidence(
     crawler = _crawler(tmp_path)
     raw_pipeline = RawEvidencePipeline.from_crawler(crawler)
     link_pipeline = EvidenceLinkPipeline.from_crawler(crawler)
-    catalog_pipeline = CatalogPipeline.from_crawler(crawler)
+    catalog_pipeline = OutlookMailPipeline.from_crawler(crawler)
 
     raw = _raw_item(evidence_id="provisional")
     semantic = _mail("provisional")
@@ -272,7 +272,7 @@ def test_native_pipeline_manager_orders_raw_link_then_mail_catalog(
             "ITEM_PIPELINES": {
                 "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
                 "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-                "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+                "message_ingest.pipelines.microsoft.outlook.email.OutlookMailPipeline": 300,
             },
             "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
             "MSGLOOM_SOURCE_ID": "source-1",
@@ -283,7 +283,7 @@ def test_native_pipeline_manager_orders_raw_link_then_mail_catalog(
     )
     manager = ItemPipelineManager.from_crawler(crawler)
     names = [type(pipeline).__name__ for pipeline in manager.middlewares]
-    expected = ["RawEvidencePipeline", "EvidenceLinkPipeline", "CatalogPipeline"]
+    expected = ["RawEvidencePipeline", "EvidenceLinkPipeline", "OutlookMailPipeline"]
     if names != expected:
         pytest.fail(f"Unexpected native pipeline order: {names!r}")
 
@@ -337,7 +337,7 @@ def test_native_pipeline_manager_blocks_mail_catalog_on_missing_evidence(
             "ITEM_PIPELINES": {
                 "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
                 "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
-                "message_ingest.pipelines.catalog.CatalogPipeline": 300,
+                "message_ingest.pipelines.microsoft.outlook.email.OutlookMailPipeline": 300,
             },
             "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
             "MSGLOOM_SOURCE_ID": "source-1",

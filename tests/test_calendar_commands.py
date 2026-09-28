@@ -13,9 +13,7 @@ from scrapy.exceptions import UsageError
 from message_ingest.commands.microsoft import (
     Command as MicrosoftCommand,
 )
-from message_ingest.commands.microsoft import (
-    _aware_datetime,
-)
+from message_ingest.commands.microsoft.options import aware_datetime
 
 
 class FakeStats:
@@ -215,4 +213,4 @@ def test_calendar_window_rejects_reversed_range() -> None:
 )
 def test_calendar_window_datetime_validator_rejects_unsafe_scope(value: str) -> None:
     with pytest.raises(argparse.ArgumentTypeError):
-        _aware_datetime(value)
+        aware_datetime(value)

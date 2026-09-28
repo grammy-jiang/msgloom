@@ -11,6 +11,7 @@ from scrapy import Request
 from scrapy.http import TextResponse
 from scrapy.utils.test import get_crawler
 
+import message_ingest.commands.microsoft.profile as profile_command
 from message_ingest.commands import microsoft as microsoft_command
 from message_ingest.items.acquisition import RawHttpEvidenceItem
 from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
@@ -130,7 +131,7 @@ def test_profile_command_prints_validated_profile(monkeypatch, capsys) -> None:
         stats = FakeStats({"msgloom/evidence/response_persisted_count": 1})
 
     monkeypatch.setattr(
-        microsoft_command,
+        profile_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )
@@ -150,7 +151,7 @@ def test_profile_command_fails_when_no_profile_was_retrieved(
         stats = FakeStats({"msgloom/evidence/response_persisted_count": 1})
 
     monkeypatch.setattr(
-        microsoft_command,
+        profile_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )
@@ -174,7 +175,7 @@ def test_profile_command_fails_when_evidence_did_not_persist(
         stats = FakeStats({})
 
     monkeypatch.setattr(
-        microsoft_command,
+        profile_command,
         "run_graph",
         lambda _command, _spider_name, _spider_args: FakeCrawler(),
     )

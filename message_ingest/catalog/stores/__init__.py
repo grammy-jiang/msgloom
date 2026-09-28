@@ -1,4 +1,4 @@
-"""Scrapy item-persistence pipelines."""
+"""Domain stores backed by one shared catalog lifecycle."""
 
 from . import evidence, microsoft
 
