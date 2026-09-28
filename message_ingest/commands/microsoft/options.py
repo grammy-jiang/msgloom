@@ -70,6 +70,15 @@ def add_microsoft_options(command: Any, parser: argparse.ArgumentParser) -> None
         help="confirm 'auth clear' removal of the local token cache",
     )
     parser.add_argument(
+        "--mailbox",
+        default=None,
+        metavar="USER_ID_OR_UPN",
+        help=(
+            "target a delegated/shared Outlook mailbox; omitted uses the "
+            "signed-in mailbox. Prefer an immutable Entra object ID."
+        ),
+    )
+    parser.add_argument(
         "--folder",
         default=None,
         metavar="FOLDER_ID",

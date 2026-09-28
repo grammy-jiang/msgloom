@@ -3,21 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any, ClassVar
+from typing import Any
 from urllib.parse import urlencode
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarItem
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+
+from ._base import OutlookCalendarSpider
 
 
-class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
+class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
     """Inventory visible calendars without inferring deletion from absence."""
 
     name = "outlook_calendar_discover"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
 
     def __init__(
         self,
@@ -71,7 +71,7 @@ class OutlookCalendarDiscoverSpider(MicrosoftGraphSpider):
         )
         query = urlencode({"$top": self.page_size})
         yield self._request(
-            f"{self.graph_root}/me/calendars?{query}",
+            self._mailbox_url(f"/calendars?{query}"),
             callback=self.parse_calendars,
             purpose="calendar-inventory-page",
             cb_kwargs={},

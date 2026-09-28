@@ -13,17 +13,16 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     AttachmentRecord,
     MailFolderRecord,
     MessageObservation,
+    MessagePresence,
     MessageRecord,
     MessageSurface,
 )
 
+from ._email_lifecycle import OutlookMailLifecycleStore
 
-class OutlookMailStore:
+
+class OutlookMailStore(OutlookMailLifecycleStore):
     """Own Outlook Mail catalog state for one logical source."""
-
-    def __init__(self, catalog, *, source_id: str) -> None:
-        self.catalog = catalog
-        self.source_id = source_id
 
     def record_message(
         self,
@@ -78,6 +77,14 @@ class OutlookMailStore:
                 record.is_removed = False
                 record.latest_observed_at = observed_at
                 record.latest_evidence_id = evidence_id
+
+            self.mark_message_present_in_session(
+                session,
+                message_id=message_id,
+                run_id=run_id,
+                observed_at=observed_at,
+                evidence_id=evidence_id,
+            )
 
             return self._add_observation(
                 session,
@@ -227,9 +234,18 @@ class OutlookMailStore:
     ) -> list[str]:
         """Return current message IDs, optionally scoped to crawl observations."""
         with self.catalog.Session() as session:
-            stmt = select(MessageRecord.message_id).where(
-                MessageRecord.source_id == self.source_id,
-                MessageRecord.is_removed.is_(False),
+            stmt = (
+                select(MessageRecord.message_id)
+                .outerjoin(
+                    MessagePresence,
+                    (MessagePresence.source_id == MessageRecord.source_id)
+                    & (MessagePresence.message_id == MessageRecord.message_id),
+                )
+                .where(
+                    MessageRecord.source_id == self.source_id,
+                    MessageRecord.is_removed.is_(False),
+                    self.active_message_filter(),
+                )
             )
             normalized_runs = tuple(dict.fromkeys(run_ids or ()))
             normalized_kinds = tuple(dict.fromkeys(observation_kinds or ()))
@@ -317,8 +333,9 @@ class OutlookMailStore:
         folder: dict[str, Any],
         evidence_id: str | None,
         observed_at: str,
+        run_id: str | None = None,
     ) -> None:
-        """Keep latest folder metadata; discovery does not infer deletion."""
+        """Keep folder metadata while separately tracking current presence."""
         folder_id = folder["id"]
         with self.catalog.Session() as session, session.begin():
             record = session.scalar(
@@ -346,6 +363,13 @@ class OutlookMailStore:
             record.is_hidden = folder.get("isHidden")
             record.latest_observed_at = observed_at
             record.latest_evidence_id = evidence_id
+            self.mark_folder_present_in_session(
+                session,
+                folder_id=folder_id,
+                run_id=run_id,
+                observed_at=observed_at,
+                evidence_id=evidence_id,
+            )
 
 
 __all__ = ["OutlookMailStore"]

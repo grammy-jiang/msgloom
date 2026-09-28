@@ -1,10 +1,26 @@
 # Outlook mail delta synchronization
 
-msgloom uses two complementary Microsoft Graph paths for Outlook mail:
+msgloom uses three complementary Microsoft Graph paths for Outlook mail:
 
-1. per-folder message delta for efficient incremental change tracking;
-2. a lightweight whole-mailbox reconciliation pass for coverage gaps that
+1. mailbox-level mailFolder delta for folder add/update/remove lifecycle;
+2. recursive folder inventory plus per-folder message delta for complete
+   folder-tree/message synchronization;
+3. a lightweight whole-mailbox reconciliation pass for coverage gaps that
    cannot be represented by the enumerable mail-folder hierarchy.
+
+## Folder lifecycle delta
+
+The user-level Mail sync workflow first runs the stable Graph
+/me/mailFolders/delta stream. Its opaque deltaLink is stored independently from
+all per-folder message delta cursors. Folder add/update entries refresh local
+folder metadata and presence; explicit removed entries tombstone folder
+presence and remove that folder's stale message-delta checkpoint.
+
+This stream does not replace recursive folder inventory. Recursive inventory
+remains the snapshot truth used to verify the complete nested folder tree and
+to reconcile any folder that was missed or whose prior incremental state is
+unavailable. Folder delta provides efficient lifecycle evidence, while a
+complete recursive inventory can rebuild state.
 
 ## Why per-folder delta
 
@@ -97,6 +113,23 @@ Scheduler and retained twelve durable candidates. Running the same spider with
 the same JOBDIR logged `Resuming crawl (1 requests scheduled)`, restored the
 same run id, executed only reconciliation/orphan recovery, and then committed
 the original twelve candidate checkpoints.
+
+## Mailbox presence semantics
+
+A per-folder message removed record means only that the message left that
+folder. It is persisted as a folder-removal observation and never by itself
+marks the message globally absent.
+
+Whole-mailbox reconciliation records one lightweight sighting for every message
+ID it sees. Only after reconciliation reaches its terminal page and Scrapy
+becomes idle can the snapshot be promoted. Messages known historically but
+missing from that complete snapshot become confirmed mailbox-absent; messages
+that are present or whose presence has never been globally reconciled remain
+eligible for acquisition planning.
+
+Folder inventory uses the same candidate/promotion pattern for current folder
+presence. Missing folders from a complete recursive snapshot become absent and
+their stale per-folder message delta cursors are removed.
 
 ## Whole-mailbox reconciliation
 

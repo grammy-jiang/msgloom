@@ -28,6 +28,7 @@ from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
 )
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
+    OutlookFolderDeltaCheckpointStore,
 )
 
 ROOT = Path(__file__).parents[1]
@@ -38,6 +39,7 @@ RUN_COMMAND = r"""
 import sys
 from scrapy.cmdline import execute
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.spiders.microsoft.outlook.email.folder_delta import OutlookFolderDeltaSpider
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from message_ingest.spiders.microsoft.outlook.calendar.discover import OutlookCalendarDiscoverSpider
 from message_ingest.spiders.microsoft.outlook.calendar.delta import OutlookCalendarDeltaSpider
@@ -45,6 +47,7 @@ from message_ingest.spiders.microsoft.outlook.calendar.window import OutlookCale
 from message_ingest.spiders.microsoft.outlook.calendar.full import OutlookCalendarFullSpider
 
 for spider_cls in (
+    OutlookFolderDeltaSpider,
     OutlookDeltaSpider,
     OutlookFullSpider,
     OutlookCalendarDiscoverSpider,
@@ -110,6 +113,27 @@ def test_mail_sync_runs_delta_then_refreshes_changed_message(tmp_path: Path) -> 
             parsed = urlsplit(self.path)
             path = parsed.path.removeprefix("/v1.0")
             root = self.server.graph_root  # type: ignore[attr-defined]
+            if path == "/me/mailFolders/delta":
+                _json(
+                    self,
+                    {
+                        "value": [
+                            {
+                                "id": "folder-inbox",
+                                "displayName": "Inbox",
+                                "parentFolderId": None,
+                                "childFolderCount": 0,
+                                "totalItemCount": 1,
+                                "unreadItemCount": 1,
+                                "isHidden": False,
+                            }
+                        ],
+                        "@odata.deltaLink": (
+                            f"{root}/me/mailFolders/delta?$deltatoken=folder-done"
+                        ),
+                    },
+                )
+                return
             if path == "/me/mailFolders":
                 _json(
                     self,
@@ -206,6 +230,11 @@ def test_mail_sync_runs_delta_then_refreshes_changed_message(tmp_path: Path) -> 
         pytest.fail(result.stderr)
     catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
     try:
+        folder_cursor = OutlookFolderDeltaCheckpointStore(
+            catalog, "mail-sync-fixture"
+        ).get_delta_link()
+        if folder_cursor is None or "$deltatoken=folder-done" not in folder_cursor:
+            pytest.fail("Expected committed mailFolder delta cursor")
         links = OutlookDeltaCheckpointStore(
             catalog, "mail-sync-fixture"
         ).get_delta_links()

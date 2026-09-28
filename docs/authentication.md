@@ -17,14 +17,12 @@ Set `MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH=false` for unattended jobs so missing
 silent credentials fail closed instead of opening an authentication prompt.
 
 Authentication is provider infrastructure, but scopes belong to resources.
-Project defaults keep Graph auth/scopes disabled. Outlook Mail declares only
-`Mail.Read`, all Calendar acquisition modes share `Calendars.Read`, and the
-one-shot Microsoft profile command declares `User.Read`. Calendar uses one
-read-only product scope because delta/full require `Calendars.Read`; splitting
-discovery/window onto `Calendars.ReadBasic` would force another interactive
-consent when a user switches Calendar modes. Future Graph resources must own
-their least-privilege product scope without creating avoidable mode-level
-consent churn.
+Project defaults keep Graph auth/scopes disabled. Self-mailbox Outlook Mail uses
+`Mail.Read`, self-mailbox Calendar uses `Calendars.Read`, and the one-shot
+Microsoft profile command uses `User.Read`. When an Outlook command supplies
+`--mailbox`, Mail switches to `Mail.Read.Shared` and Calendar switches to
+`Calendars.Read.Shared` before the CrawlerProcess is constructed. This keeps
+shared/delegated consent explicit without broadening normal self-mailbox runs.
 
 ## Logical source identity
 
@@ -44,6 +42,23 @@ the account data MSAL needs.
 For MSAL 1.39, msgloom treats `home_account_id` as an opaque stable account
 key and never parses or normalizes it. This binds the signed-in home account;
 it does not prove a tenant-specific target such as a shared mailbox.
+
+## Target mailbox binding
+
+Account identity and mailbox target identity are separate.
+`source_bindings` hashes the signed-in MSAL home account.
+`source_target_bindings` hashes the Outlook mailbox target used by that logical
+source. The raw mailbox locator is not copied into the binding row.
+
+The self-mailbox target has a stable internal key. Existing catalogs created
+before target binding are allowed to bind that self target because all previous
+Outlook code used `/me`. Existing Mail/Calendar data cannot be rebound to a
+shared/delegated target; use a new `MSGLOOM_SOURCE_ID`. Profile-only raw
+evidence does not claim a mailbox target.
+
+This gate runs during the same async `spider_opened` startup path as account
+verification, before Scheduler requests execute. A target mismatch therefore
+fails before cached, queued or fresh provider requests can mix resources.
 
 ## Startup identity gate
 
@@ -121,6 +136,10 @@ Common optional settings:
 `MSGLOOM_MS_TOKEN_CACHE=var/auth/msal-token-cache.json`
 
 `MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH=false`
+
+`MSGLOOM_TARGET_MAILBOX=<user-object-id-or-UPN>` is the internal setting
+corresponding to the public Outlook `--mailbox` option. Prefer the public option
+for operator commands.
 
 `MSGLOOM_SOURCE_IDENTITY_REQUIRED` defaults to true as a Scrapy setting.
 For a controlled fixture or diagnostic that deliberately skips provider-account

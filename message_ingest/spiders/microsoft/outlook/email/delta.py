@@ -114,7 +114,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         self._delta_start_scheduled = True
         self._persist_execution_state()
         yield self._folder_list_request(
-            f"{self.graph_root}/me/mailFolders?"
+            self._mailbox_url("/mailFolders?")
             + urlencode({"includeHiddenFolders": "true", "$top": self.page_size}),
             parent_folder_id=None,
             page_number=1,
@@ -382,7 +382,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         encoded_id = quote(folder_id, safe="")
         query = urlencode({"$select": ",".join(self.discovery_fields)})
         return self._message_delta_request(
-            f"{self.graph_root}/me/mailFolders/{encoded_id}/messages/delta?{query}",
+            self._mailbox_url(f"/mailFolders/{encoded_id}/messages/delta?{query}"),
             folder_id=folder_id,
             page_number=1,
             from_checkpoint=False,

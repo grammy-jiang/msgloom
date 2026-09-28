@@ -8,10 +8,10 @@ from typing import Any, ClassVar
 import scrapy
 
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
 
 
-class OutlookMailSpider(MicrosoftGraphSpider, ABC):
+class OutlookMailSpider(OutlookMailboxSpider, ABC):
     """
     Share Outlook Mail representation and item projection across acquisition modes.
 
@@ -21,6 +21,7 @@ class OutlookMailSpider(MicrosoftGraphSpider, ABC):
     """
 
     graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
+    shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read.Shared",)
     failure_context_keys: ClassVar[tuple[str, ...]] = (
         "message_id",
         "attachment_id",
@@ -66,6 +67,7 @@ class OutlookMailSpider(MicrosoftGraphSpider, ABC):
         accept: str = "application/json",
         dont_cache: bool = False,
         prefer: str | None = 'IdType="ImmutableId"',
+        download_maxsize: int | None = None,
     ) -> scrapy.Request:
         """Build a Graph request with Outlook's immutable-ID preference."""
         return super()._request(
@@ -77,6 +79,7 @@ class OutlookMailSpider(MicrosoftGraphSpider, ABC):
             accept=accept,
             dont_cache=dont_cache,
             prefer=prefer,
+            download_maxsize=download_maxsize,
         )
 
     def _message_item(

@@ -39,12 +39,14 @@ remains `msgloom`.
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
 | `message_ingest/acquisition/contracts.py` | Define provider-independent structural contracts for evidence-linked items. |
 | `message_ingest/acquisition/source_identity.py` | Bind logical sources to hashed opaque provider identities. |
+| `message_ingest/acquisition/source_target.py` | Bind one logical source to one hashed provider resource target and refuse target switching. |
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
 | `message_ingest/acquisition/microsoft/outlook/email/profile.py` | Define versioned Outlook Mail full-acquisition completion policy and attachment surface requirements. |
 | `message_ingest/acquisition/microsoft/outlook/email/planner.py` | Select current Mail records with incomplete Full-v1 surfaces from the catalog. |
 | `message_ingest/acquisition/microsoft/outlook/calendar/profile.py` | Define changeKey-aware versioned Calendar full-acquisition completion policy. |
 | `message_ingest/acquisition/microsoft/outlook/calendar/planner.py` | Select incomplete Calendar Full-v1 targets, optionally scoped to collection runs. |
+| `message_ingest/acquisition/microsoft/outlook/notifications.py` | Validate basic Graph notification clientState and reduce payloads to privacy-safe sync hints. |
 | `message_ingest/commands/microsoft/__init__.py` | Expose the sole public `scrapy microsoft` command and dispatch its hierarchy. |
 | `message_ingest/commands/microsoft/auth.py` | Dispatch offline Microsoft auth status/clear operations through shared auth management. |
 | `message_ingest/commands/microsoft/outlook/mail.py` | Map Outlook Mail CLI actions to existing spiders. |
@@ -55,22 +57,29 @@ remains `msgloom`.
 | `message_ingest/spiders/microsoft/outlook/calendar/window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
 | `message_ingest/spiders/microsoft/outlook/calendar/delta.py` | Incrementally synchronize one exact primary-calendar window. |
 | `message_ingest/spiders/microsoft/outlook/calendar/full.py` | Acquire rich detail and attachments for selected events. |
+| `message_ingest/spiders/microsoft/outlook/calendar/_attachments.py` | Own Calendar attachment pagination, raw-content requests, and item expansion. |
 | `message_ingest/pipelines/microsoft/outlook/calendar.py` | Route Calendar/event/attachment/delta items through the shared write lock into Calendar/checkpoint stores. |
 | `message_ingest/sync/microsoft/outlook/calendar/checkpoints.py` | Stage and atomically promote fixed-window Calendar delta cursors. |
 | `message_ingest/sync/microsoft/outlook/calendar/state.py` | Apply winning delta observations to committed fixed-window membership. |
 | `message_ingest/spiders/microsoft/outlook/calendar/_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
+| `message_ingest/spiders/microsoft/outlook/calendar/_base.py` | Share Calendar own/delegated permission and mailbox-target behavior. |
+| `message_ingest/extensions/microsoft/outlook/calendar/resume.py` | Validate Calendar window/full JOBDIR scope before saved requests execute. |
 | `message_ingest/spiders/microsoft/outlook/email/_delta_state.py` | Serialize Mail delta execution facts independently of provider cursors. |
+| `message_ingest/spiders/microsoft/outlook/_mailbox.py` | Select signed-in versus delegated mailbox paths and resource scopes. |
+| `message_ingest/spiders/microsoft/outlook/email/folder_delta.py` | Track mailbox folder add/update/remove changes through an independent mailFolder delta cursor. |
 | `message_ingest/catalog/models/base.py` | Own the shared SQLAlchemy declarative metadata. |
-| `message_ingest/catalog/models/acquisition.py` | Define source-binding and raw-evidence models. |
-| `message_ingest/catalog/models/microsoft/outlook/email.py` | Define Outlook Mail, folder, attachment, surface, and delta-checkpoint models. |
-| `message_ingest/catalog/models/microsoft/outlook/calendar.py` | Define Calendar resources, semantic versions, run sightings, Full-v1 surfaces, attachments, and fixed-window delta models. |
+| `message_ingest/catalog/models/acquisition.py` | Define account/target source bindings and provider-independent raw-evidence models. |
+| `message_ingest/catalog/models/microsoft/outlook/email.py` | Define Mail records, folder/message presence and sightings, Full-v1 surfaces, and independent folder/message delta checkpoints. |
+| `message_ingest/catalog/models/microsoft/outlook/calendar.py` | Define Calendar resources, semantic versions, series topology, run sightings, Full-v1 surfaces, attachments, and fixed-window delta models. |
 | `message_ingest/catalog/store.py` | Own the shared SQLite engine and session lifecycle only. |
 | `message_ingest/catalog/stores/evidence.py` | Persist and query provider-independent raw HTTP evidence metadata. |
 | `message_ingest/catalog/stores/microsoft/outlook/email.py` | Persist/query Outlook Mail, folder, attachment, and enrichment-surface state. |
+| `message_ingest/catalog/stores/microsoft/outlook/_email_lifecycle.py` | Promote complete folder/message presence snapshots and apply explicit folder tombstones. |
 | `message_ingest/catalog/stores/microsoft/outlook/calendar.py` | Persist Calendar inventory, event versions, delta observations, and attachment state. |
 | `message_ingest/sync/microsoft/outlook/email/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
+| `message_ingest/extensions/microsoft/outlook/email/folder_checkpoint.py` | Promote complete mailbox-level mailFolder delta cursors at Scrapy idle. |
 
-Catalog model modules are split by persistence domain while `message_ingest.catalog.models` and `message_ingest.catalog` continue to re-export model classes. The original 17 tables remain unchanged. P0 Calendar enrichment adds two new tables, `calendar_event_sightings` and `calendar_event_surfaces`; both are additive tables that existing catalogs can create through the current `create_all()` initialization without altering existing columns.
+Catalog model modules are split by persistence domain while `message_ingest.catalog.models` and `message_ingest.catalog` continue to re-export model classes. P0/P1 schema evolution is additive only: new Calendar enrichment/topology and Mail lifecycle/folder-delta tables are created through current metadata without altering existing columns.
 
 Synchronization state and Scrapy lifecycle are intentionally separate. The `message_ingest/sync/` tree owns provider checkpoint/state rules and catalog transactions; `message_ingest/extensions/microsoft/outlook/` only adapts Scrapy signals and SpiderState to those rules. JOBDIR remains a framework resume mechanism rather than the provider checkpoint store.
 
@@ -180,8 +189,7 @@ raw HTTP evidence owns the exact provider bytes and the semantic row stores the
 content evidence link.
 Expanded item attachments also keep nested `contentBytes` only in raw evidence.
 Attachment rows use the parent event's resolved calendar ID within the same
-source. Full acquisition currently rejects JOBDIR; rerun the target IDs to
-refresh an interrupted acquisition.
+source. Full acquisition supports clean JOBDIR pause/resume. Saved execution scope is validated before queued requests run, so a mismatched target/calendar/profile cannot reuse the job state.
 
 `OutlookCalendarStore` maintains latest calendar/event state and append-only semantic
 event versions; `OutlookCalendarPipeline` only routes items, serializes writes, and records

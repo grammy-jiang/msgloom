@@ -237,14 +237,15 @@ def test_window_rejects_invalid_scope(start: str, end: str, match: str) -> None:
         )
 
 
-def test_window_rejects_jobdir(tmp_path: Path) -> None:
+def test_window_accepts_jobdir_for_native_resume(tmp_path: Path) -> None:
     crawler = get_crawler(
         OutlookCalendarWindowSpider,
         settings_dict={"JOBDIR": str(tmp_path / "job")},
     )
-    with pytest.raises(ValueError, match="does not support JOBDIR"):
-        OutlookCalendarWindowSpider.from_crawler(
-            crawler,
-            start_datetime=START,
-            end_datetime=END,
-        )
+    spider = OutlookCalendarWindowSpider.from_crawler(
+        crawler,
+        start_datetime=START,
+        end_datetime=END,
+    )
+    if spider.start_datetime != START or spider.end_datetime != END:
+        pytest.fail("Expected Calendar window scope to remain unchanged with JOBDIR")

@@ -106,6 +106,56 @@ class OutlookMessageSurfaceItem:
 
 
 @dataclass(slots=True)
+class OutlookFolderSnapshotCandidateItem:
+    """Terminal recursive folder inventory awaiting idle-time promotion."""
+
+    run_id: str
+    observed_at: str
+    evidence_id: str | None
+
+
+@dataclass(slots=True)
+class OutlookMessagePresenceSightingItem:
+    """One lightweight message seen during whole-mailbox reconciliation."""
+
+    run_id: str
+    message_id: str
+    observed_at: str
+    evidence_id: str | None
+
+
+@dataclass(slots=True)
+class OutlookMessagePresenceCandidateItem:
+    """Terminal whole-mailbox reconciliation awaiting presence promotion."""
+
+    run_id: str
+    observed_at: str
+    evidence_id: str | None
+
+
+@dataclass(slots=True)
+class OutlookMailFolderRemovalItem:
+    """Explicit folder deletion/removal reported by the mailFolder delta stream."""
+
+    folder_id: str
+    removed_reason: str | None
+    raw: dict[str, Any]
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+
+
+@dataclass(slots=True)
+class OutlookFolderDeltaCheckpointCandidateItem:
+    """Terminal mailFolder delta cursor awaiting idle-time promotion."""
+
+    run_id: str
+    delta_link: str
+    observed_at: str
+    evidence_id: str | None
+
+
+@dataclass(slots=True)
 class OutlookDeltaCheckpointCandidateItem:
     """
     A final-page cursor pending whole-run validation by the idle extension.
@@ -121,9 +171,14 @@ class OutlookDeltaCheckpointCandidateItem:
 __all__ = [
     "OutlookAttachmentItem",
     "OutlookDeltaCheckpointCandidateItem",
+    "OutlookFolderDeltaCheckpointCandidateItem",
+    "OutlookFolderSnapshotCandidateItem",
     "OutlookMailDetailItem",
     "OutlookMailFolderItem",
+    "OutlookMailFolderRemovalItem",
     "OutlookMailItem",
     "OutlookMailRemovalItem",
+    "OutlookMessagePresenceCandidateItem",
+    "OutlookMessagePresenceSightingItem",
     "OutlookMessageSurfaceItem",
 ]

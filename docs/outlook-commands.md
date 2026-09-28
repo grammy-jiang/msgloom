@@ -11,6 +11,29 @@ CLI input and maps it to existing spiders. Graph traversal, authentication,
 parsing, persistence, resume, and retry behavior remain in their established
 Scrapy components.
 
+## Shared/delegated mailbox targeting
+
+Every Outlook Mail and Calendar action accepts:
+
+    --mailbox USER_ID_OR_UPN
+
+Omit the option for the signed-in mailbox. When supplied, msgloom targets the
+Graph `/users/{id}/...` resource path instead of `/me/...`. Prefer an
+immutable Microsoft Entra object ID; a UPN is accepted but can change over time.
+
+The signed-in account and target mailbox are separate identities.
+`MSGLOOM_SOURCE_ID` remains bound to the signed-in MSAL account and also gains
+a hashed target-mailbox binding. One logical source therefore cannot switch
+between self and shared mailboxes. Use a distinct source ID for every target.
+Existing pre-P2 sources with Mail/Calendar data safely bind to the signed-in
+mailbox on first use and cannot be repointed to a delegated mailbox.
+
+Self-mailbox acquisition uses `Mail.Read` / `Calendars.Read`. Delegated/shared
+targets use `Mail.Read.Shared` / `Calendars.Read.Shared`. The signed-in
+user must already have access to the target resource. Full Mail sync assumes
+sufficient access to enumerate the target mailbox; a narrowly shared single
+folder is better handled with targeted discovery/full acquisition.
+
 ## Outlook Mail discovery
 
     scrapy microsoft outlook mail discover [options]
@@ -52,27 +75,18 @@ The command delegates to the internal outlook_delta spider.
 
     scrapy microsoft outlook mail sync [options]
 
-This is the normal user-level Mail workflow. It composes the existing Scrapy
+This is the normal user-level Mail workflow. It composes existing Scrapy
 spiders instead of implementing another traversal engine:
 
-1. run per-folder delta synchronization and whole-mailbox reconciliation;
-2. refresh every message changed or recovered by that delta run;
-3. query the catalog for older messages whose `outlook-mail-full-v1` surfaces
-   are still incomplete and run targeted `enrich` acquisition for that backlog.
+1. run mailbox-level mailFolder delta and commit its independent cursor;
+2. run recursive folder inventory, per-folder message delta and whole-mailbox
+   reconciliation;
+3. refresh every message changed or recovered by that message-delta run;
+4. enrich older messages whose Full-v1 surfaces are still incomplete.
 
-Options:
-
-- --page-size N: delta page size, 1 through 1000; default 25;
-- --reconcile / --no-reconcile: whole-mailbox reconciliation, enabled by default;
-- --max-enrich N: cap only planner-selected historical backlog; 0 or omitted is
-  unlimited. Messages changed by the current delta run are never dropped by
-  this backlog limit.
-
-The phases run sequentially inside one Scrapy process. A delta phase must reach
-terminal status `completed` before enrichment starts. `sync` rejects a shared
-`JOBDIR`: JOBDIR belongs to one Scrapy crawl's Scheduler/SpiderState, not a
-multi-spider workflow. Use `mail delta` directly when resumable single-phase
-execution is required.
+The phases run sequentially inside one Scrapy process. Multi-phase sync rejects
+a shared JOBDIR because JOBDIR belongs to one crawler's Scheduler and
+SpiderState, not the full workflow.
 
 ## Outlook Mail targeted full acquisition
 
@@ -116,7 +130,7 @@ Options:
 - --calendar CALENDAR_ID: select a specific calendar; omitted uses the default;
 - --page-size N: Graph page size, 1 through 1000; default 100.
 
-The command delegates to the internal outlook_calendar_window spider.
+The command delegates to the internal outlook_calendar_window spider. Calendar window supports clean Scrapy JOBDIR pause/resume. The fixed window, calendar scope and page size must match on resume.
 
 ## Outlook Calendar delta synchronization
 
@@ -179,6 +193,16 @@ The command rejects a shared `JOBDIR` for the same reason as Mail sync. Use the
 `calendar delta` primitive when native JOBDIR resume is required for the primary
 calendar phase.
 
+### Stable Calendar API policy
+
+Production Calendar sync deliberately stays on Microsoft Graph v1.0. The
+stable path uses fixed-window delta for the target mailbox primary calendar and
+bounded calendarView refreshes for secondary calendars. Microsoft currently
+exposes broader secondary-calendar delta only through Graph beta, whose API is
+not supported for production use. P2 therefore does not enable beta fallback
+or a hidden feature flag; secondary windows remain the supported path until the
+capability reaches v1.0 and is separately qualified.
+
 ## Outlook Calendar targeted full acquisition
 
     scrapy microsoft outlook calendar full EVENT_ID [EVENT_ID ...] [options]
@@ -205,9 +229,35 @@ pending again automatically. Large attachment content remains in raw HTTP
 evidence rather than being duplicated in the semantic attachment table.
 
 The command delegates to the internal outlook_calendar_full spider.
-Full acquisition currently rejects JOBDIR. To recover an interrupted full
-acquisition, rerun the same event IDs. Raw evidence retains every capture, and
+Calendar full supports clean Scrapy JOBDIR pause/resume. The saved execution
+scope includes the target event IDs, calendar, operation, profile and page size;
+a mismatched JOBDIR is rejected before saved requests execute. Raw evidence retains every capture, and
 repeated captures with an unchanged `changeKey` do not add a semantic version.
+
+## Change-notification trigger policy
+
+Microsoft Graph change notifications are optional scheduling hints only. The
+package does not host a public webhook server and notifications never replace
+Mail/Calendar sync correctness. A deployment-owned HTTPS adapter validates and
+coalesces notifications, then launches the same finite sync commands. See
+`docs/microsoft-change-notifications.md`.
+
+Delegated shared scopes can read shared/delegated resources but cannot create
+change-notification subscriptions for items in another user's mailbox. Shared
+mailbox notifications therefore require a separate application-permission
+delivery adapter; acquisition itself remains delegated and read-only.
+
+## Raw-content size policy
+
+Mail MIME/raw attachments and Calendar raw attachments use Scrapy's native
+per-request download size limit. MSGLOOM_MAX_RAW_CONTENT_BYTES defaults to
+64 MiB and can be overridden per deployment.
+
+Known oversized attachments are skipped before a raw request when provider
+metadata already supplies a size. Otherwise Scrapy cancels the download when
+the native limit is exceeded. A policy-driven omission records terminal
+Full-v1 surface status omitted_size_limit, so the planner does not retry an
+intentionally omitted body forever.
 
 ## Standard Scrapy options
 

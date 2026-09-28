@@ -163,3 +163,120 @@ class OutlookDeltaCheckpointStore:
                     checkpoint.run_id = run_id
                 candidate.committed_at = committed_at
             return len(candidates)
+
+
+class OutlookFolderDeltaCheckpointStore:
+    """Persist the single mailbox-level mailFolder delta cursor per source."""
+
+    def __init__(self, catalog_or_url: Catalog | str, source_id: str) -> None:
+        self._owns_catalog = isinstance(catalog_or_url, str)
+        self.catalog = (
+            Catalog(catalog_or_url)
+            if isinstance(catalog_or_url, str)
+            else catalog_or_url
+        )
+        self.source_id = source_id
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(
+            CatalogService.from_crawler(crawler).catalog,
+            crawler.settings["MSGLOOM_SOURCE_ID"],
+        )
+
+    def close(self) -> None:
+        if self._owns_catalog:
+            self.catalog.close()
+
+    def get_delta_link(self) -> str | None:
+        from message_ingest.catalog import FolderDeltaCheckpoint
+
+        with self.catalog.Session() as session:
+            return session.scalar(
+                select(FolderDeltaCheckpoint.delta_link).filter_by(
+                    source_id=self.source_id
+                )
+            )
+
+    def write_candidate(
+        self,
+        *,
+        run_id: str,
+        delta_link: str,
+        observed_at: str,
+        evidence_id: str | None = None,
+    ) -> None:
+        from message_ingest.catalog import FolderDeltaCheckpointCandidate
+
+        with self.catalog.Session() as session, session.begin():
+            record = session.scalar(
+                select(FolderDeltaCheckpointCandidate).filter_by(
+                    source_id=self.source_id,
+                    run_id=run_id,
+                )
+            )
+            if record is None:
+                session.add(
+                    FolderDeltaCheckpointCandidate(
+                        source_id=self.source_id,
+                        run_id=run_id,
+                        delta_link=delta_link,
+                        evidence_id=evidence_id,
+                        observed_at=observed_at,
+                    )
+                )
+                return
+            record.delta_link = delta_link
+            record.evidence_id = evidence_id
+            record.observed_at = observed_at
+
+    def get_candidate(self, run_id: str):
+        from message_ingest.catalog import FolderDeltaCheckpointCandidate
+
+        with self.catalog.Session() as session:
+            return session.scalar(
+                select(FolderDeltaCheckpointCandidate).filter_by(
+                    source_id=self.source_id,
+                    run_id=run_id,
+                )
+            )
+
+    def commit(self, run_id: str) -> None:
+        from message_ingest.catalog import (
+            FolderDeltaCheckpoint,
+            FolderDeltaCheckpointCandidate,
+        )
+
+        committed_at = datetime.now(UTC).isoformat()
+        with self.catalog.Session() as session, session.begin():
+            candidate = session.scalar(
+                select(FolderDeltaCheckpointCandidate).filter_by(
+                    source_id=self.source_id,
+                    run_id=run_id,
+                )
+            )
+            if candidate is None:
+                raise RuntimeError("folder delta candidate missing")
+            checkpoint = session.scalar(
+                select(FolderDeltaCheckpoint).filter_by(source_id=self.source_id)
+            )
+            if checkpoint is None:
+                session.add(
+                    FolderDeltaCheckpoint(
+                        source_id=self.source_id,
+                        delta_link=candidate.delta_link,
+                        committed_at=committed_at,
+                        run_id=run_id,
+                    )
+                )
+            else:
+                checkpoint.delta_link = candidate.delta_link
+                checkpoint.committed_at = committed_at
+                checkpoint.run_id = run_id
+            candidate.committed_at = committed_at
+
+
+__all__ = [
+    "OutlookDeltaCheckpointStore",
+    "OutlookFolderDeltaCheckpointStore",
+]

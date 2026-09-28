@@ -12,7 +12,7 @@ from message_ingest.acquisition.microsoft.outlook.email import profile
 
 
 def test_acquisition_profile_packages_expose_only_domain_surfaces() -> None:
-    if outlook.__all__ != ["calendar", "email"]:
+    if outlook.__all__ != ["calendar", "email", "notifications"]:
         pytest.fail(f"Unexpected Outlook acquisition exports: {outlook.__all__!r}")
     if "FULL_V1" not in email.__all__:
         pytest.fail("Expected Outlook Mail acquisition profile to expose FULL_V1")

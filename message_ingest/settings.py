@@ -57,9 +57,11 @@ MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
     "MSGLOOM_MS_ERROR_MIDDLEWARE_ENABLED", True
 )
 MSGLOOM_DELTA_CHECKPOINT_ENABLED = _env_bool("MSGLOOM_DELTA_CHECKPOINT_ENABLED", True)
+MSGLOOM_FOLDER_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CRAWL_STATUS_ENABLED = _env_bool("MSGLOOM_CRAWL_STATUS_ENABLED", True)
 MSGLOOM_CATALOG_ENABLED = _env_bool("MSGLOOM_CATALOG_ENABLED", True)
+MSGLOOM_TARGET_MAILBOX = ""
 MSGLOOM_RAW_EVIDENCE_ENABLED = _env_bool("MSGLOOM_RAW_EVIDENCE_ENABLED", True)
 
 # Use Scrapy's built-in downloader stack. Authentication implementations are
@@ -90,6 +92,7 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft_graph.identity.MicrosoftGraphSourceIdentityExtension": 425,
     "message_ingest.extensions.microsoft_graph.integrity.MicrosoftGraphIntegrityExtension": 450,
     "message_ingest.extensions.microsoft.outlook.email.checkpoint.OutlookDeltaCheckpointExtension": 500,
+    "message_ingest.extensions.microsoft.outlook.email.folder_checkpoint.OutlookFolderDeltaCheckpointExtension": 505,
     "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,
@@ -197,6 +200,9 @@ MSGLOOM_DATABASE_URL = os.getenv(
     "MSGLOOM_DATABASE_URL", "sqlite:///var/msgloom.sqlite3"
 )
 MSGLOOM_RAW_EVIDENCE_DIR = os.getenv("MSGLOOM_RAW_EVIDENCE_DIR", "var/acquisition/raw")
+MSGLOOM_MAX_RAW_CONTENT_BYTES = int(
+    os.getenv("MSGLOOM_MAX_RAW_CONTENT_BYTES", str(64 * 1024 * 1024))
+)
 MSGLOOM_SOURCE_ID = os.getenv("MSGLOOM_SOURCE_ID", "microsoft-outlook-default")
 MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
 # Legacy identity bootstrap must be an explicit invocation-scoped Scrapy

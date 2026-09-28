@@ -103,6 +103,25 @@ class CalendarEventSurface(Base):
     resource_version: Mapped[str | None] = mapped_column(Text, index=True)
 
 
+class CalendarSeriesTopologyRecord(Base):
+    """Latest expanded recurring-series topology for one series master."""
+
+    __tablename__ = "calendar_series_topologies"
+    __table_args__ = (UniqueConstraint("source_id", "series_master_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    series_master_id: Mapped[str] = mapped_column(Text, index=True)
+    calendar_id: Mapped[str] = mapped_column(Text, index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    change_key: Mapped[str | None] = mapped_column(Text, index=True)
+    cancelled_occurrences: Mapped[list[str] | None] = mapped_column(JSON)
+    exception_occurrences: Mapped[list[dict[str, object]] | None] = mapped_column(JSON)
+    latest_observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    latest_evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    raw: Mapped[dict[str, object] | None] = mapped_column(JSON)
+
+
 class CalendarEventAttachmentRecord(Base):
     """Latest known attachment metadata for one Calendar event."""
 
@@ -262,4 +281,5 @@ __all__ = [
     "CalendarEventSighting",
     "CalendarEventSurface",
     "CalendarRecord",
+    "CalendarSeriesTopologyRecord",
 ]

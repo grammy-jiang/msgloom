@@ -41,9 +41,25 @@ class Command(ScrapyCommand):
         super().add_options(parser)
         add_microsoft_options(self, parser)
 
+    def process_options(self, args: list[str], opts: argparse.Namespace) -> None:
+        """Apply Outlook mailbox targeting before CrawlerProcess construction."""
+        super().process_options(args, opts)
+        mailbox = getattr(opts, "mailbox", None)
+        if mailbox is None:
+            return
+        if not isinstance(mailbox, str) or not mailbox or mailbox != mailbox.strip():
+            raise UsageError(
+                "--mailbox must be non-empty without surrounding whitespace"
+            )
+        if self.settings is None:
+            raise RuntimeError("Scrapy did not initialize command settings")
+        self.settings.set("MSGLOOM_TARGET_MAILBOX", mailbox, priority="cmdline")
+
     def run(self, args: list[str], opts: argparse.Namespace) -> None:
         """Dispatch the selected Microsoft hierarchy path."""
         require_no_positional_args(args)
+        if getattr(opts, "mailbox", None) is not None and opts.section != "outlook":
+            raise UsageError("--mailbox is valid only below 'microsoft outlook'")
         if opts.section == "profile":
             dispatch_profile(self, opts)
             return

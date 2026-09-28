@@ -90,8 +90,7 @@ no built-in request-subgraph join primitive. Moving it to an Extension would
 move source traversal out of the Spider, which would be less aligned with
 Scrapy's component model.
 
-This state is currently **not** claimed to survive JOBDIR pause/resume. That is
-a separate remaining task.
+Mail delta traversal state now survives clean JOBDIR pause/resume through an explicit SpiderState payload. Calendar window/full use separate scope-validated resume state; provider checkpoints remain independent catalog state.
 
 ## Requests and Scheduler
 

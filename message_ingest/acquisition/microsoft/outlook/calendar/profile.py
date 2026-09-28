@@ -12,6 +12,7 @@ TERMINAL_SURFACE_STATUSES = frozenset(
         "acquired",
         "unsupported",
         "not_applicable",
+        "omitted_size_limit",
         "unauthorized",
         "unavailable",
     }

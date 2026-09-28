@@ -70,6 +70,19 @@ class OutlookCalendarEventSurfaceItem:
 
 
 @dataclass(slots=True)
+class OutlookCalendarSeriesTopologyItem:
+    """Expanded or terminal recurring-series topology for one series master."""
+
+    series_master_id: str
+    calendar_id: str
+    status: str
+    raw: dict[str, Any] | None
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+
+
+@dataclass(slots=True)
 class OutlookCalendarDeltaObservationItem:
     """One ordered event entry from a fixed Calendar delta window."""
 
@@ -111,4 +124,5 @@ __all__ = [
     "OutlookCalendarEventItem",
     "OutlookCalendarEventSurfaceItem",
     "OutlookCalendarItem",
+    "OutlookCalendarSeriesTopologyItem",
 ]

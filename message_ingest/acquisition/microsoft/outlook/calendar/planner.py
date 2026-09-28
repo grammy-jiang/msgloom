@@ -61,6 +61,22 @@ def pending_full_v1_targets(
                     complete = False
                     break
         if complete:
+            event_state = store.get_event_state(event_id=event_id)
+            if event_state is not None:
+                event_type = event_state["event_type"]
+                series_master_id = event_state["series_master_id"]
+                if event_type == "seriesMaster":
+                    series_master_id = event_id
+                if (
+                    event_type in {"occurrence", "exception", "seriesMaster"}
+                    and series_master_id
+                    and not store.series_topology_covers(
+                        series_master_id=series_master_id,
+                        observed_at=event_state["latest_observed_at"],
+                    )
+                ):
+                    complete = False
+        if complete:
             continue
         targets.append(
             CalendarEnrichmentTarget(event_id, calendar_id, resource_version)

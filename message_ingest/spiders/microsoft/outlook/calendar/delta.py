@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Iterator
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any
 from urllib.parse import urlencode
 
 import scrapy
@@ -19,19 +19,18 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
 )
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
     CalendarDeltaCheckpointStore,
 )
 
+from ._base import OutlookCalendarSpider
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
 
 
-class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
+class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
     """Track changes inside one fixed primary-calendar time window."""
 
     name = "outlook_calendar_delta"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
     failure_context_keys = ("start_datetime", "end_datetime")
     calendar_scope = "default"
 
@@ -395,7 +394,7 @@ class OutlookCalendarDeltaSpider(MicrosoftGraphSpider):
             }
         )
         return self._delta_request(
-            f"{self.graph_root}/me/calendarView/delta?{query}",
+            self._mailbox_url(f"/calendarView/delta?{query}"),
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,

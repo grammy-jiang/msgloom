@@ -4,21 +4,22 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any
 from urllib.parse import quote, urlencode
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarEventItem
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+
+from ._base import OutlookCalendarSpider
+from ._resume_state import CalendarScopedExecutionState, execution_payload
 
 
-class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
+class OutlookCalendarWindowSpider(OutlookCalendarSpider):
     """Read one explicit Calendar time window through Graph calendarView."""
 
     name = "outlook_calendar_window"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
 
     def __init__(
         self,
@@ -45,6 +46,8 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
         self.page_size = self._bounded_int(
             page_size, name="page_size", minimum=1, maximum=1000
         )
+        self.state: dict[str, Any] = {}
+        self._job_resumed = False
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -59,6 +62,12 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
             False,
             priority="spider",
         )
+        extensions = settings.getdict("EXTENSIONS")
+        extensions["scrapy.extensions.spiderstate.SpiderState"] = None
+        extensions[
+            "message_ingest.extensions.microsoft.outlook.calendar.resume.CalendarWindowSpiderState"
+        ] = 0
+        settings.set("EXTENSIONS", extensions, priority="spider")
         settings.set(
             "ITEM_PIPELINES",
             {
@@ -70,16 +79,14 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
         )
         super().update_settings(settings)
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        """Reject JOBDIR until Calendar resume semantics are tested."""
-        if crawler.settings.get("JOBDIR"):
-            raise ValueError("Calendar window acquisition does not support JOBDIR yet")
-        return super().from_crawler(crawler, *args, **kwargs)
-
     async def start(self) -> AsyncIterator[Any]:
-        """Schedule the first occurrence-expanded Calendar view page."""
+        """Regenerate the fixed-window start; JOBDIR dupefilter owns replay."""
+        self._persist_execution_state()
         self.crawler.stats.set_value("msgloom/crawl/mode", "calendar_window")
+        self.crawler.stats.set_value("msgloom/crawl/run_id", self.run_id)
+        self.crawler.stats.set_value(
+            "msgloom/crawl/calendar/job_resumed", self._job_resumed
+        )
         self.crawler.stats.set_value(
             "msgloom/crawl/calendar/pagination_exhausted",
             False,
@@ -92,11 +99,11 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
             "msgloom/crawl/calendar/window_end",
             self.end_datetime,
         )
-        base = f"{self.graph_root}/me/calendar/calendarView"
+        base = self._mailbox_url("/calendar/calendarView")
         calendar_key = "default"
         if self.calendar_id:
             encoded = quote(self.calendar_id, safe="")
-            base = f"{self.graph_root}/me/calendars/{encoded}/calendarView"
+            base = self._mailbox_url(f"/calendars/{encoded}/calendarView")
             calendar_key = self.calendar_id
         query = urlencode(
             {
@@ -168,6 +175,39 @@ class OutlookCalendarWindowSpider(MicrosoftGraphSpider):
             verbatim_url=True,
             prefer='IdType="ImmutableId"',
         )
+
+    def _resume_scope(self) -> dict[str, object]:
+        return {
+            "start_datetime": self.start_datetime,
+            "end_datetime": self.end_datetime,
+            "calendar_id": self.calendar_id,
+            "page_size": self.page_size,
+        }
+
+    def _restore_execution_state(self) -> None:
+        restored, resumed = CalendarScopedExecutionState.restore(
+            self.state.get("msgloom_calendar_window"),
+            expected_scope=self._resume_scope(),
+            default_run_id=self.run_id,
+            label="window",
+        )
+        self.run_id = restored.run_id
+        self._run_failed = restored.run_failed
+        self._failure_reasons = set(restored.failure_reasons)
+        self._job_resumed = resumed
+        self._persist_execution_state()
+
+    def _persist_execution_state(self) -> None:
+        self.state["msgloom_calendar_window"] = execution_payload(
+            run_id=self.run_id,
+            scope=self._resume_scope(),
+            run_failed=self._run_failed,
+            failure_reasons=self._failure_reasons,
+        )
+
+    def mark_run_failed(self, reason: str) -> None:
+        super().mark_run_failed(reason)
+        self._persist_execution_state()
 
     @classmethod
     def _window_datetime(cls, raw: str, *, name: str) -> str:

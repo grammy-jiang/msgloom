@@ -23,8 +23,11 @@ from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpide
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
 
 
-def _spider(**kwargs) -> OutlookFullSpider:
-    crawler = get_crawler(OutlookFullSpider)
+def _spider(*, max_raw_content_bytes: int | None = None, **kwargs) -> OutlookFullSpider:
+    settings = {}
+    if max_raw_content_bytes is not None:
+        settings["MSGLOOM_MAX_RAW_CONTENT_BYTES"] = max_raw_content_bytes
+    crawler = get_crawler(OutlookFullSpider, settings_dict=settings)
     return OutlookFullSpider.from_crawler(crawler, **kwargs)
 
 
@@ -189,3 +192,63 @@ def test_mime_callback_emits_raw_http_evidence_then_semantic_surface() -> None:
     )
     if surface.surface != "mime":
         pytest.fail('Expected: surface.surface == "mime"')
+
+
+def test_attachment_inventory_requests_metadata_only_and_caps_response() -> None:
+    spider = _spider(
+        message_ids="immutable-message-002",
+        max_raw_content_bytes=1024,
+    )
+    request = spider._attachments_request(
+        "immutable-message-002",
+        page_number=1,
+    )
+    selected = set(parse_qs(urlsplit(request.url).query)["$select"][0].split(","))
+    if "contentBytes" in selected:
+        pytest.fail("Attachment inventory must never request contentBytes")
+    if {"id", "name", "contentType", "size", "isInline"} > selected:
+        pytest.fail("Expected attachment planning metadata in $select")
+    if request.meta.get("download_maxsize") != 1024:
+        pytest.fail("Expected native Scrapy maxsize on attachment inventory")
+
+
+def test_known_oversized_item_attachment_is_terminal_without_followup_requests() -> (
+    None
+):
+    spider = _spider(message_ids="m1", max_raw_content_bytes=100)
+    request = spider._attachments_request("m1", page_number=1)
+    response = TextResponse(
+        request.url,
+        request=request,
+        body=(
+            b'{"value":[{"@odata.type":"#microsoft.graph.itemAttachment",'
+            b'"id":"large-item","name":"large.eml","size":101,"isInline":false}]}'
+        ),
+        encoding="utf-8",
+        headers={"Content-Type": "application/json"},
+    )
+    output = list(spider.parse_attachments(response, **request.cb_kwargs))
+    if any(isinstance(value, Request) for value in output):
+        pytest.fail("Known oversized attachment must not schedule content requests")
+    surfaces = {
+        value.surface: value.status
+        for value in output
+        if isinstance(value, OutlookMessageSurfaceItem)
+    }
+    if surfaces.get("attachment_raw:large-item") != "omitted_size_limit":
+        pytest.fail("Expected oversized raw attachment terminal omission")
+    if surfaces.get("item_attachment_detail:large-item") != "omitted_size_limit":
+        pytest.fail("Expected oversized expanded item terminal omission")
+    if surfaces.get("attachments") != "acquired":
+        pytest.fail("Attachment inventory itself should remain acquired")
+
+
+def test_mail_raw_requests_use_configured_native_scrapy_maxsize() -> None:
+    spider = _spider(message_ids="m1", max_raw_content_bytes=4096)
+    for request in (
+        spider._message_mime_request("m1"),
+        spider._attachment_raw_request("m1", "a1"),
+        spider._item_attachment_detail_request("m1", "a1"),
+    ):
+        if request.meta.get("download_maxsize") != 4096:
+            pytest.fail("Expected configured Scrapy download_maxsize on raw content")

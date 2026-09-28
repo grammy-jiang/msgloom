@@ -8,7 +8,12 @@ from urllib.parse import quote, urlencode
 import scrapy
 from scrapy.http import TextResponse
 
-from message_ingest.items.microsoft.outlook.email import OutlookMailFolderItem
+from message_ingest.items.microsoft.outlook.email import (
+    OutlookFolderSnapshotCandidateItem,
+    OutlookMailFolderItem,
+    OutlookMessagePresenceCandidateItem,
+    OutlookMessagePresenceSightingItem,
+)
 
 from ._base import OutlookMailSpider
 
@@ -115,8 +120,9 @@ class OutlookFolderTraversal(OutlookMailSpider):
                     "msgloom/crawl/delta/child_folder_traversal_request_count"
                 )
                 yield self._folder_list_request(
-                    f"{self.graph_root}/me/mailFolders/"
-                    f"{quote(folder_id, safe='')}/childFolders?"
+                    self._mailbox_url(
+                        f"/mailFolders/{quote(folder_id, safe='')}/childFolders?"
+                    )
                     + urlencode(
                         {"includeHiddenFolders": "true", "$top": self.page_size}
                     ),
@@ -138,7 +144,15 @@ class OutlookFolderTraversal(OutlookMailSpider):
                 verbatim_url=True,
             )
 
-        if (reconciliation := self._finish_folder_inventory_response()) is not None:
+        was_complete = self._folder_inventory_complete
+        reconciliation = self._finish_folder_inventory_response()
+        if not was_complete and self._folder_inventory_complete:
+            yield OutlookFolderSnapshotCandidateItem(
+                run_id=self.run_id,
+                observed_at=evidence.observed_at,
+                evidence_id=evidence.evidence_id,
+            )
+        if reconciliation is not None:
             yield reconciliation
 
     def parse_global_reconciliation(
@@ -169,6 +183,12 @@ class OutlookFolderTraversal(OutlookMailSpider):
             message_id = message.get("id")
             if not isinstance(message_id, str):
                 continue
+            yield OutlookMessagePresenceSightingItem(
+                run_id=self.run_id,
+                message_id=message_id,
+                observed_at=evidence.observed_at,
+                evidence_id=evidence.evidence_id,
+            )
             if message.get("parentFolderId") in self._seen_folder_ids:
                 continue
             if message_id in self._reconcile_orphan_ids:
@@ -184,6 +204,11 @@ class OutlookFolderTraversal(OutlookMailSpider):
             )
             return
 
+        yield OutlookMessagePresenceCandidateItem(
+            run_id=self.run_id,
+            observed_at=evidence.observed_at,
+            evidence_id=evidence.evidence_id,
+        )
         self._reconcile_complete = True
         self._persist_execution_state()
         self.crawler.stats.set_value("msgloom/crawl/reconcile/completed", True)
@@ -288,7 +313,7 @@ class OutlookFolderTraversal(OutlookMailSpider):
                     "$top": 1000,
                 }
             )
-            url = f"{self.graph_root}/me/messages?{query}"
+            url = self._mailbox_url(f"/messages?{query}")
         return self._request(
             url,
             callback=self.parse_global_reconciliation,
@@ -305,7 +330,7 @@ class OutlookFolderTraversal(OutlookMailSpider):
         encoded_id = quote(message_id, safe="")
         query = urlencode({"$select": ",".join(self.discovery_fields)})
         return self._request(
-            f"{self.graph_root}/me/messages/{encoded_id}?{query}",
+            self._mailbox_url(f"/messages/{encoded_id}?{query}"),
             callback=self.parse_reconciliation_message,
             purpose="message-reconcile",
             cb_kwargs={"message_id": message_id},

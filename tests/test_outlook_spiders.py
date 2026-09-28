@@ -29,6 +29,9 @@ from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpi
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
+from message_ingest.spiders.microsoft.outlook.email.folder_delta import (
+    OutlookFolderDeltaSpider,
+)
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
 
@@ -43,6 +46,7 @@ def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
         "outlook_calendar_window": OutlookCalendarWindowSpider,
         "outlook_discover": OutlookDiscoverSpider,
         "outlook_delta": OutlookDeltaSpider,
+        "outlook_folder_delta": OutlookFolderDeltaSpider,
         "outlook_full": OutlookFullSpider,
     }
     if set(loader.list()) != set(expected):

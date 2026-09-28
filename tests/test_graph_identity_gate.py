@@ -12,6 +12,7 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
 import message_ingest.extensions.microsoft_graph.identity as gate_module
+from message_ingest.extensions.catalog import CatalogService
 from message_ingest.extensions.microsoft_graph.identity import (
     MicrosoftGraphSourceIdentityExtension,
 )
@@ -29,6 +30,7 @@ def _crawler(
     auth_method: str = "device_code",
     catalog=True,
     identity_required: bool = True,
+    target_mailbox: str = "",
 ):
     crawler = get_crawler(
         OutlookDiscoverSpider,
@@ -40,6 +42,7 @@ def _crawler(
             "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
             "MSGLOOM_SOURCE_ID": "source-1",
             "MSGLOOM_SOURCE_IDENTITY_REQUIRED": identity_required,
+            "MSGLOOM_TARGET_MAILBOX": target_mailbox,
         },
     )
     spider = OutlookDiscoverSpider.from_crawler(crawler)
@@ -113,6 +116,51 @@ def test_successful_gate_awaits_shared_auth_session(
         pytest.fail("Expected startup gate to await auth session identity")
     if spider.run_failed:
         pytest.fail("Expected successful identity gate not to fail run")
+
+
+def test_shared_target_binding_is_verified_before_requests_and_cannot_switch(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    class FakeSession:
+        def attach_account_binding(self, binding) -> None:
+            self.binding = binding
+
+        async def establish_account_binding(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        gate_module.MicrosoftGraphAuthSession,
+        "from_crawler",
+        lambda crawler: FakeSession(),
+    )
+
+    first, first_spider = _crawler(
+        tmp_path,
+        target_mailbox="00000000-0000-0000-0000-000000000123",
+    )
+    first_extension = build_from_crawler(MicrosoftGraphSourceIdentityExtension, first)
+    asyncio.run(first_extension.spider_opened(first_spider))
+    if first.stats.get_value("msgloom/source_target/gate_state") != "verified":
+        pytest.fail("Expected startup gate to verify delegated mailbox target")
+    if first.stats.get_value("downloader/request_count") is not None:
+        pytest.fail("Expected target binding before downloader requests")
+    CatalogService.from_crawler(first).close()
+
+    second, second_spider = _crawler(
+        tmp_path,
+        target_mailbox="00000000-0000-0000-0000-000000000999",
+    )
+    second_extension = build_from_crawler(MicrosoftGraphSourceIdentityExtension, second)
+    with pytest.raises(CloseSpider) as excinfo:
+        asyncio.run(second_extension.spider_opened(second_spider))
+    if excinfo.value.reason != "source_identity_failed":
+        pytest.fail("Expected target mismatch to use startup identity close path")
+    if second_spider.run_failed is not True:
+        pytest.fail("Expected target mismatch to fail logical run before requests")
+    if second.stats.get_value("downloader/request_count") is not None:
+        pytest.fail("Expected no request execution after target mismatch")
+    CatalogService.from_crawler(second).close()
 
 
 def test_catalog_disabled_does_not_install_identity_gate(tmp_path: Path) -> None:

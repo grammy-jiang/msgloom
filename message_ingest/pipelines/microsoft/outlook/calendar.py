@@ -18,6 +18,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventItem,
     OutlookCalendarEventSurfaceItem,
     OutlookCalendarItem,
+    OutlookCalendarSeriesTopologyItem,
 )
 from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
     CalendarDeltaCheckpointStore,
@@ -73,6 +74,10 @@ class OutlookCalendarPipeline:
         if isinstance(item, OutlookCalendarAttachmentContentItem):
             outcome = await self._write(self.store.persist_attachment_content, item)
             self._outcome("attachment_content", outcome)
+            return item
+        if isinstance(item, OutlookCalendarSeriesTopologyItem):
+            outcome = await self._write(self.store.persist_series_topology, item)
+            self._outcome("series_topology", outcome)
             return item
         if isinstance(item, OutlookCalendarEventSurfaceItem):
             async with self._write_lock:

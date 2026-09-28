@@ -12,6 +12,7 @@ from scrapy.http import Response, TextResponse
 
 from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1,
+    attachment_required_surfaces,
     attachment_type_name,
 )
 from message_ingest.items.microsoft.outlook.email import (
@@ -85,6 +86,22 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             )
 
             if type_name in {"fileAttachment", "itemAttachment"}:
+                if self._attachment_size_exceeds_limit(attachment.get("size")):
+                    self.crawler.stats.inc_value(
+                        "msgloom/crawl/enrichment/size_limit_omission_count"
+                    )
+                    for surface in attachment_required_surfaces(
+                        attachment_type, attachment_id
+                    ):
+                        yield OutlookMessageSurfaceItem(
+                            message_id=message_id,
+                            surface=surface,
+                            status="omitted_size_limit",
+                            observed_at=evidence.observed_at,
+                            evidence_id=evidence.evidence_id,
+                            profile_version=FULL_V1,
+                        )
+                    continue
                 yield self._attachment_raw_request(message_id, attachment_id)
                 if type_name == "itemAttachment":
                     yield self._item_attachment_detail_request(
@@ -168,8 +185,13 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         acquired.
         """
         encoded_id = quote(message_id, safe="")
+        if url is None:
+            query = urlencode(
+                {"$select": ("id,name,contentType,size,isInline,lastModifiedDateTime")}
+            )
+            url = self._mailbox_url(f"/messages/{encoded_id}/attachments?{query}")
         return self._request(
-            url or f"{self.graph_root}/me/messages/{encoded_id}/attachments",
+            url,
             callback=self.parse_attachments,
             purpose="attachments-list",
             cb_kwargs={
@@ -177,6 +199,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                 "page_number": page_number,
             },
             verbatim_url=verbatim_url,
+            download_maxsize=self._max_raw_content_bytes(),
         )
 
     def _attachment_raw_request(
@@ -191,8 +214,9 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         encoded_message_id = quote(message_id, safe="")
         encoded_attachment_id = quote(attachment_id, safe="")
         return self._request(
-            f"{self.graph_root}/me/messages/{encoded_message_id}/attachments/"
-            f"{encoded_attachment_id}/$value",
+            self._mailbox_url(
+                f"/messages/{encoded_message_id}/attachments/{encoded_attachment_id}/$value"
+            ),
             callback=self.parse_raw_evidence,
             purpose="attachment-raw",
             cb_kwargs={
@@ -200,6 +224,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                 "attachment_id": attachment_id,
             },
             accept="*/*",
+            download_maxsize=self._max_raw_content_bytes(),
         )
 
     def _item_attachment_detail_request(
@@ -214,12 +239,15 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         encoded_attachment_id = quote(attachment_id, safe="")
         query = urlencode({"$expand": "microsoft.graph.itemattachment/item"})
         return self._request(
-            f"{self.graph_root}/me/messages/{encoded_message_id}/attachments/"
-            f"{encoded_attachment_id}?{query}",
+            self._mailbox_url(
+                f"/messages/{encoded_message_id}/attachments/"
+                f"{encoded_attachment_id}?{query}"
+            ),
             callback=self.parse_attachment_detail,
             purpose="item-attachment-detail",
             cb_kwargs={
                 "message_id": message_id,
                 "attachment_id": attachment_id,
             },
+            download_maxsize=self._max_raw_content_bytes(),
         )

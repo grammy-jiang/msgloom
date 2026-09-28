@@ -12,6 +12,7 @@ from scrapy.http import Response, TextResponse
 
 from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
     FULL_V1,
+    attachment_required_surfaces,
     attachment_type_name,
 )
 from message_ingest.items.microsoft.outlook.calendar import (
@@ -19,7 +20,8 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventSurfaceItem,
 )
-from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+
+from ._base import OutlookCalendarSpider
 
 
 def _metadata_without_content(value: Any) -> Any:
@@ -35,7 +37,7 @@ def _metadata_without_content(value: Any) -> Any:
     return value
 
 
-class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
+class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
     """Own Calendar attachment pagination, raw content, and item expansion."""
 
     page_size: int
@@ -109,6 +111,23 @@ class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
                 f"msgloom/crawl/calendar/full/attachment_type_count/{type_name}"
             )
             if type_name in {"fileAttachment", "itemAttachment"}:
+                if self._attachment_size_exceeds_limit(raw.get("size")):
+                    self.crawler.stats.inc_value(
+                        "msgloom/crawl/calendar/full/size_limit_omission_count"
+                    )
+                    for surface in attachment_required_surfaces(
+                        attachment_type, attachment_id
+                    ):
+                        yield OutlookCalendarEventSurfaceItem(
+                            event_id=event_id,
+                            surface=surface,
+                            status="omitted_size_limit",
+                            observed_at=evidence.observed_at,
+                            evidence_id=evidence.evidence_id,
+                            profile_version=FULL_V1,
+                            resource_version=resource_version,
+                        )
+                    continue
                 yield self._attachment_raw_request(
                     event_id,
                     attachment_id,
@@ -251,7 +270,12 @@ class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
     ) -> scrapy.Request:
         """Inventory attachments only for events that report attachments."""
         event_path = self._event_path(event_id)
-        query = urlencode({"$top": self.page_size})
+        query = urlencode(
+            {
+                "$top": self.page_size,
+                "$select": "id,name,contentType,size,isInline,lastModifiedDateTime",
+            }
+        )
         return self._request(
             f"{self.graph_root}{event_path}/attachments?{query}",
             callback=self.parse_attachments,
@@ -262,6 +286,7 @@ class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
                 "resource_version": resource_version,
             },
             prefer='IdType="ImmutableId"',
+            download_maxsize=self._max_raw_content_bytes(),
         )
 
     def _attachment_raw_request(
@@ -285,6 +310,7 @@ class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
             },
             accept="*/*",
             prefer='IdType="ImmutableId"',
+            download_maxsize=self._max_raw_content_bytes(),
         )
 
     def _item_attachment_detail_request(
@@ -308,6 +334,7 @@ class OutlookCalendarAttachmentTraversal(MicrosoftGraphSpider, ABC):
                 "resource_version": resource_version,
             },
             prefer='IdType="ImmutableId"',
+            download_maxsize=self._max_raw_content_bytes(),
         )
 
 

@@ -1,6 +1,6 @@
 """SQLAlchemy catalog models grouped by acquisition domain."""
 
-from .acquisition import RawHttpEvidence, SourceBinding
+from .acquisition import RawHttpEvidence, SourceBinding, SourceTargetBinding
 from .base import Base
 from .microsoft.outlook import (
     AttachmentRecord,
@@ -14,10 +14,19 @@ from .microsoft.outlook import (
     CalendarEventSighting,
     CalendarEventSurface,
     CalendarRecord,
+    CalendarSeriesTopologyRecord,
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    FolderDeltaCheckpoint,
+    FolderDeltaCheckpointCandidate,
+    MailFolderPresence,
     MailFolderRecord,
+    MailFolderSighting,
+    MailFolderSnapshotCandidate,
     MessageObservation,
+    MessagePresence,
+    MessagePresenceCandidate,
+    MessagePresenceSighting,
     MessageRecord,
     MessageSurface,
 )
@@ -35,12 +44,22 @@ __all__ = [
     "CalendarEventSighting",
     "CalendarEventSurface",
     "CalendarRecord",
+    "CalendarSeriesTopologyRecord",
     "DeltaCheckpoint",
     "DeltaCheckpointCandidate",
+    "FolderDeltaCheckpoint",
+    "FolderDeltaCheckpointCandidate",
+    "MailFolderPresence",
     "MailFolderRecord",
+    "MailFolderSighting",
+    "MailFolderSnapshotCandidate",
     "MessageObservation",
+    "MessagePresence",
+    "MessagePresenceCandidate",
+    "MessagePresenceSighting",
     "MessageRecord",
     "MessageSurface",
     "RawHttpEvidence",
     "SourceBinding",
+    "SourceTargetBinding",
 ]

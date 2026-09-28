@@ -99,10 +99,13 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
     )
     sync_module.run_mail_sync(command, _opts(page_size=50, reconcile=False))
 
-    if len(captured) != 1 or captured[0].spider_name != "outlook_delta":
-        pytest.fail("Expected Mail sync to begin with delta")
+    if [phase.spider_name for phase in captured] != [
+        "outlook_folder_delta",
+        "outlook_delta",
+    ]:
+        pytest.fail(f"Unexpected Mail sync collection phases: {captured!r}")
     follow = list(
-        captured[0].after(SimpleNamespace(spider=SimpleNamespace(run_id="delta-run")))
+        captured[1].after(SimpleNamespace(spider=SimpleNamespace(run_id="delta-run")))
     )
     if [(phase.spider_name, phase.spider_args["operation"]) for phase in follow] != [
         ("outlook_full", "refresh"),

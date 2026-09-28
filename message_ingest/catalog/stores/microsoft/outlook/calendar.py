@@ -14,6 +14,7 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarEventRecord,
     CalendarEventSighting,
     CalendarRecord,
+    CalendarSeriesTopologyRecord,
 )
 from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentContentItem,
@@ -21,6 +22,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarDeltaObservationItem,
     OutlookCalendarEventItem,
     OutlookCalendarItem,
+    OutlookCalendarSeriesTopologyItem,
 )
 
 from ._calendar_planning import CalendarPlanningStore
@@ -212,6 +214,75 @@ class OutlookCalendarStore(CalendarPlanningStore):
                 )
             )
         return "created"
+
+    def persist_series_topology(
+        self,
+        item: OutlookCalendarSeriesTopologyItem,
+    ) -> str:
+        """Upsert one recurring-series topology or terminal provider outcome."""
+        raw = item.raw
+        with self.catalog.Session() as session, session.begin():
+            record = session.scalar(
+                select(CalendarSeriesTopologyRecord).filter_by(
+                    source_id=self.source_id,
+                    series_master_id=item.series_master_id,
+                )
+            )
+            created = record is None
+            if record is not None and self._is_older_capture(
+                item.observed_at, record.latest_observed_at
+            ):
+                return "stale"
+            if record is None:
+                record = CalendarSeriesTopologyRecord(
+                    source_id=self.source_id,
+                    series_master_id=item.series_master_id,
+                    calendar_id=item.calendar_id,
+                    status=item.status,
+                    change_key=None,
+                    cancelled_occurrences=None,
+                    exception_occurrences=None,
+                    latest_observed_at=item.observed_at,
+                    latest_evidence_id=item.evidence_id,
+                    raw=None,
+                )
+                session.add(record)
+            previous = (
+                record.status,
+                record.change_key,
+                record.cancelled_occurrences,
+                record.exception_occurrences,
+                record.raw,
+            )
+            record.calendar_id = item.calendar_id
+            record.status = item.status
+            record.latest_observed_at = item.observed_at
+            record.latest_evidence_id = item.evidence_id
+            record.raw = raw
+            if raw is None:
+                record.change_key = None
+                record.cancelled_occurrences = None
+                record.exception_occurrences = None
+            else:
+                record.change_key = self._string(raw.get("changeKey"))
+                cancelled = raw.get("cancelledOccurrences")
+                exceptions = raw.get("exceptionOccurrences")
+                record.cancelled_occurrences = (
+                    cancelled if isinstance(cancelled, list) else []
+                )
+                record.exception_occurrences = (
+                    exceptions if isinstance(exceptions, list) else []
+                )
+            if created:
+                return "created"
+            current = (
+                record.status,
+                record.change_key,
+                record.cancelled_occurrences,
+                record.exception_occurrences,
+                record.raw,
+            )
+            return "unchanged" if current == previous else "changed"
 
     def persist_attachment_metadata(
         self,

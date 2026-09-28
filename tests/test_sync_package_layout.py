@@ -48,6 +48,7 @@ def test_checkpoint_extensions_expose_only_framework_adapters() -> None:
     if email_extensions.__all__ != [
         "OutlookCrawlStatusExtension",
         "OutlookDeltaCheckpointExtension",
+        "OutlookFolderDeltaCheckpointExtension",
     ]:
         pytest.fail(
             f"Unexpected Outlook Mail extension exports: {email_extensions.__all__!r}"
@@ -55,6 +56,8 @@ def test_checkpoint_extensions_expose_only_framework_adapters() -> None:
     if calendar_extensions.__all__ != [
         "CalendarDeltaCheckpointExtension",
         "CalendarDeltaSpiderState",
+        "CalendarFullSpiderState",
+        "CalendarWindowSpiderState",
     ]:
         pytest.fail(
             f"Unexpected Calendar extension exports: {calendar_extensions.__all__!r}"

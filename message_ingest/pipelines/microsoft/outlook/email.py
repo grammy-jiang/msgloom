@@ -13,14 +13,20 @@ from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookDeltaCheckpointCandidateItem,
+    OutlookFolderDeltaCheckpointCandidateItem,
+    OutlookFolderSnapshotCandidateItem,
     OutlookMailDetailItem,
     OutlookMailFolderItem,
+    OutlookMailFolderRemovalItem,
     OutlookMailItem,
     OutlookMailRemovalItem,
+    OutlookMessagePresenceCandidateItem,
+    OutlookMessagePresenceSightingItem,
     OutlookMessageSurfaceItem,
 )
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
+    OutlookFolderDeltaCheckpointStore,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,6 +48,9 @@ class OutlookMailPipeline:
         self.stats = stats
         self._write_lock = service.write_lock
         self.checkpoints = OutlookDeltaCheckpointStore(self.catalog, source_id)
+        self.folder_checkpoints = OutlookFolderDeltaCheckpointStore(
+            self.catalog, source_id
+        )
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -68,6 +77,11 @@ class OutlookMailPipeline:
             OutlookMailRemovalItem,
             OutlookMessageSurfaceItem,
             OutlookDeltaCheckpointCandidateItem,
+            OutlookFolderSnapshotCandidateItem,
+            OutlookFolderDeltaCheckpointCandidateItem,
+            OutlookMailFolderRemovalItem,
+            OutlookMessagePresenceSightingItem,
+            OutlookMessagePresenceCandidateItem,
         )
         if not isinstance(item, supported):
             return item
@@ -99,6 +113,7 @@ class OutlookMailPipeline:
                 folder=item.raw,
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
+                run_id=item.run_id,
             )
             return ("msgloom/catalog/folder_item_processed_count",)
         if isinstance(item, OutlookMailRemovalItem):
@@ -127,6 +142,45 @@ class OutlookMailPipeline:
                     f"{surface_kind}/{item.status}"
                 ),
             )
+        if isinstance(item, OutlookMailFolderRemovalItem):
+            self.store.mark_folder_removed(
+                folder_id=item.folder_id,
+                run_id=item.run_id,
+                observed_at=item.observed_at,
+                evidence_id=item.evidence_id,
+                reason=item.removed_reason,
+            )
+            return ("msgloom/catalog/folder_delta_removed_count",)
+        if isinstance(item, OutlookFolderDeltaCheckpointCandidateItem):
+            self.folder_checkpoints.write_candidate(
+                run_id=item.run_id,
+                delta_link=item.delta_link,
+                observed_at=item.observed_at,
+                evidence_id=item.evidence_id,
+            )
+            return ("msgloom/catalog/folder_delta_candidate_processed_count",)
+        if isinstance(item, OutlookFolderSnapshotCandidateItem):
+            self.store.write_folder_snapshot_candidate(
+                run_id=item.run_id,
+                observed_at=item.observed_at,
+                evidence_id=item.evidence_id,
+            )
+            return ("msgloom/catalog/folder_snapshot_candidate_processed_count",)
+        if isinstance(item, OutlookMessagePresenceSightingItem):
+            self.store.record_message_sighting(
+                run_id=item.run_id,
+                message_id=item.message_id,
+                observed_at=item.observed_at,
+                evidence_id=item.evidence_id,
+            )
+            return ("msgloom/catalog/message_presence_sighting_processed_count",)
+        if isinstance(item, OutlookMessagePresenceCandidateItem):
+            self.store.write_message_presence_candidate(
+                run_id=item.run_id,
+                observed_at=item.observed_at,
+                evidence_id=item.evidence_id,
+            )
+            return ("msgloom/catalog/message_presence_candidate_processed_count",)
         if isinstance(item, OutlookDeltaCheckpointCandidateItem):
             self.checkpoints.write_candidate(
                 run_id=item.run_id,

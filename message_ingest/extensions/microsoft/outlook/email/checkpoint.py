@@ -7,6 +7,8 @@ import logging
 from scrapy import signals
 from scrapy.exceptions import CloseSpider, NotConfigured
 
+from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
+from message_ingest.extensions.catalog import CatalogService
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
@@ -26,7 +28,14 @@ class OutlookDeltaCheckpointExtension:
         idle gate.
         """
         self.crawler = crawler
-        self.store = OutlookDeltaCheckpointStore.from_crawler(crawler)
+        service = CatalogService.from_crawler(crawler)
+        self.store = OutlookDeltaCheckpointStore(
+            service.catalog, crawler.settings["MSGLOOM_SOURCE_ID"]
+        )
+        self.lifecycle = OutlookMailStore(
+            service.catalog,
+            source_id=crawler.settings["MSGLOOM_SOURCE_ID"],
+        )
         self._handled_run_ids: set[str] = set()
 
     @classmethod
@@ -149,6 +158,27 @@ class OutlookDeltaCheckpointExtension:
             raise CloseSpider(reason="delta_incomplete")
 
         try:
+            lifecycle = self.lifecycle.commit_delta_lifecycle(
+                run_id,
+                expected_folder_ids=started,
+                reconcile_messages=spider.reconcile_global,
+            )
+            stats.set_value(
+                "msgloom/catalog/folder_presence_present_count",
+                lifecycle["folders_present"],
+            )
+            stats.set_value(
+                "msgloom/catalog/folder_presence_absent_count",
+                lifecycle["folders_absent"],
+            )
+            stats.set_value(
+                "msgloom/catalog/message_presence_present_count",
+                lifecycle["messages_present"],
+            )
+            stats.set_value(
+                "msgloom/catalog/message_presence_absent_count",
+                lifecycle["messages_absent"],
+            )
             committed = self.store.commit(run_id)
         except Exception as exc:
             stats.inc_value("msgloom/checkpoint/error_count")

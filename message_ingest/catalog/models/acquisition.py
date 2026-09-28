@@ -21,6 +21,20 @@ class SourceBinding(Base):
     bound_at: Mapped[str] = mapped_column(String(40))
 
 
+class SourceTargetBinding(Base):
+    """Stable logical source bound to one hashed provider resource target."""
+
+    __tablename__ = "source_target_bindings"
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(64), index=True)
+    resource_kind: Mapped[str] = mapped_column(String(96), index=True)
+    key_scheme: Mapped[str] = mapped_column(String(96))
+    target_key_sha256: Mapped[str] = mapped_column(String(64), index=True)
+    binding_method: Mapped[str] = mapped_column(String(32))
+    bound_at: Mapped[str] = mapped_column(String(40))
+
+
 class RawHttpEvidence(Base):
     """
     One captured exchange, with credential-free headers and digest-named
@@ -55,4 +69,4 @@ class RawHttpEvidence(Base):
     error_message: Mapped[str | None] = mapped_column(Text)
 
 
-__all__ = ["RawHttpEvidence", "SourceBinding"]
+__all__ = ["RawHttpEvidence", "SourceBinding", "SourceTargetBinding"]

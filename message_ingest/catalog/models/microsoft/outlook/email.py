@@ -109,6 +109,122 @@ class MailFolderRecord(Base):
     latest_evidence_id: Mapped[str | None] = mapped_column(String(32))
 
 
+class MailFolderPresence(Base):
+    """Current mailbox presence for a folder, separate from historical metadata."""
+
+    __tablename__ = "mail_folder_presence"
+    __table_args__ = (UniqueConstraint("source_id", "folder_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    folder_id: Mapped[str] = mapped_column(Text, index=True)
+    is_present: Mapped[bool] = mapped_column(Boolean, index=True)
+    removed_reason: Mapped[str | None] = mapped_column(String(80))
+    latest_run_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    latest_observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    latest_evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+
+
+class MailFolderSighting(Base):
+    """One folder seen during a complete recursive inventory run."""
+
+    __tablename__ = "mail_folder_sightings"
+    __table_args__ = (UniqueConstraint("source_id", "run_id", "folder_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    folder_id: Mapped[str] = mapped_column(Text, index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+
+
+class MailFolderSnapshotCandidate(Base):
+    """Terminal recursive folder inventory awaiting idle-time promotion."""
+
+    __tablename__ = "mail_folder_snapshot_candidates"
+    __table_args__ = (UniqueConstraint("source_id", "run_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    committed_at: Mapped[str | None] = mapped_column(String(40))
+
+
+class MessagePresence(Base):
+    """Current whole-mailbox presence, independent of per-folder removals."""
+
+    __tablename__ = "message_presence"
+    __table_args__ = (UniqueConstraint("source_id", "message_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    message_id: Mapped[str] = mapped_column(Text, index=True)
+    is_present: Mapped[bool] = mapped_column(Boolean, index=True)
+    reason: Mapped[str] = mapped_column(String(80), index=True)
+    latest_run_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    latest_observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    latest_evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+
+
+class MessagePresenceSighting(Base):
+    """One lightweight whole-mailbox reconciliation sighting."""
+
+    __tablename__ = "message_presence_sightings"
+    __table_args__ = (UniqueConstraint("source_id", "run_id", "message_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    message_id: Mapped[str] = mapped_column(Text, index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+
+
+class MessagePresenceCandidate(Base):
+    """Terminal mailbox reconciliation awaiting idle-time presence promotion."""
+
+    __tablename__ = "message_presence_candidates"
+    __table_args__ = (UniqueConstraint("source_id", "run_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    committed_at: Mapped[str | None] = mapped_column(String(40))
+
+
+class FolderDeltaCheckpoint(Base):
+    """Committed Graph cursor for the mailbox mailFolder delta collection."""
+
+    __tablename__ = "folder_delta_checkpoints"
+    __table_args__ = (UniqueConstraint("source_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    delta_link: Mapped[str] = mapped_column(Text)
+    committed_at: Mapped[str] = mapped_column(String(40))
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+
+
+class FolderDeltaCheckpointCandidate(Base):
+    """Uncommitted terminal mailFolder delta cursor for one crawl run."""
+
+    __tablename__ = "folder_delta_checkpoint_candidates"
+    __table_args__ = (UniqueConstraint("source_id", "run_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(String(200), index=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    delta_link: Mapped[str] = mapped_column(Text)
+    evidence_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    observed_at: Mapped[str] = mapped_column(String(40), index=True)
+    committed_at: Mapped[str | None] = mapped_column(String(40))
+
+
 class DeltaCheckpoint(Base):
     """Committed provider cursor safe for the next independent delta run."""
 
@@ -145,8 +261,16 @@ __all__ = [
     "AttachmentRecord",
     "DeltaCheckpoint",
     "DeltaCheckpointCandidate",
+    "FolderDeltaCheckpoint",
+    "FolderDeltaCheckpointCandidate",
+    "MailFolderPresence",
     "MailFolderRecord",
+    "MailFolderSighting",
+    "MailFolderSnapshotCandidate",
     "MessageObservation",
+    "MessagePresence",
+    "MessagePresenceCandidate",
+    "MessagePresenceSighting",
     "MessageRecord",
     "MessageSurface",
 ]

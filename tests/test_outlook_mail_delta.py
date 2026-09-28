@@ -24,9 +24,11 @@ from message_ingest.extensions.microsoft.outlook.email.checkpoint import (
 from message_ingest.items.acquisition import AcquisitionFailureItem
 from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
+    OutlookFolderSnapshotCandidateItem,
     OutlookMailFolderItem,
     OutlookMailItem,
     OutlookMailRemovalItem,
+    OutlookMessagePresenceCandidateItem,
 )
 from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
@@ -191,6 +193,33 @@ def test_successful_idle_commits_all_sqlalchemy_candidates_atomically(
     spider._persist_execution_state()
 
     pipeline = OutlookMailPipeline.from_crawler(crawler)
+    for item in (
+        OutlookMailFolderItem(
+            folder_id="folder-inbox",
+            display_name="Inbox",
+            parent_folder_id=None,
+            child_folder_count=0,
+            total_item_count=0,
+            unread_item_count=0,
+            is_hidden=False,
+            raw={"id": "folder-inbox"},
+            source_response_url="https://graph.microsoft.com/v1.0/me/mailFolders",
+            observed_at="2026-09-26T00:00:00+00:00",
+            evidence_id=None,
+            run_id=spider.run_id,
+        ),
+        OutlookFolderSnapshotCandidateItem(
+            run_id=spider.run_id,
+            observed_at="2026-09-26T00:00:00+00:00",
+            evidence_id=None,
+        ),
+        OutlookMessagePresenceCandidateItem(
+            run_id=spider.run_id,
+            observed_at="2026-09-26T00:00:00+00:00",
+            evidence_id=None,
+        ),
+    ):
+        asyncio.run(pipeline.process_item(item))
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(

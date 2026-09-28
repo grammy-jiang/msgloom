@@ -14,6 +14,12 @@ from message_ingest.acquisition.source_identity import (
     SourceIdentityError,
     SourceIdentityService,
 )
+from message_ingest.acquisition.source_target import (
+    SELF_MAILBOX_KEY,
+    SourceTargetBindingService,
+    SourceTargetError,
+    SourceTargetIdentity,
+)
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from microsoft_graph import PROVIDER_ID
 from microsoft_graph.auth.accounts import (
@@ -110,6 +116,22 @@ class MicrosoftGraphSourceIdentityExtension:
             session = MicrosoftGraphAuthSession.from_crawler(self.crawler)
             session.attach_account_binding(_SourceIdentityAccountBinding(service))
             await session.establish_account_binding()
+            if spider.mailbox_targeted:
+                mailbox = self.crawler.settings.get("MSGLOOM_TARGET_MAILBOX", "") or ""
+                if not isinstance(mailbox, str):
+                    raise TypeError("MSGLOOM_TARGET_MAILBOX must be a string")
+                target = SourceTargetIdentity(
+                    provider=PROVIDER_ID,
+                    resource_kind="outlook_mailbox",
+                    key_scheme="graph-mailbox-locator/sha256-v1",
+                    target_key=mailbox or SELF_MAILBOX_KEY,
+                )
+                SourceTargetBindingService.from_crawler(self.crawler).bind_or_verify(
+                    target
+                )
+                self.crawler.stats.set_value(
+                    "msgloom/source_target/gate_state", "verified"
+                )
             self.crawler.stats.set_value(
                 "msgloom/source_identity/gate_state",
                 "verified",
@@ -129,7 +151,7 @@ class MicrosoftGraphSourceIdentityExtension:
                 "SourceIdentityBootstrapRequired",
                 log_error=False,
             )
-        except (MicrosoftGraphAuthError, SourceIdentityError) as exc:
+        except (MicrosoftGraphAuthError, SourceIdentityError, SourceTargetError) as exc:
             self._fail(
                 spider,
                 type(exc).__name__,

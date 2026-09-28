@@ -23,6 +23,7 @@ def test_spider_packages_expose_only_declared_public_surfaces() -> None:
     if email.__all__ != [
         "OutlookDeltaSpider",
         "OutlookDiscoverSpider",
+        "OutlookFolderDeltaSpider",
         "OutlookFullSpider",
     ]:
         pytest.fail(f"Unexpected Outlook email exports: {email.__all__!r}")

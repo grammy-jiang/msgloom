@@ -7,6 +7,7 @@ from typing import Any
 from urllib.parse import quote, urlencode
 
 import scrapy
+from scrapy.exceptions import DownloadCancelledError
 from scrapy.http import Response, TextResponse
 from twisted.python.failure import Failure
 
@@ -182,6 +183,28 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         purpose = callback_data.get("purpose", "unknown")
         evidence = self._failure_evidence_item(failure)
         yield evidence
+        if failure.check(DownloadCancelledError) and purpose in {
+            "message-mime",
+            "attachments-list",
+            "attachment-raw",
+            "item-attachment-detail",
+        }:
+            surface = self._surface_for_purpose(
+                purpose, callback_data.get("attachment_id")
+            )
+            if surface and (message_id := callback_data.get("message_id")):
+                self.crawler.stats.inc_value(
+                    "msgloom/crawl/enrichment/download_size_limit_omission_count"
+                )
+                yield OutlookMessageSurfaceItem(
+                    message_id=message_id,
+                    surface=surface,
+                    status="omitted_size_limit",
+                    observed_at=evidence.observed_at,
+                    evidence_id=evidence.evidence_id,
+                    profile_version=FULL_V1,
+                )
+                return
         terminal_status = {
             401: "unauthorized",
             403: "unauthorized",
@@ -308,7 +331,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         encoded_id = quote(message_id, safe="")
         query = urlencode({"$select": ",".join(self.full_fields)})
         return self._request(
-            f"{self.graph_root}/me/messages/{encoded_id}?{query}",
+            self._mailbox_url(f"/messages/{encoded_id}?{query}"),
             callback=self.parse_message_detail,
             purpose="message-detail",
             cb_kwargs={"message_id": message_id},
@@ -321,9 +344,10 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         """
         encoded_id = quote(message_id, safe="")
         return self._request(
-            f"{self.graph_root}/me/messages/{encoded_id}/$value",
+            self._mailbox_url(f"/messages/{encoded_id}/$value"),
             callback=self.parse_raw_evidence,
             purpose="message-mime",
             cb_kwargs={"message_id": message_id},
             accept="message/rfc822, */*",
+            download_maxsize=self._max_raw_content_bytes(),
         )

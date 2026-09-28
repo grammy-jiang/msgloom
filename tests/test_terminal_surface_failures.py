@@ -20,8 +20,11 @@ from message_ingest.items.microsoft.outlook.email import OutlookMessageSurfaceIt
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 
 
-def _spider() -> OutlookFullSpider:
-    crawler = get_crawler(OutlookFullSpider)
+def _spider(*, max_raw_content_bytes: int | None = None) -> OutlookFullSpider:
+    settings = {}
+    if max_raw_content_bytes is not None:
+        settings["MSGLOOM_MAX_RAW_CONTENT_BYTES"] = max_raw_content_bytes
+    crawler = get_crawler(OutlookFullSpider, settings_dict=settings)
     return OutlookFullSpider.from_crawler(crawler, message_ids="m1")
 
 
@@ -102,4 +105,28 @@ def test_server_error_remains_failure_not_terminal_surface() -> None:
     if not any(isinstance(value, AcquisitionFailureItem) for value in output):
         pytest.fail(
             "Expected: any(isinstance(value, AcquisitionFailureItem) for value in output)"
+        )
+
+
+def test_download_size_cancellation_becomes_terminal_omission_not_run_failure() -> None:
+    from scrapy.exceptions import DownloadCancelledError
+
+    spider = _spider(max_raw_content_bytes=10)
+    request = spider._message_mime_request("m1")
+    failure = Failure(DownloadCancelledError("response exceeds configured maxsize"))
+    failure.__dict__["request"] = request
+    output = list(spider.errback(failure))
+
+    surface = next(
+        value for value in output if isinstance(value, OutlookMessageSurfaceItem)
+    )
+    if surface.surface != "mime" or surface.status != "omitted_size_limit":
+        pytest.fail("Expected maxsize cancellation to become MIME size omission")
+    if any(isinstance(value, AcquisitionFailureItem) for value in output):
+        pytest.fail(
+            "Policy size omission must not become a generic acquisition failure"
+        )
+    if spider.run_failed:
+        pytest.fail(
+            "Policy size omission must not fail the logical full-acquisition run"
         )

@@ -14,6 +14,7 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarEventSighting,
     CalendarEventSurface,
     CalendarRecord,
+    CalendarSeriesTopologyRecord,
 )
 
 
@@ -29,6 +30,8 @@ class CalendarEventPlanningState(TypedDict):
     event_id: str
     calendar_id: str
     resource_version: str | None
+    event_type: str | None
+    series_master_id: str | None
     latest_observed_at: str
 
 
@@ -115,8 +118,37 @@ class CalendarPlanningStore:
                 "event_id": row.event_id,
                 "calendar_id": row.calendar_id,
                 "resource_version": row.change_key,
+                "event_type": row.event_type,
+                "series_master_id": row.series_master_id,
                 "latest_observed_at": row.latest_observed_at,
             }
+
+    def series_topology_covers(
+        self,
+        *,
+        series_master_id: str,
+        observed_at: str,
+    ) -> bool:
+        """Return whether terminal topology state is at least as fresh as the event."""
+        with self.catalog.Session() as session:
+            row = session.scalar(
+                select(CalendarSeriesTopologyRecord).filter_by(
+                    source_id=self.source_id,
+                    series_master_id=series_master_id,
+                )
+            )
+            if row is None:
+                return False
+            if row.status not in {
+                "acquired",
+                "unsupported",
+                "unauthorized",
+                "unavailable",
+            }:
+                return False
+            return self._capture_time(row.latest_observed_at) >= self._capture_time(
+                observed_at
+            )
 
     def get_event_surfaces(
         self,

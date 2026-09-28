@@ -28,12 +28,18 @@ def _spider(
     event_ids: str = "event-1",
     calendar_id: str = "",
     page_size: str = "100",
+    max_raw_content_bytes: int | None = None,
 ) -> OutlookCalendarFullSpider:
     crawler = get_crawler(
         OutlookCalendarFullSpider,
         settings_dict={
             "MSGLOOM_CATALOG_ENABLED": True,
             "MSGLOOM_SOURCE_IDENTITY_REQUIRED": False,
+            **(
+                {"MSGLOOM_MAX_RAW_CONTENT_BYTES": max_raw_content_bytes}
+                if max_raw_content_bytes is not None
+                else {}
+            ),
         },
     )
     spider = OutlookCalendarFullSpider.from_crawler(
@@ -281,3 +287,131 @@ def test_expanded_item_keeps_nested_bytes_in_evidence_only() -> None:
         pytest.fail("Expected item attachment detail surface")
     if surface.surface != "item_attachment_detail:item-1":
         pytest.fail("Expected item attachment detail surface key")
+
+
+def test_recurring_event_detail_requests_expanded_series_master_topology() -> None:
+    spider = _spider()
+    request = spider._event_detail_request("occurrence-1")
+    output = list(
+        spider.parse_event_detail(
+            _response(
+                request,
+                {
+                    "id": "occurrence-1",
+                    "changeKey": "occ-v1",
+                    "type": "occurrence",
+                    "seriesMasterId": "series-1",
+                    "subject": "Recurring",
+                },
+            ),
+            **request.cb_kwargs,
+        )
+    )
+    topology = next(
+        value
+        for value in output
+        if isinstance(value, Request)
+        and value.cb_kwargs.get("purpose") == "calendar-series-master"
+    )
+    if urlsplit(topology.url).path != "/v1.0/me/events/series-1":
+        pytest.fail(f"Unexpected series-master path: {topology.url!r}")
+    query = parse_qs(urlsplit(topology.url).query)
+    if query.get("$expand") != ["exceptionOccurrences"]:
+        pytest.fail("Expected expanded exceptionOccurrences")
+    selected = query.get("$select", [""])[0]
+    for field in ("exceptionOccurrences", "cancelledOccurrences", "occurrenceId"):
+        if field not in selected:
+            pytest.fail(f"Expected {field} in series-master select")
+
+
+def test_series_master_callback_emits_shared_topology_item() -> None:
+    from message_ingest.items.microsoft.outlook.calendar import (
+        OutlookCalendarSeriesTopologyItem,
+    )
+
+    spider = _spider(calendar_id="calendar-1")
+    request = spider._series_master_request("series-1")
+    payload = {
+        "id": "series-1",
+        "changeKey": "master-v2",
+        "type": "seriesMaster",
+        "cancelledOccurrences": ["occurrence-id-1"],
+        "exceptionOccurrences": [
+            {
+                "id": "exception-1",
+                "occurrenceId": "occurrence-id-2",
+                "subject": "Moved occurrence",
+            }
+        ],
+    }
+    output = list(
+        spider.parse_series_master(
+            _response(request, payload),
+            **request.cb_kwargs,
+        )
+    )
+    topology = next(
+        value
+        for value in output
+        if isinstance(value, OutlookCalendarSeriesTopologyItem)
+    )
+    if topology.series_master_id != "series-1" or topology.status != "acquired":
+        pytest.fail("Expected acquired shared series topology")
+    if topology.calendar_id != "calendar-1":
+        pytest.fail("Expected containing calendar scope on series topology")
+    if topology.raw != payload:
+        pytest.fail("Expected exact expanded series master payload")
+
+
+def test_calendar_attachment_inventory_requests_metadata_only_and_caps_response() -> (
+    None
+):
+    spider = _spider(max_raw_content_bytes=2048)
+    request = spider._attachments_request("event-1", page_number=1)
+    query = parse_qs(urlsplit(request.url).query)
+    selected = set(query["$select"][0].split(","))
+    if "contentBytes" in selected:
+        pytest.fail("Calendar attachment inventory must not request contentBytes")
+    if request.meta.get("download_maxsize") != 2048:
+        pytest.fail("Expected native maxsize on Calendar attachment inventory")
+
+
+def test_calendar_known_oversized_item_attachment_is_terminal_without_requests() -> (
+    None
+):
+    spider = _spider(max_raw_content_bytes=100)
+    request = spider._attachments_request(
+        "event-1", page_number=1, resource_version="v1"
+    )
+    output = list(
+        spider.parse_attachments(
+            _response(
+                request,
+                {
+                    "value": [
+                        {
+                            "@odata.type": "#microsoft.graph.itemAttachment",
+                            "id": "large-item",
+                            "name": "large.eml",
+                            "size": 101,
+                            "isInline": False,
+                        }
+                    ]
+                },
+            ),
+            **request.cb_kwargs,
+        )
+    )
+    if any(isinstance(value, Request) for value in output):
+        pytest.fail("Known oversized Calendar attachment must not schedule content")
+    surfaces = {
+        value.surface: value.status
+        for value in output
+        if isinstance(value, OutlookCalendarEventSurfaceItem)
+    }
+    if surfaces.get("attachment_raw:large-item") != "omitted_size_limit":
+        pytest.fail("Expected Calendar raw attachment size omission")
+    if surfaces.get("item_attachment_detail:large-item") != "omitted_size_limit":
+        pytest.fail("Expected Calendar item-detail size omission")
+    if surfaces.get("attachments") != "acquired":
+        pytest.fail("Calendar attachment inventory should remain acquired")

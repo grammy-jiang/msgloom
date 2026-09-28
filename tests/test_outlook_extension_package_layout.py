@@ -16,6 +16,7 @@ def test_outlook_mail_extension_surface_is_resource_scoped() -> None:
     if email.__all__ != [
         "OutlookCrawlStatusExtension",
         "OutlookDeltaCheckpointExtension",
+        "OutlookFolderDeltaCheckpointExtension",
     ]:
         pytest.fail(f"Unexpected Outlook Mail extension exports: {email.__all__!r}")
     if OutlookCrawlStatusExtension.__module__ != (

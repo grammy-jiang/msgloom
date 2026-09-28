@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 from message_ingest.catalog.models import Base
-from message_ingest.catalog.models.acquisition import RawHttpEvidence, SourceBinding
+from message_ingest.catalog.models.acquisition import (
+    RawHttpEvidence,
+    SourceBinding,
+    SourceTargetBinding,
+)
 from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarDeltaCheckpoint,
     CalendarDeltaCheckpointCandidate,
@@ -19,13 +23,22 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarEventSighting,
     CalendarEventSurface,
     CalendarRecord,
+    CalendarSeriesTopologyRecord,
 )
 from message_ingest.catalog.models.microsoft.outlook.email import (
     AttachmentRecord,
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    FolderDeltaCheckpoint,
+    FolderDeltaCheckpointCandidate,
+    MailFolderPresence,
     MailFolderRecord,
+    MailFolderSighting,
+    MailFolderSnapshotCandidate,
     MessageObservation,
+    MessagePresence,
+    MessagePresenceCandidate,
+    MessagePresenceSighting,
     MessageRecord,
     MessageSurface,
 )
@@ -42,6 +55,15 @@ EXPECTED_TABLES = {
     "calendar_event_surfaces",
     "calendar_events",
     "calendars",
+    "message_presence_sightings",
+    "message_presence_candidates",
+    "message_presence",
+    "mail_folder_snapshot_candidates",
+    "mail_folder_sightings",
+    "mail_folder_presence",
+    "folder_delta_checkpoints",
+    "folder_delta_checkpoint_candidates",
+    "calendar_series_topologies",
     "delta_checkpoint_candidates",
     "delta_checkpoints",
     "mail_folders",
@@ -50,6 +72,7 @@ EXPECTED_TABLES = {
     "messages",
     "raw_http_evidence",
     "source_bindings",
+    "source_target_bindings",
 }
 
 
@@ -63,6 +86,7 @@ def test_model_package_registers_complete_existing_schema() -> None:
 def test_models_live_in_expected_domain_modules() -> None:
     expected = {
         SourceBinding: "message_ingest.catalog.models.acquisition",
+        SourceTargetBinding: "message_ingest.catalog.models.acquisition",
         RawHttpEvidence: "message_ingest.catalog.models.acquisition",
         CalendarRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarEventRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
@@ -74,6 +98,15 @@ def test_models_live_in_expected_domain_modules() -> None:
         CalendarDeltaCheckpointCandidate: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarDeltaObservation: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarDeltaEventState: "message_ingest.catalog.models.microsoft.outlook.calendar",
+        MessagePresenceSighting: "message_ingest.catalog.models.microsoft.outlook.email",
+        MessagePresenceCandidate: "message_ingest.catalog.models.microsoft.outlook.email",
+        MessagePresence: "message_ingest.catalog.models.microsoft.outlook.email",
+        MailFolderSnapshotCandidate: "message_ingest.catalog.models.microsoft.outlook.email",
+        MailFolderSighting: "message_ingest.catalog.models.microsoft.outlook.email",
+        MailFolderPresence: "message_ingest.catalog.models.microsoft.outlook.email",
+        FolderDeltaCheckpointCandidate: "message_ingest.catalog.models.microsoft.outlook.email",
+        FolderDeltaCheckpoint: "message_ingest.catalog.models.microsoft.outlook.email",
+        CalendarSeriesTopologyRecord: "message_ingest.catalog.models.microsoft.outlook.calendar",
         MessageRecord: "message_ingest.catalog.models.microsoft.outlook.email",
         MessageObservation: "message_ingest.catalog.models.microsoft.outlook.email",
         MessageSurface: "message_ingest.catalog.models.microsoft.outlook.email",

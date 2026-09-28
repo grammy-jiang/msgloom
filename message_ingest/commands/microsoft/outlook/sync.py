@@ -109,6 +109,10 @@ def run_mail_sync(command: Any, opts) -> None:
         command,
         [
             GraphPhase(
+                "outlook_folder_delta",
+                {"page_size": str(opts.page_size or 25)},
+            ),
+            GraphPhase(
                 "outlook_delta",
                 {
                     "page_size": str(opts.page_size or 25),
@@ -116,7 +120,7 @@ def run_mail_sync(command: Any, opts) -> None:
                 },
                 after=after_delta,
                 accepted_final_statuses=frozenset({"completed"}),
-            )
+            ),
         ],
     )
 

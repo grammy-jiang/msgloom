@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Iterator
-from typing import Any, ClassVar
+from typing import Any
 from urllib.parse import quote
 
 import scrapy
+from scrapy.exceptions import DownloadCancelledError
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 from twisted.python.failure import Failure
@@ -25,17 +26,18 @@ from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventItem,
     OutlookCalendarEventSurfaceItem,
+    OutlookCalendarSeriesTopologyItem,
 )
 
-from ._attachments import OutlookCalendarAttachmentTraversal
+from ._resume_state import CalendarScopedExecutionState, execution_payload
+from ._series import OutlookCalendarSeriesTraversal
 
 
-class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
+class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
     """Refresh rich detail for selected Calendar event IDs."""
 
     name = "outlook_calendar_full"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
-    failure_context_keys = ("event_id", "attachment_id")
+    failure_context_keys = ("event_id", "attachment_id", "series_master_id")
 
     def __init__(
         self,
@@ -72,6 +74,8 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             minimum=1,
             maximum=1000,
         )
+        self.state: dict[str, Any] = {}
+        self._job_resumed = False
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -91,6 +95,12 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             False,
             priority="spider",
         )
+        extensions = settings.getdict("EXTENSIONS")
+        extensions["scrapy.extensions.spiderstate.SpiderState"] = None
+        extensions[
+            "message_ingest.extensions.microsoft.outlook.calendar.resume.CalendarFullSpiderState"
+        ] = 0
+        settings.set("EXTENSIONS", extensions, priority="spider")
         settings.set(
             "ITEM_PIPELINES",
             {
@@ -102,16 +112,13 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
         )
         super().update_settings(settings)
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        """Reject JOBDIR until targeted Calendar resume is explicitly tested."""
-        if crawler.settings.get("JOBDIR"):
-            raise ValueError("Calendar full acquisition does not support JOBDIR yet")
-        return super().from_crawler(crawler, *args, **kwargs)
-
     async def start(self) -> AsyncIterator[Any]:
-        """Refresh all Full-v1 surfaces or schedule only persisted gaps."""
+        """Plan targets idempotently; JOBDIR dupefilter owns saved-request replay."""
+        self._persist_execution_state()
         self.crawler.stats.set_value("msgloom/crawl/mode", "calendar_full")
+        self.crawler.stats.set_value(
+            "msgloom/crawl/calendar/full/job_resumed", self._job_resumed
+        )
         self.crawler.stats.set_value("msgloom/crawl/run_id", self.run_id)
         self.crawler.stats.set_value(
             "msgloom/crawl/calendar/full/target_event_count",
@@ -191,6 +198,8 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             page_number=1,
             resource_version=effective_version,
         )
+        if (series_master_id := self._series_master_id(payload, event_id)) is not None:
+            yield self._series_master_request(series_master_id)
 
     def errback(self, failure: Failure) -> Iterator[Any]:
         """Persist terminal Full-v1 surface outcomes; leave transient gaps pending."""
@@ -198,6 +207,28 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
         purpose = callback_data.get("purpose", "unknown")
         evidence = self._failure_evidence_item(failure)
         yield evidence
+        if failure.check(DownloadCancelledError) and purpose in {
+            "calendar-event-attachments",
+            "calendar-attachment-raw",
+            "calendar-item-attachment-detail",
+        }:
+            surface = self._surface_for_purpose(
+                purpose, callback_data.get("attachment_id")
+            )
+            if surface and (event_id := callback_data.get("event_id")):
+                self.crawler.stats.inc_value(
+                    "msgloom/crawl/calendar/full/download_size_limit_omission_count"
+                )
+                yield OutlookCalendarEventSurfaceItem(
+                    event_id=event_id,
+                    surface=surface,
+                    status="omitted_size_limit",
+                    observed_at=evidence.observed_at,
+                    evidence_id=evidence.evidence_id,
+                    profile_version=FULL_V1,
+                    resource_version=callback_data.get("resource_version"),
+                )
+                return
         terminal_status = {
             401: "unauthorized",
             403: "unauthorized",
@@ -205,6 +236,20 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             410: "unavailable",
             405: "unsupported",
         }.get(evidence.response_status or 0)
+        if (
+            purpose == "calendar-series-master"
+            and terminal_status
+            and (series_master_id := callback_data.get("series_master_id"))
+        ):
+            yield OutlookCalendarSeriesTopologyItem(
+                series_master_id=series_master_id,
+                calendar_id=self.calendar_id or "default",
+                status=terminal_status,
+                raw=None,
+                observed_at=evidence.observed_at,
+                evidence_id=evidence.evidence_id,
+                run_id=self.run_id,
+            )
         surface = self._surface_for_purpose(
             purpose,
             callback_data.get("attachment_id"),
@@ -236,6 +281,40 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             return f"item_attachment_detail:{attachment_id}"
         return None
 
+    def _resume_scope(self) -> dict[str, object]:
+        return {
+            "event_ids": list(self.event_ids),
+            "calendar_id": self.calendar_id,
+            "page_size": self.page_size,
+            "operation": self.operation,
+            "profile": self.profile,
+        }
+
+    def _restore_execution_state(self) -> None:
+        restored, resumed = CalendarScopedExecutionState.restore(
+            self.state.get("msgloom_calendar_full"),
+            expected_scope=self._resume_scope(),
+            default_run_id=self.run_id,
+            label="full",
+        )
+        self.run_id = restored.run_id
+        self._run_failed = restored.run_failed
+        self._failure_reasons = set(restored.failure_reasons)
+        self._job_resumed = resumed
+        self._persist_execution_state()
+
+    def _persist_execution_state(self) -> None:
+        self.state["msgloom_calendar_full"] = execution_payload(
+            run_id=self.run_id,
+            scope=self._resume_scope(),
+            run_failed=self._run_failed,
+            failure_reasons=self._failure_reasons,
+        )
+
+    def mark_run_failed(self, reason: str) -> None:
+        super().mark_run_failed(reason)
+        self._persist_execution_state()
+
     def _load_enrichment_state(self, event_id: str) -> dict[str, Any]:
         catalog = CatalogService.from_crawler(self.crawler).catalog
         store = OutlookCalendarStore(
@@ -243,10 +322,27 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
             source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"],
         )
         event_state = store.get_event_state(event_id=event_id)
+        series_master_id = None
+        topology_current = True
+        if event_state is not None:
+            event_type = event_state["event_type"]
+            series_master_id = event_state["series_master_id"]
+            if event_type == "seriesMaster":
+                series_master_id = event_id
+            if (
+                event_type in {"occurrence", "exception", "seriesMaster"}
+                and series_master_id
+            ):
+                topology_current = store.series_topology_covers(
+                    series_master_id=series_master_id,
+                    observed_at=event_state["latest_observed_at"],
+                )
         return {
             "resource_version": (
                 event_state.get("resource_version") if event_state is not None else None
             ),
+            "series_master_id": series_master_id,
+            "series_topology_current": topology_current,
             "surfaces": store.get_event_surfaces(event_id=event_id),
             "attachments": store.get_event_attachments(event_id=event_id),
         }
@@ -263,6 +359,10 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
                 event_id,
                 resource_version=resource_version,
             )
+        if (series_master_id := state["series_master_id"]) and not state[
+            "series_topology_current"
+        ]:
+            yield self._series_master_request(series_master_id)
         if not surface_is_complete(
             surfaces,
             "attachments",
@@ -333,6 +433,6 @@ class OutlookCalendarFullSpider(OutlookCalendarAttachmentTraversal):
         """Return an event path scoped to default or one named calendar."""
         encoded_event = quote(event_id, safe="")
         if not self.calendar_id:
-            return f"/me/events/{encoded_event}"
+            return f"{self._mailbox_path()}/events/{encoded_event}"
         encoded_calendar = quote(self.calendar_id, safe="")
-        return f"/me/calendars/{encoded_calendar}/events/{encoded_event}"
+        return f"{self._mailbox_path()}/calendars/{encoded_calendar}/events/{encoded_event}"

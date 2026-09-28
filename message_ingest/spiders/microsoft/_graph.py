@@ -35,17 +35,20 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
     graph_root = GRAPH_ROOT
     failure_context_keys: ClassVar[tuple[str, ...]] = ()
     graph_permissions: ClassVar[tuple[str, ...]] = ()
+    mailbox_targeted: ClassVar[bool] = False
+
+    @classmethod
+    def required_graph_permissions(cls, settings: BaseSettings) -> tuple[str, ...]:
+        """Return provider scopes after final command/settings targeting is known."""
+        return cls.graph_permissions
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
         """Translate resource permissions into shared Graph auth settings."""
         settings.set("MS_GRAPH_AUTH_ENABLED", True, priority="spider")
-        if cls.graph_permissions:
-            settings.set(
-                "MS_GRAPH_SCOPES",
-                list(cls.graph_permissions),
-                priority="spider",
-            )
+        scopes = cls.required_graph_permissions(settings)
+        if scopes:
+            settings.set("MS_GRAPH_SCOPES", list(scopes), priority="spider")
         super().update_settings(settings)
 
     def __init__(self, *args, **kwargs) -> None:
@@ -148,6 +151,22 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
             f"msgloom/crawl/integrity_failure_reason_count/{reason}"
         )
 
+    def _max_raw_content_bytes(self) -> int:
+        """Return the configured binary/raw-response cap; zero means unlimited."""
+        value = self.crawler.settings.getint("MSGLOOM_MAX_RAW_CONTENT_BYTES", 0)
+        if value < 0:
+            raise ValueError("MSGLOOM_MAX_RAW_CONTENT_BYTES must be >= 0")
+        return value
+
+    def _attachment_size_exceeds_limit(self, size: object) -> bool:
+        limit = self._max_raw_content_bytes()
+        return (
+            limit > 0
+            and isinstance(size, int)
+            and not isinstance(size, bool)
+            and size > limit
+        )
+
     def _request(
         self,
         url: str,
@@ -159,6 +178,7 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
         accept: str = "application/json",
         dont_cache: bool = False,
         prefer: str | None = None,
+        download_maxsize: int | None = None,
     ) -> scrapy.Request:
         """
         Build a serializable Graph request with explicit callback context.
@@ -175,6 +195,8 @@ class MicrosoftGraphSpider(scrapy.Spider, ABC):
             meta["verbatim_url"] = True
         if dont_cache:
             meta["dont_cache"] = True
+        if download_maxsize is not None:
+            meta["download_maxsize"] = download_maxsize
         return scrapy.Request(
             url,
             callback=callback,

@@ -69,12 +69,11 @@ class OutlookDiscoverSpider(OutlookMailSpider):
             }
         )
         if self.folder:
-            base_url = (
-                f"{self.graph_root}/me/mailFolders/"
-                f"{quote(self.folder, safe='')}/messages"
+            base_url = self._mailbox_url(
+                f"/mailFolders/{quote(self.folder, safe='')}/messages"
             )
         else:
-            base_url = f"{self.graph_root}/me/messages"
+            base_url = self._mailbox_url("/messages")
         yield self._message_list_request(f"{base_url}?{query}", page_number=1)
 
     def parse(
