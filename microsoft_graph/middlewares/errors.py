@@ -60,10 +60,20 @@ class MicrosoftGraphErrorMiddleware:
             crawler.settings, default=self.default_stats_prefix
         )
         self.graph_host = graph_host(crawler)
+        # Consumers can retain counters serialized in existing JOBDIRs.
+        self.retry_meta_key = crawler.settings.get(
+            "MS_GRAPH_ERROR_RETRY_META_KEY", self.retry_meta_key
+        )
         self.retry_http_codes = {
             int(code)
             for code in crawler.settings.getlist(
                 "MS_GRAPH_ERROR_RETRY_HTTP_CODES", self.default_retry_http_codes
+            )
+        }
+        self.retry_409_codes = {
+            code.casefold()
+            for code in crawler.settings.getlist(
+                "MS_GRAPH_ERROR_RETRY_409_CODES", ["Directory_ConcurrencyViolation"]
             )
         }
 
@@ -167,16 +177,12 @@ class MicrosoftGraphErrorMiddleware:
 
     def _should_retry(self, status: int, graph_codes: tuple[str, ...]) -> bool:
         """
-        Retry throttling/service pressure and only the documented transient
-        Graph 409 code.
+        Retry configured HTTP statuses and provider-specific 409 codes.
         """
         if status in self.retry_http_codes:
             return True
         if status == 409:
-            return any(
-                code.casefold() == "directory_concurrencyviolation"
-                for code in graph_codes
-            )
+            return any(code.casefold() in self.retry_409_codes for code in graph_codes)
         return False
 
     def _retry_request(

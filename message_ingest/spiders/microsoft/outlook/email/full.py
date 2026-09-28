@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
-from urllib.parse import quote, urlencode
 
 import scrapy
 from scrapy.exceptions import DownloadCancelledError
@@ -23,24 +22,15 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMailDetailItem,
     OutlookMessageSurfaceItem,
 )
+from microsoft_graph.protocol import graph_object
 
 from ._attachments import OutlookAttachmentTraversal
-from ._base import OutlookMailSpider
 
 
 class OutlookFullSpider(OutlookAttachmentTraversal):
     """Acquire or enrich the Full-profile surfaces of selected messages."""
 
     name = "outlook_full"
-
-    full_fields = OutlookMailSpider.discovery_fields + (
-        "body",
-        "changeKey",
-        "internetMessageHeaders",
-        "isDeliveryReceiptRequested",
-        "isReadReceiptRequested",
-        "uniqueBody",
-    )
 
     def __init__(
         self,
@@ -128,7 +118,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         self.crawler.stats.inc_value("msgloom/crawl/enrichment/message_detail_count")
         yield OutlookMailDetailItem(
             message_id=message_id,
-            raw=response.json(),
+            raw=graph_object(response.json(), context="Outlook message detail"),
             source_response_url=response.url,
             observed_at=evidence.observed_at,
             evidence_id=evidence.evidence_id,
@@ -328,10 +318,8 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         Acquire full JSON fields without changing the shared discovery
         representation.
         """
-        encoded_id = quote(message_id, safe="")
-        query = urlencode({"$select": ",".join(self.full_fields)})
         return self._request(
-            self._mailbox_url(f"/messages/{encoded_id}?{query}"),
+            self.message_path(message_id, fields=self.full_fields),
             callback=self.parse_message_detail,
             purpose="message-detail",
             cb_kwargs={"message_id": message_id},
@@ -342,9 +330,8 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         Acquire the MIME representation with its own request fingerprint
         headers.
         """
-        encoded_id = quote(message_id, safe="")
         return self._request(
-            self._mailbox_url(f"/messages/{encoded_id}/$value"),
+            self.message_mime_path(message_id),
             callback=self.parse_raw_evidence,
             purpose="message-mime",
             cb_kwargs={"message_id": message_id},

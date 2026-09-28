@@ -39,22 +39,18 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
             'Expected: "scrapy.downloadermiddlewares.retry.RetryMiddleware" not in middlewares'
         )
     if (
-        middlewares[
-            "message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware"
-        ]
+        middlewares["microsoft_graph.middlewares.retry.PrivacySafeRetryMiddleware"]
         != 550
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware"] == 550'
+            'Expected: middlewares["microsoft_graph.middlewares.retry.PrivacySafeRetryMiddleware"] == 550'
         )
     if (
-        middlewares[
-            "message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"
-        ]
+        middlewares["microsoft_graph.middlewares.errors.MicrosoftGraphErrorMiddleware"]
         != 555
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware"] == 555'
+            'Expected: middlewares["microsoft_graph.middlewares.errors.MicrosoftGraphErrorMiddleware"] == 555'
         )
     if middlewares["scrapy.downloadermiddlewares.stats.DownloaderStats"] != 850:
         pytest.fail(
@@ -62,12 +58,12 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
         )
     if (
         middlewares[
-            "message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
+            "microsoft_graph.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"
         ]
         != 960
     ):
         pytest.fail(
-            'Expected: middlewares["message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
+            'Expected: middlewares["microsoft_graph.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware"] == 960'
         )
     if middlewares["scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware"] != 900:
         pytest.fail(

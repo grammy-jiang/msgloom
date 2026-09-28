@@ -18,15 +18,15 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.middlewares.microsoft_graph.errors import (
-    PrivacySafeRetryMiddleware,
-)
 from microsoft_graph.auth.session import (
     MicrosoftGraphAuthSession,
 )
 from microsoft_graph.middlewares.authentication import (
     MicrosoftGraphDeviceCodeAuthMiddleware,
     MicrosoftGraphInteractiveAuthMiddleware,
+)
+from microsoft_graph.middlewares.retry import (
+    PrivacySafeRetryMiddleware,
 )
 
 
@@ -35,6 +35,9 @@ def _settings(
 ) -> dict:
     return {
         "MS_GRAPH_AUTH_ENABLED": True,
+        "MS_GRAPH_STATS_PREFIX": "msgloom",
+        "MS_GRAPH_AUTH_RETRY_META_KEY": "_msgloom_ms_auth_retry",
+        "MS_GRAPH_AUTH_FORCE_REFRESH_META_KEY": "_msgloom_ms_force_refresh",
         "MS_GRAPH_AUTH_METHOD": auth_method,
         "MS_GRAPH_CLIENT_ID": "test-client-id",
         "MS_GRAPH_AUTHORITY": "https://login.microsoftonline.com/common",
@@ -359,6 +362,7 @@ def test_transport_retry_does_not_serialize_bearer_token() -> None:
     auth = MicrosoftGraphDeviceCodeAuthMiddleware(
         cast(MicrosoftGraphAuthSession, FakeSession()),
         stats=crawler.stats,
+        stats_namespace="msgloom",
     )
     retry = PrivacySafeRetryMiddleware.from_crawler(crawler)
     manager = DownloaderMiddlewareManager(retry, auth, crawler=crawler)
@@ -405,6 +409,7 @@ def test_https_to_http_graph_redirect_is_refused_without_token() -> None:
     auth = MicrosoftGraphDeviceCodeAuthMiddleware(
         cast(MicrosoftGraphAuthSession, FakeSession()),
         stats=crawler.stats,
+        stats_namespace="msgloom",
     )
     redirect = RedirectMiddleware.from_crawler(crawler)
     original = Request(

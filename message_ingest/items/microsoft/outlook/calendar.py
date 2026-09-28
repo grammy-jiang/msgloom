@@ -5,24 +5,30 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from microsoft_graph.items.outlook import (
+    OutlookCalendarAttachmentItem as GraphOutlookCalendarAttachmentItem,
+)
+from microsoft_graph.items.outlook import (
+    OutlookCalendarItem as GraphOutlookCalendarItem,
+)
+from microsoft_graph.items.outlook import (
+    OutlookEventItem as GraphOutlookEventItem,
+)
+
 
 @dataclass(slots=True)
-class OutlookCalendarItem:
+class OutlookCalendarItem(GraphOutlookCalendarItem):
     """One observation of a calendar visible to the signed-in user."""
 
-    calendar_id: str
-    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
 
 
 @dataclass(slots=True)
-class OutlookCalendarEventItem:
+class OutlookCalendarEventItem(GraphOutlookEventItem):
     """One observation of an event in a declared Calendar scope."""
 
-    event_id: str
-    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None
@@ -31,13 +37,9 @@ class OutlookCalendarEventItem:
 
 
 @dataclass(slots=True)
-class OutlookCalendarAttachmentItem:
+class OutlookCalendarAttachmentItem(GraphOutlookCalendarAttachmentItem):
     """One attachment metadata/content observation for a Calendar event."""
 
-    event_id: str
-    attachment_id: str
-    attachment_type: str | None
-    raw: dict[str, Any]
     observed_at: str
     evidence_id: str | None
     run_id: str | None

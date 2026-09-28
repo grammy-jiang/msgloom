@@ -14,6 +14,8 @@ from uuid import uuid4
 import msal
 from scrapy.exceptions import NotConfigured
 
+from microsoft_graph.stats import stats_prefix
+
 from .accounts import (
     MicrosoftGraphAuthError,
     account_key,
@@ -31,7 +33,7 @@ from .management import (
 )
 
 logger = logging.getLogger(__name__)
-_SESSION_ATTR = "_msgloom_microsoft_graph_auth_session"
+_SESSION_ATTR = "_microsoft_graph_auth_session"
 _SAFE_ERROR_CODE = re.compile(r"[A-Za-z0-9_.-]{1,96}")
 
 
@@ -50,6 +52,7 @@ class MicrosoftGraphAuthSession:
         allow_interactive: bool,
         account_binding: MicrosoftGraphAccountBinding | None = None,
         stats=None,
+        stats_namespace: str = "microsoft_graph",
     ) -> None:
         """Load cache state while deferring application construction."""
         self.client_id = client_id
@@ -61,6 +64,7 @@ class MicrosoftGraphAuthSession:
         self.allow_interactive = allow_interactive
         self.account_binding = account_binding
         self.stats = stats
+        self.stats_prefix = stats_prefix({"MS_GRAPH_STATS_PREFIX": stats_namespace})
         self.token_cache_path = Path(token_cache_path)
         self.token_cache = msal.SerializableTokenCache()
         cache_exists = self.token_cache_path.exists()
@@ -75,9 +79,9 @@ class MicrosoftGraphAuthSession:
         self._expires_at = 0.0
         self._account_binding_ready = account_binding is None
         self._lock = asyncio.Lock()
-        self._set("msgloom/auth/method", auth_method)
-        self._set("msgloom/auth/application_mode", self.application_mode)
-        self._set("msgloom/auth/token_cache_loaded", cache_exists)
+        self._set("method", auth_method)
+        self._set("application_mode", self.application_mode)
+        self._set("token_cache_loaded", cache_exists)
         logger.info(
             "Microsoft authentication configured: application_mode=%s "
             "application=%s auth_method=%s token_cache=%s",
@@ -89,9 +93,8 @@ class MicrosoftGraphAuthSession:
         if self.application_mode == "development":
             logger.warning(
                 "Microsoft development authentication is active. Consent "
-                "screens will identify %s rather than msgloom. Use this client "
-                "for development/testing only. Run 'scrapy "
-                "microsoft auth status' for details.",
+                "screens will identify %s. Use this client "
+                "for development/testing only.",
                 self.application_name,
             )
 
@@ -121,6 +124,7 @@ class MicrosoftGraphAuthSession:
             allow_interactive=settings.getbool("MS_GRAPH_AUTH_ALLOW_INTERACTIVE"),
             account_binding=None,
             stats=crawler.stats,
+            stats_namespace=stats_prefix(settings),
         )
         setattr(crawler, _SESSION_ATTR, session)
         return session
@@ -173,12 +177,12 @@ class MicrosoftGraphAuthSession:
         """Return a token that belongs to the pinned account."""
         now = time.time()
         if self._memory_token_valid(now, force_refresh):
-            self._inc("msgloom/auth/memory_token_hit_count")
+            self._inc("memory_token_hit_count")
             return self._access_token or ""
         async with self._lock:
             now = time.time()
             if self._memory_token_valid(now, force_refresh):
-                self._inc("msgloom/auth/memory_token_hit_count")
+                self._inc("memory_token_hit_count")
                 return self._access_token or ""
             if self.account_binding is not None and not self._account_binding_ready:
                 raise MicrosoftGraphAuthError(
@@ -302,12 +306,12 @@ class MicrosoftGraphAuthSession:
         """Acquire silently for one account while preserving MSAL errors."""
         if account is None:
             return None
-        self._inc("msgloom/auth/silent_attempt_count")
+        self._inc("silent_attempt_count")
         result = app.acquire_token_silent_with_error(
             self.scopes, account=account, force_refresh=force_refresh
         )
         if self._has_token(result):
-            self._inc("msgloom/auth/silent_success_count")
+            self._inc("silent_success_count")
         return result
 
     def _require_silent_token(
@@ -331,16 +335,16 @@ class MicrosoftGraphAuthSession:
             self.auth_method,
             ",".join(sorted(self.scopes)),
         )
-        self._inc("msgloom/auth/user_interaction_count")
+        self._inc("user_interaction_count")
         if self.auth_method == "device_code":
             flow = app.initiate_device_flow(scopes=self.scopes)
             if "user_code" not in flow:
                 raise MicrosoftGraphAuthError("Unable to start device-code auth")
             logger.warning("Microsoft sign-in required: %s", flow["message"])
-            self._inc("msgloom/auth/device_code_count")
+            self._inc("device_code_count")
             result = app.acquire_token_by_device_flow(flow)
         else:
-            self._inc("msgloom/auth/browser_interactive_count")
+            self._inc("browser_interactive_count")
             result = app.acquire_token_interactive(
                 scopes=self.scopes,
                 login_hint=self.account_username or None,
@@ -392,12 +396,11 @@ class MicrosoftGraphAuthSession:
         if self.client_id:
             return
         raise MicrosoftGraphAuthError(
-            "Microsoft application Client ID is not configured. Run "
-            "'scrapy microsoft auth status' for local diagnostics. During "
-            "development, MSGLOOM_MS_CLIENT_ID may use the documented "
+            "Microsoft application Client ID is not configured. Set "
+            "MS_GRAPH_CLIENT_ID. During development, you may use the documented "
             "Microsoft Graph Command Line Tools client "
             f"({MICROSOFT_GRAPH_CLI_CLIENT_ID}); real deployments should use "
-            "the msgloom managed application or an operator-supplied Entra "
+            "an operator-supplied Entra "
             "public-client application ID."
         )
 
@@ -446,14 +449,14 @@ class MicrosoftGraphAuthSession:
                 temp_path.unlink()
             except FileNotFoundError:
                 pass
-        self._inc("msgloom/auth/token_cache_save_count")
+        self._inc("token_cache_save_count")
 
     def _inc(self, key: str, count: int = 1) -> None:
         """Publish authentication counters without account identifiers."""
         if self.stats is not None:
-            self.stats.inc_value(key, count=count)
+            self.stats.inc_value(f"{self.stats_prefix}auth/{key}", count=count)
 
     def _set(self, key: str, value) -> None:
         """Publish bounded authentication state."""
         if self.stats is not None:
-            self.stats.set_value(key, value)
+            self.stats.set_value(f"{self.stats_prefix}auth/{key}", value)

@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Iterator
-from datetime import datetime
 from typing import Any
-from urllib.parse import urlencode
 
 import scrapy
 from scrapy.http import TextResponse
@@ -23,6 +21,7 @@ from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
     CalendarDeltaCheckpointStore,
 )
 from microsoft_graph.protocol import GraphDeltaPage
+from microsoft_graph.protocol.calendar import calendar_window
 
 from ._base import OutlookCalendarSpider
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
@@ -45,14 +44,9 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
     ) -> None:
         """Validate one immutable Calendar delta scope."""
         super().__init__(*args, **kwargs)
-        self.start_datetime = self._window_datetime(
-            start_datetime, name="start_datetime"
+        self.start_datetime, self.end_datetime = calendar_window(
+            start_datetime, end_datetime
         )
-        self.end_datetime = self._window_datetime(end_datetime, name="end_datetime")
-        if self._parsed_datetime(self.start_datetime) >= self._parsed_datetime(
-            self.end_datetime
-        ):
-            raise ValueError("start_datetime must be earlier than end_datetime")
         self.page_size = self._bounded_int(
             page_size, name="page_size", minimum=1, maximum=1000
         )
@@ -385,14 +379,9 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
 
     def _initial_delta_request(self, *, reset_count: int) -> scrapy.Request:
         """Build the first request for the exact configured window."""
-        query = urlencode(
-            {
-                "startDateTime": self.start_datetime,
-                "endDateTime": self.end_datetime,
-            }
-        )
+        path = self.calendar_view_delta_path(self.start_datetime, self.end_datetime)
         return self._delta_request(
-            self._mailbox_url(f"/calendarView/delta?{query}"),
+            f"{self.graph_root}{path}",
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,
@@ -449,27 +438,3 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
         )
-
-    @classmethod
-    def _window_datetime(cls, raw: str, *, name: str) -> str:
-        """Validate a timezone-aware ISO-8601 window boundary."""
-        value = raw.strip()
-        if not value:
-            raise ValueError(f"{name} is required")
-        if raw != value:
-            raise ValueError(f"{name} must not contain surrounding whitespace")
-        cls._parsed_datetime(value)
-        return value
-
-    @staticmethod
-    def _parsed_datetime(value: str) -> datetime:
-        """Parse a Calendar window boundary, accepting a Z suffix."""
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError as exc:
-            raise ValueError(
-                "Calendar delta values must be valid ISO-8601 datetimes"
-            ) from exc
-        if parsed.tzinfo is None or parsed.utcoffset() is None:
-            raise ValueError("Calendar delta datetimes must include a timezone offset")
-        return parsed

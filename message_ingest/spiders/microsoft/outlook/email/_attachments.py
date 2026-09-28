@@ -18,7 +18,7 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookMessageSurfaceItem,
 )
-from microsoft_graph.protocol import GraphCollectionPage
+from microsoft_graph.protocol import GraphCollectionPage, graph_object
 from microsoft_graph.protocol.attachments import (
     attachment_list_path,
     attachment_raw_path,
@@ -84,11 +84,9 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             self.crawler.stats.inc_value(
                 f"msgloom/crawl/enrichment/attachment_type_count/{type_name}"
             )
-            yield OutlookAttachmentItem(
+            yield OutlookAttachmentItem.from_graph(
+                attachment,
                 message_id=message_id,
-                attachment_id=attachment_id,
-                attachment_type=attachment_type,
-                raw=attachment,
                 source_response_url=response.url,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
@@ -162,7 +160,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         self.crawler.stats.inc_value(
             "msgloom/crawl/enrichment/item_attachment_detail_count"
         )
-        payload = response.json()
+        payload = graph_object(response.json(), context="Outlook attachment detail")
         yield OutlookAttachmentItem(
             message_id=message_id,
             attachment_id=attachment_id,
@@ -195,7 +193,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         acquired.
         """
         if url is None:
-            url = f"{self.graph_root}{attachment_list_path(self._message_path(message_id))}"
+            url = f"{self.graph_root}{attachment_list_path(self.message_path(message_id))}"
         return self._request(
             url,
             callback=self.parse_attachments,
@@ -217,7 +215,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         Request raw attachment bytes with a representation-specific ``Accept``
         header.
         """
-        path = attachment_raw_path(self._message_path(message_id), attachment_id)
+        path = attachment_raw_path(self.message_path(message_id), attachment_id)
         return self._request(
             f"{self.graph_root}{path}",
             callback=self.parse_raw_evidence,
@@ -238,7 +236,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         """
         Expand the embedded Graph item separately from its raw content surface.
         """
-        path = item_attachment_path(self._message_path(message_id), attachment_id)
+        path = item_attachment_path(self.message_path(message_id), attachment_id)
         return self._request(
             f"{self.graph_root}{path}",
             callback=self.parse_attachment_detail,

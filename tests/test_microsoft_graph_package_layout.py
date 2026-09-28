@@ -40,6 +40,7 @@ def test_public_components_use_canonical_packages() -> None:
             "MicrosoftGraphDeviceCodeAuthMiddleware": "authentication",
             "MicrosoftGraphInteractiveAuthMiddleware": "authentication",
             "MicrosoftGraphErrorMiddleware": "errors",
+            "PrivacySafeRetryMiddleware": "retry",
             "MicrosoftGraphDiagnosticsMiddleware": "diagnostics",
         },
         "microsoft_graph.items": {"GraphResourceItem": "graph"},

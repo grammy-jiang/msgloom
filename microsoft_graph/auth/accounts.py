@@ -82,7 +82,7 @@ def select_unbound_cached_account(
         return None
     if len(accounts) > 1:
         raise MicrosoftGraphAuthError(
-            "Multiple Microsoft accounts are cached; set MSGLOOM_MS_USERNAME "
+            "Multiple Microsoft accounts are cached; set MS_GRAPH_ACCOUNT_USERNAME "
             "for the first source binding"
         )
     if not accounts:

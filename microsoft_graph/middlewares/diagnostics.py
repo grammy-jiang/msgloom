@@ -34,6 +34,9 @@ class MicrosoftGraphDiagnosticsMiddleware:
             crawler.settings, default=self.default_stats_prefix
         )
         self.graph_host = graph_host(crawler)
+        self.client_request_id_meta = crawler.settings.get(
+            "MS_GRAPH_CLIENT_REQUEST_ID_META_KEY", self.client_request_id_meta
+        )
 
     @classmethod
     def from_crawler(cls, crawler):

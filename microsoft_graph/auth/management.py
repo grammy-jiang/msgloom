@@ -78,24 +78,20 @@ def inspect_auth_status(settings: BaseSettings) -> MicrosoftAuthStatus:
         remediation.extend(
             (
                 (
-                    "Development: set MSGLOOM_MS_CLIENT_ID to the documented "
+                    "Development: set MS_GRAPH_CLIENT_ID to the documented "
                     "Microsoft Graph Command Line Tools development client ID."
                 ),
+                "Production: configure your own Entra public-client application ID.",
                 (
-                    "Production: use the msgloom-managed Microsoft application "
-                    "when available, or configure your own Entra public-client "
-                    "application ID."
-                ),
-                (
-                    "Run 'scrapy microsoft auth status' after changing the "
-                    "configuration."
+                    "Inspect the local authentication configuration and token "
+                    "cache after changing the configuration."
                 ),
             )
         )
     elif mode == "development":
         warnings.append(
             "Development authentication is active. Microsoft consent screens "
-            "will name Microsoft Graph Command Line Tools, not msgloom."
+            "will name Microsoft Graph Command Line Tools."
         )
         remediation.append(
             "Use this application identity for development/testing only; "
@@ -146,9 +142,8 @@ def inspect_auth_status(settings: BaseSettings) -> MicrosoftAuthStatus:
                 "valid MSAL cache."
             )
             remediation.append(
-                "If the cache is corrupted, use 'scrapy "
-                "microsoft auth clear --yes' to remove only the local cached "
-                "credentials, then sign in again."
+                "If the cache is corrupted, remove only the configured local "
+                "token cache, then sign in again."
             )
 
     normalized_client_id = client_id.lower()

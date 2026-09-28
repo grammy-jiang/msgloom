@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from urllib.parse import quote, urlencode
-
 import scrapy
 from scrapy.http import TextResponse
 
@@ -63,20 +61,13 @@ class OutlookDiscoverSpider(OutlookMailSpider):
             "msgloom/crawl/discovery/max_pages", self.max_pages
         )
 
-        query = urlencode(
-            {
-                "$select": ",".join(self.discovery_fields),
-                "$orderby": "receivedDateTime desc",
-                "$top": self.page_size,
-            }
+        path = self.messages_path(
+            folder_id=self.folder,
+            fields=self.discovery_fields,
+            order_by="receivedDateTime desc",
+            page_size=self.page_size,
         )
-        if self.folder:
-            base_url = self._mailbox_url(
-                f"/mailFolders/{quote(self.folder, safe='')}/messages"
-            )
-        else:
-            base_url = self._mailbox_url("/messages")
-        yield self._message_list_request(f"{base_url}?{query}", page_number=1)
+        yield self._message_list_request(f"{self.graph_root}{path}", page_number=1)
 
     def parse(
         self,

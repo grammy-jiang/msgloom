@@ -55,9 +55,15 @@ AUTOTHROTTLE_DEBUG = False
 MS_GRAPH_AUTH_ENABLED = False
 # Reusable transport components keep the established msgloom stat families.
 MS_GRAPH_STATS_PREFIX = "msgloom"
+# Keep request metadata compatible with existing JOBDIR and retry requests.
+MS_GRAPH_ERROR_RETRY_META_KEY = "_msgloom_graph_error_retry"
+MS_GRAPH_CLIENT_REQUEST_ID_META_KEY = "_msgloom_ms_client_request_id"
+MS_GRAPH_AUTH_RETRY_META_KEY = "_msgloom_ms_auth_retry"
+MS_GRAPH_AUTH_FORCE_REFRESH_META_KEY = "_msgloom_ms_force_refresh"
 # 509 remains msgloom policy; the framework default is 429/503 plus the
 # transient Directory_ConcurrencyViolation 409 error code.
 MS_GRAPH_ERROR_RETRY_HTTP_CODES = [429, 503, 509]
+MS_GRAPH_ERROR_RETRY_409_CODES = ["Directory_ConcurrencyViolation"]
 MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
     "MSGLOOM_MS_ERROR_MIDDLEWARE_ENABLED", True
 )
@@ -80,15 +86,14 @@ DOWNLOADER_MIDDLEWARES = {
     # Preserve Scrapy generic retries through a privacy-safe subclass that
     # suppresses Request reprs containing Graph continuation URLs.
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-    "message_ingest.middlewares.microsoft_graph.errors.PrivacySafeRetryMiddleware": 550,
+    "microsoft_graph.middlewares.retry.PrivacySafeRetryMiddleware": 550,
     # Request hooks run in ascending priority and response hooks in descending
     # priority. Diagnostics therefore sees each Graph response before auth can
     # replace a 401 with a retry Request. Provider retries still run after auth.
-    # Thin adapters retain logger names and persisted retry/correlation meta.
-    "message_ingest.middlewares.microsoft_graph.errors.MicrosoftGraphErrorMiddleware": 555,
+    "microsoft_graph.middlewares.errors.MicrosoftGraphErrorMiddleware": 555,
     "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
     "microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware": 951,
-    "message_ingest.middlewares.microsoft_graph.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
+    "microsoft_graph.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
 }
 
 EXTENSIONS = {

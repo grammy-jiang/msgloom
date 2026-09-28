@@ -157,6 +157,12 @@ def test_status_command_json_is_machine_readable(tmp_path: Path, capsys) -> None
         pytest.fail("Expected JSON status to report unconfigured application")
     if payload["application_mode"] != "unconfigured":
         pytest.fail("Expected JSON application classification")
+    if not any("MSGLOOM_MS_CLIENT_ID" in text for text in payload["remediation"]):
+        pytest.fail("The product command must explain its environment setting")
+    if not any(
+        "scrapy microsoft auth status" in text for text in payload["remediation"]
+    ):
+        pytest.fail("The product command must retain local CLI guidance")
 
 
 def test_clear_requires_confirmation_and_preserves_cache(tmp_path: Path) -> None:

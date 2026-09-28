@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import replace
 from typing import Any
 
 from scrapy.exceptions import UsageError
@@ -34,6 +35,24 @@ def dispatch_auth(command: Any, opts: argparse.Namespace) -> None:
 
 def _auth_status(command: Any, opts: argparse.Namespace) -> None:
     status = inspect_auth_status(_settings(command))
+    # Framework diagnostics describe settings and MSAL state. The command
+    # adds the product's environment and workflow instructions for operators.
+    guidance: tuple[str, ...] = ()
+    if status.application_mode == "unconfigured":
+        guidance = (
+            (
+                "Set MSGLOOM_MS_CLIENT_ID to configure MS_GRAPH_CLIENT_ID, then "
+                "run 'scrapy microsoft auth status' again."
+            ),
+        )
+    elif status.cache_valid is False:
+        guidance = (
+            (
+                "Use 'scrapy microsoft auth clear --yes' to remove only the "
+                "configured local cache, then sign in again."
+            ),
+        )
+    status = replace(status, remediation=status.remediation + guidance)
     if opts.json:
         print(json.dumps(status.as_dict(), indent=2, sort_keys=True))
         return

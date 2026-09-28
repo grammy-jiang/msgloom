@@ -7,6 +7,7 @@ from .authentication import (
 )
 from .diagnostics import MicrosoftGraphDiagnosticsMiddleware
 from .errors import MicrosoftGraphErrorMiddleware
+from .retry import PrivacySafeRetryMiddleware
 
 __all__ = [
     "MicrosoftGraphDelegatedAuthMiddleware",
@@ -14,4 +15,5 @@ __all__ = [
     "MicrosoftGraphDiagnosticsMiddleware",
     "MicrosoftGraphErrorMiddleware",
     "MicrosoftGraphInteractiveAuthMiddleware",
+    "PrivacySafeRetryMiddleware",
 ]

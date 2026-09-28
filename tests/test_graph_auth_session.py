@@ -456,7 +456,7 @@ def test_development_client_logs_application_identity(
         pytest.fail("Expected development-only guidance")
 
 
-def test_missing_client_id_error_points_to_status_command(tmp_path: Path) -> None:
+def test_missing_client_id_error_points_to_framework_setting(tmp_path: Path) -> None:
     session = MicrosoftGraphAuthSession(
         client_id="",
         authority="https://login.microsoftonline.com/common",
@@ -471,7 +471,7 @@ def test_missing_client_id_error_points_to_status_command(tmp_path: Path) -> Non
     with pytest.raises(MicrosoftGraphAuthError) as caught:
         session._require_client_id()
     message = str(caught.value)
-    if "microsoft auth status" not in message:
-        pytest.fail("Expected status-command remediation for missing Client ID")
+    if "MS_GRAPH_CLIENT_ID" not in message:
+        pytest.fail("Expected framework setting remediation for missing Client ID")
     if "development" not in message or "real deployments" not in message:
         pytest.fail("Expected development and production remediation")

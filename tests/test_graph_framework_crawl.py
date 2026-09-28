@@ -22,7 +22,7 @@ def graph_server():
             seen.append((self.path, self.headers.get("client-request-id")))
             if len(seen) == 1:
                 status, payload = 429, {"error": {"code": "TooManyRequests"}}
-            elif self.path == "/v1.0/me/contacts":
+            elif self.path in {"/v1.0/me/contacts", "/v1.0/me/messages"}:
                 status, payload = (
                     200,
                     {
@@ -52,24 +52,35 @@ def graph_server():
         server.server_close()
 
 
+@pytest.mark.parametrize("resource", ["contacts", "messages"])
 def test_collection_crawl_retries_paginates_and_exports_without_pipeline(
     tmp_path,
     graph_server,
+    resource,
 ):
     root, seen = graph_server
-    feed = tmp_path / "contacts.json"
+    feed = tmp_path / f"{resource}.json"
     report = tmp_path / "stats.json"
     code = """
 import json
 import sys
 from pathlib import Path
 from scrapy.crawler import CrawlerProcess
+from microsoft_graph.items.outlook import OutlookMessageItem
 from microsoft_graph.spiders import GraphCollectionSpider
 
 class Contacts(GraphCollectionSpider):
     name = "standalone_contacts"
     endpoint = "/me/contacts"
     graph_permissions = ("Contacts.Read",)
+
+class Messages(GraphCollectionSpider):
+    name = "standalone_messages"
+    endpoint = "/me/messages"
+    graph_permissions = ("Mail.Read",)
+
+    def resource_to_item(self, resource, response):
+        return OutlookMessageItem.from_graph(resource)
 
 process = CrawlerProcess({
     "ADDONS": {"microsoft_graph.addon.MicrosoftGraphAddon": 100},
@@ -79,13 +90,13 @@ process = CrawlerProcess({
     "REMOTE_CONTROL_ENABLED": False,
     "LOG_ENABLED": False,
 })
-crawler = process.create_crawler(Contacts)
+crawler = process.create_crawler(Messages if sys.argv[4] == "messages" else Contacts)
 process.crawl(crawler)
 process.start()
 Path(sys.argv[3]).write_text(json.dumps(crawler.stats.get_stats(), default=str))
 """
     result = subprocess.run(
-        [sys.executable, "-c", code, root, str(feed), str(report)],
+        [sys.executable, "-c", code, root, str(feed), str(report), resource],
         capture_output=True,
         text=True,
         timeout=30,
@@ -94,11 +105,17 @@ Path(sys.argv[3]).write_text(json.dumps(crawler.stats.get_stats(), default=str))
     if result.returncode:
         pytest.fail(result.stderr)
     items = json.loads(feed.read_text())
-    if [item["resource"]["id"] for item in items] != ["first", "second"]:
+    field = "raw" if resource == "messages" else "resource"
+    if [item[field]["id"] for item in items] != ["first", "second"]:
         pytest.fail("Standalone crawler must feed-export every default item")
+    if resource == "messages" and [item["message_id"] for item in items] != [
+        "first",
+        "second",
+    ]:
+        pytest.fail("Default Outlook Items must export their provider projection")
     if [path for path, _ in seen] != [
-        "/v1.0/me/contacts",
-        "/v1.0/me/contacts",
+        f"/v1.0/me/{resource}",
+        f"/v1.0/me/{resource}",
         "/v1.0/page?cursor=a%2Fb+%2B&x=2&x=1",
     ]:
         pytest.fail(f"Unexpected provider requests: {seen}")

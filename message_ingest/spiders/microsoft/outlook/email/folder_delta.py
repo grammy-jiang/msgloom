@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
 from typing import Any, ClassVar
-from urllib.parse import urlencode
 
 import scrapy
 from scrapy.http import TextResponse
@@ -30,16 +29,6 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
 
     name = "outlook_folder_delta"
     graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
-
-    folder_fields = (
-        "id",
-        "displayName",
-        "parentFolderId",
-        "childFolderCount",
-        "totalItemCount",
-        "unreadItemCount",
-        "isHidden",
-    )
 
     def __init__(self, *args, page_size: str = "25", **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -138,15 +127,8 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                     run_id=self.run_id,
                 )
                 continue
-            yield OutlookMailFolderItem(
-                folder_id=folder_id,
-                display_name=folder.get("displayName"),
-                parent_folder_id=folder.get("parentFolderId"),
-                child_folder_count=folder.get("childFolderCount"),
-                total_item_count=folder.get("totalItemCount"),
-                unread_item_count=folder.get("unreadItemCount"),
-                is_hidden=folder.get("isHidden"),
-                raw=folder,
+            yield OutlookMailFolderItem.from_graph(
+                folder,
                 source_response_url=response.url,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
@@ -212,9 +194,9 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
         }
 
     def _initial_request(self, *, reset_count: int) -> scrapy.Request:
-        query = urlencode({"$select": ",".join(self.folder_fields)})
+        path = self.mail_folder_delta_path(fields=self.folder_fields)
         return self._delta_request(
-            self._mailbox_url(f"/mailFolders/delta?{query}"),
+            f"{self.graph_root}{path}",
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,

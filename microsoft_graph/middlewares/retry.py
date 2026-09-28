@@ -1,22 +1,19 @@
-"""Provider-specific retries layered on Scrapy's retry helpers."""
+"""Generic Scrapy retries with URL-safe replacement log records."""
 
 from __future__ import annotations
 
-import asyncio  # noqa: F401 -- retained for legacy retry test/patch imports
 import logging
 
 from scrapy.downloadermiddlewares.retry import RetryMiddleware, get_retry_request
 
-from microsoft_graph.middlewares.errors import (
-    MicrosoftGraphErrorMiddleware as GraphErrorMiddleware,
-)
+from microsoft_graph.request import graph_operation
 
 logger = logging.getLogger(__name__)
 # Scrapy's retry helper formats the full Request repr. Use an unregistered
 # logger above CRITICAL so helper messages cannot expose Graph URLs; the
 # middleware emits its own bounded replacement records.
 _retry_helper_logger = logging.Logger(  # noqa: LOG001
-    "message_ingest.retry_helper.silent",
+    "microsoft_graph.transport_retry_helper.silent",
     level=logging.CRITICAL + 1,
 )
 
@@ -44,7 +41,7 @@ class PrivacySafeRetryMiddleware(RetryMiddleware):
             give_up_log_level=give_up_log_level,
         )
         retry_number = int(request.meta.get("retry_times", 0)) + 1
-        purpose = request.cb_kwargs.get("purpose", "unknown")
+        purpose = graph_operation(request)
         reason_label = self._reason_label(reason)
         if retry is None:
             level = (
@@ -84,12 +81,3 @@ class PrivacySafeRetryMiddleware(RetryMiddleware):
         if isinstance(reason, type):
             return reason.__name__
         return type(reason).__name__
-
-
-class MicrosoftGraphErrorMiddleware(GraphErrorMiddleware):
-    """Keep msgloom retry policy, stats, logs, and queued retry metadata."""
-
-    retry_meta_key = "_msgloom_graph_error_retry"
-    default_stats_prefix = "msgloom"
-    default_retry_http_codes = (429, 503, 509)
-    logger = logger

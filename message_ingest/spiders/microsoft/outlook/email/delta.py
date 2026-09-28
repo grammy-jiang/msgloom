@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
-from urllib.parse import quote, urlencode
 
 import scrapy
 from scrapy.http import TextResponse
@@ -115,8 +114,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         self._delta_start_scheduled = True
         self._persist_execution_state()
         yield self._folder_list_request(
-            self._mailbox_url("/mailFolders?")
-            + urlencode({"includeHiddenFolders": "true", "$top": self.page_size}),
+            self.mail_folders_path(include_hidden=True, page_size=self.page_size),
             parent_folder_id=None,
             page_number=1,
             purpose="folder-list",
@@ -388,10 +386,9 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         Build the initial cursor request with a bounded expired-token reset
         count.
         """
-        encoded_id = quote(folder_id, safe="")
-        query = urlencode({"$select": ",".join(self.discovery_fields)})
+        path = self.message_delta_path(folder_id, fields=self.discovery_fields)
         return self._message_delta_request(
-            self._mailbox_url(f"/mailFolders/{encoded_id}/messages/delta?{query}"),
+            f"{self.graph_root}{path}",
             folder_id=folder_id,
             page_number=1,
             from_checkpoint=False,

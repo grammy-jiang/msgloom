@@ -5,25 +5,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from microsoft_graph.items.outlook import (
+    OutlookAttachmentItem as GraphOutlookAttachmentItem,
+)
+from microsoft_graph.items.outlook import (
+    OutlookMailFolderItem as GraphOutlookMailFolderItem,
+)
+from microsoft_graph.items.outlook import (
+    OutlookMessageItem as GraphOutlookMessageItem,
+)
+
 
 @dataclass(slots=True)
-class OutlookMailItem:
+class OutlookMailItem(GraphOutlookMessageItem):
     """One discovery, delta, or reconciliation observation of a message."""
 
-    message_id: str
-    subject: str | None
-    sender_address: str | None
-    from_address: str | None
-    received_date_time: str | None
-    internet_message_id: str | None
-    conversation_id: str | None
-    parent_folder_id: str | None
-    importance: str | None
-    inference_classification: str | None
-    is_read: bool | None
-    has_attachments: bool | None
-    body_preview: str | None
-    raw: dict[str, Any]
     source_response_url: str
     observed_at: str
     observation_kind: str
@@ -44,13 +40,9 @@ class OutlookMailDetailItem:
 
 
 @dataclass(slots=True)
-class OutlookAttachmentItem:
+class OutlookAttachmentItem(GraphOutlookAttachmentItem):
     """Attachment metadata from either inventory or expanded item detail."""
 
-    message_id: str
-    attachment_id: str
-    attachment_type: str | None
-    raw: dict[str, Any]
     source_response_url: str
     observed_at: str
     evidence_id: str | None
@@ -58,17 +50,9 @@ class OutlookAttachmentItem:
 
 
 @dataclass(slots=True)
-class OutlookMailFolderItem:
+class OutlookMailFolderItem(GraphOutlookMailFolderItem):
     """One folder observation; absence from an inventory is not a deletion."""
 
-    folder_id: str
-    display_name: str | None
-    parent_folder_id: str | None
-    child_folder_count: int | None
-    total_item_count: int | None
-    unread_item_count: int | None
-    is_hidden: bool | None
-    raw: dict[str, Any]
     source_response_url: str
     observed_at: str
     evidence_id: str | None

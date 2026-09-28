@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from urllib.parse import quote, urlencode
 
 import scrapy
 from scrapy.http import TextResponse
@@ -14,14 +13,14 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMessagePresenceCandidateItem,
     OutlookMessagePresenceSightingItem,
 )
+from microsoft_graph.protocol import GraphCollectionPage, graph_object
 
 from ._base import OutlookMailSpider
 
 
 class OutlookFolderTraversal(OutlookMailSpider):
     """
-    Folder inventory and reconciliation callbacks for
-    :class:`~message_ingest.spiders.microsoft.outlook.email.delta.OutlookDeltaSpider`.
+    Own folder inventory and reconciliation during Outlook Mail delta sync.
 
     These stay bound to the spider so Scrapy can serialize their requests. The
     concrete delta spider persists this traversal state.
@@ -75,8 +74,15 @@ class OutlookFolderTraversal(OutlookMailSpider):
         """
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        folders = payload.get("value", [])
+        # Mail inventories retain missing values and falsey-link compatibility.
+        # Defer continuation validation until after evidence and observations.
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        folders = page.values
         self.logger.debug(
             "Processed Outlook folder page: purpose=%s page=%s folders=%s",
             purpose,
@@ -90,15 +96,8 @@ class OutlookFolderTraversal(OutlookMailSpider):
 
         for folder in folders:
             folder_id = folder["id"]
-            yield OutlookMailFolderItem(
-                folder_id=folder_id,
-                display_name=folder.get("displayName"),
-                parent_folder_id=folder.get("parentFolderId"),
-                child_folder_count=folder.get("childFolderCount"),
-                total_item_count=folder.get("totalItemCount"),
-                unread_item_count=folder.get("unreadItemCount"),
-                is_hidden=folder.get("isHidden"),
-                raw=folder,
+            yield OutlookMailFolderItem.from_graph(
+                folder,
                 source_response_url=response.url,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
@@ -120,11 +119,10 @@ class OutlookFolderTraversal(OutlookMailSpider):
                     "msgloom/crawl/delta/child_folder_traversal_request_count"
                 )
                 yield self._folder_list_request(
-                    self._mailbox_url(
-                        f"/mailFolders/{quote(folder_id, safe='')}/childFolders?"
-                    )
-                    + urlencode(
-                        {"includeHiddenFolders": "true", "$top": self.page_size}
+                    self.mail_folders_path(
+                        parent_folder_id=folder_id,
+                        include_hidden=True,
+                        page_size=self.page_size,
                     ),
                     parent_folder_id=folder_id,
                     page_number=1,
@@ -132,7 +130,7 @@ class OutlookFolderTraversal(OutlookMailSpider):
                 )
             yield self._message_delta_start_request(folder_id)
 
-        if next_link := payload.get("@odata.nextLink"):
+        if next_link := page.next_link:
             self.crawler.stats.inc_value(
                 "msgloom/crawl/delta/folder_continuation_count"
             )
@@ -172,8 +170,13 @@ class OutlookFolderTraversal(OutlookMailSpider):
         """
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        values = payload.get("value", [])
+        page = GraphCollectionPage.from_payload(
+            response.json(),
+            missing_value_empty=True,
+            empty_links_absent=True,
+            validate_links=False,
+        )
+        values = page.values
         self.crawler.stats.inc_value("msgloom/crawl/reconcile/page_count")
         self.crawler.stats.inc_value(
             "msgloom/crawl/reconcile/message_count", count=len(values)
@@ -197,7 +200,7 @@ class OutlookFolderTraversal(OutlookMailSpider):
             self.crawler.stats.inc_value("msgloom/crawl/reconcile/orphan_count")
             yield self._reconciliation_message_request(message_id)
 
-        if next_link := payload.get("@odata.nextLink"):
+        if next_link := page.next_link:
             yield self._global_reconciliation_request(
                 next_link,
                 verbatim_url=True,
@@ -233,7 +236,7 @@ class OutlookFolderTraversal(OutlookMailSpider):
         yield evidence
         self.crawler.stats.inc_value("msgloom/crawl/reconcile/message_recovered_count")
         yield self._message_item(
-            response.json(),
+            graph_object(response.json(), context="Outlook reconciliation message"),
             response.url,
             evidence.observed_at,
             observation_kind="reconcile",
@@ -307,13 +310,11 @@ class OutlookFolderTraversal(OutlookMailSpider):
         unchanged.
         """
         if url is None:
-            query = urlencode(
-                {
-                    "$select": "id,parentFolderId,lastModifiedDateTime",
-                    "$top": 1000,
-                }
+            path = self.messages_path(
+                fields=("id", "parentFolderId", "lastModifiedDateTime"),
+                page_size=1000,
             )
-            url = self._mailbox_url(f"/messages?{query}")
+            url = f"{self.graph_root}{path}"
         return self._request(
             url,
             callback=self.parse_global_reconciliation,
@@ -327,10 +328,8 @@ class OutlookFolderTraversal(OutlookMailSpider):
         """
         Fetch discovery metadata for an orphan message without cache replay.
         """
-        encoded_id = quote(message_id, safe="")
-        query = urlencode({"$select": ",".join(self.discovery_fields)})
         return self._request(
-            self._mailbox_url(f"/messages/{encoded_id}?{query}"),
+            self.message_path(message_id, fields=self.discovery_fields),
             callback=self.parse_reconciliation_message,
             purpose="message-reconcile",
             cb_kwargs={"message_id": message_id},

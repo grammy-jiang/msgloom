@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from typing import Any
 
@@ -19,7 +18,7 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarAttachmentItem,
     OutlookCalendarEventSurfaceItem,
 )
-from microsoft_graph.protocol import GraphCollectionPage
+from microsoft_graph.protocol import GraphCollectionPage, graph_object
 from microsoft_graph.protocol.attachments import (
     attachment_list_path,
     attachment_raw_path,
@@ -42,16 +41,11 @@ def _metadata_without_content(value: Any) -> Any:
     return value
 
 
-class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
+class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
     """Own Calendar attachment pagination, raw content, and item expansion."""
 
     page_size: int
     calendar_id: str
-
-    @abstractmethod
-    def _event_path(self, event_id: str) -> str:
-        """Return the Graph path for one event in the active calendar scope."""
-        raise NotImplementedError
 
     def parse_attachments(
         self,
@@ -84,8 +78,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
             "msgloom/crawl/calendar/full/attachment_page_count"
         )
         for attachment in values:
-            if not isinstance(attachment, dict):
-                raise TypeError("Calendar attachment entry must be a JSON object")
+            attachment = graph_object(attachment, context="Calendar attachment entry")
             attachment_id = attachment.get("id")
             if not isinstance(attachment_id, str) or not attachment_id:
                 raise ValueError("Calendar attachment must contain a non-empty id")
@@ -224,9 +217,9 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         """Persist expanded item-attachment detail as richer metadata."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar item attachment detail must be a JSON object")
+        payload = graph_object(
+            response.json(), context="Calendar item attachment detail"
+        )
         provider_id = payload.get("id")
         if provider_id != attachment_id:
             raise ValueError("Calendar item attachment detail ID changed in flight")
@@ -271,7 +264,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
     ) -> scrapy.Request:
         """Inventory attachments only for events that report attachments."""
         path = attachment_list_path(
-            self._event_path(event_id),
+            self.event_path(event_id, calendar_id=self.calendar_id),
             page_size=self.page_size,
         )
         return self._request(
@@ -295,7 +288,9 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         resource_version: str | None = None,
     ) -> scrapy.Request:
         """Request raw bytes for file and item attachments."""
-        path = attachment_raw_path(self._event_path(event_id), attachment_id)
+        path = attachment_raw_path(
+            self.event_path(event_id, calendar_id=self.calendar_id), attachment_id
+        )
         return self._request(
             f"{self.graph_root}{path}",
             callback=self.parse_attachment_content,
@@ -318,7 +313,9 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider, ABC):
         resource_version: str | None = None,
     ) -> scrapy.Request:
         """Expand an embedded Graph item separately from its raw bytes."""
-        path = item_attachment_path(self._event_path(event_id), attachment_id)
+        path = item_attachment_path(
+            self.event_path(event_id, calendar_id=self.calendar_id), attachment_id
+        )
         return self._request(
             f"{self.graph_root}{path}",
             callback=self.parse_attachment_detail,

@@ -12,23 +12,29 @@ from scrapy.http import Request, Response
 from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.test import get_crawler
 
-from message_ingest.middlewares.microsoft_graph.diagnostics import (
-    MicrosoftGraphDiagnosticsMiddleware,
-)
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
+)
+from microsoft_graph.middlewares.diagnostics import (
+    MicrosoftGraphDiagnosticsMiddleware,
 )
 
 
 def _middleware():
-    crawler = get_crawler(OutlookDiscoverSpider)
+    crawler = get_crawler(
+        OutlookDiscoverSpider,
+        settings_dict={
+            "MS_GRAPH_STATS_PREFIX": "msgloom",
+            "MS_GRAPH_CLIENT_REQUEST_ID_META_KEY": "_msgloom_ms_client_request_id",
+        },
+    )
     crawler.spider = OutlookDiscoverSpider.from_crawler(crawler)
     return build_from_crawler(MicrosoftGraphDiagnosticsMiddleware, crawler)
 
 
 def test_graph_request_gets_unique_client_request_id_and_debug_log(caplog) -> None:
     middleware = _middleware()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.microsoft_graph")
+    caplog.set_level(logging.DEBUG, logger="microsoft_graph.middlewares")
     request = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
         cb_kwargs={"purpose": "message-list"},
@@ -66,7 +72,7 @@ def test_graph_request_gets_unique_client_request_id_and_debug_log(caplog) -> No
 
 def test_graph_response_logs_server_request_id(caplog) -> None:
     middleware = _middleware()
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.microsoft_graph")
+    caplog.set_level(logging.DEBUG, logger="microsoft_graph.middlewares")
     request = Request(
         "https://graph.microsoft.com/v1.0/me/messages",
         cb_kwargs={"purpose": "message-list"},
@@ -174,7 +180,7 @@ def test_cached_graph_response_is_counted_as_replay_not_transport(caplog) -> Non
         status=200,
         flags=["cached"],
     )
-    caplog.set_level(logging.DEBUG, logger="message_ingest.middlewares.microsoft_graph")
+    caplog.set_level(logging.DEBUG, logger="microsoft_graph.middlewares")
 
     returned = middleware.process_response(request, response)
 

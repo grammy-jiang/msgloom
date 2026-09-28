@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
-from urllib.parse import quote
 
 import scrapy
 from scrapy.exceptions import DownloadCancelledError
@@ -28,6 +27,8 @@ from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarEventSurfaceItem,
     OutlookCalendarSeriesTopologyItem,
 )
+from microsoft_graph.protocol import graph_object
+from microsoft_graph.protocol.calendar import series_master_id
 
 from ._resume_state import CalendarScopedExecutionState, execution_payload
 from ._series import OutlookCalendarSeriesTraversal
@@ -159,9 +160,7 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
 
-        payload = response.json()
-        if not isinstance(payload, dict):
-            raise TypeError("Calendar event detail must be a JSON object")
+        payload = graph_object(response.json(), context="Calendar event detail")
         provider_id = payload.get("id")
         if not isinstance(provider_id, str) or not provider_id:
             raise ValueError("Calendar event detail must contain a non-empty id")
@@ -198,8 +197,8 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
             page_number=1,
             resource_version=effective_version,
         )
-        if (series_master_id := self._series_master_id(payload, event_id)) is not None:
-            yield self._series_master_request(series_master_id)
+        if (master_id := series_master_id(payload, event_id)) is not None:
+            yield self._series_master_request(master_id)
 
     def errback(self, failure: Failure) -> Iterator[Any]:
         """Persist terminal Full-v1 surface outcomes; leave transient gaps pending."""
@@ -417,9 +416,8 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
         self, event_id: str, *, resource_version: str | None = None
     ) -> scrapy.Request:
         """Request the full event representation with a text body."""
-        event_path = self._event_path(event_id)
         return self._request(
-            f"{self.graph_root}{event_path}",
+            self.event_path(event_id, calendar_id=self.calendar_id),
             callback=self.parse_event_detail,
             purpose="calendar-event-detail",
             cb_kwargs={
@@ -428,11 +426,3 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
             },
             prefer=('IdType="ImmutableId", outlook.body-content-type="text"'),
         )
-
-    def _event_path(self, event_id: str) -> str:
-        """Return an event path scoped to default or one named calendar."""
-        encoded_event = quote(event_id, safe="")
-        if not self.calendar_id:
-            return f"{self._mailbox_path()}/events/{encoded_event}"
-        encoded_calendar = quote(self.calendar_id, safe="")
-        return f"{self._mailbox_path()}/calendars/{encoded_calendar}/events/{encoded_event}"
