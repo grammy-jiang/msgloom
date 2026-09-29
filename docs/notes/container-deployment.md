@@ -214,3 +214,20 @@ The full three-image matrix remains manager-owned acceptance work. This worker
 does not claim it passed. Until the integrated candidate contains the real
 report resources and console entrypoint and the manager supplies the qualified
 runtime lock/current official digests, those release gates remain pending.
+
+## Required host resource enforcement
+
+Qualification first reads the daemon's memory, swap, CPU quota, and PID-limit
+capabilities. Each capability must be explicitly supported. A missing or false
+value stops qualification before package or container work. Skipping the
+isolation probe does not bypass this gate. Requested Docker flags alone do not
+prove that the kernel enforces them.
+
+On the manager's ARM64 host on September 29, 2026, Docker reported memory and
+swap enforcement unavailable. The host kernel command line contained
+`cgroup_disable=memory`, so the cgroup v2 hierarchy offered only the
+`cpuset`, `cpu`, `io`, and `pids` controllers. Restricted-container
+parser and offline AI probes also failed. Container acceptance remains pending
+on a host that can enforce the required limits and run both isolated workers.
+The manager did not change host kernel or daemon settings and did not weaken
+the worker boundary.

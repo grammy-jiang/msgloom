@@ -21,6 +21,7 @@ from deployment.qualification import (
     validate_resources,
     wheel_metadata,
 )
+from tests.container_deployment.helpers import daemon_result
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
@@ -174,7 +175,7 @@ def test_failed_execution_persists_machine_readable_evidence(tmp_path: Path) -> 
             from deployment.process import CommandResult
 
             if command[:2] == ["docker", "info"]:
-                return CommandResult(0, "aarch64")
+                return daemon_result(command)
             return CommandResult(124, "synthetic timeout", True)
 
     args = SimpleNamespace(
@@ -234,7 +235,7 @@ class _InterruptingQualificationRunner:
         from deployment.process import CommandResult
 
         if command[:2] == ["docker", "info"]:
-            return CommandResult(0, "aarch64")
+            return daemon_result(command)
         if len(command) > 1 and Path(command[1]).name == "qualify_installed_wheel.py":
             if self.stage == "packaging":
                 raise KeyboardInterrupt("synthetic packaging interrupt")
@@ -340,7 +341,7 @@ def test_qualification_json_retains_runtime_cleanup_failure(tmp_path: Path) -> N
         def run(self, command: list[str], *, cwd: Path, timeout: int = 300):
             del cwd, timeout
             if command[:2] == ["docker", "info"]:
-                return CommandResult(0, "aarch64")
+                return daemon_result(command)
             if (
                 len(command) > 1
                 and Path(command[1]).name == "qualify_installed_wheel.py"

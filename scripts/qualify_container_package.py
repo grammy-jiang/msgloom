@@ -31,6 +31,7 @@ from deployment.qualification import (
 )
 from deployment.release import ReleaseInputError
 from deployment.target import (
+    _daemon_resource_check,
     _host_checks,
     _qualify_target,
 )
@@ -177,6 +178,11 @@ def qualify(
         daemon_architecture = daemon.output.strip()
         if daemon_architecture not in {"aarch64", "arm64"}:
             raise QualificationError("Docker daemon is not native ARM64")
+        resource_check = _daemon_resource_check(selected, ROOT)
+        report["host_checks"] = [asdict(resource_check)]
+        _write_report(output_root, report)
+        if resource_check.status != "pass":
+            raise QualificationError("Docker daemon cannot enforce required limits")
 
         active_stage = "package qualification"
         package_output = output_root / "package"
@@ -209,14 +215,15 @@ def qualify(
 
         active_stage = "host preflight"
         report["host_checks"] = [
+            asdict(resource_check),
             {
                 "name": "host-preflight",
                 "status": "pending",
                 "detail": "execution started",
-            }
+            },
         ]
         _write_report(output_root, report)
-        report["host_checks"] = [
+        report["host_checks"] = [asdict(resource_check)] + [
             asdict(check)
             for check in _host_checks(
                 selected,

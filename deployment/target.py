@@ -25,6 +25,37 @@ from deployment.qualification import (
 _DETAIL_PART_LIMIT = 700
 
 
+def _daemon_resource_check(runner: Runner, cwd: Path) -> Check:
+    """Require daemon enforcement of every requested container resource cap."""
+    fields = {
+        "memory": ".MemoryLimit",
+        "swap": ".SwapLimit",
+        "cpu_quota": ".CPUCfsQuota",
+        "pids": ".PidsLimit",
+    }
+    template = (
+        "{"
+        + ",".join(f'"{name}":{{{{json {field}}}}}' for name, field in fields.items())
+        + "}"
+    )
+    result = runner.run(["docker", "info", "--format", template], cwd=cwd)
+    check = _check_result("daemon-resource-limits", result)
+    if check.status != "pass":
+        return check
+    try:
+        data = json.loads(result.output)
+    except (ValueError, TypeError):
+        return Check(check.name, "fail", "daemon resource evidence is invalid")
+    if not isinstance(data, dict) or set(data) != set(fields):
+        return Check(check.name, "fail", "daemon resource evidence is incomplete")
+    unavailable = sorted(name for name in fields if data[name] is not True)
+    if unavailable:
+        return Check(
+            check.name, "fail", "unsupported limits: " + ", ".join(unavailable)
+        )
+    return Check(check.name, "pass", "memory, swap, CPU quota and PID caps supported")
+
+
 def _check_result(name: str, result: object) -> Check:
     returncode = cast(int, getattr(result, "returncode", 1))
     output = cast(str, getattr(result, "output", "command result was invalid"))
