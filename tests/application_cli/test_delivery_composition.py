@@ -139,6 +139,30 @@ def test_submission_requires_factory_and_reconciliation_never_sends(
                 f"uncertain provider call did not retain unknown effect: {uncertain_outcome}"
             )
 
+        # A repeated manual invocation with a fresh execution and plan must
+        # not bypass reconciliation of the unknown effect.
+        repeated_plan = submission_plan(report_ref, report, suffix="repeated")
+        repeated = blocked.model_copy(
+            update={
+                "execution": "submit-repeated",
+                "attempt": "submit-repeated-attempt",
+                "plan": repeated_plan,
+            }
+        )
+        sends_before_repeat = len(uncertain_transport.calls)
+        repeated_outcome = await execute_invocation(
+            configuration,
+            repeated,
+            dependencies=CompositionDependencies(
+                secret_resolver=resolver,
+                report_transport_factory=transport_factory,
+            ),
+        )
+        if len(uncertain_transport.calls) != sends_before_repeat:
+            pytest.fail("repeated invocation resent past an unknown effect")
+        if repeated_outcome.status is TerminalStatus.COMPLETE:
+            pytest.fail("repeated invocation claimed completion past unknown effect")
+
         store = await Phase1Persistence.open(
             configuration.database_url,
             registry=ResultSchemaRegistry.phase1(),

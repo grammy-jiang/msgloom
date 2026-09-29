@@ -105,14 +105,29 @@ report semantics and rendered coverage.
 
 ### Case 8: timeout after submission
 
-Pending integration of the reviewed delivery lane. The persistence contracts
-that the delivery lane composes are covered by:
+`tests/delivery/test_submission.py::
+test_timeout_and_cancellation_after_pending_are_unknown_and_block_retry`
 
-`tests/phase1_foundation/test_persistence.py::
-test_unknown_external_effect_blocks_blind_retry`
+`tests/delivery/test_submission.py::
+test_receipt_write_failure_after_call_remains_unknown`
 
-`tests/persistence_fences/test_claim_fencing.py::
-test_expired_submission_cannot_start_effect_but_can_reconcile_pending`
+`tests/delivery/test_r2_effects.py::
+test_invalid_post_call_response_stays_unknown_across_restart`
+
+`tests/delivery/test_r3_safety.py::
+test_transport_value_error_retains_unknown_gate`
+
+`tests/delivery/test_reconciliation_transport.py::
+test_unknown_reconciliation_requires_proof_and_rejected_releases_retry`
+
+`tests/delivery/test_reconciliation_transport.py::
+test_graph_202_is_accepted_only_and_http_is_one_shot`
+
+After the durable `PENDING` mark, a timeout, cancellation, invalid response,
+receipt write failure, or transport error keeps the effect `UNKNOWN` and
+holds the claim gate, so a fresh plan cannot resend. Only explicit
+reconciliation with provider evidence can release a retry, and a provider
+`202` counts as accepted submission, never as confirmed recipient delivery.
 
 ### Case 9: replay with a changed prompt
 
@@ -155,9 +170,26 @@ requires every stage outcome to be awaited and saved.
 
 ### Case 12: scheduler-free invocation
 
-Pending integration of the reviewed application CLI lane. The package has no
-scheduler runtime dependency. The CLI lane owns manual finite commands and the
-check that repeated invocation cannot bypass delivery reconciliation.
+`tests/application_cli/test_help_config_status.py::
+test_help_and_config_do_not_create_storage_or_require_credentials`
+
+`tests/application_cli/test_help_config_status.py::
+test_status_is_read_only_and_reports_exact_saved_refs`
+
+`tests/application_cli/test_stage_composition.py::
+test_actual_triage_then_report_build_with_injected_model_boundary`
+
+`tests/application_cli/test_delivery_composition.py::
+test_submission_requires_factory_and_reconciliation_never_sends`
+
+`tests/application_cli/test_entrypoint.py::
+test_project_script_points_at_the_single_sync_entrypoint`
+
+The `msgloom` console script runs finite commands with one `asyncio.run` and
+no scheduler dependency. Help, configuration inspection, and status need no
+credentials and create no storage. After an unknown submission effect, a
+repeated manual submit with a fresh execution and plan does not call the
+transport, and reconciliation records evidence without any send.
 
 ## Semantic fixture proposal
 
