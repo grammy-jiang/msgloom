@@ -1,6 +1,6 @@
 # Phase 1 semantic-data handoff
 
-**Scope:** producer/consumer API for durable prepared data only.
+**Scope:** producer/consumer API for durable preparation data.
 
 Phase 1 persistence remains the sole owner of the provider-neutral `phase1_*`
 schema in its separate Application database. Schema version 2 adds
@@ -59,7 +59,8 @@ claim = await persistence.acquire_claim(
 )
 ```
 
-`prepared@1`, `triage@1`, and `report@1` are semantic product-result
+`prepared@1`, `filter_result@1`, `group_result@1`, `triage@1`, and `report@1`
+are semantic product-result
 schemas. An acceptable result for any of them must declare a semantic-data
 reference and must be written with `append_result_with_data()`; a metadata-only
 success marker is rejected. Failed, blocked, cancelled, or otherwise
@@ -84,7 +85,13 @@ and schema validation for consumers.
 
 ## Registry boundary
 
-Only `prepared@1` has a semantic codec in this lane. The codec round-trips the
+The default registry includes `prepared@1`, `filter_result@1`, and
+`group_result@1`. Their codecs round-trip exact typed preparation data. See
+[filtering and grouping](preparation-semantics.md) for their contracts. Save
+each filter result with its prepared input reference, then each grouping
+result with its exact filter input references before admitting dependent work.
+
+The prepared codec round-trips the
 typed prepared record, including ordered parser blocks/tables and exact source
 locations, through canonical bounded JSON. It does not accept dictionaries as
 producer payloads and does not provide a generic arbitrary-JSON store.

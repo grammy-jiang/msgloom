@@ -15,6 +15,8 @@ from msgloom.persistence.errors import (
     UnknownSemanticDataSchemaError,
 )
 from msgloom.preparation.codec import PreparedDataCodec
+from msgloom.preparation.filtering import FilterResultCodec
+from msgloom.preparation.grouping import GroupResultCodec
 
 
 class _SemanticCodec(Protocol):
@@ -53,7 +55,7 @@ class SemanticDataRegistry:
     @classmethod
     def phase1(cls) -> SemanticDataRegistry:
         """Register only semantic schemas with implemented consumers."""
-        return cls((PreparedDataCodec(),))
+        return cls((PreparedDataCodec(), FilterResultCodec(), GroupResultCodec()))
 
     def reference(
         self,
