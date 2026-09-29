@@ -131,6 +131,10 @@ class Phase1Store:
                     connection, claim, result, now=datetime.now(UTC)
                 )
             append_stage_result(connection, result)
+            if claim is not None:
+                require_claim_publication(
+                    connection, claim, result, now=datetime.now(UTC)
+                )
 
     def append_result_with_data(
         self,
@@ -162,6 +166,10 @@ class Phase1Store:
                 )
             append_semantic_data(connection, encoded)
             append_stage_result(connection, result, require_new=require_new)
+            if claim is not None:
+                require_claim_publication(
+                    connection, claim, result, now=datetime.now(UTC)
+                )
 
     def load_semantic_data(self, reference: SemanticDataRef) -> object:
         """Load and validate one immutable semantic payload."""
@@ -232,13 +240,13 @@ class Phase1Store:
         if not claim_key.strip():
             raise ValueError("claim key must be non-empty")
         lease = validate_lease_seconds(lease_seconds)
-        now = datetime.now(UTC)
-        expires = now + timedelta(seconds=lease)
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
 
         with self._write_transaction() as connection:
             self._require_inputs(connection, required_inputs)
+            now = datetime.now(UTC)
+            expires = now + timedelta(seconds=lease)
             current = (
                 connection.execute(
                     select(claims).where(claims.c.claim_key == claim_key)
@@ -345,8 +353,8 @@ class Phase1Store:
         """Finish an attempt and release only effects that are safe to retry."""
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
-        now = datetime.now(UTC)
         with self._write_transaction() as connection:
+            now = datetime.now(UTC)
             current = require_current_claim(
                 connection, token, now=now, require_unexpired=False
             )

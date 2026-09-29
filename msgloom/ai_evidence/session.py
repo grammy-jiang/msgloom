@@ -13,6 +13,7 @@ from msgloom.ai import (
     TrustedPolicy,
 )
 from msgloom.contracts import (
+    ClaimToken,
     ExecutionIdentity,
     ResultRef,
     StageResult,
@@ -99,6 +100,7 @@ class EvidenceSession:
         request_ref: ResultRef,
         configuration_version: str,
         code_version: str,
+        claim: ClaimToken | None = None,
     ) -> None:
         self._persistence = persistence
         self.execution = execution
@@ -106,6 +108,7 @@ class EvidenceSession:
         self.request_ref = request_ref
         self.configuration_version = configuration_version
         self.code_version = code_version
+        self._claim = claim
         self._trace_refs: list[ResultRef] = []
         self._terminal_ref: ResultRef | None = None
         self._transition_lock = asyncio.Lock()
@@ -137,6 +140,7 @@ class EvidenceSession:
         required_inputs: tuple[ResultRef, ...],
         configuration_version: str,
         code_version: str,
+        claim: ClaimToken | None = None,
     ) -> EvidenceSession:
         """Validate durable inputs and save request evidence before execution."""
         if not isinstance(persistence, Phase1Persistence):
@@ -203,6 +207,7 @@ class EvidenceSession:
                     result,
                     evidence,
                     require_new=True,
+                    claim=claim,
                 )
             )
         except DuplicateResultError:
@@ -216,6 +221,7 @@ class EvidenceSession:
             ResultRef(request_id, "ai_request", "1"),
             configuration_version,
             code_version,
+            claim,
         )
         if cancelled:
             raise asyncio.CancelledError
@@ -274,7 +280,9 @@ class EvidenceSession:
             semantic_data_ref=semantic_ref,
         )
         _none, cancelled = await _accepted(
-            self._persistence.append_result_with_data(result, evidence)
+            self._persistence.append_result_with_data(
+                result, evidence, claim=self._claim
+            )
         )
         self._trace_refs.append(ResultRef(result_id, "ai_trace", "1"))
         if cancelled:
@@ -395,7 +403,9 @@ class EvidenceSession:
             semantic_data_ref=semantic_ref,
         )
         _none, cancelled = await _accepted(
-            self._persistence.append_result_with_data(result, evidence)
+            self._persistence.append_result_with_data(
+                result, evidence, claim=self._claim
+            )
         )
         terminal = ResultRef(result_id, "ai_response", "1")
         self._terminal_ref = terminal

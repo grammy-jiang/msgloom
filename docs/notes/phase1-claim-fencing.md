@@ -37,6 +37,12 @@ validation, semantic insertion, and result insertion execute in the same
 or execution-mismatched claim therefore leaves neither a result nor newly
 inserted semantic bytes.
 
+Lease acquisition and completion sample time after obtaining the writer lock.
+Publication checks again after insertion, before transaction commit. A lease
+that expires during a bounded write causes the whole publication to roll back.
+``EvidenceSession.begin(..., claim=token)`` forwards the enclosing claim to
+request, trace, and terminal evidence writes. A3 callers must supply that token.
+
 ## Ownership and lineage
 
 A publication token must still be the exact current durable owner: claim key,

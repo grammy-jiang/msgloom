@@ -68,6 +68,7 @@ def test_atomic_begin_has_one_winner_across_one_and_two_facades(
                 value: object,
                 *,
                 require_new: bool = False,
+                claim=None,
             ) -> None:
                 nonlocal arrived
                 if getattr(result, "kind", None) == "ai_request":
@@ -79,6 +80,7 @@ def test_atomic_begin_has_one_winner_across_one_and_two_facades(
                     result,
                     value,
                     require_new=require_new,
+                    claim=claim,
                 )
 
             return gated
@@ -181,11 +183,12 @@ def test_concurrent_trace_and_finish_serialize_on_durable_prefix(
             value: object,
             *,
             require_new: bool = False,
+            claim=None,
         ) -> None:
             if getattr(result, "kind", None) == "ai_trace":
                 trace_entered.set()
                 await release_trace.wait()
-            await original(result, value, require_new=require_new)  # type: ignore[arg-type]
+            await original(result, value, require_new=require_new, claim=claim)  # type: ignore[arg-type]
 
         store.append_result_with_data = gated  # type: ignore[method-assign]
         request = session.request.request
@@ -304,11 +307,12 @@ def test_terminal_response_and_diagnostic_cannot_race_overwrite(
             value: object,
             *,
             require_new: bool = False,
+            claim=None,
         ) -> None:
             if getattr(result, "kind", None) == "ai_response":
                 terminal_entered.set()
                 await release_terminal.wait()
-            await original(result, value, require_new=require_new)  # type: ignore[arg-type]
+            await original(result, value, require_new=require_new, claim=claim)  # type: ignore[arg-type]
 
         store.append_result_with_data = gated  # type: ignore[method-assign]
         request = session.request.request
