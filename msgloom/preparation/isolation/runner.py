@@ -436,17 +436,21 @@ def _open_descendant_pidfds(root_pid: int) -> list[int]:
 
 
 def _wait_pidfds(pidfds: list[int], seconds: float) -> bool:
+    """Wait for reaping, retaining ownership while exited zombies remain."""
     poller = select.poll()
     for pidfd in pidfds:
-        poller.register(pidfd, select.POLLIN)
+        # Readability marks exit; only hangup confirms reaping.
+        poller.register(pidfd, 0)
     remaining = set(pidfds)
     deadline = time.monotonic() + seconds
     while remaining:
         milliseconds = max(0, int((deadline - time.monotonic()) * 1000))
         if milliseconds == 0:
             return False
-        for pidfd, _event in poller.poll(milliseconds):
-            remaining.discard(pidfd)
+        for pidfd, event in poller.poll(milliseconds):
+            if event & select.POLLHUP:
+                remaining.discard(pidfd)
+                poller.unregister(pidfd)
     return True
 
 

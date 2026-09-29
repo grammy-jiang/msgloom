@@ -127,3 +127,12 @@ interpreters without installing runtimes:
 Those commands create isolated project environments from the existing frozen
 lock; they do not install or select a different Python runtime. The manager
 still owns dependency qualification and the native-format matrix.
+
+## Reaping completion
+
+Cleanup retains descendant pidfds until the kernel reports hangup. Readability
+alone means the process exited and can still be a zombie. Hangup confirms that
+its parent has reaped it. This avoids returning from parser cancellation while
+an exited descendant remains in the process table. The synthetic regression
+holds an exited child unreaped, then explicitly reaps it to test both states.
+See the [Linux pidfd lifecycle documentation](https://man7.org/linux/man-pages/man2/pidfd_open.2.html).
