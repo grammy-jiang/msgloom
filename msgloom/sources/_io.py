@@ -13,7 +13,11 @@ from typing import TypeVar
 from msgloom.preparation.contracts import SavedByteReference
 from msgloom.sources._catalog import EvidenceRow
 from msgloom.sources._safe_io import open_root
-from msgloom.sources.models import SourceEvidenceError, SourceReferenceError
+from msgloom.sources.models import (
+    SourceEvidenceError,
+    SourceEvidenceLimitError,
+    SourceReferenceError,
+)
 
 _T = TypeVar("_T")
 
@@ -122,7 +126,9 @@ class EvidenceFiles:
     def read(self, row: EvidenceRow) -> bytes:
         """Read one regular file through a pinned root and verify integrity."""
         if row.response_body_bytes > self.max_bytes:
-            raise SourceEvidenceError("saved evidence exceeds configured byte limit")
+            raise SourceEvidenceLimitError(
+                "saved evidence exceeds configured byte limit"
+            )
         path = Path(row.response_body_path)
         if not path.is_absolute():
             raise SourceEvidenceError("saved evidence path is not absolute")
@@ -202,7 +208,9 @@ class EvidenceFiles:
             remaining -= len(chunk)
         data = b"".join(chunks)
         if len(data) > self.max_bytes:
-            raise SourceEvidenceError("saved evidence exceeds configured byte limit")
+            raise SourceEvidenceLimitError(
+                "saved evidence exceeds configured byte limit"
+            )
         return data
 
     def close(self) -> None:

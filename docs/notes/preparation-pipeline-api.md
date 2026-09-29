@@ -189,3 +189,35 @@ A parser rejection, including input validation before child launch, adds the
 ``content-parse-failed`` limitation and retains the prepared record and other
 parsed components. An aggregate parser output budget violation still fails
 the operation. It cannot become an ordinary per-content limitation.
+
+## Post-selection saved-evidence loss
+
+A captured ``collected_selection@1`` remains authoritative when selected saved
+component later disappears, becomes unreadable, or fails its recorded byte
+count or digest. Preparation never recollects or substitutes current bytes.
+The exact saved byte reference remains in the captured selection and, for
+attachments, in the partial prepared attachment. The affected component is not
+sent to a parser.
+
+Saved component loading has a narrow failure classification. Evidence
+availability, reference, and integrity failures after selection add
+``saved-content-unavailable`` and allow unrelated verified metadata, bodies,
+attachments, filtering, and grouping to publish as ``INCOMPLETE``. Reader
+configuration/closed-state failures, cancellation, stale claim ownership,
+source byte ceilings, aggregate selection/derived/parser-output ceilings, and
+other producer failures remain fatal or retain their existing lifecycle
+classification. ``SourceEvidenceLimitError`` distinguishes the configured
+saved-byte ceiling from ordinary ``SourceEvidenceError`` without matching
+exception text.
+
+Replay uses the exact durable captured selection and repeats the same
+availability checks against its saved byte references. A restart therefore
+preserves the known selected version and honest unavailable-component state;
+it does not consult mutable A1 projections or changed content. Derived parser
+artifacts and parsed-content identities remain attempt-bound where required by
+the existing immutable result identity contract.
+
+The preparation lane owns this classification and partial-result policy.
+The source-reader change is limited to precise error typing for its existing
+byte ceiling; it does not alter evidence lookup, containment, integrity,
+transport, or collection behavior.

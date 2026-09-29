@@ -221,7 +221,11 @@ class SourceReferenceError(SourceReaderError):
 
 
 class SourceEvidenceError(SourceReaderError):
-    """Saved evidence failed containment, type, size, or digest verification."""
+    """Saved evidence failed containment, type, availability, or integrity checks."""
+
+
+class SourceEvidenceLimitError(SourceEvidenceError):
+    """Saved evidence exceeds the configured finite byte budget."""
 
 
 @runtime_checkable

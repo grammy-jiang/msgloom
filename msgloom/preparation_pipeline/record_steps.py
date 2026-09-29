@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import json
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -40,6 +38,7 @@ from .codec import (
     DERIVED_BYTES_SCHEMA_VERSION,
     DerivedByteArtifact,
 )
+from .component_loading import load_selected_component
 from .formatting import (
     attachment_format,
     format_for_kind,
@@ -50,6 +49,7 @@ from .formatting import (
     readable_text,
 )
 from .models import PreparationPlan
+from .parsed_identity import parsed_version
 
 
 class RecordSteps:
@@ -213,32 +213,36 @@ class RecordSteps:
                     )
                 )
             else:
-                content = await self._reader.load_saved_bytes(attachment.saved_bytes)
-                output = await self._parse(
-                    profile.format,
-                    profile.parser,
-                    profile.config,
-                    profile.limits,
-                    attachment.saved_bytes,
-                    content,
-                    state,
+                content = await load_selected_component(
+                    self._reader, attachment.saved_bytes, item_limitations
                 )
-                if output is not None:
-                    parsed_ref = await self._parsed_version(
-                        captured,
-                        f"attachment:{index}",
-                        profile,
+                if content is not None:
+                    output = await self._parse(
+                        profile.format,
+                        profile.parser,
+                        profile.config,
+                        profile.limits,
                         attachment.saved_bytes,
-                        output,
+                        content,
+                        state,
                     )
-                    parsed_index = len(parsed)
-                    parsed.append(
-                        ReferencedParserOutput(reference=parsed_ref, output=output)
-                    )
-                    mappings.extend(
-                        parsed_mappings(attachment.reference, parsed_index, output)
-                    )
-                    item_limitations.extend(parser_limitations(output))
+                    if output is not None:
+                        parsed_ref = await parsed_version(
+                            self._run_sync_owned,
+                            captured,
+                            f"attachment:{index}",
+                            profile,
+                            attachment.saved_bytes,
+                            output,
+                        )
+                        parsed_index = len(parsed)
+                        parsed.append(
+                            ReferencedParserOutput(reference=parsed_ref, output=output)
+                        )
+                        mappings.extend(
+                            parsed_mappings(attachment.reference, parsed_index, output)
+                        )
+                        item_limitations.extend(parser_limitations(output))
             attachments.append(
                 PreparedAttachment(
                     reference=attachment.reference,
@@ -291,7 +295,11 @@ class RecordSteps:
                     )
                 )
                 return None
-            content = await self._reader.load_saved_bytes(body.saved_bytes)
+            content = await load_selected_component(
+                self._reader, body.saved_bytes, state.limitations
+            )
+            if content is None:
+                return None
             output = await self._parse(
                 format_,
                 profile.parser,
@@ -304,8 +312,13 @@ class RecordSteps:
             if output is None:
                 return None
             return (
-                await self._parsed_version(
-                    captured, component, profile, body.saved_bytes, output
+                await parsed_version(
+                    self._run_sync_owned,
+                    captured,
+                    component,
+                    profile,
+                    body.saved_bytes,
+                    output,
                 ),
                 output,
             )
@@ -394,7 +407,9 @@ class RecordSteps:
         if output is None:
             return None
         return (
-            await self._parsed_version(captured, component, profile, saved, output),
+            await parsed_version(
+                self._run_sync_owned, captured, component, profile, saved, output
+            ),
             output,
         )
 
@@ -432,66 +447,3 @@ class RecordSteps:
         if state.parser_output_bytes > self._plan.max_total_parser_output_bytes:
             raise ValueError("aggregate parser output exceeds configured bound")
         return output
-
-    async def _parsed_version(
-        self,
-        captured: _Captured,
-        component: str,
-        profile,
-        saved: SavedByteReference,
-        output: ParserOutput,
-    ) -> VersionRef:
-        output_bytes = await self._run_sync_owned(encode_output, output)
-        limits = profile.limits
-        material = {
-            "selection": {
-                "kind": captured.selection.selection.kind,
-                "identity": captured.selection.selection.identity,
-                "version": captured.selection.selection.version,
-            },
-            "source": {
-                "kind": captured.selection.source.kind,
-                "identity": captured.selection.source.identity,
-                "version": captured.selection.source.version,
-            },
-            "component": component,
-            "saved": {
-                "reference": saved.reference,
-                "sha256": saved.sha256,
-                "byte_count": saved.byte_count,
-            },
-            "format": profile.format.value,
-            "parser": {
-                "name": profile.parser.name,
-                "version": profile.parser.version,
-                "backend": profile.parser.backend,
-            },
-            "config": {
-                "profile": profile.config.profile,
-                "settings": [list(item) for item in profile.config.settings],
-            },
-            "limits": {
-                "wall_time_seconds": limits.wall_time_seconds,
-                "memory_bytes": limits.memory_bytes,
-                "decompressed_bytes": limits.decompressed_bytes,
-                "output_bytes": limits.output_bytes,
-                "container_members": limits.container_members,
-            },
-            "output_sha256": hashlib.sha256(output_bytes).hexdigest(),
-        }
-        payload = json.dumps(
-            material,
-            ensure_ascii=False,
-            allow_nan=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode()
-        identity = hashlib.sha256(
-            (
-                f"{captured.selection.source.kind}\0"
-                f"{captured.selection.source.identity}\0{component}"
-            ).encode()
-        ).hexdigest()
-        return VersionRef(
-            "parsed_content", identity, hashlib.sha256(payload).hexdigest()
-        )
