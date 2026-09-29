@@ -39,10 +39,18 @@ groups, uv_sync_locked=true, and package=wheel. Missing interpreters fail
 rather than skip.
 
 Normal source-suite runs use at most four xdist workers, then run tests marked
-exclusive_state separately with xdist disabled. Branch coverage is written
-under each tox environment. The compatibility environments only import the
-selected FastMCP release and exercise a synthetic shared typed/async contract;
-they do not start a server, service, provider call, or model call.
+exclusive_state separately with xdist disabled. Both normal commands exclude
+the fastmcp_compat marker. Compatibility tests are skipped unless the explicit
+MSGLOOM_FASTMCP_COMPAT=1 gate is present; each named compatibility environment
+sets that gate, selects only fastmcp_compat tests, and requires FastMCP 4.0.10.
+A missing FastMCP package therefore fails an opted-in compatibility run while
+plain pytest remains valid without FastMCP. Compatibility tests do not start a
+server, service, provider call, or model call.
+
+Each tox environment sets COVERAGE_FILE to its own .tox environment directory.
+The serial command may append only to the same environment's parallel coverage
+data, so separate interpreter and compatibility runs cannot share the checkout
+.coverage file. Coverage XML remains separate per environment as well.
 
 The repository pytest configuration includes pythonpath=["."]. Therefore these
 tox source-suite runs do not prove installed import provenance even though tox
@@ -52,11 +60,15 @@ check outside the checkout.
 ## Installed-wheel qualification
 
 scripts/qualify_installed_wheel.py accepts only explicit source, output,
-isolated-environment Python, and uv paths. It validates the expected build
-backend before invoking build tooling. It uses argument lists rather than a
-shell, runs uv builds offline, and rejects setup.py or setup.cfg from the
-checkout. It stages only Git-tracked build inputs below the output root so
-setuptools metadata generation never writes into the source checkout.
+isolated-environment Python, and uv paths. The environment Python path is made
+absolute without resolving executable symlinks, preserving the virtual
+environment invocation identity. The helper verifies that Python reports the
+intended isolated environment before creating the output root or invoking build
+work. It validates the expected build backend before invoking build tooling,
+uses argument lists rather than a shell, runs uv builds offline, and rejects
+setup.py or setup.cfg from the checkout. It stages only Git-tracked build
+inputs below the output root so setuptools metadata generation never writes
+into the source checkout.
 
 The helper performs this finite sequence:
 
@@ -69,18 +81,22 @@ The helper performs this finite sequence:
 5. Inspect every wheel member and normal runtime metadata.
 6. Install that exact wheel with --no-deps into the explicitly supplied
    isolated environment.
-7. Run Python with -I from a directory outside the checkout, import all three
-   runtime roots, and require their paths to live under the supplied
-   environment.
+7. Remove PYTHONPATH and run that environment Python with -I from a directory
+   outside the checkout. Import all three runtime roots and require their paths
+   to live under the supplied environment, rejecting source fallback.
 8. Require FastMCP and Prefect to be absent in the normal environment and
    verify imports do not create files in the probe directory or background
    threads.
 9. Check every explicitly required CLI and package resource. Missing required
    items fail the qualification.
 
-The helper writes only below the supplied output root. It does not update the
-lock, install into system Python, access provider credentials, make provider
-calls, or perform paid/model acceptance.
+The helper writes artifacts below the supplied output root and installs the
+wheel into the explicitly supplied isolated environment. Every Git listing,
+build, install, environment check, and installed probe subprocess has a
+120-second timeout. Timeout diagnostics expose only the executable basename,
+not command arguments or private paths. The helper does not update the lock,
+install into system Python, access provider credentials, make provider calls,
+or perform paid/model acceptance.
 
 A manager-owned invocation has this shape:
 
@@ -109,6 +125,12 @@ Focused lane checks do not resolve or rewrite uv.lock:
 pyright scripts/qualify_installed_wheel.py tests/packaging
 git diff --check
 ~~~
+
+Plain pytest includes the compatibility module but skips it without the opt-in
+gate. An explicit opt-in with FastMCP absent is a required negative check: it
+must fail rather than silently skip. Parsed tox configuration should also be
+checked with the manager's tool environment when that environment is
+available; this lane does not install tox into the shared virtual environment.
 
 After review, the manager owns lock resolution and the locked tox matrix:
 

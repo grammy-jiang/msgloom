@@ -107,11 +107,22 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
     _require_equal(base["package"], "wheel", "tox package mode")
     _require_equal(base["dependency_groups"], ["dev"], "tox dependency groups")
     _require_equal(base["uv_sync_locked"], True, "locked uv sync")
+    base_env = _table(base["set_env"], "tox base environment")
+    _require_equal(
+        base_env["COVERAGE_FILE"],
+        "{env_dir}/.coverage",
+        "per-environment coverage data",
+    )
     commands = cast(list[list[str]], base["commands"])
     if "-n" not in commands[0] or "4" not in commands[0]:
         pytest.fail("parallel test command must bound xdist at four workers")
     if commands[1][commands[1].index("-n") + 1] != "0":
         pytest.fail("exclusive-state test command must disable xdist")
+    for command in commands:
+        marker_index = command.index("-m", command.index("-m") + 1)
+        marker = command[marker_index + 1]
+        if "not fastmcp_compat" not in marker:
+            pytest.fail("normal tox command must exclude FastMCP compatibility")
     for version in ("py312", "py313", "py314"):
         environments = _table(tox["env"], "tox environments")
         compat = _table(
@@ -123,7 +134,22 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
             ["dev", "compat-fastmcp4"],
             f"{version} FastMCP groups",
         )
+        compat_env = _table(compat["set_env"], f"{version} FastMCP environment")
+        _require_equal(
+            compat_env["MSGLOOM_FASTMCP_COMPAT"],
+            "1",
+            f"{version} FastMCP opt-in",
+        )
+        _require_equal(
+            compat_env["COVERAGE_FILE"],
+            "{env_dir}/.coverage",
+            f"{version} coverage data",
+        )
         compat_command = cast(list[list[str]], compat["commands"])[0]
+        marker_index = compat_command.index("-m", compat_command.index("-m") + 1)
+        marker = compat_command[marker_index + 1]
+        if marker != "fastmcp_compat":
+            pytest.fail(f"{version} compatibility test marker is not required")
         if "--cov-branch" not in compat_command:
             pytest.fail(f"{version} compatibility coverage is not branch-aware")
         if not any("coverage.xml" in item for item in compat_command):

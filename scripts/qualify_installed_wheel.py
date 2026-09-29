@@ -23,6 +23,7 @@ RUNTIME_ROOTS = ("msgloom", "message_ingest", "microsoft_graph")
 BUILD_BACKEND = "setuptools.build_meta"
 BUILD_REQUIREMENTS = ["setuptools==84.0.0"]
 FORBIDDEN_RUNTIME = ("fastmcp", "prefect")
+COMMAND_TIMEOUT_SECONDS = 120
 
 
 class QualificationError(RuntimeError):
@@ -48,15 +49,21 @@ def _run(
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run one bounded command without shell interpolation."""
-    return subprocess.run(
-        command,
-        cwd=cwd,
-        env=env,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+    try:
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            env=env,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        executable = Path(command[0]).name
+        detail = f"timeout after {COMMAND_TIMEOUT_SECONDS}s: {executable}"
+        raise QualificationError(detail) from None
 
 
 def _validate_request_paths(request: QualificationRequest) -> None:
@@ -84,7 +91,7 @@ def _source_epoch(source_root: Path) -> int:
 
 def _stage_tracked_source(request: QualificationRequest) -> Path:
     """Copy only tracked build inputs beneath the caller output root."""
-    completed = subprocess.run(
+    completed = _run(
         [
             "git",
             "-C",
@@ -96,13 +103,9 @@ def _stage_tracked_source(request: QualificationRequest) -> Path:
             "MANIFEST.in",
             *RUNTIME_ROOTS,
         ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        cwd=request.source_root,
     )
-    relative_paths = [
-        item.decode("utf-8") for item in completed.stdout.split(b"\0") if item
-    ]
+    relative_paths = [item for item in completed.stdout.split("\0") if item]
     required = {"pyproject.toml", "MANIFEST.in"}
     if not required <= set(relative_paths):
         raise QualificationError("tracked build metadata is incomplete")
@@ -271,9 +274,8 @@ def _one_artifact(directory: Path, suffix: str) -> Path:
     """Return the single artifact with the requested suffix."""
     matches = sorted(directory.glob(f"*{suffix}"))
     if len(matches) != 1:
-        raise QualificationError(
-            f"expected one {suffix} artifact, found {len(matches)}"
-        )
+        detail = f"expected one {suffix} artifact, found {len(matches)}"
+        raise QualificationError(detail)
     return matches[0]
 
 
@@ -336,6 +338,11 @@ def _validate_env_python(env_python: Path) -> None:
     data = json.loads(probe.stdout)
     if data["prefix"] == data["base_prefix"]:
         raise QualificationError("supplied Python is not isolated")
+    intended_prefix = env_python.parent.parent.resolve()
+    if Path(data["prefix"]).resolve() != intended_prefix:
+        raise QualificationError(
+            "supplied Python does not belong to intended environment"
+        )
 
 
 def _probe_code(
@@ -427,7 +434,7 @@ def install_and_probe(
     )
     env = os.environ.copy()
     env.pop("PYTHONPATH", None)
-    completed = subprocess.run(
+    completed = _run(
         [
             str(request.env_python),
             "-I",
@@ -436,10 +443,6 @@ def install_and_probe(
         ],
         cwd=probe_dir,
         env=env,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
     )
     return json.loads(completed.stdout)
 
@@ -447,6 +450,7 @@ def install_and_probe(
 def qualify(request: QualificationRequest) -> dict[str, object]:
     """Run the finite offline package qualification."""
     _validate_request_paths(request)
+    _validate_env_python(request.env_python)
     request.output_root.mkdir(parents=True, exist_ok=False)
     sdist, wheel = build_artifacts(request)
     probe = install_and_probe(request, wheel)
@@ -477,7 +481,7 @@ def main() -> int:
     request = QualificationRequest(
         source_root=args.source_root.resolve(),
         output_root=args.output_root.resolve(),
-        env_python=args.env_python.resolve(),
+        env_python=Path(os.path.abspath(args.env_python)),
         uv=args.uv.resolve(),
         required_cli=tuple(args.require_cli),
         required_resource=tuple(args.require_resource),

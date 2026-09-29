@@ -43,6 +43,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "exclusive_state: tests that must run serially outside xdist",
+    "fastmcp_compat: tests requiring the opt-in FastMCP compatibility group",
 ]
 
 [tool.pyright]
@@ -90,17 +91,18 @@ skip_missing_interpreters = false
 
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
+set_env = { COVERAGE_FILE = "{env_dir}/.coverage" }
 package = "wheel"
 dependency_groups = ["dev"]
 uv_sync_locked = true
 commands = [
     ["python", "-m", "pytest", "-q", "-n", "4",
-     "-m", "not exclusive_state",
+     "-m", "not exclusive_state and not fastmcp_compat",
      "--cov=msgloom", "--cov=message_ingest", "--cov=microsoft_graph",
      "--cov-branch", "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],
     ["python", "-m", "pytest", "-q", "-n", "0",
-     "-m", "exclusive_state", "--cov=msgloom", "--cov=message_ingest",
+     "-m", "exclusive_state and not fastmcp_compat", "--cov=msgloom", "--cov=message_ingest",
      "--cov=microsoft_graph", "--cov-branch", "--cov-append",
      "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],
@@ -108,8 +110,9 @@ commands = [
 
 [tool.tox.env.py312-fastmcp4]
 dependency_groups = ["dev", "compat-fastmcp4"]
+set_env = { COVERAGE_FILE = "{env_dir}/.coverage", MSGLOOM_FASTMCP_COMPAT = "1" }
 commands = [
-    ["python", "-m", "pytest", "-q",
+    ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],
@@ -117,8 +120,9 @@ commands = [
 
 [tool.tox.env.py313-fastmcp4]
 dependency_groups = ["dev", "compat-fastmcp4"]
+set_env = { COVERAGE_FILE = "{env_dir}/.coverage", MSGLOOM_FASTMCP_COMPAT = "1" }
 commands = [
-    ["python", "-m", "pytest", "-q",
+    ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],
@@ -126,8 +130,9 @@ commands = [
 
 [tool.tox.env.py314-fastmcp4]
 dependency_groups = ["dev", "compat-fastmcp4"]
+set_env = { COVERAGE_FILE = "{env_dir}/.coverage", MSGLOOM_FASTMCP_COMPAT = "1" }
 commands = [
-    ["python", "-m", "pytest", "-q",
+    ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],

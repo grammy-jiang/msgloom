@@ -4,11 +4,20 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import os
 from importlib.metadata import version
 
 import pytest
 
 from msgloom.contracts import EvidenceReader, VersionRef
+
+pytestmark = [
+    pytest.mark.fastmcp_compat,
+    pytest.mark.skipif(
+        os.environ.get("MSGLOOM_FASTMCP_COMPAT") != "1",
+        reason="FastMCP compatibility tests require explicit opt-in",
+    ),
+]
 
 
 class SyntheticReader:
