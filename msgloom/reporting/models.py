@@ -173,6 +173,8 @@ class ReportSelectionPlan(_FrozenModel):
         topics = tuple(x.topic_ref for x in self.assessment_selections)
         if len(topics) != len(set(topics)):
             raise ValueError("assessment selection topics must be unique")
+        if any(x.evidence_ref is None for x in self.prior_state):
+            raise ValueError("prior report state requires durable evidence")
         states = tuple((x.policy_ref, x.assessment_ref) for x in self.prior_state)
         if len(states) != len(set(states)):
             raise ValueError(
@@ -194,9 +196,42 @@ class FrozenReportInput(_FrozenModel):
 class FrozenRendererConfig(_FrozenModel):
     """Persist the exact finite rendering choices used for a selection."""
 
-    max_part_bytes: int
-    max_total_bytes: int
-    max_parts: int
+    max_part_bytes: Annotated[int, Field(ge=1_024, le=4 * 1024 * 1024)]
+    max_total_bytes: Annotated[int, Field(ge=2_048, le=8 * 1024 * 1024)]
+    max_parts: Annotated[int, Field(ge=1, le=128)]
+
+    @model_validator(mode="after")
+    def _coherent(self) -> FrozenRendererConfig:
+        if self.max_total_bytes < self.max_part_bytes:
+            raise ValueError("total output bound must allow one full part")
+        return self
+
+
+class FrozenReportHistory(_FrozenModel):
+    """Freeze one verified delivery-history dependency and integrity basis."""
+
+    evidence_ref: ResultRef
+    report_ref: VersionRef
+    policy_ref: VersionRef
+    assessment_ref: VersionRef
+    reported_at: datetime
+    receipt_ref: VersionRef
+    semantic_data_ref: SemanticDataRef | None = None
+
+    @model_validator(mode="after")
+    def _closed_history(self) -> FrozenReportHistory:
+        if (
+            self.evidence_ref.kind != "report_submission"
+            or self.evidence_ref.schema_version != "1"
+        ):
+            raise ValueError("history evidence must reference report_submission@1")
+        if self.report_ref.kind != "report" or self.policy_ref.kind != "report-policy":
+            raise ValueError("history report/policy reference kind is invalid")
+        if self.assessment_ref.kind != "topic-assessment":
+            raise ValueError("history assessment reference kind is invalid")
+        if self.reported_at.tzinfo is None or self.reported_at.utcoffset() is None:
+            raise ValueError("history reported time must be timezone-aware")
+        return self
 
 
 class FrozenReportSelection(_FrozenModel):
@@ -215,14 +250,36 @@ class FrozenReportSelection(_FrozenModel):
     selected: Annotated[
         tuple[AssessmentSelection, ...], Field(min_length=1, max_length=256)
     ]
+    history: Annotated[tuple[FrozenReportHistory, ...], Field(max_length=512)] = ()
 
     @model_validator(mode="after")
     def _closed_selection(self) -> FrozenReportSelection:
+        if self.report_ref.kind != "report":
+            raise ValueError("frozen report reference must be report kind")
+        if self.policy.policy_ref.kind != "report-policy":
+            raise ValueError("frozen policy reference must be report-policy kind")
         if tuple(item.result_ref for item in self.inputs) != self.plan.triage_results:
             raise ValueError("frozen inputs must exactly match the selection plan")
+        for item in self.inputs:
+            if (
+                item.result_ref.kind != "triage"
+                or item.result_ref.schema_version != "1"
+                or item.semantic_data_ref.kind != "triage"
+                or item.semantic_data_ref.schema_version != "1"
+            ):
+                raise ValueError("frozen input must bind exact triage@1 schemas")
         pairs = tuple((x.topic_ref, x.assessment_ref) for x in self.selected)
         if len(pairs) != len(set(pairs)):
             raise ValueError("frozen selected assessments must be unique")
+        for item in self.selected:
+            if (
+                item.topic_ref.kind != "topic"
+                or item.assessment_ref.kind != "topic-assessment"
+            ):
+                raise ValueError("frozen selected assessment identities are malformed")
+        expected_history = tuple(x.evidence_ref for x in self.plan.prior_state)
+        if tuple(x.evidence_ref for x in self.history) != expected_history:
+            raise ValueError("frozen history must exactly match prior-state evidence")
         return self
 
 
@@ -299,7 +356,24 @@ class SavedReport(_FrozenModel):
     def _aware_and_unique(self) -> SavedReport:
         if self.due_at.tzinfo is None or self.due_at.utcoffset() is None:
             raise ValueError("saved report due time must be timezone-aware")
+        if self.report_ref.kind != "report" or self.policy_ref.kind != "report-policy":
+            raise ValueError("saved report reference kinds are invalid")
+        if any(
+            x.kind != "triage" or x.schema_version != "1"
+            for x in self.source_triage_results
+        ):
+            raise ValueError("saved report source results must be triage@1")
         topics = tuple(x.topic_ref for x in self.topics)
         if len(topics) != len(set(topics)):
             raise ValueError("saved report topic identities must be unique")
+        if any(x.kind != "topic" for x in topics):
+            raise ValueError("saved report topic reference kind is invalid")
+        numbers = tuple(x.part_number for x in self.parts)
+        if numbers != tuple(range(1, len(self.parts) + 1)):
+            raise ValueError("saved report parts must be uniquely consecutive")
+        mapped = tuple(ref for part in self.parts for ref in part.topic_refs)
+        if mapped != topics:
+            raise ValueError(
+                "saved report topic-to-part mapping must be exact and ordered"
+            )
         return self

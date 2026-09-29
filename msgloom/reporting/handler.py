@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import asyncio
 from time import monotonic
-from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
 
 from msgloom.contracts import (
-    AttemptIdentity,
     ClaimKind,
     ClaimToken,
     ExternalEffectState,
@@ -22,7 +20,6 @@ from msgloom.contracts import (
     ResultRef,
     StageResult,
     TerminalStatus,
-    VersionRef,
 )
 from msgloom.persistence import Phase1Persistence, Phase1PersistenceError
 from msgloom.triage import TopicAssessment, TriageData
@@ -35,9 +32,13 @@ from .build import (
     validate_semantic_coverage,
 )
 from .codec import REPORT_KIND, REPORT_SCHEMA_VERSION
+from .config import ReportHandlerConfig
+from .history import ReportHistoryEvidence, ReportHistoryMetadata, ReportHistoryResolver
+from .lifecycle import finish_quietly
 from .models import (
     AssessmentSelection,
     FrozenRendererConfig,
+    FrozenReportHistory,
     FrozenReportInput,
     FrozenReportSelection,
     ReportOverviewItem,
@@ -52,33 +53,6 @@ from .selection import ReportSelectionError, select_topics
 from .selection_codec import REPORT_SELECTION_KIND, REPORT_SELECTION_SCHEMA_VERSION
 
 
-class ReportHandlerConfig(BaseModel):
-    """Trusted finite identities and budget for one configured build."""
-
-    model_config = ConfigDict(frozen=True, strict=True, extra="forbid")
-
-    report_ref: VersionRef
-    result_id: Annotated[str, Field(min_length=1, max_length=256)]
-    semantic_data_id: Annotated[str, Field(min_length=1, max_length=256)]
-    selection_result_id: Annotated[str, Field(min_length=1, max_length=256)]
-    selection_semantic_data_id: Annotated[str, Field(min_length=1, max_length=256)]
-    max_input_bytes: Annotated[int, Field(ge=1, le=64 * 1024 * 1024)]
-    attempt: AttemptIdentity
-    code_version: Annotated[str, Field(min_length=1, max_length=256)]
-    expected_parameters: Annotated[tuple[tuple[str, str], ...], Field(max_length=32)]
-    timeout_seconds: Annotated[float, Field(gt=0.0, le=300.0)]
-    claim_lease_seconds: Annotated[float, Field(gt=0.0, le=600.0)]
-
-    @model_validator(mode="after")
-    def _budget_fits_lease(self) -> ReportHandlerConfig:
-        keys = tuple(key for key, _value in self.expected_parameters)
-        if len(keys) != len(set(keys)):
-            raise ValueError("trusted handler parameters must have unique keys")
-        if self.claim_lease_seconds < self.timeout_seconds + 1.0:
-            raise ValueError("claim lease must exceed the finite operation budget")
-        return self
-
-
 class ReportBuildHandler:
     """Build one immutable report from exact already-admitted saved inputs."""
 
@@ -90,6 +64,7 @@ class ReportBuildHandler:
         persistence: Phase1Persistence,
         renderer_config: RendererConfig,
         config: ReportHandlerConfig,
+        history_resolver: ReportHistoryResolver | None = None,
     ) -> None:
         try:
             self._policy = ReportPolicy.model_validate_json(
@@ -106,33 +81,49 @@ class ReportBuildHandler:
             )
         except (PydanticSerializationError, ValidationError, TypeError, ValueError):
             raise ValueError("report build configuration failed validation") from None
+        if self._plan.prior_state and history_resolver is None:
+            raise ValueError("prior report history requires a durable history resolver")
         self._persistence = persistence
+        self._history_resolver = history_resolver
 
     async def run(self, request: OperationRequest) -> OperationOutcome:
-        """Validate request binding, claim policy scope, build, and persist."""
+        """Validate, admit metadata, claim, build, and publish within one deadline."""
         mismatch = self._request_mismatch(request)
         if mismatch is not None:
             return self._failed(request, "request_binding_invalid", mismatch)
-        claim = None
-        started = monotonic()
+        claim: ClaimToken | None = None
+        durable_refs: list[ResultRef] = []
+        deadline = monotonic() + self._config.timeout_seconds
         try:
-            claim = await self._persistence.acquire_claim(
-                self._claim_key(),
-                ClaimKind.REPORT_BUILD,
-                request.execution,
-                self._config.attempt,
-                required_inputs=self._plan.triage_results,
-                lease_seconds=self._config.claim_lease_seconds,
-            )
-            async with asyncio.timeout(self._config.timeout_seconds):
-                await self._validate_prior_evidence()
-                loaded = await self._load_inputs()
-                selected = select_topics(self._policy, self._plan, loaded)
-                snapshot = self._selection_snapshot(loaded, selected)
-                selection_result = self._selection_stage_result(request, snapshot)
-                await self._persistence.append_result_with_data(
-                    selection_result, snapshot
+            async with asyncio.timeout_at(deadline):
+                _admitted, history_meta = await self._inspect_inputs()
+                self._check_deadline(deadline)
+                required = self._plan.triage_results + tuple(
+                    item.evidence_ref for item in history_meta
                 )
+                claim = await self._persistence.acquire_claim(
+                    self._claim_key(),
+                    ClaimKind.REPORT_BUILD,
+                    request.execution,
+                    self._config.attempt,
+                    required_inputs=required,
+                    lease_seconds=self._config.claim_lease_seconds,
+                )
+                loaded = await self._load_inputs()
+                history = await self._resolve_history(history_meta)
+                selected = select_topics(self._policy, self._plan, loaded)
+                snapshot = self._selection_snapshot(loaded, selected, history)
+                selection_result = self._selection_stage_result(request, snapshot)
+                self._check_deadline(deadline)
+                await self._persistence.append_result_with_data(
+                    selection_result, snapshot, claim=claim
+                )
+                selection_ref = ResultRef(
+                    selection_result.result_id,
+                    selection_result.kind,
+                    selection_result.schema_version,
+                )
+                durable_refs.append(selection_ref)
                 topics = build_topics(selected, self._plan)
                 overview = build_overview(topics)
                 validate_semantic_coverage(topics, overview)
@@ -142,7 +133,9 @@ class ReportBuildHandler:
                     for limitation in result.limitations
                 )
                 limitations = report_limitations(topics, self._plan, upstream)
-                parts = await self._render_owned(overview, topics, limitations, started)
+                parts = await self._render_owned(
+                    overview, topics, limitations, deadline
+                )
                 report = SavedReport(
                     report_ref=self._config.report_ref,
                     policy_ref=self._policy.policy_ref,
@@ -163,11 +156,15 @@ class ReportBuildHandler:
                     else TerminalStatus.COMPLETE
                 )
                 result = self._stage_result(request, report, status)
-                if monotonic() - started >= self._config.claim_lease_seconds:
-                    raise ReportBuildError("report build claim lease expired")
-                await self._persistence.append_result_with_data(result, report)
-                if monotonic() - started >= self._config.claim_lease_seconds:
-                    raise ReportBuildError("report build claim lease expired")
+                self._check_deadline(deadline)
+                await self._persistence.append_result_with_data(
+                    result, report, claim=claim
+                )
+                report_result_ref = ResultRef(
+                    result.result_id, result.kind, result.schema_version
+                )
+                durable_refs.append(report_result_ref)
+                self._check_deadline(deadline)
                 await self._persistence.finish_claim(
                     claim, status, ExternalEffectState.NONE
                 )
@@ -176,46 +173,49 @@ class ReportBuildHandler:
                     execution=request.execution,
                     capability=request.capability,
                     status=status,
-                    result_refs=(
-                        ResultRef(
-                            result_id=result.result_id,
-                            kind=result.kind,
-                            schema_version=result.schema_version,
-                        ),
-                    ),
+                    result_refs=(report_result_ref,),
                     limitations=limitations,
                     external_effect=ExternalEffectState.NONE,
                 )
         except asyncio.CancelledError:
             if claim is not None:
-                await self._finish_after_interrupt(claim, TerminalStatus.CANCELLED)
+                await finish_quietly(self._persistence, claim, TerminalStatus.CANCELLED)
             raise
         except TimeoutError:
             if claim is not None:
-                await self._finish_after_interrupt(claim, TerminalStatus.FAILED)
+                await finish_quietly(self._persistence, claim, TerminalStatus.FAILED)
             return self._failed(
-                request, "report_build_timeout", "Report build timed out"
+                request,
+                "report_build_timeout",
+                "Report build timed out",
+                tuple(durable_refs),
             )
         except (ReportSelectionError, ReportBuildError, TypeError, ValueError):
             if claim is not None:
-                await self._finish_after_interrupt(claim, TerminalStatus.FAILED)
+                await finish_quietly(self._persistence, claim, TerminalStatus.FAILED)
             return self._failed(
                 request,
                 "report_build_invalid",
                 "Report build input or output failed validation",
+                tuple(durable_refs),
             )
         except Phase1PersistenceError:
             if claim is not None:
-                await self._finish_after_interrupt(claim, TerminalStatus.FAILED)
+                await finish_quietly(self._persistence, claim, TerminalStatus.FAILED)
             return self._failed(
                 request,
                 "report_build_failed",
                 "Report build persistence or ownership failed",
+                tuple(durable_refs),
             )
 
-    async def _load_inputs(
+    async def _inspect_inputs(
         self,
-    ) -> tuple[tuple[ResultRef, StageResult, TriageData], ...]:
+    ) -> tuple[
+        tuple[tuple[ResultRef, StageResult], ...],
+        tuple[ReportHistoryMetadata, ...],
+    ]:
+        """Inspect and sum all declared metadata before claim acquisition."""
         admitted: list[tuple[ResultRef, StageResult]] = []
         total = 0
         for ref in self._plan.triage_results:
@@ -224,8 +224,8 @@ class ReportBuildHandler:
                 raise ReportSelectionError("selected triage result is missing")
             if (
                 result.result_id != ref.result_id
-                or result.kind != ref.kind
-                or result.schema_version != ref.schema_version
+                or result.kind != "triage"
+                or result.schema_version != "1"
             ):
                 raise ReportSelectionError(
                     "selected triage result reference mismatches"
@@ -234,6 +234,49 @@ class ReportBuildHandler:
             if total > self._config.max_input_bytes:
                 raise ReportSelectionError("selected semantic inputs exceed byte limit")
             admitted.append((ref, result))
+        history: list[ReportHistoryMetadata] = []
+        resolver = self._history_resolver
+        for state in self._plan.prior_state:
+            if resolver is None or state.evidence_ref is None:
+                raise ReportSelectionError(
+                    "prior report history resolver is unavailable"
+                )
+            metadata = await resolver.inspect(state.evidence_ref)
+            metadata = ReportHistoryMetadata.model_validate_json(
+                metadata.model_dump_json(warnings="error"), strict=True
+            )
+            result = await self._persistence.get_result(state.evidence_ref.result_id)
+            if (
+                result is None
+                or result.result_id != state.evidence_ref.result_id
+                or result.kind != "report_submission"
+                or result.schema_version != "1"
+                or not result.acceptable
+                or result.status
+                not in {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}
+                or metadata.evidence_ref != state.evidence_ref
+                or metadata.semantic_data_ref != result.semantic_data_ref
+            ):
+                raise ReportSelectionError("prior report history metadata mismatches")
+            if result.semantic_data_ref is not None:
+                total += result.semantic_data_ref.byte_count
+                if total > self._config.max_input_bytes:
+                    raise ReportSelectionError(
+                        "selected semantic inputs exceed byte limit"
+                    )
+            history.append(metadata)
+        return tuple(admitted), tuple(history)
+
+    async def _load_inputs(
+        self,
+    ) -> tuple[tuple[ResultRef, StageResult, TriageData], ...]:
+        """Reload bounded metadata after claim, then resolve admitted semantic data."""
+        admitted, _history = await self._inspect_inputs()
+        return await self._load_admitted(admitted)
+
+    async def _load_admitted(
+        self, admitted: tuple[tuple[ResultRef, StageResult], ...]
+    ) -> tuple[tuple[ResultRef, StageResult, TriageData], ...]:
         loaded = []
         for ref, result in admitted:
             data_ref = result.semantic_data_ref
@@ -245,42 +288,64 @@ class ReportBuildHandler:
             loaded.append((ref, result, data))
         return tuple(loaded)
 
-    async def _validate_prior_evidence(self) -> None:
-        for state in self._plan.prior_state:
-            ref = state.evidence_ref
-            if ref is None:
-                raise ReportSelectionError("prior report state lacks durable evidence")
-            result = await self._persistence.get_result(ref.result_id)
+    async def _resolve_history(
+        self, metadata: tuple[ReportHistoryMetadata, ...]
+    ) -> tuple[ReportHistoryEvidence, ...]:
+        resolver = self._history_resolver
+        if metadata and resolver is None:
+            raise ReportSelectionError("prior report history resolver is unavailable")
+        resolved = []
+        for state, meta in zip(self._plan.prior_state, metadata, strict=True):
+            if resolver is None:
+                raise ReportSelectionError(
+                    "prior report history resolver is unavailable"
+                )
+            evidence = await resolver.resolve(meta)
+            evidence = ReportHistoryEvidence.model_validate_json(
+                evidence.model_dump_json(warnings="error"), strict=True
+            )
             if (
-                result is None
-                or result.result_id != ref.result_id
-                or result.kind != "report_submission"
-                or result.schema_version != "1"
-                or not result.acceptable
-                or state.assessment_ref not in result.topic_versions
-                or result.configuration_version != state.policy_ref.version
+                evidence.evidence_ref != state.evidence_ref
+                or evidence.report_ref != state.report_ref
+                or evidence.policy_ref != state.policy_ref
+                or evidence.assessment_ref != state.assessment_ref
+                or evidence.reported_at != state.reported_at
+                or evidence.semantic_data_ref != meta.semantic_data_ref
             ):
                 raise ReportSelectionError("prior report evidence does not match state")
+            resolved.append(evidence)
+        return tuple(resolved)
 
     def _selection_snapshot(
         self,
         loaded: tuple[tuple[ResultRef, StageResult, TriageData], ...],
         selected: tuple[TopicAssessment, ...],
+        history: tuple[ReportHistoryEvidence, ...],
     ) -> FrozenReportSelection:
-        inputs = []
-        for ref, result, _data in loaded:
-            if result.semantic_data_ref is None:
-                raise ReportSelectionError("selected triage semantic data is missing")
-            inputs.append(
-                FrozenReportInput(
-                    result_ref=ref, semantic_data_ref=result.semantic_data_ref
-                )
+        inputs = tuple(
+            FrozenReportInput(
+                result_ref=ref, semantic_data_ref=result.semantic_data_ref
             )
+            for ref, result, _data in loaded
+            if result.semantic_data_ref is not None
+        )
         choices = tuple(
             AssessmentSelection(
                 topic_ref=item.topic_ref, assessment_ref=item.assessment_ref
             )
             for item in selected
+        )
+        frozen_history = tuple(
+            FrozenReportHistory(
+                evidence_ref=item.evidence_ref,
+                report_ref=item.report_ref,
+                policy_ref=item.policy_ref,
+                assessment_ref=item.assessment_ref,
+                reported_at=item.reported_at,
+                receipt_ref=item.receipt_ref,
+                semantic_data_ref=item.semantic_data_ref,
+            )
+            for item in history
         )
         return FrozenReportSelection(
             report_ref=self._config.report_ref,
@@ -293,8 +358,9 @@ class ReportBuildHandler:
             ),
             code_version=self._config.code_version,
             expected_parameters=self._config.expected_parameters,
-            inputs=tuple(inputs),
+            inputs=inputs,
             selected=choices,
+            history=frozen_history,
         )
 
     def _selection_stage_result(
@@ -312,7 +378,8 @@ class ReportBuildHandler:
             schema_version=REPORT_SELECTION_SCHEMA_VERSION,
             execution=request.execution,
             attempt=self._config.attempt,
-            input_refs=self._plan.triage_results,
+            input_refs=self._plan.triage_results
+            + tuple(x.evidence_ref for x in snapshot.history),
             source_versions=(),
             prepared_versions=(),
             topic_versions=tuple(x.assessment_ref for x in snapshot.selected),
@@ -328,7 +395,7 @@ class ReportBuildHandler:
         overview: tuple[ReportOverviewItem, ...],
         topics: tuple[ReportTopic, ...],
         limitations: tuple[Limitation, ...],
-        started: float,
+        deadline: float,
     ) -> tuple[ReportPart, ...]:
         task = asyncio.create_task(
             asyncio.to_thread(
@@ -352,26 +419,15 @@ class ReportBuildHandler:
             raise error
         if cancelled:
             raise asyncio.CancelledError
-        if monotonic() - started >= self._config.timeout_seconds:
-            raise TimeoutError
+        self._check_deadline(deadline)
         return task.result()
 
     def _stage_result(
-        self,
-        request: OperationRequest,
-        report: SavedReport,
-        status: TerminalStatus,
+        self, request: OperationRequest, report: SavedReport, status: TerminalStatus
     ) -> StageResult:
         data_ref = self._persistence.semantic_reference(
-            self._config.semantic_data_id,
-            REPORT_KIND,
-            REPORT_SCHEMA_VERSION,
-            report,
+            self._config.semantic_data_id, REPORT_KIND, REPORT_SCHEMA_VERSION, report
         )
-        source_versions = tuple(
-            source for topic in report.topics for source in topic.source_refs
-        )
-        topic_versions = tuple(topic.assessment_ref for topic in report.topics)
         return StageResult(
             result_id=self._config.result_id,
             kind=REPORT_KIND,
@@ -385,9 +441,11 @@ class ReportBuildHandler:
                     REPORT_SELECTION_SCHEMA_VERSION,
                 ),
             ),
-            source_versions=source_versions,
+            source_versions=tuple(
+                source for topic in report.topics for source in topic.source_refs
+            ),
             prepared_versions=(),
-            topic_versions=topic_versions,
+            topic_versions=tuple(topic.assessment_ref for topic in report.topics),
             configuration_version=self._policy.policy_ref.version,
             code_version=self._config.code_version,
             status=status,
@@ -412,36 +470,23 @@ class ReportBuildHandler:
         ref = self._policy.policy_ref
         return f"report-build:{ref.kind}:{ref.identity}:{ref.version}"
 
-    async def _finish_after_interrupt(
-        self,
-        claim: ClaimToken,
-        status: TerminalStatus,
-    ) -> None:
-        task = asyncio.create_task(
-            self._persistence.finish_claim(claim, status, ExternalEffectState.NONE)
-        )
-        cancelled = False
-        while not task.done():
-            try:
-                await asyncio.shield(task)
-            except asyncio.CancelledError:
-                cancelled = True
-        error = task.exception()
-        if error is not None:
-            raise error
-        if cancelled:
-            raise asyncio.CancelledError
+    @staticmethod
+    def _check_deadline(deadline: float) -> None:
+        if monotonic() >= deadline:
+            raise TimeoutError
 
     @staticmethod
     def _failed(
         request: OperationRequest,
         code: str,
         detail: str,
+        result_refs: tuple[ResultRef, ...] = (),
     ) -> OperationOutcome:
         return OperationOutcome(
             execution=request.execution,
             capability=request.capability,
             status=TerminalStatus.FAILED,
+            result_refs=result_refs,
             failures=(Failure(code=code, detail=detail),),
             external_effect=ExternalEffectState.NONE,
         )

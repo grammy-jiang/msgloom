@@ -398,12 +398,12 @@ def test_slow_render_drains_deadline_and_keeps_event_loop_responsive(
         original = handler_module.render_report
 
         def slow_render(*args: object, **kwargs: object) -> object:
-            sleep(0.12)
+            sleep(0.30)
             return original(*args, **kwargs)  # type: ignore[arg-type]
 
         monkeypatch.setattr(handler_module, "render_report", slow_render)
         config = _config("slow-report").model_copy(
-            update={"timeout_seconds": 0.05, "claim_lease_seconds": 2.0}
+            update={"timeout_seconds": 0.20, "claim_lease_seconds": 2.0}
         )
         handler = ReportBuildHandler(
             policy=policy(),

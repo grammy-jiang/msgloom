@@ -74,4 +74,5 @@ def _validate_report(value: SavedReport) -> None:
         value.overview,
         value.pending_warnings,
         value.limitations,
+        report_ref=value.report_ref,
     )

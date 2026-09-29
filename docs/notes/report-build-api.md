@@ -65,10 +65,12 @@ Application remains responsible for trusted caller admission and terminal
 OperationOutcome persistence. The handler verifies REPORT_BUILD, exact target
 references, and exact trusted parameters before claiming work.
 
-The handler acquires the existing per-policy REPORT_BUILD durable claim with
-the exact triage result dependencies. It loads only those declared saved
-inputs, freezes selection, builds and renders, atomically writes the report@1
-stage result plus semantic payload, then finishes the claim. Cancellation
+The handler first inspects exact declared triage and history metadata and
+enforces the aggregate semantic byte ceiling. It then acquires the existing
+per-policy REPORT_BUILD durable claim with those exact durable dependencies,
+loads only admitted semantic inputs, freezes selection, builds and renders,
+atomically writes the report@1 stage result plus semantic payload, then finishes
+the claim. Cancellation
 drains accepted persistence work before claim completion. The configured claim
 lease must exceed the finite operation budget; elapsed lease checks prevent a
 known-expired owner from returning success. Persistence ownership errors fail
@@ -93,11 +95,11 @@ topic/assessment versions. ReportSelectionCodec is the closed bounded codec
 declaration for manager composition. This lane does not edit shared registries.
 A render failure therefore leaves the selection evidence durable.
 
-Prior-state suppression remains keyed by policy plus assessment. In the handler
-path, every prior state must additionally name a durable report_submission@1
-result. The saved result must be acceptable, include the assessment version,
-and carry the matching policy configuration version. No live receipt discovery
-occurs during report selection.
+Prior-state suppression remains keyed by the complete policy reference plus
+assessment. Every prior state names durable report_submission@1 evidence and is
+resolved through the typed history resolver described below. Metadata
+acceptability alone is not delivery evidence. No live receipt discovery occurs
+during report selection.
 
 Upstream StageResult limitations are retained alongside topic-local limitations
 and pending-newer warnings in the saved report limitation set. Pending work
@@ -110,11 +112,10 @@ Cancellation and timeout drain accepted rendering before claim cleanup, and
 the operation deadline is checked again after that drain. An expired render
 cannot publish an acceptable report.
 
-The handler currently has two persistence append sites, in this order:
+The handler has two persistence append sites, in this order:
 report_selection@1 before rendering, then report@1 after rendered coverage
-validation. Integration must pass the reviewed persistence claim token to both
-append sites when the manager's claim-bound append API lands. This lane
-intentionally does not implement a second claim mechanism.
+validation. Both use the reviewed claim-bound append API with the exact acquired
+claim token. This lane does not implement a second claim mechanism.
 
 Rendered coverage is structural. Overview identity and essential summary
 content must occur in the overview section, while exact topic/assessment
@@ -132,3 +133,57 @@ timezone must resolve through the IANA database and due_at must represent the
 same local wall time and offset in that zone. This preserves fold-aware
 fall-back behavior and spring-forward elapsed intervals. Original deadline
 wording, interpretation, timezone basis and ambiguity remain unchanged.
+
+## R3 structural, history, and claim closure
+
+R3 admits every declared input by metadata before claim acquisition. It validates
+and sums semantic byte counts for all triage inputs and any delivery-history
+semantic payloads before claim acquisition; only after that bound passes may
+claim validation or semantic resolution load payload bytes. The operation uses
+one absolute acceptance deadline beginning before metadata admission and
+covering claim acquisition, loading, selection, codec/reference construction,
+rendering, publication, and completion. Synchronous codec/render work is
+rechecked against that deadline before publication. Owned render work is
+off-loop and drained through repeated cancellation.
+
+Both report_selection@1 and report@1 publications pass the exact acquired claim
+to the claim-fenced atomic result/data append API. There is no unfenced
+fallback. A stale, expired, reclaimed, terminal, or execution-mismatched owner
+therefore cannot publish either semantic product. Cleanup is drained without
+replacing the original cancellation or failure; a failed outcome retains any
+selection/report result references that had already become durable.
+
+Prior report state is not evidence by itself. A configured handler with prior
+state requires a ReportHistoryResolver. Its inspect method returns bounded
+ReportHistoryMetadata without loading receipt semantic data, so the handler can
+perform pre-claim byte admission. After claim acquisition, resolve returns
+ReportHistoryEvidence: the exact durable report_submission@1 reference, report
+VersionRef, complete policy VersionRef, assessment VersionRef, aware reported
+time, receipt integrity VersionRef, optional semantic-data integrity reference,
+and an external effect of only ACCEPTED or CONFIRMED. Every field must exactly
+match the trusted prior state and inspected metadata. UNKNOWN, REJECTED,
+NOT_STARTED, a forged timestamp, or another policy identity sharing a version
+string fails closed. The verified receipt basis is copied into
+FrozenReportSelection.history for restart/replay.
+
+Rendered validation is exact and format-local. Every part number must be unique
+and consecutive and the ordered topic-to-part mapping must equal the saved topic
+order. Plain and HTML outputs are independently reproduced from the frozen
+semantic report and compared byte-for-byte to the saved strings. HTML is also
+parsed with strict allowed tags/attributes, balanced non-void tags, explicit br
+void handling, non-nested unique article boundaries, and exact source-link href
+bindings. Business text containing strings such as DETAILS, TOPIC, or PENDING
+WORK remains ordinary template data and cannot create parser structure.
+
+FrozenRendererConfig uses the same finite bounds and coherence rule as
+RendererConfig. Frozen selections validate report/policy/topic/assessment
+reference kinds, exact triage@1 result/data bindings, selected identities, and
+the complete ordered history basis. Saved reports validate exact reference
+kinds, consecutive part numbering, and ordered topic mapping. Both codecs still
+strictly revalidate nested values and canonical bytes, so model_copy bypasses
+and noncanonical replay fail without exposing business text.
+
+The package root no longer eagerly imports the persistence-backed handler.
+ReportBuildHandler and ReportHandlerConfig are loaded lazily, allowing the
+shared semantic registry to import report codecs during persistence package
+initialization without a reporting/persistence initialization cycle.
