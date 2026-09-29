@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import cast
 
@@ -63,6 +65,50 @@ class Catalog:
         self.evidence = RawEvidenceStore(self)
         if database and not in_memory:
             os.chmod(Path(database), 0o600)
+
+    @contextmanager
+    def writer_session(self) -> Iterator[Session]:
+        """
+        Yield a session after acquiring SQLite writer intent before any reads.
+
+        Runtime connections normally use ``autocommit=False``. Temporarily
+        delegate transaction control to this checked-out driver connection so
+        ``BEGIN IMMEDIATE`` can acquire SQLite's database writer reservation
+        before a read-modify-write transaction observes state. Independent
+        :class:`Catalog` instances targeting one file therefore wait at the
+        database boundary instead of deadlocking during a deferred lock
+        upgrade. Commit and rollback remain owned by this context.
+        """
+        with self.engine.connect() as connection:
+            driver = cast(
+                sqlite3.Connection,
+                connection.connection.driver_connection,
+            )
+            previous_autocommit = driver.autocommit
+            driver.autocommit = True
+            try:
+                connection.exec_driver_sql("BEGIN IMMEDIATE")
+                try:
+                    with (
+                        Session(
+                            bind=connection,
+                            expire_on_commit=False,
+                        ) as session,
+                        session.begin(),
+                    ):
+                        yield session
+                    connection.exec_driver_sql("COMMIT")
+                except BaseException:
+                    if driver.in_transaction:
+                        connection.exec_driver_sql("ROLLBACK")
+                    raise
+                finally:
+                    if connection.in_transaction():
+                        connection.rollback()
+            finally:
+                if connection.in_transaction():
+                    connection.rollback()
+                driver.autocommit = previous_autocommit
 
     def close(self) -> None:
         """Dispose the engine after outstanding pipeline work finishes."""

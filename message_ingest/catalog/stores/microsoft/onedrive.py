@@ -84,7 +84,7 @@ class OneDriveStore:
         self._capture_time(item.observed_at)
         if not isinstance(item.evidence_id, str) or not item.evidence_id:
             raise ValueError("OneDrive content requires linked evidence")
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             outcome = self._upsert_session(session, OneDriveContentRecord, item, {})
             self._append_content_capture(session, item)
             return outcome
@@ -121,7 +121,7 @@ class OneDriveStore:
             "started_at": item.started_at,
             "trigger_evidence_id": item.trigger_evidence_id,
         }
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             self._require_evidence(session, item.trigger_evidence_id, item.run_id)
             record = session.get(
                 OneDriveDeltaResyncAttempt,
@@ -151,7 +151,7 @@ class OneDriveStore:
             "evidence_id": item.evidence_id,
             "raw": item.raw,
         }
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             self._require_evidence(session, item.evidence_id, item.run_id)
             record = session.scalar(
                 select(OneDriveDeltaResyncObservation).filter_by(
@@ -177,7 +177,7 @@ class OneDriveStore:
     ) -> Outcome:
         """Commit one current observation in its own transaction."""
         self._capture_time(item.observed_at)
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             return self._upsert_session(session, model, item, overrides)
 
     def _upsert_session(
@@ -273,7 +273,7 @@ class OneDriveStore:
             "evidence_id": item.evidence_id,
             "observed_at": item.observed_at,
         }
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             self._require_evidence(session, item.evidence_id, item.run_id)
             record = session.get(
                 OneDriveDeltaCheckpointCandidate, (self.source_id, item.run_id)
@@ -316,7 +316,7 @@ class OneDriveStore:
         reset_attempt: int | None = None,
     ) -> OneDriveDeltaCheckpoint:
         """Atomically materialize a winning reset, then advance its exact cursor."""
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             candidate = session.get(
                 OneDriveDeltaCheckpointCandidate, (self.source_id, run_id)
             )

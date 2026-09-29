@@ -22,8 +22,13 @@ authoritative throughout a partial or failed reset.
 At a terminal deltaLink the existing candidate mechanism stages the exact opaque
 cursor. Scrapy's native idle gate runs only after pending requests and item
 processing are empty. The OneDrive checkpoint extension additionally requires a
-clean logical run and a terminal candidate. Promotion is awaited under the shared `CatalogService.write_lock` and performs
-revision CAS plus resync materialization in one catalog transaction. A losing/stale CAS rolls back
+clean logical run and a terminal candidate. Promotion runs synchronously in the native idle callback after verifying the shared
+`CatalogService.write_lock` is free. It therefore finishes before pipeline shutdown
+can dispose the catalog. OneDrive write transactions use
+`Catalog.writer_session()`, which acquires SQLite ``BEGIN IMMEDIATE`` writer
+intent before any read-modify-write work. This database-level boundary serializes
+independent Catalog instances that target the same file. Promotion still performs
+revision CAS plus resync materialization atomically; a losing/stale CAS rolls back
 without applying staged observations.
 
 Winning observations are applied in provider order, so the last occurrence of a

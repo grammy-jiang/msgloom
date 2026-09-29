@@ -196,7 +196,7 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/catalog/models/acquisition.py` | Define account/target source bindings and provider-independent raw-evidence models. |
 | `message_ingest/catalog/models/microsoft/outlook/email.py` | Define Mail records, folder/message presence and sightings, Full-v1 surfaces, and independent folder/message delta checkpoints. |
 | `message_ingest/catalog/models/microsoft/outlook/calendar.py` | Define Calendar resources, semantic versions, series topology, run sightings, Full-v1 surfaces, attachments, and fixed-window delta models. |
-| `message_ingest/catalog/store.py` | Own the shared SQLite engine and session lifecycle only. |
+| `message_ingest/catalog/store.py` | Own the shared SQLite engine/session lifecycle and the explicit database writer-intent transaction context. |
 | `message_ingest/catalog/stores/evidence.py` | Persist and query provider-independent raw HTTP evidence metadata. |
 | `message_ingest/catalog/stores/microsoft/outlook/email.py` | Persist/query Outlook Mail, folder, attachment, and enrichment-surface state. |
 | `message_ingest/catalog/stores/microsoft/outlook/_email_lifecycle.py` | Promote complete folder/message presence snapshots and apply explicit folder tombstones. |
@@ -211,7 +211,8 @@ Synchronization state and Scrapy lifecycle are intentionally separate. The `mess
 Request identity and observability are project-level Scrapy policies rather than product Spider concerns. Graph-wide fingerprinting remains source-aware; Calendar delta adds only its reset-attempt identity. The global LogFormatter uses provider-neutral wording, while item summaries expose only allowlisted fields and are shared with Graph LogRecord privacy filtering.
 
 `message_ingest/settings.py` uses the component paths above. Custom settings and Python
-imports should also use these module paths. `Catalog` owns only engine/session lifecycle;
+imports should also use these module paths. `Catalog` owns engine/session lifecycle plus the shared `writer_session()` boundary,
+which acquires SQLite writer intent before domain read-modify-write transactions;
 domain stores own SQL behavior. Commands remain thin intent/argument mapping over named
 Scrapy spiders, and only `message_ingest.commands.microsoft.Command` is a public command.
 
