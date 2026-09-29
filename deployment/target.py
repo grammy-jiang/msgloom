@@ -22,15 +22,22 @@ from deployment.qualification import (
     unique_name,
 )
 
+_DETAIL_PART_LIMIT = 700
+
 
 def _check_result(name: str, result: object) -> Check:
     returncode = cast(int, getattr(result, "returncode", 1))
     output = cast(str, getattr(result, "output", "command result was invalid"))
     cleanup = cast(tuple[str, ...], getattr(result, "cleanup_errors", ()))
-    detail = output.strip() or ("ok" if returncode == 0 else "command failed")
+    primary = output.strip() or ("ok" if returncode == 0 else "command failed")
     if cleanup:
-        detail = sanitize(detail + "; " + "; ".join(cleanup))
-    return Check(name, "pass" if returncode == 0 else "fail", detail)
+        primary_detail = sanitize(primary)[-_DETAIL_PART_LIMIT:]
+        cleanup_detail = sanitize("; ".join(cleanup))[-_DETAIL_PART_LIMIT:]
+        detail = f"primary: {primary_detail}; cleanup: {cleanup_detail}"
+    else:
+        detail = primary
+    status = "fail" if returncode != 0 or cleanup else "pass"
+    return Check(name, status, detail)
 
 
 def _run_check(
@@ -188,7 +195,9 @@ def _cleanup(
         except (OSError, RuntimeError, ValueError) as exc:
             checks.append(Check(name, "fail", sanitize(str(exc))))
             continue
-        if result.returncode and "No such" not in result.output:
+        cleanup_errors = cast(tuple[str, ...], getattr(result, "cleanup_errors", ()))
+        missing = result.returncode != 0 and "No such" in result.output
+        if cleanup_errors or (result.returncode != 0 and not missing):
             checks.append(_check_result(name, result))
     return checks
 

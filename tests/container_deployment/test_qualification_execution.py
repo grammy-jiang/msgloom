@@ -331,6 +331,71 @@ def test_interruption_persists_truthful_partial_json(
             pytest.fail(f"target cleanup error was not preserved: {checks!r}")
 
 
+def test_qualification_json_retains_runtime_cleanup_failure(tmp_path: Path) -> None:
+    from deployment.process import CommandResult
+
+    module = _script()
+
+    class CleanupEvidenceRunner:
+        def run(self, command: list[str], *, cwd: Path, timeout: int = 300):
+            del cwd, timeout
+            if command[:2] == ["docker", "info"]:
+                return CommandResult(0, "aarch64")
+            if (
+                len(command) > 1
+                and Path(command[1]).name == "qualify_installed_wheel.py"
+            ):
+                _write_synthetic_package(command)
+                return CommandResult(0, "packaged")
+            if command[:3] == ["docker", "image", "inspect"]:
+                return CommandResult(0, "sha256:synthetic")
+            if command[:2] == ["docker", "run"]:
+                code = command[-1]
+                if "platform.python_version()" in code:
+                    data = {
+                        "architecture": "aarch64",
+                        "python": "3.12.0",
+                        "entry_points": [],
+                        "resources": {RESOURCE: True},
+                    }
+                    return CommandResult(
+                        0,
+                        json.dumps(data),
+                        cleanup_errors=("container cleanup failed: synthetic",),
+                    )
+                return CommandResult(0, "probe-ok")
+            return CommandResult(0, "ok")
+
+    source = tmp_path / "source"
+    source.mkdir()
+    lock = tmp_path / "runtime.txt"
+    lock.write_text("", encoding="utf-8")
+    args = SimpleNamespace(
+        target=_targets(),
+        source_root=source,
+        output_root=tmp_path / "out",
+        env_python=PYTHON,
+        uv=Path(shutil.which("uv") or "/missing/uv"),
+        runtime_lock=lock,
+        require_resource=[RESOURCE],
+        seccomp_profile=None,
+        skip_isolation_preflight=True,
+    )
+    report = module.qualify(args, runner=cast(Runner, CleanupEvidenceRunner()))
+    evidence = args.output_root / "container-qualification.json"
+    persisted = json.loads(evidence.read_text(encoding="utf-8"))
+    if persisted != report:
+        pytest.fail("persisted qualification JSON diverged from returned evidence")
+    targets = cast(list[dict[str, object]], persisted["targets"])
+    checks = cast(list[dict[str, object]], targets[0]["checks"])
+    runtime = next(check for check in checks if check["name"] == "installed-runtime")
+    if runtime["status"] != "fail":
+        pytest.fail(f"runtime cleanup failure was discarded: {runtime!r}")
+    detail = str(runtime["detail"])
+    if "cleanup: container cleanup failed: synthetic" not in detail:
+        pytest.fail(f"runtime cleanup detail was discarded: {runtime!r}")
+
+
 def test_target_build_failure_returns_partial_evidence_and_cleans(
     tmp_path: Path,
 ) -> None:

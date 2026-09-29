@@ -155,10 +155,12 @@ probes; it is not a general escape hatch.
 ## Bounded lifecycle and evidence
 
 Subprocess stdout/stderr is consumed through nonblocking descriptors and only
-a finite tail is retained. One absolute command deadline remains authoritative
-until the leader has exited, inherited output reaches EOF, and the
-invocation-owned process group is gone. An exited leader therefore cannot turn
-an inherited-pipe descendant into an unbounded read or wait. Deadline expiry
+a finite tail is retained. Read work is capped per selector turn so continuous
+output cannot starve lifetime checks. One absolute command deadline remains
+authoritative until the leader has exited, inherited output reaches EOF, and
+the invocation-owned process group is gone. An exited leader therefore cannot
+turn an inherited-pipe descendant into an unbounded read or wait. Deadline
+expiry
 records return code 124, sends SIGTERM to only that invocation-owned group,
 uses a short bounded grace, then SIGKILLs remaining group members. Cancellation
 uses the same idempotent cleanup path. Focused real-subprocess tests cover
@@ -168,9 +170,12 @@ pipe, a SIGTERM-resistant descendant, noisy bounded output, and cancellation.
 Every `docker run` has a unique invocation-owned `--name`. The runner
 explicitly attempts `docker rm -f` for that exact name after the Docker CLI
 returns, including successful or already-exited CLI cases; an already removed
-`--rm` container is accepted as absent. Target cleanup attempts the
-invocation-owned volume and image independently. Cleanup failures are bounded
-evidence and do not replace the original target interruption.
+`--rm` container is accepted as absent. A failed owned-container cleanup makes
+that command check fail even when its primary command returned zero; primary
+command evidence and cleanup evidence remain separately labelled. Target
+cleanup attempts the invocation-owned volume and image independently. Cleanup
+failures are bounded evidence and do not replace the original target
+interruption. Absence-only cleanup remains idempotent.
 
 `container-qualification.json` is atomically written immediately after the
 output root is created, after release-input and host-preflight checkpoints,

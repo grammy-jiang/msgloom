@@ -275,6 +275,51 @@ def _wait_pid_gone(pid: int, timeout: float = 1.0) -> bool:
     return not Path(f"/proc/{pid}").exists()
 
 
+def _deadline_starts_after_ready(
+    monkeypatch: pytest.MonkeyPatch,
+    ready: Path,
+) -> None:
+    """Start the test deadline only after the synthetic phase is ready."""
+    import deployment.process as process_module
+
+    real_monotonic = time.monotonic
+
+    def after_ready(timeout: float) -> float:
+        barrier_deadline = real_monotonic() + 2.0
+        while not ready.exists() and real_monotonic() < barrier_deadline:
+            time.sleep(0.01)
+        return real_monotonic() + timeout
+
+    monkeypatch.setattr(process_module, "_deadline_after", after_ready)
+
+
+def test_runner_deadline_cannot_be_starved_by_continuous_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ready = tmp_path / "noisy.ready"
+    _deadline_starts_after_ready(monkeypatch, ready)
+    code = (
+        "import os;from pathlib import Path;"
+        f"Path({str(ready)!r}).write_text('ready');"
+        "chunk=b'x'*4096;"
+        "\nwhile True: os.write(1,chunk)"
+    )
+    start = time.monotonic()
+    result = Runner().run(
+        [str(PYTHON), "-c", code],
+        cwd=tmp_path,
+        timeout=0.1,
+    )
+    elapsed = time.monotonic() - start
+    if not ready.exists():
+        pytest.fail("continuous-output phase never reached its readiness barrier")
+    if result.returncode != 124 or not result.timed_out or elapsed >= 3.0:
+        pytest.fail(
+            f"continuous output starved deadline checks: {result!r}, {elapsed=}"
+        )
+
+
 def test_runner_deadline_applies_after_output_closes(tmp_path: Path) -> None:
     start = time.monotonic()
     result = Runner().run(
@@ -293,8 +338,10 @@ def test_runner_deadline_applies_after_output_closes(tmp_path: Path) -> None:
 
 def test_runner_deadline_applies_to_inherited_output_descendant(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pid_file = tmp_path / "inherited.pid"
+    _deadline_starts_after_ready(monkeypatch, pid_file)
     code = (
         "import subprocess,sys;from pathlib import Path;"
         "p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(2)']);"
@@ -307,7 +354,7 @@ def test_runner_deadline_applies_to_inherited_output_descendant(
         timeout=0.2,
     )
     elapsed = time.monotonic() - start
-    if result.returncode != 124 or not result.timed_out or elapsed >= 0.9:
+    if result.returncode != 124 or not result.timed_out or elapsed >= 3.0:
         pytest.fail(f"inherited pipe escaped deadline: {result!r}, {elapsed=}")
     if not pid_file.exists():
         pytest.fail("synthetic inherited-pipe descendant did not start")
@@ -315,8 +362,12 @@ def test_runner_deadline_applies_to_inherited_output_descendant(
         pytest.fail("owned inherited-pipe descendant survived timeout cleanup")
 
 
-def test_runner_kills_descendant_that_ignores_group_sigterm(tmp_path: Path) -> None:
+def test_runner_kills_descendant_that_ignores_group_sigterm(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     pid_file = tmp_path / "ignores-term.pid"
+    _deadline_starts_after_ready(monkeypatch, pid_file)
     code = (
         "import signal,subprocess,sys,time;from pathlib import Path;"
         "signal.signal(signal.SIGTERM,lambda *_:sys.exit(0));"
@@ -332,7 +383,7 @@ def test_runner_kills_descendant_that_ignores_group_sigterm(tmp_path: Path) -> N
         timeout=0.2,
     )
     elapsed = time.monotonic() - start
-    if result.returncode != 124 or not result.timed_out or elapsed >= 1.0:
+    if result.returncode != 124 or not result.timed_out or elapsed >= 3.0:
         pytest.fail(f"SIGTERM-resistant descendant escaped cleanup: {elapsed=}")
     if not pid_file.exists():
         pytest.fail("synthetic SIGTERM-resistant descendant did not start")

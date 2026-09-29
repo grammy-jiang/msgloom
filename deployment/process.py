@@ -18,6 +18,7 @@ _TERMINATION_GRACE_SECONDS = 0.2
 _DRAIN_GRACE_SECONDS = 0.2
 _CLEANUP_TIMEOUT_SECONDS = 15
 _SELECT_SLICE_SECONDS = 0.05
+_READ_BURST_CHUNKS = 16
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +44,11 @@ def _tail_append(chunks: deque[bytes], size: int, value: bytes) -> int:
         chunks.popleft()
         size -= len(first)
     return size
+
+
+def _deadline_after(timeout: float) -> float:
+    """Return the absolute production lifetime deadline."""
+    return time.monotonic() + timeout
 
 
 def _group_exists(pgid: int) -> bool:
@@ -179,7 +185,7 @@ class Runner:
         selector.register(process.stdout, selectors.EVENT_READ)
         chunks: deque[bytes] = deque()
         size = 0
-        deadline = time.monotonic() + timeout
+        deadline = _deadline_after(timeout)
         timed_out = False
         pipe_eof = False
         try:
@@ -195,7 +201,9 @@ class Runner:
                     break
                 events = selector.select(min(remaining, _SELECT_SLICE_SECONDS))
                 for key, _ in events:
-                    while True:
+                    for _ in range(_READ_BURST_CHUNKS):
+                        if time.monotonic() >= deadline:
+                            break
                         try:
                             value = os.read(key.fd, _READ_CHUNK)
                         except BlockingIOError:
