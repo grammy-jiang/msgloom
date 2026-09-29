@@ -48,6 +48,8 @@ def test_semantic_schema_type_and_reference_mismatches_are_rejected(
         prepared = prepared_record()
         try:
             with pytest.raises(UnknownSemanticDataSchemaError):
+                persistence.semantic_reference("data-x", "unregistered", "1", prepared)
+            with pytest.raises(SemanticDataTypeError):
                 persistence.semantic_reference("data-x", "triage", "1", prepared)
             with pytest.raises(SemanticDataTypeError):
                 persistence.semantic_reference(
@@ -76,6 +78,7 @@ def test_semantic_schema_type_and_reference_mismatches_are_rejected(
         "filter_result",
         "group_result",
         "working_context",
+        "triage_rules",
         "triage",
         "report",
     ],
