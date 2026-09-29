@@ -40,6 +40,8 @@ test_selection_replays_after_restart_and_source_projection_change`
 
 ### Case 2: message edit, move, or repeated page
 
+Identity and observed versions are covered by:
+
 `tests/source_reader/test_saved_source_reader.py::
 test_outlook_old_version_does_not_fall_forward`
 
@@ -48,6 +50,30 @@ test_folder_removal_observation_does_not_imply_global_message_absence`
 
 `tests/test_outlook_mail_delta.py::
 test_message_delta_follows_nextlink_then_emits_checkpoint_candidate`
+
+`tests/test_calendar_pipeline.py::
+test_same_change_key_updates_capture_without_new_semantic_version`
+
+`tests/test_calendar_pipeline.py::
+test_changed_change_key_appends_new_semantic_version`
+
+A repeated admission of the same triage plan does not repeat model work:
+
+`tests/triage_pipeline/test_replay_failures.py::
+test_duplicate_admission_does_not_repeat_model_work`
+
+The clause "unchanged content does not cause duplicate triage" is not yet
+established end to end:
+
+- The saved-source reader lists one version per Outlook mail observation,
+  and a repeated capture in new evidence adds an observation.
+- A2 prepared versions are not yet stable across runs. Parsed-content
+  provenance embeds the execution-scoped derived-bytes result identity, so
+  re-preparing unchanged content yields a new prepared version.
+- Phase 1 has no automatic work selection. Triage runs only on an explicit
+  invocation, and the caller selects `new-source` or `earlier-context`
+  roles. Design section 2 reuse references for unchanged versions are not
+  implemented.
 
 ### Case 3: same subject, different work
 
@@ -99,9 +125,14 @@ ends `INCOMPLETE`.
 `tests/phase1_e2e/test_cross_stage_chain.py::
 test_many_important_topics_keep_actions_deadlines_and_report_coverage`
 
+`tests/delivery/test_multipart.py::
+test_partial_acceptance_is_not_full_and_retry_skips_accepted_part`
+
 Twelve important topics are produced by A3. A5 is forced into multipart output
 and preserves every topic and every action, deadline, and risk in canonical
-report semantics and rendered coverage.
+report semantics and rendered coverage. Multipart delivery keeps one report
+identity per part claim: partial acceptance is not reported as full delivery,
+and a retry skips parts that were already accepted.
 
 ### Case 8: timeout after submission
 
