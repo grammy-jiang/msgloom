@@ -31,3 +31,23 @@ class ExternalEffectReconciliationRequired(Phase1PersistenceError):
 
 class IncompatibleSchemaError(Phase1PersistenceError):
     """The neutral table set/version requires an explicit migration."""
+
+
+class UnknownSemanticDataSchemaError(Phase1PersistenceError):
+    """Semantic data has no registered kind/schema codec."""
+
+
+class SemanticDataTypeError(Phase1PersistenceError):
+    """Semantic data does not match the registered Python contract."""
+
+
+class SemanticDataReferenceError(Phase1PersistenceError):
+    """A semantic-data reference does not match its validated payload."""
+
+
+class SemanticDataIntegrityError(Phase1PersistenceError):
+    """Stored semantic data failed its integrity or schema validation."""
+
+
+class SemanticDataTooLargeError(Phase1PersistenceError):
+    """Canonical semantic data exceeds its registered storage bound."""

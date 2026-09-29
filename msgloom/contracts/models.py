@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from string import hexdigits
 
 from msgloom.contracts.enums import (
     ClaimKind,
@@ -63,6 +64,28 @@ class ResultRef:
         _require_text(self.result_id, "result reference identity")
         _require_text(self.kind, "result reference kind")
         _require_text(self.schema_version, "result reference schema version")
+
+
+@dataclass(frozen=True, slots=True)
+class SemanticDataRef:
+    """Reference immutable validated semantic data by schema and integrity."""
+
+    data_id: str
+    kind: str
+    schema_version: str
+    sha256: str
+    byte_count: int
+
+    def __post_init__(self) -> None:
+        _require_text(self.data_id, "semantic data identity")
+        _require_text(self.kind, "semantic data kind")
+        _require_text(self.schema_version, "semantic data schema version")
+        if len(self.sha256) != 64 or any(c not in hexdigits for c in self.sha256):
+            raise ValueError("semantic data sha256 must be 64 hexadecimal characters")
+        if isinstance(self.byte_count, bool) or not isinstance(self.byte_count, int):
+            raise TypeError("semantic data byte count must be an integer")
+        if self.byte_count < 1:
+            raise ValueError("semantic data byte count must be positive")
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,6 +207,7 @@ class StageResult:
     prompt_version: str | None = None
     model_identifier: str | None = None
     working_context_version: VersionRef | None = None
+    semantic_data_ref: SemanticDataRef | None = None
     exposed_output_ref: VersionRef | None = None
     exposed_diagnostics: tuple[Diagnostic, ...] = ()
     limitations: tuple[Limitation, ...] = ()
@@ -226,30 +250,59 @@ class ClaimToken:
 
 @dataclass(frozen=True, slots=True)
 class ResultSchemaRegistry:
-    """Immutable allowlist of stage-result kinds and schema versions."""
+    """Immutable allowlist of result schemas and their semantic-data policy."""
 
     schemas: frozenset[tuple[str, str]]
+    semantic_data_required: frozenset[tuple[str, str]] = frozenset()
+
+    def __post_init__(self) -> None:
+        if not self.semantic_data_required <= self.schemas:
+            raise ValueError(
+                "semantic-data requirements must reference registered result schemas"
+            )
 
     @classmethod
     def phase1(cls) -> ResultSchemaRegistry:
         """Return the result schemas owned by the Phase 1 product path."""
+        schemas = frozenset(
+            {
+                ("prepared", "1"),
+                ("triage", "1"),
+                ("report", "1"),
+                ("report_submission", "1"),
+            }
+        )
         return cls(
+            schemas,
             frozenset(
                 {
                     ("prepared", "1"),
                     ("triage", "1"),
                     ("report", "1"),
-                    ("report_submission", "1"),
                 }
-            )
+            ),
         )
 
-    def with_schema(self, kind: str, schema_version: str) -> ResultSchemaRegistry:
+    def with_schema(
+        self,
+        kind: str,
+        schema_version: str,
+        *,
+        semantic_data_required: bool = False,
+    ) -> ResultSchemaRegistry:
         """Return a registry extended by one explicitly reviewed producer schema."""
         _require_text(kind, "result kind")
         _require_text(schema_version, "result schema version")
-        return ResultSchemaRegistry(self.schemas | {(kind, schema_version)})
+        key = (kind, schema_version)
+        required = self.semantic_data_required
+        if semantic_data_required:
+            required = required | {key}
+        return ResultSchemaRegistry(self.schemas | {key}, required)
 
     def supports(self, kind: str, schema_version: str) -> bool:
         """Return whether the exact kind/version pair is registered."""
         return (kind, schema_version) in self.schemas
+
+    def requires_data(self, kind: str, schema_version: str) -> bool:
+        """Return whether acceptable results require a semantic payload."""
+        return (kind, schema_version) in self.semantic_data_required

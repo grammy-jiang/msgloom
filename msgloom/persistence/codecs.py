@@ -5,7 +5,14 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable
 
-from msgloom.contracts import Diagnostic, Failure, Limitation, ResultRef, VersionRef
+from msgloom.contracts import (
+    Diagnostic,
+    Failure,
+    Limitation,
+    ResultRef,
+    SemanticDataRef,
+    VersionRef,
+)
 
 
 def _dump(value: object) -> str:
@@ -36,6 +43,40 @@ def decode_result_refs(value: str) -> tuple[ResultRef, ...]:
             schema_version=_text(item, "schema_version"),
         )
         for item in _objects(data)
+    )
+
+
+def encode_semantic_data_ref(ref: SemanticDataRef | None) -> str | None:
+    """Encode one optional semantic-data integrity reference."""
+    if ref is None:
+        return None
+    return _dump(
+        {
+            "data_id": ref.data_id,
+            "kind": ref.kind,
+            "schema_version": ref.schema_version,
+            "sha256": ref.sha256,
+            "byte_count": ref.byte_count,
+        }
+    )
+
+
+def decode_semantic_data_ref(value: str | None) -> SemanticDataRef | None:
+    """Decode one optional semantic-data integrity reference."""
+    if value is None:
+        return None
+    data = json.loads(value)
+    if not isinstance(data, dict):
+        raise TypeError("semantic data reference must be an object")
+    byte_count = data.get("byte_count")
+    if isinstance(byte_count, bool) or not isinstance(byte_count, int):
+        raise TypeError("semantic data byte_count must be an integer")
+    return SemanticDataRef(
+        data_id=_text(data, "data_id"),
+        kind=_text(data, "kind"),
+        schema_version=_text(data, "schema_version"),
+        sha256=_text(data, "sha256"),
+        byte_count=byte_count,
     )
 
 

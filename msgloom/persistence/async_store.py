@@ -15,9 +15,11 @@ from msgloom.contracts import (
     OperationOutcome,
     ResultRef,
     ResultSchemaRegistry,
+    SemanticDataRef,
     StageResult,
     TerminalStatus,
 )
+from msgloom.persistence.semantic import SemanticDataRegistry
 from msgloom.persistence.store import Phase1Store
 
 
@@ -43,6 +45,7 @@ class Phase1Persistence:
         database_url: str,
         *,
         registry: ResultSchemaRegistry | None = None,
+        semantic_registry: SemanticDataRegistry | None = None,
         max_concurrent_threads: int = 1,
     ) -> Phase1Persistence:
         """Open and validate the neutral schema without leaking on cancellation."""
@@ -52,7 +55,10 @@ class Phase1Persistence:
         constructed: list[Phase1Store] = []
 
         def construct() -> Phase1Store:
-            store = Phase1Store(database_url, selected)
+            if semantic_registry is None:
+                store = Phase1Store(database_url, selected)
+            else:
+                store = Phase1Store(database_url, selected, semantic_registry)
             constructed.append(store)
             return store
 
@@ -70,6 +76,24 @@ class Phase1Persistence:
     async def append_result(self, result: StageResult) -> None:
         """Await an append-only result write through the bounded thread boundary."""
         await self._call(self._store.append_result, result)
+
+    def semantic_reference(
+        self,
+        data_id: str,
+        kind: str,
+        schema_version: str,
+        value: object,
+    ) -> SemanticDataRef:
+        """Build a validated semantic-data integrity reference without I/O."""
+        return self._store.semantic_reference(data_id, kind, schema_version, value)
+
+    async def append_result_with_data(self, result: StageResult, value: object) -> None:
+        """Atomically persist a stage result and its referenced semantic data."""
+        await self._call(self._store.append_result_with_data, result, value)
+
+    async def load_semantic_data(self, reference: SemanticDataRef) -> object:
+        """Load and validate semantic data through its exact integrity reference."""
+        return await self._call(self._store.load_semantic_data, reference)
 
     async def get_result(self, result_id: str) -> StageResult | None:
         """Await an exact stage-result read."""

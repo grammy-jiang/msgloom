@@ -110,9 +110,10 @@ def test_append_only_rerun_lineage_retains_accepted_history(tmp_path: Path) -> N
             _url(tmp_path / "phase1.sqlite3"), registry=_registry()
         )
         try:
-            first = _result("first")
+            first = _result("first", kind="fake_result")
             second = _result(
                 "second",
+                kind="fake_result",
                 inputs=(ResultRef(first.result_id, first.kind, first.schema_version),),
             )
             await persistence.append_result(first)
@@ -141,7 +142,9 @@ def test_append_only_rerun_lineage_retains_accepted_history(tmp_path: Path) -> N
 
 def test_dependent_claim_requires_durable_acceptable_input(tmp_path: Path) -> None:
     async def exercise() -> None:
-        persistence = await Phase1Persistence.open(_url(tmp_path / "phase1.sqlite3"))
+        persistence = await Phase1Persistence.open(
+            _url(tmp_path / "phase1.sqlite3"), registry=_registry()
+        )
         try:
             missing = ResultRef("missing", "prepared", "1")
             with pytest.raises(DependencyNotReadyError):
@@ -171,7 +174,12 @@ def test_dependent_claim_requires_durable_acceptable_input(tmp_path: Path) -> No
                     required_inputs=(ref,),
                 )
 
-            acceptable = replace(incomplete, result_id="acceptable", acceptable=True)
+            acceptable = replace(
+                incomplete,
+                result_id="acceptable",
+                kind="fake_result",
+                acceptable=True,
+            )
             await persistence.append_result(acceptable)
             acceptable_ref = ResultRef(
                 acceptable.result_id, acceptable.kind, acceptable.schema_version
@@ -325,7 +333,9 @@ def test_unknown_external_effect_blocks_blind_retry(tmp_path: Path) -> None:
 
 def test_cancellation_waits_for_inflight_write_to_finish(tmp_path: Path) -> None:
     async def exercise() -> None:
-        persistence = await Phase1Persistence.open(_url(tmp_path / "phase1.sqlite3"))
+        persistence = await Phase1Persistence.open(
+            _url(tmp_path / "phase1.sqlite3"), registry=_registry()
+        )
         started = threading.Event()
         original = persistence._store.append_result
 
@@ -335,7 +345,7 @@ def test_cancellation_waits_for_inflight_write_to_finish(tmp_path: Path) -> None
             original(result)
 
         persistence._store.append_result = slow_append  # type: ignore[method-assign]
-        result = _result("cancelled-write")
+        result = _result("cancelled-write", kind="fake_result")
         task = asyncio.create_task(persistence.append_result(result))
         await asyncio.to_thread(started.wait, 2)
         task.cancel()

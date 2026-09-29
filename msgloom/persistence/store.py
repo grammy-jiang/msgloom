@@ -20,6 +20,7 @@ from msgloom.contracts import (
     OperationOutcome,
     ResultRef,
     ResultSchemaRegistry,
+    SemanticDataRef,
     StageResult,
     TerminalStatus,
 )
@@ -30,6 +31,7 @@ from msgloom.persistence.errors import (
     ExternalEffectReconciliationRequired,
     ImmutableRecordError,
     IncompatibleSchemaError,
+    SemanticDataReferenceError,
     StaleClaimError,
     UnknownResultSchemaError,
 )
@@ -43,10 +45,12 @@ from msgloom.persistence.records import (
     outcome_from_row,
     outcome_values,
     result_from_row,
-    result_values,
 )
+from msgloom.persistence.result_store import append_stage_result
+from msgloom.persistence.semantic import SemanticDataRegistry
+from msgloom.persistence.semantic_store import append_semantic_data, load_semantic_data
 
-_SCHEMA_VERSION = "1"
+_SCHEMA_VERSION = "2"
 _SAFE_RETRY_EFFECTS = frozenset(
     {
         ExternalEffectState.NONE,
@@ -59,7 +63,12 @@ _SAFE_RETRY_EFFECTS = frozenset(
 class Phase1Store:
     """Own synchronous SQLite transactions for the neutral application schema."""
 
-    def __init__(self, database_url: str, registry: ResultSchemaRegistry) -> None:
+    def __init__(
+        self,
+        database_url: str,
+        registry: ResultSchemaRegistry,
+        semantic_registry: SemanticDataRegistry | None = None,
+    ) -> None:
         url = make_url(database_url)
         if url.get_backend_name() != "sqlite":
             raise ValueError("Phase 1 persistence currently requires SQLite")
@@ -70,6 +79,7 @@ class Phase1Store:
         path.parent.mkdir(parents=True, exist_ok=True)
         os.chmod(path.parent, 0o700)
         self.registry = registry
+        self.semantic_registry = semantic_registry or SemanticDataRegistry.phase1()
         self.engine = create_engine(
             database_url,
             connect_args={"autocommit": True, "timeout": 30.0},
@@ -88,29 +98,56 @@ class Phase1Store:
         """Dispose the engine after all awaited facade calls have drained."""
         self.engine.dispose()
 
+    def semantic_reference(
+        self,
+        data_id: str,
+        kind: str,
+        schema_version: str,
+        value: object,
+    ) -> SemanticDataRef:
+        """Build an integrity reference using the registered semantic codec."""
+        return self.semantic_registry.reference(data_id, kind, schema_version, value)
+
     def append_result(self, result: StageResult) -> None:
-        """Append one immutable result, allowing only identical replay."""
-        self._require_schema(result.kind, result.schema_version)
-        values = result_values(result)
-        table = STAGE_RESULTS
-        with self._write_transaction() as connection:
-            existing = (
-                connection.execute(
-                    select(table).where(table.c.result_id == result.result_id)
-                )
-                .mappings()
-                .first()
+        """Append metadata-only results only when their schema/status permits it."""
+        if result.semantic_data_ref is not None:
+            raise SemanticDataReferenceError(
+                "semantic result data must use append_result_with_data"
             )
-            if existing is not None:
-                if result_from_row(existing) != result:
-                    raise ImmutableRecordError(
-                        f"stage result {result.result_id!r} is immutable"
-                    )
-                return
-            connection.execute(table.insert().values(**values))
+        self._require_schema(result.kind, result.schema_version)
+        needs_data = self.registry.requires_data(result.kind, result.schema_version)
+        if result.acceptable and needs_data:
+            raise SemanticDataReferenceError("acceptable result requires semantic data")
+        with self._write_transaction() as connection:
+            append_stage_result(connection, result)
+
+    def append_result_with_data(self, result: StageResult, value: object) -> None:
+        """Atomically append one result and its immutable semantic data."""
+        self._require_schema(result.kind, result.schema_version)
+        reference = result.semantic_data_ref
+        if reference is None:
+            raise SemanticDataReferenceError(
+                "semantic result must declare semantic_data_ref"
+            )
+        if (
+            reference.kind != result.kind
+            or reference.schema_version != result.schema_version
+        ):
+            raise SemanticDataReferenceError(
+                "semantic data kind/schema must match its stage result"
+            )
+        encoded = self.semantic_registry.encode_for_reference(reference, value)
+        with self._write_transaction() as connection:
+            append_semantic_data(connection, encoded)
+            append_stage_result(connection, result)
+
+    def load_semantic_data(self, reference: SemanticDataRef) -> object:
+        """Load and validate one immutable semantic payload."""
+        with self.engine.connect() as connection:
+            return load_semantic_data(connection, reference, self.semantic_registry)
 
     def get_result(self, result_id: str) -> StageResult | None:
-        """Load one immutable result by identity."""
+        """Load one result and enforce its registered semantic-data policy."""
         table = STAGE_RESULTS
         with self.engine.connect() as connection:
             row = (
@@ -121,7 +158,11 @@ class Phase1Store:
         if row is None:
             return None
         self._require_schema(row["kind"], row["schema_version"])
-        return result_from_row(row)
+        result = result_from_row(row)
+        needs_data = self.registry.requires_data(result.kind, result.schema_version)
+        if result.acceptable and result.semantic_data_ref is None and needs_data:
+            raise SemanticDataReferenceError("acceptable result lacks semantic data")
+        return result
 
     def save_outcome(self, outcome: OperationOutcome) -> None:
         """Save one immutable terminal operation outcome."""
@@ -339,6 +380,19 @@ class Phase1Store:
                 raise DependencyNotReadyError(
                     "required stage result is not explicitly acceptable"
                 )
+            data_ref = result_from_row(row).semantic_data_ref
+            needs_data = self.registry.requires_data(ref.kind, ref.schema_version)
+            if data_ref is None and needs_data:
+                raise DependencyNotReadyError("required result lacks semantic data")
+            if data_ref is not None:
+                if (
+                    data_ref.kind != row["kind"]
+                    or data_ref.schema_version != row["schema_version"]
+                ):
+                    raise DependencyNotReadyError(
+                        "required semantic data schema mismatches its stage result"
+                    )
+                load_semantic_data(connection, data_ref, self.semantic_registry)
 
     def _require_current_claim(self, connection: Connection, token: ClaimToken) -> None:
         claims = WORK_CLAIMS

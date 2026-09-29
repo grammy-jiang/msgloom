@@ -8,9 +8,15 @@ from msgloom.persistence.errors import (
     ImmutableRecordError,
     IncompatibleSchemaError,
     Phase1PersistenceError,
+    SemanticDataIntegrityError,
+    SemanticDataReferenceError,
+    SemanticDataTooLargeError,
+    SemanticDataTypeError,
     StaleClaimError,
     UnknownResultSchemaError,
+    UnknownSemanticDataSchemaError,
 )
+from msgloom.persistence.semantic import SemanticDataRegistry
 
 __all__ = [
     "ClaimUnavailableError",
@@ -20,6 +26,12 @@ __all__ = [
     "IncompatibleSchemaError",
     "Phase1Persistence",
     "Phase1PersistenceError",
+    "SemanticDataIntegrityError",
+    "SemanticDataReferenceError",
+    "SemanticDataRegistry",
+    "SemanticDataTooLargeError",
+    "SemanticDataTypeError",
     "StaleClaimError",
     "UnknownResultSchemaError",
+    "UnknownSemanticDataSchemaError",
 ]

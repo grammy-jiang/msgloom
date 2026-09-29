@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import Boolean, String, Text
+from sqlalchemy import Boolean, Integer, LargeBinary, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -41,10 +41,24 @@ class StageResultRecord(Phase1Base):
     prompt_version: Mapped[str | None] = mapped_column(String)
     model_identifier: Mapped[str | None] = mapped_column(String)
     working_context_version: Mapped[str | None] = mapped_column(Text)
+    semantic_data_ref: Mapped[str | None] = mapped_column(Text)
     exposed_output_ref: Mapped[str | None] = mapped_column(Text)
     exposed_diagnostics: Mapped[str] = mapped_column(Text, nullable=False)
     limitations: Mapped[str] = mapped_column(Text, nullable=False)
     failures: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class SemanticDataRecord(Phase1Base):
+    """Persist immutable validated semantic data; raw evidence is never stored."""
+
+    __tablename__ = "phase1_semantic_data"
+
+    data_id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    schema_version: Mapped[str] = mapped_column(String, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    byte_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
 
 
 class OperationOutcomeRecord(Phase1Base):

@@ -21,12 +21,14 @@ from msgloom.persistence.codecs import (
     decode_failures,
     decode_limitations,
     decode_result_refs,
+    decode_semantic_data_ref,
     decode_version_ref,
     decode_version_refs,
     encode_diagnostics,
     encode_failures,
     encode_limitations,
     encode_result_refs,
+    encode_semantic_data_ref,
     encode_version_ref,
     encode_version_refs,
 )
@@ -34,6 +36,7 @@ from msgloom.persistence.models import (
     ClaimAttemptRecord,
     OperationOutcomeRecord,
     SchemaMetadataRecord,
+    SemanticDataRecord,
     StageResultRecord,
     WorkClaimRecord,
 )
@@ -44,6 +47,7 @@ from msgloom.persistence.models import (
 CLAIM_ATTEMPTS = cast(Table, ClaimAttemptRecord.__table__)
 OPERATION_OUTCOMES = cast(Table, OperationOutcomeRecord.__table__)
 SCHEMA_METADATA = cast(Table, SchemaMetadataRecord.__table__)
+SEMANTIC_DATA = cast(Table, SemanticDataRecord.__table__)
 STAGE_RESULTS = cast(Table, StageResultRecord.__table__)
 WORK_CLAIMS = cast(Table, WorkClaimRecord.__table__)
 
@@ -68,6 +72,7 @@ def result_values(result: StageResult) -> dict[str, Any]:
         "prompt_version": result.prompt_version,
         "model_identifier": result.model_identifier,
         "working_context_version": encode_version_ref(result.working_context_version),
+        "semantic_data_ref": encode_semantic_data_ref(result.semantic_data_ref),
         "exposed_output_ref": encode_version_ref(result.exposed_output_ref),
         "exposed_diagnostics": encode_diagnostics(result.exposed_diagnostics),
         "limitations": encode_limitations(result.limitations),
@@ -93,6 +98,7 @@ def result_from_row(row: RowMapping) -> StageResult:
         prompt_version=row["prompt_version"],
         model_identifier=row["model_identifier"],
         working_context_version=decode_version_ref(row["working_context_version"]),
+        semantic_data_ref=decode_semantic_data_ref(row["semantic_data_ref"]),
         exposed_output_ref=decode_version_ref(row["exposed_output_ref"]),
         exposed_diagnostics=decode_diagnostics(row["exposed_diagnostics"]),
         limitations=decode_limitations(row["limitations"]),
