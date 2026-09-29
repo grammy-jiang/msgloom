@@ -7,9 +7,8 @@ import sqlite3
 from pathlib import Path
 from urllib.parse import quote
 
-from sqlalchemy.engine import make_url
-
 from msgloom.contracts import ResultRef
+from msgloom.persistence import sqlite_file_path
 
 
 class StatusError(ValueError):
@@ -66,12 +65,9 @@ def read_saved_status(database_url: str, execution: str) -> dict[str, object]:
 
 def _database_path(database_url: str) -> Path:
     try:
-        url = make_url(database_url)
+        return sqlite_file_path(database_url)
     except (TypeError, ValueError):
         raise StatusError("status_store_incompatible") from None
-    if url.get_backend_name() != "sqlite" or not url.database:
-        raise StatusError("status_store_incompatible")
-    return Path(url.database)
 
 
 def _require_schema(connection: sqlite3.Connection) -> None:

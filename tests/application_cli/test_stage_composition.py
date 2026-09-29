@@ -15,14 +15,13 @@ from msgloom.cli.composition import (
     execute_invocation,
 )
 from msgloom.cli.models import ReportBuildInvocation, TriageInvocation
-from msgloom.cli.registry import full_semantic_registry
 from msgloom.configuration import SecretResolver, load_operator_configuration
 from msgloom.contracts import (
     ResultSchemaRegistry,
     TerminalStatus,
     VersionRef,
 )
-from msgloom.persistence import Phase1Persistence
+from msgloom.persistence import Phase1Persistence, SemanticDataRegistry
 from msgloom.reporting import (
     DueMode,
     ReminderMode,
@@ -150,7 +149,7 @@ def test_actual_triage_then_report_build_with_injected_model_boundary(
         seed = await Phase1Persistence.open(
             configuration.database_url,
             registry=ResultSchemaRegistry.phase1(),
-            semantic_registry=full_semantic_registry(),
+            semantic_registry=SemanticDataRegistry.phase1(),
         )
         try:
             await save_selection(seed, chosen)
@@ -184,14 +183,6 @@ def test_actual_triage_then_report_build_with_injected_model_boundary(
             ),
         )
         if triage_outcome.status is not TerminalStatus.COMPLETE:
-            if (
-                triage_outcome.failures
-                and triage_outcome.failures[0].code == "operation_failed"
-            ):
-                pytest.xfail(
-                    "configuration triage version kind is incompatible with "
-                    "TriageProducerConfig on this baseline"
-                )
             pytest.fail(f"triage composition failed: {triage_outcome}")
         if runner.calls != 1:
             pytest.fail("triage did not use exactly one injected model attempt")
@@ -223,8 +214,12 @@ def test_actual_triage_then_report_build_with_injected_model_boundary(
             selection_semantic_data_id="report-selection-data-cli",
         )
         report_outcome = await execute_invocation(configuration, report)
-        if report_outcome.status is not TerminalStatus.COMPLETE:
-            pytest.fail(f"report composition failed: {report_outcome}")
+        # The seeded prepared record carries one saved synthetic limitation.
+        # Trusted A3 propagation keeps it, so A5 saves an INCOMPLETE report.
+        if report_outcome.status is not TerminalStatus.INCOMPLETE:
+            pytest.fail(f"report composition hid a saved limitation: {report_outcome}")
+        if {item.code for item in report_outcome.limitations} != {"synthetic"}:
+            pytest.fail("report outcome did not mirror exactly the saved limitation")
         if not any(item.kind == "report" for item in report_outcome.result_refs):
             pytest.fail("report build did not publish the saved report result")
 

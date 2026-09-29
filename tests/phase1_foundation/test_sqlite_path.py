@@ -40,6 +40,7 @@ def test_plain_and_uri_urls_name_the_same_file(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "url",
     [
+        "not a database url",
         "postgresql://localhost/phase1",
         "sqlite://",
         "sqlite:///:memory:",

@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
 from sqlalchemy.util import asbool
 
 
@@ -20,10 +21,13 @@ def sqlite_file_path(database_url: str) -> Path:
     SQLite requires. The ``uri`` flag uses SQLAlchemy's own boolean coercion,
     so this function and the driver always agree on the file identity.
 
-    :raises ValueError: for a non-SQLite backend, an in-memory database, or a
-        malformed URI filename.
+    :raises ValueError: for an unparseable URL, a non-SQLite backend, an
+        in-memory database, or a malformed URI filename.
     """
-    url = make_url(database_url)
+    try:
+        url = make_url(database_url)
+    except ArgumentError:
+        raise ValueError("database URL is invalid") from None
     if url.get_backend_name() != "sqlite":
         raise ValueError("Phase 1 persistence currently requires SQLite")
     database = url.database

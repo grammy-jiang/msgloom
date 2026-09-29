@@ -78,7 +78,10 @@ option.
 ## Invocation files
 
 Invocation files are UTF-8 JSON, bounded to 2 MiB, duplicate-key rejecting,
-and closed against unknown fields. Every execution file binds schema version
+and closed against unknown fields. The CLI reads each file through one
+non-blocking descriptor that does not follow a final symlink and accepts only
+a regular file, so a FIFO, device, or swapped path fails with
+`invocation_unavailable` instead of blocking. Every execution file binds schema version
 1, the exact redacted operator configuration version, execution identity,
 attempt identity, caller, authority reference, and the stage-specific plan.
 

@@ -34,7 +34,7 @@ from msgloom.delivery import (
     ReportTransport,
     SubmissionHandlerConfig,
 )
-from msgloom.persistence import Phase1Persistence
+from msgloom.persistence import Phase1Persistence, SemanticDataRegistry
 from msgloom.preparation_pipeline import PreparationHandler
 from msgloom.reporting import ReportBuildHandler
 from msgloom.sources import SavedSourceReader
@@ -47,7 +47,6 @@ from .models import (
     ReportSubmitInvocation,
     TriageInvocation,
 )
-from .registry import full_semantic_registry
 
 
 class TriageRunnerFactory(Protocol):
@@ -419,7 +418,7 @@ async def _open(configuration: OperatorConfiguration) -> Phase1Persistence:
     return await Phase1Persistence.open(
         configuration.database_url,
         registry=ResultSchemaRegistry.phase1(),
-        semantic_registry=full_semantic_registry(),
+        semantic_registry=SemanticDataRegistry.phase1(),
     )
 
 

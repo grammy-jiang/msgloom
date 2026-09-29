@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -77,6 +78,29 @@ def test_duplicate_unknown_and_oversized_invocation_inputs_fail_closed(
             pytest.fail("oversized invocation used the wrong safe failure code")
     else:
         pytest.fail("oversized invocation was accepted")
+
+
+@pytest.mark.parametrize("kind", ["fifo", "symlink", "directory"])
+def test_non_regular_invocation_paths_fail_without_blocking(
+    tmp_path: Path, kind: str
+) -> None:
+    """Only a regular file is read; FIFOs, symlinks, and directories fail."""
+    target = tmp_path / "target.json"
+    target.write_text(json.dumps(_prepare_payload("version")), encoding="utf-8")
+    path = tmp_path / "invocation.json"
+    if kind == "fifo":
+        os.mkfifo(path)
+    elif kind == "symlink":
+        path.symlink_to(target)
+    else:
+        path.mkdir()
+    try:
+        load_invocation(path, StageName.PREPARE)
+    except InvocationError as error:
+        if error.code != "invocation_unavailable":
+            pytest.fail(f"{kind} invocation used the wrong safe failure code")
+    else:
+        pytest.fail(f"{kind} invocation path was accepted")
 
 
 def test_configuration_version_mismatch_precedes_persistence(tmp_path: Path) -> None:

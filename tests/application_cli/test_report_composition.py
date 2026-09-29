@@ -9,10 +9,9 @@ import pytest
 
 from msgloom.cli.composition import execute_invocation
 from msgloom.cli.models import ReportBuildInvocation
-from msgloom.cli.registry import full_semantic_registry
 from msgloom.configuration import load_operator_configuration
 from msgloom.contracts import ResultSchemaRegistry, TerminalStatus, VersionRef
-from msgloom.persistence import Phase1Persistence
+from msgloom.persistence import Phase1Persistence, SemanticDataRegistry
 from tests.application_cli.helpers import minimal_config
 from tests.reporting.helpers import plan, policy, save_triage, topic, triage_data
 
@@ -42,7 +41,7 @@ def test_actual_report_build_persists_new_report_identity(tmp_path: Path) -> Non
         seed = await Phase1Persistence.open(
             configuration.database_url,
             registry=ResultSchemaRegistry.phase1(),
-            semantic_registry=full_semantic_registry(),
+            semantic_registry=SemanticDataRegistry.phase1(),
         )
         try:
             triage_ref = await save_triage(seed, triage_data(topic()))

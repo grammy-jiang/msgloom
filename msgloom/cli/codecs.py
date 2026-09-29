@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -53,15 +55,31 @@ def load_invocation(path: Path, stage: StageName) -> BaseModel:
 
 
 def _read(path: Path) -> bytes:
+    """
+    Read one bounded regular file through a single no-follow descriptor.
+
+    The descriptor is opened non-blocking and without following a final
+    symlink, then checked with ``fstat``. A FIFO, device, directory, or
+    symlink is rejected before any blocking read, and the file cannot be
+    swapped between the check and the read.
+    """
     try:
-        info = path.stat()
-        if not path.is_file() or info.st_size > MAX_INVOCATION_BYTES:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except OSError:
+        raise InvocationError("invocation_unavailable") from None
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            raise InvocationError("invocation_unavailable")
+        if info.st_size > MAX_INVOCATION_BYTES:
             raise InvocationError("invocation_too_large")
-        payload = path.read_bytes()
+        payload = os.read(fd, MAX_INVOCATION_BYTES + 1)
     except InvocationError:
         raise
     except OSError:
         raise InvocationError("invocation_unavailable") from None
+    finally:
+        os.close(fd)
     if not payload or len(payload) > MAX_INVOCATION_BYTES:
         raise InvocationError("invocation_too_large")
     return payload

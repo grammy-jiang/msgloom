@@ -13,7 +13,6 @@ from msgloom.cli.composition import (
     reconcile_invocation,
 )
 from msgloom.cli.models import ReportReconcileInvocation, ReportSubmitInvocation
-from msgloom.cli.registry import full_semantic_registry
 from msgloom.configuration import SecretResolver, load_operator_configuration
 from msgloom.contracts import (
     AttemptIdentity,
@@ -21,8 +20,8 @@ from msgloom.contracts import (
     ResultSchemaRegistry,
     TerminalStatus,
 )
-from msgloom.delivery import ReportReconciliationPlan
-from msgloom.persistence import Phase1Persistence
+from msgloom.delivery import ReportReconciliationPlan, submission_claim_key
+from msgloom.persistence import Phase1Persistence, SemanticDataRegistry
 from tests.application_cli.helpers import minimal_config
 from tests.delivery.helpers import (
     RecordingTransport,
@@ -86,7 +85,7 @@ def test_submission_requires_factory_and_reconciliation_never_sends(
         seed = await Phase1Persistence.open(
             configuration.database_url,
             registry=ResultSchemaRegistry.phase1(),
-            semantic_registry=full_semantic_registry(),
+            semantic_registry=SemanticDataRegistry.phase1(),
         )
         try:
             report_ref, report = await build_report(seed)
@@ -143,13 +142,15 @@ def test_submission_requires_factory_and_reconciliation_never_sends(
         store = await Phase1Persistence.open(
             configuration.database_url,
             registry=ResultSchemaRegistry.phase1(),
-            semantic_registry=full_semantic_registry(),
+            semantic_registry=SemanticDataRegistry.phase1(),
         )
         try:
-            key = (
-                f"report-submit:{report.report_ref.identity}:"
-                f"{report.report_ref.version}:{report.policy_ref.identity}:"
-                f"{report.policy_ref.version}:1"
+            key = submission_claim_key(
+                report.report_ref.identity,
+                report.report_ref.version,
+                report.policy_ref.identity,
+                report.policy_ref.version,
+                1,
             )
             inspection = await store.inspect_claim(key)
             target = inspection.current_token
