@@ -1,0 +1,287 @@
+"""Run the To Do command through real Scrapy and a local Graph fixture."""
+
+import json
+import subprocess
+import sys
+from collections import Counter
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from threading import Thread
+from typing import Any
+from urllib.parse import quote
+
+import pytest
+from sqlalchemy import select
+
+from message_ingest.catalog import Catalog
+from message_ingest.catalog.models.acquisition import (
+    RawHttpEvidence,
+    SourceTargetBinding,
+)
+from message_ingest.catalog.models.microsoft.todo import (
+    TodoChecklistItemRecord,
+    TodoLinkedResourceRecord,
+    TodoTaskListRecord,
+    TodoTaskRecord,
+)
+
+ROOT = Path(__file__).parents[1]
+LIST_ID = "private-list/+%2F"
+TASK_ID = "private-task/+%2f"
+LISTS = "/v1.0/me/todo/lists"
+TASKS = f"{LISTS}/{quote(LIST_ID, safe='')}/tasks"
+TASK = f"{TASKS}/{quote(TASK_ID, safe='')}"
+CHECKS = TASK + "/checklistItems"
+LINKS = TASK + "/linkedResources"
+CURSOR = "?$skiptoken=opaque-secret%2f&x=+&x=%20"
+
+
+@pytest.fixture
+def graph_server():
+    requests = []
+    state = {"mode": "success", "retried": False}
+    pages: dict[str, dict[str, Any]] = {
+        LISTS + "?%24top=2": {
+            "value": [
+                {
+                    "id": LIST_ID,
+                    "displayName": "",
+                    "isOwner": False,
+                    "isShared": False,
+                    "wellknownListName": "defaultList",
+                }
+            ],
+            "@odata.nextLink": LISTS + CURSOR,
+        },
+        LISTS + CURSOR: {
+            "value": [{"id": "flagged", "wellknownListName": "flaggedEmails"}]
+        },
+        TASKS + "?%24top=2": {
+            "value": [
+                {
+                    "id": TASK_ID,
+                    "title": "provider-private-title",
+                    "status": "notStarted",
+                    "categories": [],
+                    "isReminderOn": False,
+                    "body": {"contentType": "html", "content": ""},
+                    "dueDateTime": {
+                        "dateTime": "2026-10-01T00:00:00",
+                        "timeZone": "UTC",
+                    },
+                    "linkedResources": [{"id": "embedded-only"}],
+                }
+            ],
+            "@odata.nextLink": TASKS + CURSOR,
+        },
+        TASKS + CURSOR: {"value": [{"id": "second", "title": ""}]},
+        LISTS + "/flagged/tasks?%24top=2": {"value": []},
+        CHECKS: {
+            "value": [{"id": "check-one", "displayName": "", "isChecked": False}],
+            "@odata.nextLink": CHECKS + CURSOR,
+        },
+        CHECKS + CURSOR: {"value": [{"id": "check-two", "isChecked": True}]},
+        LINKS: {
+            "value": [{"id": "link-one", "displayName": "", "externalId": "external"}],
+            "@odata.nextLink": LINKS + CURSOR,
+        },
+        LINKS + CURSOR: {
+            "value": [{"id": "link-two", "webUrl": "https://example.test/evidence"}]
+        },
+        TASKS + "/second/checklistItems": {"value": []},
+        TASKS + "/second/linkedResources": {"value": []},
+    }
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, format, *args):
+            pass
+
+        def do_GET(self):
+            requests.append(self.path)
+            status = 200
+            payload = pages.get(self.path)
+            if state["mode"] == "empty":
+                payload = {"value": []}
+            elif self.path == LINKS and state["mode"] == "failure":
+                status = 403
+                payload = {
+                    "error": {
+                        "code": "ErrorAccessDenied",
+                        "message": "provider-private-title",
+                    }
+                }
+            elif self.path == LINKS and state["mode"] == "malformed":
+                payload = {"value": [{"displayName": "no identity"}]}
+            elif self.path == LINKS and not state["retried"]:
+                state["retried"] = True
+                status = 503
+                payload = {"error": {"code": "ServiceUnavailable", "message": "retry"}}
+            if payload is None:
+                status = 404
+                payload = {"error": {"code": "FixtureRouteMissing"}}
+            if isinstance(next_link := payload.get("@odata.nextLink"), str):
+                payload = {
+                    **payload,
+                    "@odata.nextLink": origin + next_link,
+                }
+            body = json.dumps(payload).encode()
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            if status == 503:
+                self.send_header("Retry-After", "0")
+            self.end_headers()
+            self.wfile.write(body)
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    origin = f"http://127.0.0.1:{server.server_port}"
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield origin, state, requests, pages
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def _crawl(tmp_path, origin):
+    settings = {
+        "MS_GRAPH_SERVICE_ROOT": origin + "/v1.0",
+        "MS_GRAPH_AUTH_METHOD": "none",
+        "MSGLOOM_SOURCE_IDENTITY_REQUIRED": "False",
+        "MSGLOOM_TODO_SOURCE_ID": "todo-fixture",
+        "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+        "MSGLOOM_RAW_EVIDENCE_DIR": str(tmp_path / "raw"),
+        "MSGLOOM_CATALOG_ENABLED": "True",
+        "MSGLOOM_RAW_EVIDENCE_ENABLED": "True",
+        "HTTPCACHE_ENABLED": "False",
+        "AUTOTHROTTLE_ENABLED": "False",
+        "LOG_LEVEL": "DEBUG",
+    }
+    args = [
+        sys.executable,
+        "-m",
+        "scrapy",
+        "microsoft",
+        "todo",
+        "discover",
+        "--page-size",
+        "2",
+    ]
+    for key, value in settings.items():
+        args.extend(["-s", f"{key}={value}"])
+    return subprocess.run(
+        args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+    )
+
+
+def _private_logs(stderr):
+    for private in (
+        LIST_ID,
+        TASK_ID,
+        quote(LIST_ID, safe=""),
+        quote(TASK_ID, safe=""),
+        "provider-private-title",
+        "opaque-secret",
+    ):
+        if private in stderr:
+            pytest.fail(f"Shared privacy components leaked provider data: {private}")
+
+
+def test_real_todo_command_crawls_all_surfaces_and_preserves_evidence(
+    tmp_path, graph_server
+):
+    origin, state, requests, pages = graph_server
+    result = _crawl(tmp_path, origin)
+    if result.returncode or "ERROR" in result.stderr:
+        pytest.fail(result.stderr)
+    _private_logs(result.stderr)
+    if Counter(requests) != Counter(
+        {path: 2 if path == LINKS else 1 for path in pages}
+    ):
+        pytest.fail(f"Traversal or opaque request bytes changed: {requests!r}")
+    for component in (
+        "MicrosoftGraphErrorMiddleware",
+        "PrivacySafeRetryMiddleware",
+        "MicrosoftGraphDiagnosticsMiddleware",
+        "MicrosoftGraphLogPrivacyExtension",
+        "RepresentationAwareRequestFingerprinter",
+    ):
+        if component not in result.stderr:
+            pytest.fail(f"Shared Graph component was not enabled: {component}")
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            records = []
+            for model in (
+                TodoTaskListRecord,
+                TodoTaskRecord,
+                TodoChecklistItemRecord,
+                TodoLinkedResourceRecord,
+            ):
+                rows = session.scalars(select(model)).all()
+                if len(rows) != 2:
+                    pytest.fail(f"Missing paginated {model.__name__} state")
+                records.extend(rows)
+            evidence = session.scalars(select(RawHttpEvidence)).all()
+            if len(evidence) != len(pages):
+                pytest.fail("Expected one raw capture per callback-visible response")
+            evidence_by_id = {row.evidence_id: row for row in evidence}
+            for row in records:
+                capture = evidence_by_id.get(row.latest_evidence_id)
+                if capture is None or row.latest_observed_at != capture.observed_at:
+                    pytest.fail(
+                        "Semantic state must reference persisted evidence and time"
+                    )
+                if (
+                    row.source_id != "todo-fixture"
+                    or capture.source_id != row.source_id
+                ):
+                    pytest.fail("To Do source identity did not reach storage")
+            links = session.scalars(select(TodoLinkedResourceRecord)).all()
+            if {row.linked_resource_id for row in links} != {"link-one", "link-two"}:
+                pytest.fail("Embedded relation replaced explicit relation fetch")
+            if (
+                next(
+                    row for row in links if row.linked_resource_id == "link-one"
+                ).web_url
+                is not None
+            ):
+                pytest.fail("A missing provider web URL must remain valid")
+            if session.scalars(select(SourceTargetBinding)).first() is not None:
+                pytest.fail("To Do must not create Outlook source-target bindings")
+        # An empty later inventory must not remove any previously observed row.
+        state["mode"] = "empty"
+        second = _crawl(tmp_path, origin)
+        if second.returncode:
+            pytest.fail(second.stderr)
+        with catalog.Session() as session:
+            if len(session.scalars(select(TodoTaskRecord)).all()) != 2:
+                pytest.fail("Discovery inferred task removal from absence")
+    finally:
+        catalog.close()
+
+
+@pytest.mark.parametrize("mode", ["failure", "malformed"])
+def test_real_todo_failure_retains_evidence_and_fails_command(
+    tmp_path, graph_server, mode
+):
+    origin, state, _requests, _pages = graph_server
+    state["mode"] = mode
+    result = _crawl(tmp_path, origin)
+    if result.returncode != 1:
+        pytest.fail(f"Request/callback failure must fail the command: {result.stderr}")
+    _private_logs(result.stderr)
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            captures = session.scalars(
+                select(RawHttpEvidence).filter_by(purpose="todo-linked-resources-page")
+            ).all()
+            if not any(row.request_url == origin + LINKS for row in captures):
+                pytest.fail("Failed relation response lost its raw evidence")
+            if session.scalars(select(TodoLinkedResourceRecord)).first() is not None:
+                pytest.fail("Failed or malformed response produced relation state")
+    finally:
+        catalog.close()

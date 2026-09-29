@@ -30,6 +30,12 @@ from .microsoft.outlook import (
     MessageRecord,
     MessageSurface,
 )
+from .microsoft.todo import (
+    TodoChecklistItemRecord,
+    TodoLinkedResourceRecord,
+    TodoTaskListRecord,
+    TodoTaskRecord,
+)
 
 __all__ = [
     "AttachmentRecord",
@@ -62,4 +68,8 @@ __all__ = [
     "RawHttpEvidence",
     "SourceBinding",
     "SourceTargetBinding",
+    "TodoChecklistItemRecord",
+    "TodoLinkedResourceRecord",
+    "TodoTaskListRecord",
+    "TodoTaskRecord",
 ]

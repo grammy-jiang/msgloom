@@ -31,6 +31,10 @@ from message_ingest.catalog.models import (
     RawHttpEvidence,
     SourceBinding,
     SourceTargetBinding,
+    TodoChecklistItemRecord,
+    TodoLinkedResourceRecord,
+    TodoTaskListRecord,
+    TodoTaskRecord,
 )
 from message_ingest.catalog.store import Catalog
 from message_ingest.catalog.stores.evidence import RawEvidenceStore
@@ -38,6 +42,7 @@ from message_ingest.catalog.stores.microsoft.outlook import (
     OutlookCalendarStore,
     OutlookMailStore,
 )
+from message_ingest.catalog.stores.microsoft.todo import TodoStore
 
 __all__ = [
     "AttachmentRecord",
@@ -74,4 +79,9 @@ __all__ = [
     "RawHttpEvidence",
     "SourceBinding",
     "SourceTargetBinding",
+    "TodoChecklistItemRecord",
+    "TodoLinkedResourceRecord",
+    "TodoStore",
+    "TodoTaskListRecord",
+    "TodoTaskRecord",
 ]

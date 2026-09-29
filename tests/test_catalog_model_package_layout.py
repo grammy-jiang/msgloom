@@ -73,6 +73,10 @@ EXPECTED_TABLES = {
     "raw_http_evidence",
     "source_bindings",
     "source_target_bindings",
+    "todo_task_lists",
+    "todo_tasks",
+    "todo_checklist_items",
+    "todo_linked_resources",
 }
 
 

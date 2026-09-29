@@ -215,6 +215,7 @@ MSGLOOM_MAX_RAW_CONTENT_BYTES = int(
     os.getenv("MSGLOOM_MAX_RAW_CONTENT_BYTES", str(64 * 1024 * 1024))
 )
 MSGLOOM_SOURCE_ID = os.getenv("MSGLOOM_SOURCE_ID", "microsoft-outlook-default")
+MSGLOOM_TODO_SOURCE_ID = os.getenv("MSGLOOM_TODO_SOURCE_ID", "microsoft-todo-default")
 MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
 # Legacy identity bootstrap must be an explicit invocation-scoped Scrapy
 # setting (for example ``-s ...``), never a sticky environment default.

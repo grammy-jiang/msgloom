@@ -35,6 +35,7 @@ microsoft_graph/
     __init__.py
     graph.py
     resources.py
+    todo.py
     outlook/
       __init__.py
       mailbox.py
@@ -43,6 +44,7 @@ microsoft_graph/
   items/
     __init__.py
     graph.py
+    todo.py
     outlook/
       __init__.py
       mail.py
@@ -93,6 +95,8 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `microsoft_graph/spiders/resources.py` | Provide minimal object/collection spiders with replaceable item hooks and native pagination. |
 | `microsoft_graph/items/graph.py` | Provide an optional provider-only GraphResourceItem dataclass. |
 | `microsoft_graph/items/outlook/` | Provide optional Mail and Calendar dataclasses and resource mappers. |
+| `microsoft_graph/items/todo.py` | Provide optional task-list, task, checklist, and linked-resource dataclasses with unchanged provider values. |
+| `microsoft_graph/spiders/todo.py` | Own To Do read scopes and encoded v1.0 collection paths. |
 | `microsoft_graph/middlewares/errors.py` | Own Graph-specific retry/backoff through Scrapy's retry helper. |
 | `microsoft_graph/middlewares/diagnostics.py` | Record Graph transport diagnostics for each attempt. |
 | `microsoft_graph/middlewares/retry.py` | Preserve native generic retries with URL-safe logging. |
@@ -114,6 +118,7 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `message_ingest/items/acquisition.py` | Define provider-independent raw-evidence and exhausted-acquisition failure items. |
 | `message_ingest/items/microsoft/outlook/email.py` | Define Outlook Mail discovery, enrichment, attachment, removal, surface, and delta-candidate items. |
 | `message_ingest/items/microsoft/outlook/calendar.py` | Define Calendar inventory, event, attachment, delta-observation, and checkpoint-candidate items. |
+| `message_ingest/items/microsoft/todo.py` | Inherit To Do provider projections and add observation, evidence, and run context. |
 | `message_ingest/pipelines/evidence.py` | Store raw HTTP evidence and content-addressed payload files. |
 | `message_ingest/acquisition/contracts.py` | Define provider-independent structural contracts for evidence-linked items. |
 | `message_ingest/acquisition/source_identity.py` | Bind logical sources to hashed opaque provider identities. |
@@ -129,6 +134,11 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `message_ingest/commands/microsoft/auth.py` | Dispatch offline Microsoft auth status/clear operations through shared auth management. |
 | `message_ingest/commands/microsoft/outlook/mail.py` | Map Outlook Mail CLI actions to existing spiders. |
 | `message_ingest/commands/microsoft/outlook/calendar.py` | Map Outlook Calendar CLI actions to existing spiders. |
+| `message_ingest/commands/microsoft/todo.py` | Map To Do discovery to its single read-only spider. |
+| `message_ingest/spiders/microsoft/todo/discover.py` | Traverse lists, tasks, checklist items, and explicit linked resources with evidence-first callbacks. |
+| `message_ingest/pipelines/microsoft/todo.py` | Await current-state writes under the shared catalog lock after evidence linking. |
+| `message_ingest/catalog/models/microsoft/todo.py` | Define four additive current-state tables with source and provider identity keys. |
+| `message_ingest/catalog/stores/microsoft/todo.py` | Apply latest-capture To Do projections without inferring deletion. |
 | `message_ingest/commands/microsoft/outlook/sync.py` | Compose sequential Mail/Calendar collection and planner-driven enrichment phases from existing spiders. |
 | `message_ingest/pipelines/microsoft/outlook/email.py` | Route Outlook Mail items through the shared write lock into Mail/checkpoint stores. |
 | `message_ingest/spiders/microsoft/outlook/calendar/discover.py` | Inventory visible calendars through paginated Graph callbacks. |
@@ -175,6 +185,9 @@ and `PROVIDER_ID`. Public component imports use their owning packages:
   `GraphCollectionSpider`.
 - `microsoft_graph.spiders.outlook`: `OutlookMailboxSpider`, `OutlookMailSpider`,
   and `OutlookCalendarSpider`.
+- `microsoft_graph.spiders.todo`: `MicrosoftTodoSpider`.
+- `microsoft_graph.items.todo`: `TodoTaskListItem`, `TodoTaskItem`,
+  `TodoChecklistItem`, and `TodoLinkedResourceItem`.
 - `microsoft_graph.middlewares`: `MicrosoftGraphDelegatedAuthMiddleware`,
   `MicrosoftGraphDeviceCodeAuthMiddleware`,
   `MicrosoftGraphInteractiveAuthMiddleware`,
@@ -577,6 +590,67 @@ The practical Calendar coverage is therefore:
 These modes share Graph authentication, evidence capture, request fingerprinting,
 retry/privacy infrastructure, and source identity, but retain resource-specific
 state and lifecycle rules.
+
+## Microsoft To Do discovery
+
+Msgloom is a personal work-information system. Microsoft To Do supplies
+obligation and action state: task status, deadlines, checklist state, and linked
+evidence for future Topic analysis. This slice acquires current state through
+the Microsoft Graph v1.0 `todoTask` API.
+
+```console
+.venv/bin/scrapy microsoft todo discover --page-size 100
+```
+
+The command accepts only `--page-size` as a product option, plus normal Scrapy
+settings and logging options. It rejects resource IDs, `--mailbox`, and Outlook
+Mail/Calendar options. The spider is `microsoft_todo_discover`.
+
+The provider base declares only `Tasks.Read`. Microsoft documents this as the
+least-privilege delegated permission for personal accounts for
+[lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0),
+[tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0),
+[checklist items](https://learn.microsoft.com/en-us/graph/api/todotask-list-checklistitems?view=graph-rest-1.0),
+and [linked resources](https://learn.microsoft.com/en-us/graph/api/todotask-list-linkedresources?view=graph-rest-1.0).
+All acquisition requests use GET. The framework owns scopes, path grammar,
+single ID encoding, and optional provider-only Items. Nested body, date/time,
+and recurrence objects retain their provider shape. Built-in `wellknownListName`
+values, including `defaultList` and `flaggedEmails`, remain intact and follow
+the same traversal.
+
+The application owns callbacks, evidence, run integrity, and persistence.
+Lists lead to tasks. Every task leads to explicit `checklistItems` and
+`linkedResources` requests. These relation collections supply authoritative
+relation observations even when task JSON embeds links. A linked resource can
+omit `webUrl`. Each callback yields raw evidence before semantic Items and uses
+`GraphCollectionPage` to read an opaque `nextLink`. Parent IDs travel through
+`cb_kwargs` and are retained in failure context, never in stats labels.
+
+The spider inherits the existing Graph authentication, retry, diagnostics,
+privacy, and request-fingerprint policies. It uses the application `_request()`
+helper and shared errback. Outlook checkpoint and status modes are disabled.
+The pipeline stages are raw evidence at 200, evidence linking at 250, and To Do
+storage at 300. Writes are awaited under `CatalogService.write_lock`. Storage
+failures propagate to the shared integrity extension. To Do refuses `JOBDIR`
+with `ValueError` because application resume behavior is not yet validated.
+
+`MSGLOOM_TODO_SOURCE_ID` reads the environment and defaults to
+`microsoft-todo-default`. The To Do spider sets effective `MSGLOOM_SOURCE_ID`
+at spider priority. An explicit `-s MSGLOOM_SOURCE_ID=...` still wins. Outlook
+source behavior is unchanged. To Do verifies account identity without creating
+an Outlook source-target binding.
+
+The catalog adds `todo_task_lists`, `todo_tasks`, `todo_checklist_items`, and
+`todo_linked_resources`. Primary keys combine source ID with list ID, task ID,
+and relation ID as applicable. Each row keeps the provider projection, raw
+JSON, latest observation time, and latest evidence ID. Scalar provider dates
+retain their original text; nested zoned dates remain JSON. Capture times are
+compared as timezone-aware instants. Older captures cannot replace current
+state. Equal capture times use processing order. Missing inventory entries do
+not imply deletion.
+
+Delta acquisition, write operations, task completion, and Topic linking are
+deferred. This slice provides no sync/full modes or deprecated `baseTask` paths.
 
 ## Simplifications
 

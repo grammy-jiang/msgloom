@@ -34,12 +34,14 @@ from message_ingest.spiders.microsoft.outlook.email.folder_delta import (
 )
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
+from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscoverSpider
 
 
 def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
         "microsoft_profile": MicrosoftProfileSpider,
+        "microsoft_todo_discover": MicrosoftTodoDiscoverSpider,
         "outlook_calendar_delta": OutlookCalendarDeltaSpider,
         "outlook_calendar_discover": OutlookCalendarDiscoverSpider,
         "outlook_calendar_full": OutlookCalendarFullSpider,
