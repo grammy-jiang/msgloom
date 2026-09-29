@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import stat
+import tomllib
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, cast
@@ -58,17 +59,18 @@ def load_operator_configuration(
 ) -> OperatorConfiguration:
     """Load, validate, redact, and freeze one explicit operator configuration."""
     try:
-        config_path = config_file.resolve(strict=True)
-        _check_regular_bounded(config_path, MAX_CONFIG_BYTES)
+        config_path = config_file.expanduser().absolute()
+        config_values = _decode_toml_object(
+            _read_bounded(config_path, MAX_CONFIG_BYTES)
+        )
         options = dict(command_options or {})
         _check_options(options)
         _check_environment()
-        if mounted_secret_dir is not None:
-            _check_settings_secret_files(mounted_secret_dir)
+        mounted_values = _load_mounted_settings(mounted_secret_dir)
         settings = _load_settings(
-            config_path,
             options=options,
-            mounted_secret_dir=mounted_secret_dir,
+            config_values=config_values,
+            mounted_values=mounted_values,
         )
         settings = _resolve_paths(settings, config_path.parent)
         prompt_text, prompt_digest, schema, schema_digest = _triage_files(settings)
@@ -92,12 +94,12 @@ def load_operator_configuration(
 
 
 def _load_settings(
-    config_path: Path,
     *,
     options: dict[str, object],
-    mounted_secret_dir: Path | None,
+    config_values: Mapping[str, object],
+    mounted_values: Mapping[str, object],
 ) -> OperatorSettings:
-    with bound_sources(config_path, mounted_secret_dir):
+    with bound_sources(config_values, mounted_values):
         return OperatorSettings(**cast(Any, options))
 
 
@@ -134,11 +136,11 @@ def _resolve_paths(settings: OperatorSettings, base_dir: Path) -> OperatorSettin
             input_config=triage.input_config,
             working_context=triage.working_context,
             prompt_ref=triage.prompt_ref,
-            prompt_file=resolve_path(base_dir, triage.prompt_file),
+            prompt_file=_resolve_unfollowed(base_dir, triage.prompt_file),
             model_ref=triage.model_ref,
             model_identifier=triage.model_identifier,
             output_schema_ref=triage.output_schema_ref,
-            output_schema_file=resolve_path(base_dir, triage.output_schema_file),
+            output_schema_file=_resolve_unfollowed(base_dir, triage.output_schema_file),
             attempt_limits=triage.attempt_limits,
             runtime=runtime,
             secret_binding_ids=triage.secret_binding_ids,
@@ -152,6 +154,12 @@ def _resolve_paths(settings: OperatorSettings, base_dir: Path) -> OperatorSettin
     return settings.model_copy(
         update={"storage": storage, "source": source, "triage": triage}
     )
+
+
+def _resolve_unfollowed(base_dir: Path, path: Path) -> Path:
+    """Resolve relative syntax without following the final filesystem object."""
+    value = path if path.is_absolute() else base_dir / path
+    return Path(os.path.abspath(value))
 
 
 def _triage_files(
@@ -319,64 +327,112 @@ def _check_options(options: dict[str, object]) -> None:
 
 
 def _check_environment() -> None:
+    prefix = _ENV_PREFIX.casefold()
+    seen: list[tuple[str, ...]] = []
     for key, value in os.environ.items():
-        if not key.startswith(_ENV_PREFIX):
+        if not key.casefold().startswith(prefix):
             continue
         tail = key[len(_ENV_PREFIX) :]
-        top = tail.split("__", 1)[0].lower()
-        if top not in _TOP_LEVEL:
+        segments = tuple(part.casefold() for part in tail.split("__"))
+        if not segments or not segments[0] or segments[0] not in _TOP_LEVEL:
+            raise ConfigurationError(ConfigurationErrorCode.UNKNOWN_INPUT)
+        if any(not part for part in segments):
             raise ConfigurationError(ConfigurationErrorCode.UNKNOWN_INPUT)
         if len(value.encode("utf-8")) > MAX_SETTINGS_SECRET_BYTES:
             raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
-
-
-def _check_settings_secret_files(directory: Path) -> None:
-    try:
-        root = directory.resolve(strict=True)
-        if not root.is_dir():
+        if any(
+            segments == prior
+            or segments[: len(prior)] == prior
+            or prior[: len(segments)] == segments
+            for prior in seen
+        ):
             raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
-        for field in _TOP_LEVEL:
-            candidate = root / field
-            if not candidate.exists():
-                continue
-            _check_regular_bounded(candidate, MAX_SETTINGS_SECRET_BYTES)
-    except ConfigurationError:
-        raise
-    except OSError:
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
+        seen.append(segments)
 
 
-def _check_regular_bounded(path: Path, maximum: int) -> None:
+def _load_mounted_settings(directory: Path | None) -> dict[str, object]:
+    if directory is None:
+        return {}
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     try:
-        info = path.lstat()
+        root_fd = os.open(directory, flags)
     except OSError:
         raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
-    if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
-    if info.st_size > maximum:
-        raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
+    values: dict[str, object] = {}
+    try:
+        for field in _TOP_LEVEL:
+            data = _read_named_bounded(root_fd, field, MAX_SETTINGS_SECRET_BYTES)
+            if data is None:
+                continue
+            text = _decode_utf8(data).strip()
+            if not text:
+                continue
+            values[field] = (
+                text if field == "code_version" else _decode_json_value(text)
+            )
+    finally:
+        os.close(root_fd)
+    return values
+
+
+def _read_named_bounded(root_fd: int, name: str, maximum: int) -> bytes | None:
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    try:
+        fd = os.open(name, flags, dir_fd=root_fd)
+    except FileNotFoundError:
+        return None
+    except OSError:
+        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
+    try:
+        return _read_regular_fd(fd, maximum)
+    finally:
+        os.close(fd)
 
 
 def _read_bounded(path: Path, maximum: int) -> bytes:
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
-        try:
-            info = os.fstat(fd)
-            if not stat.S_ISREG(info.st_mode) or info.st_size > maximum:
-                raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
-            data = os.read(fd, maximum + 1)
-        finally:
-            os.close(fd)
+        fd = os.open(path, flags)
+    except OSError:
+        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
+    try:
+        return _read_regular_fd(fd, maximum)
+    finally:
+        os.close(fd)
+
+
+def _read_regular_fd(fd: int, maximum: int) -> bytes:
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
+        if info.st_size > maximum:
+            raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
+        data = os.read(fd, maximum + 1)
     except ConfigurationError:
         raise
     except OSError:
         raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
-    if not data or len(data) > maximum:
+    if len(data) > maximum:
         raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
     return data
 
 
-def _decode_json_object(data: bytes) -> dict[str, object]:
+def _decode_utf8(data: bytes) -> str:
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
+
+
+def _decode_toml_object(data: bytes) -> dict[str, object]:
+    value = tomllib.loads(_decode_utf8(data))
+    if not isinstance(value, dict) or not value:
+        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
+    return cast(dict[str, object], value)
+
+
+def _decode_json_value(text: str) -> object:
     def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for key, value in items:
@@ -385,7 +441,11 @@ def _decode_json_object(data: bytes) -> dict[str, object]:
             result[key] = value
         return result
 
-    value = json.loads(data, object_pairs_hook=pairs)
+    return json.loads(text, object_pairs_hook=pairs)
+
+
+def _decode_json_object(data: bytes) -> dict[str, object]:
+    value = _decode_json_value(_decode_utf8(data))
     if not isinstance(value, dict) or not value:
         raise ValueError("schema must be a non-empty object")
     return value

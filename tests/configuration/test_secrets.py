@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import cast
 
@@ -10,7 +13,10 @@ import pytest
 from msgloom.configuration import (
     ConfigurationError,
     ConfigurationErrorCode,
+    SecretBinding,
+    SecretPurpose,
     SecretResolver,
+    SecretSource,
     load_operator_configuration,
 )
 
@@ -93,3 +99,81 @@ def test_secret_purpose_mismatch_rejects_configuration(
         load_operator_configuration(minimal_toml, command_options=options)
     if caught.value.code is not ConfigurationErrorCode.INVALID_INPUT:
         pytest.fail("cross-purpose credential binding was not rejected")
+
+
+def test_secret_special_files_are_rejected_without_blocking(tmp_path: Path) -> None:
+    secret_dir = tmp_path / "mounted"
+    secret_dir.mkdir()
+    fifo = secret_dir / "fifo-secret"
+    os.mkfifo(fifo)
+    code = """
+from pathlib import Path
+from msgloom.configuration import (
+    ConfigurationError,
+    SecretBinding,
+    SecretPurpose,
+    SecretResolver,
+    SecretSource,
+)
+binding = SecretBinding(
+    binding_id="fifo",
+    purpose=SecretPurpose.REPORT,
+    logical_name="transport",
+    source=SecretSource.MOUNTED_FILE,
+    locator="fifo-secret",
+)
+resolver = SecretResolver(
+    allowed_environment=set(),
+    allowed_files={"fifo-secret"},
+    mounted_secret_dir=Path(__import__("sys").argv[1]),
+)
+print("READY", flush=True)
+try:
+    resolver.resolve(binding)
+except ConfigurationError as error:
+    print(error.code.value, flush=True)
+"""
+    process = subprocess.Popen(
+        [sys.executable, "-c", code, str(secret_dir)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=3.0)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.communicate()
+        pytest.fail("secret FIFO open blocked past the finite subprocess budget")
+    if process.returncode != 0:
+        pytest.fail(f"secret FIFO subprocess failed unexpectedly: {stderr!r}")
+    if stdout.splitlines() != ["READY", "secret_unavailable"]:
+        pytest.fail("secret FIFO subprocess did not reach and reject the open")
+
+    fifo.unlink()
+    target = tmp_path / "secret-target"
+    target.write_text("synthetic-private", encoding="utf-8")
+    fifo.symlink_to(target)
+    binding = SecretBinding(
+        binding_id="symlink",
+        purpose=SecretPurpose.REPORT,
+        logical_name="transport",
+        source=SecretSource.MOUNTED_FILE,
+        locator="fifo-secret",
+    )
+    resolver = SecretResolver(
+        allowed_environment=set(),
+        allowed_files={"fifo-secret"},
+        mounted_secret_dir=secret_dir,
+    )
+    with pytest.raises(ConfigurationError) as caught:
+        resolver.resolve(binding)
+    if caught.value.code is not ConfigurationErrorCode.SECRET_UNAVAILABLE:
+        pytest.fail("symlinked secret was not rejected safely")
+
+    fifo.unlink()
+    fifo.write_bytes(b"x" * (16 * 1024 + 1))
+    with pytest.raises(ConfigurationError) as caught:
+        resolver.resolve(binding)
+    if caught.value.code is not ConfigurationErrorCode.SECRET_UNAVAILABLE:
+        pytest.fail("oversized secret was not rejected safely")

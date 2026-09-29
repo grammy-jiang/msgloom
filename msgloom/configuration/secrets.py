@@ -54,9 +54,13 @@ class SecretResolver:
         if Path(locator).name != locator:
             raise ConfigurationError(ConfigurationErrorCode.SECRET_NOT_APPROVED)
         try:
-            root_fd = os.open(self._root, os.O_RDONLY | os.O_DIRECTORY)
+            root_fd = os.open(self._root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
             try:
-                fd = os.open(locator, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=root_fd)
+                fd = os.open(
+                    locator,
+                    os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                    dir_fd=root_fd,
+                )
             finally:
                 os.close(root_fd)
             try:

@@ -225,3 +225,32 @@ MSGLOOM_CONFIG__CODE_VERSION=build-override
 A command option mapping containing code_version=build-command overrides that
 environment value. A mounted settings file named code_version overrides TOML
 but remains below environment and command options.
+
+## R2 validation and file-boundary hardening
+
+Configuration inspection now rejects reusable settings that the reviewed
+execution contracts cannot use: A2 lease/operation and derived aggregate
+relationships, A3 attempt/cleanup/operation/lease relationships, and A5 build
+timeout/lease relationships are enforced before OperatorConfiguration is
+returned. A2 parser profiles must match the exact production registry identity
+for their format and the reviewed production profile/settings contract; this
+validation does not start a parser.
+
+Environment preflight follows pydantic-settings' case-insensitive
+MSGLOOM_CONFIG__ matching. Unknown recognized-prefix names, case aliases,
+overlapping whole/nested settings, and oversized values fail with fixed safe
+configuration errors before source composition.
+
+The explicit TOML and consumed mounted settings are read once through bounded,
+nonblocking, no-follow descriptors and then supplied to pydantic-settings as
+in-memory custom mapping sources. Prompt and schema files use the same
+nonblocking/no-follow descriptor validation after relative path resolution
+without dereferencing the final object. Secret resolution opens both the
+mounted root and leaf without following symlinks and adds a nonblocking leaf
+open, so FIFOs and other nonregular files are rejected before any read.
+Inspection still never resolves credential files or environment values.
+
+OperatorConfiguration.database_url uses SQLite file-URI mode with the
+filesystem path percent-encoded before the controlled uri=true query option.
+Reserved filename characters such as question marks therefore remain part of
+the exact configured database filename rather than becoming URL query syntax.

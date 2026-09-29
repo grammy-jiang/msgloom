@@ -11,14 +11,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
-    SecretsSettingsSource,
     SettingsConfigDict,
-    TomlConfigSettingsSource,
 )
 
 from msgloom.ai.models import AttemptLimits
 from msgloom.contracts import PhaseCapability, VersionRef
+from msgloom.preparation import DocumentFormat
 from msgloom.preparation.filtering import FilterConfig
+from msgloom.preparation.isolation.registry import PRODUCTION_REGISTRY
 from msgloom.preparation_pipeline import ParserProfile
 from msgloom.reporting import RendererConfig, ReportPolicy
 from msgloom.triage import TriageRuleConfig
@@ -44,6 +44,54 @@ _AI_CREDENTIAL_KEYS = frozenset(
 )
 ShortText = Annotated[str, Field(min_length=1, max_length=256)]
 JsonObject = dict[str, Any]
+
+_PARSER_PROFILES = {
+    DocumentFormat.MIME: "mime-html-v1",
+    DocumentFormat.HTML: "mime-html-v1",
+    DocumentFormat.TEXT: "mime-html-v1",
+    DocumentFormat.JSON: "mime-html-v1",
+    DocumentFormat.PDF: "pdf-primary-v1",
+    DocumentFormat.DOCX: "word-native-v1",
+    DocumentFormat.DOC: "word-native-v1",
+    DocumentFormat.XLSX: "excel-primary-v1",
+    DocumentFormat.XLSM: "excel-primary-v1",
+    DocumentFormat.XLS: "excel-primary-v1",
+    DocumentFormat.XLSB: "excel-primary-v1",
+    DocumentFormat.ODS: "excel-primary-v1",
+}
+_EXCEL_FORMATS = frozenset(
+    {
+        DocumentFormat.XLSX,
+        DocumentFormat.XLSM,
+        DocumentFormat.XLS,
+        DocumentFormat.XLSB,
+        DocumentFormat.ODS,
+    }
+)
+_EXCEL_SETTING_KEYS = frozenset(
+    {"include_hidden_sheets", "include_hidden_rows", "include_hidden_columns"}
+)
+_EXCEL_BOOL_VALUES = frozenset({"1", "true", "yes", "0", "false", "no"})
+
+
+def _validate_parser_profile(profile: ParserProfile) -> None:
+    """Require the exact reviewed production parser and reusable profile."""
+    entry = PRODUCTION_REGISTRY.resolve(profile.format)
+    if profile.parser != entry.identity:
+        raise ValueError("parser identity is not registered for the selected format")
+    if profile.config.profile != _PARSER_PROFILES[profile.format]:
+        raise ValueError("parser profile is not supported for the selected format")
+    settings = dict(profile.config.settings)
+    if profile.format not in _EXCEL_FORMATS:
+        if settings:
+            raise ValueError("selected parser profile does not accept settings")
+        return
+    if set(settings) - _EXCEL_SETTING_KEYS:
+        raise ValueError("spreadsheet parser setting is not supported")
+    if any(
+        value.strip().lower() not in _EXCEL_BOOL_VALUES for value in settings.values()
+    ):
+        raise ValueError("spreadsheet parser setting value is invalid")
 
 
 class SecretPurpose(StrEnum):
@@ -166,6 +214,19 @@ class PreparationSettings(_ClosedModel):
             raise TypeError("parser profiles must be a finite sequence")
         return tuple(_strict_model(ParserProfile, item) for item in value)
 
+    @model_validator(mode="after")
+    def _usable_operation(self) -> PreparationSettings:
+        formats = tuple(profile.format for profile in self.parser_profiles)
+        if len(formats) != len(set(formats)):
+            raise ValueError("parser profiles must have unique formats")
+        for profile in self.parser_profiles:
+            _validate_parser_profile(profile)
+        if self.max_derived_bytes > self.max_total_derived_bytes:
+            raise ValueError("per-artifact derived bound exceeds aggregate bound")
+        if self.claim_lease_seconds <= self.execution_timeout_seconds + 1.0:
+            raise ValueError("claim lease must exceed execution budget by one second")
+        return self
+
 
 class AIRuntimeSettings(_ClosedModel):
     """Paths used only when the CLI later constructs the isolated AI runner."""
@@ -223,6 +284,17 @@ class TriageSettings(_ClosedModel):
     def _strict_limits(cls, value: object) -> AttemptLimits:
         return _strict_dataclass(AttemptLimits, value)
 
+    @model_validator(mode="after")
+    def _usable_operation(self) -> TriageSettings:
+        acceptance = self.operation_timeout_seconds - self.cleanup_margin_seconds
+        if acceptance <= 0:
+            raise ValueError("operation timeout must leave a cleanup margin")
+        if self.attempt_limits.timeout_seconds > acceptance:
+            raise ValueError("attempt timeout exceeds operation acceptance budget")
+        if self.lease_seconds < self.operation_timeout_seconds:
+            raise ValueError("claim lease must cover the total operation budget")
+        return self
+
 
 class ReportTransportSettings(_ClosedModel):
     """Reference one manager-integrated report transport without constructing it."""
@@ -258,6 +330,12 @@ class ReportSettings(_ClosedModel):
     def _strict_renderer(cls, value: object) -> RendererConfig:
         return _strict_model(RendererConfig, value)
 
+    @model_validator(mode="after")
+    def _usable_operation(self) -> ReportSettings:
+        if self.claim_lease_seconds < self.timeout_seconds + 1.0:
+            raise ValueError("claim lease must exceed the finite operation budget")
+        return self
+
 
 class OperatorSettings(BaseSettings):
     """Raw pydantic-settings surface before path and cross-section validation."""
@@ -292,21 +370,18 @@ class OperatorSettings(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Apply the project precedence and intentionally omit dotenv."""
-        from msgloom.configuration.sources import config_file, secret_dir
+        from msgloom.configuration.sources import (
+            MappingSettingsSource,
+            config_values,
+            mounted_values,
+        )
 
         del dotenv_settings, file_secret_settings
         return (
             init_settings,
             env_settings,
-            SecretsSettingsSource(
-                settings_cls,
-                secrets_dir=secret_dir(),
-                env_prefix="",
-            ),
-            TomlConfigSettingsSource(
-                settings_cls,
-                toml_file=config_file(),
-            ),
+            MappingSettingsSource(settings_cls, mounted_values()),
+            MappingSettingsSource(settings_cls, config_values()),
         )
 
     @model_validator(mode="after")

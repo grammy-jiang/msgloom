@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
+from urllib.parse import quote
+
+from sqlalchemy import URL
 
 from msgloom.ai.models import AttemptLimits
 from msgloom.ai.policy import RuntimeIsolation, TrustedPolicy
@@ -263,8 +266,14 @@ class OperatorConfiguration:
 
     @property
     def database_url(self) -> str:
-        """Return the SQLite URL for explicit persistence construction."""
-        return f"sqlite:///{self._database_path}"
+        """Return a SQLite URI preserving the exact configured file identity."""
+        encoded = quote(str(self._database_path), safe="/")
+        url = URL.create(
+            "sqlite",
+            database=f"file:{encoded}",
+            query={"uri": "true"},
+        )
+        return url.render_as_string(hide_password=False)
 
     @property
     def admissions(self) -> tuple[TrustedAdmission, ...]:

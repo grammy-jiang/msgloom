@@ -92,8 +92,12 @@ def full_options(tmp_path: Path) -> dict[str, object]:
             "parser_profiles": [
                 {
                     "format": "text",
-                    "parser": {"name": "text", "version": "1", "backend": None},
-                    "config": {"profile": "plain", "settings": []},
+                    "parser": {
+                        "name": "msgloom.mime-html",
+                        "version": "1",
+                        "backend": "stdlib-email+selectolax-0.4.12",
+                    },
+                    "config": {"profile": "mime-html-v1", "settings": []},
                     "limits": {
                         "wall_time_seconds": 2.0,
                         "memory_bytes": 1048576,

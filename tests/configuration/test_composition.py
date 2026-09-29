@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import cast
 
 import pytest
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
 
 from msgloom.configuration import (
     ConfigurationError,
@@ -33,8 +35,12 @@ def test_full_configuration_resolves_relative_paths_and_operations(
     expected_root = minimal_toml.parent / "saved" / "raw"
     if source.evidence_roots != (expected_root,):
         pytest.fail("evidence root was not resolved against explicit TOML")
-    if not configured.database_url.endswith("/state/phase1.sqlite3"):
+    expected_database = minimal_toml.parent / "state" / "phase1.sqlite3"
+    parsed_url = make_url(configured.database_url)
+    if parsed_url.database != f"file:{expected_database}":
         pytest.fail("persistence path was not resolved against explicit TOML")
+    if parsed_url.query.get("uri") != "true":
+        pytest.fail("persistence URL did not preserve filesystem URI semantics")
 
     prepare = configured.operation(PhaseCapability.PREPARE)
     triage = configured.operation(PhaseCapability.TRIAGE)
@@ -222,3 +228,28 @@ def test_operation_builders_reuse_integrated_domain_contracts(
     )
     if handler.code_version != configured.code_version:
         pytest.fail("A5 handler config lost code provenance")
+
+
+def test_database_url_preserves_reserved_filename_identity(
+    minimal_toml: Path,
+) -> None:
+    reserved = Path("state") / "phase1?reserved #%.sqlite3"
+    configured = load_operator_configuration(
+        minimal_toml,
+        command_options={"storage": {"sqlite_path": str(reserved)}},
+    )
+    exact_path = minimal_toml.parent / reserved
+    exact_path.parent.mkdir(parents=True, exist_ok=True)
+
+    engine = create_engine(configured.database_url)
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("CREATE TABLE identity_probe (value INTEGER)"))
+    finally:
+        engine.dispose()
+
+    if not exact_path.is_file():
+        pytest.fail("SQLite URL did not open the exact reserved-character path")
+    rewritten = minimal_toml.parent / "state" / "phase1"
+    if rewritten.exists():
+        pytest.fail("SQLite URL rewrote '?' into URI query semantics")
