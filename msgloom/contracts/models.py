@@ -279,6 +279,7 @@ class ResultSchemaRegistry:
                 ("ai_response", "1"),
                 ("triage", "1"),
                 ("report", "1"),
+                ("report_selection", "1"),
                 ("report_submission", "1"),
             }
         )
@@ -299,6 +300,7 @@ class ResultSchemaRegistry:
                     ("ai_response", "1"),
                     ("triage", "1"),
                     ("report", "1"),
+                    ("report_selection", "1"),
                 }
             ),
         )

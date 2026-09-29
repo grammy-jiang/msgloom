@@ -34,7 +34,7 @@ from .build import (
 from .codec import REPORT_KIND, REPORT_SCHEMA_VERSION
 from .config import ReportHandlerConfig
 from .history import ReportHistoryEvidence, ReportHistoryMetadata, ReportHistoryResolver
-from .lifecycle import finish_quietly
+from .lifecycle import finish_quietly, run_sync_owned
 from .models import (
     AssessmentSelection,
     FrozenRendererConfig,
@@ -113,7 +113,9 @@ class ReportBuildHandler:
                 history = await self._resolve_history(history_meta)
                 selected = select_topics(self._policy, self._plan, loaded)
                 snapshot = self._selection_snapshot(loaded, selected, history)
-                selection_result = self._selection_stage_result(request, snapshot)
+                selection_result = await run_sync_owned(
+                    self._selection_stage_result, request, snapshot
+                )
                 self._check_deadline(deadline)
                 await self._persistence.append_result_with_data(
                     selection_result, snapshot, claim=claim
@@ -155,7 +157,9 @@ class ReportBuildHandler:
                     if limitations
                     else TerminalStatus.COMPLETE
                 )
-                result = self._stage_result(request, report, status)
+                result = await run_sync_owned(
+                    self._stage_result, request, report, status
+                )
                 self._check_deadline(deadline)
                 await self._persistence.append_result_with_data(
                     result, report, claim=claim
@@ -397,30 +401,17 @@ class ReportBuildHandler:
         limitations: tuple[Limitation, ...],
         deadline: float,
     ) -> tuple[ReportPart, ...]:
-        task = asyncio.create_task(
-            asyncio.to_thread(
-                render_report,
-                self._config.report_ref,
-                overview,
-                topics,
-                self._plan.pending_warnings,
-                self._renderer,
-                limitations,
-            )
+        parts = await run_sync_owned(
+            render_report,
+            self._config.report_ref,
+            overview,
+            topics,
+            self._plan.pending_warnings,
+            self._renderer,
+            limitations,
         )
-        cancelled = False
-        while not task.done():
-            try:
-                await asyncio.shield(task)
-            except asyncio.CancelledError:
-                cancelled = True
-        error = task.exception()
-        if error is not None:
-            raise error
-        if cancelled:
-            raise asyncio.CancelledError
         self._check_deadline(deadline)
-        return task.result()
+        return parts
 
     def _stage_result(
         self, request: OperationRequest, report: SavedReport, status: TerminalStatus

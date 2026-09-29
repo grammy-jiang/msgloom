@@ -221,7 +221,7 @@ def test_handler_failed_write_returns_failure_and_releases_claim(
         selection = plan(triage_ref)
         original = store.append_result_with_data
 
-        async def fail_write(result: object, value: object) -> None:
+        async def fail_write(result: object, value: object, *, claim=None) -> None:
             del result, value
             from msgloom.persistence import ImmutableRecordError
 
@@ -364,7 +364,7 @@ def test_selection_write_failure_prevents_render(
             rendered = True
             raise RuntimeError("render should not run")
 
-        async def fail_write(result: object, value: object) -> None:
+        async def fail_write(result: object, value: object, *, claim=None) -> None:
             del result, value
             from msgloom.persistence import ImmutableRecordError
 

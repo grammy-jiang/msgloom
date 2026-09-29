@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 from typing import Protocol
 
 from msgloom.contracts import ClaimToken, ExternalEffectState, TerminalStatus
@@ -34,7 +35,32 @@ async def finish_quietly(
             await asyncio.shield(task)
         except asyncio.CancelledError:
             continue
+        except (Phase1PersistenceError, ValueError):
+            break
     try:
         task.result()
     except (Phase1PersistenceError, ValueError):
         return
+
+
+async def run_sync_owned[**P, T](
+    callback: Callable[P, T], *args: P.args, **kwargs: P.kwargs
+) -> T:
+    """Drain one synchronous operation off-loop before propagating cancellation."""
+    task = asyncio.create_task(asyncio.to_thread(callback, *args, **kwargs))
+    cancelled = False
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            cancelled = True
+        except Exception:  # noqa: BLE001
+            break
+    if task.cancelled():
+        raise asyncio.CancelledError
+    error = task.exception()
+    if cancelled:
+        raise asyncio.CancelledError
+    if error is not None:
+        raise error
+    return task.result()

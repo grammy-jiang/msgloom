@@ -187,3 +187,15 @@ The package root no longer eagerly imports the persistence-backed handler.
 ReportBuildHandler and ReportHandlerConfig are loaded lazily, allowing the
 shared semantic registry to import report codecs during persistence package
 initialization without a reporting/persistence initialization cycle.
+
+## Integrated registry and cleanup
+
+The default Phase 1 composition registers both ``report_selection@1`` and
+``report@1`` as required semantic products. The wheel includes the report
+subpackage's Jinja templates. A default-registry restart test reloads both
+products and checks exact saved content.
+
+Canonical selection and report validation run off the caller event loop.
+The handler drains this owned work before propagating cancellation. Stale
+claim errors during terminal cleanup do not replace the original cancellation
+or failure. Deterministic codec barriers check both publication boundaries.

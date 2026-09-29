@@ -19,10 +19,8 @@ from msgloom.reporting import (
     DueMode,
     ReminderMode,
     RepeatMode,
-    ReportCodec,
     ReportDestination,
     ReportPolicy,
-    ReportSelectionCodec,
     ReportSelectionPlan,
     SourceLink,
 )
@@ -138,10 +136,8 @@ def plan(
 
 
 def semantic_registry() -> SemanticDataRegistry:
-    """Compose report codec locally without editing the shared registry."""
-    base = SemanticDataRegistry.phase1()
-    codecs = base._codecs  # pyright: ignore[reportPrivateUsage]
-    return SemanticDataRegistry(codecs + (ReportSelectionCodec(), ReportCodec()))
+    """Use the default report composition in production and restart tests."""
+    return SemanticDataRegistry.phase1()
 
 
 async def open_store(path: Path) -> Phase1Persistence:
