@@ -76,6 +76,13 @@ The AI runner uses the [SDK integration](tech-stack.md#ai-runner). It has separa
 
 The three layers organise saved content; they are not three database servers.
 
+The accepted Phase 1 implementation keeps the A1 acquisition catalog and the
+provider-neutral result schema in separate SQLite files. Each file has one
+schema owner. This preserves the tested acquisition schema while keeping one
+logical Persistence responsibility. Exact version and evidence references
+connect the stages; a dependent stage still requires durable accepted input.
+See the [persistence decision](notes/phase1-persistence-spike.md).
+
 ```mermaid
 flowchart LR
     L1[Layer 1: received bytes] --> L2[Layer 2: parsed content]

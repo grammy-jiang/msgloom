@@ -17,7 +17,7 @@ Earlier selections were researched on 7 September 2026; the FastMCP 4 alignment 
 | Deliverable | Installable `msgloom` Python package under the [packaging contract](#8-packaging-and-later-dependencies). | Required |
 | Runtime | Python 3.12 minimum; Python 3.13 remains the default deployment target. Python 3.12, 3.13 and 3.14 are mandatory test and compatibility targets. | Required |
 | Deployment | Docker container with persistent storage. The External scheduler and package are installed independently; no scheduler is included in msgloom. | Required |
-| Application database | SQLite through an async ORM interface; no handwritten application SQL. | Required |
+| Application database | SQLite through SQLAlchemy behind an awaited async boundary. Each schema has one owner; transaction control belongs to persistence. | Required |
 | AI runner | [SDK integration](#ai-runner) with local Claude Code and the existing AWS Bedrock connection. | Required |
 | Cost boundary | No new paid services. Microsoft 365, Claude Code and AWS Bedrock are the existing exceptions. | Required |
 
@@ -31,14 +31,14 @@ Rows describe package dependencies unless explicitly marked deployment-only. Pro
 | --- | --- | --- | --- |
 | Configuration | [pydantic-settings 2](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) | Typed settings, environment variables, secret files and TOML sources; reuse Pydantic validation. | 1 |
 | External scheduler | [Prefect 3, self-hosted](https://docs.prefect.io/v3/concepts/server), deployment-only | Launch and await installed msgloom subcommands. No Prefect dependency, decorators or client in the package. | 1 deployment |
-| Source adapters / A1 | [Microsoft Graph Python SDK](https://pypi.org/project/msgraph-sdk/) | Use async request methods; provider types stay inside adapters. | 1 |
-| Source authentication | [Azure Identity async credentials](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.aio) | Await credential acquisition and close clients on exit. | 1 |
-| Response capture / A1 | [HTTPX AsyncClient](https://www.python-httpx.org/async/) through the SDK transport | Await requests and capture before deserialisation; reuse and explicitly close clients. | 1 |
+| Source adapters / A1 | The reusable `microsoft_graph` framework on pinned [Scrapy](https://docs.scrapy.org/en/2.19/) | Implemented Microsoft acquisition; spiders own traversal and downloader middleware owns transport policy. | 1 |
+| Source authentication | [MSAL for Python](https://msal-python.readthedocs.io/) through the existing Graph authentication boundary | Preserve tested cache, account identity, read scopes, and token privacy. | 1 |
+| Response capture / A1 | Scrapy responses and awaited raw-evidence pipelines | Save received bytes before semantic items; retain evidence links and native lifecycle ownership. | 1 |
 | Parsing / A2 | Format-specific choices in [Parser selection](#parser-selection) | Fast extraction paths behind awaited workers, with accuracy and coverage checks. | 1 |
 | Filtering and grouping / A2 | Typed Python, `re`, `datetime`, `zoneinfo` | Source-native relationships and declared predicates need no NLP or rule-engine service. | 1 |
 | Deterministic triage / A3 | Typed Python predicates and enums | Evaluate validated rule data; never execute configuration as arbitrary Python. | 1 |
 | Structured boundaries | [Pydantic 2](https://docs.pydantic.dev/latest/) | Validate configuration-linked records, stage outputs and AI responses; generate JSON Schema. | 1 |
-| Persistence | [SQLAlchemy async ORM](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html), [aiosqlite](https://aiosqlite.omnilib.dev/en/stable/) and Alembic | Async engine and sessions for state; migrations remain explicit administration. | 1 |
+| Persistence | [SQLAlchemy 2](https://docs.sqlalchemy.org/en/20/) through bounded, awaited thread calls | Keep the tested A1 catalog. New provider-neutral results use a separate schema owner and SQLite file; migrations remain explicit administration. | 1 |
 | Persistent files | [AnyIO file operations](https://anyio.readthedocs.io/en/stable/fileio.html), `pathlib` and `hashlib` | Await blocking file work; preserve integrity and atomic-write semantics. | 1 |
 | Working context reader | AnyIO file operations | Await read-only memory access and save a versioned snapshot. | 1 |
 | Async execution | [AnyIO 4](https://anyio.readthedocs.io/en/stable/), using its asyncio backend | Await resource lifetimes, workers and cancellation; no cross-stage queue. | 1 |
@@ -137,7 +137,9 @@ The wrapper records execution identities and outcomes, not message bodies. Disti
 
 Use asyncio as the supported loop backend, with AnyIO for tasks, file I/O, workers and cancellation. SQLAlchemy's driver path means Trio compatibility is not claimed. Architecture owns [stage sequencing](architecture.md#async-execution).
 
-Use Graph async methods, `azure.identity.aio`, HTTPX AsyncClient and the async Claude Agent SDK interface. Use SQLAlchemy `AsyncEngine` and `AsyncSession` with `sqlite+aiosqlite` and its asyncio installation support. [aiosqlite](https://aiosqlite.omnilib.dev/en/stable/) wraps per-connection worker-thread execution; it does not create concurrent SQLite writers. Use one session per task and short transactions. Alembic remains explicit administration, never automatic on import.
+The implemented Microsoft A1 adapter retains Graph-over-Scrapy and MSAL. Native Scrapy owns requests, item processing, and clean-idle checkpoint gates. A future SDK transport migration requires separate evidence and approval; it is not a Phase 1 prerequisite.
+
+New provider-neutral persistence uses bounded, awaited synchronous SQLAlchemy calls. The [persistence decision](notes/phase1-persistence-spike.md) records the equivalent-transaction comparison, cancellation draining, and separate schema ownership. One async Application boundary awaits durable results before dependent stages. Keep transactions short, acquire writer intent before read-modify-write, and finish accepted writes before disposal. The async Claude Agent SDK interface remains the selected A3 boundary.
 
 Await [AnyIO worker processes](https://anyio.readthedocs.io/en/stable/subprocesses.html) for document parsing and [thread-backed I/O](https://anyio.readthedocs.io/en/stable/threads.html) for blocking files. Render larger Jinja2 outputs off the event loop. Small validation and pure calculations may stay synchronous. Coroutine cancellation does not stop an arbitrary thread: drain safe I/O or terminate an isolated process before releasing its claim.
 

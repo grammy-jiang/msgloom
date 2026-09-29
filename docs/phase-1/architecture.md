@@ -43,6 +43,12 @@ Enforce the [async execution contract](../architecture.md#async-execution). The 
 
 ## 3. Collection writes
 
+Microsoft collection uses the implemented Graph-over-Scrapy adapter described
+in [component layout](../component-layout.md). Spiders own traversal, downloader
+middleware owns transport policy, pipelines await persistence, and extensions
+own lifecycle gates. The sequence below describes logical ordering; it does
+not replace native Scrapy lifecycle or JOBDIR callback contracts with an SDK.
+
 ```mermaid
 sequenceDiagram
     participant C as A1 Collection
@@ -138,10 +144,16 @@ A retry reuses the saved output and report identity. It does not rerun triage. R
 
 ## 6. Recovery and replay
 
+The accepted [persistence boundary](../notes/phase1-persistence-spike.md) uses
+short SQLAlchemy transactions behind bounded, awaited thread calls. A1 keeps
+its existing catalog. Provider-neutral Phase 1 results use a separate SQLite
+file with one schema owner. Cancellation drains an accepted write before the
+caller releases claims or closes resources.
+
 | Situation | Application response |
 | --- | --- |
 | Competing collection or reporting runs | Acquire a per-scope or per-policy claim through the ORM; only the claim holder advances progress. |
-| Temporary database contention | Await a short ORM transaction retry. Use one async session per task; never share an active session across workers. |
+| Temporary database contention | Acquire writer ownership before reading mutable state and await the bounded transaction. Never share an active session across workers or blindly repeat an external effect. |
 | Failed parse or AI output | Restart from the selected saved input with a new attempt identity. |
 | External scheduler restart or missed trigger | A later command resumes saved pending work. Manual invocation remains available without the scheduler. |
 | Missing file or disk exhaustion | Mark dependent work unavailable and stop progress; restore or explicitly recollect where permitted. |

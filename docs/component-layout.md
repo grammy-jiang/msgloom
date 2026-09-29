@@ -166,8 +166,11 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/commands/microsoft/auth.py` | Dispatch offline Microsoft auth status/clear operations through shared auth management. |
 | `message_ingest/commands/microsoft/outlook/mail.py` | Map Outlook Mail CLI actions to existing spiders. |
 | `message_ingest/commands/microsoft/outlook/calendar.py` | Map Outlook Calendar CLI actions to existing spiders. |
-| `message_ingest/commands/microsoft/todo.py` | Map To Do discovery to its single read-only spider. |
+| `message_ingest/commands/microsoft/todo.py` | Map read-only To Do discovery and authoritative snapshot sync to their spiders. |
 | `message_ingest/spiders/microsoft/todo/discover.py` | Traverse lists, tasks, checklist items, and explicit linked resources with evidence-first callbacks. |
+| `message_ingest/spiders/microsoft/todo/sync.py` | Reuse discovery callbacks with uncached authoritative traversal. |
+| `message_ingest/extensions/microsoft/todo/snapshot.py` | Gate synchronous presence promotion on clean native idle and durable traversal proof. |
+| `message_ingest/sync/microsoft/todo/snapshots.py` | Persist sightings and completions; atomically compare and swap snapshot presence. |
 | `message_ingest/pipelines/microsoft/todo.py` | Await current-state writes under the shared catalog lock after evidence linking. |
 | `message_ingest/catalog/models/microsoft/todo.py` | Define four additive current-state tables with source and provider identity keys. |
 | `message_ingest/catalog/stores/microsoft/todo.py` | Apply latest-capture To Do projections without inferring deletion. |
@@ -641,7 +644,7 @@ These modes share Graph authentication, evidence capture, request fingerprinting
 retry/privacy infrastructure, and source identity, but retain resource-specific
 state and lifecycle rules.
 
-## Microsoft To Do discovery
+## Microsoft To Do discovery and authoritative sync
 
 Msgloom is a personal work-information system. Microsoft To Do supplies
 obligation and action state: task status, deadlines, checklist state, and linked
@@ -650,11 +653,13 @@ the Microsoft Graph v1.0 `todoTask` API.
 
 ```console
 .venv/bin/scrapy microsoft todo discover --page-size 100
+.venv/bin/scrapy microsoft todo sync --page-size 100
 ```
 
 The command accepts only `--page-size` as a product option, plus normal Scrapy
 settings and logging options. It rejects resource IDs, `--mailbox`, and Outlook
-Mail/Calendar options. The spider is `microsoft_todo_discover`.
+Mail/Calendar options. Discovery uses `microsoft_todo_discover`; sync uses
+`microsoft_todo_sync` and reuses the same four traversal callbacks.
 
 The provider base declares only `Tasks.Read`. Microsoft documents this as the
 least-privilege delegated permission for personal accounts for
@@ -699,8 +704,22 @@ compared as timezone-aware instants. Older captures cannot replace current
 state. Equal capture times use processing order. Missing inventory entries do
 not imply deletion.
 
-Delta acquisition, write operations, task completion, and Topic linking are
-deferred. This slice provides no sync/full modes or deprecated `baseTask` paths.
+Authoritative sync bypasses the HTTP cache for every page. It records source/run
+sightings and terminal completion proof for lists, tasks, checklist items, and
+linked resources. A candidate requires the exact complete traversal implied by
+the sightings and current-run evidence for every completion.
+
+At clean native idle, the snapshot extension verifies that the shared write
+lock is free, then promotes synchronously before pipeline shutdown. One
+transaction compares and swaps the source revision and reconciles separate
+presence tables. A stale competing run cannot change authoritative presence.
+Failure, dropped items, and incomplete pagination prevent promotion. Historical
+provider records and evidence remain available when a key becomes absent.
+
+The read-only task-delta capability probe succeeded with ``Tasks.Read``. Delta
+remains optional and deferred. Snapshot correctness does not depend on it.
+Write operations, task completion, and Topic linking remain out of scope. No
+``baseTask`` path is used. See [the snapshot contract](notes/todo-sync.md).
 
 ## Microsoft OneDrive evidence and context
 
