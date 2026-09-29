@@ -73,6 +73,8 @@ MSGLOOM_DELTA_CHECKPOINT_ENABLED = _env_bool("MSGLOOM_DELTA_CHECKPOINT_ENABLED",
 MSGLOOM_FOLDER_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_ONEDRIVE_DELTA_CHECKPOINT_ENABLED = False
+MSGLOOM_CONTACTS_SNAPSHOT_PROMOTION_ENABLED = False
+MSGLOOM_CONTACTS_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CRAWL_STATUS_ENABLED = _env_bool("MSGLOOM_CRAWL_STATUS_ENABLED", True)
 MSGLOOM_CATALOG_ENABLED = _env_bool("MSGLOOM_CATALOG_ENABLED", True)
 MSGLOOM_TARGET_MAILBOX = ""
@@ -105,6 +107,8 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.extensions.microsoft.onedrive.checkpoint.OneDriveDeltaCheckpointExtension": 515,
     "message_ingest.extensions.microsoft.todo.snapshot.TodoSnapshotExtension": 520,
+    "message_ingest.extensions.microsoft.contacts.checkpoint.ContactsSnapshotPromotionExtension": 521,
+    "message_ingest.extensions.microsoft.contacts.checkpoint.ContactsDeltaCheckpointExtension": 522,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "microsoft_graph.extensions.onedrive.OneDriveContentPrivacyExtension": 530,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,
@@ -219,6 +223,9 @@ MSGLOOM_SOURCE_ID = os.getenv("MSGLOOM_SOURCE_ID", "microsoft-outlook-default")
 MSGLOOM_TODO_SOURCE_ID = os.getenv("MSGLOOM_TODO_SOURCE_ID", "microsoft-todo-default")
 MSGLOOM_ONEDRIVE_SOURCE_ID = os.getenv(
     "MSGLOOM_ONEDRIVE_SOURCE_ID", "microsoft-onedrive-default"
+)
+MSGLOOM_CONTACTS_SOURCE_ID = os.getenv(
+    "MSGLOOM_CONTACTS_SOURCE_ID", "microsoft-contacts-default"
 )
 MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
 # Legacy identity bootstrap must be an explicit invocation-scoped Scrapy

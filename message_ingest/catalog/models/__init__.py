@@ -2,6 +2,21 @@
 
 from .acquisition import RawHttpEvidence, SourceBinding, SourceTargetBinding
 from .base import Base
+from .microsoft.contacts import (
+    ContactCollectionCompletion,
+    ContactDeltaCheckpoint,
+    ContactDeltaCheckpointCandidate,
+    ContactDeltaObservation,
+    ContactFolderPresence,
+    ContactFolderRecord,
+    ContactFolderSighting,
+    ContactPresence,
+    ContactPromotionBase,
+    ContactPromotionGeneration,
+    ContactRecord,
+    ContactSighting,
+    ContactsSnapshotState,
+)
 from .microsoft.onedrive import (
     OneDriveContentCapture,
     OneDriveContentRecord,
@@ -72,6 +87,19 @@ __all__ = [
     "CalendarEventSurface",
     "CalendarRecord",
     "CalendarSeriesTopologyRecord",
+    "ContactCollectionCompletion",
+    "ContactDeltaCheckpoint",
+    "ContactDeltaCheckpointCandidate",
+    "ContactDeltaObservation",
+    "ContactFolderPresence",
+    "ContactFolderRecord",
+    "ContactFolderSighting",
+    "ContactPresence",
+    "ContactPromotionBase",
+    "ContactPromotionGeneration",
+    "ContactRecord",
+    "ContactSighting",
+    "ContactsSnapshotState",
     "DeltaCheckpoint",
     "DeltaCheckpointCandidate",
     "FolderDeltaCheckpoint",

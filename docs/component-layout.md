@@ -126,6 +126,8 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `microsoft_graph/spiders/todo.py` | Own To Do read scopes and encoded v1.0 collection paths. |
 | `microsoft_graph/items/onedrive.py` | Provide optional drive and driveItem dataclasses with unchanged provider values. |
 | `microsoft_graph/spiders/onedrive.py` | Own OneDrive read scopes, encoded v1.0 paths, and safe binary content requests. |
+| `microsoft_graph/items/contacts.py` | Preserve personal contact/folder projections and sparse tombstones without application state. |
+| `microsoft_graph/spiders/contacts.py` | Own Contacts.Read and separate default/custom-folder paths with opaque continuation support. |
 | `microsoft_graph/middlewares/errors.py` | Own Graph-specific retry/backoff through Scrapy's retry helper. |
 | `microsoft_graph/middlewares/diagnostics.py` | Record Graph transport diagnostics for each attempt. |
 | `microsoft_graph/middlewares/retry.py` | Preserve native generic retries with URL-safe logging. |
@@ -170,6 +172,13 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/catalog/models/microsoft/todo.py` | Define four additive current-state tables with source and provider identity keys. |
 | `message_ingest/catalog/stores/microsoft/todo.py` | Apply latest-capture To Do projections without inferring deletion. |
 | `message_ingest/commands/microsoft/onedrive.py` | Map OneDrive discovery, delta, and explicit content to their spiders. |
+| `message_ingest/commands/microsoft/contacts.py` | Dispatch read-only Contacts discovery and authoritative snapshot sync. |
+| `message_ingest/spiders/microsoft/contacts/` | Traverse default contacts and recursive custom folders; support explicit custom-folder delta. |
+| `message_ingest/catalog/stores/microsoft/contacts.py` | Save current state and reconcile snapshot presence under shared promotion generations. |
+| `message_ingest/catalog/stores/microsoft/_contacts_delta.py` | Stage ordered sparse changes and atomically promote the opaque cursor. |
+| `message_ingest/catalog/stores/microsoft/_contacts_state.py` | Own shared snapshot/delta ordering and semantic state assignments. |
+| `message_ingest/pipelines/microsoft/contacts.py` | Await Contacts writes after evidence linking under the shared catalog lock. |
+| `message_ingest/extensions/microsoft/contacts/` | Gate synchronous snapshot/delta promotion on clean native idle. |
 | `message_ingest/items/microsoft/onedrive.py` | Add provenance to provider metadata and define content metadata and checkpoint candidates. |
 | `message_ingest/spiders/microsoft/onedrive/` | Own root discovery, metadata delta, explicit content, and download URL redaction. |
 | `message_ingest/pipelines/microsoft/onedrive.py` | Await OneDrive current-state writes under the catalog lock after evidence linking. |
@@ -883,3 +892,34 @@ without Scrapy. They also preserve standalone crawls, add-on precedence, exact
 fingerprint bytes, callback/errback serialization, and delta compatibility.
 Run Python LSP diagnostics on `microsoft_graph/`, `message_ingest/`, and `tests/`
 after changing imports.
+
+## Microsoft Contacts context
+
+Contacts supplies identity and relationship context. It does not create Topics.
+The provider requests only `Contacts.Read`. The selected projection excludes
+`personalNotes`; raw evidence preserves the response to that selected request.
+
+```console
+.venv/bin/scrapy microsoft contacts discover --page-size 100
+.venv/bin/scrapy microsoft contacts sync --page-size 100
+```
+
+Default contacts and recursive custom-folder inventory are separate surfaces.
+Discovery saves observations without absence inference. Sync bypasses the HTTP
+cache and requires terminal completion proof for the default collection,
+folder inventory, and each custom folder's child and contact collections.
+A complete clean run promotes separate presence tables at native idle.
+
+Custom-folder delta requires an explicit concrete folder ID and remains a
+low-level spider. It stages sparse changes and tombstones in provider order,
+then promotes them with the exact opaque terminal cursor. Snapshot and delta
+share a durable generation captured before traversal. A stale competing run
+cannot advance presence or a cursor. All Contacts mutations use the shared
+SQLite writer transaction boundary across independent Catalog instances.
+Failures, dropped items, and incomplete traversal prevent promotion. `JOBDIR`
+is rejected until Contacts resume semantics are qualified.
+
+Synthetic acceptance covers recursion, pagination, schema registration,
+ordering, and failure gates. Live acceptance remains pending `Contacts.Read`
+consent. No interactive consent or provider mutation is part of automated
+validation. See [the Contacts contract](notes/contacts-sync.md).

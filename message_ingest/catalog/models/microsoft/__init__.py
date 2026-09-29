@@ -1,5 +1,5 @@
 """Microsoft catalog model domains."""
 
-from . import outlook
+from . import contacts, outlook
 
-__all__ = ["outlook"]
+__all__ = ["contacts", "outlook"]
