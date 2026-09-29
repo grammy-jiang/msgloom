@@ -23,6 +23,8 @@ SPIDER_MODULES = ["message_ingest.spiders.microsoft"]
 NEWSPIDER_MODULE = "message_ingest.spiders.microsoft"
 COMMANDS_MODULE = "message_ingest.commands"
 
+ADDONS = {"microsoft_graph.addon.MicrosoftGraphAddon": 100}
+
 
 # Scrapy's global default is False. The generated project template enables it,
 # but Microsoft Graph is an authenticated API rather than a web crawl.
@@ -84,17 +86,12 @@ MS_GRAPH_AUTH_METHOD = (
 )
 
 DOWNLOADER_MIDDLEWARES = {
-    # Preserve Scrapy generic retries through a privacy-safe subclass that
-    # suppresses Request reprs containing Graph continuation URLs.
-    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-    "microsoft_graph.middlewares.retry.PrivacySafeRetryMiddleware": 550,
     # Request hooks run in ascending priority and response hooks in descending
-    # priority. Diagnostics therefore sees each Graph response before auth can
-    # replace a 401 with a retry Request. Provider retries still run after auth.
-    "microsoft_graph.middlewares.errors.MicrosoftGraphErrorMiddleware": 555,
+    # priority. The add-on installs safe retries at 550, Graph errors at 555,
+    # and diagnostics at 960. Diagnostics sees responses before auth replaces
+    # a 401; provider retries still run after auth.
     "microsoft_graph.middlewares.authentication.MicrosoftGraphDeviceCodeAuthMiddleware": 950,
     "microsoft_graph.middlewares.authentication.MicrosoftGraphInteractiveAuthMiddleware": 951,
-    "microsoft_graph.middlewares.diagnostics.MicrosoftGraphDiagnosticsMiddleware": 960,
 }
 
 EXTENSIONS = {
@@ -108,7 +105,7 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.extensions.microsoft.onedrive.checkpoint.OneDriveDeltaCheckpointExtension": 515,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
-    "message_ingest.extensions.microsoft.onedrive.privacy.OneDriveContentPrivacyExtension": 530,
+    "microsoft_graph.extensions.onedrive.OneDriveContentPrivacyExtension": 530,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native
     # implementation explicitly instead of maintaining another timer.

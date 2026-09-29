@@ -66,18 +66,14 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
         """Schedule bounded uncached downloads only for requested items."""
         limit = self._max_raw_content_bytes()
         for item_id in self.item_ids:
-            request = self.graph_request(
-                self.content_path(item_id),
+            yield self.content_request(
+                item_id,
                 callback=self.parse_content,
                 errback=self.content_errback,
                 operation="onedrive-content",
                 cb_kwargs={"item_id": item_id, "purpose": "onedrive-content"},
-                accept="application/octet-stream",
-                dont_cache=True,
                 download_maxsize=limit or None,
             )
-            request.meta["allow_offsite"] = True
-            yield request
 
     def parse_content(
         self, response: Response, *, item_id: str, purpose: str

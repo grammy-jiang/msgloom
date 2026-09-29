@@ -48,7 +48,6 @@ class OutlookCalendarSeriesTraversal(OutlookCalendarAttachmentTraversal):
             callback=self.parse_series_master,
             purpose="calendar-series-master",
             cb_kwargs={"series_master_id": series_master_id},
-            prefer='IdType="ImmutableId"',
         )
 
 

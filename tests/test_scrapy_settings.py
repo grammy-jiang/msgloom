@@ -10,7 +10,8 @@ from scrapy import Spider
 from scrapy.crawler import Crawler
 from scrapy.extensions.periodic_log import PeriodicLog
 from scrapy.settings import Settings, default_settings
-from scrapy.utils.misc import build_from_crawler
+from scrapy.utils.misc import build_from_crawler, load_object
+from scrapy.utils.python import global_object_name
 from scrapy.utils.test import get_crawler
 
 import message_ingest.settings as project_settings
@@ -31,9 +32,14 @@ def test_downloader_middleware_order_matches_scrapy_request_response_semantics()
     None
 ):
     settings = _settings()
-    middlewares = settings.get_component_priority_dict_with_base(
-        "DOWNLOADER_MIDDLEWARES"
-    )
+    crawler = Crawler(NonGraphSpider, settings)
+    crawler.addons.load_settings(settings)
+    middlewares = {
+        global_object_name(load_object(key)): priority
+        for key, priority in settings.get_component_priority_dict_with_base(
+            "DOWNLOADER_MIDDLEWARES"
+        ).items()
+    }
     if "scrapy.downloadermiddlewares.retry.RetryMiddleware" in middlewares:
         pytest.fail(
             'Expected: "scrapy.downloadermiddlewares.retry.RetryMiddleware" not in middlewares'

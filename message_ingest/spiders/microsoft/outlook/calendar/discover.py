@@ -74,7 +74,6 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
             callback=self.parse_calendars,
             purpose="calendar-inventory-page",
             cb_kwargs={},
-            prefer='IdType="ImmutableId"',
         )
 
     def parse_calendars(
@@ -120,5 +119,4 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
             purpose="calendar-inventory-page",
             cb_kwargs={},
             verbatim_url=True,
-            prefer='IdType="ImmutableId"',
         )

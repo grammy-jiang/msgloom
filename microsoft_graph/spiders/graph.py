@@ -118,6 +118,16 @@ class MicrosoftGraphSpider(scrapy.Spider):
         """Schedule an opaque provider continuation through native Scrapy."""
         return self.graph_request(url, **{**kwargs, "verbatim_url": True})
 
+    def compose_prefer(self, *values: str) -> str | None:
+        """
+        Append preferences to the provider default in caller order.
+
+        Values are complete header directives; no parsing or deduplication is
+        applied. Pass the result to :meth:`graph_request`. Its explicit
+        ``prefer=None`` still omits the header, independently of this helper.
+        """
+        return ", ".join(filter(None, (self.graph_prefer, *values))) or None
+
     def errback(self, failure: Failure) -> Any:
         """Propagate terminal failures; consumers may override this named hook."""
         failure.raiseException()

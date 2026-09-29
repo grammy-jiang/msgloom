@@ -9,8 +9,9 @@ from .mailbox import OutlookMailboxSpider
 
 
 class OutlookCalendarSpider(OutlookMailboxSpider):
-    """Share Calendar own/shared scopes and mailbox path behavior."""
+    """Supply Calendar scopes, mailbox paths, and immutable IDs."""
 
+    graph_prefer = 'IdType="ImmutableId"'
     graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read",)
     shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Calendars.Read.Shared",)
 

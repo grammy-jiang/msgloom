@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any, ClassVar
+from typing import Any
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from microsoft_graph.protocol import graph_object
+from microsoft_graph.spiders.user import MicrosoftGraphUserSpider
 
 
-class MicrosoftProfileSpider(MicrosoftGraphSpider):
+class MicrosoftProfileSpider(MicrosoftGraphUserSpider, MicrosoftGraphSpider):
     """
     Fetch the signed-in user profile through the shared Graph lifecycle.
 
@@ -23,7 +24,6 @@ class MicrosoftProfileSpider(MicrosoftGraphSpider):
     """
 
     name = "microsoft_profile"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("User.Read",)
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -56,7 +56,7 @@ class MicrosoftProfileSpider(MicrosoftGraphSpider):
         """Schedule exactly one signed-in-user profile request."""
         self.crawler.stats.set_value("msgloom/crawl/mode", "profile")
         yield self._request(
-            f"{self.graph_root}/me",
+            self.user_path(),
             callback=self.parse_profile,
             purpose="user-profile",
             cb_kwargs={},

@@ -409,7 +409,7 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
             },
             dont_cache=True,
             verbatim_url=page_number > 1 or from_checkpoint,
-            prefer=(f'IdType="ImmutableId", odata.maxpagesize={self.page_size}'),
+            prefer=self.compose_prefer(f"odata.maxpagesize={self.page_size}"),
         )
 
     def _state_failure(

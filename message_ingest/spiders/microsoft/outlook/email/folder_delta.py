@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any, ClassVar
+from typing import Any
 
 import scrapy
 from scrapy.http import TextResponse
@@ -28,7 +28,6 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
     """Track mailbox folder add/update/remove events with an opaque delta cursor."""
 
     name = "outlook_folder_delta"
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
 
     def __init__(self, *args, page_size: str = "25", **kwargs) -> None:
         super().__init__(*args, **kwargs)

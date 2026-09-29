@@ -80,11 +80,10 @@ def test_full_start_deduplicates_ids_and_requests_text_body() -> None:
     ]:
         pytest.fail("Expected default-calendar event detail paths")
     for request in requests:
-        prefer = request.headers.get("Prefer", b"").decode()
-        if 'IdType="ImmutableId"' not in prefer:
-            pytest.fail("Expected immutable Calendar event IDs")
-        if 'outlook.body-content-type="text"' not in prefer:
-            pytest.fail("Expected Calendar full event body as text")
+        if request.headers.get("Prefer") != (
+            b'IdType="ImmutableId", outlook.body-content-type="text"'
+        ):
+            pytest.fail("Calendar detail Prefer bytes changed")
 
 
 def test_named_calendar_scopes_detail_and_attachment_paths() -> None:

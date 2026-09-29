@@ -424,5 +424,5 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
                 "event_id": event_id,
                 "resource_version": resource_version,
             },
-            prefer=('IdType="ImmutableId", outlook.body-content-type="text"'),
+            prefer=self.compose_prefer('outlook.body-content-type="text"'),
         )

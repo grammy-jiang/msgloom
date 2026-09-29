@@ -104,7 +104,6 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
             callback=self.parse_events,
             purpose="calendar-window-page",
             cb_kwargs={"calendar_id": self.calendar_id or "default"},
-            prefer='IdType="ImmutableId"',
         )
 
     def parse_events(
@@ -154,7 +153,6 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
             purpose="calendar-window-page",
             cb_kwargs={"calendar_id": calendar_id},
             verbatim_url=True,
-            prefer='IdType="ImmutableId"',
         )
 
     def _resume_scope(self) -> dict[str, object]:

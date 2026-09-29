@@ -96,7 +96,7 @@ def test_initial_delta_request_uses_fixed_window_and_prefer_page_size(
     if "$top" in query:
         pytest.fail("Calendar delta must use Prefer, not $top, for page size")
     prefer = request.headers.get("Prefer", b"").decode()
-    if "odata.maxpagesize=2" not in prefer or 'IdType="ImmutableId"' not in prefer:
+    if prefer != 'IdType="ImmutableId", odata.maxpagesize=2':
         pytest.fail(f"Unexpected Calendar delta Prefer header: {prefer!r}")
     if request.meta.get("dont_cache") is not True:
         pytest.fail("Expected Calendar delta requests to bypass HTTP cache")

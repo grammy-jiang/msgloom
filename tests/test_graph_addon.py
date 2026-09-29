@@ -22,6 +22,10 @@ class CustomRetryMiddleware(RetryMiddleware):
     """Represent a consumer's selected generic retry implementation."""
 
 
+class CustomPrivacyExtension(MicrosoftGraphLogPrivacyExtension):
+    """Represent a consumer's Graph privacy integration."""
+
+
 def enabled_components(settings):
     return {
         load_object(key): priority
@@ -101,6 +105,8 @@ def test_consumer_can_disable_or_reprioritize_components_and_fingerprint():
     [
         MicrosoftGraphLogPrivacyExtension,
         "microsoft_graph.extensions.privacy.MicrosoftGraphLogPrivacyExtension",
+        CustomPrivacyExtension,
+        f"{__name__}.CustomPrivacyExtension",
     ],
 )
 def test_explicit_privacy_extension_choice_is_preserved_without_duplicates(
@@ -123,10 +129,10 @@ def test_explicit_privacy_extension_choice_is_preserved_without_duplicates(
         ).items()
     }
     if extension_priority is None:
-        if MicrosoftGraphLogPrivacyExtension in enabled:
+        if any(issubclass(cls, MicrosoftGraphLogPrivacyExtension) for cls in enabled):
             pytest.fail("Explicitly disabled privacy extension was re-enabled")
         return
-    if enabled.get(MicrosoftGraphLogPrivacyExtension) != extension_priority:
+    if enabled.get(load_object(key)) != extension_priority:
         pytest.fail("Privacy extension did not retain the consumer's priority")
 
 

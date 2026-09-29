@@ -1,5 +1,6 @@
 """Use two HTTP hosts to prove native redirect auth and content privacy."""
 
+import gzip
 import json
 import os
 import socket
@@ -42,15 +43,20 @@ def download_servers():
             status = 403 if state["mode"] == "http_error" else 200
             if state["mode"] == "retry" and len(observed["download"]) == 1:
                 status = 500
+            body = BODY
+            if state["mode"] == "decompression_limit":
+                body = gzip.compress(BODY * 1024)
             self.send_response(status)
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Length", str(len(BODY)))
+            self.send_header("Content-Length", str(len(body)))
+            if state["mode"] == "decompression_limit":
+                self.send_header("Content-Encoding", "gzip")
             self.send_header("Content-Location", download_url)
             self.send_header("X-Download-Source", download_url)
             # A final Location header is still private, even on a HTTP 200/403.
             self.send_header("Location", download_url)
             self.end_headers()
-            self.wfile.write(BODY)
+            self.wfile.write(body)
 
     download = ThreadingHTTPServer(("127.0.0.1", 0), DownloadHandler)
     download_url = f"http://127.0.0.1:{download.server_port}{DOWNLOAD_PATH}"
@@ -125,7 +131,7 @@ def verify_transport(observed):
         pytest.fail("Native redirect changed download URL bytes")
 
 
-def verify_private(result, download_url):
+def verify_private(result, download_url, tmp_path, observed):
     for secret in (
         TOKEN,
         download_url,
@@ -141,9 +147,20 @@ def verify_private(result, download_url):
         "RepresentationAwareRequestFingerprinter",
         "scrapy.downloadermiddlewares.redirect.RedirectMiddleware",
         "scrapy.downloadermiddlewares.offsite.OffsiteMiddleware",
+        "microsoft_graph.extensions.onedrive.OneDriveContentPrivacyExtension",
+        "microsoft_graph.addon.MicrosoftGraphAddon",
     ):
         if component not in result.stderr:
             pytest.fail(f"Shared or native component was replaced: {component}")
+    transport = json.loads((tmp_path / "transport.json").read_text())
+    if transport != {
+        "framework_content_helper": True,
+        "marked_downloads": len(observed["graph"]) + len(observed["download"]),
+        "framework_privacy_active": True,
+    }:
+        pytest.fail(f"Framework content helper or privacy was bypassed: {transport}")
+    if "message_ingest.extensions.microsoft.onedrive.privacy" in result.stderr:
+        pytest.fail("Legacy application content privacy must not be loaded")
 
 
 def evidence_rows(tmp_path):
@@ -187,7 +204,7 @@ def test_native_two_host_content_redirect_persists_exact_bytes_once(
     if result.returncode or "ERROR" in result.stderr:
         pytest.fail(result.stderr)
     verify_transport(observed)
-    verify_private(result, download_url)
+    verify_private(result, download_url, tmp_path, observed)
     if len(observed["download"]) != (2 if mode == "retry" else 1):
         pytest.fail("Shared retry behavior was not preserved on the download host")
     evidence, content = evidence_rows(tmp_path)
@@ -218,17 +235,26 @@ def test_native_two_host_content_redirect_persists_exact_bytes_once(
         pytest.fail("Content request bypass must prevent cached body duplicates")
 
 
-@pytest.mark.parametrize("mode", ["http_error", "disconnect", "oversize"])
+@pytest.mark.parametrize(
+    "mode", ["http_error", "disconnect", "oversize", "decompression_limit"]
+)
 def test_failed_native_download_keeps_urls_out_of_logs_and_failure_evidence(
     tmp_path, download_servers, mode
 ):
     origin, download_url, state, observed = download_servers
     state["mode"] = mode
-    result = crawl(tmp_path, origin, maxsize=1 if mode == "oversize" else 1024)
+    limit = {"oversize": 1, "decompression_limit": 512}.get(mode, 1024)
+    result = crawl(tmp_path, origin, maxsize=limit)
     if result.returncode != 1:
         pytest.fail(f"Failed content acquisition must fail the run: {result.stderr}")
     verify_transport(observed)
-    verify_private(result, download_url)
+    verify_private(result, download_url, tmp_path, observed)
+    if (
+        mode == "decompression_limit"
+        and "component=scrapy.downloadermiddlewares.httpcompression"
+        not in result.stderr
+    ):
+        pytest.fail("Compressed fixture must exercise native compression privacy")
     evidence, content = evidence_rows(tmp_path)
     capture = verify_evidence(evidence, origin + SOURCE)
     if content or not capture.error_type:

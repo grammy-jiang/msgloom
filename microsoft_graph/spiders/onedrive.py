@@ -1,9 +1,13 @@
 """Microsoft OneDrive read scopes and signed-in-account v1.0 paths."""
 
-from typing import ClassVar
+from typing import Any, ClassVar
 from urllib.parse import quote, urlencode
 
+from scrapy import Request
+
 from .graph import MicrosoftGraphSpider
+
+ONEDRIVE_CONTENT_META_KEY = "_microsoft_graph_onedrive_content"
 
 
 class MicrosoftOneDriveSpider(MicrosoftGraphSpider):
@@ -40,5 +44,37 @@ class MicrosoftOneDriveSpider(MicrosoftGraphSpider):
         """Address content for one explicit raw item ID encoded once."""
         return f"{self.drive_path()}/items/{quote(item_id, safe='')}/content"
 
+    def content_request(
+        self,
+        item_id: str,
+        *,
+        callback=None,
+        errback=None,
+        cb_kwargs: dict[str, Any] | None = None,
+        operation: str = "onedrive-content",
+        download_maxsize: int | None = None,
+    ) -> Request:
+        """
+        Build an uncached binary GET that permits native offsite redirects.
 
-__all__ = ["MicrosoftOneDriveSpider"]
+        Scrapy copies the private marker across redirects and retries. Enable
+        the extension in :mod:`microsoft_graph.extensions.onedrive`
+        to sanitize native logs for these requests. Native redirect
+        handling removes cross-origin Authorization. Consumers still own
+        evidence, retained URLs, failure records, and content storage policy.
+        """
+        request = self.graph_request(
+            self.content_path(item_id),
+            callback=callback,
+            errback=errback,
+            cb_kwargs=cb_kwargs,
+            operation=operation,
+            accept="application/octet-stream",
+            dont_cache=True,
+            download_maxsize=download_maxsize,
+        )
+        request.meta.update({"allow_offsite": True, ONEDRIVE_CONTENT_META_KEY: True})
+        return request
+
+
+__all__ = ["ONEDRIVE_CONTENT_META_KEY", "MicrosoftOneDriveSpider"]

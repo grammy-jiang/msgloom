@@ -98,11 +98,27 @@ def test_mailbox_paths_scopes_and_representation(base, scopes, target):
     if crawler.settings.getlist("MS_GRAPH_SCOPES") != [scopes[bool(target)]]:
         pytest.fail("Mailbox declaration must select own/shared scopes")
     request = spider.graph_request(spider._mailbox_url("/messages"))
-    expected_prefer = b'IdType="ImmutableId"' if base is OutlookMailSpider else None
-    if request.headers.get("Prefer") != expected_prefer:
-        pytest.fail("Mail alone defaults to immutable IDs")
+    if request.headers.get("Prefer") != b'IdType="ImmutableId"':
+        pytest.fail("Mail and Calendar must default to immutable IDs")
     if spider.graph_request("/me", prefer=None).headers.get("Prefer") is not None:
         pytest.fail("Consumer must be able to suppress the default preference")
+
+
+@pytest.mark.parametrize("base", [MicrosoftGraphSpider, OutlookCalendarSpider])
+def test_prefer_composition_preserves_default_order_and_explicit_opt_out(base):
+    spider = base(name="preferences")
+    parts = ("odata.maxpagesize=37", 'outlook.body-content-type="text"')
+    expected = ", ".join(filter(None, (spider.graph_prefer, *parts)))
+    prefer = spider.compose_prefer(*parts)
+    if prefer != expected:
+        pytest.fail("Prefer composition must append exact values in caller order")
+    request = spider.graph_request("/me", prefer=prefer)
+    if request.headers.get("Prefer") != expected.encode():
+        pytest.fail("Composed Prefer header bytes changed")
+    if spider.compose_prefer() != spider.graph_prefer:
+        pytest.fail("Empty composition must preserve the provider default")
+    if "Prefer" in spider.graph_request("/me", prefer=None).headers:
+        pytest.fail("Explicit None must still suppress provider defaults")
 
 
 def test_fingerprints_match_native_header_algorithm_and_msgloom_v1():

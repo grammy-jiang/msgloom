@@ -7,6 +7,7 @@ from dataclasses import fields, make_dataclass
 import pytest
 from itemadapter import ItemAdapter
 from scrapy.settings import Settings
+from scrapy.utils.request import request_from_dict
 
 from microsoft_graph.items.onedrive import OneDriveDriveItem, OneDriveItem
 from microsoft_graph.spiders.onedrive import MicrosoftOneDriveSpider
@@ -44,6 +45,48 @@ def test_onedrive_paths_encode_raw_ids_once_and_require_read_only_scope():
         pytest.fail("OneDrive requires Files.Read only")
     if settings.getlist("MS_GRAPH_SCOPES") != ["Files.Read"]:
         pytest.fail("OneDrive must not request write permissions")
+
+
+@pytest.mark.parametrize("maxsize", [None, 0, 4096])
+def test_content_request_owns_safe_transport_and_serializable_callbacks(maxsize):
+    from microsoft_graph.spiders.onedrive import ONEDRIVE_CONTENT_META_KEY
+
+    spider = MicrosoftOneDriveSpider(name="content")
+    request = spider.content_request(
+        "A/B%2F",
+        callback=spider.parse,
+        errback=spider.errback,
+        cb_kwargs={"item": "A/B%2F"},
+        operation="download",
+        download_maxsize=maxsize,
+    )
+    if request.url != spider.graph_root + "/me/drive/items/A%2FB%252F/content":
+        pytest.fail("Content helper must construct and encode the Graph path")
+    if request.method != "GET" or request.body:
+        pytest.fail("Content helper must remain read-only")
+    if request.headers.get("Accept") != b"application/octet-stream":
+        pytest.fail("Content helper must request the binary representation")
+    expected = {
+        "microsoft_graph_operation": "download",
+        "dont_cache": True,
+        "allow_offsite": True,
+        ONEDRIVE_CONTENT_META_KEY: True,
+    }
+    if maxsize is not None:
+        expected["download_maxsize"] = maxsize
+    if request.meta != expected or request.cb_kwargs != {"item": "A/B%2F"}:
+        pytest.fail("Safe content metadata or consumer callback data changed")
+    restored = request_from_dict(request.to_dict(spider=spider), spider=spider)
+    if restored.meta != request.meta or restored.callback != spider.parse:
+        pytest.fail("Content callbacks and privacy marker must survive JOBDIR")
+    if restored.errback != spider.errback:
+        pytest.fail("Content errback must survive JOBDIR")
+    ordinary = spider.graph_request(spider.drive_path())
+    if ordinary.headers.get("Accept") != b"application/json" or any(
+        key in ordinary.meta
+        for key in (ONEDRIVE_CONTENT_META_KEY, "dont_cache", "allow_offsite")
+    ):
+        pytest.fail("Content safety defaults must not change ordinary Graph requests")
 
 
 @pytest.mark.parametrize("provider", [OneDriveDriveItem, OneDriveItem])
@@ -174,7 +217,8 @@ from microsoft_graph.spiders.onedrive import MicrosoftOneDriveSpider
 from microsoft_graph.items.onedrive import OneDriveDriveItem, OneDriveItem
 spider = MicrosoftOneDriveSpider(name="standalone")
 spider.graph_request(spider.drive_path())
-spider.graph_request(spider.content_path("item"))
+spider.content_request("item")
+from microsoft_graph.extensions.onedrive import OneDriveContentPrivacyExtension
 OneDriveDriveItem.from_graph({"id": "drive"})
 OneDriveItem.from_graph({"id": "item", "deleted": {}})
 """

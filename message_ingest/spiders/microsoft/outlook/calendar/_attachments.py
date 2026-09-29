@@ -170,7 +170,6 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                 "resource_version": resource_version,
             },
             verbatim_url=True,
-            prefer='IdType="ImmutableId"',
         )
 
     def parse_attachment_content(
@@ -276,7 +275,6 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                 "page_number": page_number,
                 "resource_version": resource_version,
             },
-            prefer='IdType="ImmutableId"',
             download_maxsize=self._max_raw_content_bytes(),
         )
 
@@ -301,7 +299,6 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                 "resource_version": resource_version,
             },
             accept="*/*",
-            prefer='IdType="ImmutableId"',
             download_maxsize=self._max_raw_content_bytes(),
         )
 
@@ -325,7 +322,6 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                 "attachment_id": attachment_id,
                 "resource_version": resource_version,
             },
-            prefer='IdType="ImmutableId"',
             download_maxsize=self._max_raw_content_bytes(),
         )
 

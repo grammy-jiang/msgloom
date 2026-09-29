@@ -83,6 +83,15 @@ class MicrosoftGraphAddon:
             priority="addon",
         )
         settings.set("EXTENSIONS", settings.getdict("EXTENSIONS"), priority="addon")
-        settings.setdefault_in_component_priority_dict(
-            "EXTENSIONS", MicrosoftGraphLogPrivacyExtension, 100
+        # A consumer subclass supplies the complete Graph privacy contract.
+        # Even a disabled entry is an explicit choice, just like the base
+        # class. Resolve class/path aliases without changing entry priorities.
+        privacy_selected = any(
+            isinstance(cls := load_object(component), type)
+            and issubclass(cls, MicrosoftGraphLogPrivacyExtension)
+            for component in settings.getdict("EXTENSIONS")
         )
+        if not privacy_selected:
+            settings.setdefault_in_component_priority_dict(
+                "EXTENSIONS", MicrosoftGraphLogPrivacyExtension, 100
+            )

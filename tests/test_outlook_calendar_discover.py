@@ -56,6 +56,8 @@ def test_discover_start_lists_visible_calendars() -> None:
         pytest.fail(f"Unexpected Calendar inventory path: {parsed.path}")
     if parse_qs(parsed.query).get("$top") != ["100"]:
         pytest.fail("Expected Calendar inventory page size 100")
+    if request.headers.get("Prefer") != b'IdType="ImmutableId"':
+        pytest.fail("Calendar inventory must inherit immutable-ID representation")
 
 
 def test_discover_emits_inventory_and_opaque_continuation() -> None:

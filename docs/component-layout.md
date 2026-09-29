@@ -34,6 +34,7 @@ microsoft_graph/
   spiders/
     __init__.py
     graph.py
+    user.py
     resources.py
     todo.py
     onedrive.py
@@ -60,6 +61,7 @@ microsoft_graph/
     __init__.py
     _logfilters.py
     privacy.py
+    onedrive.py
   logformatter.py
   fingerprints.py
   request.py
@@ -79,6 +81,28 @@ settings. The framework has no `settings.py` or `pipelines/`. Its optional
 privacy extension only sanitizes Scrapy records. Msgloom supplies persistence
 pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 
+Msgloom enables `MicrosoftGraphAddon` at priority 100. It supplies safe retry
+(550), Graph error handling (555), diagnostics (960), and default representation
+and logging components. Explicit consumer component entries retain their
+priorities. An explicit Graph privacy extension subclass, including a disabled
+entry, replaces the default. Msgloom retains its privacy subclass, fingerprinter,
+formatter, authentication selection, and lifecycle extensions. The separate
+OneDrive content privacy extension supplements core privacy at priority 530.
+
+`MicrosoftOneDriveSpider.content_request()` builds uncached binary requests and
+marks them for private native redirects. `OneDriveContentPrivacyExtension`
+sanitizes marked redirect/duplicate records and native HTTP/1.1 and compression
+warnings for live marked requests. It keeps weak request references through
+response middleware and removes filters at engine shutdown. Other product and
+unmarked request logs retain their behavior. Native redirects still remove
+cross-origin Authorization. Msgloom alone rewrites evidence URLs, selects retained
+headers, records failures, and stores content digests and bytes.
+
+Mail and Calendar provider spiders default to `IdType="ImmutableId"`.
+`compose_prefer()` appends complete directives in order; explicit `prefer=None`
+still suppresses the header. The user provider supplies only `User.Read` and
+`user_path()` (`/me`); msgloom retains profile evidence and command output.
+
 ## Component ownership
 
 | Package | Responsibility |
@@ -94,13 +118,14 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `microsoft_graph/middlewares/authentication.py` | Attach/remove credentials at the downloader boundary and refresh one pinned account after 401. |
 | `microsoft_graph/protocol/` | Validate Graph object, collection, delta, error, Calendar, attachment, and notification structures without Scrapy dependencies. |
 | `microsoft_graph/spiders/graph.py` | Construct Graph requests, declare scopes, and preserve opaque continuation URLs. |
+| `microsoft_graph/spiders/user.py` | Own the signed-in-user path and read scope without application output policy. |
 | `microsoft_graph/spiders/resources.py` | Provide minimal object/collection spiders with replaceable item hooks and native pagination. |
 | `microsoft_graph/items/graph.py` | Provide an optional provider-only GraphResourceItem dataclass. |
 | `microsoft_graph/items/outlook/` | Provide optional Mail and Calendar dataclasses and resource mappers. |
 | `microsoft_graph/items/todo.py` | Provide optional task-list, task, checklist, and linked-resource dataclasses with unchanged provider values. |
 | `microsoft_graph/spiders/todo.py` | Own To Do read scopes and encoded v1.0 collection paths. |
 | `microsoft_graph/items/onedrive.py` | Provide optional drive and driveItem dataclasses with unchanged provider values. |
-| `microsoft_graph/spiders/onedrive.py` | Own OneDrive read scopes and encoded v1.0 drive, children, delta, and content paths. |
+| `microsoft_graph/spiders/onedrive.py` | Own OneDrive read scopes, encoded v1.0 paths, and safe binary content requests. |
 | `microsoft_graph/middlewares/errors.py` | Own Graph-specific retry/backoff through Scrapy's retry helper. |
 | `microsoft_graph/middlewares/diagnostics.py` | Record Graph transport diagnostics for each attempt. |
 | `microsoft_graph/middlewares/retry.py` | Preserve native generic retries with URL-safe logging. |
@@ -111,6 +136,7 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `microsoft_graph/addon.py` | Supply overridable safe retry, transport diagnostics, representation identity, and Graph formatter defaults. |
 | `microsoft_graph/logformatter.py` | Format Graph requests and item types without URLs, payloads, or arbitrary exception text. |
 | `microsoft_graph/extensions/privacy.py` | Install crawler-scoped Scrapy core log sanitization without changing application state or stats. |
+| `microsoft_graph/extensions/onedrive.py` | Supplement Graph privacy for sensitive native OneDrive content transport logs. |
 | `message_ingest/extensions/microsoft_graph/identity.py` | Verify persisted source identity before Scheduler requests execute. |
 | `message_ingest/spiders/microsoft/_graph.py` | Adapt reusable requests to msgloom evidence, failures, auth enablement, and logical run integrity. |
 | `message_ingest/fingerprints/microsoft_graph.py` | Keep source context and Graph representation headers in stable request identity. |
