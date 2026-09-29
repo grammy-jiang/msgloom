@@ -1,0 +1,70 @@
+Report {{ report_ref|ref }} — part {{ part_number }}/{{ part_count }}
+
+OVERVIEW
+{% for item in overview %}
+- {{ item.topic_ref|ref }} / {{ item.assessment_ref|ref }}
+  {{ item.title }} [{{ item.priority.value }}]
+  Developments:{% for value in item.developments %} {{ value }}{% else %} none{% endfor %}
+  Actions:{% for value in item.actions %} {{ value }}{% else %} none{% endfor %}
+  Deadlines:{% for value in item.deadlines %} {{ value }}{% else %} none{% endfor %}
+  Risks:{% for value in item.risks %} {{ value }}{% else %} none{% endfor %}
+{% endfor %}
+{% if warnings %}
+PENDING WORK
+{% for warning in warnings %}
+- {{ warning.topic_ref|ref }} selected {{ warning.selected_assessment_ref|ref }};
+  pending {{ warning.pending_ref|ref }}: {{ warning.detail }}
+{% endfor %}
+{% endif %}
+DETAILS
+{% for topic in topics %}
+TOPIC {{ topic.topic_ref|ref }}
+Assessment: {{ topic.assessment_ref|ref }}
+Title: {{ topic.title }}
+Priority: {{ topic.priority.value }}
+Priority reason: {{ topic.reason }}
+
+Developments:
+{% for item in topic.developments %}
+- {{ item.text }}
+{% for evidence in item.evidence %}
+  Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}
+{% endfor %}
+{% else %}- none
+{% endfor %}
+Actions:
+{% for item in topic.actions %}
+- {{ item.text }}
+  Owner: {{ item.owner.state.value }}{% if item.owner.value %} — {{ item.owner.value }}{% endif %}
+{% for evidence in item.evidence %}
+  Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}
+{% endfor %}
+{% else %}- none
+{% endfor %}
+Deadlines:
+{% for item in topic.deadlines %}
+- Original: {{ item.original_wording }}
+  Interpreted: {% if item.interpreted_at %}{{ item.interpreted_at.isoformat() }}; timezone basis={{ item.timezone_basis }}{% else %}not interpreted{% endif %}; ambiguous={{ item.ambiguous }}
+{% for evidence in item.evidence %}
+  Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}
+{% endfor %}
+{% else %}- none
+{% endfor %}
+Risks:
+{% for item in topic.risks %}
+- {{ item.text }}
+{% for evidence in item.evidence %}
+  Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}
+{% endfor %}
+{% else %}- none
+{% endfor %}
+Source messages:
+{% for source in topic.source_refs %}
+- {{ source|ref }}{% for link in topic.source_links if link.source_ref == source %} — {{ link.url }}{% endfor %}
+{% endfor %}
+Limitations:
+{% for item in topic.limitations %}- {{ item.code }}: {{ item.detail }}
+{% else %}- none
+{% endfor %}
+
+{% endfor %}
