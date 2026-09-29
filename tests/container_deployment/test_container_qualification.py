@@ -367,13 +367,17 @@ def test_runner_kills_descendant_that_ignores_group_sigterm(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pid_file = tmp_path / "ignores-term.pid"
-    _deadline_starts_after_ready(monkeypatch, pid_file)
+    ready_file = tmp_path / "ignores-term.ready"
+    _deadline_starts_after_ready(monkeypatch, ready_file)
+    child_code = (
+        "import signal,time;from pathlib import Path;"
+        "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+        f"Path({str(ready_file)!r}).write_text('ready');time.sleep(5)"
+    )
     code = (
         "import signal,subprocess,sys,time;from pathlib import Path;"
         "signal.signal(signal.SIGTERM,lambda *_:sys.exit(0));"
-        "p=subprocess.Popen([sys.executable,'-c',"
-        "'import signal,time;"
-        "signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(5)']);"
+        f"p=subprocess.Popen([sys.executable,'-c',{child_code!r}]);"
         f"Path({str(pid_file)!r}).write_text(str(p.pid));time.sleep(5)"
     )
     start = time.monotonic()
@@ -385,8 +389,8 @@ def test_runner_kills_descendant_that_ignores_group_sigterm(
     elapsed = time.monotonic() - start
     if result.returncode != 124 or not result.timed_out or elapsed >= 3.0:
         pytest.fail(f"SIGTERM-resistant descendant escaped cleanup: {elapsed=}")
-    if not pid_file.exists():
-        pytest.fail("synthetic SIGTERM-resistant descendant did not start")
+    if not pid_file.exists() or not ready_file.exists():
+        pytest.fail("synthetic descendant did not install its SIGTERM handler")
     pid = int(pid_file.read_text(encoding="utf-8"))
     if not _wait_pid_gone(pid):
         pytest.fail("SIGTERM-resistant owned descendant survived SIGKILL cleanup")
