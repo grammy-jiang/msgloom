@@ -25,6 +25,7 @@ from msgloom.sources import CollectedSelectionCodec
 from msgloom.triage.codec import TriageDataCodec
 from msgloom.triage.rule_codec import TriageRuleEvaluationCodec
 from msgloom.triage_input.codec import TriageInputCodec
+from msgloom.triage_pipeline.codecs import InputPartCodec, TriagePartStateCodec
 from msgloom.working_context.codec import WorkingContextCodec
 
 
@@ -70,6 +71,8 @@ class SemanticDataRegistry:
                 DerivedByteArtifactCodec(),
                 ReportSelectionCodec(),
                 ReportCodec(),
+                InputPartCodec(),
+                TriagePartStateCodec(),
                 PreparedDataCodec(),
                 FilterResultCodec(),
                 GroupResultCodec(),

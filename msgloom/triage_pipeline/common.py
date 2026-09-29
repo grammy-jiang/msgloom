@@ -62,16 +62,10 @@ def ensure_acceptance_time() -> float:
 
 async def cpu_bound[T](operation: Callable[..., T], *args: Any) -> T:
     """Run owned pure work off-loop and drain it before propagating cancellation."""
-    task = asyncio.create_task(asyncio.to_thread(operation, *args))
-    cancelled = False
-    while not task.done():
-        try:
-            await asyncio.shield(task)
-        except asyncio.CancelledError:
-            cancelled = True
+    result, cancelled = await drain(asyncio.to_thread(operation, *args))
     if cancelled:
         raise asyncio.CancelledError
-    return task.result()
+    return result
 
 
 async def drain[T](awaitable: Coroutine[object, object, T]) -> tuple[T, bool]:
@@ -83,9 +77,13 @@ async def drain[T](awaitable: Coroutine[object, object, T]) -> tuple[T, bool]:
             await asyncio.shield(task)
         except asyncio.CancelledError:
             cancelled = True
+        except Exception:  # noqa: BLE001
+            break
     if task.cancelled():
         raise asyncio.CancelledError
     error = task.exception()
+    if cancelled and error is not None:
+        raise asyncio.CancelledError
     if error is not None:
         raise error
     return task.result(), cancelled

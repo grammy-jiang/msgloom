@@ -104,14 +104,20 @@ can reuse a confirmed prior topic identity only when reconcile_triage
 evidence rules support continuity. Replay never recaptures working-context
 files and never sends a report.
 
-## Opt-in producer schemas
+## Producer schema composition
 
-Shared default registries are not mutated. This lane exports
-TRIAGE_PIPELINE_CODECS and TRIAGE_PIPELINE_RESULT_SCHEMAS for manager
-composition. They contain triage_input_part@1 for canonical part bytes and
-triage_part_state@1 for bounded immutable part/attempt diagnostics.
-Production composition must register both result schemas as semantic-data
-results and add both codecs to its explicit semantic registry.
+The default persistence registries include triage_input_part@1 for canonical
+part bytes and triage_part_state@1 for bounded immutable part diagnostics.
+Both require semantic data. TRIAGE_PIPELINE_CODECS and
+TRIAGE_PIPELINE_RESULT_SCHEMAS also expose these contracts for explicit custom
+registries. The package loads execution lazily so default codec construction
+does not create a persistence import cycle.
+
+The integration regression runs actual preparation, triage, and report
+handlers with the default registries and an injected AI runner. It reopens the
+database and checks exact saved lineage and report source evidence.
+Cancellation remains the operation outcome after an owned worker fails while
+draining. The original cancellation cannot become an ordinary stage failure.
 
 ## Lineage contract
 

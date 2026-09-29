@@ -1,5 +1,7 @@
 """Finite awaited A3 producer composition."""
 
+from typing import TYPE_CHECKING
+
 from .codecs import (
     TRIAGE_PART_STATE_KIND,
     TRIAGE_PART_STATE_SCHEMA_VERSION,
@@ -9,8 +11,10 @@ from .codecs import (
     TriagePartState,
     TriagePartStateCodec,
 )
-from .handler import TriageHandler, TriageRunner
 from .models import TriageMode, TriageProducerConfig, TriageReplayPlan
+
+if TYPE_CHECKING:
+    from .handler import TriageHandler, TriageRunner
 
 __all__ = [
     "TRIAGE_PART_STATE_KIND",
@@ -26,3 +30,12 @@ __all__ = [
     "TriageReplayPlan",
     "TriageRunner",
 ]
+
+
+def __getattr__(name: str) -> object:
+    """Load persistence-backed execution only after codec composition."""
+    if name in {"TriageHandler", "TriageRunner"}:
+        from .handler import TriageHandler, TriageRunner
+
+        return {"TriageHandler": TriageHandler, "TriageRunner": TriageRunner}[name]
+    raise AttributeError(name)
