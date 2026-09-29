@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -265,16 +266,20 @@ def test_feed_export_sees_only_successful_canonicalized_items(
 ) -> None:
     feed_path = tmp_path / "feed.jsonl"
     database_url = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
+    # Scrapy 2.19 inspects generator source on Python 3.12. A real fixture
+    # module keeps that diagnostic active; ``python -c`` has no source file.
+    probe_path = tmp_path / "feed_probe.py"
+    probe_path.write_text(FEED_RUN)
     result = subprocess.run(
         [
             sys.executable,
-            "-c",
-            FEED_RUN,
+            str(probe_path),
             str(feed_path),
             database_url,
             str(tmp_path / "raw"),
         ],
         cwd=ROOT,
+        env={**os.environ, "PYTHONPATH": str(ROOT)},
         capture_output=True,
         text=True,
         timeout=20,

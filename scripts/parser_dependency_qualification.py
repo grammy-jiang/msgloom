@@ -68,7 +68,10 @@ def _exercise_excel() -> dict[str, object]:
     workbook = CalamineWorkbook.from_filelike(BytesIO(fixture))
     sheet = workbook.get_sheet_by_name("Visible")
     metadata = workbook.sheets_metadata
-    _require(sheet.start == (2, 1), "Calamine source start offset changed")
+    start = sheet.start
+    if start is None:
+        raise RuntimeError("Calamine source start offset is missing")
+    _require(start == (2, 1), "Calamine source start offset changed")
     _require(
         sheet.merged_cell_ranges == [((2, 3), (2, 4))],
         "Calamine merged range changed",
@@ -96,7 +99,7 @@ def _exercise_excel() -> dict[str, object]:
     _require(formula_book["Hidden"].sheet_state == "hidden", "Hidden state changed")
     _require(openpyxl.xml.DEFUSEDXML is True, "OpenPyXL defusedxml is not active")
     return {
-        "calamine_start": list(sheet.start),
+        "calamine_start": list(start),
         "cached_formula_value": cached_sheet["C4"].value,
         "defusedxml": openpyxl.xml.DEFUSEDXML,
         "formula": formula_sheet["C4"].value,
