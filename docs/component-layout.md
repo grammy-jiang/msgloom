@@ -660,10 +660,23 @@ deferred. This slice provides no sync/full modes or deprecated `baseTask` paths.
 - Observation replay detection is shared by messages and folder removals.
 - The evidence pipeline passes one SQLAlchemy record to the catalog, removing a
   second copy of the same long argument list.
-- The database schema is separated from query code. For this V1-only additive
-  change, `source_bindings` is created from current SQLAlchemy metadata; legacy
-  source ownership still requires one explicit operator bootstrap. Changes to
-  existing tables/columns require a future explicit migration mechanism.
+- The database schema is separated from query code. Schema initialization holds
+  `BEGIN IMMEDIATE` across the known `raw_http_evidence` migration and table
+  creation. The migration accepts only the exact response-only legacy column
+  set, preserves every legacy row and `body_*` value, and rebuilds the table
+  with the current request/response columns plus the three old `body_*`
+  compatibility columns. Those old columns become nullable so current ORM
+  inserts are not blocked by obsolete NOT NULL constraints. Historical
+  `body_*` metadata is copied exactly into `response_body_*`; historical
+  GET request bodies are recorded as empty, while unavailable request headers,
+  response URLs, flags, and error metadata remain empty or null.
+  Migration-only fingerprints use a separate SHA-256 domain and the evidence
+  ID, so current requests cannot intentionally select historical captures as
+  cache aliases. Current indexes are recreated, the historical response-body
+  digest index is retained, reopening is idempotent, and unknown partial
+  schemas fail before DDL. `source_bindings` is still created from current
+  SQLAlchemy metadata; legacy source ownership requires the existing explicit
+  operator bootstrap.
 - Checkpoint SQL lives directly in `OutlookDeltaCheckpointStore`, removing the
   forwarding layer through `Catalog`.
 - Enrichment reads only the state it uses and streams its output. Small forwarding

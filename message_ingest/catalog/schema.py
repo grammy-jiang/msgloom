@@ -6,18 +6,21 @@ from typing import cast
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
+from message_ingest.catalog.legacy_evidence import migrate_legacy_evidence
 from message_ingest.catalog.models.base import Base
 
 
 def initialize_schema(database_url: str, *, in_memory: bool) -> bytes | None:
     """
-    Add missing tables under a writer transaction on a disposable connection.
+    Migrate known evidence and add tables under one disposable writer lock.
 
     Driver autocommit leaves SQL transaction control to this function. Acquire
-    the writer lock before ``create_all`` inspects any table. A failed lock
-    acquisition has no transaction to roll back; DDL failures do. Closing the
-    connection and disposing the engine also run when initialization fails.
-    Existing rows and source bindings are never changed here.
+    the writer lock before migration or ``create_all`` inspects any table. A
+    failed lock acquisition has no transaction to roll back; migration and DDL
+    failures do. Closing the connection and disposing the engine also run when
+    initialization fails. The known evidence migration preserves historical
+    fields while rebuilding obsolete constraints for current writes; source
+    bindings remain unchanged.
 
     Private memory databases disappear when this connection closes. Return
     their committed schema image for the runtime connection to restore. File
@@ -32,6 +35,7 @@ def initialize_schema(database_url: str, *, in_memory: bool) -> bytes | None:
         with engine.connect() as connection:
             connection.exec_driver_sql("BEGIN IMMEDIATE")
             try:
+                migrate_legacy_evidence(connection)
                 Base.metadata.create_all(connection)
                 connection.exec_driver_sql("COMMIT")
             except BaseException:
