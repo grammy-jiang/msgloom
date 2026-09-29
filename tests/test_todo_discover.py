@@ -22,6 +22,7 @@ from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
 from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscoverSpider
+from message_ingest.spiders.microsoft.todo.sync import MicrosoftTodoSyncSpider
 from microsoft_graph.items import todo as provider
 from microsoft_graph.spiders.todo import MicrosoftTodoSpider
 
@@ -290,3 +291,24 @@ def test_discovery_refuses_jobdir(tmp_path):
 def test_discovery_rejects_invalid_page_sizes(size):
     with pytest.raises(ValueError):
         MicrosoftTodoDiscoverSpider(page_size=size)
+
+
+def test_sync_reuses_discovery_callbacks_and_forces_uncached_snapshot_reads():
+    crawler = get_crawler(MicrosoftTodoSyncSpider)
+    spider = MicrosoftTodoSyncSpider.from_crawler(crawler)
+    request = _first(spider)
+    if request.meta.get("dont_cache") is not True:
+        pytest.fail("Authoritative To Do traversal must bypass HTTP cache")
+    if (
+        request.callback is None
+        or request.callback.__func__ is not MicrosoftTodoDiscoverSpider.parse_task_lists
+    ):
+        pytest.fail("Sync must share the discovery traversal callbacks")
+    if spider.required_graph_permissions(crawler.settings) != ("Tasks.Read",):
+        pytest.fail("Authoritative sync must retain the read-only Tasks.Read scope")
+    outputs = _parse(request, {"value": []})
+    completions = [
+        item for item in outputs if isinstance(item, todo.TodoTraversalCompleteItem)
+    ]
+    if len(completions) != 1 or completions[0].collection_kind != "task_lists":
+        pytest.fail("Terminal root page did not emit durable traversal proof")

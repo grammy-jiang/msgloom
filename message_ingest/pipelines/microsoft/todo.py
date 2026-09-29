@@ -1,73 +1,93 @@
-"""Persist To Do observations after evidence capture and linking."""
+"""Persist Microsoft To Do provider state and authoritative snapshot proof."""
 
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
-from typing import Any
 
 from scrapy.exceptions import NotConfigured
 
-from message_ingest.catalog.stores.microsoft.todo import Outcome, TodoStore
+from message_ingest.catalog.stores.microsoft.todo import TodoStore
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.todo import (
     TodoChecklistItem,
     TodoLinkedResourceItem,
     TodoTaskItem,
     TodoTaskListItem,
+    TodoTraversalCompleteItem,
 )
+from message_ingest.sync.microsoft.todo.snapshots import TodoSnapshotStore
 
 
 class TodoPipeline:
-    """Await durable current-state writes under the crawler's shared lock."""
+    """Persist To Do items under the crawler-shared catalog write lock."""
 
-    def __init__(self, *, service: CatalogService, source_id: str, stats=None) -> None:
+    def __init__(self, crawler, service: CatalogService, source_id: str) -> None:
+        """Bind source-scoped content and snapshot stores to shared resources."""
+        self.crawler = crawler
         self.service = service
         self.catalog = service.catalog
         self.store = TodoStore(self.catalog, source_id=source_id)
-        self.stats = stats
+        self.snapshot_store = TodoSnapshotStore(self.catalog, source_id=source_id)
+        self.authoritative = crawler.spidercls.name == "microsoft_todo_sync"
 
     @classmethod
     def from_crawler(cls, crawler):
-        """Enable only when the shared SQL catalog is available."""
+        """Enable persistence only with the shared SQL catalog."""
         if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
-            raise NotConfigured("To Do persistence requires the SQL catalog")
-        return cls(
-            service=CatalogService.from_crawler(crawler),
-            source_id=crawler.settings["MSGLOOM_SOURCE_ID"],
-            stats=crawler.stats,
-        )
+            raise NotConfigured("To Do persistence requires the SQLAlchemy catalog")
+        source_id = crawler.settings.get("MSGLOOM_SOURCE_ID")
+        if not source_id:
+            raise NotConfigured("MSGLOOM_SOURCE_ID is required")
+        return cls(crawler, CatalogService.from_crawler(crawler), source_id)
 
-    async def process_item(self, item: Any) -> Any:
-        """Persist To Do items; pass storage errors to run integrity."""
-        if isinstance(item, TodoTaskListItem):
-            return await self._persist(item, "task_list", self.store.persist_task_list)
-        if isinstance(item, TodoTaskItem):
-            return await self._persist(item, "task", self.store.persist_task)
-        if isinstance(item, TodoChecklistItem):
-            return await self._persist(
-                item, "checklist_item", self.store.persist_checklist_item
-            )
-        if isinstance(item, TodoLinkedResourceItem):
-            return await self._persist(
-                item, "linked_resource", self.store.persist_linked_resource
-            )
-        return item
-
-    async def _persist[Item](
-        self, item: Item, kind: str, operation: Callable[[Item], Outcome]
-    ) -> Item:
-        """Serialize and await a write before recording a bounded outcome."""
+    async def process_item(self, item):
+        """Await content and snapshot proof writes before item completion."""
+        if not isinstance(
+            item,
+            (
+                TodoTaskListItem,
+                TodoTaskItem,
+                TodoChecklistItem,
+                TodoLinkedResourceItem,
+                TodoTraversalCompleteItem,
+            ),
+        ):
+            return item
+        if isinstance(item, TodoTraversalCompleteItem) and not self.authoritative:
+            return item
         async with self.service.write_lock:
-            outcome = await asyncio.to_thread(operation, item)
-        if self.stats is not None:
-            self.stats.inc_value(f"msgloom/catalog/todo/{kind}_item_processed_count")
-            self.stats.inc_value(f"msgloom/catalog/todo/{kind}_{outcome}_count")
+            outcome, kind = await asyncio.to_thread(self._persist, item)
+        if kind != "traversal_completion":
+            self.crawler.stats.inc_value(
+                f"msgloom/catalog/todo/{kind}_item_processed_count"
+            )
+        self.crawler.stats.inc_value(f"msgloom/catalog/todo/{kind}_{outcome}_count")
         return item
 
-    def close_spider(self) -> None:
-        """Close the shared service after Scrapy drains item work."""
+    def close_spider(self, _spider=None) -> None:
+        """Release the crawler-shared catalog after all pipeline work."""
         self.service.close()
+
+    def _persist(self, item) -> tuple[str, str]:
+        """Run one serialized content/proof write in the worker thread."""
+        if isinstance(item, TodoTraversalCompleteItem):
+            self.snapshot_store.record_completion(item)
+            return "recorded", "traversal_completion"
+        if isinstance(item, TodoTaskListItem):
+            outcome = self.store.persist_task_list(item)
+            kind = "task_list"
+        elif isinstance(item, TodoTaskItem):
+            outcome = self.store.persist_task(item)
+            kind = "task"
+        elif isinstance(item, TodoChecklistItem):
+            outcome = self.store.persist_checklist_item(item)
+            kind = "checklist_item"
+        else:
+            outcome = self.store.persist_linked_resource(item)
+            kind = "linked_resource"
+        if self.authoritative:
+            self.snapshot_store.record_sighting(item)
+        return outcome, kind
 
 
 __all__ = ["TodoPipeline"]

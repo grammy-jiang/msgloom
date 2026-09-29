@@ -104,6 +104,7 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft.outlook.email.folder_checkpoint.OutlookFolderDeltaCheckpointExtension": 505,
     "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
     "message_ingest.extensions.microsoft.onedrive.checkpoint.OneDriveDeltaCheckpointExtension": 515,
+    "message_ingest.extensions.microsoft.todo.snapshot.TodoSnapshotExtension": 520,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "microsoft_graph.extensions.onedrive.OneDriveContentPrivacyExtension": 530,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,

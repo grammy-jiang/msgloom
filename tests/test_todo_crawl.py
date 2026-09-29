@@ -1,6 +1,7 @@
 """Run the To Do command through real Scrapy and a local Graph fixture."""
 
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -19,10 +20,17 @@ from message_ingest.catalog.models.acquisition import (
     SourceTargetBinding,
 )
 from message_ingest.catalog.models.microsoft.todo import (
+    TodoChecklistItemPresence,
     TodoChecklistItemRecord,
+    TodoLinkedResourcePresence,
     TodoLinkedResourceRecord,
+    TodoSnapshotCandidate,
+    TodoSnapshotState,
+    TodoTaskListPresence,
     TodoTaskListRecord,
+    TodoTaskPresence,
     TodoTaskRecord,
+    TodoTraversalCompletion,
 )
 
 ROOT = Path(__file__).parents[1]
@@ -145,7 +153,7 @@ def graph_server():
         thread.join(timeout=5)
 
 
-def _crawl(tmp_path, origin):
+def _crawl(tmp_path, origin, *, action="discover", extra_settings=None):
     settings = {
         "MS_GRAPH_SERVICE_ROOT": origin + "/v1.0",
         "MS_GRAPH_AUTH_METHOD": "none",
@@ -159,20 +167,29 @@ def _crawl(tmp_path, origin):
         "AUTOTHROTTLE_ENABLED": "False",
         "LOG_LEVEL": "DEBUG",
     }
+    settings.update(extra_settings or {})
     args = [
         sys.executable,
         "-m",
         "scrapy",
         "microsoft",
         "todo",
-        "discover",
+        action,
         "--page-size",
         "2",
     ]
     for key, value in settings.items():
         args.extend(["-s", f"{key}={value}"])
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "tests") + os.pathsep + env.get("PYTHONPATH", "")
     return subprocess.run(
-        args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+        args,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+        env=env,
     )
 
 
@@ -283,5 +300,152 @@ def test_real_todo_failure_retains_evidence_and_fails_command(
                 pytest.fail("Failed relation response lost its raw evidence")
             if session.scalars(select(TodoLinkedResourceRecord)).first() is not None:
                 pytest.fail("Failed or malformed response produced relation state")
+    finally:
+        catalog.close()
+
+
+def _presence_state(session):
+    """Return current presence without exposing provider identities in failures."""
+    state = session.get(TodoSnapshotState, "todo-fixture")
+    rows = []
+    for model in (
+        TodoTaskListPresence,
+        TodoTaskPresence,
+        TodoChecklistItemPresence,
+        TodoLinkedResourcePresence,
+    ):
+        rows.extend(
+            (row.is_present, row.latest_run_id, row.latest_observed_at)
+            for row in session.scalars(select(model)).all()
+        )
+    return None if state is None else (state.revision, state.run_id), sorted(rows)
+
+
+def test_real_todo_sync_promotes_only_after_full_multipage_traversal(
+    tmp_path, graph_server
+):
+    origin, _state, requests, pages = graph_server
+    result = _crawl(tmp_path, origin, action="sync")
+    if result.returncode:
+        pytest.fail(result.stderr)
+    _private_logs(result.stderr)
+    if Counter(requests) != Counter(
+        {path: 2 if path == LINKS else 1 for path in pages}
+    ):
+        pytest.fail("Authoritative sync did not traverse every synthetic page")
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            state = session.get(TodoSnapshotState, "todo-fixture")
+            if state is None or state.revision != 1:
+                pytest.fail("Clean full traversal did not promote revision one")
+            candidates = session.scalars(select(TodoSnapshotCandidate)).all()
+            if len(candidates) != 1 or candidates[0].committed_at is None:
+                pytest.fail("Terminal snapshot candidate was not durably committed")
+            completions = session.scalars(select(TodoTraversalCompletion)).all()
+            if len(completions) != 7:
+                pytest.fail("Durable traversal accounting is incomplete")
+            for model in (
+                TodoTaskListPresence,
+                TodoTaskPresence,
+                TodoChecklistItemPresence,
+                TodoLinkedResourcePresence,
+            ):
+                rows = session.scalars(select(model)).all()
+                if len(rows) != 2 or any(not row.is_present for row in rows):
+                    pytest.fail("Full traversal did not promote current presence")
+    finally:
+        catalog.close()
+
+
+@pytest.mark.parametrize("mode", ["failure", "malformed"])
+def test_real_todo_sync_failure_keeps_promoted_presence(tmp_path, graph_server, mode):
+    origin, state, _requests, _pages = graph_server
+    first = _crawl(tmp_path, origin, action="sync")
+    if first.returncode:
+        pytest.fail(first.stderr)
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            before = _presence_state(session)
+        state["mode"] = mode
+        failed = _crawl(tmp_path, origin, action="sync")
+        if failed.returncode != 1:
+            pytest.fail("Incomplete or failed authoritative sync must fail the command")
+        _private_logs(failed.stderr)
+        with catalog.Session() as session:
+            after = _presence_state(session)
+        if after != before:
+            pytest.fail("Failed authoritative sync changed promoted presence")
+    finally:
+        catalog.close()
+
+
+def test_real_todo_sync_incomplete_paging_blocks_promotion(tmp_path, graph_server):
+    origin, _state, _requests, _pages = graph_server
+    first = _crawl(tmp_path, origin, action="sync")
+    if first.returncode:
+        pytest.fail(first.stderr)
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            before = _presence_state(session)
+        middlewares = {
+            "todo_sync_failures.DropChecklistContinuationMiddleware": 700,
+        }
+        failed = _crawl(
+            tmp_path,
+            origin,
+            action="sync",
+            extra_settings={"SPIDER_MIDDLEWARES": json.dumps(middlewares)},
+        )
+        if failed.returncode != 1:
+            pytest.fail("Missing continuation must block authoritative promotion")
+        _private_logs(failed.stderr)
+        with catalog.Session() as session:
+            after = _presence_state(session)
+        if after != before:
+            pytest.fail("Incomplete paging changed promoted presence")
+    finally:
+        catalog.close()
+
+
+@pytest.mark.parametrize(
+    "failure_pipeline",
+    [
+        "todo_sync_failures.DropTodoTaskPipeline",
+        "todo_sync_failures.FailTodoTaskPipeline",
+    ],
+)
+def test_real_todo_sync_pipeline_failure_blocks_promotion(
+    tmp_path, graph_server, failure_pipeline
+):
+    origin, _state, _requests, _pages = graph_server
+    first = _crawl(tmp_path, origin, action="sync")
+    if first.returncode:
+        pytest.fail(first.stderr)
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            before = _presence_state(session)
+        pipelines = {
+            "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+            "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
+            "message_ingest.pipelines.microsoft.todo.TodoPipeline": 300,
+            failure_pipeline: 350,
+        }
+        failed = _crawl(
+            tmp_path,
+            origin,
+            action="sync",
+            extra_settings={"ITEM_PIPELINES": json.dumps(pipelines)},
+        )
+        if failed.returncode != 1:
+            pytest.fail("DropItem/item_error must block authoritative promotion")
+        _private_logs(failed.stderr)
+        with catalog.Session() as session:
+            after = _presence_state(session)
+        if after != before:
+            pytest.fail("Pipeline failure changed promoted presence")
     finally:
         catalog.close()

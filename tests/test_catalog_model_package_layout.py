@@ -85,6 +85,17 @@ EXPECTED_TABLES = {
     "todo_tasks",
     "todo_checklist_items",
     "todo_linked_resources",
+    "todo_checklist_item_presence",
+    "todo_checklist_item_sightings",
+    "todo_linked_resource_presence",
+    "todo_linked_resource_sightings",
+    "todo_snapshot_candidates",
+    "todo_snapshot_state",
+    "todo_task_list_presence",
+    "todo_task_list_sightings",
+    "todo_task_presence",
+    "todo_task_sightings",
+    "todo_traversal_completions",
 }
 
 

@@ -46,9 +46,22 @@ class TodoLinkedResourceItem(GraphTodoLinkedResourceItem):
     run_id: str | None
 
 
+@dataclass(slots=True)
+class TodoTraversalCompleteItem:
+    """Terminal-page proof for one authoritative collection traversal."""
+
+    collection_kind: str
+    list_id: str | None
+    task_id: str | None
+    observed_at: str
+    evidence_id: str | None
+    run_id: str | None
+
+
 __all__ = [
     "TodoChecklistItem",
     "TodoLinkedResourceItem",
     "TodoTaskItem",
     "TodoTaskListItem",
+    "TodoTraversalCompleteItem",
 ]

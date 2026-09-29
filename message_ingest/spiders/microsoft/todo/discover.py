@@ -11,6 +11,7 @@ from message_ingest.items.microsoft.todo import (
     TodoLinkedResourceItem,
     TodoTaskItem,
     TodoTaskListItem,
+    TodoTraversalCompleteItem,
 )
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from microsoft_graph.protocol import GraphCollectionPage
@@ -29,6 +30,7 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
 
     name = "microsoft_todo_discover"
     failure_context_keys: ClassVar[tuple[str, ...]] = ("list_id", "task_id")
+    authoritative_snapshot: ClassVar[bool] = False
 
     def __init__(self, *args, page_size: str = "100", **kwargs) -> None:
         """Validate collection page size before scheduling any requests."""
@@ -70,9 +72,33 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
             raise ValueError("To Do discovery does not support JOBDIR yet")
         return super().from_crawler(crawler, *args, **kwargs)
 
+    def _todo_request(self, url: str, **kwargs):
+        """Use uncached Graph reads only for authoritative snapshot traversal."""
+        return self._request(url, dont_cache=self.authoritative_snapshot, **kwargs)
+
+    def _completion_item(
+        self,
+        collection_kind: str,
+        evidence,
+        *,
+        list_id: str | None = None,
+        task_id: str | None = None,
+    ) -> TodoTraversalCompleteItem | None:
+        """Build terminal traversal proof only for authoritative sync runs."""
+        if not self.authoritative_snapshot:
+            return None
+        return TodoTraversalCompleteItem(
+            collection_kind=collection_kind,
+            list_id=list_id,
+            task_id=task_id,
+            observed_at=evidence.observed_at,
+            evidence_id=evidence.evidence_id,
+            run_id=self.run_id,
+        )
+
     async def start(self) -> AsyncIterator[Any]:
         """Schedule task-list inventory for the signed-in account."""
-        yield self._request(
+        yield self._todo_request(
             self.task_lists_path(page_size=self.page_size),
             callback=self.parse_task_lists,
             purpose="todo-task-lists-page",
@@ -98,20 +124,22 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
             )
             self.crawler.stats.inc_value("msgloom/crawl/todo/task_list_count")
             yield item
-            yield self._request(
+            yield self._todo_request(
                 self.tasks_path(item.list_id, page_size=self.page_size),
                 callback=self.parse_tasks,
                 purpose="todo-tasks-page",
                 cb_kwargs={"list_id": item.list_id},
             )
         if next_link := page.next_link:
-            yield self._request(
+            yield self._todo_request(
                 next_link,
                 callback=self.parse_task_lists,
                 purpose=purpose,
                 cb_kwargs={},
                 verbatim_url=True,
             )
+        elif completion := self._completion_item("task_lists", evidence):
+            yield completion
 
     def parse_tasks(
         self, response: TextResponse, *, purpose: str, list_id: str
@@ -134,26 +162,28 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
             self.crawler.stats.inc_value("msgloom/crawl/todo/task_count")
             yield item
             context = {"list_id": list_id, "task_id": item.task_id}
-            yield self._request(
+            yield self._todo_request(
                 self.checklist_items_path(list_id, item.task_id),
                 callback=self.parse_checklist_items,
                 purpose="todo-checklist-items-page",
                 cb_kwargs=context,
             )
-            yield self._request(
+            yield self._todo_request(
                 self.linked_resources_path(list_id, item.task_id),
                 callback=self.parse_linked_resources,
                 purpose="todo-linked-resources-page",
                 cb_kwargs=context,
             )
         if next_link := page.next_link:
-            yield self._request(
+            yield self._todo_request(
                 next_link,
                 callback=self.parse_tasks,
                 purpose=purpose,
                 cb_kwargs={"list_id": list_id},
                 verbatim_url=True,
             )
+        elif completion := self._completion_item("tasks", evidence, list_id=list_id):
+            yield completion
 
     def parse_checklist_items(
         self, response: TextResponse, *, purpose: str, list_id: str, task_id: str
@@ -177,13 +207,17 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
             self.crawler.stats.inc_value("msgloom/crawl/todo/checklist_item_count")
             yield item
         if next_link := page.next_link:
-            yield self._request(
+            yield self._todo_request(
                 next_link,
                 callback=self.parse_checklist_items,
                 purpose=purpose,
                 cb_kwargs={"list_id": list_id, "task_id": task_id},
                 verbatim_url=True,
             )
+        elif completion := self._completion_item(
+            "checklist_items", evidence, list_id=list_id, task_id=task_id
+        ):
+            yield completion
 
     def parse_linked_resources(
         self, response: TextResponse, *, purpose: str, list_id: str, task_id: str
@@ -207,10 +241,14 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
             self.crawler.stats.inc_value("msgloom/crawl/todo/linked_resource_count")
             yield item
         if next_link := page.next_link:
-            yield self._request(
+            yield self._todo_request(
                 next_link,
                 callback=self.parse_linked_resources,
                 purpose=purpose,
                 cb_kwargs={"list_id": list_id, "task_id": task_id},
                 verbatim_url=True,
             )
+        elif completion := self._completion_item(
+            "linked_resources", evidence, list_id=list_id, task_id=task_id
+        ):
+            yield completion

@@ -159,6 +159,39 @@ def test_schema_adds_only_todo_tables_and_preserves_existing_data(tmp_path):
             "task_id",
             "linked_resource_id",
         ),
+        "todo_task_list_sightings": ("source_id", "run_id", "list_id"),
+        "todo_task_sightings": ("source_id", "run_id", "list_id", "task_id"),
+        "todo_checklist_item_sightings": (
+            "source_id",
+            "run_id",
+            "list_id",
+            "task_id",
+            "checklist_item_id",
+        ),
+        "todo_linked_resource_sightings": (
+            "source_id",
+            "run_id",
+            "list_id",
+            "task_id",
+            "linked_resource_id",
+        ),
+        "todo_traversal_completions": ("source_id", "run_id", "scope_key"),
+        "todo_snapshot_candidates": ("source_id", "run_id"),
+        "todo_snapshot_state": ("source_id",),
+        "todo_task_list_presence": ("source_id", "list_id"),
+        "todo_task_presence": ("source_id", "list_id", "task_id"),
+        "todo_checklist_item_presence": (
+            "source_id",
+            "list_id",
+            "task_id",
+            "checklist_item_id",
+        ),
+        "todo_linked_resource_presence": (
+            "source_id",
+            "list_id",
+            "task_id",
+            "linked_resource_id",
+        ),
     }
     engine = create_engine(url)
     try:

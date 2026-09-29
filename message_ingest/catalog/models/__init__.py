@@ -41,10 +41,21 @@ from .microsoft.outlook import (
     MessageSurface,
 )
 from .microsoft.todo import (
+    TodoChecklistItemPresence,
     TodoChecklistItemRecord,
+    TodoChecklistItemSighting,
+    TodoLinkedResourcePresence,
     TodoLinkedResourceRecord,
+    TodoLinkedResourceSighting,
+    TodoSnapshotCandidate,
+    TodoSnapshotState,
+    TodoTaskListPresence,
     TodoTaskListRecord,
+    TodoTaskListSighting,
+    TodoTaskPresence,
     TodoTaskRecord,
+    TodoTaskSighting,
+    TodoTraversalCompletion,
 )
 
 __all__ = [
@@ -86,8 +97,19 @@ __all__ = [
     "RawHttpEvidence",
     "SourceBinding",
     "SourceTargetBinding",
+    "TodoChecklistItemPresence",
     "TodoChecklistItemRecord",
+    "TodoChecklistItemSighting",
+    "TodoLinkedResourcePresence",
     "TodoLinkedResourceRecord",
+    "TodoLinkedResourceSighting",
+    "TodoSnapshotCandidate",
+    "TodoSnapshotState",
+    "TodoTaskListPresence",
     "TodoTaskListRecord",
+    "TodoTaskListSighting",
+    "TodoTaskPresence",
     "TodoTaskRecord",
+    "TodoTaskSighting",
+    "TodoTraversalCompletion",
 ]
