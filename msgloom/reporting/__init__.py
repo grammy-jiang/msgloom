@@ -6,6 +6,9 @@ from .handler import ReportBuildHandler, ReportHandlerConfig
 from .models import (
     AssessmentSelection,
     DueMode,
+    FrozenRendererConfig,
+    FrozenReportInput,
+    FrozenReportSelection,
     PendingAssessmentWarning,
     PriorReportState,
     ReminderMode,
@@ -21,14 +24,24 @@ from .models import (
 )
 from .renderer import RENDERER_VERSION, RendererConfig, render_report
 from .selection import ReportSelectionError, select_topics
+from .selection_codec import (
+    REPORT_SELECTION_KIND,
+    REPORT_SELECTION_SCHEMA_VERSION,
+    ReportSelectionCodec,
+)
 
 __all__ = [
     "MAX_REPORT_BYTES",
     "RENDERER_VERSION",
     "REPORT_KIND",
     "REPORT_SCHEMA_VERSION",
+    "REPORT_SELECTION_KIND",
+    "REPORT_SELECTION_SCHEMA_VERSION",
     "AssessmentSelection",
     "DueMode",
+    "FrozenRendererConfig",
+    "FrozenReportInput",
+    "FrozenReportSelection",
     "PendingAssessmentWarning",
     "PriorReportState",
     "ReminderMode",
@@ -42,6 +55,7 @@ __all__ = [
     "ReportOverviewItem",
     "ReportPart",
     "ReportPolicy",
+    "ReportSelectionCodec",
     "ReportSelectionError",
     "ReportSelectionPlan",
     "ReportTopic",

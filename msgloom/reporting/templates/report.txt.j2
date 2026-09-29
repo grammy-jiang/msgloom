@@ -16,6 +16,11 @@ PENDING WORK
   pending {{ warning.pending_ref|ref }}: {{ warning.detail }}
 {% endfor %}
 {% endif %}
+{% if limitations %}
+REPORT LIMITATIONS
+{% for item in limitations %}- {{ item.code }}: {{ item.detail }}
+{% endfor %}
+{% endif %}
 DETAILS
 {% for topic in topics %}
 TOPIC {{ topic.topic_ref|ref }}

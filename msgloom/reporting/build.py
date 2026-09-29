@@ -98,9 +98,11 @@ def validate_semantic_coverage(
 def report_limitations(
     topics: tuple[ReportTopic, ...],
     plan: ReportSelectionPlan,
+    upstream: tuple[Limitation, ...] = (),
 ) -> tuple[Limitation, ...]:
     """Collect explicit source limitations and pending-work warnings."""
-    values = list(chain.from_iterable(item.limitations for item in topics))
+    values = list(upstream)
+    values.extend(chain.from_iterable(item.limitations for item in topics))
     values.extend(
         Limitation(code="pending_newer_assessment", detail=item.detail)
         for item in plan.pending_warnings

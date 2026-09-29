@@ -9,6 +9,7 @@ from msgloom.contracts import (
     AttemptIdentity,
     ExecutionIdentity,
     ResultRef,
+    ResultSchemaRegistry,
     StageResult,
     TerminalStatus,
     VersionRef,
@@ -21,6 +22,7 @@ from msgloom.reporting import (
     ReportCodec,
     ReportDestination,
     ReportPolicy,
+    ReportSelectionCodec,
     ReportSelectionPlan,
     SourceLink,
 )
@@ -139,13 +141,16 @@ def semantic_registry() -> SemanticDataRegistry:
     """Compose report codec locally without editing the shared registry."""
     base = SemanticDataRegistry.phase1()
     codecs = base._codecs  # pyright: ignore[reportPrivateUsage]
-    return SemanticDataRegistry(codecs + (ReportCodec(),))
+    return SemanticDataRegistry(codecs + (ReportSelectionCodec(), ReportCodec()))
 
 
 async def open_store(path: Path) -> Phase1Persistence:
     """Open real Phase 1 persistence with the lane-local report codec."""
     return await Phase1Persistence.open(
         f"sqlite+pysqlite:///{path}",
+        registry=ResultSchemaRegistry.phase1().with_schema(
+            "report_selection", "1", semantic_data_required=True
+        ),
         semantic_registry=semantic_registry(),
     )
 

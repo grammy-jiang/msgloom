@@ -6,7 +6,8 @@ import asyncio
 from time import monotonic
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic_core import PydanticSerializationError
 
 from msgloom.contracts import (
     AttemptIdentity,
@@ -14,6 +15,7 @@ from msgloom.contracts import (
     ClaimToken,
     ExternalEffectState,
     Failure,
+    Limitation,
     OperationOutcome,
     OperationRequest,
     PhaseCapability,
@@ -23,7 +25,7 @@ from msgloom.contracts import (
     VersionRef,
 )
 from msgloom.persistence import Phase1Persistence, Phase1PersistenceError
-from msgloom.triage import TriageData
+from msgloom.triage import TopicAssessment, TriageData
 
 from .build import (
     ReportBuildError,
@@ -33,9 +35,21 @@ from .build import (
     validate_semantic_coverage,
 )
 from .codec import REPORT_KIND, REPORT_SCHEMA_VERSION
-from .models import ReportPolicy, ReportSelectionPlan, SavedReport
+from .models import (
+    AssessmentSelection,
+    FrozenRendererConfig,
+    FrozenReportInput,
+    FrozenReportSelection,
+    ReportOverviewItem,
+    ReportPart,
+    ReportPolicy,
+    ReportSelectionPlan,
+    ReportTopic,
+    SavedReport,
+)
 from .renderer import RENDERER_VERSION, RendererConfig, render_report
 from .selection import ReportSelectionError, select_topics
+from .selection_codec import REPORT_SELECTION_KIND, REPORT_SELECTION_SCHEMA_VERSION
 
 
 class ReportHandlerConfig(BaseModel):
@@ -46,6 +60,9 @@ class ReportHandlerConfig(BaseModel):
     report_ref: VersionRef
     result_id: Annotated[str, Field(min_length=1, max_length=256)]
     semantic_data_id: Annotated[str, Field(min_length=1, max_length=256)]
+    selection_result_id: Annotated[str, Field(min_length=1, max_length=256)]
+    selection_semantic_data_id: Annotated[str, Field(min_length=1, max_length=256)]
+    max_input_bytes: Annotated[int, Field(ge=1, le=64 * 1024 * 1024)]
     attempt: AttemptIdentity
     code_version: Annotated[str, Field(min_length=1, max_length=256)]
     expected_parameters: Annotated[tuple[tuple[str, str], ...], Field(max_length=32)]
@@ -74,11 +91,22 @@ class ReportBuildHandler:
         renderer_config: RendererConfig,
         config: ReportHandlerConfig,
     ) -> None:
-        self._policy = policy
-        self._plan = selection_plan
+        try:
+            self._policy = ReportPolicy.model_validate_json(
+                policy.model_dump_json(warnings="error"), strict=True
+            )
+            self._plan = ReportSelectionPlan.model_validate_json(
+                selection_plan.model_dump_json(warnings="error"), strict=True
+            )
+            self._renderer = RendererConfig.model_validate_json(
+                renderer_config.model_dump_json(warnings="error"), strict=True
+            )
+            self._config = ReportHandlerConfig.model_validate_json(
+                config.model_dump_json(warnings="error"), strict=True
+            )
+        except (PydanticSerializationError, ValidationError, TypeError, ValueError):
+            raise ValueError("report build configuration failed validation") from None
         self._persistence = persistence
-        self._renderer = renderer_config
-        self._config = config
 
     async def run(self, request: OperationRequest) -> OperationOutcome:
         """Validate request binding, claim policy scope, build, and persist."""
@@ -97,19 +125,24 @@ class ReportBuildHandler:
                 lease_seconds=self._config.claim_lease_seconds,
             )
             async with asyncio.timeout(self._config.timeout_seconds):
+                await self._validate_prior_evidence()
                 loaded = await self._load_inputs()
                 selected = select_topics(self._policy, self._plan, loaded)
+                snapshot = self._selection_snapshot(loaded, selected)
+                selection_result = self._selection_stage_result(request, snapshot)
+                await self._persistence.append_result_with_data(
+                    selection_result, snapshot
+                )
                 topics = build_topics(selected, self._plan)
                 overview = build_overview(topics)
                 validate_semantic_coverage(topics, overview)
-                limitations = report_limitations(topics, self._plan)
-                parts = render_report(
-                    self._config.report_ref,
-                    overview,
-                    topics,
-                    self._plan.pending_warnings,
-                    self._renderer,
+                upstream = tuple(
+                    limitation
+                    for _ref, result, _data in loaded
+                    for limitation in result.limitations
                 )
+                limitations = report_limitations(topics, self._plan, upstream)
+                parts = await self._render_owned(overview, topics, limitations, started)
                 report = SavedReport(
                     report_ref=self._config.report_ref,
                     policy_ref=self._policy.policy_ref,
@@ -183,25 +216,145 @@ class ReportBuildHandler:
     async def _load_inputs(
         self,
     ) -> tuple[tuple[ResultRef, StageResult, TriageData], ...]:
-        loaded = []
+        admitted: list[tuple[ResultRef, StageResult]] = []
+        total = 0
         for ref in self._plan.triage_results:
             result = await self._persistence.get_result(ref.result_id)
-            if result is None:
+            if result is None or result.semantic_data_ref is None:
                 raise ReportSelectionError("selected triage result is missing")
             if (
                 result.result_id != ref.result_id
                 or result.kind != ref.kind
                 or result.schema_version != ref.schema_version
-                or result.semantic_data_ref is None
             ):
                 raise ReportSelectionError(
                     "selected triage result reference mismatches"
                 )
-            data = await self._persistence.load_semantic_data(result.semantic_data_ref)
+            total += result.semantic_data_ref.byte_count
+            if total > self._config.max_input_bytes:
+                raise ReportSelectionError("selected semantic inputs exceed byte limit")
+            admitted.append((ref, result))
+        loaded = []
+        for ref, result in admitted:
+            data_ref = result.semantic_data_ref
+            if data_ref is None:
+                raise ReportSelectionError("selected triage semantic data is missing")
+            data = await self._persistence.load_semantic_data(data_ref)
             if not isinstance(data, TriageData):
                 raise ReportSelectionError("selected semantic input is not triage@1")
             loaded.append((ref, result, data))
         return tuple(loaded)
+
+    async def _validate_prior_evidence(self) -> None:
+        for state in self._plan.prior_state:
+            ref = state.evidence_ref
+            if ref is None:
+                raise ReportSelectionError("prior report state lacks durable evidence")
+            result = await self._persistence.get_result(ref.result_id)
+            if (
+                result is None
+                or result.result_id != ref.result_id
+                or result.kind != "report_submission"
+                or result.schema_version != "1"
+                or not result.acceptable
+                or state.assessment_ref not in result.topic_versions
+                or result.configuration_version != state.policy_ref.version
+            ):
+                raise ReportSelectionError("prior report evidence does not match state")
+
+    def _selection_snapshot(
+        self,
+        loaded: tuple[tuple[ResultRef, StageResult, TriageData], ...],
+        selected: tuple[TopicAssessment, ...],
+    ) -> FrozenReportSelection:
+        inputs = []
+        for ref, result, _data in loaded:
+            if result.semantic_data_ref is None:
+                raise ReportSelectionError("selected triage semantic data is missing")
+            inputs.append(
+                FrozenReportInput(
+                    result_ref=ref, semantic_data_ref=result.semantic_data_ref
+                )
+            )
+        choices = tuple(
+            AssessmentSelection(
+                topic_ref=item.topic_ref, assessment_ref=item.assessment_ref
+            )
+            for item in selected
+        )
+        return FrozenReportSelection(
+            report_ref=self._config.report_ref,
+            policy=self._policy,
+            plan=self._plan,
+            renderer=FrozenRendererConfig(
+                max_part_bytes=self._renderer.max_part_bytes,
+                max_total_bytes=self._renderer.max_total_bytes,
+                max_parts=self._renderer.max_parts,
+            ),
+            code_version=self._config.code_version,
+            expected_parameters=self._config.expected_parameters,
+            inputs=tuple(inputs),
+            selected=choices,
+        )
+
+    def _selection_stage_result(
+        self, request: OperationRequest, snapshot: FrozenReportSelection
+    ) -> StageResult:
+        data_ref = self._persistence.semantic_reference(
+            self._config.selection_semantic_data_id,
+            REPORT_SELECTION_KIND,
+            REPORT_SELECTION_SCHEMA_VERSION,
+            snapshot,
+        )
+        return StageResult(
+            result_id=self._config.selection_result_id,
+            kind=REPORT_SELECTION_KIND,
+            schema_version=REPORT_SELECTION_SCHEMA_VERSION,
+            execution=request.execution,
+            attempt=self._config.attempt,
+            input_refs=self._plan.triage_results,
+            source_versions=(),
+            prepared_versions=(),
+            topic_versions=tuple(x.assessment_ref for x in snapshot.selected),
+            configuration_version=self._policy.policy_ref.version,
+            code_version=self._config.code_version,
+            status=TerminalStatus.COMPLETE,
+            acceptable=True,
+            semantic_data_ref=data_ref,
+        )
+
+    async def _render_owned(
+        self,
+        overview: tuple[ReportOverviewItem, ...],
+        topics: tuple[ReportTopic, ...],
+        limitations: tuple[Limitation, ...],
+        started: float,
+    ) -> tuple[ReportPart, ...]:
+        task = asyncio.create_task(
+            asyncio.to_thread(
+                render_report,
+                self._config.report_ref,
+                overview,
+                topics,
+                self._plan.pending_warnings,
+                self._renderer,
+                limitations,
+            )
+        )
+        cancelled = False
+        while not task.done():
+            try:
+                await asyncio.shield(task)
+            except asyncio.CancelledError:
+                cancelled = True
+        error = task.exception()
+        if error is not None:
+            raise error
+        if cancelled:
+            raise asyncio.CancelledError
+        if monotonic() - started >= self._config.timeout_seconds:
+            raise TimeoutError
+        return task.result()
 
     def _stage_result(
         self,
@@ -225,7 +378,13 @@ class ReportBuildHandler:
             schema_version=REPORT_SCHEMA_VERSION,
             execution=request.execution,
             attempt=self._config.attempt,
-            input_refs=self._plan.triage_results,
+            input_refs=(
+                ResultRef(
+                    self._config.selection_result_id,
+                    REPORT_SELECTION_KIND,
+                    REPORT_SELECTION_SCHEMA_VERSION,
+                ),
+            ),
             source_versions=source_versions,
             prepared_versions=(),
             topic_versions=topic_versions,

@@ -7,7 +7,9 @@ import json
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
 
+from .build import ReportBuildError, validate_semantic_coverage
 from .models import SavedReport
+from .renderer import validate_rendered_coverage
 
 REPORT_KIND = "report"
 REPORT_SCHEMA_VERSION = "1"
@@ -37,8 +39,15 @@ class ReportCodec:
             ).encode("utf-8")
             if len(payload) > self.max_bytes:
                 raise TypeError("report@1 data exceeds the canonical size limit")
-            SavedReport.model_validate_json(payload, strict=True)
-        except (PydanticSerializationError, ValidationError, TypeError, ValueError):
+            checked = SavedReport.model_validate_json(payload, strict=True)
+            _validate_report(checked)
+        except (
+            PydanticSerializationError,
+            ValidationError,
+            ReportBuildError,
+            TypeError,
+            ValueError,
+        ):
             raise TypeError("report@1 data failed validation") from None
         return payload
 
@@ -48,8 +57,21 @@ class ReportCodec:
             raise ValueError("stored report@1 data exceeds the size limit")
         try:
             value = SavedReport.model_validate_json(payload, strict=True)
-        except (ValidationError, ValueError):
+            _validate_report(value)
+        except (ValidationError, ReportBuildError, ValueError):
             raise ValueError("stored report@1 data failed validation") from None
         if self.encode(value) != payload:
             raise ValueError("stored report@1 data is not canonical")
         return value
+
+
+def _validate_report(value: SavedReport) -> None:
+    """Recheck semantic and rendered coverage without changing saved bytes."""
+    validate_semantic_coverage(value.topics, value.overview)
+    validate_rendered_coverage(
+        value.topics,
+        value.parts,
+        value.overview,
+        value.pending_warnings,
+        value.limitations,
+    )

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 from msgloom.contracts import ResultRef, StageResult, TerminalStatus
 from msgloom.triage import TopicAssessment, TriageData
@@ -43,6 +43,11 @@ def select_topics(
         (item.topic_ref.kind, item.topic_ref.identity): item.assessment_ref
         for item in plan.assessment_selections
     }
+    for key, wanted in choices.items():
+        if key not in candidates or not any(
+            item.assessment_ref == wanted for item in candidates[key]
+        ):
+            raise ReportSelectionError("assessment selection does not match input")
     selected: list[TopicAssessment] = []
     for topic_key in sorted(candidates):
         versions = candidates[topic_key]
@@ -100,16 +105,14 @@ def _is_due(
     latest = max(item.reported_at for item in states)
     if policy.reminder_mode is ReminderMode.AFTER_INTERVAL:
         interval = policy.reminder_after_seconds
-        if (
-            interval is not None
-            and latest + timedelta(seconds=interval) <= policy.due_at
-        ):
+        if interval is not None and latest.astimezone(UTC) + timedelta(
+            seconds=interval
+        ) <= policy.due_at.astimezone(UTC):
             return True
     if policy.repeat_mode is RepeatMode.AFTER_INTERVAL:
         interval = policy.repeat_after_seconds
-        if (
-            interval is not None
-            and latest + timedelta(seconds=interval) <= policy.due_at
-        ):
+        if interval is not None and latest.astimezone(UTC) + timedelta(
+            seconds=interval
+        ) <= policy.due_at.astimezone(UTC):
             return True
     return False

@@ -225,6 +225,7 @@ def test_report_codec_revalidates_nested_models_and_is_canonical() -> None:
     item = topic()
     built = build_topics((item,), plan(ResultRef("r", "triage", "1")))
     overview = build_overview(built)
+    visible_limitations = (Limitation(code="synthetic", detail="Visible limitation"),)
     parts = render_report(
         ref("report", "codec"),
         overview,
@@ -235,6 +236,7 @@ def test_report_codec_revalidates_nested_models_and_is_canonical() -> None:
             max_total_bytes=200_000,
             max_parts=2,
         ),
+        visible_limitations,
     )
     from msgloom.reporting.models import SavedReport
 
@@ -248,7 +250,7 @@ def test_report_codec_revalidates_nested_models_and_is_canonical() -> None:
         topics=built,
         overview=overview,
         pending_warnings=(),
-        limitations=(Limitation(code="synthetic", detail="Visible limitation"),),
+        limitations=visible_limitations,
         renderer_version="test-renderer",
         parts=parts,
     )
@@ -324,3 +326,75 @@ def test_priority_and_deadline_due_criteria_are_explicit() -> None:
             plan(result_ref),
             _loaded(result_ref, triage_data(future)),  # type: ignore[arg-type]
         )
+
+
+def test_codec_rejects_swapped_part_content_and_duplicate_overview() -> None:
+    """Saved output must prove section-local identity and unique overview coverage."""
+    first = topic("topic-a", source_identity="message-a")
+    second = topic("topic-b", "assessment-b", source_identity="message-b")
+    built = build_topics((first, second), plan(ResultRef("r", "triage", "1")))
+    overview = build_overview(built)
+    parts = render_report(
+        ref("report", "structural"),
+        overview,
+        built,
+        (),
+        RendererConfig(max_part_bytes=4_000, max_total_bytes=8_000, max_parts=4),
+    )
+    if len(parts) != 2:
+        pytest.fail("fixture did not produce multipart output")
+    swapped = (
+        parts[0].model_copy(
+            update={
+                "plain_text": parts[1].plain_text,
+                "html": parts[1].html,
+            }
+        ),
+        parts[1],
+    )
+    from msgloom.reporting.renderer import validate_rendered_coverage
+
+    with pytest.raises(ReportBuildError):
+        validate_rendered_coverage(built, swapped, overview)
+    duplicate = parts[0].model_copy(
+        update={
+            "plain_text": parts[0].plain_text.replace(
+                "OVERVIEW\n", "OVERVIEW\n- topic:topic-a@1 duplicate\n", 1
+            )
+        }
+    )
+    with pytest.raises(ReportBuildError):
+        validate_rendered_coverage(built, (duplicate, parts[1]), overview)
+
+
+def test_dst_spring_forward_interval_uses_elapsed_time() -> None:
+    """Repeat intervals compare instants rather than local wall-time arithmetic."""
+    from zoneinfo import ZoneInfo
+
+    zone = ZoneInfo("America/New_York")
+    before = datetime(2027, 3, 14, 1, 30, tzinfo=zone)
+    after = datetime(2027, 3, 14, 3, 30, tzinfo=zone)
+    item = topic()
+    result_ref = ResultRef("dst-spring", "triage", "1")
+    configured = policy().model_copy(
+        update={
+            "due_at": after,
+            "timezone": "America/New_York",
+            "repeat_mode": RepeatMode.AFTER_INTERVAL,
+            "repeat_after_seconds": 3600,
+        }
+    )
+    prior = PriorReportState(
+        policy_ref=configured.policy_ref,
+        assessment_ref=item.assessment_ref,
+        report_ref=ref("report", "previous"),
+        reported_at=before,
+    )
+    selection = plan(result_ref).model_copy(update={"prior_state": (prior,)})
+    selected = select_topics(
+        configured,
+        selection,
+        _loaded(result_ref, triage_data(item)),  # type: ignore[arg-type]
+    )
+    if selected != (item,):
+        pytest.fail("elapsed spring-forward hour did not satisfy repeat interval")

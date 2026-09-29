@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from msgloom.contracts import Limitation, ResultRef, VersionRef
+from msgloom.contracts import Limitation, ResultRef, SemanticDataRef, VersionRef
 from msgloom.triage import (
     Deadline,
     Development,
@@ -74,6 +75,16 @@ class ReportPolicy(_FrozenModel):
     def _validate_policy(self) -> ReportPolicy:
         if self.due_at.tzinfo is None or self.due_at.utcoffset() is None:
             raise ValueError("report due time must be timezone-aware")
+        try:
+            zone = ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError):
+            raise ValueError("report timezone must be a real IANA timezone") from None
+        local = self.due_at.astimezone(zone)
+        if (
+            local.replace(tzinfo=None) != self.due_at.replace(tzinfo=None)
+            or local.utcoffset() != self.due_at.utcoffset()
+        ):
+            raise ValueError("report due time must be coherent with its timezone")
         if len(self.priorities) != len(set(self.priorities)):
             raise ValueError("report priorities must be unique")
         self._validate_interval(self.repeat_mode, self.repeat_after_seconds, "repeat")
@@ -98,6 +109,7 @@ class PriorReportState(_FrozenModel):
     assessment_ref: VersionRef
     report_ref: VersionRef
     reported_at: datetime
+    evidence_ref: ResultRef | None = None
 
     @model_validator(mode="after")
     def _aware(self) -> PriorReportState:
@@ -158,6 +170,9 @@ class ReportSelectionPlan(_FrozenModel):
         )
         if len(pairs) != len(set(pairs)):
             raise ValueError("assessment selections must be unique")
+        topics = tuple(x.topic_ref for x in self.assessment_selections)
+        if len(topics) != len(set(topics)):
+            raise ValueError("assessment selection topics must be unique")
         states = tuple((x.policy_ref, x.assessment_ref) for x in self.prior_state)
         if len(states) != len(set(states)):
             raise ValueError(
@@ -166,6 +181,48 @@ class ReportSelectionPlan(_FrozenModel):
         links = tuple(x.source_ref for x in self.source_links)
         if len(links) != len(set(links)):
             raise ValueError("source links must be unique")
+        return self
+
+
+class FrozenReportInput(_FrozenModel):
+    """Bind one admitted result to its exact semantic payload reference."""
+
+    result_ref: ResultRef
+    semantic_data_ref: SemanticDataRef
+
+
+class FrozenRendererConfig(_FrozenModel):
+    """Persist the exact finite rendering choices used for a selection."""
+
+    max_part_bytes: int
+    max_total_bytes: int
+    max_parts: int
+
+
+class FrozenReportSelection(_FrozenModel):
+    """Durable pre-render snapshot of one report selection decision."""
+
+    schema_version: Literal["1"] = "1"
+    report_ref: VersionRef
+    policy: ReportPolicy
+    plan: ReportSelectionPlan
+    renderer: FrozenRendererConfig
+    code_version: ShortText
+    expected_parameters: Annotated[tuple[tuple[str, str], ...], Field(max_length=32)]
+    inputs: Annotated[
+        tuple[FrozenReportInput, ...], Field(min_length=1, max_length=128)
+    ]
+    selected: Annotated[
+        tuple[AssessmentSelection, ...], Field(min_length=1, max_length=256)
+    ]
+
+    @model_validator(mode="after")
+    def _closed_selection(self) -> FrozenReportSelection:
+        if tuple(item.result_ref for item in self.inputs) != self.plan.triage_results:
+            raise ValueError("frozen inputs must exactly match the selection plan")
+        pairs = tuple((x.topic_ref, x.assessment_ref) for x in self.selected)
+        if len(pairs) != len(set(pairs)):
+            raise ValueError("frozen selected assessments must be unique")
         return self
 
 

@@ -25,7 +25,8 @@ assessment; it cannot silently make an older assessment look current.
 ## Saved report and codec
 
 SavedReport is the complete semantic report@1 product. It binds one report
-identity to the policy/destination, exact source triage results, exact topic and
+identity to the policy/destination, exact source triage results, exact topic
+and
 assessment identities, overview, complete topic details, source messages,
 labelled source-statement/interpretation evidence, actions and owner
 uncertainty, deadline wording/interpreted time/timezone/ambiguity, risks,
@@ -39,7 +40,8 @@ and requires semantic data.
 
 Coverage validation compares exact topic/assessment identities and essential
 content. Rendered validation additionally checks each topic's explicit
-topic-to-part mapping and its essential fields. Counts or self-reported coverage
+topic-to-part mapping and its essential fields. Counts or self-reported
+coverage
 metadata are not accepted as proof.
 
 ## Rendering
@@ -74,3 +76,59 @@ the operation rather than claiming success.
 
 No numerical semantic release threshold is asserted by this API. Those
 thresholds remain manager/user acceptance decisions.
+
+## R2 durability and acceptance boundaries
+
+Before Jinja rendering, the handler revalidates the trusted policy, selection
+plan, renderer configuration and handler configuration, admits only the exact
+declared triage results, and sums their saved semantic byte counts. The
+configured aggregate input ceiling is enforced before any triage semantic
+payload is loaded. The plan itself bounds the input count.
+
+The handler then resolves the selected assessment versions and persists a
+report_selection@1 result plus FrozenReportSelection semantic payload. That
+snapshot binds the full policy and plan, renderer limits, code version, trusted
+request parameters, exact input result/data integrity references and selected
+topic/assessment versions. ReportSelectionCodec is the closed bounded codec
+declaration for manager composition. This lane does not edit shared registries.
+A render failure therefore leaves the selection evidence durable.
+
+Prior-state suppression remains keyed by policy plus assessment. In the handler
+path, every prior state must additionally name a durable report_submission@1
+result. The saved result must be acceptable, include the assessment version,
+and carry the matching policy configuration version. No live receipt discovery
+occurs during report selection.
+
+Upstream StageResult limitations are retained alongside topic-local limitations
+and pending-newer warnings in the saved report limitation set. Pending work
+remains explicit and does not replace the selected assessment.
+
+Rendering is accepted blocking work owned by the handler and runs on a worker
+thread. Jinja output is consumed incrementally and stops before crossing a
+configured part or total byte ceiling; a complete topic is never truncated.
+Cancellation and timeout drain accepted rendering before claim cleanup, and
+the operation deadline is checked again after that drain. An expired render
+cannot publish an acceptable report.
+
+The handler currently has two persistence append sites, in this order:
+report_selection@1 before rendering, then report@1 after rendered coverage
+validation. Integration must pass the reviewed persistence claim token to both
+append sites when the manager's claim-bound append API lands. This lane
+intentionally does not implement a second claim mechanism.
+
+Rendered coverage is structural. Overview identity and essential summary
+content must occur in the overview section, while exact topic/assessment
+identity, priority and reason, developments, action owner state/value, original
+and interpreted deadline details, timezone basis and ambiguity, risks, source
+references, evidence-kind labels, topic limitations, pending warnings and
+report limitations are checked in their required sections. Saved HTML is
+parsed as markup: source text remains escaped data, only the template
+tag/attribute surface is accepted, and links must remain safe HTTP(S) URLs.
+The report codec repeats semantic and rendered coverage checks without changing
+the stored output bytes.
+
+Report interval policies use elapsed instants, comparing in UTC. The configured
+timezone must resolve through the IANA database and due_at must represent the
+same local wall time and offset in that zone. This preserves fold-aware
+fall-back behavior and spring-forward elapsed intervals. Original deadline
+wording, interpretation, timezone basis and ambiguity remain unchanged.

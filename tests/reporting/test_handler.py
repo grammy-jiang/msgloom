@@ -41,6 +41,9 @@ def _config(identity: str = "report-result") -> ReportHandlerConfig:
         report_ref=ref("report", identity),
         result_id=identity,
         semantic_data_id=f"data-{identity}",
+        selection_result_id=f"selection-{identity}",
+        selection_semantic_data_id=f"selection-data-{identity}",
+        max_input_bytes=4 * 1024 * 1024,
         attempt=AttemptIdentity(f"attempt-{identity}"),
         code_version="report-build-test",
         expected_parameters=(("mode", "scheduled"),),
@@ -305,5 +308,135 @@ def test_handler_rejects_saved_unacceptable_triage_input(tmp_path: Path) -> None
                 pytest.fail("unacceptable triage input published a report")
         finally:
             await store.close()
+
+    asyncio.run(exercise())
+
+
+def test_failed_render_keeps_frozen_selection_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Selection is durable before rendering and survives a render failure."""
+
+    async def exercise() -> None:
+        store = await open_store(tmp_path / "render-failure.sqlite3")
+        triage_ref = await save_triage(store, triage_data(topic()))
+        selection = plan(triage_ref)
+
+        def fail_render(*args: object, **kwargs: object) -> object:
+            del args, kwargs
+            from msgloom.reporting import ReportBuildError
+
+            raise ReportBuildError("synthetic render failure")
+
+        monkeypatch.setattr("msgloom.reporting.handler.render_report", fail_render)
+        outcome = await _handler(store, selection).run(_request(selection))
+        if outcome.status is not TerminalStatus.FAILED:
+            pytest.fail("render failure did not fail the operation")
+        frozen_result = await store.get_result("selection-report-result")
+        if frozen_result is None or frozen_result.semantic_data_ref is None:
+            pytest.fail("render failure lost the pre-render selection snapshot")
+        frozen = await store.load_semantic_data(frozen_result.semantic_data_ref)
+        from msgloom.reporting import FrozenReportSelection
+
+        if not isinstance(frozen, FrozenReportSelection):
+            pytest.fail("saved pre-render evidence has the wrong semantic type")
+        if frozen.inputs[0].result_ref != triage_ref:
+            pytest.fail("frozen selection lost its exact triage result reference")
+        await store.close()
+
+    asyncio.run(exercise())
+
+
+def test_selection_write_failure_prevents_render(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Rendering cannot start before the frozen selection write commits."""
+
+    async def exercise() -> None:
+        store = await open_store(tmp_path / "selection-write-failure.sqlite3")
+        triage_ref = await save_triage(store, triage_data(topic()))
+        selection = plan(triage_ref)
+        rendered = False
+
+        def observe_render(*args: object, **kwargs: object) -> object:
+            nonlocal rendered
+            del args, kwargs
+            rendered = True
+            raise RuntimeError("render should not run")
+
+        async def fail_write(result: object, value: object) -> None:
+            del result, value
+            from msgloom.persistence import ImmutableRecordError
+
+            raise ImmutableRecordError("synthetic write failure")
+
+        monkeypatch.setattr("msgloom.reporting.handler.render_report", observe_render)
+        monkeypatch.setattr(store, "append_result_with_data", fail_write)
+        outcome = await _handler(store, selection).run(_request(selection))
+        if outcome.status is not TerminalStatus.FAILED:
+            pytest.fail("selection write failure did not fail the operation")
+        if rendered:
+            pytest.fail("rendering started before selection persistence")
+        await store.close()
+
+    asyncio.run(exercise())
+
+
+def test_slow_render_drains_deadline_and_keeps_event_loop_responsive(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Synchronous rendering runs off-loop and cannot publish after its deadline."""
+
+    async def exercise() -> None:
+        from time import sleep
+
+        import msgloom.reporting.handler as handler_module
+
+        store = await open_store(tmp_path / "slow-render.sqlite3")
+        triage_ref = await save_triage(store, triage_data(topic()))
+        selection = plan(triage_ref)
+        original = handler_module.render_report
+
+        def slow_render(*args: object, **kwargs: object) -> object:
+            sleep(0.12)
+            return original(*args, **kwargs)  # type: ignore[arg-type]
+
+        monkeypatch.setattr(handler_module, "render_report", slow_render)
+        config = _config("slow-report").model_copy(
+            update={"timeout_seconds": 0.05, "claim_lease_seconds": 2.0}
+        )
+        handler = ReportBuildHandler(
+            policy=policy(),
+            selection_plan=selection,
+            persistence=store,
+            renderer_config=RendererConfig(
+                max_part_bytes=100_000,
+                max_total_bytes=300_000,
+                max_parts=8,
+            ),
+            config=config,
+        )
+        ticks = 0
+        running = True
+
+        async def ticker() -> None:
+            nonlocal ticks
+            while running:
+                ticks += 1
+                await asyncio.sleep(0.01)
+
+        tick_task = asyncio.create_task(ticker())
+        outcome = await handler.run(_request(selection, "slow-execution"))
+        running = False
+        await tick_task
+        if outcome.status is not TerminalStatus.FAILED:
+            pytest.fail("expired slow render published an acceptable report")
+        if ticks < 3:
+            pytest.fail("synchronous rendering blocked the event loop")
+        if await store.get_result("slow-report") is not None:
+            pytest.fail("expired render persisted an acceptable report")
+        if await store.get_result("selection-slow-report") is None:
+            pytest.fail("expired render lost its frozen selection evidence")
+        await store.close()
 
     asyncio.run(exercise())
