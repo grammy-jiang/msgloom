@@ -1,5 +1,7 @@
 """Finite owner-only saved report delivery and reconciliation."""
 
+from typing import TYPE_CHECKING
+
 from .codec import (
     MAX_SUBMISSION_BYTES,
     REPORT_SUBMISSION_KIND,
@@ -10,8 +12,6 @@ from .codec import (
     SubmissionAttemptCodec,
     SubmissionReceiptCodec,
 )
-from .handler import ReportSubmissionHandler
-from .history import DeliveryReportHistoryResolver
 from .mime import build_mime, validate_owner_address
 from .models import (
     ProviderEvidence,
@@ -24,7 +24,6 @@ from .models import (
     SubmissionPartPlan,
     SubmissionReceipt,
 )
-from .reconciliation import ReportReconciler, submission_claim_key
 from .transport import (
     GraphSendMailTransport,
     HttpResponse,
@@ -32,6 +31,11 @@ from .transport import (
     ReportTransport,
     TransportReceipt,
 )
+
+if TYPE_CHECKING:
+    from .handler import ReportSubmissionHandler
+    from .history import DeliveryReportHistoryResolver
+    from .reconciliation import ReportReconciler, submission_claim_key
 
 __all__ = [
     "MAX_SUBMISSION_BYTES",
@@ -63,3 +67,23 @@ __all__ = [
     "submission_claim_key",
     "validate_owner_address",
 ]
+
+
+def __getattr__(name: str) -> object:
+    """Load persistence-backed delivery only after codec composition."""
+    if name == "ReportSubmissionHandler":
+        from .handler import ReportSubmissionHandler
+
+        return ReportSubmissionHandler
+    if name == "DeliveryReportHistoryResolver":
+        from .history import DeliveryReportHistoryResolver
+
+        return DeliveryReportHistoryResolver
+    if name in {"ReportReconciler", "submission_claim_key"}:
+        from .reconciliation import ReportReconciler, submission_claim_key
+
+        return {
+            "ReportReconciler": ReportReconciler,
+            "submission_claim_key": submission_claim_key,
+        }[name]
+    raise AttributeError(name)

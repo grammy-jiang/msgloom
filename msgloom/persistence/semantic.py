@@ -8,6 +8,7 @@ from typing import Protocol
 
 from msgloom.ai_evidence.codecs import AI_EVIDENCE_CODECS
 from msgloom.contracts import SemanticDataRef
+from msgloom.delivery.codec import ReportSubmissionCodec
 from msgloom.persistence.errors import (
     SemanticDataIntegrityError,
     SemanticDataReferenceError,
@@ -71,6 +72,7 @@ class SemanticDataRegistry:
                 DerivedByteArtifactCodec(),
                 ReportSelectionCodec(),
                 ReportCodec(),
+                ReportSubmissionCodec(),
                 InputPartCodec(),
                 TriagePartStateCodec(),
                 PreparedDataCodec(),

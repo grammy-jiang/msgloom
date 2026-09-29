@@ -14,8 +14,11 @@ accepted.
 `ReportSubmissionHandler` is the awaited `REPORT_SUBMIT` operation seam for
 later Application/CLI composition. Application remains responsible for caller
 admission and terminal OperationOutcome persistence. Delivery does not add a
-registry entry, capability, CLI, authentication flow, or credential source.
-`ReportSubmissionCodec` is exported for manager-owned registry composition.
+capability, CLI, authentication flow, or credential source.
+`SemanticDataRegistry.phase1()` registers `ReportSubmissionCodec`, so default
+persistence reloads saved attempts, receipts, and reconciliation evidence. The
+package exports its persistence-backed handler, history resolver, and
+reconciler lazily, which lets persistence import the codec without a cycle.
 
 ## Lifecycle and retry
 
