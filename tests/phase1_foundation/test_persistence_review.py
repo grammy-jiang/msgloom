@@ -103,7 +103,7 @@ def test_terminal_claim_history_is_immutable_and_identical_replay_is_idempotent(
                 ClaimKind.REPORT_SUBMIT,
                 ExecutionIdentity("execution-history"),
                 AttemptIdentity("attempt-history"),
-                lease_seconds=0,
+                lease_seconds=60,
             )
             await persistence.finish_claim(
                 token,

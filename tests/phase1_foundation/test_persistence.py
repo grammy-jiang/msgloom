@@ -305,7 +305,7 @@ def test_unknown_external_effect_blocks_blind_retry(tmp_path: Path) -> None:
                 ClaimKind.REPORT_SUBMIT,
                 ExecutionIdentity("execution-submit"),
                 AttemptIdentity("attempt-submit"),
-                lease_seconds=0,
+                lease_seconds=60,
             )
             with pytest.raises(ValueError, match="classify"):
                 await persistence.finish_claim(

@@ -7,7 +7,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy import create_engine, delete, inspect, select, update
-from sqlalchemy.engine import Connection, RowMapping, make_url
+from sqlalchemy.engine import Connection, make_url
 
 from msgloom.contracts import (
     AttemptIdentity,
@@ -21,6 +21,13 @@ from msgloom.contracts import (
     SemanticDataRef,
     StageResult,
     TerminalStatus,
+)
+from msgloom.persistence.claim_store import (
+    claim_attempt,
+    claim_is_expired,
+    require_claim_publication,
+    require_current_claim,
+    validate_lease_seconds,
 )
 from msgloom.persistence.codecs import encode_result_refs
 from msgloom.persistence.errors import (
@@ -106,8 +113,10 @@ class Phase1Store:
         """Build an integrity reference using the registered semantic codec."""
         return self.semantic_registry.reference(data_id, kind, schema_version, value)
 
-    def append_result(self, result: StageResult) -> None:
-        """Append metadata-only results only when their schema/status permits it."""
+    def append_result(
+        self, result: StageResult, *, claim: ClaimToken | None = None
+    ) -> None:
+        """Append metadata-only results, optionally fenced by a live claim."""
         if result.semantic_data_ref is not None:
             raise SemanticDataReferenceError(
                 "semantic result data must use append_result_with_data"
@@ -117,10 +126,19 @@ class Phase1Store:
         if result.acceptable and needs_data:
             raise SemanticDataReferenceError("acceptable result requires semantic data")
         with self._write_transaction() as connection:
+            if claim is not None:
+                require_claim_publication(
+                    connection, claim, result, now=datetime.now(UTC)
+                )
             append_stage_result(connection, result)
 
     def append_result_with_data(
-        self, result: StageResult, value: object, *, require_new: bool = False
+        self,
+        result: StageResult,
+        value: object,
+        *,
+        require_new: bool = False,
+        claim: ClaimToken | None = None,
     ) -> None:
         """Atomically append a result/data pair, optionally requiring a new id."""
         self._require_schema(result.kind, result.schema_version)
@@ -138,6 +156,10 @@ class Phase1Store:
             )
         encoded = self.semantic_registry.encode_for_reference(reference, value)
         with self._write_transaction() as connection:
+            if claim is not None:
+                require_claim_publication(
+                    connection, claim, result, now=datetime.now(UTC)
+                )
             append_semantic_data(connection, encoded)
             append_stage_result(connection, result, require_new=require_new)
 
@@ -209,10 +231,9 @@ class Phase1Store:
         """Atomically validate dependencies and acquire or reclaim one scope."""
         if not claim_key.strip():
             raise ValueError("claim key must be non-empty")
-        if lease_seconds < 0:
-            raise ValueError("claim lease must be non-negative")
+        lease = validate_lease_seconds(lease_seconds)
         now = datetime.now(UTC)
-        expires = now + timedelta(seconds=lease_seconds)
+        expires = now + timedelta(seconds=lease)
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
 
@@ -231,7 +252,7 @@ class Phase1Store:
                     raise ExternalEffectReconciliationRequired(
                         "prior external effect requires reconciliation"
                     )
-                if _parse_time(current["expires_at"]) > now:
+                if not claim_is_expired(current, now):
                     raise ClaimUnavailableError("durable claim is already held")
                 connection.execute(
                     update(attempts)
@@ -286,16 +307,24 @@ class Phase1Store:
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
         with self._write_transaction() as connection:
-            self._require_current_claim(connection, token)
+            now = datetime.now(UTC)
+            current = require_current_claim(
+                connection, token, now=now, require_unexpired=False
+            )
             if token.kind is not ClaimKind.REPORT_SUBMIT:
                 raise ValueError(
                     "only report submission claims can have external effects"
                 )
             if effect is ExternalEffectState.NONE:
                 raise ValueError("report submission must classify its external effect")
-            attempt = self._claim_attempt(connection, token)
+            attempt = claim_attempt(connection, token)
             if attempt["finished_at"] is not None:
                 raise ImmutableRecordError("terminal claim attempt is immutable")
+            current_effect = ExternalEffectState(current["external_effect"])
+            if claim_is_expired(current, now) and current_effect in _SAFE_RETRY_EFFECTS:
+                raise StaleClaimError(
+                    "expired claim cannot begin a new external effect"
+                )
             connection.execute(
                 update(claims)
                 .where(claims.c.claim_token == token.token)
@@ -318,7 +347,14 @@ class Phase1Store:
         attempts = CLAIM_ATTEMPTS
         now = datetime.now(UTC)
         with self._write_transaction() as connection:
-            self._require_current_claim(connection, token)
+            current = require_current_claim(
+                connection, token, now=now, require_unexpired=False
+            )
+            current_effect = ExternalEffectState(current["external_effect"])
+            if claim_is_expired(current, now) and current_effect in _SAFE_RETRY_EFFECTS:
+                raise StaleClaimError(
+                    "expired claim cannot finish after ownership ended"
+                )
             if (
                 token.kind is ClaimKind.REPORT_SUBMIT
                 and effect is ExternalEffectState.NONE
@@ -329,7 +365,7 @@ class Phase1Store:
                 ExternalEffectState.NOT_STARTED,
             }:
                 raise ValueError("non-submission claims cannot record external effects")
-            attempt = self._claim_attempt(connection, token)
+            attempt = claim_attempt(connection, token)
             if attempt["finished_at"] is not None:
                 if (
                     attempt["terminal_status"] == status.value
@@ -394,46 +430,6 @@ class Phase1Store:
                     )
                 load_semantic_data(connection, data_ref, self.semantic_registry)
 
-    def _require_current_claim(self, connection: Connection, token: ClaimToken) -> None:
-        claims = WORK_CLAIMS
-        current = (
-            connection.execute(
-                select(claims).where(claims.c.claim_key == token.claim_key)
-            )
-            .mappings()
-            .first()
-        )
-        if current is None:
-            raise StaleClaimError("claim attempt no longer owns this scope")
-        if (
-            current["claim_token"] != token.token
-            or current["claim_kind"] != token.kind.value
-            or current["execution_id"] != token.execution.value
-            or current["attempt_id"] != token.attempt.value
-        ):
-            raise StaleClaimError("claim token metadata does not match current owner")
-
-    def _claim_attempt(self, connection: Connection, token: ClaimToken) -> RowMapping:
-        attempt = (
-            connection.execute(
-                select(CLAIM_ATTEMPTS).where(
-                    CLAIM_ATTEMPTS.c.claim_token == token.token
-                )
-            )
-            .mappings()
-            .first()
-        )
-        if attempt is None:
-            raise StaleClaimError("claim attempt history is missing")
-        if (
-            attempt["claim_key"] != token.claim_key
-            or attempt["claim_kind"] != token.kind.value
-            or attempt["execution_id"] != token.execution.value
-            or attempt["attempt_id"] != token.attempt.value
-        ):
-            raise StaleClaimError("claim token metadata does not match attempt history")
-        return attempt
-
     def _require_schema(self, kind: str, schema_version: str) -> None:
         if not self.registry.supports(kind, schema_version):
             raise UnknownResultSchemaError(
@@ -490,10 +486,3 @@ class Phase1Store:
 
 def _time(value: datetime) -> str:
     return value.isoformat(timespec="microseconds")
-
-
-def _parse_time(value: str) -> datetime:
-    parsed = datetime.fromisoformat(value)
-    if parsed.tzinfo is None:
-        raise ValueError("stored claim time must be timezone-aware")
-    return parsed

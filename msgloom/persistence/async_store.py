@@ -73,9 +73,15 @@ class Phase1Persistence:
             raise
         return cls(store, max_concurrent_threads=max_concurrent_threads)
 
-    async def append_result(self, result: StageResult) -> None:
-        """Await an append-only result write through the bounded thread boundary."""
-        await self._call(self._store.append_result, result)
+    async def append_result(
+        self, result: StageResult, *, claim: ClaimToken | None = None
+    ) -> None:
+        """Await an append-only result write, optionally fenced by a claim."""
+        if claim is None:
+            await self._call(self._store.append_result, result)
+            return
+        operation = partial(self._store.append_result, result, claim=claim)
+        await self._call(operation)
 
     def semantic_reference(
         self,
@@ -88,17 +94,27 @@ class Phase1Persistence:
         return self._store.semantic_reference(data_id, kind, schema_version, value)
 
     async def append_result_with_data(
-        self, result: StageResult, value: object, *, require_new: bool = False
+        self,
+        result: StageResult,
+        value: object,
+        *,
+        require_new: bool = False,
+        claim: ClaimToken | None = None,
     ) -> None:
-        """Atomically persist a result/data pair, optionally requiring a new id."""
-        if not require_new:
+        """Atomically persist a result/data pair with optional claim fencing."""
+        if claim is None and not require_new:
             await self._call(self._store.append_result_with_data, result, value)
             return
+        keywords: dict[str, object] = {}
+        if require_new:
+            keywords["require_new"] = True
+        if claim is not None:
+            keywords["claim"] = claim
         operation = partial(
             self._store.append_result_with_data,
             result,
             value,
-            require_new=True,
+            **keywords,
         )
         await self._call(operation)
 
