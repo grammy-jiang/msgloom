@@ -62,14 +62,22 @@ A repeated admission of the same triage plan does not repeat model work:
 `tests/triage_pipeline/test_replay_failures.py::
 test_duplicate_admission_does_not_repeat_model_work`
 
-The clause "unchanged content does not cause duplicate triage" is not yet
+Re-preparing unchanged saved versions in a new execution reproduces the
+identical parsed and prepared semantic versions, while each run keeps its own
+durable results and exact lineage:
+
+`tests/phase1_e2e/test_unchanged_content.py::
+test_unchanged_saved_versions_keep_prepared_identity_across_runs`
+
+`tests/preparation_pipeline/test_stable_identity.py::
+test_semantic_identity_is_stable_while_durable_results_remain_per_run`
+
+The clause "unchanged content does not cause duplicate triage" is still not
 established end to end:
 
 - The saved-source reader lists one version per Outlook mail observation,
-  and a repeated capture in new evidence adds an observation.
-- A2 prepared versions are not yet stable across runs. Parsed-content
-  provenance embeds the execution-scoped derived-bytes result identity, so
-  re-preparing unchanged content yields a new prepared version.
+  and a repeated capture in new evidence adds an observation. Calendar
+  capture versions follow `changeKey`; mail observations do not.
 - Phase 1 has no automatic work selection. Triage runs only on an explicit
   invocation, and the caller selects `new-source` or `earlier-context`
   roles. Design section 2 reuse references for unchanged versions are not
