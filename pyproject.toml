@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "msgloom"
 version = "0.1.0"
@@ -23,12 +27,23 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8,<9",
+    "pytest-cov==7.1.0",
+    "pytest-xdist==3.8.0",
     "ruff==0.16.9",
+    "tox==4.64.4",
+    "tox-uv==1.36.0",
+]
+
+compat-fastmcp4 = [
+    "fastmcp==4.0.10",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "exclusive_state: tests that must run serially outside xdist",
+]
 
 [tool.pyright]
 include = ["msgloom", "message_ingest", "microsoft_graph", "tests"]
@@ -39,3 +54,81 @@ venv = ".venv"
 [tool.ruff]
 target-version = "py312"
 extend-exclude = ["research"]
+
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["msgloom", "msgloom.*", "message_ingest", "message_ingest.*",
+           "microsoft_graph", "microsoft_graph.*"]
+exclude = ["tests", "tests.*", "research", "research.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+msgloom = [
+    "templates/*",
+    "templates/**/*",
+    "prompts/*",
+    "prompts/**/*",
+    "migrations/*",
+    "migrations/**/*",
+]
+
+[tool.tox]
+requires = ["tox==4.64.4", "tox-uv==1.36.0"]
+env_list = [
+    "py312",
+    "py313",
+    "py314",
+    "py312-fastmcp4",
+    "py313-fastmcp4",
+    "py314-fastmcp4",
+]
+skip_missing_interpreters = false
+
+[tool.tox.env_run_base]
+runner = "uv-venv-lock-runner"
+package = "wheel"
+dependency_groups = ["dev"]
+uv_sync_locked = true
+commands = [
+    ["python", "-m", "pytest", "-q", "-n", "4",
+     "-m", "not exclusive_state",
+     "--cov=msgloom", "--cov=message_ingest", "--cov=microsoft_graph",
+     "--cov-branch", "--cov-report=term-missing",
+     "--cov-report=xml:{env_dir}/coverage.xml"],
+    ["python", "-m", "pytest", "-q", "-n", "0",
+     "-m", "exclusive_state", "--cov=msgloom", "--cov=message_ingest",
+     "--cov=microsoft_graph", "--cov-branch", "--cov-append",
+     "--cov-report=term-missing",
+     "--cov-report=xml:{env_dir}/coverage.xml"],
+]
+
+[tool.tox.env.py312-fastmcp4]
+dependency_groups = ["dev", "compat-fastmcp4"]
+commands = [
+    ["python", "-m", "pytest", "-q",
+     "tests/packaging/test_fastmcp_compatibility.py",
+     "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
+     "--cov-report=xml:{env_dir}/coverage.xml"],
+]
+
+[tool.tox.env.py313-fastmcp4]
+dependency_groups = ["dev", "compat-fastmcp4"]
+commands = [
+    ["python", "-m", "pytest", "-q",
+     "tests/packaging/test_fastmcp_compatibility.py",
+     "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
+     "--cov-report=xml:{env_dir}/coverage.xml"],
+]
+
+[tool.tox.env.py314-fastmcp4]
+dependency_groups = ["dev", "compat-fastmcp4"]
+commands = [
+    ["python", "-m", "pytest", "-q",
+     "tests/packaging/test_fastmcp_compatibility.py",
+     "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
+     "--cov-report=xml:{env_dir}/coverage.xml"],
+]
