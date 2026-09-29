@@ -119,7 +119,9 @@ input choices, working-context allowlist, prompt/model/schema selections,
 attempt limits, isolated-runtime paths, A3 aggregate budgets, and at least
 one AI-purpose credential reference. The configuration version is injected
 as the exact TriageInputConfig.version and
-TrustedInputVersions.configuration value.
+TrustedInputVersions.configuration value. That reference has kind
+`triage_input_config`, identity `phase1`, and the redacted snapshot
+version, which is the kind the reviewed A3 producer requires.
 
 The prompt file is read by load_operator_configuration as bounded UTF-8 text
 (64 KiB maximum). The JSON output-schema file is read by the same loader with

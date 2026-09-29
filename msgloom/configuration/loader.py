@@ -220,7 +220,10 @@ def _compose(
         if prompt_text is None or schema is None:
             raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
         item = settings.triage
-        config_ref = VersionRef("operator-configuration", "phase1", snapshot_version)
+        # The reviewed A3 contract names the composed triage input version
+        # ``triage_input_config``. The redacted snapshot version keeps it
+        # change-sensitive with the rest of the operator configuration.
+        config_ref = VersionRef("triage_input_config", "phase1", snapshot_version)
         input_config = build_input_config(item.input_config, config_ref)
         context = build_working_context(item.working_context, base_dir)
         versions = TrustedInputVersions(

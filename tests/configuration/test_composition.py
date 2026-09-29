@@ -213,6 +213,12 @@ def test_operation_builders_reuse_integrated_domain_contracts(
     )
     if producer.configuration_version != configured.version:
         pytest.fail("A3 producer lost configuration provenance")
+    if producer.versions.configuration != producer.input_config.version:
+        pytest.fail("A3 trusted configuration version differs from input config")
+    try:
+        producer.validated()
+    except ValueError as error:
+        pytest.fail(f"A3 producer rejected composed trusted versions: {error}")
 
     report = configured.operation(PhaseCapability.REPORT_BUILD)
     if not isinstance(report, ReportOperationData):
