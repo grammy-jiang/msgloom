@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 from hashlib import sha256
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from docx import Document
+from openpyxl import Workbook
 
 from msgloom.preparation.contracts import (
     DocumentFormat,
@@ -31,6 +34,19 @@ def _docx_content() -> bytes:
     table.cell(0, 0).text = "Mapped cell 42"
     stream = BytesIO()
     document.save(stream)
+    return stream.getvalue()
+
+
+def _xlsx_content() -> bytes:
+    workbook = Workbook()
+    sheet = workbook.active
+    if sheet is None:
+        raise RuntimeError("synthetic workbook has no initial sheet")
+    sheet["B3"] = "Synthetic spreadsheet"
+    sheet["C3"] = 42
+    stream = BytesIO()
+    workbook.save(stream)
+    workbook.close()
     return stream.getvalue()
 
 
@@ -108,3 +124,45 @@ def test_production_parser_preserves_content_and_provenance_in_sandbox(
         ]
         if len(cells) != 1 or cells[0].text != "Mapped cell 42":
             pytest.fail("isolated Word parser lost the mapped table cell")
+
+
+@pytest.mark.parametrize("format_", [DocumentFormat.XLSX, DocumentFormat.XLS])
+def test_production_excel_route_retains_numeric_cell_coordinates(
+    format_: DocumentFormat,
+) -> None:
+    """Verify the native workbook reader through production process dispatch."""
+    if format_ is DocumentFormat.XLSX:
+        content = _xlsx_content()
+    else:
+        content = (
+            Path(__file__).parent
+            / "parser_excel"
+            / "fixtures"
+            / "synthetic-cell-values.xls"
+        ).read_bytes()
+    request = _request(content, format_, "excel-primary-v1")
+    if format_ is DocumentFormat.XLS:
+        request = replace(
+            request,
+            config=ParserConfig(
+                profile="excel-primary-v1",
+                settings=(
+                    ("include_hidden_rows", "true"),
+                    ("include_hidden_columns", "true"),
+                ),
+            ),
+        )
+    output = asyncio.run(parse_isolated(request, content))
+    cells = [
+        cell
+        for block in output.blocks
+        if isinstance(block, TableBlock)
+        for cell in block.table.cells
+        if (cell.row_index, cell.column_index) == (3, 3)
+    ]
+    if len(cells) != 1 or cells[0].value_type != "numeric":
+        pytest.fail("isolated Excel parser lost the numeric source coordinate")
+    if cells[0].text not in {"42", "42.0"}:
+        pytest.fail("isolated Excel parser changed the numeric source value")
+    if output.provenance != ParserProvenance.from_request(request):
+        pytest.fail("isolated Excel parser changed exact source provenance")
