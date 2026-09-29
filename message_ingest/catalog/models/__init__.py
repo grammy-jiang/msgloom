@@ -2,6 +2,13 @@
 
 from .acquisition import RawHttpEvidence, SourceBinding, SourceTargetBinding
 from .base import Base
+from .microsoft.onedrive import (
+    OneDriveContentRecord,
+    OneDriveDeltaCheckpoint,
+    OneDriveDeltaCheckpointCandidate,
+    OneDriveDriveRecord,
+    OneDriveItemRecord,
+)
 from .microsoft.outlook import (
     AttachmentRecord,
     CalendarDeltaCheckpoint,
@@ -65,6 +72,11 @@ __all__ = [
     "MessagePresenceSighting",
     "MessageRecord",
     "MessageSurface",
+    "OneDriveContentRecord",
+    "OneDriveDeltaCheckpoint",
+    "OneDriveDeltaCheckpointCandidate",
+    "OneDriveDriveRecord",
+    "OneDriveItemRecord",
     "RawHttpEvidence",
     "SourceBinding",
     "SourceTargetBinding",

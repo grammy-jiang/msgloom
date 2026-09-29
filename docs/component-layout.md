@@ -36,6 +36,7 @@ microsoft_graph/
     graph.py
     resources.py
     todo.py
+    onedrive.py
     outlook/
       __init__.py
       mailbox.py
@@ -45,6 +46,7 @@ microsoft_graph/
     __init__.py
     graph.py
     todo.py
+    onedrive.py
     outlook/
       __init__.py
       mail.py
@@ -97,6 +99,8 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `microsoft_graph/items/outlook/` | Provide optional Mail and Calendar dataclasses and resource mappers. |
 | `microsoft_graph/items/todo.py` | Provide optional task-list, task, checklist, and linked-resource dataclasses with unchanged provider values. |
 | `microsoft_graph/spiders/todo.py` | Own To Do read scopes and encoded v1.0 collection paths. |
+| `microsoft_graph/items/onedrive.py` | Provide optional drive and driveItem dataclasses with unchanged provider values. |
+| `microsoft_graph/spiders/onedrive.py` | Own OneDrive read scopes and encoded v1.0 drive, children, delta, and content paths. |
 | `microsoft_graph/middlewares/errors.py` | Own Graph-specific retry/backoff through Scrapy's retry helper. |
 | `microsoft_graph/middlewares/diagnostics.py` | Record Graph transport diagnostics for each attempt. |
 | `microsoft_graph/middlewares/retry.py` | Preserve native generic retries with URL-safe logging. |
@@ -139,6 +143,13 @@ pipelines and stateful lifecycle extensions through the consumer Scrapy project.
 | `message_ingest/pipelines/microsoft/todo.py` | Await current-state writes under the shared catalog lock after evidence linking. |
 | `message_ingest/catalog/models/microsoft/todo.py` | Define four additive current-state tables with source and provider identity keys. |
 | `message_ingest/catalog/stores/microsoft/todo.py` | Apply latest-capture To Do projections without inferring deletion. |
+| `message_ingest/commands/microsoft/onedrive.py` | Map OneDrive discovery, delta, and explicit content to their spiders. |
+| `message_ingest/items/microsoft/onedrive.py` | Add provenance to provider metadata and define content metadata and checkpoint candidates. |
+| `message_ingest/spiders/microsoft/onedrive/` | Own root discovery, metadata delta, explicit content, and download URL redaction. |
+| `message_ingest/pipelines/microsoft/onedrive.py` | Await OneDrive current-state writes under the catalog lock after evidence linking. |
+| `message_ingest/catalog/models/microsoft/onedrive.py` | Define additive source-scoped drive, item, content, and checkpoint tables. |
+| `message_ingest/catalog/stores/microsoft/onedrive.py` | Preserve current metadata, explicit tombstones, content references, and checkpoint candidates. |
+| `message_ingest/extensions/microsoft/onedrive/` | Promote clean delta candidates at Scrapy idle and sanitize native download logs. |
 | `message_ingest/commands/microsoft/outlook/sync.py` | Compose sequential Mail/Calendar collection and planner-driven enrichment phases from existing spiders. |
 | `message_ingest/pipelines/microsoft/outlook/email.py` | Route Outlook Mail items through the shared write lock into Mail/checkpoint stores. |
 | `message_ingest/spiders/microsoft/outlook/calendar/discover.py` | Inventory visible calendars through paginated Graph callbacks. |
@@ -188,6 +199,8 @@ and `PROVIDER_ID`. Public component imports use their owning packages:
 - `microsoft_graph.spiders.todo`: `MicrosoftTodoSpider`.
 - `microsoft_graph.items.todo`: `TodoTaskListItem`, `TodoTaskItem`,
   `TodoChecklistItem`, and `TodoLinkedResourceItem`.
+- `microsoft_graph.spiders.onedrive`: `MicrosoftOneDriveSpider`.
+- `microsoft_graph.items.onedrive`: `OneDriveDriveItem` and `OneDriveItem`.
 - `microsoft_graph.middlewares`: `MicrosoftGraphDelegatedAuthMiddleware`,
   `MicrosoftGraphDeviceCodeAuthMiddleware`,
   `MicrosoftGraphInteractiveAuthMiddleware`,
@@ -510,6 +523,7 @@ Scrapy remains the pipeline engine. The enabled item stages are:
    `EvidenceLinkedItem` and verifies that a non-null evidence reference exists.
 3. Resource pipelines at 300 persist only their own domain item types. Outlook
    Mail uses `OutlookMailPipeline`; Calendar uses `OutlookCalendarPipeline`.
+   To Do and OneDrive use their own current-state pipelines at the same stage.
 
 Pipeline priorities define stage order for one item. Cross-item dependency still
 relies on the existing `CONCURRENT_ITEMS=1` callback-output contract: a callback
@@ -651,6 +665,97 @@ not imply deletion.
 
 Delta acquisition, write operations, task completion, and Topic linking are
 deferred. This slice provides no sync/full modes or deprecated `baseTask` paths.
+
+## Microsoft OneDrive evidence and context
+
+OneDrive is an evidence and context source for msgloom's personal
+work-information system. It is not a primary Topic generator. This slice does
+not create Topics automatically or download every file body.
+
+```console
+.venv/bin/scrapy microsoft onedrive discover --page-size 100
+.venv/bin/scrapy microsoft onedrive delta --page-size 100
+.venv/bin/scrapy microsoft onedrive content ITEM_ID [ITEM_ID ...]
+```
+
+These actions remain below the single public `microsoft` command. Discovery
+and delta accept page sizes from 1 through 1000. Content requires explicit item
+IDs and rejects `--page-size`. All three reject `--mailbox` and unrelated
+Outlook, Calendar, To Do, and authentication options. Normal Scrapy settings
+and logging options remain available. No upload, create, rename, move, delete,
+or share mutation is implemented.
+
+The provider declares only `Files.Read`. Microsoft documents this delegated
+personal-account least privilege for
+[drive metadata](https://learn.microsoft.com/en-us/graph/api/drive-get?view=graph-rest-1.0),
+[folder children](https://learn.microsoft.com/en-us/graph/api/driveitem-list-children?view=graph-rest-1.0),
+[driveItem delta](https://learn.microsoft.com/en-us/graph/api/driveitem-delta?view=graph-rest-1.0),
+and [content](https://learn.microsoft.com/en-us/graph/api/driveitem-get-content?view=graph-rest-1.0).
+All acquisition requests use GET. The framework owns path construction,
+single ID encoding, and optional provider projections. It owns no traversal,
+catalog, checkpoint, evidence, or content-retention policy for OneDrive.
+
+`microsoft_onedrive_discover` reads `/me/drive`, then paginates
+`/me/drive/root/children`. It records drive metadata and root children without
+recursing through folders. `microsoft_onedrive_delta` reads metadata across
+the drive hierarchy through `/me/drive/root/delta`. A first run supplies
+`$top`; subsequent runs reuse the exact stored opaque `deltaLink`. Both modes
+follow opaque `nextLink` values unchanged. Delta requests bypass the HTTP
+cache. Each callback yields raw HTTP evidence before semantic items.
+
+The terminal delta response produces a candidate linked to its evidence and
+run. The OneDrive checkpoint extension promotes that candidate only after
+Scrapy becomes idle, item writes complete, and the run passes its integrity
+gates. Request, callback, or persistence failure blocks promotion. All three
+OneDrive spiders reject `JOBDIR` until application resume semantics are validated.
+An expired checkpoint response (HTTP 410) fails closed; this slice does not
+discard the cursor or automatically reset it.
+
+The app uses `MSGLOOM_ONEDRIVE_SOURCE_ID`, which defaults to
+`microsoft-onedrive-default`. Each OneDrive spider sets effective
+`MSGLOOM_SOURCE_ID` at spider priority; explicit command-line settings win.
+The source belongs to the signed-in account and has no Outlook source-target
+binding. Outlook and To Do retain their existing source behavior. Statistics
+use bounded keys below `msgloom/crawl/onedrive/` and contain no provider IDs.
+
+Current-state tables keep drive metadata by source, and drive items and latest
+explicit content by source and item ID. Older observations cannot replace newer
+state. False, zero, empty strings, and nested provider values remain intact.
+Only a `deleted` facet marks an item deleted. Tombstones preserve useful prior
+metadata that the provider omits; a first observation can be a sparse tombstone.
+Discovery absence never implies deletion. The app removes
+`@microsoft.graph.downloadUrl`, including nested `remoteItem` occurrences,
+before semantic metadata storage. Raw metadata response bodies remain exact
+HTTP evidence.
+
+`microsoft_onedrive_content` requests `/me/drive/items/{item-id}/content` only
+for the requested IDs. Microsoft's content endpoint redirects to a short-lived
+preauthenticated download URL. Native Scrapy `RedirectMiddleware` follows that
+redirect. The original request sets `allow_offsite=True`, which redirected
+requests inherit. Existing delegated authentication strips Authorization
+before redirect processing and never attaches it to a non-Graph host. Native
+redirect handling also strips Authorization when scheme, host, or port changes.
+No custom redirect or authentication middleware is needed.
+
+Content requests use `dont_cache=True`. A nonzero
+`MSGLOOM_MAX_RAW_CONTENT_BYTES` sets Scrapy's `download_maxsize`, so an oversized
+download fails. The successful binary response emits sanitized raw evidence
+before its semantic content item. Both evidence URL fields retain the safe
+Graph `/content` source URL. URL-bearing headers, including `Location`, are
+removed, and `preauthenticated_download_url_redacted` marks the response.
+The content errback applies the same URL policy to failure evidence and
+`AcquisitionFailureItem.url`. Existing retry, diagnostics, fingerprint, and
+privacy components remain active. A OneDrive content privacy extension also
+sanitizes native redirect and download-size log records that can contain the
+preauthenticated URL.
+
+The raw-evidence pipeline stores content bytes once in its content-addressed
+blob store. The OneDrive content record contains only the item ID, digest,
+byte count, observation time, evidence reference, and run provenance. It stores
+no body bytes or preauthenticated URL. Raw evidence runs at priority 200,
+evidence linking at 250, and OneDrive persistence at 300. Writes are awaited
+under the shared `CatalogService.write_lock`; a disabled catalog disables the
+resource pipeline.
 
 ## Simplifications
 

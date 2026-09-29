@@ -9,6 +9,7 @@ from scrapy.exceptions import UsageError
 
 from message_ingest.commands._common import require_no_positional_args
 from message_ingest.commands.microsoft.auth import dispatch_auth
+from message_ingest.commands.microsoft.onedrive import dispatch_onedrive
 from message_ingest.commands.microsoft.options import add_microsoft_options
 from message_ingest.commands.microsoft.outlook import dispatch_outlook
 from message_ingest.commands.microsoft.profile import dispatch_profile
@@ -23,7 +24,7 @@ class Command(ScrapyCommand):
 
     def syntax(self) -> str:
         return (
-            "{profile,auth,outlook,todo} [RESOURCE_OR_ACTION] [ACTION] "
+            "{profile,auth,outlook,todo,onedrive} [RESOURCE_OR_ACTION] [ACTION] "
             "[RESOURCE_ID ...] [options]"
         )
 
@@ -33,7 +34,8 @@ class Command(ScrapyCommand):
     def long_desc(self) -> str:
         return (
             "Use one Microsoft namespace for account profile, authentication "
-            "management, Outlook Mail/Calendar, and To Do acquisition. Operations that "
+            "management, Outlook Mail/Calendar, To Do, and OneDrive acquisition. "
+            "Operations that "
             "need Microsoft authentication run through the normal Scrapy Graph "
             "lifecycle."
         )
@@ -72,6 +74,9 @@ class Command(ScrapyCommand):
             return
         if opts.section == "todo":
             dispatch_todo(self, opts)
+            return
+        if opts.section == "onedrive":
+            dispatch_onedrive(self, opts)
             return
         raise UsageError("unsupported Microsoft command path")
 

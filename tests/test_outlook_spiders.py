@@ -12,6 +12,13 @@ from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft.onedrive.content import (
+    MicrosoftOneDriveContentSpider,
+)
+from message_ingest.spiders.microsoft.onedrive.delta import MicrosoftOneDriveDeltaSpider
+from message_ingest.spiders.microsoft.onedrive.discover import (
+    MicrosoftOneDriveDiscoverSpider,
+)
 from message_ingest.spiders.microsoft.outlook.calendar.delta import (
     OutlookCalendarDeltaSpider,
 )
@@ -40,6 +47,9 @@ from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscover
 def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
+        "microsoft_onedrive_content": MicrosoftOneDriveContentSpider,
+        "microsoft_onedrive_delta": MicrosoftOneDriveDeltaSpider,
+        "microsoft_onedrive_discover": MicrosoftOneDriveDiscoverSpider,
         "microsoft_profile": MicrosoftProfileSpider,
         "microsoft_todo_discover": MicrosoftTodoDiscoverSpider,
         "outlook_calendar_delta": OutlookCalendarDeltaSpider,

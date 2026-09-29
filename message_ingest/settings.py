@@ -70,6 +70,7 @@ MS_GRAPH_ERROR_MIDDLEWARE_ENABLED = _env_bool(
 MSGLOOM_DELTA_CHECKPOINT_ENABLED = _env_bool("MSGLOOM_DELTA_CHECKPOINT_ENABLED", True)
 MSGLOOM_FOLDER_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CALENDAR_DELTA_CHECKPOINT_ENABLED = False
+MSGLOOM_ONEDRIVE_DELTA_CHECKPOINT_ENABLED = False
 MSGLOOM_CRAWL_STATUS_ENABLED = _env_bool("MSGLOOM_CRAWL_STATUS_ENABLED", True)
 MSGLOOM_CATALOG_ENABLED = _env_bool("MSGLOOM_CATALOG_ENABLED", True)
 MSGLOOM_TARGET_MAILBOX = ""
@@ -105,7 +106,9 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft.outlook.email.checkpoint.OutlookDeltaCheckpointExtension": 500,
     "message_ingest.extensions.microsoft.outlook.email.folder_checkpoint.OutlookFolderDeltaCheckpointExtension": 505,
     "message_ingest.extensions.microsoft.outlook.calendar.checkpoint.CalendarDeltaCheckpointExtension": 510,
+    "message_ingest.extensions.microsoft.onedrive.checkpoint.OneDriveDeltaCheckpointExtension": 515,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
+    "message_ingest.extensions.microsoft.onedrive.privacy.OneDriveContentPrivacyExtension": 530,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,
     # PeriodicLog is not in Scrapy 2.19 EXTENSIONS_BASE; enable the native
     # implementation explicitly instead of maintaining another timer.
@@ -216,6 +219,9 @@ MSGLOOM_MAX_RAW_CONTENT_BYTES = int(
 )
 MSGLOOM_SOURCE_ID = os.getenv("MSGLOOM_SOURCE_ID", "microsoft-outlook-default")
 MSGLOOM_TODO_SOURCE_ID = os.getenv("MSGLOOM_TODO_SOURCE_ID", "microsoft-todo-default")
+MSGLOOM_ONEDRIVE_SOURCE_ID = os.getenv(
+    "MSGLOOM_ONEDRIVE_SOURCE_ID", "microsoft-onedrive-default"
+)
 MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
 # Legacy identity bootstrap must be an explicit invocation-scoped Scrapy
 # setting (for example ``-s ...``), never a sticky environment default.
