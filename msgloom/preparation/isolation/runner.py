@@ -16,6 +16,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from msgloom.preparation.contracts import ParserOutput, ParserProvenance, ParserRequest
+from msgloom.preparation.isolation.ownership import await_owned as _await_owned
 from msgloom.preparation.isolation.registry import (
     PRODUCTION_REGISTRY,
     RegistryEntry,
@@ -142,20 +143,6 @@ async def _run_isolated(
         if process is not None:
             await _cleanup_process(process)
         raise ParserIsolationError("isolated parser lifecycle failed") from None
-
-
-async def _await_owned(awaitable):
-    task = asyncio.ensure_future(awaitable)
-    cancelled = False
-    while not task.done():
-        try:
-            await asyncio.shield(task)
-        except asyncio.CancelledError:
-            cancelled = True
-    result = task.result()
-    if cancelled:
-        raise asyncio.CancelledError
-    return result
 
 
 async def _cleanup_process(process: asyncio.subprocess.Process) -> None:

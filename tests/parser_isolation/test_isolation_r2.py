@@ -96,9 +96,11 @@ def test_late_synchronous_validation_cannot_return_a_successful_result(
     asyncio.run(exercise())
 
 
+@pytest.mark.parametrize("late_failure", [False, True])
 def test_cancelled_file_preparation_is_drained_before_return(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    late_failure: bool,
 ) -> None:
     """Cancellation cannot outlive accepted file-system worker ownership."""
     entered = threading.Event()
@@ -109,6 +111,8 @@ def test_cancelled_file_preparation_is_drained_before_return(
     def prepare(root: Path, content: bytes) -> tuple[Path, Path]:
         entered.set()
         release.wait(timeout=5)
+        if late_failure:
+            raise ValueError("synthetic late file preparation failure")
         return real_prepare(root, content)
 
     def make_root(*, prefix: str) -> str:
@@ -164,13 +168,24 @@ def test_wall_deadline_includes_stdin_ipc_and_cleanup(
 ) -> None:
     """A blocked stdin drain is timed and still transfers cleanup ownership."""
     cleaned = False
+    timer: asyncio.Timeout | None = None
+
+    def controlled_timeout(_deadline: float) -> asyncio.Timeout:
+        # Start expiry at the IPC barrier. Host load must not move this test's
+        # deadline into preflight, where no process exists to clean up.
+        nonlocal timer
+        timer = asyncio.Timeout(None)
+        return timer
 
     class SlowStdin:
         def write(self, payload: bytes) -> None:
             del payload
 
         async def drain(self) -> None:
-            await asyncio.sleep(1)
+            if timer is None:
+                pytest.fail("stdin IPC started without the enclosing timeout")
+            timer.reschedule(asyncio.get_running_loop().time())
+            await asyncio.Future()
 
         def close(self) -> None:
             return None
@@ -194,6 +209,7 @@ def test_wall_deadline_includes_stdin_ipc_and_cleanup(
 
     monkeypatch.setattr(isolation_runner, "_spawn_process", spawn)
     monkeypatch.setattr(isolation_runner, "_cleanup_process", cleanup)
+    monkeypatch.setattr(isolation_runner.asyncio, "timeout_at", controlled_timeout)
     with pytest.raises(ParserTimeoutError, match="wall-time"):
         asyncio.run(
             _parse_isolated(_request(wall_time=0.05), b"synthetic content", _REGISTRY)

@@ -75,6 +75,9 @@ bubblewrap child, and waits for every captured descendant pidfd to report exit
 before returning. Accepted thread work, process spawn/reap, result reading, and
 temporary-storage removal are drained through cancellation; repeated
 cancellation cannot hand their ownership back early.
+If owned thread work fails after caller cancellation, the failure is retrieved
+and cancellation remains the outcome. Temporary storage is still removed
+before the coroutine returns.
 
 ## Wire and provenance validation
 
