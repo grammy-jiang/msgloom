@@ -24,6 +24,7 @@ from msgloom.persistence.reconciliation import (
     ReconciliationResult,
 )
 from msgloom.persistence.semantic import SemanticDataRegistry
+from msgloom.persistence.sqlite_path import sqlite_file_path
 
 __all__ = [
     "ClaimAttemptSnapshot",
@@ -46,4 +47,5 @@ __all__ = [
     "StaleClaimError",
     "UnknownResultSchemaError",
     "UnknownSemanticDataSchemaError",
+    "sqlite_file_path",
 ]

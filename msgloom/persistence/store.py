@@ -3,11 +3,10 @@
 import os
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy import create_engine, delete, select, update
-from sqlalchemy.engine import Connection, make_url
+from sqlalchemy.engine import Connection
 
 from msgloom.contracts import (
     AttemptIdentity,
@@ -60,6 +59,7 @@ from msgloom.persistence.result_store import append_stage_result
 from msgloom.persistence.schema_store import initialize_schema
 from msgloom.persistence.semantic import SemanticDataRegistry
 from msgloom.persistence.semantic_store import append_semantic_data, load_semantic_data
+from msgloom.persistence.sqlite_path import sqlite_file_path
 
 _SAFE_RETRY_EFFECTS = frozenset(
     {
@@ -79,13 +79,7 @@ class Phase1Store:
         registry: ResultSchemaRegistry,
         semantic_registry: SemanticDataRegistry | None = None,
     ) -> None:
-        url = make_url(database_url)
-        if url.get_backend_name() != "sqlite":
-            raise ValueError("Phase 1 persistence currently requires SQLite")
-        if not url.database or url.database == ":memory:":
-            raise ValueError("Phase 1 durable persistence requires a file database")
-
-        path = Path(url.database)
+        path = sqlite_file_path(database_url)
         path.parent.mkdir(parents=True, exist_ok=True)
         os.chmod(path.parent, 0o700)
         self.registry = registry
