@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from functools import partial
 from typing import Protocol
 
 from msgloom.ai import AnalysisAttempt, AnalysisResponse, TraceSink
@@ -42,6 +43,7 @@ from .codecs import (
     TriagePartState,
 )
 from .models import TriageProducerConfig
+from .part_state_mixin import _TriagePartStateMixin
 
 
 class TriageRunner(Protocol):
@@ -54,12 +56,20 @@ class TriageRunner(Protocol):
         ...
 
 
-from .common import drain, result_ref, stable_id
+from .common import (
+    RUN_STATE,
+    RunState,
+    cpu_bound,
+    drain,
+    durable_prefix,
+    result_ref,
+    stable_id,
+)
 from .finalize_mixin import _TriageFinalizeMixin
 from .io_mixin import _TriageIOMixin
 
 
-class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
+class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin):
     """Produce one bounded saved A3 result from exact durable A2 inputs."""
 
     def __init__(
@@ -70,71 +80,140 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
     ) -> None:
         self._persistence = persistence
         self._config = config
+        self._trusted_fingerprint = config.validated().semantic_fingerprint()
         self._runner = runner
 
     async def run(self, request: OperationRequest) -> OperationOutcome:
         """Validate, claim, produce, and return one finite TRIAGE outcome."""
+        try:
+            checked = self._config.validated()
+            if checked.semantic_fingerprint() != self._trusted_fingerprint:
+                raise ValueError("trusted triage configuration changed")
+            self._config = checked
+        except (TypeError, ValueError) as error:
+            return self._outcome(
+                request,
+                TerminalStatus.FAILED,
+                failure=Failure("triage_config_invalid", type(error).__name__),
+            )
         failure = self._validate_request(request)
         if failure is not None:
             return self._outcome(request, TerminalStatus.FAILED, failure=failure)
-        try:
-            loaded = await self._preflight_upstream()
-        except Exception as error:  # noqa: BLE001
-            return self._outcome(
-                request,
-                TerminalStatus.FAILED,
-                failure=Failure("triage_input_invalid", type(error).__name__),
-            )
 
-        attempt = AttemptIdentity(
-            stable_id(
-                "triage-attempt",
-                request.execution.value,
-                self._config.configuration_version,
-                self._config.versions.prompt.version,
+        loop = asyncio.get_running_loop()
+        state = RunState(
+            acceptance_deadline=(
+                loop.time()
+                + self._config.operation_timeout_seconds
+                - self._config.cleanup_margin_seconds
             )
         )
-        required = tuple(item[0] for item in loaded)
+        token = RUN_STATE.set(state)
+        claim = None
         try:
-            claim = await self._persistence.acquire_claim(
-                self._config.claim_key,
-                ClaimKind.TRIAGE,
-                request.execution,
-                attempt,
-                required_inputs=required,
-                lease_seconds=self._config.lease_seconds,
-            )
-        except Exception as error:  # noqa: BLE001
-            return self._outcome(
-                request,
-                TerminalStatus.FAILED,
-                failure=Failure("triage_claim_unavailable", type(error).__name__),
-            )
+            try:
+                async with asyncio.timeout_at(state.acceptance_deadline):
+                    loaded = await self._preflight_upstream()
+            except TimeoutError:
+                return self._deadline_outcome(request)
+            except Exception as error:  # noqa: BLE001
+                return self._outcome(
+                    request,
+                    TerminalStatus.FAILED,
+                    refs=durable_prefix(),
+                    failure=Failure("triage_input_invalid", type(error).__name__),
+                )
 
-        try:
-            outcome = await self._produce(request, attempt, claim, loaded)
-        except asyncio.CancelledError:
-            await self._cancel_claim(claim)
-            raise
-        except StaleClaimError:
-            return self._stale(request)
-        except Exception as error:  # noqa: BLE001
-            outcome = self._outcome(
-                request,
-                TerminalStatus.FAILED,
-                failure=Failure("triage_failed", type(error).__name__),
-            )
-        try:
-            _none, cancelled = await drain(
-                self._persistence.finish_claim(
-                    claim, outcome.status, ExternalEffectState.NONE
+            prepared_versions = []
+            for _reference, saved in loaded:
+                for version in saved.prepared_versions:
+                    if version.kind != "prepared":
+                        raise ValueError("upstream prepared lineage kind is invalid")
+                    if version not in prepared_versions:
+                        prepared_versions.append(version)
+            if not prepared_versions:
+                return self._outcome(
+                    request,
+                    TerminalStatus.FAILED,
+                    failure=Failure(
+                        "triage_lineage_invalid",
+                        "upstream prepared lineage is missing",
+                    ),
+                )
+            state.prepared_versions = tuple(prepared_versions)
+
+            attempt = AttemptIdentity(
+                stable_id(
+                    "triage-attempt",
+                    request.execution.value,
+                    self._config.configuration_version,
+                    self._config.rule_config.version.version,
+                    self._config.versions.configuration.version,
+                    self._config.versions.prompt.version,
+                    self._config.versions.model.version,
+                    self._config.versions.output_schema.version,
+                    self._config.semantic_fingerprint(),
                 )
             )
-        except StaleClaimError:
-            return self._stale(request)
-        if cancelled:
-            raise asyncio.CancelledError
-        return outcome
+            required = tuple(item[0] for item in loaded)
+            try:
+                claim = await self._persistence.acquire_claim(
+                    self._config.claim_key,
+                    ClaimKind.TRIAGE,
+                    request.execution,
+                    attempt,
+                    required_inputs=required,
+                    lease_seconds=self._config.lease_seconds,
+                )
+            except Exception as error:  # noqa: BLE001
+                return self._outcome(
+                    request,
+                    TerminalStatus.FAILED,
+                    refs=durable_prefix(),
+                    failure=Failure("triage_claim_unavailable", type(error).__name__),
+                )
+
+            try:
+                async with asyncio.timeout_at(state.acceptance_deadline):
+                    outcome = await self._produce(request, attempt, claim, loaded)
+            except TimeoutError:
+                outcome = self._deadline_outcome(request)
+            except asyncio.CancelledError:
+                await self._cancel_claim(claim)
+                raise
+            except StaleClaimError:
+                return self._stale(request, durable_prefix())
+            except Exception as error:  # noqa: BLE001
+                outcome = self._outcome(
+                    request,
+                    TerminalStatus.FAILED,
+                    refs=durable_prefix(),
+                    failure=Failure("triage_failed", type(error).__name__),
+                )
+            try:
+                _none, cancelled = await drain(
+                    self._persistence.finish_claim(
+                        claim, outcome.status, ExternalEffectState.NONE
+                    )
+                )
+            except StaleClaimError:
+                return self._stale(request, durable_prefix())
+            if cancelled:
+                raise asyncio.CancelledError
+            return outcome
+        finally:
+            RUN_STATE.reset(token)
+
+    def _deadline_outcome(self, request: OperationRequest) -> OperationOutcome:
+        return self._outcome(
+            request,
+            TerminalStatus.INCOMPLETE,
+            refs=durable_prefix(),
+            limitation=Limitation(
+                "triage_operation_deadline",
+                "Finite triage acceptance deadline expired",
+            ),
+        )
 
     def _validate_request(self, request: OperationRequest) -> Failure | None:
         if request.capability is not PhaseCapability.TRIAGE:
@@ -197,15 +276,24 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
             self._config.plan.group_results, by_id, GroupResult
         )
         priors = await self._load_priors(by_id)
-        rules = evaluate_rule_set(prepared, self._config.rule_config)
+        rules = await cpu_bound(evaluate_rule_set, prepared, self._config.rule_config)
         rule_ref = await self._save_rules(
             request, attempt, claim, rules, tuple(by_id.values())
         )
         context, context_result = await self._context(request, attempt, claim, by_id)
-        selection = self._selection(
-            prepared, filters, groups, rules, rule_ref, context, by_id
+        selection = await cpu_bound(
+            self._selection,
+            prepared,
+            filters,
+            groups,
+            rules,
+            rule_ref,
+            context,
+            by_id,
         )
-        snapshot = build_triage_input(selection, self._config.input_config)
+        snapshot = await cpu_bound(
+            build_triage_input, selection, self._config.input_config
+        )
         input_result = await self._save_snapshot(
             request, attempt, claim, snapshot, rule_ref, context_result
         )
@@ -215,8 +303,9 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
         candidates: list[TriageCandidate] = []
         states: list[TriagePartState] = []
         evidence_refs: list[ResultRef] = []
+        saved_payload_values = await cpu_bound(saved_part_payloads, snapshot)
         for envelope, saved_payload in zip(
-            snapshot.parts, saved_part_payloads(snapshot), strict=True
+            snapshot.parts, saved_payload_values, strict=True
         ):
             part_result = await self._save_part(
                 request,
@@ -250,7 +339,7 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
                 return self._outcome(
                     request,
                     TerminalStatus.INCOMPLETE,
-                    refs=(input_result, *evidence_refs),
+                    refs=durable_prefix(),
                     limitation=Limitation(
                         "triage_part_incomplete",
                         "At least one required semantic part did not complete",
@@ -268,11 +357,13 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
         )
         all_held = len(snapshot.held) == len(snapshot.selected_sources)
         if snapshot.parts:
-            if not validate_parent_part_states(snapshot, parent_states):
+            if not await cpu_bound(
+                validate_parent_part_states, snapshot, parent_states
+            ):
                 return self._outcome(
                     request,
                     TerminalStatus.INCOMPLETE,
-                    refs=(input_result, *evidence_refs),
+                    refs=durable_prefix(),
                     limitation=Limitation(
                         "triage_input_incomplete", "Saved input coverage is incomplete"
                     ),
@@ -281,29 +372,32 @@ class TriageHandler(_TriageIOMixin, _TriageFinalizeMixin):
             return self._outcome(
                 request,
                 TerminalStatus.INCOMPLETE,
-                refs=(input_result,),
+                refs=durable_prefix(),
                 limitation=Limitation(
                     "triage_input_missing_parts",
                     "Required semantic input has no executable parts",
                 ),
             )
 
-        combined = self._combine_candidates(candidates, snapshot)
+        combined = await cpu_bound(self._combine_candidates, candidates, snapshot)
         try:
-            data = reconcile_triage(
-                combined,
-                selected_records=prepared,
-                filter_config=self._config.filter_config,
-                filter_results=filters,
-                rule_evaluation=rules,
-                topic_allocations=self._config.plan.topic_allocations,
-                prior_assessments=priors,
+            data = await cpu_bound(
+                partial(
+                    reconcile_triage,
+                    combined,
+                    selected_records=prepared,
+                    filter_config=self._config.filter_config,
+                    filter_results=filters,
+                    rule_evaluation=rules,
+                    topic_allocations=self._config.plan.topic_allocations,
+                    prior_assessments=priors,
+                )
             )
         except TriageReconciliationError as error:
             return self._outcome(
                 request,
                 TerminalStatus.INCOMPLETE,
-                refs=(input_result, *evidence_refs),
+                refs=durable_prefix(),
                 limitation=Limitation("triage_rejected", error.code),
             )
         final_ref = await self._save_triage(

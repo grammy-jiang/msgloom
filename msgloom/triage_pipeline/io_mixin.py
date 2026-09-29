@@ -14,11 +14,15 @@ from msgloom.contracts import (
     AttemptIdentity,
     ResultRef,
     StageResult,
-    TerminalStatus,
     VersionRef,
 )
 from msgloom.persistence import Phase1Persistence, StaleClaimError
-from msgloom.triage import PriorTopicAssessment, TriageData, validate_triage_candidate
+from msgloom.triage import (
+    PriorTopicAssessment,
+    TriageCandidate,
+    TriageData,
+    validate_triage_candidate,
+)
 from msgloom.triage_input import (
     PART_KIND,
     PART_SCHEMA_VERSION,
@@ -38,13 +42,36 @@ from msgloom.working_context import (
     snapshot_ref,
 )
 
-from .codecs import (
-    TRIAGE_PART_STATE_KIND,
-    TRIAGE_PART_STATE_SCHEMA_VERSION,
-    TriagePartState,
+from .common import (
+    cpu_bound,
+    drain,
+    ensure_acceptance_time,
+    record_result,
+    result_ref,
+    stable_id,
 )
-from .common import drain, result_ref, stable_id
 from .models import TriageMode, TriageProducerConfig
+
+
+def _validated_candidate(output: object, part) -> TriageCandidate:
+    """Validate bounded model output and exact per-part source coverage."""
+    payload = json.dumps(
+        output,
+        ensure_ascii=False,
+        allow_nan=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    candidate = validate_triage_candidate(payload)
+    allowed = {item.source_ref for item in part.fragments}
+    used = {source for topic in candidate.topics for source in topic.source_refs} | {
+        item.source_ref for item in candidate.dispositions
+    }
+    if not used <= allowed:
+        raise ValueError("candidate references a source outside its part")
+    if not allowed <= used:
+        raise ValueError("candidate does not cover every required part source")
+    return candidate
 
 
 class _TriageIOMixin:
@@ -56,6 +83,20 @@ class _TriageIOMixin:
     _stage: Callable[..., StageResult]
     _part_attempt: Callable[..., AttemptIdentity]
     _context_text: Callable[..., str]
+    _save_part_state: Callable[..., Any]
+
+    async def _semantic_ref(self, *args: Any):
+        """Encode and hash one semantic value off the caller event loop."""
+        return await cpu_bound(self._persistence.semantic_reference, *args)
+
+    async def _record_terminal_prefix(self, terminal: ResultRef) -> None:
+        """Record request/traces before the exact durable terminal response."""
+        saved = await self._persistence.get_result(terminal.result_id)
+        if saved is None:
+            raise ValueError("durable AI terminal result is missing")
+        for reference in saved.input_refs:
+            record_result(reference)
+        record_result(terminal)
 
     async def _load_values[T](
         self,
@@ -115,8 +156,9 @@ class _TriageIOMixin:
             "triage-rules",
             request.execution.value,
             self._config.rule_config.version.version,
+            self._config.semantic_fingerprint(),
         )
-        semantic = self._persistence.semantic_reference(
+        semantic = await self._semantic_ref(
             f"{result_id}:data", "triage_rules", "1", rules
         )
         result = self._stage(
@@ -128,8 +170,9 @@ class _TriageIOMixin:
             tuple(item.source_ref for item in rules.outcomes),
             semantic=semantic,
         )
+        ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, rules, claim=claim)
-        return result_ref(result)
+        return record_result(result_ref(result))
 
     async def _context(self, request, attempt, claim, by_id):
         plan = self._config.plan
@@ -155,7 +198,7 @@ class _TriageIOMixin:
         result_id = stable_id(
             "working-context", request.execution.value, version.version
         )
-        semantic = self._persistence.semantic_reference(
+        semantic = await self._semantic_ref(
             f"{result_id}:data",
             WORKING_CONTEXT_KIND,
             WORKING_CONTEXT_SCHEMA_VERSION,
@@ -171,8 +214,9 @@ class _TriageIOMixin:
             semantic=semantic,
             working_context=version,
         )
+        ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, value, claim=claim)
-        return value, result_ref(result)
+        return value, record_result(result_ref(result))
 
     def _selection(
         self, prepared, filters, groups, rules, rule_ref, context, by_id
@@ -225,7 +269,7 @@ class _TriageIOMixin:
         result_id = stable_id(
             "triage-input", request.execution.value, snapshot.snapshot_hash
         )
-        semantic = self._persistence.semantic_reference(
+        semantic = await self._semantic_ref(
             f"{result_id}:data", "triage_input", "1", snapshot
         )
         upstream = (
@@ -245,20 +289,23 @@ class _TriageIOMixin:
             semantic=semantic,
             working_context=snapshot.working_context_ref,
         )
+        ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, snapshot, claim=claim)
-        return result_ref(result)
+        return record_result(result_ref(result))
 
     async def _save_part(
         self, request, attempt, claim, part, payload, input_result
     ) -> ResultRef:
-        if encode_part(part) != payload:
+        encoded_part = await cpu_bound(encode_part, part)
+        if encoded_part != payload:
             raise ValueError("saved part payload does not match canonical part bytes")
-        semantic = self._persistence.semantic_reference(
+        semantic = await self._semantic_ref(
             stable_id(
                 "triage-part-data",
                 request.execution.value,
                 part.part_id,
                 part.versions.prompt.version,
+                self._config.semantic_fingerprint(),
             ),
             PART_KIND,
             PART_SCHEMA_VERSION,
@@ -269,7 +316,12 @@ class _TriageIOMixin:
         result = self._stage(
             request,
             attempt,
-            stable_id("triage-part", request.execution.value, part.part_id),
+            stable_id(
+                "triage-part",
+                request.execution.value,
+                part.part_id,
+                self._config.semantic_fingerprint(),
+            ),
             PART_KIND,
             (input_result,),
             tuple(
@@ -281,14 +333,16 @@ class _TriageIOMixin:
             semantic=semantic,
             working_context=part.working_context_ref,
         )
+        ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, part, claim=claim)
-        return result_ref(result)
+        return record_result(result_ref(result))
 
     async def _run_part(
         self, request, claim, part, part_result, input_result, context_result, context
     ):
         attempt_id = self._part_attempt(request, part.part_id)
-        context_text = self._context_text(context)
+        context_text = await cpu_bound(self._context_text, context)
+        part_payload = await cpu_bound(encode_part, part)
         analysis = AnalysisAttempt(
             attempt=attempt_id,
             input_refs=(
@@ -299,19 +353,21 @@ class _TriageIOMixin:
                         request.execution.value,
                         part.part_id,
                         part.versions.prompt.version,
+                        self._config.semantic_fingerprint(),
                     ),
-                    sha256(encode_part(part)).hexdigest(),
+                    sha256(part_payload).hexdigest(),
                 ),
             ),
             context_ref=snapshot_ref(context),
             prompt_ref=self._config.versions.prompt,
             schema_ref=self._config.versions.output_schema,
             model_ref=self._config.versions.model,
-            input_text=encode_part(part).decode(),
+            input_text=part_payload.decode(),
             context_text=context_text,
             prompt_text=self._config.prompt_text,
             limits=self._config.attempt_limits,
         )
+        ensure_acceptance_time()
         session = await EvidenceSession.begin(
             self._persistence,
             request.execution,
@@ -322,9 +378,37 @@ class _TriageIOMixin:
             code_version=self._config.code_version,
             claim=claim,
         )
+        record_result(session.request_ref)
         sink = PersistenceTraceSink(session)
         try:
-            response = await self._runner.run(analysis, sink)
+            timeout = min(
+                self._config.attempt_limits.timeout_seconds,
+                ensure_acceptance_time(),
+            )
+            async with asyncio.timeout(timeout):
+                response = await self._runner.run(analysis, sink)
+        except TimeoutError:
+            terminal, cancelled = await drain(
+                session.finish_diagnostic(
+                    cancelled=False,
+                    failure_code="attempt_deadline",
+                    failure_detail="AI attempt deadline expired",
+                )
+            )
+            await self._record_terminal_prefix(terminal)
+            if cancelled:
+                raise asyncio.CancelledError
+            state_ref = await self._save_part_state(
+                request,
+                claim,
+                part,
+                attempt_id,
+                PartState.FAILED,
+                terminal,
+                "attempt_deadline",
+                (part_result, input_result, context_result),
+            )
+            return None, state_ref, terminal
         except asyncio.CancelledError:
             try:
                 _ref, _cancelled = await drain(
@@ -338,13 +422,16 @@ class _TriageIOMixin:
                 pass
             raise
         except Exception:  # noqa: BLE001
-            terminal, _cancelled = await drain(
+            terminal, cancelled = await drain(
                 session.finish_diagnostic(
                     cancelled=False,
                     failure_code="runner_failed",
                     failure_detail="AI runner failed",
                 )
             )
+            await self._record_terminal_prefix(terminal)
+            if cancelled:
+                raise asyncio.CancelledError
             state_ref = await self._save_part_state(
                 request,
                 claim,
@@ -357,7 +444,10 @@ class _TriageIOMixin:
             )
             return None, state_ref, terminal
 
-        terminal = await session.finish(response)
+        terminal, cancelled = await drain(session.finish(response))
+        await self._record_terminal_prefix(terminal)
+        if cancelled:
+            raise asyncio.CancelledError
         if not response.acceptable_for_semantic_validation:
             state_ref = await self._save_part_state(
                 request,
@@ -371,20 +461,11 @@ class _TriageIOMixin:
             )
             return None, state_ref, terminal
         try:
-            payload = json.dumps(
+            candidate = await cpu_bound(
+                _validated_candidate,
                 response.structured_output,
-                ensure_ascii=False,
-                allow_nan=False,
-                sort_keys=True,
-                separators=(",", ":"),
-            ).encode()
-            candidate = validate_triage_candidate(payload)
-            allowed = {item.source_ref for item in part.fragments}
-            used = {
-                source for topic in candidate.topics for source in topic.source_refs
-            } | {item.source_ref for item in candidate.dispositions}
-            if not used <= allowed:
-                raise ValueError("candidate references a source outside its part")
+                part,
+            )
         except (TypeError, ValueError):
             state_ref = await self._save_part_state(
                 request,
@@ -409,56 +490,3 @@ class _TriageIOMixin:
             (part_result, input_result, context_result),
         )
         return candidate, state_ref, terminal
-
-    async def _save_part_state(
-        self, request, claim, part, attempt, state, terminal, failure_code, inputs
-    ) -> ResultRef:
-        value = TriagePartState(
-            part_ref=self._persistence.semantic_reference(
-                stable_id(
-                    "triage-part-data",
-                    request.execution.value,
-                    part.part_id,
-                    part.versions.prompt.version,
-                ),
-                PART_KIND,
-                PART_SCHEMA_VERSION,
-                part,
-            ),
-            attempt=attempt,
-            state=state,
-            ai_response_ref=terminal,
-            failure_code=failure_code,
-        )
-        result_id = stable_id(
-            "triage-part-state", request.execution.value, part.part_id, attempt.value
-        )
-        semantic = self._persistence.semantic_reference(
-            f"{result_id}:data",
-            TRIAGE_PART_STATE_KIND,
-            TRIAGE_PART_STATE_SCHEMA_VERSION,
-            value,
-        )
-        result = self._stage(
-            request,
-            attempt,
-            result_id,
-            TRIAGE_PART_STATE_KIND,
-            (*inputs, terminal),
-            tuple(
-                sorted(
-                    {item.source_ref for item in part.fragments},
-                    key=lambda ref: (ref.kind, ref.identity, ref.version),
-                )
-            ),
-            semantic=semantic,
-            working_context=part.working_context_ref,
-            acceptable=state is PartState.COMPLETE,
-            status=(
-                TerminalStatus.COMPLETE
-                if state is PartState.COMPLETE
-                else TerminalStatus.FAILED
-            ),
-        )
-        await self._persistence.append_result_with_data(result, value, claim=claim)
-        return result_ref(result)

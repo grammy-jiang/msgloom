@@ -30,7 +30,15 @@ from msgloom.triage import (
 from msgloom.triage_input import TriageInputSnapshot
 from msgloom.working_context import WorkingContextSnapshot, snapshot_ref
 
-from .common import drain, result_ref, stable_id
+from .common import (
+    RUN_STATE,
+    cpu_bound,
+    drain,
+    ensure_acceptance_time,
+    record_result,
+    result_ref,
+    stable_id,
+)
 from .models import TriageProducerConfig
 
 
@@ -147,9 +155,14 @@ class _TriageFinalizeMixin:
             self._config.versions.prompt.version,
             self._config.versions.model.version,
             input_ref.result_id,
+            self._config.semantic_fingerprint(),
         )
-        semantic = self._persistence.semantic_reference(
-            f"{result_id}:data", "triage", "1", data
+        semantic = await cpu_bound(
+            self._persistence.semantic_reference,
+            f"{result_id}:data",
+            "triage",
+            "1",
+            data,
         )
         lineage = (
             *(result_ref(item) for item in upstream),
@@ -176,8 +189,9 @@ class _TriageFinalizeMixin:
             working_context=snapshot_ref(context),
             topic_versions=tuple(topic.assessment_ref for topic in data.topics),
         )
+        ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, data, claim=claim)
-        return result_ref(result)
+        return record_result(result_ref(result))
 
     def _stage(
         self,
@@ -194,6 +208,8 @@ class _TriageFinalizeMixin:
         acceptable=True,
         status=TerminalStatus.COMPLETE,
     ) -> StageResult:
+        run_state = RUN_STATE.get()
+        prepared_versions = () if run_state is None else run_state.prepared_versions
         return StageResult(
             result_id=result_id,
             kind=kind,
@@ -202,7 +218,7 @@ class _TriageFinalizeMixin:
             attempt=attempt,
             input_refs=tuple(input_refs),
             source_versions=tuple(source_versions),
-            prepared_versions=tuple(source_versions),
+            prepared_versions=prepared_versions,
             topic_versions=tuple(topic_versions),
             configuration_version=self._config.configuration_version,
             code_version=self._config.code_version,
@@ -224,23 +240,42 @@ class _TriageFinalizeMixin:
                 request.execution.value,
                 part_id,
                 self._config.versions.prompt.version,
+                self._config.versions.model.version,
+                self._config.versions.output_schema.version,
+                self._config.configuration_version,
+                self._config.semantic_fingerprint(),
             )
         )
 
     @staticmethod
     def _context_text(context: WorkingContextSnapshot) -> str:
-        payload = [
-            {
-                "selection_id": item.selection_id,
-                "state": item.state.value,
-                "text": item.text,
-                "limitations": [
-                    {"code": value.code, "detail": value.detail}
-                    for value in item.limitations
-                ],
-            }
-            for item in context.files
-        ]
+        payload = {
+            "configuration_ref": {
+                "kind": context.configuration_ref.kind,
+                "identity": context.configuration_ref.identity,
+                "version": context.configuration_ref.version,
+            },
+            "capture_time": context.capture_time.isoformat(),
+            "timezone": context.timezone,
+            "snapshot_sha256": context.snapshot_sha256,
+            "files": [
+                {
+                    "selection_id": item.selection_id,
+                    "state": item.state.value,
+                    "text": item.text,
+                    "modified_at": (
+                        None
+                        if item.modified_at is None
+                        else item.modified_at.isoformat()
+                    ),
+                    "limitations": [
+                        {"code": value.code, "detail": value.detail}
+                        for value in item.limitations
+                    ],
+                }
+                for item in context.files
+            ],
+        }
         return json.dumps(
             payload,
             ensure_ascii=False,
@@ -260,11 +295,14 @@ class _TriageFinalizeMixin:
             pass
 
     @staticmethod
-    def _stale(request: OperationRequest) -> OperationOutcome:
+    def _stale(
+        request: OperationRequest, refs: tuple[ResultRef, ...] = ()
+    ) -> OperationOutcome:
         return OperationOutcome(
             execution=request.execution,
             capability=PhaseCapability.TRIAGE,
             status=TerminalStatus.FAILED,
+            result_refs=refs,
             failures=(Failure("stale_triage_claim", "triage ownership expired"),),
         )
 

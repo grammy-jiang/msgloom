@@ -57,6 +57,12 @@ async def _success(tmp_path):
         pytest.fail("multiple synthetic topics were not retained")
     if final.acceptable is not True:
         pytest.fail("final semantics were not acceptable")
+    if not final.prepared_versions or any(
+        item.kind != "prepared" for item in final.prepared_versions
+    ):
+        pytest.fail("final result did not preserve exact prepared lineage")
+    if any(item.kind == "prepared" for item in final.source_versions):
+        pytest.fail("prepared lineage was incorrectly copied into source lineage")
     await store.close()
 
 

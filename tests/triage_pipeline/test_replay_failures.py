@@ -116,8 +116,8 @@ async def _duplicate(tmp_path):
     await store.close()
 
 
-def test_expired_claim_cannot_publish_semantics(tmp_path):
-    """A stale owner fails rather than bypassing the publication fence."""
+def test_finite_deadline_precedes_claim_expiry(tmp_path):
+    """Acceptance closes before the configured durable claim can expire."""
     asyncio.run(_stale(tmp_path))
 
 
@@ -130,15 +130,20 @@ async def _stale(tmp_path):
         producer,
         attempt_limits=tiny_limits,
         lease_seconds=0.04,
+        operation_timeout_seconds=0.03,
+        cleanup_margin_seconds=0.005,
     )
     triage = TriageHandler(store, producer, SlowRunner())
 
     outcome = await triage.run(request(producer, "stale-exec"))
 
-    if outcome.status is not TerminalStatus.FAILED:
-        pytest.fail("expired claim was allowed to complete")
-    if not outcome.failures or outcome.failures[0].code != "stale_triage_claim":
-        pytest.fail("stale ownership was not surfaced explicitly")
+    if outcome.status is not TerminalStatus.INCOMPLETE:
+        pytest.fail("finite operation deadline was allowed to complete")
+    if not outcome.limitations or outcome.limitations[0].code not in {
+        "triage_part_incomplete",
+        "triage_operation_deadline",
+    }:
+        pytest.fail("finite acceptance deadline was not surfaced explicitly")
     await store.close()
 
 
@@ -154,6 +159,7 @@ async def _changed_prompt(tmp_path):
     first_runner = FakeRunner(store, [first_candidate])
     first = TriageHandler(store, first_config, first_runner)
     first_outcome = await first.run(request(first_config, "first-exec"))
+    first_context_text = first_runner.attempts[0].context_text
     if first_outcome.status is not TerminalStatus.COMPLETE:
         pytest.fail("first triage did not complete")
     final = await store.get_result(first_outcome.result_refs[0].result_id)
@@ -171,7 +177,7 @@ async def _changed_prompt(tmp_path):
     allocation = TopicAllocation(
         allocation_key=old_allocation.allocation_key,
         topic_ref=old_allocation.topic_ref,
-        assessment_ref=VersionRef("assessment", "topic-0", "v2"),
+        assessment_ref=VersionRef("topic-assessment", "topic-0", "v2"),
     )
     source = first_config.plan.expected_targets[0]
     evidence = TriageEvidence(
@@ -232,6 +238,8 @@ async def _changed_prompt(tmp_path):
     replay_final = await store.get_result(outcome.result_refs[0].result_id)
     if replay_final is None or replay_final.prompt_version != "v2":
         pytest.fail("changed prompt did not create a new saved assessment result")
+    if runner.attempts[0].context_text != first_context_text:
+        pytest.fail("replay recaptured or changed the saved time/context snapshot")
     await store.close()
 
 

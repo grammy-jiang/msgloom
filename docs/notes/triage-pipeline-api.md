@@ -14,8 +14,18 @@ allocations, and live-versus-replay context choice. TriageProducerConfig
 binds that plan to exact filter/rule/input configuration, prompt/schema/model
 versions, TrustedPolicy, finite AI limits, request parameters, aggregate
 upstream count/byte limits, part count, one-attempt-per-part policy,
-code/configuration versions, and a claim lease covering the configured
-maximum AI elapsed budget.
+code/configuration versions, an explicit total operation timeout, a cleanup
+margin, and a claim lease covering the whole operation budget. The acceptance
+deadline is operation_timeout_seconds minus cleanup_margin_seconds. A single
+attempt timeout must fit inside that acceptance window, and the claim lease
+must be at least the total operation timeout.
+
+At construction the handler snapshots a fully revalidated semantic
+fingerprint, including filter/rule/input configuration, roles, allocations,
+prompt text, schema, model, and attempt limits. At each public operation it
+strictly reconstructs nested Pydantic values and trusted policy maps and
+rejects mutation before persistence I/O. Changed semantic choices require a
+new handler/configuration and produce distinct attempt/part/result identities.
 
 The handler rejects capability, target, or parameter mismatch before semantic
 payload loading. It first reads only result metadata and checks aggregate
@@ -23,9 +33,14 @@ semantic byte_count and result count. Only exact acceptable results with
 semantic data are loaded.
 
 Live mode captures only WorkingContextConfig.selected_files and saves the
-result before downstream use. Replay requires an exact accepted saved
-working-context result and never calls capture. Deterministic triage rules are
-evaluated from exact saved prepared records and saved before input building.
+result before downstream use. The bounded model context contains capture time,
+timezone, configuration reference, snapshot digest, file capture states,
+content, modification times, and limitations, but never configured allowed
+roots or local paths. This metadata is retained even when no files are
+selected. Replay requires an exact accepted saved working-context result,
+serializes those exact saved values and never calls capture. Deterministic
+triage rules are evaluated from exact saved prepared records and saved before
+input building.
 
 ## Durable ordering and ownership
 
@@ -43,7 +58,15 @@ EvidenceSession.begin receives the enclosing claim. A child AttemptIdentity
 is fresh per part and differs from the enclosing triage attempt. A stale
 claim cannot be bypassed to save semantic output. Cancellation drains
 accepted evidence writes and claim release through repeated cancellation,
-then re-raises caller cancellation. There is no automatic AI retry.
+then re-raises caller cancellation. There is no automatic AI retry. The
+handler independently applies the declared per-attempt timeout even to an
+injected runner. It also applies the enclosing
+acceptance deadline to preflight and production. Pure input building,
+canonical part encoding/hashing, context serialization, parent validation,
+candidate combination, and reconciliation run off the caller event loop;
+owned off-loop work drains before cancellation is propagated. Accepted
+persistence remains awaited. Incomplete/failed operation outcomes retain the
+ordered durable result prefix already published.
 
 ## Multipart and deterministic holds
 
@@ -57,7 +80,11 @@ Filtered exclusions and deterministic rule exclusions/conflicts never invoke
 the runner. They become explicit EXCLUDED or REVIEW_REQUIRED dispositions.
 Snapshot failures, absent required parts, failed parts, invalid model
 structure, or reconciliation failures return INCOMPLETE; they never become
-low-value or no-reportable-content decisions.
+low-value or no-reportable-content decisions. Each successful part must
+explicitly account for every source represented by that part's fragments; an
+empty response cannot borrow coverage from a different part that happens to
+reference the same source. triage_part_state@1 accepts only coherent terminal
+COMPLETE/FAILED shapes with an exact ai_response@1 reference.
 
 Multipart topic combination is keyed only by trusted allocation_key. Display
 title is never an identity key. Parts sharing an allocation must agree on
@@ -85,3 +112,14 @@ composition. They contain triage_input_part@1 for canonical part bytes and
 triage_part_state@1 for bounded immutable part/attempt diagnostics.
 Production composition must register both result schemas as semantic-data
 results and add both codecs to its explicit semantic registry.
+
+## Lineage contract
+
+A3 separates source, prepared, and topic lineage. Upstream prepared/filter/
+group results must carry exact VersionRef(kind="prepared", ...) lineage. The
+producer validates and propagates those prepared references independently
+from provider source versions. Topic allocations use
+VersionRef(kind="topic-assessment", ...) so saved triage output composes
+directly with reporting's topic-assessment contract. Prior assessments remain
+separate exact saved triage references and are never inferred from source or
+prepared identity.

@@ -56,12 +56,12 @@ async def _distinct_groups(tmp_path):
         TopicAllocation(
             allocation_key="allocation-a",
             topic_ref=VersionRef("topic", "topic-a", "v1"),
-            assessment_ref=VersionRef("assessment", "topic-a", "v1"),
+            assessment_ref=VersionRef("topic-assessment", "topic-a", "v1"),
         ),
         TopicAllocation(
             allocation_key="allocation-b",
             topic_ref=VersionRef("topic", "topic-b", "v1"),
-            assessment_ref=VersionRef("assessment", "topic-b", "v1"),
+            assessment_ref=VersionRef("topic-assessment", "topic-b", "v1"),
         ),
     )
     candidates = [

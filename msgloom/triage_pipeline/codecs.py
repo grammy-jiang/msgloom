@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from msgloom.contracts import AttemptIdentity, ResultRef, SemanticDataRef
 from msgloom.triage_input import InputPart, PartState, encode_part
@@ -24,6 +24,19 @@ class TriagePartState(BaseModel):
     state: PartState
     ai_response_ref: ResultRef | None = None
     failure_code: str | None = Field(default=None, max_length=64)
+
+    @model_validator(mode="after")
+    def _terminal_shape(self) -> TriagePartState:
+        if self.state is PartState.PENDING:
+            raise ValueError("saved triage part state cannot remain pending")
+        if self.ai_response_ref is None or self.ai_response_ref.kind != "ai_response":
+            raise ValueError("terminal triage part state requires an AI response")
+        if self.state is PartState.COMPLETE:
+            if self.failure_code is not None:
+                raise ValueError("complete triage part state cannot carry failure")
+        elif not self.failure_code or not self.failure_code.strip():
+            raise ValueError("failed triage part state requires failure code")
+        return self
 
 
 class InputPartCodec:

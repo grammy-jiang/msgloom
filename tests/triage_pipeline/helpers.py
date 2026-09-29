@@ -85,8 +85,13 @@ async def open_store(path: Path) -> Phase1Persistence:
     )
 
 
-def stage(result_ref, data_ref, source_ref) -> StageResult:
-    """Build one acceptable synthetic upstream result."""
+def stage(
+    result_ref,
+    data_ref,
+    source_refs: tuple[VersionRef, ...],
+    prepared_refs: tuple[VersionRef, ...],
+) -> StageResult:
+    """Build one acceptable synthetic upstream result with prepared lineage."""
     return StageResult(
         result_id=result_ref.result_id,
         kind=result_ref.kind,
@@ -94,8 +99,8 @@ def stage(result_ref, data_ref, source_ref) -> StageResult:
         execution=ExecutionIdentity("upstream-exec"),
         attempt=AttemptIdentity(f"attempt-{result_ref.result_id}"),
         input_refs=(),
-        source_versions=(source_ref,),
-        prepared_versions=(source_ref,),
+        source_versions=source_refs,
+        prepared_versions=prepared_refs,
         topic_versions=(),
         configuration_version="upstream-config",
         code_version="upstream-code",
@@ -107,20 +112,39 @@ def stage(result_ref, data_ref, source_ref) -> StageResult:
 
 async def save_selection(store: Phase1Persistence, selected) -> None:
     """Persist exact prepared/filter/group values named by a pure selection."""
+    prepared = {
+        binding.record.source: VersionRef(
+            "prepared",
+            binding.result_ref.result_id,
+            binding.data_ref.sha256,
+        )
+        for binding in selected.prepared
+    }
     for binding in selected.prepared:
         await store.append_result_with_data(
-            stage(binding.result_ref, binding.data_ref, binding.record.source),
+            stage(
+                binding.result_ref,
+                binding.data_ref,
+                (binding.record.source,),
+                (prepared[binding.record.source],),
+            ),
             binding.record,
         )
     for binding in selected.filters:
         await store.append_result_with_data(
-            stage(binding.result_ref, binding.data_ref, binding.result.input),
+            stage(
+                binding.result_ref,
+                binding.data_ref,
+                (binding.result.input,),
+                (prepared[binding.result.input],),
+            ),
             binding.result,
         )
-    source = selected.prepared[0].record.source
+    all_sources = tuple(prepared)
+    all_prepared = tuple(prepared[source] for source in all_sources)
     for binding in selected.groups:
         await store.append_result_with_data(
-            stage(binding.result_ref, binding.data_ref, source),
+            stage(binding.result_ref, binding.data_ref, all_sources, all_prepared),
             binding.result,
         )
 
@@ -133,9 +157,11 @@ class FakeRunner:
         self.candidates = list(candidates)
         self.calls = 0
         self.request_was_saved = []
+        self.attempts = []
 
     async def run(self, attempt, trace_sink):
         """Return the next synthetic structured candidate without provider use."""
+        self.attempts.append(attempt)
         saved = await self.store.get_result(f"ai-request:{attempt.attempt.value}")
         self.request_was_saved.append(saved is not None and saved.acceptable)
         candidate = self.candidates[self.calls]
@@ -164,7 +190,9 @@ def setup(*, allocations=1, prompt_version="v1"):
             allocation_key=f"allocation-{index}",
             topic_ref=VersionRef("topic", f"topic-{index}", "v1"),
             assessment_ref=VersionRef(
-                "assessment", f"topic-{index}", f"{prompt_version}-{index}"
+                "topic-assessment",
+                f"topic-{index}",
+                f"{prompt_version}-{index}",
             ),
         )
         for index in range(allocations)
@@ -242,7 +270,9 @@ def setup(*, allocations=1, prompt_version="v1"):
         claim_key=f"triage:source-1:{prompt_version}",
         configuration_version=f"producer-{prompt_version}",
         code_version="test-build",
-        lease_seconds=10.0,
+        lease_seconds=60.0,
+        operation_timeout_seconds=45.0,
+        cleanup_margin_seconds=5.0,
         max_upstream_results=16,
         max_upstream_bytes=64 * 1024 * 1024,
         max_parts=4,
