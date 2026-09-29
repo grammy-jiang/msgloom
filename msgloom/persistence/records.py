@@ -35,6 +35,7 @@ from msgloom.persistence.codecs import (
 from msgloom.persistence.models import (
     ClaimAttemptRecord,
     OperationOutcomeRecord,
+    ReconciliationRecord,
     SchemaMetadataRecord,
     SemanticDataRecord,
     StageResultRecord,
@@ -46,6 +47,7 @@ from msgloom.persistence.models import (
 # narrow casts here rather than suppressing Core insert/update/delete checking.
 CLAIM_ATTEMPTS = cast(Table, ClaimAttemptRecord.__table__)
 OPERATION_OUTCOMES = cast(Table, OperationOutcomeRecord.__table__)
+RECONCILIATIONS = cast(Table, ReconciliationRecord.__table__)
 SCHEMA_METADATA = cast(Table, SchemaMetadataRecord.__table__)
 SEMANTIC_DATA = cast(Table, SemanticDataRecord.__table__)
 STAGE_RESULTS = cast(Table, StageResultRecord.__table__)

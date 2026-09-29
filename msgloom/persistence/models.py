@@ -105,3 +105,19 @@ class ClaimAttemptRecord(Phase1Base):
     finished_at: Mapped[str | None] = mapped_column(String)
     terminal_status: Mapped[str | None] = mapped_column(String)
     external_effect: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ReconciliationRecord(Phase1Base):
+    """Retain one immutable external-effect reconciliation decision."""
+
+    __tablename__ = "phase1_reconciliations"
+
+    reconciliation_id: Mapped[str] = mapped_column(String, primary_key=True)
+    claim_token: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    claim_key: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    claim_kind: Mapped[str] = mapped_column(String, nullable=False)
+    execution_id: Mapped[str] = mapped_column(String, nullable=False)
+    attempt_id: Mapped[str] = mapped_column(String, nullable=False)
+    decision: Mapped[str] = mapped_column(String, nullable=False)
+    evidence_refs: Mapped[str] = mapped_column(Text, nullable=False)
+    resolved_at: Mapped[str] = mapped_column(String, nullable=False)

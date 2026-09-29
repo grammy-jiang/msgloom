@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from sqlalchemy import create_engine, delete, inspect, select, update
+from sqlalchemy import create_engine, delete, select, update
 from sqlalchemy.engine import Connection, make_url
 
 from msgloom.contracts import (
@@ -35,16 +35,19 @@ from msgloom.persistence.errors import (
     DependencyNotReadyError,
     ExternalEffectReconciliationRequired,
     ImmutableRecordError,
-    IncompatibleSchemaError,
     SemanticDataReferenceError,
     StaleClaimError,
     UnknownResultSchemaError,
 )
-from msgloom.persistence.models import Phase1Base
+from msgloom.persistence.reconciliation import (
+    ClaimInspection,
+    ReconciliationRequest,
+    ReconciliationResult,
+)
+from msgloom.persistence.reconciliation_store import inspect_claim, reconcile_effect
 from msgloom.persistence.records import (
     CLAIM_ATTEMPTS,
     OPERATION_OUTCOMES,
-    SCHEMA_METADATA,
     STAGE_RESULTS,
     WORK_CLAIMS,
     outcome_from_row,
@@ -52,10 +55,10 @@ from msgloom.persistence.records import (
     result_from_row,
 )
 from msgloom.persistence.result_store import append_stage_result
+from msgloom.persistence.schema_store import initialize_schema
 from msgloom.persistence.semantic import SemanticDataRegistry
 from msgloom.persistence.semantic_store import append_semantic_data, load_semantic_data
 
-_SCHEMA_VERSION = "2"
 _SAFE_RETRY_EFFECTS = frozenset(
     {
         ExternalEffectState.NONE,
@@ -93,7 +96,7 @@ class Phase1Store:
             pool_timeout=30.0,
         )
         try:
-            self._initialize_schema()
+            initialize_schema(self.engine)
             os.chmod(path, 0o600)
         except BaseException:
             self.engine.dispose()
@@ -401,6 +404,20 @@ class Phase1Store:
                 .values(external_effect=effect.value, expires_at=_time(now))
             )
 
+    def reconcile_external_effect(
+        self, request: ReconciliationRequest
+    ) -> ReconciliationResult:
+        """Atomically save reconciliation proof and update retry gating."""
+        with self._write_transaction() as connection:
+            return reconcile_effect(connection, request, self._require_inputs)
+
+    def inspect_claim(
+        self, claim_key: str, *, history_limit: int = 100
+    ) -> ClaimInspection:
+        """Read bounded current ownership and immutable claim history."""
+        with self.engine.connect() as connection:
+            return inspect_claim(connection, claim_key, history_limit)
+
     def _require_inputs(
         self, connection: Connection, refs: tuple[ResultRef, ...]
     ) -> None:
@@ -443,42 +460,6 @@ class Phase1Store:
             raise UnknownResultSchemaError(
                 f"unregistered result schema: {kind!r} version {schema_version!r}"
             )
-
-    def _initialize_schema(self) -> None:
-        expected = set(Phase1Base.metadata.tables)
-        with self.engine.connect() as connection:
-            connection.exec_driver_sql("BEGIN IMMEDIATE")
-            try:
-                existing = {
-                    name
-                    for name in inspect(connection).get_table_names()
-                    if name.startswith("phase1_")
-                }
-                if not existing:
-                    Phase1Base.metadata.create_all(connection)
-                    connection.execute(
-                        SCHEMA_METADATA.insert().values(
-                            key="schema_version", value=_SCHEMA_VERSION
-                        )
-                    )
-                elif existing != expected:
-                    raise IncompatibleSchemaError(
-                        "neutral table set requires an explicit migration"
-                    )
-                else:
-                    version = connection.execute(
-                        select(SCHEMA_METADATA.c.value).where(
-                            SCHEMA_METADATA.c.key == "schema_version"
-                        )
-                    ).scalar_one_or_none()
-                    if version != _SCHEMA_VERSION:
-                        raise IncompatibleSchemaError(
-                            "neutral schema version requires an explicit migration"
-                        )
-                connection.exec_driver_sql("COMMIT")
-            except BaseException:
-                connection.exec_driver_sql("ROLLBACK")
-                raise
 
     @contextmanager
     def _write_transaction(self):

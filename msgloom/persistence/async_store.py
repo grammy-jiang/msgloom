@@ -19,6 +19,11 @@ from msgloom.contracts import (
     StageResult,
     TerminalStatus,
 )
+from msgloom.persistence.reconciliation import (
+    ClaimInspection,
+    ReconciliationRequest,
+    ReconciliationResult,
+)
 from msgloom.persistence.semantic import SemanticDataRegistry
 from msgloom.persistence.store import Phase1Store
 
@@ -171,6 +176,21 @@ class Phase1Persistence:
     ) -> None:
         """Await terminal attempt storage before any safe claim release."""
         await self._call(self._store.finish_claim, token, status, effect)
+
+    async def reconcile_external_effect(
+        self, request: ReconciliationRequest
+    ) -> ReconciliationResult:
+        """Await atomic reconciliation proof and retry-gate persistence."""
+        return await self._call(self._store.reconcile_external_effect, request)
+
+    async def inspect_claim(
+        self, claim_key: str, *, history_limit: int = 100
+    ) -> ClaimInspection:
+        """Await bounded restart inspection without exposing private SQL."""
+        operation = partial(
+            self._store.inspect_claim, claim_key, history_limit=history_limit
+        )
+        return await self._call(operation)
 
     async def close(self) -> None:
         """

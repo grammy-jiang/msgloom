@@ -16,9 +16,18 @@ from msgloom.persistence.errors import (
     UnknownResultSchemaError,
     UnknownSemanticDataSchemaError,
 )
+from msgloom.persistence.reconciliation import (
+    ClaimAttemptSnapshot,
+    ClaimInspection,
+    ReconciliationIdentity,
+    ReconciliationRequest,
+    ReconciliationResult,
+)
 from msgloom.persistence.semantic import SemanticDataRegistry
 
 __all__ = [
+    "ClaimAttemptSnapshot",
+    "ClaimInspection",
     "ClaimUnavailableError",
     "DependencyNotReadyError",
     "ExternalEffectReconciliationRequired",
@@ -26,6 +35,9 @@ __all__ = [
     "IncompatibleSchemaError",
     "Phase1Persistence",
     "Phase1PersistenceError",
+    "ReconciliationIdentity",
+    "ReconciliationRequest",
+    "ReconciliationResult",
     "SemanticDataIntegrityError",
     "SemanticDataReferenceError",
     "SemanticDataRegistry",
