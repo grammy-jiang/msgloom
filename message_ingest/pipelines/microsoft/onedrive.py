@@ -13,6 +13,8 @@ from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.microsoft.onedrive import (
     OneDriveContentItem,
     OneDriveDeltaCheckpointCandidateItem,
+    OneDriveDeltaResyncAttemptItem,
+    OneDriveDeltaResyncObservationItem,
     OneDriveDriveItem,
     OneDriveItem,
 )
@@ -42,6 +44,14 @@ class OneDrivePipeline:
         """Persist OneDrive items and propagate failures to run integrity."""
         if isinstance(item, OneDriveDriveItem):
             return await self._persist(item, "drive", self.store.persist_drive)
+        if isinstance(item, OneDriveDeltaResyncAttemptItem):
+            return await self._persist(
+                item, "resync_attempt", self.store.persist_resync_attempt
+            )
+        if isinstance(item, OneDriveDeltaResyncObservationItem):
+            return await self._persist(
+                item, "resync_observation", self.store.persist_resync_observation
+            )
         if isinstance(item, OneDriveItem):
             return await self._persist(item, "item", self.store.persist_item)
         if isinstance(item, OneDriveContentItem):

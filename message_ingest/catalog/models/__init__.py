@@ -3,9 +3,12 @@
 from .acquisition import RawHttpEvidence, SourceBinding, SourceTargetBinding
 from .base import Base
 from .microsoft.onedrive import (
+    OneDriveContentCapture,
     OneDriveContentRecord,
     OneDriveDeltaCheckpoint,
     OneDriveDeltaCheckpointCandidate,
+    OneDriveDeltaResyncAttempt,
+    OneDriveDeltaResyncObservation,
     OneDriveDriveRecord,
     OneDriveItemRecord,
 )
@@ -72,9 +75,12 @@ __all__ = [
     "MessagePresenceSighting",
     "MessageRecord",
     "MessageSurface",
+    "OneDriveContentCapture",
     "OneDriveContentRecord",
     "OneDriveDeltaCheckpoint",
     "OneDriveDeltaCheckpointCandidate",
+    "OneDriveDeltaResyncAttempt",
+    "OneDriveDeltaResyncObservation",
     "OneDriveDriveRecord",
     "OneDriveItemRecord",
     "RawHttpEvidence",

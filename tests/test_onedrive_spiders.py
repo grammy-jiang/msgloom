@@ -9,12 +9,16 @@ from scrapy import Request
 from scrapy.crawler import Crawler
 from scrapy.http import TextResponse
 from scrapy.settings import Settings
+from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
+from twisted.python.failure import Failure
 
-from message_ingest.items.acquisition import RawHttpEvidenceItem
+from message_ingest.items.acquisition import AcquisitionFailureItem, RawHttpEvidenceItem
 from message_ingest.items.microsoft.onedrive import (
     OneDriveDeltaCheckpointCandidateItem,
+    OneDriveDeltaResyncAttemptItem,
+    OneDriveDeltaResyncObservationItem,
     OneDriveDriveItem,
     OneDriveItem,
 )
@@ -42,7 +46,12 @@ OPAQUE = "https://graph.microsoft.com/v1.0/me/drive/root/delta?z=%2f&x=+&x=%20&t
 def spider[SpiderT: OneDriveSpider](
     cls: type[SpiderT], settings=None, **kwargs
 ) -> SpiderT:
-    crawler = get_crawler(cls, settings or {})
+    selected = {
+        "MSGLOOM_SOURCE_ID": "onedrive-test-source",
+        "MSGLOOM_DATABASE_URL": "sqlite:///:memory:",
+        **(settings or {}),
+    }
+    crawler = get_crawler(cls, selected)
     return cls.from_crawler(crawler, **kwargs)
 
 
@@ -90,14 +99,16 @@ def test_onedrive_source_priority_and_product_isolation(cls, override):
         override or settings["MSGLOOM_TODO_SOURCE_ID"]
     ):
         pytest.fail("OneDrive changed To Do source selection")
-    for key in (
-        "DOWNLOADER_MIDDLEWARES",
-        "LOG_FORMATTER",
-        "REQUEST_FINGERPRINTER_CLASS",
-        "CONCURRENT_ITEMS",
-    ):
+    for key in ("DOWNLOADER_MIDDLEWARES", "LOG_FORMATTER", "CONCURRENT_ITEMS"):
         if crawler.settings[key] != settings[key]:
             pytest.fail(f"OneDrive replaced a shared framework contract: {key}")
+    expected_fingerprinter = (
+        "message_ingest.fingerprints.microsoft.onedrive.OneDriveDeltaRequestFingerprinter"
+        if cls is MicrosoftOneDriveDeltaSpider
+        else settings["REQUEST_FINGERPRINTER_CLASS"]
+    )
+    if crawler.settings["REQUEST_FINGERPRINTER_CLASS"] != expected_fingerprinter:
+        pytest.fail("OneDrive request fingerprinting changed outside delta reset needs")
     if crawler.settings.getdict("ITEM_PIPELINES") != {
         "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
         "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,
@@ -230,7 +241,14 @@ def test_invalid_delta_cannot_produce_candidate(payload):
 
 @pytest.mark.parametrize("cls", CLASSES)
 def test_onedrive_refuses_unvalidated_jobdir(cls, tmp_path):
-    crawler = get_crawler(cls, {"JOBDIR": str(tmp_path / "job")})
+    crawler = get_crawler(
+        cls,
+        {
+            "JOBDIR": str(tmp_path / "job"),
+            "MSGLOOM_SOURCE_ID": "onedrive-test-source",
+            "MSGLOOM_DATABASE_URL": "sqlite:///:memory:",
+        },
+    )
     with pytest.raises(ValueError, match="does not support JOBDIR"):
         cls.from_crawler(crawler, item_ids='["item"]')
 
@@ -240,3 +258,106 @@ def test_onedrive_refuses_unvalidated_jobdir(cls, tmp_path):
 def test_onedrive_rejects_invalid_page_sizes(cls, size):
     with pytest.raises(ValueError):
         cls(page_size=size)
+
+
+class _RequestFailure(Failure):
+    """Carry the request that Scrapy attaches to downloader failures."""
+
+    request: Request
+
+
+def _http_failure(request, *, location=None):
+    headers = {"Location": location} if location is not None else {}
+    failed = TextResponse(
+        request.url,
+        request=request,
+        status=410,
+        headers=headers,
+        body=b'{"error":{"code":"resyncChangesApplyDifferences"}}',
+        encoding="utf-8",
+    )
+    failure = _RequestFailure(HttpError(failed, "synthetic gone"))
+    failure.request = request
+    return failure
+
+
+def test_delta_410_valid_location_starts_one_verbatim_staged_resync():
+    instance = spider(MicrosoftOneDriveDeltaSpider)
+    instance.base_revision = 3
+    expired = instance._delta_request(
+        OPAQUE, page_number=1, reset_attempt=0, verbatim=True
+    )
+    output = list(instance.errback(_http_failure(expired, location=OPAQUE)))
+    if len(output) != 3:
+        pytest.fail("Valid 410 must emit evidence, durable attempt, and one request")
+    evidence, attempt, reset = output
+    if not isinstance(evidence, RawHttpEvidenceItem) or not isinstance(
+        attempt, OneDriveDeltaResyncAttemptItem
+    ):
+        pytest.fail("410 reset lost evidence-first durable attempt ordering")
+    if any(name.lower() == "location" for name in evidence.response_headers):
+        pytest.fail("Opaque reset Location leaked into retained response headers")
+    if "onedrive_delta_resync_location_redacted" not in evidence.response_flags:
+        pytest.fail("410 evidence did not declare Location redaction")
+    if (
+        not isinstance(reset, Request)
+        or reset.url != OPAQUE
+        or not reset.meta.get("verbatim_url")
+        or not reset.meta.get("dont_cache")
+        or reset.cb_kwargs.get("reset_attempt") != 1
+        or reset.cb_kwargs.get("page_number") != 1
+    ):
+        pytest.fail("Fresh resync did not preserve the allowed Location verbatim")
+    if instance.crawler.request_fingerprinter.fingerprint(expired) == (
+        instance.crawler.request_fingerprinter.fingerprint(reset)
+    ):
+        pytest.fail("Same-URL reset was not separated from the expired chain")
+
+    terminal = parse(
+        reset,
+        {
+            "value": [{"id": "synthetic", "name": "server"}],
+            "@odata.deltaLink": OPAQUE + "&reset=done",
+        },
+    )
+    if not isinstance(terminal[1], OneDriveDeltaResyncObservationItem):
+        pytest.fail("Reset enumeration updated current items instead of staging")
+    if not isinstance(terminal[2], OneDriveDeltaCheckpointCandidateItem):
+        pytest.fail("Reset terminal page did not stage a checkpoint candidate")
+    staged = terminal[1]
+    if staged.base_revision != 3 or staged.page_number != 1 or staged.entry_index != 0:
+        pytest.fail("Reset sighting lost base revision or durable ordering")
+
+
+@pytest.mark.parametrize(
+    "location",
+    [None, "/v1.0/me/drive/root/delta", "https://off-host.invalid/v1.0/delta"],
+)
+def test_delta_410_missing_invalid_or_offhost_location_fails_closed(location):
+    instance = spider(MicrosoftOneDriveDeltaSpider)
+    instance.base_revision = 1
+    expired = instance._delta_request(
+        OPAQUE, page_number=1, reset_attempt=0, verbatim=True
+    )
+    output = list(instance.errback(_http_failure(expired, location=location)))
+    if len(output) != 2 or not isinstance(output[1], AcquisitionFailureItem):
+        pytest.fail("Unsafe 410 Location must become one terminal acquisition failure")
+    if any(isinstance(value, Request) for value in output) or not instance.run_failed:
+        pytest.fail("Unsafe 410 Location scheduled work or preserved clean integrity")
+
+
+def test_delta_second_410_in_reset_attempt_fails_closed():
+    instance = spider(MicrosoftOneDriveDeltaSpider)
+    instance.base_revision = 1
+    expired = instance._delta_request(
+        OPAQUE, page_number=1, reset_attempt=0, verbatim=True
+    )
+    first = list(instance.errback(_http_failure(expired, location=OPAQUE)))
+    reset = first[-1]
+    if not isinstance(reset, Request):
+        pytest.fail("Fixture failed to start reset")
+    second = list(instance.errback(_http_failure(reset, location=OPAQUE)))
+    if len(second) != 2 or not isinstance(second[1], AcquisitionFailureItem):
+        pytest.fail("Second 410 must fail instead of starting another reset")
+    if any(isinstance(value, OneDriveDeltaResyncAttemptItem) for value in second):
+        pytest.fail("Second 410 created a second reset attempt")

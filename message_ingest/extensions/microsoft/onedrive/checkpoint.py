@@ -1,70 +1,116 @@
-"""Promote OneDrive terminal cursors only after clean Scrapy idle."""
+"""Promote complete OneDrive delta rounds only after native idle."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
 
 from scrapy import signals
-from scrapy.exceptions import CloseSpider, NotConfigured
+from scrapy.exceptions import CloseSpider, DontCloseSpider, NotConfigured
+from scrapy.utils.defer import deferred_from_coro
+from twisted.python.failure import Failure
 
 from message_ingest.catalog.stores.microsoft.onedrive import OneDriveStore
 from message_ingest.extensions.catalog import CatalogService
-from message_ingest.spiders.microsoft.onedrive.delta import MicrosoftOneDriveDeltaSpider
+from message_ingest.spiders.microsoft.onedrive.delta import (
+    MicrosoftOneDriveDeltaSpider,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class OneDriveDeltaCheckpointExtension:
-    """
-    Use native idle to gate one source/run candidate after completed writes.
-
-    Scrapy 2.19 excludes pending requests, callbacks, and item pipeline work
-    from idle. The shared integrity extension records callback/item failures;
-    the Spider marks terminal request failures. No candidate is promoted on
-    interrupted shutdown, and a candidate alone never proves run completion.
-    """
+    """Promote one terminal cursor after requests and item pipelines are idle."""
 
     def __init__(self, crawler) -> None:
         self.crawler = crawler
-        self._handled = False
+        self._promotion_started = False
+        self._promotion_done = False
+        self._promotion_error: Failure | None = None
 
     @classmethod
     def from_crawler(cls, crawler):
-        """Enable only for OneDrive delta with catalog persistence enabled."""
+        """Enable only for the explicit OneDrive delta spider setting."""
         if not crawler.settings.getbool("MSGLOOM_ONEDRIVE_DELTA_CHECKPOINT_ENABLED"):
-            raise NotConfigured("OneDrive delta checkpoints disabled")
-        if not crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
-            raise NotConfigured("OneDrive checkpoints require the SQL catalog")
+            raise NotConfigured("OneDrive delta checkpoint extension disabled")
         extension = cls(crawler)
         crawler.signals.connect(extension.spider_idle, signal=signals.spider_idle)
         return extension
 
     def spider_idle(self, spider) -> None:
-        """Promote once after terminal completion; fail closed on any gap."""
-        if not isinstance(spider, MicrosoftOneDriveDeltaSpider) or self._handled:
+        """Gate promotion on durable completion and await it under the write lock."""
+        if not isinstance(spider, MicrosoftOneDriveDeltaSpider):
             return
-        self._handled = True
-        prefix = "msgloom/crawl/onedrive/delta/checkpoint/"
-        service = CatalogService.from_crawler(self.crawler)
-        if (
-            spider.run_failed
-            or not spider.terminal_delta_seen
-            or service.write_lock.locked()
-        ):
-            self.crawler.stats.set_value(prefix + "outcome", "skipped")
+        if self._promotion_error is not None:
+            spider.mark_run_failed("onedrive_checkpoint_promotion_failed")
+            raise CloseSpider(reason="onedrive_checkpoint_promotion_failed")
+        if self._promotion_done:
+            return
+        if self._promotion_started:
+            raise DontCloseSpider
+
+        if spider.run_failed or not spider.terminal_delta_seen:
             spider.mark_run_failed("onedrive_delta_incomplete")
+            self.crawler.stats.set_value(
+                "msgloom/onedrive/checkpoint/outcome", "skipped"
+            )
             raise CloseSpider(reason="onedrive_delta_incomplete")
+
+        service = CatalogService.from_crawler(self.crawler)
         store = OneDriveStore(
-            service.catalog, source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"]
+            service.catalog,
+            source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"],
         )
-        try:
-            # This handler is synchronous. At native idle no item write holds
-            # the shared lock, and no new work can interleave this transaction.
-            checkpoint = store.promote_checkpoint(
-                run_id=spider.run_id, base_revision=spider.base_revision
+        candidate = store.load_candidate(
+            run_id=spider.run_id, base_revision=spider.base_revision
+        )
+        if candidate is None:
+            spider.mark_run_failed("onedrive_delta_candidate_missing")
+            self.crawler.stats.set_value(
+                "msgloom/onedrive/checkpoint/outcome", "skipped"
             )
-        except Exception as exc:
-            self.crawler.stats.set_value(prefix + "outcome", "error")
-            spider.mark_run_failed("onedrive_checkpoint_commit_failed")
-            spider.logger.error(
-                "OneDrive checkpoint promotion failed: error_type=%s",
-                type(exc).__name__,
+            raise CloseSpider(reason="onedrive_delta_candidate_missing")
+
+        self._promotion_started = True
+        deferred = deferred_from_coro(self._promote(spider, service, store))
+        deferred.addCallbacks(self._promotion_succeeded, self._promotion_failed)
+        raise DontCloseSpider
+
+    async def _promote(self, spider, service: CatalogService, store: OneDriveStore):
+        """Serialize the idle-time SQL transaction with every pipeline write."""
+        async with service.write_lock:
+            return await asyncio.to_thread(
+                store.promote_checkpoint,
+                run_id=spider.run_id,
+                base_revision=spider.base_revision,
+                reset_attempt=spider.reset_attempt or None,
             )
-            raise CloseSpider(reason="onedrive_checkpoint_commit_failed") from exc
-        self.crawler.stats.set_value(prefix + "outcome", "committed")
-        self.crawler.stats.set_value(prefix + "revision", checkpoint.revision)
-        self.crawler.stats.inc_value(prefix + "commit_count")
+
+    def _promotion_succeeded(self, checkpoint):
+        """Publish bounded success facts after the awaited transaction returns."""
+        self._promotion_done = True
+        self.crawler.stats.set_value("msgloom/onedrive/checkpoint/outcome", "committed")
+        self.crawler.stats.set_value(
+            "msgloom/onedrive/checkpoint/revision", checkpoint.revision
+        )
+        self.crawler.stats.inc_value("msgloom/onedrive/checkpoint/commit_count")
+        logger.info(
+            "OneDrive delta checkpoint committed: revision=%s",
+            checkpoint.revision,
+            extra={"spider": self.crawler.spider},
+        )
+        return checkpoint
+
+    def _promotion_failed(self, failure: Failure):
+        """Retain the failure for the next idle pass to close deterministically."""
+        self._promotion_error = failure
+        self.crawler.stats.set_value("msgloom/onedrive/checkpoint/outcome", "error")
+        self.crawler.stats.inc_value("msgloom/onedrive/checkpoint/error_count")
+        logger.error(
+            "OneDrive checkpoint promotion failed: error_type=%s",
+            failure.type.__name__ if failure.type else "UnknownError",
+            extra={"spider": self.crawler.spider},
+        )
+
+
+__all__ = ["OneDriveDeltaCheckpointExtension"]

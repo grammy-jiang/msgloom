@@ -89,8 +89,11 @@ def test_onedrive_schema_is_additive_and_uses_source_scope(api, tmp_path):
         "onedrive_drives": ("source_id",),
         "onedrive_items": ("source_id", "item_id"),
         "onedrive_contents": ("source_id", "item_id"),
+        "onedrive_content_captures": ("source_id", "evidence_id"),
         "onedrive_delta_checkpoints": ("source_id",),
         "onedrive_delta_checkpoint_candidates": ("source_id", "run_id"),
+        "onedrive_delta_resync_attempts": ("source_id", "run_id", "reset_attempt"),
+        "onedrive_delta_resync_observations": ("observation_id",),
     }
     url = f"sqlite:///{tmp_path / 'existing.sqlite3'}"
     engine = create_engine(url)
@@ -274,6 +277,11 @@ def test_content_state_has_no_second_body_or_transport_url(api, catalog):
         "observed_at",
         "evidence_id",
         "run_id",
+        "planned_metadata_observed_at",
+        "planned_metadata_evidence_id",
+        "planned_e_tag",
+        "planned_c_tag",
+        "response_e_tag",
     }
     if {field.name for field in fields(item)} != allowed:
         pytest.fail("Content items must contain only digest/size and provenance")
@@ -286,6 +294,14 @@ def test_content_state_has_no_second_body_or_transport_url(api, catalog):
             for column in row.__table__.columns
         ):
             pytest.fail("Content body or transport URL leaked into semantic state")
+        capture = session.scalars(select(models.OneDriveContentCapture)).one()
+        if capture.evidence_id != "evidence" or capture.content_sha256 != "digest":
+            pytest.fail("Append-only content capture lost its evidence association")
+        if any(
+            "body" in column.name or "url" in column.name
+            for column in capture.__table__.columns
+        ):
+            pytest.fail("Content capture association must not duplicate bytes or URLs")
 
 
 def test_candidate_is_not_resume_point_and_promotion_compares_revision(api, catalog):

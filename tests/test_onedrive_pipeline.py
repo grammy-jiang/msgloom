@@ -11,6 +11,7 @@ from sqlalchemy import select
 
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.catalog.models.microsoft.onedrive import (
+    OneDriveContentCapture,
     OneDriveContentRecord,
     OneDriveItemRecord,
 )
@@ -101,6 +102,14 @@ def test_pipeline_persists_canonical_evidence_reference_after_linking(tmp_path):
                 original.observed_at
             ):
                 pytest.fail("OneDrive write overtook canonical evidence linking")
+            capture = session.scalars(select(OneDriveContentCapture)).one()
+            if (
+                capture.evidence_id != "original"
+                or capture.observed_at != original.observed_at
+            ):
+                pytest.fail(
+                    "Content version association did not use canonical evidence"
+                )
         if (
             crawler.stats.get_value("msgloom/catalog/onedrive/content_created_count")
             != 1

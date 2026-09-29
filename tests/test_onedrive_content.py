@@ -12,8 +12,11 @@ from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
+from message_ingest.catalog import Catalog
+from message_ingest.catalog.stores.microsoft.onedrive import OneDriveStore
+from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import AcquisitionFailureItem, RawHttpEvidenceItem
-from message_ingest.items.microsoft.onedrive import OneDriveContentItem
+from message_ingest.items.microsoft.onedrive import OneDriveContentItem, OneDriveItem
 from message_ingest.spiders.microsoft.onedrive.content import (
     MicrosoftOneDriveContentSpider,
 )
@@ -48,6 +51,7 @@ def downloaded(request, status=200):
         headers={
             "Content-Type": "application/octet-stream",
             "Content-Length": str(len(BODY)),
+            "ETag": '"version-1"',
             "Location": SECRET,
             "Content-Location": SECRET,
             "Link": f"<{SECRET}>",
@@ -105,6 +109,8 @@ def test_redirected_binary_evidence_is_first_and_uses_only_safe_graph_source():
         evidence.evidence_id,
     ):
         pytest.fail("Content metadata must reference exactly one raw capture")
+    if content.response_e_tag != '"version-1"':
+        pytest.fail("Safe response ETag was not retained for version proof")
     if any(
         hasattr(content, field) for field in ("body", "raw", "url", "response_body")
     ):
@@ -156,3 +162,39 @@ def test_failed_download_redacts_urls_headers_and_exception_text(http_error, cap
 def test_invalid_explicit_item_ids_are_rejected(item_ids):
     with pytest.raises(ValueError):
         MicrosoftOneDriveContentSpider(item_ids=item_ids)
+
+
+def test_content_request_planning_binds_known_metadata_version(tmp_path):
+    database = f"sqlite:///{tmp_path / 'catalog.sqlite3'}"
+    catalog = Catalog(database)
+    try:
+        OneDriveStore(catalog, source_id="source").persist_item(
+            OneDriveItem.from_graph(
+                {"id": "item", "eTag": '"etag-1"', "cTag": '"ctag-1"', "file": {}},
+                observed_at="2026-09-29T00:00:00+00:00",
+                evidence_id="metadata-evidence",
+                run_id="metadata-run",
+            )
+        )
+    finally:
+        catalog.close()
+    crawler = get_crawler(
+        MicrosoftOneDriveContentSpider,
+        {
+            "MSGLOOM_CATALOG_ENABLED": True,
+            "MSGLOOM_DATABASE_URL": database,
+            "MSGLOOM_ONEDRIVE_SOURCE_ID": "source",
+            "MSGLOOM_MAX_RAW_CONTENT_BYTES": 1234,
+        },
+    )
+    instance = MicrosoftOneDriveContentSpider.from_crawler(crawler, item_ids='["item"]')
+    try:
+        request = requests(instance)[0]
+        if request.cb_kwargs.get("planned_e_tag") != '"etag-1"':
+            pytest.fail("Content request did not bind the current metadata eTag")
+        if request.cb_kwargs.get("planned_c_tag") != '"ctag-1"':
+            pytest.fail("Documented file-content cTag was not retained")
+        if request.cb_kwargs.get("planned_metadata_evidence_id") != "metadata-evidence":
+            pytest.fail("Content planning lost the exact metadata observation")
+    finally:
+        CatalogService.from_crawler(crawler).close()

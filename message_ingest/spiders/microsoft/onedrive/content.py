@@ -1,5 +1,6 @@
 """Capture content only for explicit OneDrive IDs, with private URL handling."""
 
+import asyncio
 import json
 from collections.abc import AsyncIterator, Iterator
 from hashlib import sha256
@@ -9,6 +10,8 @@ from scrapy.http import Response
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.python.failure import Failure
 
+from message_ingest.catalog.stores.microsoft.onedrive import OneDriveStore
+from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import AcquisitionFailureItem, RawHttpEvidenceItem
 from message_ingest.items.microsoft.onedrive import OneDriveContentItem
 
@@ -63,22 +66,52 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
         self.item_ids = tuple(dict.fromkeys(values))
 
     async def start(self) -> AsyncIterator[Any]:
-        """Schedule bounded uncached downloads only for requested items."""
+        """Bind known metadata versions before scheduling explicit downloads."""
+        versions = {}
+        if self.crawler.settings.getbool("MSGLOOM_CATALOG_ENABLED"):
+            service = CatalogService.from_crawler(self.crawler)
+            store = OneDriveStore(
+                service.catalog, source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"]
+            )
+            versions = await asyncio.to_thread(store.load_item_versions, self.item_ids)
         limit = self._max_raw_content_bytes()
         for item_id in self.item_ids:
+            version = versions.get(item_id)
             yield self.content_request(
                 item_id,
                 callback=self.parse_content,
                 errback=self.content_errback,
                 operation="onedrive-content",
-                cb_kwargs={"item_id": item_id, "purpose": "onedrive-content"},
+                cb_kwargs={
+                    "item_id": item_id,
+                    "purpose": "onedrive-content",
+                    "planned_metadata_observed_at": (
+                        version.observed_at if version is not None else None
+                    ),
+                    "planned_metadata_evidence_id": (
+                        version.evidence_id if version is not None else None
+                    ),
+                    "planned_e_tag": version.e_tag if version is not None else None,
+                    # Microsoft documents cTag as the file-content tag. Retain it
+                    # for audit context; freshness proof remains exact eTag based.
+                    "planned_c_tag": version.c_tag if version is not None else None,
+                },
                 download_maxsize=limit or None,
             )
 
     def parse_content(
-        self, response: Response, *, item_id: str, purpose: str
+        self,
+        response: Response,
+        *,
+        item_id: str,
+        purpose: str,
+        planned_metadata_observed_at: str | None,
+        planned_metadata_evidence_id: str | None,
+        planned_e_tag: str | None,
+        planned_c_tag: str | None,
     ) -> Iterator[Any]:
-        """Sanitize evidence first, then emit digest and size without bytes."""
+        """Sanitize evidence first, then bind bytes to known version facts."""
+        response_e_tag = self._single_entity_header(response, "ETag")
         evidence = self._raw_http_evidence_item(response, purpose)
         self._redact_download(evidence, item_id)
         yield evidence
@@ -90,6 +123,11 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
             item_id=item_id,
             content_sha256=sha256(response.body).hexdigest(),
             content_bytes=len(response.body),
+            planned_metadata_observed_at=planned_metadata_observed_at,
+            planned_metadata_evidence_id=planned_metadata_evidence_id,
+            planned_e_tag=planned_e_tag,
+            planned_c_tag=planned_c_tag,
+            response_e_tag=response_e_tag,
             observed_at=evidence.observed_at,
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
@@ -136,6 +174,17 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
         )
+
+    @staticmethod
+    def _single_entity_header(response: Response, name: str) -> str | None:
+        """Retain one URL-free entity header exactly, otherwise no proof value."""
+        values = response.headers.getlist(name)
+        if len(values) != 1:
+            return None
+        value = values[0].decode("latin-1")
+        if not value or "://" in value:
+            return None
+        return value
 
     def _redact_download(self, evidence: RawHttpEvidenceItem, item_id: str) -> None:
         """Replace transport locations while keeping exact body/status/hash."""
