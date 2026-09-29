@@ -87,9 +87,20 @@ class Phase1Persistence:
         """Build a validated semantic-data integrity reference without I/O."""
         return self._store.semantic_reference(data_id, kind, schema_version, value)
 
-    async def append_result_with_data(self, result: StageResult, value: object) -> None:
-        """Atomically persist a stage result and its referenced semantic data."""
-        await self._call(self._store.append_result_with_data, result, value)
+    async def append_result_with_data(
+        self, result: StageResult, value: object, *, require_new: bool = False
+    ) -> None:
+        """Atomically persist a result/data pair, optionally requiring a new id."""
+        if not require_new:
+            await self._call(self._store.append_result_with_data, result, value)
+            return
+        operation = partial(
+            self._store.append_result_with_data,
+            result,
+            value,
+            require_new=True,
+        )
+        await self._call(operation)
 
     async def load_semantic_data(self, reference: SemanticDataRef) -> object:
         """Load and validate semantic data through its exact integrity reference."""

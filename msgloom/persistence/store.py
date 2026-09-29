@@ -1,7 +1,5 @@
 """Synchronous SQLAlchemy owner for provider-neutral Phase 1 tables."""
 
-from __future__ import annotations
-
 import os
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
@@ -121,8 +119,10 @@ class Phase1Store:
         with self._write_transaction() as connection:
             append_stage_result(connection, result)
 
-    def append_result_with_data(self, result: StageResult, value: object) -> None:
-        """Atomically append one result and its immutable semantic data."""
+    def append_result_with_data(
+        self, result: StageResult, value: object, *, require_new: bool = False
+    ) -> None:
+        """Atomically append a result/data pair, optionally requiring a new id."""
         self._require_schema(result.kind, result.schema_version)
         reference = result.semantic_data_ref
         if reference is None:
@@ -139,7 +139,7 @@ class Phase1Store:
         encoded = self.semantic_registry.encode_for_reference(reference, value)
         with self._write_transaction() as connection:
             append_semantic_data(connection, encoded)
-            append_stage_result(connection, result)
+            append_stage_result(connection, result, require_new=require_new)
 
     def load_semantic_data(self, reference: SemanticDataRef) -> object:
         """Load and validate one immutable semantic payload."""

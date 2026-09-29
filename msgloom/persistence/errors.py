@@ -13,6 +13,10 @@ class ImmutableRecordError(Phase1PersistenceError):
     """An existing immutable result or outcome conflicts with a rewrite."""
 
 
+class DuplicateResultError(Phase1PersistenceError):
+    """A caller required a new result identity that already exists."""
+
+
 class DependencyNotReadyError(Phase1PersistenceError):
     """A dependent stage input is absent or not explicitly acceptable."""
 
