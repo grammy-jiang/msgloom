@@ -215,6 +215,7 @@ class ReportReconciliationPlan(_ClosedModel):
     part_number: Annotated[int, Field(ge=1, le=128)]
     decision: ExternalEffectState
     provider_evidence: Annotated[tuple[ProviderEvidence, ...], Field(max_length=16)]
+    receipt_ref: ResultRef | None = None
     recovery_attempt: AttemptIdentity
     recovery_result_id: ShortText
     code_version: ShortText
@@ -228,6 +229,19 @@ class ReportReconciliationPlan(_ClosedModel):
             and not self.provider_evidence
         ):
             raise ValueError("definite reconciliation requires provider evidence")
+        definite_acceptance = self.decision in {
+            ExternalEffectState.ACCEPTED,
+            ExternalEffectState.CONFIRMED,
+        }
+        if definite_acceptance and self.receipt_ref is None:
+            raise ValueError("accepted reconciliation requires a durable receipt")
+        if not definite_acceptance and self.receipt_ref is not None:
+            raise ValueError("only accepted reconciliation may bind a receipt")
+        if self.receipt_ref is not None and (
+            self.receipt_ref.kind != "report_submission"
+            or self.receipt_ref.schema_version != "1"
+        ):
+            raise ValueError("reconciliation receipt reference is invalid")
         return self
 
 

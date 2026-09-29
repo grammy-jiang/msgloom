@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -13,6 +12,7 @@ from msgloom.delivery import (
     DeliveryReportHistoryResolver,
     TransportReceipt,
 )
+from msgloom.delivery.records import history_result_id
 from msgloom.reporting import (
     PriorReportState,
     RendererConfig,
@@ -49,13 +49,11 @@ def test_accepted_history_is_verified_across_restart_and_attempt_is_not_history(
             pytest.fail("synthetic accepted report did not complete")
 
         assessment = report.topics[0].assessment_ref
-        digest = sha256(
-            (
-                f"{submit_plan.parts[0].receipt_result_id}:"
-                f"{assessment.identity}:{assessment.version}"
-            ).encode()
-        ).hexdigest()[:32]
-        history_ref = ResultRef(f"report-history-{digest}", "report_submission", "1")
+        history_ref = ResultRef(
+            history_result_id(report.report_ref, report.policy_ref, 1, assessment),
+            "report_submission",
+            "1",
+        )
         attempt_ref = ResultRef(
             submit_plan.parts[0].attempt_result_id, "report_submission", "1"
         )

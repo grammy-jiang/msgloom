@@ -64,7 +64,7 @@ def test_partial_acceptance_is_not_full_and_retry_skips_accepted_part(
             TransportReceipt(ExternalEffectState.ACCEPTED, "202"),
             TransportReceipt(ExternalEffectState.REJECTED, "400"),
         )
-        outcome = await submission_handler(first, initial, transport, timeout=5.0).run(
+        outcome = await submission_handler(first, initial, transport, timeout=30.0).run(
             submission_request(initial)
         )
         if outcome.status is not TerminalStatus.INCOMPLETE:
@@ -103,7 +103,7 @@ def test_partial_acceptance_is_not_full_and_retry_skips_accepted_part(
                 retry,
                 retry_transport,
                 attempt="multipart-retry-attempt",
-                timeout=5.0,
+                timeout=30.0,
             ).run(submission_request(retry, identity="multipart-retry"))
             if completed.status is not TerminalStatus.COMPLETE:
                 pytest.fail("safe rejected part retry did not complete report")

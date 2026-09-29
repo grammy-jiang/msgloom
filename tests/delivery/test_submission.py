@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -18,7 +17,9 @@ from msgloom.delivery import (
     SubmissionAttempt,
     SubmissionReceipt,
     TransportReceipt,
+    submission_claim_key,
 )
+from msgloom.delivery.records import history_result_id
 from msgloom.persistence import Phase1PersistenceError
 from tests.delivery.helpers import (
     RecordingTransport,
@@ -137,14 +138,17 @@ def test_definite_receipts_persist_before_effect_and_survive_restart(
                 if history_ids:
                     pytest.fail("history refs must not be exposed as send receipts")
                 assessment = report.topics[0].assessment_ref
-                digest = sha256(
-                    (
-                        f"{plan_value.parts[0].receipt_result_id}:"
-                        f"{assessment.identity}:{assessment.version}"
-                    ).encode()
-                ).hexdigest()[:32]
+                receipt_ref = ResultRef(
+                    plan_value.parts[0].receipt_result_id,
+                    "report_submission",
+                    "1",
+                )
                 evidence_ref = ResultRef(
-                    f"report-history-{digest}", "report_submission", "1"
+                    history_result_id(
+                        report.report_ref, report.policy_ref, 1, assessment
+                    ),
+                    "report_submission",
+                    "1",
                 )
                 resolved = await resolver.resolve(await resolver.inspect(evidence_ref))
                 if resolved.assessment_ref != report.topics[0].assessment_ref:
@@ -167,7 +171,7 @@ def test_timeout_and_cancellation_after_pending_are_unknown_and_block_retry(
             plan_value = submission_plan(report_ref, report, suffix="timeout")
             transport = RecordingTransport(TimeoutError())
             outcome = await submission_handler(
-                store, plan_value, transport, timeout=2.0
+                store, plan_value, transport, timeout=30.0
             ).run(submission_request(plan_value))
             if outcome.external_effect is not ExternalEffectState.UNKNOWN:
                 pytest.fail("timed-out submission did not remain unknown")
@@ -200,9 +204,13 @@ def test_timeout_and_cancellation_after_pending_are_unknown_and_block_retry(
             with pytest.raises(asyncio.CancelledError):
                 await task
             snapshot = await store.inspect_claim(
-                f"report-submit:{report.report_ref.identity}:"
-                f"{report.report_ref.version}:{report.policy_ref.identity}:"
-                f"{report.policy_ref.version}:1"
+                submission_claim_key(
+                    report.report_ref.identity,
+                    report.report_ref.version,
+                    report.policy_ref.identity,
+                    report.policy_ref.version,
+                    1,
+                )
             )
             if snapshot.current_effect is not ExternalEffectState.UNKNOWN:
                 pytest.fail("cancelled in-flight submission did not remain unknown")

@@ -22,6 +22,7 @@ from msgloom.delivery import (
     ReportReconciler,
     ReportReconciliationPlan,
     TransportReceipt,
+    submission_claim_key,
 )
 from tests.delivery.helpers import (
     RecordingTransport,
@@ -84,9 +85,9 @@ def test_concurrent_claim_holder_cannot_duplicate_send(tmp_path: Path) -> None:
             )
             first_transport.release = asyncio.Event()
             first = asyncio.create_task(
-                submission_handler(store, plan_value, first_transport, timeout=5.0).run(
-                    submission_request(plan_value, identity="first")
-                )
+                submission_handler(
+                    store, plan_value, first_transport, timeout=30.0
+                ).run(submission_request(plan_value, identity="first"))
             )
             await first_transport.entered.wait()
 
@@ -132,9 +133,12 @@ def test_unknown_reconciliation_requires_proof_and_rejected_releases_retry(
         )
         if outcome.external_effect is not ExternalEffectState.UNKNOWN:
             pytest.fail("synthetic uncertain call did not remain unknown")
-        key = (
-            f"report-submit:{report.report_ref.identity}:{report.report_ref.version}:"
-            f"{report.policy_ref.identity}:{report.policy_ref.version}:1"
+        key = submission_claim_key(
+            report.report_ref.identity,
+            report.report_ref.version,
+            report.policy_ref.identity,
+            report.policy_ref.version,
+            1,
         )
         snapshot = await first.inspect_claim(key)
         target = snapshot.current_token

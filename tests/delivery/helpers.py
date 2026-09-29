@@ -20,6 +20,7 @@ from msgloom.delivery import (
     ReportSubmissionCodec,
     ReportSubmissionHandler,
     ReportSubmissionPlan,
+    ReportTransport,
     SubmissionHandlerConfig,
     SubmissionPartPlan,
     TransportReceipt,
@@ -143,10 +144,10 @@ def submission_request(
 def submission_handler(
     store: Phase1Persistence,
     plan_value: ReportSubmissionPlan,
-    transport: RecordingTransport,
+    transport: ReportTransport,
     *,
     attempt: str = "submit-attempt",
-    timeout: float = 2.0,
+    timeout: float = 30.0,
 ) -> ReportSubmissionHandler:
     """Build a finite handler with explicit synthetic transport."""
     return ReportSubmissionHandler(

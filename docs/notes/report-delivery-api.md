@@ -70,3 +70,52 @@ Authentication and Mail.Send consent remain deployment-owned inputs.
 
 Reference:
 [Microsoft Graph sendMail API](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0)
+
+## R2 safety and recovery invariants
+
+The operation timeout is one total budget over saved-report metadata and
+semantic loading, claim work, MIME and canonical codec CPU work, persistence,
+transport, history publication, and final claim acceptance. CPU-heavy MIME
+and report canonicalization run off the caller event loop. Cancellation drains
+owned persistence, CPU, and transport cleanup even when the caller cancels
+repeatedly; late cleanup failures do not replace the caller cancellation.
+
+Once PENDING is durable, every error that can occur after transport may have
+started retains UNKNOWN unless a durable definite receipt or stronger durable
+claim state proves ACCEPTED, CONFIRMED, or REJECTED. Settlement reloads the
+durable effect before finishing, including cancellation between a completed
+PENDING write and the caller observing that write. Invalid or oversized
+provider metadata is treated as untrusted response data and cannot release the
+retry gate. Incomplete outcomes retain the exact durable attempt/receipt
+prefix. A total-budget expiry cannot report operation success even if cleanup
+later persists a stronger external-effect fact.
+
+Submission claim keys hash a canonical JSON tuple of report identity/version,
+policy identity/version, and part number. Delimiter-bearing references
+therefore cannot alias another part scope. A retry after either direct or
+reconciled REJECTED state must bind the exact saved attempt from the rejected
+target attempt; MIME is never regenerated for that retry.
+
+Accepted/confirmed history identities are stable per report, policy, part, and
+assessment rather than per retry result name. History stores the original
+durable receipt timestamp. On restart, accepted parts first verify existing
+receipt-backed history. Missing history can be rebuilt idempotently under a
+fresh no-send recovery claim from the exact durable accepted receipt. Recovery
+never invokes the transport.
+
+Accepted/confirmed reconciliation requires both bounded provider proof and the
+exact durable accepted/confirmed receipt from the target attempt. The receipt,
+its attempt, report/policy/part, assessment lineage, effect, execution, and
+attempt identity are revalidated before reconciliation. Exact reconciliation
+proof retries reuse the immutable proof result; changed proof under the same
+identity fails. After accepted reconciliation, singular history is repaired
+from the original receipt timestamp. The history resolver independently reloads
+the receipt and attempt lineage, so fabricated history, mismatched attempts,
+and operator assertions without a durable receipt cannot qualify as prior
+reporting evidence.
+
+MIME generation rejects header newlines and other ASCII control characters,
+requires the owner mailbox to be ASCII, RFC 2047-encodes non-ASCII report
+identity in Subject, and wraps base64 body lines to the RFC 2045 76-character
+limit. Saved send bytes and their SHA-256 remain canonical codec inputs for
+exact replay.

@@ -114,3 +114,28 @@ class GraphSendMailTransport:
                 response.request_id,
             )
         raise RuntimeError("Graph submission outcome is not definitively classified")
+
+
+def validate_transport_receipt(value: object) -> TransportReceipt:
+    """Rebuild the finite trust boundary around provider response metadata."""
+    if not isinstance(value, TransportReceipt):
+        raise TypeError("transport returned an invalid response")
+    if value.effect not in {
+        ExternalEffectState.ACCEPTED,
+        ExternalEffectState.CONFIRMED,
+        ExternalEffectState.REJECTED,
+    }:
+        raise ValueError("transport returned an invalid effect")
+    if (
+        not isinstance(value.provider_status, str)
+        or not value.provider_status.strip()
+        or len(value.provider_status) > 512
+    ):
+        raise ValueError("transport status failed bounded validation")
+    if value.provider_receipt is not None and (
+        not isinstance(value.provider_receipt, str)
+        or not value.provider_receipt.strip()
+        or len(value.provider_receipt) > 512
+    ):
+        raise ValueError("transport receipt failed bounded validation")
+    return value
