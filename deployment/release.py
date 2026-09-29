@@ -30,6 +30,13 @@ FORBIDDEN_LOCK_NAMES = {
     "tox",
     "tox-uv",
 }
+_MAX_WHEEL_BYTES = 512 * 1024 * 1024
+_MAX_WHEEL_MEMBERS = 10_000
+_MAX_METADATA_BYTES = 4 * 1024 * 1024
+_MAX_LOCK_BYTES = 4 * 1024 * 1024
+_MAX_RESOURCE_SPECS = 128
+_MAX_RESOURCE_SPEC_CHARS = 1024
+_MAX_REQUIREMENTS = 2048
 _DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
 _LOCK_LINE = re.compile(
     r"([A-Za-z0-9][A-Za-z0-9_.-]*)==([^\s]+)"
@@ -75,9 +82,11 @@ def validate_targets(targets: tuple[Target, ...]) -> None:
 
 
 def sha256_file(path: Path) -> str:
-    """Return the content digest of one regular artifact."""
+    """Return the content digest of one bounded regular artifact."""
     if not path.is_file() or path.is_symlink():
         raise ReleaseInputError("qualification artifact must be a regular file")
+    if path.stat().st_size > _MAX_WHEEL_BYTES:
+        raise ReleaseInputError("qualification artifact exceeds 512 MiB")
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -89,6 +98,8 @@ def wheel_metadata(wheel: Path) -> WheelMetadata:
     """Validate wheel filename, distribution identity, and core metadata."""
     if not wheel.is_file() or wheel.is_symlink():
         raise ReleaseInputError("wheel must be a regular file")
+    if wheel.stat().st_size > _MAX_WHEEL_BYTES:
+        raise ReleaseInputError("wheel exceeds 512 MiB")
     try:
         wheel_name, wheel_version, _, tags = parse_wheel_filename(wheel.name)
     except InvalidWheelFilename as exc:
@@ -99,16 +110,22 @@ def wheel_metadata(wheel: Path) -> WheelMetadata:
     if tag_values != {("py3", "none", "any")}:
         raise ReleaseInputError("msgloom wheel must be universal py3-none-any")
     with zipfile.ZipFile(wheel) as archive:
-        names = tuple(archive.namelist())
-        metadata_names = [
-            name
-            for name in names
-            if name.endswith(".dist-info/METADATA") and "/" in name
+        infos = archive.infolist()
+        if len(infos) > _MAX_WHEEL_MEMBERS:
+            raise ReleaseInputError("wheel contains too many members")
+        names = tuple(info.filename for info in infos)
+        metadata_infos = [
+            info
+            for info in infos
+            if info.filename.endswith(".dist-info/METADATA") and "/" in info.filename
         ]
-        if len(metadata_names) != 1:
+        if len(metadata_infos) != 1:
             raise ReleaseInputError("wheel must contain exactly one METADATA")
+        metadata_info = metadata_infos[0]
+        if metadata_info.file_size > _MAX_METADATA_BYTES:
+            raise ReleaseInputError("wheel METADATA exceeds 4 MiB")
         metadata = Parser().parsestr(
-            archive.read(metadata_names[0]).decode("utf-8", errors="strict")
+            archive.read(metadata_info).decode("utf-8", errors="strict")
         )
     if canonicalize_name(metadata.get("Name", "")) != canonicalize_name("msgloom"):
         raise ReleaseInputError("wheel metadata distribution name must be msgloom")
@@ -121,8 +138,11 @@ def wheel_metadata(wheel: Path) -> WheelMetadata:
         raise ReleaseInputError("wheel version metadata is invalid") from exc
     if metadata_version != wheel_version:
         raise ReleaseInputError("wheel filename and metadata versions differ")
+    requirement_values = metadata.get_all("Requires-Dist", [])
+    if len(requirement_values) > _MAX_REQUIREMENTS:
+        raise ReleaseInputError("wheel contains too many dependency requirements")
     requirements: list[Requirement] = []
-    for value in metadata.get_all("Requires-Dist", []):
+    for value in requirement_values:
         try:
             requirements.append(Requirement(value))
         except InvalidRequirement as exc:
@@ -172,8 +192,12 @@ def validate_resource_specs(expected: tuple[str, ...]) -> tuple[str, ...]:
     """Validate exact caller-selected runtime resource identities."""
     if not expected:
         raise ReleaseInputError("at least one runtime resource must be required")
+    if len(expected) > _MAX_RESOURCE_SPECS:
+        raise ReleaseInputError("too many runtime resource requirements")
     seen: set[str] = set()
     for value in expected:
+        if len(value) > _MAX_RESOURCE_SPEC_CHARS:
+            raise ReleaseInputError("runtime resource requirement is too long")
         package, separator, resource = value.partition(":")
         if (
             not separator
@@ -207,6 +231,8 @@ def validate_lock(lock: Path, required: set[str]) -> set[str]:
     """Require exact hashed runtime requirements covering active direct deps."""
     if not lock.is_file() or lock.is_symlink():
         raise ReleaseInputError("runtime lock must be a regular file")
+    if lock.stat().st_size > _MAX_LOCK_BYTES:
+        raise ReleaseInputError("runtime lock exceeds 4 MiB")
     logical = lock.read_text(encoding="utf-8").replace("\\\n", " ")
     locked: set[str] = set()
     for raw in logical.splitlines():

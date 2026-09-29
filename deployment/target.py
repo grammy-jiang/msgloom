@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -205,6 +206,7 @@ def _qualify_target(
     seccomp: Path | None,
     skip_isolation: bool,
     daemon_architecture: str,
+    partial_evidence: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
     invocation = unique_name(target.python.replace(".", ""))
     image = invocation
@@ -333,8 +335,14 @@ def _qualify_target(
     except (OSError, RuntimeError, ValueError) as exc:
         checks.append(Check("target-execution", "fail", sanitize(str(exc))))
         return finish()
-    except BaseException:
-        _cleanup(runner, output_root, volume, image)
+    except (Exception, KeyboardInterrupt):
+        checks.append(Check("target-execution", "fail", "execution interrupted"))
+        partial = finish()
+        if partial_evidence is not None:
+            try:
+                partial_evidence(partial)
+            except OSError:
+                pass
         raise
 
 

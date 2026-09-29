@@ -84,17 +84,36 @@ def _package_wheel(
 
 
 def _write_report(output_root: Path, report: dict[str, object]) -> None:
-    (output_root / "container-qualification.json").write_text(
+    """Atomically persist the latest bounded qualification evidence."""
+    target = output_root / "container-qualification.json"
+    temporary = output_root / ".container-qualification.json.tmp"
+    temporary.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    temporary.replace(target)
+
+
+def _pending_target(target: Target, detail: str) -> dict[str, object]:
+    """Return truthful evidence for a target not yet completed."""
+    return {
+        "python_target": target.python,
+        "base_image": target.base_image,
+        "checks": [
+            {
+                "name": "target-qualification",
+                "status": "pending",
+                "detail": detail,
+            }
+        ],
+    }
 
 
 def qualify(
     args: argparse.Namespace,
     runner: Runner | None = None,
 ) -> dict[str, object]:
-    """Run serial qualification and persist evidence after execution starts."""
+    """Run serial qualification with durable partial lifecycle evidence."""
     selected = runner or Runner()
     targets = tuple(args.target)
     try:
@@ -120,13 +139,34 @@ def qualify(
         validate_resource_specs(resources)
     except ReleaseInputError as exc:
         raise QualificationError(str(exc)) from exc
+
     output_root.mkdir(parents=True)
     report: dict[str, object] = {
-        "release_checks": [],
-        "host_checks": [],
-        "targets": [],
+        "release_checks": [
+            {
+                "name": "qualification-execution",
+                "status": "pending",
+                "detail": "qualification started",
+            }
+        ],
+        "host_checks": [
+            {
+                "name": "host-preflight",
+                "status": "pending",
+                "detail": "not executed",
+            }
+        ],
+        "targets": [_pending_target(target, "not executed") for target in targets],
     }
+    _write_report(output_root, report)
     release_checks = cast(list[dict[str, object]], report["release_checks"])
+    results = cast(list[dict[str, object]], report["targets"])
+    context: Path | None = None
+    active_target: int | None = None
+    active_stage = "Docker daemon preflight"
+    original: Exception | KeyboardInterrupt | None = None
+    expected_failure = False
+
     try:
         daemon = selected.run(
             ["docker", "info", "--format", "{{.Architecture}}"],
@@ -137,6 +177,8 @@ def qualify(
         daemon_architecture = daemon.output.strip()
         if daemon_architecture not in {"aarch64", "arm64"}:
             raise QualificationError("Docker daemon is not native ARM64")
+
+        active_stage = "package qualification"
         package_output = output_root / "package"
         wheel = _package_wheel(
             source_root=source_root,
@@ -161,38 +203,64 @@ def qualify(
                 "wheel_sha256": wheel_hash,
                 "wheel_version": metadata.version,
                 "required_resources": list(resources),
-                "host_checks": [
-                    asdict(check)
-                    for check in _host_checks(
-                        selected,
-                        args.env_python,
-                        output_root,
-                        args.skip_isolation_preflight,
-                    )
-                ],
             }
         )
-        results = cast(list[dict[str, object]], report["targets"])
-        try:
-            for target in targets:
-                results.append(
-                    _qualify_target(
-                        target=target,
-                        wheel_hash=wheel_hash,
-                        wheel_filename=metadata.filename,
-                        wheel_version=metadata.version,
-                        resources=resources,
-                        context=context,
-                        output_root=output_root,
-                        runner=selected,
-                        seccomp=seccomp,
-                        skip_isolation=args.skip_isolation_preflight,
-                        daemon_architecture=daemon_architecture,
-                    )
-                )
+        _write_report(output_root, report)
+
+        active_stage = "host preflight"
+        report["host_checks"] = [
+            {
+                "name": "host-preflight",
+                "status": "pending",
+                "detail": "execution started",
+            }
+        ]
+        _write_report(output_root, report)
+        report["host_checks"] = [
+            asdict(check)
+            for check in _host_checks(
+                selected,
+                args.env_python,
+                output_root,
+                args.skip_isolation_preflight,
+            )
+        ]
+        _write_report(output_root, report)
+
+        for index, target in enumerate(targets):
+            active_target = index
+            active_stage = f"target {target.python}"
+            results[index] = _pending_target(target, "execution started")
+            _write_report(output_root, report)
+
+            def persist_partial(
+                value: dict[str, object],
+                target_index: int = index,
+            ) -> None:
+                results[target_index] = value
                 _write_report(output_root, report)
-        finally:
-            shutil.rmtree(context, ignore_errors=True)
+
+            results[index] = _qualify_target(
+                target=target,
+                wheel_hash=wheel_hash,
+                wheel_filename=metadata.filename,
+                wheel_version=metadata.version,
+                resources=resources,
+                context=context,
+                output_root=output_root,
+                runner=selected,
+                seccomp=seccomp,
+                skip_isolation=args.skip_isolation_preflight,
+                daemon_architecture=daemon_architecture,
+                partial_evidence=persist_partial,
+            )
+            active_target = None
+            _write_report(output_root, report)
+        release_checks[0] = {
+            "name": "qualification-execution",
+            "status": "pass",
+            "detail": "qualification execution completed",
+        }
     except (
         QualificationError,
         ReleaseInputError,
@@ -200,30 +268,52 @@ def qualify(
         ValueError,
         json.JSONDecodeError,
     ) as exc:
-        release_checks.append(
-            {
+        original = exc
+        expected_failure = True
+    except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 - preserve evidence
+        original = exc
+    finally:
+        if original is not None:
+            detail = sanitize(str(original)) or type(original).__name__
+            release_checks[0] = {
                 "name": "qualification-execution",
                 "status": "fail",
-                "detail": sanitize(str(exc)),
+                "detail": f"{active_stage}: {detail}",
             }
-        )
-        results = cast(list[dict[str, object]], report["targets"])
-        if not results:
-            results.extend(
-                {
-                    "python_target": target.python,
-                    "base_image": target.base_image,
-                    "checks": [
-                        {
-                            "name": "target-qualification",
-                            "status": "pending",
-                            "detail": "not executed after release qualification failure",
-                        }
-                    ],
-                }
-                for target in targets
-            )
-    _write_report(output_root, report)
+            if active_target is not None:
+                current = results[active_target]
+                checks = cast(list[dict[str, object]], current.get("checks", []))
+                if checks and checks[0].get("name") == "target-qualification":
+                    target = targets[active_target]
+                    results[active_target] = {
+                        "python_target": target.python,
+                        "base_image": target.base_image,
+                        "checks": [
+                            {
+                                "name": "target-qualification",
+                                "status": "fail",
+                                "detail": (
+                                    "execution interrupted before target evidence "
+                                    "completed"
+                                ),
+                            }
+                        ],
+                    }
+        if context is not None:
+            try:
+                shutil.rmtree(context)
+            except OSError as exc:
+                release_checks.append(
+                    {
+                        "name": "context-cleanup",
+                        "status": "fail",
+                        "detail": sanitize(str(exc)) or type(exc).__name__,
+                    }
+                )
+        _write_report(output_root, report)
+
+    if original is not None and not expected_failure:
+        raise original.with_traceback(original.__traceback__)
     return report
 
 

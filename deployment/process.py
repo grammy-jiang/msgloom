@@ -14,8 +14,10 @@ from pathlib import Path
 OUTPUT_LIMIT = 1600
 _READ_CHUNK = 4096
 _RAW_TAIL_LIMIT = OUTPUT_LIMIT * 4
-_TERMINATION_GRACE_SECONDS = 2.0
+_TERMINATION_GRACE_SECONDS = 0.2
+_DRAIN_GRACE_SECONDS = 0.2
 _CLEANUP_TIMEOUT_SECONDS = 15
+_SELECT_SLICE_SECONDS = 0.05
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,26 +45,70 @@ def _tail_append(chunks: deque[bytes], size: int, value: bytes) -> int:
     return size
 
 
+def _group_exists(pgid: int) -> bool:
+    """Return whether the invocation-owned process group still exists."""
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _signal_group(pgid: int, sig: signal.Signals) -> None:
+    """Signal only the process group created for this invocation."""
+    try:
+        os.killpg(pgid, sig)
+    except ProcessLookupError:
+        pass
+
+
+def _wait_owned_group(
+    process: subprocess.Popen[bytes],
+    deadline: float,
+) -> bool:
+    """Wait only until the deadline for leader and owned group exit."""
+    while time.monotonic() < deadline:
+        leader_done = process.poll() is not None
+        if leader_done and not _group_exists(process.pid):
+            return True
+        time.sleep(min(_SELECT_SLICE_SECONDS, max(deadline - time.monotonic(), 0)))
+    return process.poll() is not None and not _group_exists(process.pid)
+
+
 def _terminate_group(process: subprocess.Popen[bytes]) -> None:
     """Terminate and reap one invocation-owned host process group."""
-    if process.poll() is not None:
-        process.wait()
-        return
+    _signal_group(process.pid, signal.SIGTERM)
+    grace = time.monotonic() + _TERMINATION_GRACE_SECONDS
+    if not _wait_owned_group(process, grace):
+        _signal_group(process.pid, signal.SIGKILL)
+        kill_deadline = time.monotonic() + _TERMINATION_GRACE_SECONDS
+        _wait_owned_group(process, kill_deadline)
+    if process.poll() is None:
+        try:
+            process.wait(timeout=_TERMINATION_GRACE_SECONDS)
+        except subprocess.TimeoutExpired:
+            _signal_group(process.pid, signal.SIGKILL)
+            try:
+                process.wait(timeout=_TERMINATION_GRACE_SECONDS)
+            except subprocess.TimeoutExpired:
+                return
+
+
+def _cleanup_after_interrupt(process: subprocess.Popen[bytes]) -> None:
+    """Best-effort idempotent cleanup while preserving caller cancellation."""
     try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        process.wait()
-        return
-    try:
-        process.wait(timeout=_TERMINATION_GRACE_SECONDS)
-        return
-    except subprocess.TimeoutExpired:
-        pass
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
-    process.wait()
+        _terminate_group(process)
+    except (Exception, KeyboardInterrupt):  # noqa: BLE001 - lifecycle cleanup
+        try:
+            _signal_group(process.pid, signal.SIGKILL)
+        except (Exception, KeyboardInterrupt):  # noqa: BLE001 - lifecycle cleanup
+            return
+        try:
+            process.wait(timeout=_TERMINATION_GRACE_SECONDS)
+        except (Exception, KeyboardInterrupt):  # noqa: BLE001 - lifecycle cleanup
+            return
 
 
 def _container_name(command: list[str]) -> str | None:
@@ -88,17 +134,17 @@ class Runner:
         command: list[str],
         *,
         cwd: Path,
-        timeout: int = 300,
+        timeout: float = 300,
     ) -> CommandResult:
         """Run one command without retaining unbounded output."""
         container = _container_name(command)
         try:
             result = self._execute(command, cwd=cwd, timeout=timeout)
-        except BaseException:
+        except (Exception, KeyboardInterrupt):
             if container is not None:
                 self._remove_container(container, cwd)
             raise
-        if container is None or (result.returncode == 0 and not result.timed_out):
+        if container is None:
             return result
         cleanup = self._remove_container(container, cwd)
         return CommandResult(
@@ -113,8 +159,10 @@ class Runner:
         command: list[str],
         *,
         cwd: Path,
-        timeout: int,
+        timeout: float,
     ) -> CommandResult:
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         process = subprocess.Popen(
             command,
             cwd=cwd,
@@ -126,40 +174,59 @@ class Runner:
         if process.stdout is None:
             _terminate_group(process)
             raise RuntimeError("subprocess output pipe is unavailable")
+        os.set_blocking(process.stdout.fileno(), False)
         selector = selectors.DefaultSelector()
         selector.register(process.stdout, selectors.EVENT_READ)
         chunks: deque[bytes] = deque()
         size = 0
         deadline = time.monotonic() + timeout
         timed_out = False
+        pipe_eof = False
         try:
-            while selector.get_map():
+            while True:
+                leader_done = process.poll() is not None
+                group_done = leader_done and not _group_exists(process.pid)
+                if leader_done and pipe_eof and group_done:
+                    break
                 remaining = deadline - time.monotonic()
-                if remaining <= 0 and process.poll() is None:
+                if remaining <= 0:
                     timed_out = True
                     _terminate_group(process)
-                    remaining = 0
-                events = selector.select(min(max(remaining, 0), 0.1))
+                    break
+                events = selector.select(min(remaining, _SELECT_SLICE_SECONDS))
                 for key, _ in events:
-                    value = os.read(key.fd, _READ_CHUNK)
-                    if value:
-                        size = _tail_append(chunks, size, value)
-                    else:
-                        selector.unregister(key.fileobj)
-                if process.poll() is not None and not events:
-                    value = os.read(process.stdout.fileno(), _READ_CHUNK)
-                    if value:
-                        size = _tail_append(chunks, size, value)
-                    else:
+                    while True:
                         try:
-                            selector.unregister(process.stdout)
+                            value = os.read(key.fd, _READ_CHUNK)
+                        except BlockingIOError:
+                            break
+                        if value:
+                            size = _tail_append(chunks, size, value)
+                            continue
+                        pipe_eof = True
+                        try:
+                            selector.unregister(key.fileobj)
                         except KeyError:
                             pass
+                        break
+                if not selector.get_map():
+                    time.sleep(min(remaining, _SELECT_SLICE_SECONDS))
+            drain_deadline = time.monotonic() + _DRAIN_GRACE_SECONDS
+            while not pipe_eof and time.monotonic() < drain_deadline:
+                try:
+                    value = os.read(process.stdout.fileno(), _READ_CHUNK)
+                except BlockingIOError:
+                    time.sleep(_SELECT_SLICE_SECONDS)
+                    continue
+                if not value:
+                    pipe_eof = True
+                    break
+                size = _tail_append(chunks, size, value)
             if process.poll() is None:
-                process.wait()
-        except BaseException:
-            _terminate_group(process)
-            raise
+                _terminate_group(process)
+        except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 - preserve evidence
+            _cleanup_after_interrupt(process)
+            raise exc.with_traceback(exc.__traceback__)
         finally:
             selector.close()
             process.stdout.close()
@@ -181,7 +248,7 @@ class Runner:
                 cwd=cwd,
                 timeout=_CLEANUP_TIMEOUT_SECONDS,
             )
-        except (OSError, RuntimeError) as exc:
+        except (OSError, RuntimeError, ValueError) as exc:
             return (f"container cleanup failed: {type(exc).__name__}",)
         if result.returncode == 0 or "No such container" in result.output:
             return ()

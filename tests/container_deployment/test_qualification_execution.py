@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import cast
@@ -198,6 +200,135 @@ def test_failed_execution_persists_machine_readable_evidence(tmp_path: Path) -> 
         pytest.fail(f"unexecuted matrix was not explicit: {report!r}")
     if any(target["checks"][0]["status"] != "pending" for target in targets):
         pytest.fail(f"unexecuted targets were not pending: {report!r}")
+
+
+def _write_synthetic_package(command: list[str]) -> None:
+    """Write finite installed-wheel-helper evidence for lifecycle tests."""
+    output = Path(command[command.index("--output-root") + 1])
+    output.mkdir(parents=True)
+    wheel = output / "msgloom-0.1.0-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("msgloom/__init__.py", "")
+        archive.writestr(
+            "msgloom/reporting/templates/report.html.j2",
+            "synthetic",
+        )
+        archive.writestr(
+            "msgloom-0.1.0.dist-info/METADATA",
+            "Metadata-Version: 2.4\nName: msgloom\nVersion: 0.1.0\n",
+        )
+    (output / "qualification.json").write_text(
+        json.dumps({"wheel": str(wheel)}),
+        encoding="utf-8",
+    )
+
+
+class _InterruptingQualificationRunner:
+    """Synthetic command boundary that interrupts one qualification stage."""
+
+    def __init__(self, stage: str) -> None:
+        self.stage = stage
+
+    def run(self, command: list[str], *, cwd: Path, timeout: int = 300):
+        del cwd, timeout
+        from deployment.process import CommandResult
+
+        if command[:2] == ["docker", "info"]:
+            return CommandResult(0, "aarch64")
+        if len(command) > 1 and Path(command[1]).name == "qualify_installed_wheel.py":
+            if self.stage == "packaging":
+                raise KeyboardInterrupt("synthetic packaging interrupt")
+            if self.stage == "runtime-error":
+                raise RuntimeError("synthetic packaging runtime failure")
+            _write_synthetic_package(command)
+            return CommandResult(0, "packaged")
+        if command[:2] == ["docker", "build"] and self.stage in {
+            "target",
+            "target-cleanup",
+        }:
+            raise KeyboardInterrupt("synthetic target interrupt")
+        if len(command) > 2 and command[1:3] == ["-I", "-c"]:
+            if self.stage == "host":
+                raise KeyboardInterrupt("synthetic host interrupt")
+            return CommandResult(0, "host-ok")
+        if command[:3] == ["docker", "volume", "rm"]:
+            if self.stage == "target-cleanup":
+                return CommandResult(1, "synthetic volume cleanup failure")
+            return CommandResult(0, "")
+        if command[:3] == ["docker", "image", "rm"]:
+            return CommandResult(0, "")
+        return CommandResult(0, "synthetic-ok")
+
+
+@pytest.mark.parametrize(
+    ("stage", "skip_isolation", "error_type"),
+    [
+        ("packaging", True, KeyboardInterrupt),
+        ("host", False, KeyboardInterrupt),
+        ("target", True, KeyboardInterrupt),
+        ("target-cleanup", True, KeyboardInterrupt),
+        ("runtime-error", True, RuntimeError),
+    ],
+)
+def test_interruption_persists_truthful_partial_json(
+    tmp_path: Path,
+    stage: str,
+    skip_isolation: bool,
+    error_type: type[BaseException],
+) -> None:
+    module = _script()
+    source = tmp_path / "source"
+    source.mkdir()
+    lock = tmp_path / "runtime.txt"
+    lock.write_text("", encoding="utf-8")
+    args = SimpleNamespace(
+        target=_targets(),
+        source_root=source,
+        output_root=tmp_path / "out",
+        env_python=PYTHON,
+        uv=Path(shutil.which("uv") or "/missing/uv"),
+        runtime_lock=lock,
+        require_resource=[RESOURCE],
+        seccomp_profile=None,
+        skip_isolation_preflight=skip_isolation,
+    )
+    with pytest.raises(error_type):
+        module.qualify(
+            args,
+            runner=cast(Runner, _InterruptingQualificationRunner(stage)),
+        )
+    evidence = args.output_root / "container-qualification.json"
+    if not evidence.is_file():
+        pytest.fail(f"{stage} interruption did not leave qualification evidence")
+    report = json.loads(evidence.read_text(encoding="utf-8"))
+    release = report.get("release_checks")
+    if not isinstance(release, list) or release[0].get("status") != "fail":
+        pytest.fail(f"{stage} interruption was not a release failure: {report!r}")
+    expected_stage = {
+        "packaging": "package qualification",
+        "runtime-error": "package qualification",
+        "host": "host preflight",
+        "target": "target 3.12",
+        "target-cleanup": "target 3.12",
+    }[stage]
+    if expected_stage not in str(release[0].get("detail", "")):
+        pytest.fail(f"{stage} failure stage was not retained: {release!r}")
+    targets = report.get("targets")
+    if not isinstance(targets, list) or len(targets) != 3:
+        pytest.fail(f"{stage} interruption lost target evidence: {report!r}")
+    first_status = targets[0]["checks"][0]["status"]
+    expected = "fail" if stage in {"target", "target-cleanup"} else "pending"
+    if first_status != expected:
+        pytest.fail(f"{stage} target state was not truthful: {targets!r}")
+    if stage == "target-cleanup":
+        checks = targets[0]["checks"]
+        cleanup = [
+            check
+            for check in checks
+            if check.get("name") == "cleanup-volume" and check.get("status") == "fail"
+        ]
+        if not cleanup:
+            pytest.fail(f"target cleanup error was not preserved: {checks!r}")
 
 
 def test_target_build_failure_returns_partial_evidence_and_cleans(

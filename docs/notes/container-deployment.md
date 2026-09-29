@@ -56,6 +56,13 @@ that filename with `pip --no-deps`.
 No checkout, `.env`, host home, auth cache, tests, research tree, source
 credential, or unrelated wheel enters the context.
 
+Release-input parsing is finite before semantic processing: the wheel is capped
+at 512 MiB and 10,000 members, core METADATA at 4 MiB and 2,048 dependency
+requirements, the runtime lock at 4 MiB, and explicit resource selections at
+128 entries of at most 1,024 characters each. Oversized inputs fail closed
+before full reads; the wheel digest remains streaming and bounded by the same
+artifact limit.
+
 ## Runtime dependency lock
 
 `runtime-requirements.txt` is manager-owned release evidence exported from the
@@ -147,22 +154,39 @@ probes; it is not a general escape hatch.
 
 ## Bounded lifecycle and evidence
 
-Subprocess stdout/stderr is consumed incrementally and only a finite tail is
-retained. A timeout records return code 124 plus bounded partial output. Host
-commands run in invocation-owned process groups that are terminated and reaped
-on timeout or cancellation.
+Subprocess stdout/stderr is consumed through nonblocking descriptors and only
+a finite tail is retained. One absolute command deadline remains authoritative
+until the leader has exited, inherited output reaches EOF, and the
+invocation-owned process group is gone. An exited leader therefore cannot turn
+an inherited-pipe descendant into an unbounded read or wait. Deadline expiry
+records return code 124, sends SIGTERM to only that invocation-owned group,
+uses a short bounded grace, then SIGKILLs remaining group members. Cancellation
+uses the same idempotent cleanup path. Focused real-subprocess tests cover
+closed stdout/stderr followed by sleep, an exited leader with an inherited
+pipe, a SIGTERM-resistant descendant, noisy bounded output, and cancellation.
 
-Every `docker run` has a unique invocation-owned `--name`. On timeout or
-failure the runner explicitly removes exactly that container after terminating
-the Docker CLI. Successful `--rm` runs self-remove. Target cleanup attempts
-the invocation-owned volume and image independently; one cleanup error cannot
-skip the other or replace the original target failure.
+Every `docker run` has a unique invocation-owned `--name`. The runner
+explicitly attempts `docker rm -f` for that exact name after the Docker CLI
+returns, including successful or already-exited CLI cases; an already removed
+`--rm` container is accepted as absent. Target cleanup attempts the
+invocation-owned volume and image independently. Cleanup failures are bounded
+evidence and do not replace the original target interruption.
 
-`container-qualification.json` is written after release execution begins,
-after every completed target, and at finalization. Packaging/setup subprocess
-failure therefore still leaves bounded machine-readable failure evidence.
-Target command failures and timeouts produce target checks instead of aborting
-the remaining matrix. No unexecuted target is represented as passed.
+`container-qualification.json` is atomically written immediately after the
+output root is created, after release-input and host-preflight checkpoints,
+before and after each target, and from finalization. Packaging, host-probe,
+target, KeyboardInterrupt, and unexpected runtime failures therefore leave
+truthful partial evidence. Unexecuted work remains `pending`; interrupted
+work is `fail`; no incomplete work is promoted to `pass`. Context cleanup
+and target image/volume cleanup errors are retained separately while the
+original non-routine exception is re-raised.
+
+Focused R3 validation used a temporary isolated environment, installed the
+real sdist-built wheel there, and exercised both host production preflights:
+the parser returned `parser-isolation-ok` and the offline SDK sandbox returned
+`ai-isolation-ok`. The shared development environment was not modified. This
+is host lifecycle evidence only; it is not the manager-owned ARM64 image
+matrix, integrated entrypoint, digest, or runtime-lock acceptance gate.
 
 ## Qualification invocation
 

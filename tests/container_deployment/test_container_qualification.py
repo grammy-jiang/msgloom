@@ -6,7 +6,9 @@ import importlib.util
 import json
 import os
 import shutil
+import signal
 import subprocess
+import time
 import zipfile
 from pathlib import Path
 from types import ModuleType
@@ -134,6 +136,26 @@ def test_wheel_filename_metadata_resources_and_markers(tmp_path: Path) -> None:
         wheel_metadata(native)
 
 
+def test_release_inputs_have_finite_size_and_count_bounds(tmp_path: Path) -> None:
+    wheel = tmp_path / "msgloom-0.1.0-py3-none-any.whl"
+    with wheel.open("wb") as stream:
+        stream.truncate(512 * 1024 * 1024 + 1)
+    with pytest.raises(ReleaseInputError, match="512 MiB"):
+        wheel_metadata(wheel)
+
+    lock = tmp_path / "runtime.txt"
+    with lock.open("wb") as stream:
+        stream.truncate(4 * 1024 * 1024 + 1)
+    with pytest.raises(ReleaseInputError, match="4 MiB"):
+        validate_lock(lock, set())
+
+    resources = tuple(f"msgloom:synthetic/{index}" for index in range(129))
+    from deployment.release import validate_resource_specs
+
+    with pytest.raises(ReleaseInputError, match="too many"):
+        validate_resource_specs(resources)
+
+
 def test_lock_rejects_directives_urls_and_covers_active_dependencies(
     tmp_path: Path,
 ) -> None:
@@ -241,6 +263,121 @@ def test_runner_bounds_live_output_and_returns_timeout_evidence(tmp_path: Path) 
         pytest.fail(f"timeout was not evidence: {result!r}")
     if len(result.output) > 1600 or "timeout after 1s" not in result.output:
         pytest.fail("timeout output was not bounded and retained")
+
+
+def _wait_pid_gone(pid: int, timeout: float = 1.0) -> bool:
+    """Wait finitely for one synthetic child process to disappear."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if not Path(f"/proc/{pid}").exists():
+            return True
+        time.sleep(0.02)
+    return not Path(f"/proc/{pid}").exists()
+
+
+def test_runner_deadline_applies_after_output_closes(tmp_path: Path) -> None:
+    start = time.monotonic()
+    result = Runner().run(
+        [
+            str(PYTHON),
+            "-c",
+            "import os,time;os.close(1);os.close(2);time.sleep(2)",
+        ],
+        cwd=tmp_path,
+        timeout=0.1,
+    )
+    elapsed = time.monotonic() - start
+    if result.returncode != 124 or not result.timed_out or elapsed >= 0.8:
+        pytest.fail(f"closed-output process escaped deadline: {result!r}, {elapsed=}")
+
+
+def test_runner_deadline_applies_to_inherited_output_descendant(
+    tmp_path: Path,
+) -> None:
+    pid_file = tmp_path / "inherited.pid"
+    code = (
+        "import subprocess,sys;from pathlib import Path;"
+        "p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(2)']);"
+        f"Path({str(pid_file)!r}).write_text(str(p.pid))"
+    )
+    start = time.monotonic()
+    result = Runner().run(
+        [str(PYTHON), "-c", code],
+        cwd=tmp_path,
+        timeout=0.2,
+    )
+    elapsed = time.monotonic() - start
+    if result.returncode != 124 or not result.timed_out or elapsed >= 0.9:
+        pytest.fail(f"inherited pipe escaped deadline: {result!r}, {elapsed=}")
+    if not pid_file.exists():
+        pytest.fail("synthetic inherited-pipe descendant did not start")
+    if not _wait_pid_gone(int(pid_file.read_text(encoding="utf-8"))):
+        pytest.fail("owned inherited-pipe descendant survived timeout cleanup")
+
+
+def test_runner_kills_descendant_that_ignores_group_sigterm(tmp_path: Path) -> None:
+    pid_file = tmp_path / "ignores-term.pid"
+    code = (
+        "import signal,subprocess,sys,time;from pathlib import Path;"
+        "signal.signal(signal.SIGTERM,lambda *_:sys.exit(0));"
+        "p=subprocess.Popen([sys.executable,'-c',"
+        "'import signal,time;"
+        "signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(5)']);"
+        f"Path({str(pid_file)!r}).write_text(str(p.pid));time.sleep(5)"
+    )
+    start = time.monotonic()
+    result = Runner().run(
+        [str(PYTHON), "-c", code],
+        cwd=tmp_path,
+        timeout=0.2,
+    )
+    elapsed = time.monotonic() - start
+    if result.returncode != 124 or not result.timed_out or elapsed >= 1.0:
+        pytest.fail(f"SIGTERM-resistant descendant escaped cleanup: {elapsed=}")
+    if not pid_file.exists():
+        pytest.fail("synthetic SIGTERM-resistant descendant did not start")
+    pid = int(pid_file.read_text(encoding="utf-8"))
+    if not _wait_pid_gone(pid):
+        pytest.fail("SIGTERM-resistant owned descendant survived SIGKILL cleanup")
+
+
+def test_runner_cancellation_cleans_owned_process_group(tmp_path: Path) -> None:
+    pid_file = tmp_path / "owned-child.pid"
+    child = (
+        "from pathlib import Path;import os,time;"
+        f"Path({str(pid_file)!r}).write_text(str(os.getpid()));"
+        "time.sleep(5)"
+    )
+    wrapper = (
+        "from pathlib import Path;from deployment.process import Runner;"
+        "import sys;"
+        f"Runner().run([sys.executable,'-c',{child!r}],"
+        f"cwd=Path({str(tmp_path)!r}),timeout=10)"
+    )
+    process = subprocess.Popen(
+        [str(PYTHON), "-c", wrapper],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    deadline = time.monotonic() + 2
+    while not pid_file.exists() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    if not pid_file.exists():
+        process.kill()
+        pytest.fail("synthetic owned child did not start")
+    child_pid = int(pid_file.read_text(encoding="utf-8"))
+    process.send_signal(signal.SIGINT)
+    try:
+        process.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        pytest.fail("cancelled runner did not return finitely")
+    if process.returncode == 0:
+        pytest.fail("synthetic cancellation unexpectedly succeeded")
+    if not _wait_pid_gone(child_pid):
+        pytest.fail("cancelled runner left its owned child process alive")
 
 
 def test_real_local_container_timeout_is_removed_if_image_present(
