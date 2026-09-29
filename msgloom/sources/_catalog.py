@@ -300,6 +300,14 @@ class ReadOnlyCatalog:
             params = (source_id, run_id, scope_key, contact_id, evidence_id)
         elif len(version) == 4 and version[0] == "delta":
             _, run_id, ordinal, evidence_id = version
+            if (
+                not ordinal.isascii()
+                or not ordinal.isdecimal()
+                or len(ordinal) > 19
+                or (len(ordinal) > 1 and ordinal.startswith("0"))
+                or (ordinal_value := int(ordinal)) > 2**63 - 1
+            ):
+                raise SourceReferenceError("Contact delta ordinal is malformed")
             if not scope_key.startswith("folder:"):
                 raise SourceReferenceError("Contact delta scope is malformed")
             sql = (
@@ -312,7 +320,7 @@ class ReadOnlyCatalog:
                 run_id,
                 scope_key.removeprefix("folder:"),
                 contact_id,
-                int(ordinal),
+                ordinal_value,
                 evidence_id,
             )
         else:

@@ -66,6 +66,8 @@ identity alone never proves ownership of mutable MIME, attachment or current
 content tables.
 
 Listing is finite and deterministic. Selection is always by exact VersionRef.
+Contact delta ordinals use canonical nonnegative SQLite integers. Malformed,
+noncanonical, or overflowing ordinals fail with an opaque reference error.
 There is no latest fallback, recursive discovery, URI fetch, provider request,
 or implicit network operation.
 
