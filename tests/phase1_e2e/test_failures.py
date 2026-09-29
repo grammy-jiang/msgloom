@@ -317,7 +317,7 @@ def test_missing_attachment_and_memory_remain_explicit_in_saved_chain(
                     source,
                     "Current body",
                     title="Missing evidence topic",
-                    limitation=record.limitations,
+                    limitation=(),
                 ),
             ),
             dispositions=(),
@@ -373,6 +373,9 @@ def test_missing_attachment_and_memory_remain_explicit_in_saved_chain(
             for item in topic.limitations
         ):
             pytest.fail("report lost the selected attachment limitation")
+        report_codes = {item.code for item in report.limitations}
+        if "working-context-missing" not in report_codes:
+            pytest.fail("report lost the selected working-context limitation")
         await store.close()
         await real.close()
 

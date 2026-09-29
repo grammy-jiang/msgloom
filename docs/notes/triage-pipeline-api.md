@@ -129,3 +129,26 @@ VersionRef(kind="topic-assessment", ...) so saved triage output composes
 directly with reporting's topic-assessment contract. Prior assessments remain
 separate exact saved triage references and are never inferred from source or
 prepared identity.
+
+## Trusted limitation propagation
+
+Accepted A3 semantics do not depend on the model repeating known gaps. After
+multipart combination, the producer merges exact saved
+``PreparedRecord.limitations`` into each topic that cites the affected source.
+The same saved gap is not copied to unrelated topics. Exact model echoes are
+deduplicated. A topic with known incomplete source evidence cannot be finalized
+as ``low-value``; a model-only ``no-reportable-content`` disposition becomes
+``review-required``. Deterministic exclusions remain authoritative.
+
+Limitations for non-topic sources that still require review remain on the final
+``triage@1`` ``StageResult``. Selected working-context gaps are also derived
+from the exact saved ``WorkingContextSnapshot`` and retained there. These
+operation-level limitations use privacy-safe state/detail values and never copy
+configured local paths. Replay derives them only from the saved snapshot, so a
+later filesystem change cannot erase or replace an earlier gap.
+
+Propagation is bounded to 64 limitations per topic and 64 operation-level
+limitations. Overflow returns explicit incomplete triage and does not truncate
+or publish a misleading final semantic result. The final operation outcome
+mirrors operation-level limitations so callers can surface them without
+reloading the saved result.

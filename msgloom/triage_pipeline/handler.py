@@ -42,6 +42,12 @@ from msgloom.triage_input import (
 from .codecs import (
     TriagePartState,
 )
+from .limitations import (
+    MAX_PROPAGATED_LIMITATIONS,
+    KnownLimitationError,
+    merge_trusted_source_limitations,
+    working_context_limitations,
+)
 from .models import TriageProducerConfig
 from .part_state_mixin import _TriagePartStateMixin
 
@@ -281,6 +287,15 @@ class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin)
             request, attempt, claim, rules, tuple(by_id.values())
         )
         context, context_result = await self._context(request, attempt, claim, by_id)
+        try:
+            context_limitations = await cpu_bound(working_context_limitations, context)
+        except KnownLimitationError as error:
+            return self._outcome(
+                request,
+                TerminalStatus.INCOMPLETE,
+                refs=durable_prefix(),
+                limitation=Limitation("triage_limitation_overflow", error.code),
+            )
         selection = await cpu_bound(
             self._selection,
             prepared,
@@ -381,6 +396,28 @@ class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin)
 
         combined = await cpu_bound(self._combine_candidates, candidates, snapshot)
         try:
+            combined, disposition_limitations = await cpu_bound(
+                merge_trusted_source_limitations, combined, prepared
+            )
+        except KnownLimitationError as error:
+            return self._outcome(
+                request,
+                TerminalStatus.INCOMPLETE,
+                refs=durable_prefix(),
+                limitation=Limitation("triage_known_limitation_rejected", error.code),
+            )
+        operation_limitations = (*context_limitations, *disposition_limitations)
+        if len(operation_limitations) > MAX_PROPAGATED_LIMITATIONS:
+            return self._outcome(
+                request,
+                TerminalStatus.INCOMPLETE,
+                refs=durable_prefix(),
+                limitation=Limitation(
+                    "triage_limitation_overflow",
+                    "combined-operation-limitation-overflow",
+                ),
+            )
+        try:
             data = await cpu_bound(
                 partial(
                     reconcile_triage,
@@ -411,5 +448,11 @@ class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin)
             input_result,
             tuple(evidence_refs),
             context,
+            operation_limitations,
         )
-        return self._outcome(request, TerminalStatus.COMPLETE, refs=(final_ref,))
+        return self._outcome(
+            request,
+            TerminalStatus.COMPLETE,
+            refs=(final_ref,),
+            limitations=operation_limitations,
+        )

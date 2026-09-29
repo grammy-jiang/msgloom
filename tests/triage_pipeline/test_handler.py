@@ -180,4 +180,6 @@ async def _exclusion(tmp_path):
         pytest.fail("held-source semantic type is invalid")
     if len(data.dispositions) != 1 or data.dispositions[0].kind.value != "excluded":
         pytest.fail("deterministic exclusion was not retained")
+    if final.limitations:
+        pytest.fail("excluded source limitation escaped its authoritative exclusion")
     await store.close()

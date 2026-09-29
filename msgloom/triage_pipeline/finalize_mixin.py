@@ -148,6 +148,7 @@ class _TriageFinalizeMixin:
         input_ref,
         evidence_refs,
         context,
+        limitations=(),
     ) -> ResultRef:
         result_id = stable_id(
             "triage",
@@ -188,6 +189,7 @@ class _TriageFinalizeMixin:
             semantic=semantic,
             working_context=snapshot_ref(context),
             topic_versions=tuple(topic.assessment_ref for topic in data.topics),
+            limitations=limitations,
         )
         ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, data, claim=claim)
@@ -205,6 +207,7 @@ class _TriageFinalizeMixin:
         semantic,
         working_context=None,
         topic_versions=(),
+        limitations=(),
         acceptable=True,
         status=TerminalStatus.COMPLETE,
     ) -> StageResult:
@@ -231,6 +234,7 @@ class _TriageFinalizeMixin:
             ],
             working_context_version=working_context,
             semantic_data_ref=semantic,
+            limitations=tuple(limitations),
         )
 
     def _part_attempt(self, request: OperationRequest, part_id: str) -> AttemptIdentity:
@@ -314,6 +318,7 @@ class _TriageFinalizeMixin:
         refs: tuple[ResultRef, ...] = (),
         failure: Failure | None = None,
         limitation: Limitation | None = None,
+        limitations: tuple[Limitation, ...] = (),
     ) -> OperationOutcome:
         return OperationOutcome(
             execution=request.execution,
@@ -321,6 +326,8 @@ class _TriageFinalizeMixin:
             status=status,
             result_refs=refs,
             failures=() if failure is None else (failure,),
-            limitations=() if limitation is None else (limitation,),
+            limitations=(
+                limitations if limitation is None else (*limitations, limitation)
+            ),
             external_effect=ExternalEffectState.NONE,
         )
