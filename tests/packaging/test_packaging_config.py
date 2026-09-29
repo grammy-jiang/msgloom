@@ -61,7 +61,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
 
 
 def test_package_discovery_and_entry_points_are_closed() -> None:
-    """Package only the three tested runtime roots and no premature CLI."""
+    """Package only the three tested runtime roots and exactly one CLI."""
     project = _project()
     tool = _table(project["tool"], "tool configuration")
     setuptools = _table(tool["setuptools"], "setuptools configuration")
@@ -80,8 +80,11 @@ def test_package_discovery_and_entry_points_are_closed() -> None:
         "package include roots",
     )
     metadata = _table(project["project"], "project metadata")
-    if "scripts" in metadata:
-        pytest.fail("CLI entry points must wait for a concrete product CLI")
+    _require_equal(
+        metadata.get("scripts"),
+        {"msgloom": "msgloom.cli:main"},
+        "console script entry points",
+    )
 
 
 def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:

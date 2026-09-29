@@ -19,11 +19,11 @@ The Claude Agent SDK remains a declared runtime dependency. Its Python source
 and bundled Claude Code executable are not copied into this distribution.
 Prefect and FastMCP are not normal runtime requirements.
 
-There is no package CLI entry point yet. Adding one before a concrete
-application CLI exists would create a false installation contract. The manager
-must wire and qualify the real entry point when that CLI lands. A required CLI
-or resource can be passed to the qualification helper; absence then fails
-visibly.
+The package declares exactly one console script, `msgloom =
+msgloom.cli:main`, for the integrated application CLI. The packaging test
+requires that exact mapping, so an extra or missing entry point fails. A
+required CLI or resource can be passed to the qualification helper; absence
+then fails visibly.
 
 ## Development and compatibility groups
 
