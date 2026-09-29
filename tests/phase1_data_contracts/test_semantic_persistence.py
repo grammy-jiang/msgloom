@@ -70,7 +70,15 @@ def test_semantic_schema_type_and_reference_mismatches_are_rejected(
 
 
 @pytest.mark.parametrize(
-    "kind", ["prepared", "filter_result", "group_result", "triage", "report"]
+    "kind",
+    [
+        "prepared",
+        "filter_result",
+        "group_result",
+        "working_context",
+        "triage",
+        "report",
+    ],
 )
 def test_acceptable_product_result_requires_semantic_data(
     tmp_path: Path,

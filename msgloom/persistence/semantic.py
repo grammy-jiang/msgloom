@@ -17,6 +17,7 @@ from msgloom.persistence.errors import (
 from msgloom.preparation.codec import PreparedDataCodec
 from msgloom.preparation.filtering import FilterResultCodec
 from msgloom.preparation.grouping import GroupResultCodec
+from msgloom.working_context.codec import WorkingContextCodec
 
 
 class _SemanticCodec(Protocol):
@@ -55,7 +56,14 @@ class SemanticDataRegistry:
     @classmethod
     def phase1(cls) -> SemanticDataRegistry:
         """Register only semantic schemas with implemented consumers."""
-        return cls((PreparedDataCodec(), FilterResultCodec(), GroupResultCodec()))
+        return cls(
+            (
+                PreparedDataCodec(),
+                FilterResultCodec(),
+                GroupResultCodec(),
+                WorkingContextCodec(),
+            )
+        )
 
     def reference(
         self,
