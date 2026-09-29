@@ -234,6 +234,8 @@ class RecordSteps:
                             profile,
                             attachment.saved_bytes,
                             output,
+                            configuration_version=self._plan.configuration_version,
+                            code_version=self._plan.code_version,
                         )
                         parsed_index = len(parsed)
                         parsed.append(
@@ -319,6 +321,8 @@ class RecordSteps:
                     profile,
                     body.saved_bytes,
                     output,
+                    configuration_version=self._plan.configuration_version,
+                    code_version=self._plan.code_version,
                 ),
                 output,
             )
@@ -380,7 +384,7 @@ class RecordSteps:
             or state.derived_bytes > self._plan.max_total_derived_bytes
         ):
             raise ValueError("derived parser input exceeds configured bound")
-        artifact_ref = await self._save_value(
+        await self._save_value(
             request,
             state,
             DERIVED_BYTES_KIND,
@@ -391,7 +395,7 @@ class RecordSteps:
             tag=f"derived:{component}:{artifact.sha256}",
         )
         saved = SavedByteReference(
-            reference=artifact_ref.result_id,
+            reference=artifact.stable_reference(),
             sha256=artifact.sha256,
             byte_count=artifact.byte_count,
         )
@@ -408,7 +412,14 @@ class RecordSteps:
             return None
         return (
             await parsed_version(
-                self._run_sync_owned, captured, component, profile, saved, output
+                self._run_sync_owned,
+                captured,
+                component,
+                profile,
+                saved,
+                output,
+                configuration_version=self._plan.configuration_version,
+                code_version=self._plan.code_version,
             ),
             output,
         )

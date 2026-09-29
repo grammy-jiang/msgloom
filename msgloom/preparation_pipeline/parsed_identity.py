@@ -22,6 +22,9 @@ async def parsed_version(
     profile: ParserProfile,
     saved: SavedByteReference,
     output: ParserOutput,
+    *,
+    configuration_version: str,
+    code_version: str,
 ) -> VersionRef:
     """Fingerprint selected lineage, parser policy, bytes, and output."""
     output_bytes = await run_sync_owned(encode_output, output)
@@ -38,6 +41,8 @@ async def parsed_version(
             "version": captured.selection.source.version,
         },
         "component": component,
+        "configuration_version": configuration_version,
+        "code_version": code_version,
         "saved": {
             "reference": saved.reference,
             "sha256": saved.sha256,

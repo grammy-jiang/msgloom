@@ -174,7 +174,14 @@ class StageSteps:
                 f"{record.source.version}\0prepared@1"
             ).encode()
         ).hexdigest()
-        return VersionRef("prepared", identity, hashlib.sha256(payload).hexdigest())
+        material = (
+            self._plan.configuration_version.encode()
+            + b"\0"
+            + self._plan.code_version.encode()
+            + b"\0"
+            + payload
+        )
+        return VersionRef("prepared", identity, hashlib.sha256(material).hexdigest())
 
     def _result_id(
         self,

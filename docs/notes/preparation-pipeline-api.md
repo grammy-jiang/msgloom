@@ -213,9 +213,35 @@ exception text.
 Replay uses the exact durable captured selection and repeats the same
 availability checks against its saved byte references. A restart therefore
 preserves the known selected version and honest unavailable-component state;
-it does not consult mutable A1 projections or changed content. Derived parser
-artifacts and parsed-content identities remain attempt-bound where required by
-the existing immutable result identity contract.
+it does not consult mutable A1 projections or changed content.
+
+## Stable semantic identity and durable lineage
+
+Execution, attempt, result, and storage identifiers never enter prepared,
+parsed, filter, or group semantic payloads or semantic versions. Derived UTF-8
+parser inputs use a deterministic ``derived:sha256:<digest>`` saved-byte
+reference, while their execution-scoped ``derived_bytes@1`` ResultRefs remain
+durable dependencies of the prepared StageResult. The derived result itself
+continues to depend on the exact captured ``collected_selection@1`` ResultRef.
+This separates semantic byte identity from storage identity without weakening
+evidence-first lineage.
+
+Parsed-content versions bind the exact source and composite selection versions,
+component, derived or collected saved-byte digest and count, parser identity,
+parser configuration and limits, plan configuration/code versions, and
+accepted parser output. Prepared versions bind canonical prepared bytes plus
+the plan configuration/code versions. Filter and group StageResults retain the
+prepared versions they consumed and their execution-scoped ``input_refs``.
+Equivalent executions therefore append distinct immutable StageResults while
+retaining identical semantic versions. A meaning-bearing byte, parser policy,
+plan configuration version, or code version change creates a new affected
+semantic version.
+
+Replay and restart resolve through StageResult ``input_refs``, never by treating
+the stable parser byte reference as a persistence key. Consumers validate
+parsed provenance against the saved byte digest and count and retain the exact
+captured-selection/derived-result chain; mismatched lineage or byte identity
+fails closed instead of falling back to current source projections.
 
 The preparation lane owns this classification and partial-result policy.
 The source-reader change is limited to precise error typing for its existing

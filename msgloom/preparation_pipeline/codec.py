@@ -65,6 +65,10 @@ class DerivedByteArtifact(BaseModel):
             byte_count=len(content),
         )
 
+    def stable_reference(self) -> str:
+        """Return the execution-independent identity of the exact derived bytes."""
+        return f"derived:sha256:{self.sha256}"
+
     def bytes(self) -> bytes:
         """Return the exact verified UTF-8 parser input."""
         return self.text.encode("utf-8")
