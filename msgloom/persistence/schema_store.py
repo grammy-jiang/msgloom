@@ -36,6 +36,10 @@ def initialize_schema(engine: Engine) -> None:
                     )
                 )
             else:
+                if existing != previous and existing != expected:
+                    raise IncompatibleSchemaError(
+                        "neutral table set requires an explicit migration"
+                    )
                 version = _version(connection)
                 if existing == previous and version == _PREVIOUS_VERSION:
                     reconciliation_table.create(connection)
@@ -44,11 +48,7 @@ def initialize_schema(engine: Engine) -> None:
                         .where(SCHEMA_METADATA.c.key == "schema_version")
                         .values(value=_SCHEMA_VERSION)
                     )
-                elif existing != expected:
-                    raise IncompatibleSchemaError(
-                        "neutral table set requires an explicit migration"
-                    )
-                elif version != _SCHEMA_VERSION:
+                elif existing == previous or version != _SCHEMA_VERSION:
                     raise IncompatibleSchemaError(
                         "neutral schema version requires an explicit migration"
                     )

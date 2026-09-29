@@ -17,7 +17,11 @@ from msgloom.contracts import (
     ResultRef,
     TerminalStatus,
 )
-from msgloom.persistence.claim_store import require_current_claim
+from msgloom.persistence.claim_store import (
+    claim_attempt,
+    claim_is_expired,
+    require_current_claim,
+)
 from msgloom.persistence.codecs import decode_result_refs, encode_result_refs
 from msgloom.persistence.errors import ImmutableRecordError, StaleClaimError
 from msgloom.persistence.reconciliation import (
@@ -27,6 +31,7 @@ from msgloom.persistence.reconciliation import (
     ReconciliationRequest,
     ReconciliationResult,
     validate_history_limit,
+    validate_reconciliation_request,
 )
 from msgloom.persistence.records import CLAIM_ATTEMPTS, RECONCILIATIONS, WORK_CLAIMS
 
@@ -46,6 +51,7 @@ def reconcile_effect(
     require_inputs: Callable[[Connection, tuple[ResultRef, ...]], None],
 ) -> ReconciliationResult:
     """Save proof and update retry gating in one caller-owned transaction."""
+    request = validate_reconciliation_request(request)
     existing = _existing(connection, request.identity)
     if existing is not None:
         saved = _result_from_row(existing)
@@ -58,6 +64,9 @@ def reconcile_effect(
     current = require_current_claim(
         connection, request.target, now=now, require_unexpired=False
     )
+    attempt = claim_attempt(connection, request.target)
+    if attempt["finished_at"] is None and not claim_is_expired(current, now):
+        raise StaleClaimError("active claim owner cannot be reconciled")
     current_effect = ExternalEffectState(current["external_effect"])
     _require_transition(current_effect, request.decision)
 

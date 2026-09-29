@@ -6,8 +6,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from msgloom.contracts import (
+    AttemptIdentity,
     ClaimKind,
     ClaimToken,
+    ExecutionIdentity,
     ExternalEffectState,
     ResultRef,
     TerminalStatus,
@@ -104,6 +106,64 @@ class ClaimInspection:
     attempts: tuple[ClaimAttemptSnapshot, ...]
     reconciliations: tuple[ReconciliationResult, ...]
     history_truncated: bool
+
+
+def validate_reconciliation_request(
+    request: ReconciliationRequest,
+) -> ReconciliationRequest:
+    """Rebuild one request so shallow-frozen bypasses cannot reach storage."""
+    try:
+        if not isinstance(request, ReconciliationRequest):
+            raise TypeError
+        identity = request.identity
+        target = request.target
+        if not isinstance(identity, ReconciliationIdentity):
+            raise TypeError
+        if not isinstance(target, ClaimToken):
+            raise TypeError
+        if not isinstance(target.kind, ClaimKind):
+            raise TypeError
+        if not isinstance(target.execution, ExecutionIdentity):
+            raise TypeError
+        if not isinstance(target.attempt, AttemptIdentity):
+            raise TypeError
+        if not isinstance(request.decision, ExternalEffectState):
+            raise TypeError
+        if not isinstance(request.evidence, tuple):
+            raise TypeError
+
+        rebuilt_target = ClaimToken(
+            claim_key=_validated_text(target.claim_key),
+            token=_validated_text(target.token),
+            kind=target.kind,
+            execution=ExecutionIdentity(_validated_text(target.execution.value)),
+            attempt=AttemptIdentity(_validated_text(target.attempt.value)),
+        )
+        rebuilt_evidence = tuple(_validated_result_ref(ref) for ref in request.evidence)
+        return ReconciliationRequest(
+            identity=ReconciliationIdentity(_validated_text(identity.value)),
+            target=rebuilt_target,
+            decision=request.decision,
+            evidence=rebuilt_evidence,
+        )
+    except (AttributeError, TypeError, ValueError):
+        raise ValueError("reconciliation request is invalid") from None
+
+
+def _validated_text(value: object) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError
+    return value
+
+
+def _validated_result_ref(value: object) -> ResultRef:
+    if not isinstance(value, ResultRef):
+        raise TypeError
+    return ResultRef(
+        _validated_text(value.result_id),
+        _validated_text(value.kind),
+        _validated_text(value.schema_version),
+    )
 
 
 def validate_history_limit(value: int) -> int:

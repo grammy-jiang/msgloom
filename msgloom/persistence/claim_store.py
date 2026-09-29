@@ -8,9 +8,27 @@ from math import isfinite
 from sqlalchemy import select
 from sqlalchemy.engine import Connection, RowMapping
 
-from msgloom.contracts import ClaimToken, StageResult
+from msgloom.contracts import ClaimToken, ExternalEffectState, StageResult
 from msgloom.persistence.errors import StaleClaimError
-from msgloom.persistence.records import CLAIM_ATTEMPTS, WORK_CLAIMS
+from msgloom.persistence.records import CLAIM_ATTEMPTS, RECONCILIATIONS, WORK_CLAIMS
+
+
+def require_proven_effect_not_downgraded(
+    current: ExternalEffectState, proposed: ExternalEffectState
+) -> None:
+    """Keep accepted provider proof from becoming retry-safe."""
+    if current is ExternalEffectState.ACCEPTED and proposed in {
+        ExternalEffectState.ACCEPTED,
+        ExternalEffectState.CONFIRMED,
+    }:
+        return
+    if (
+        current is ExternalEffectState.CONFIRMED
+        and proposed is ExternalEffectState.CONFIRMED
+    ):
+        return
+    if current in {ExternalEffectState.ACCEPTED, ExternalEffectState.CONFIRMED}:
+        raise StaleClaimError("proven external effect cannot be downgraded")
 
 
 def validate_lease_seconds(value: float) -> float:
@@ -61,11 +79,23 @@ def require_claim_publication(
 ) -> None:
     """Fence a result publication to one live enclosing operation claim."""
     require_current_claim(connection, token, now=now)
+    require_unreconciled_claim(connection, token)
     attempt = claim_attempt(connection, token)
     if attempt["finished_at"] is not None:
         raise StaleClaimError("terminal claim attempt cannot publish new results")
     if result.execution != token.execution:
         raise StaleClaimError("result execution does not match claim execution")
+
+
+def require_unreconciled_claim(connection: Connection, token: ClaimToken) -> None:
+    """Reject old-owner mutations after later recovery proof was committed."""
+    reconciled = connection.execute(
+        select(RECONCILIATIONS.c.reconciliation_id).where(
+            RECONCILIATIONS.c.claim_token == token.token
+        )
+    ).first()
+    if reconciled is not None:
+        raise StaleClaimError("claim attempt was resolved by reconciliation")
 
 
 def claim_attempt(connection: Connection, token: ClaimToken) -> RowMapping:

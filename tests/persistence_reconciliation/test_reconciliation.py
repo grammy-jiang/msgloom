@@ -33,10 +33,6 @@ from msgloom.persistence import (
 )
 
 
-def _url(path: Path) -> str:
-    return f"sqlite:///{path}"
-
-
 def _registry() -> ResultSchemaRegistry:
     return ResultSchemaRegistry.phase1().with_schema("reconcile_evidence", "1")
 
@@ -60,7 +56,7 @@ def _evidence(result_id: str) -> StageResult:
 
 
 async def _open(path: Path) -> Phase1Persistence:
-    return await Phase1Persistence.open(_url(path), registry=_registry())
+    return await Phase1Persistence.open(f"sqlite:///{path}", registry=_registry())
 
 
 async def _unknown(

@@ -13,10 +13,15 @@ evidence references. Definite ACCEPTED, CONFIRMED, or REJECTED decisions
 require evidence. An inconclusive decision is explicitly UNKNOWN.
 
 Phase1Persistence.reconcile_external_effect() runs one BEGIN IMMEDIATE
-transaction. It validates every evidence result through the registered result
-and semantic-data contracts, requires the target token to remain the exact
-current owner, appends immutable reconciliation proof, and changes retry gating
-atomically. It never changes the original ClaimAttempt row.
+transaction. It reconstructs the request and its nested token/reference values
+at the public storage boundary, validates every evidence result through the
+registered result and semantic-data contracts, and requires the target token to
+remain the exact current owner. An unfinished owner with a live lease cannot be
+reconciled even when the caller possesses that exact token: recovery requires a
+terminal attempt or an expired lease. A terminal UNKNOWN attempt may therefore
+be reconciled while its retained claim has a future expiry. Proof append and
+retry-gate changes are atomic, and reconciliation never changes the original
+ClaimAttempt row.
 
 PENDING or UNKNOWN can resolve to UNKNOWN, ACCEPTED, CONFIRMED, or REJECTED.
 ACCEPTED can only refine to CONFIRMED. REJECTED removes the current claim so a
@@ -26,17 +31,24 @@ uncertainty.
 
 Exact replay of one reconciliation identity and the same request returns the
 saved result, including after a rejected scope was released. Reusing an
-identity with different bytes fails. A stale token cannot resolve or release a
-replacement owner, and two facades serialize opposed decisions so only one can
-win.
+identity with different bytes fails. After any reconciliation, old-owner
+publication, effect marking, and finish calls are fenced; later recovery proof
+cannot be overwritten by a delayed sender. ACCEPTED may only remain ACCEPTED
+or advance to CONFIRMED, and CONFIRMED cannot be downgraded into a retry-safe
+state by ordinary late-owner APIs. Definite REJECTED proof releases the scope
+in the same transaction that records that proof. A stale token cannot resolve
+or release a replacement owner, and two facades serialize opposed decisions so
+only one can win.
 
 ## Restart inspection
 
 Phase1Persistence.inspect_claim(claim_key, history_limit=100) returns a
 ClaimInspection with the current exact token/effect/expiry, immutable attempt
 history, immutable reconciliation history, and a history_truncated flag. The
-limit is closed to 1 through 100. Delivery therefore does not need direct SQL
-or private store access after restart.
+three components are read in one SQLite transaction, so a concurrent facade
+cannot produce a mixed before/after inspection. The limit is closed to 1
+through 100. Delivery therefore does not need direct SQL or private store
+access after restart.
 
 A terminal attempt with UNKNOWN remains visible as UNKNOWN after later
 reconciliation. This separation is deliberate: reconciliation records what was
@@ -48,8 +60,10 @@ The baseline already used neutral schema version 2. Reconciliation adds the
 phase1_reconciliations table, so this lane advances the schema to version 3 and
 contains an explicit version-2-to-version-3 additive migration. The migration
 creates only the new table and updates schema metadata in one immediate
-transaction; existing data is preserved. Other table sets or versions fail
-closed rather than being recreated.
+transaction; existing results, claims, evidence, and unrelated metadata are
+preserved. Missing metadata, partial/unknown table sets, malformed versions,
+and unsupported versions fail with IncompatibleSchemaError before migration
+DDL is attempted, so failed validation cannot partially advance the schema.
 
 The async facade uses the existing accepted-write draining contract.
 Cancellation, including repeated cancellation, is delayed until the accepted

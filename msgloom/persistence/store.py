@@ -27,6 +27,8 @@ from msgloom.persistence.claim_store import (
     claim_is_expired,
     require_claim_publication,
     require_current_claim,
+    require_proven_effect_not_downgraded,
+    require_unreconciled_claim,
     validate_lease_seconds,
 )
 from msgloom.persistence.codecs import encode_result_refs
@@ -328,10 +330,12 @@ class Phase1Store:
                 )
             if effect is ExternalEffectState.NONE:
                 raise ValueError("report submission must classify its external effect")
+            require_unreconciled_claim(connection, token)
             attempt = claim_attempt(connection, token)
             if attempt["finished_at"] is not None:
                 raise ImmutableRecordError("terminal claim attempt is immutable")
             current_effect = ExternalEffectState(current["external_effect"])
+            require_proven_effect_not_downgraded(current_effect, effect)
             if claim_is_expired(current, now) and current_effect in _SAFE_RETRY_EFFECTS:
                 raise StaleClaimError(
                     "expired claim cannot begin a new external effect"
@@ -362,6 +366,8 @@ class Phase1Store:
                 connection, token, now=now, require_unexpired=False
             )
             current_effect = ExternalEffectState(current["external_effect"])
+            require_unreconciled_claim(connection, token)
+            require_proven_effect_not_downgraded(current_effect, effect)
             if claim_is_expired(current, now) and current_effect in _SAFE_RETRY_EFFECTS:
                 raise StaleClaimError(
                     "expired claim cannot finish after ownership ended"
@@ -416,7 +422,14 @@ class Phase1Store:
     ) -> ClaimInspection:
         """Read bounded current ownership and immutable claim history."""
         with self.engine.connect() as connection:
-            return inspect_claim(connection, claim_key, history_limit)
+            connection.exec_driver_sql("BEGIN")
+            try:
+                snapshot = inspect_claim(connection, claim_key, history_limit)
+                connection.exec_driver_sql("COMMIT")
+                return snapshot
+            except BaseException:
+                connection.exec_driver_sql("ROLLBACK")
+                raise
 
     def _require_inputs(
         self, connection: Connection, refs: tuple[ResultRef, ...]
