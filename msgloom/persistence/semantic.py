@@ -19,6 +19,7 @@ from msgloom.preparation.filtering import FilterResultCodec
 from msgloom.preparation.grouping import GroupResultCodec
 from msgloom.triage.codec import TriageDataCodec
 from msgloom.triage.rule_codec import TriageRuleEvaluationCodec
+from msgloom.triage_input.codec import TriageInputCodec
 from msgloom.working_context.codec import WorkingContextCodec
 
 
@@ -65,6 +66,7 @@ class SemanticDataRegistry:
                 GroupResultCodec(),
                 WorkingContextCodec(),
                 TriageRuleEvaluationCodec(),
+                TriageInputCodec(),
                 TriageDataCodec(),
             )
         )

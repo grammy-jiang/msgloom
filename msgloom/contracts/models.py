@@ -271,6 +271,7 @@ class ResultSchemaRegistry:
                 ("group_result", "1"),
                 ("working_context", "1"),
                 ("triage_rules", "1"),
+                ("triage_input", "1"),
                 ("triage", "1"),
                 ("report", "1"),
                 ("report_submission", "1"),
@@ -285,6 +286,7 @@ class ResultSchemaRegistry:
                     ("group_result", "1"),
                     ("working_context", "1"),
                     ("triage_rules", "1"),
+                    ("triage_input", "1"),
                     ("triage", "1"),
                     ("report", "1"),
                 }

@@ -79,6 +79,7 @@ def test_semantic_schema_type_and_reference_mismatches_are_rejected(
         "group_result",
         "working_context",
         "triage_rules",
+        "triage_input",
         "triage",
         "report",
     ],
