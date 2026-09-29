@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
-import sys
 from pathlib import Path
 from typing import cast
 
@@ -19,6 +17,7 @@ from msgloom.configuration import (
     SecretSource,
     load_operator_configuration,
 )
+from tests.configuration.subprocess_probe import run_fifo_probe
 
 
 def test_inspection_does_not_resolve_credentials(
@@ -128,25 +127,13 @@ resolver = SecretResolver(
     mounted_secret_dir=Path(__import__("sys").argv[1]),
 )
 print("READY", flush=True)
+__import__("sys").stdin.readline()
 try:
     resolver.resolve(binding)
 except ConfigurationError as error:
     print(error.code.value, flush=True)
 """
-    process = subprocess.Popen(
-        [sys.executable, "-c", code, str(secret_dir)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        stdout, stderr = process.communicate(timeout=3.0)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.communicate()
-        pytest.fail("secret FIFO open blocked past the finite subprocess budget")
-    if process.returncode != 0:
-        pytest.fail(f"secret FIFO subprocess failed unexpectedly: {stderr!r}")
+    stdout = run_fifo_probe(code, secret_dir)
     if stdout.splitlines() != ["READY", "secret_unavailable"]:
         pytest.fail("secret FIFO subprocess did not reach and reject the open")
 

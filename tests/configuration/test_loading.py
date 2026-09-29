@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import copy
 import os
-import subprocess
-import sys
 from pathlib import Path
 from typing import cast
 
@@ -16,6 +14,7 @@ from msgloom.configuration import (
     ConfigurationErrorCode,
     load_operator_configuration,
 )
+from tests.configuration.subprocess_probe import run_fifo_probe
 
 
 def test_precedence_is_command_env_secret_toml(
@@ -307,24 +306,12 @@ def test_config_fifo_rejection_is_finite_in_owned_subprocess(tmp_path: Path) -> 
 from pathlib import Path
 from msgloom.configuration import ConfigurationError, load_operator_configuration
 print("READY", flush=True)
+__import__("sys").stdin.readline()
 try:
     load_operator_configuration(Path(__import__("sys").argv[1]))
 except ConfigurationError as error:
     print(error.code.value, flush=True)
 """
-    process = subprocess.Popen(
-        [sys.executable, "-c", code, str(fifo)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        stdout, stderr = process.communicate(timeout=3.0)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.communicate()
-        pytest.fail("configuration FIFO open blocked past the finite subprocess budget")
-    if process.returncode != 0:
-        pytest.fail(f"configuration FIFO subprocess failed unexpectedly: {stderr!r}")
+    stdout = run_fifo_probe(code, fifo)
     if stdout.splitlines() != ["READY", "invalid_input"]:
         pytest.fail("configuration FIFO subprocess did not reach and reject the open")
