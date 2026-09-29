@@ -266,6 +266,7 @@ class ResultSchemaRegistry:
         """Return the result schemas owned by the Phase 1 product path."""
         schemas = frozenset(
             {
+                ("collected_selection", "1"),
                 ("prepared", "1"),
                 ("filter_result", "1"),
                 ("group_result", "1"),
@@ -281,6 +282,7 @@ class ResultSchemaRegistry:
             schemas,
             frozenset(
                 {
+                    ("collected_selection", "1"),
                     ("prepared", "1"),
                     ("filter_result", "1"),
                     ("group_result", "1"),

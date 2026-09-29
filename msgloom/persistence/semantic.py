@@ -17,6 +17,7 @@ from msgloom.persistence.errors import (
 from msgloom.preparation.codec import PreparedDataCodec
 from msgloom.preparation.filtering import FilterResultCodec
 from msgloom.preparation.grouping import GroupResultCodec
+from msgloom.sources import CollectedSelectionCodec
 from msgloom.triage.codec import TriageDataCodec
 from msgloom.triage.rule_codec import TriageRuleEvaluationCodec
 from msgloom.triage_input.codec import TriageInputCodec
@@ -61,6 +62,7 @@ class SemanticDataRegistry:
         """Register only semantic schemas with implemented consumers."""
         return cls(
             (
+                CollectedSelectionCodec(),
                 PreparedDataCodec(),
                 FilterResultCodec(),
                 GroupResultCodec(),
