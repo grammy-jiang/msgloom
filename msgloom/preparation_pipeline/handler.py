@@ -16,7 +16,12 @@ from msgloom.contracts import (
     ResultRef,
     TerminalStatus,
 )
-from msgloom.persistence import ClaimUnavailableError, Phase1Persistence
+from msgloom.persistence import (
+    ClaimUnavailableError,
+    Phase1Persistence,
+    Phase1PersistenceError,
+    StaleClaimError,
+)
 from msgloom.sources import (
     CollectedSelection,
     CollectedSelectionCodec,
@@ -24,7 +29,7 @@ from msgloom.sources import (
 )
 
 from ._state import CapturedSelection, RunState
-from .models import PreparationMode, PreparationPlan, SelectionPlan
+from .models import PreparationMode, PreparationPlan, SelectionPlan, revalidate_plan
 from .record_steps import RecordSteps
 from .stage_steps import StageSteps, _finish_uninterrupted
 
@@ -44,12 +49,30 @@ class PreparationHandler(RecordSteps, StageSteps):
 
     async def run(self, request: OperationRequest) -> OperationOutcome:
         """Run one already-admitted PREPARE request under a durable claim."""
+        try:
+            self._plan = revalidate_plan(self._plan)
+        except (TypeError, ValueError):
+            return self._outcome(
+                request,
+                TerminalStatus.BLOCKED,
+                limitations=(
+                    Limitation(
+                        "invalid-preparation-plan",
+                        "Trusted preparation configuration failed closed validation.",
+                    ),
+                ),
+            )
         invalid = self._validate_request(request)
         if invalid is not None:
             return self._outcome(
                 request, TerminalStatus.BLOCKED, limitations=(invalid,)
             )
 
+        replay_error = await self._preflight_replay()
+        if replay_error is not None:
+            return self._outcome(
+                request, TerminalStatus.BLOCKED, limitations=(replay_error,)
+            )
         required = tuple(
             item.replay_result
             for item in self._plan.selections
@@ -75,22 +98,43 @@ class PreparationHandler(RecordSteps, StageSteps):
                     ),
                 ),
             )
+        except Phase1PersistenceError:
+            return self._outcome(
+                request,
+                TerminalStatus.FAILED,
+                failures=(
+                    Failure(
+                        "preparation-claim-failed",
+                        "Preparation claim admission failed safely.",
+                    ),
+                ),
+            )
 
-        state = RunState([], [])
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + self._plan.execution_timeout_seconds
+        state = RunState([], [], token)
         terminal = TerminalStatus.FAILED
         try:
-            async with asyncio.timeout(self._plan.execution_timeout_seconds):
+            remaining = deadline - loop.time()
+            if remaining <= 0:
+                raise TimeoutError
+            async with asyncio.timeout(remaining):
                 captured = await self._capture_all(request, state)
-                prepared, prepared_refs = await self._prepare_all(
+                prepared, prepared_refs, prepared_versions = await self._prepare_all(
                     request, captured, state
                 )
                 filter_results, filter_refs = await self._filter_all(
-                    request, prepared, prepared_refs, state
+                    request,
+                    prepared,
+                    prepared_refs,
+                    prepared_versions,
+                    state,
                 )
                 await self._group_all(
                     request,
                     prepared,
                     prepared_refs,
+                    prepared_versions,
                     filter_results,
                     filter_refs,
                     state,
@@ -102,7 +146,10 @@ class PreparationHandler(RecordSteps, StageSteps):
                 )
         except asyncio.CancelledError:
             await _finish_uninterrupted(
-                self._persistence, token, TerminalStatus.CANCELLED
+                self._persistence,
+                token,
+                TerminalStatus.CANCELLED,
+                preserve_cancellation=True,
             )
             raise
         except TimeoutError:
@@ -113,9 +160,19 @@ class PreparationHandler(RecordSteps, StageSteps):
                     "Preparation exceeded its finite execution budget.",
                 )
             )
+        except StaleClaimError:
+            terminal = TerminalStatus.FAILED
+            state.limitations.append(
+                Limitation(
+                    "preparation-claim-lost",
+                    "Preparation ownership expired or was replaced before publication.",
+                )
+            )
         except Exception as error:  # noqa: BLE001
             terminal = TerminalStatus.FAILED
-            await _finish_uninterrupted(self._persistence, token, terminal)
+            await _finish_uninterrupted(
+                self._persistence, token, terminal, suppress_stale=True
+            )
             return self._outcome(
                 request,
                 terminal,
@@ -129,13 +186,57 @@ class PreparationHandler(RecordSteps, StageSteps):
                 ),
             )
 
-        await _finish_uninterrupted(self._persistence, token, terminal)
+        owned = await _finish_uninterrupted(
+            self._persistence, token, terminal, suppress_stale=True
+        )
+        if not owned:
+            terminal = TerminalStatus.FAILED
+            if not any(
+                item.code == "preparation-claim-lost" for item in state.limitations
+            ):
+                state.limitations.append(
+                    Limitation(
+                        "preparation-claim-lost",
+                        "Preparation ownership expired or was replaced before completion.",
+                    )
+                )
         return self._outcome(
             request,
             terminal,
             refs=tuple(state.refs),
             limitations=tuple(state.limitations),
         )
+
+    async def _preflight_replay(self) -> Limitation | None:
+        """Bound replay metadata before semantic payload or claim validation loads."""
+        if self._plan.mode is not PreparationMode.REPLAY:
+            return None
+        total = 0
+        for item in self._plan.selections:
+            if item.replay_result is None:
+                return Limitation(
+                    "invalid-replay-plan",
+                    "Replay selection is missing its exact durable result reference.",
+                )
+            result = await self._persistence.get_result(item.replay_result.result_id)
+            if (
+                result is None
+                or result.kind != item.replay_result.kind
+                or result.schema_version != item.replay_result.schema_version
+                or not result.acceptable
+                or result.semantic_data_ref is None
+            ):
+                return Limitation(
+                    "invalid-replay-result",
+                    "Replay selection does not reference acceptable durable semantic data.",
+                )
+            total += result.semantic_data_ref.byte_count
+            if total > self._plan.max_total_selected_bytes:
+                return Limitation(
+                    "selection-budget-exceeded",
+                    "Replay selection metadata exceeds the configured aggregate budget.",
+                )
+        return None
 
     def _validate_request(self, request: OperationRequest) -> Limitation | None:
         if request.capability is not PhaseCapability.PREPARE:
@@ -183,9 +284,10 @@ class PreparationHandler(RecordSteps, StageSteps):
         for item in self._plan.selections:
             if self._plan.mode is PreparationMode.LIVE:
                 selection = await self._reader.read_selection(item.source)
-                payload_size = len(
-                    CollectedSelectionCodec().encode(selection)
-                ) + self._selection_evidence_bytes(selection)
+                encoded = await self._run_sync_owned(
+                    CollectedSelectionCodec().encode, selection
+                )
+                payload_size = len(encoded) + self._selection_evidence_bytes(selection)
                 result_ref = None
             else:
                 if item.replay_result is None or item.replay_selection is None:

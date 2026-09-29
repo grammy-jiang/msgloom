@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
+from collections.abc import Callable
+from typing import TypeVar
 
 from msgloom.contracts import (
     ExternalEffectState,
@@ -16,13 +19,16 @@ from msgloom.contracts import (
     TerminalStatus,
     VersionRef,
 )
-from msgloom.persistence import Phase1Persistence
+from msgloom.persistence import Phase1Persistence, StaleClaimError
 from msgloom.preparation import PreparedRecord
+from msgloom.preparation.codec import PreparedDataCodec
 from msgloom.preparation.filtering import FilterResult, apply_filters
 from msgloom.preparation.grouping import group_records
 
 from ._state import RunState as _RunState
 from .models import PreparationPlan
+
+_T = TypeVar("_T")
 
 
 class StageSteps:
@@ -36,14 +42,17 @@ class StageSteps:
         request: OperationRequest,
         records: tuple[PreparedRecord, ...],
         prepared_refs: tuple[ResultRef, ...],
+        prepared_versions: tuple[VersionRef, ...],
         state: _RunState,
     ) -> tuple[tuple[FilterResult, ...], tuple[ResultRef, ...]]:
         values: list[FilterResult] = []
         refs: list[ResultRef] = []
-        for ordinal, (record, prepared_ref) in enumerate(
-            zip(records, prepared_refs, strict=True)
+        for ordinal, (record, prepared_ref, prepared_version) in enumerate(
+            zip(records, prepared_refs, prepared_versions, strict=True)
         ):
-            value = apply_filters(record, self._plan.filter_config)
+            value = await self._run_sync_owned(
+                apply_filters, record, self._plan.filter_config
+            )
             ref = await self._save_value(
                 request,
                 state,
@@ -51,9 +60,9 @@ class StageSteps:
                 "1",
                 value,
                 source_versions=(record.source,),
-                prepared_versions=(record.source,),
+                prepared_versions=(prepared_version,),
                 input_refs=(prepared_ref,),
-                tag=f"filter:{ordinal}:{record.source.version}",
+                tag=f"filter:{ordinal}:{prepared_version.version}",
                 rule_version=self._plan.filter_config.reference.version,
             )
             values.append(value)
@@ -65,14 +74,17 @@ class StageSteps:
         request: OperationRequest,
         records: tuple[PreparedRecord, ...],
         prepared_refs: tuple[ResultRef, ...],
+        prepared_versions: tuple[VersionRef, ...],
         filters: tuple[FilterResult, ...],
         filter_refs: tuple[ResultRef, ...],
         state: _RunState,
     ) -> tuple[ResultRef, ...]:
-        groups = group_records(records, filters)
+        groups = await self._run_sync_owned(group_records, records, filters)
         prepared_by_source = {
-            record.source: ref
-            for record, ref in zip(records, prepared_refs, strict=True)
+            record.source: (ref, version)
+            for record, ref, version in zip(
+                records, prepared_refs, prepared_versions, strict=True
+            )
         }
         filter_by_source = {
             value.input: ref for value, ref in zip(filters, filter_refs, strict=True)
@@ -80,10 +92,11 @@ class StageSteps:
         refs: list[ResultRef] = []
         for ordinal, value in enumerate(groups):
             inputs = tuple(
-                prepared_by_source[member] for member in value.members
+                prepared_by_source[member][0] for member in value.members
             ) + tuple(filter_by_source[member] for member in value.members)
+            versions = tuple(prepared_by_source[member][1] for member in value.members)
             tag_members = "|".join(
-                f"{item.kind}:{item.identity}:{item.version}" for item in value.members
+                f"{item.kind}:{item.identity}:{item.version}" for item in versions
             )
             ref = await self._save_value(
                 request,
@@ -92,7 +105,7 @@ class StageSteps:
                 "1",
                 value,
                 source_versions=value.members,
-                prepared_versions=value.members,
+                prepared_versions=versions,
                 input_refs=inputs,
                 tag=f"group:{ordinal}:{tag_members}",
                 rule_version=self._plan.filter_config.reference.version,
@@ -116,8 +129,12 @@ class StageSteps:
         rule_version: str | None = None,
     ) -> ResultRef:
         result_id = self._result_id(request, kind, tag)
-        data_ref = self._persistence.semantic_reference(
-            f"{result_id}:data", kind, schema_version, value
+        data_ref = await self._run_sync_owned(
+            self._persistence.semantic_reference,
+            f"{result_id}:data",
+            kind,
+            schema_version,
+            value,
         )
         result = StageResult(
             result_id=result_id,
@@ -138,7 +155,9 @@ class StageSteps:
         )
         ref = ResultRef(result_id, kind, schema_version)
         try:
-            await self._persistence.append_result_with_data(result, value)
+            await self._persistence.append_result_with_data(
+                result, value, claim=state.claim
+            )
         except asyncio.CancelledError:
             saved = await self._persistence.get_result(result_id)
             if saved is not None and ref not in state.refs:
@@ -146,6 +165,16 @@ class StageSteps:
             raise
         state.refs.append(ref)
         return ref
+
+    async def _prepared_version(self, record: PreparedRecord) -> VersionRef:
+        payload = await self._run_sync_owned(PreparedDataCodec().encode, record)
+        identity = hashlib.sha256(
+            (
+                f"{record.source.kind}\0{record.source.identity}\0"
+                f"{record.source.version}\0prepared@1"
+            ).encode()
+        ).hexdigest()
+        return VersionRef("prepared", identity, hashlib.sha256(payload).hexdigest())
 
     def _result_id(
         self,
@@ -156,20 +185,36 @@ class StageSteps:
         material = (
             f"{request.execution.value}\0{self._plan.attempt.value}\0"
             f"{kind}\0{tag}\0{self._plan.configuration_version}\0"
-            f"{self._plan.code_version}"
+            f"{self._plan.code_version}\0{self._plan_fingerprint()}"
         ).encode()
         return "a2-" + hashlib.sha256(material).hexdigest()
 
-    @staticmethod
-    def _parsed_ref(
-        source: VersionRef,
-        component: str,
-        digest: str,
-    ) -> VersionRef:
-        identity = hashlib.sha256(
-            f"{source.kind}\0{source.identity}\0{component}".encode()
-        ).hexdigest()
-        return VersionRef("parsed_content", identity, digest)
+    def _plan_fingerprint(self) -> str:
+        work = self._plan.model_dump(mode="json", round_trip=True, warnings="error")
+        work.pop("attempt")
+        payload = json.dumps(
+            work,
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+        return hashlib.sha256(payload).hexdigest()
+
+    async def _run_sync_owned(
+        self, function: Callable[..., _T], /, *args: object
+    ) -> _T:
+        """Run finite CPU/codec work off-loop and drain it on cancellation."""
+        task = asyncio.create_task(asyncio.to_thread(function, *args))
+        cancelled = False
+        while not task.done():
+            try:
+                await asyncio.shield(task)
+            except asyncio.CancelledError:
+                cancelled = True
+        if cancelled:
+            raise asyncio.CancelledError
+        return task.result()
 
     @staticmethod
     def _outcome(
@@ -195,8 +240,11 @@ async def _finish_uninterrupted(
     persistence: Phase1Persistence,
     token,
     status: TerminalStatus,
-) -> None:
-    """Drain claim completion before propagating observed cancellation."""
+    *,
+    suppress_stale: bool = False,
+    preserve_cancellation: bool = False,
+) -> bool:
+    """Drain claim completion without allowing stale cleanup to mask ownership."""
     task = asyncio.create_task(
         persistence.finish_claim(token, status, ExternalEffectState.NONE)
     )
@@ -206,10 +254,21 @@ async def _finish_uninterrupted(
             await asyncio.shield(task)
         except asyncio.CancelledError:
             cancelled = True
+        except StaleClaimError:
+            break
     if task.cancelled():
+        if cancelled or preserve_cancellation:
+            raise asyncio.CancelledError
         raise RuntimeError("claim completion was cancelled")
     error = task.exception()
+    if isinstance(error, StaleClaimError) and (suppress_stale or cancelled):
+        if cancelled or preserve_cancellation:
+            raise asyncio.CancelledError
+        return False
     if error is not None:
+        if cancelled or preserve_cancellation:
+            raise asyncio.CancelledError
         raise error
-    if cancelled:
+    if cancelled or preserve_cancellation:
         raise asyncio.CancelledError
+    return True

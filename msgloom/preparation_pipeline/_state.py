@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from msgloom.contracts import Limitation, ResultRef
+from msgloom.contracts import ClaimToken, Limitation, ResultRef
 from msgloom.sources import CollectedSelection
 
 from .models import SelectionPlan
@@ -14,8 +14,10 @@ class RunState:
 
     refs: list[ResultRef]
     limitations: list[Limitation]
+    claim: ClaimToken
     selected_bytes: int = 0
     derived_bytes: int = 0
+    parser_output_bytes: int = 0
 
 
 @dataclass(frozen=True, slots=True)

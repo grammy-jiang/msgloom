@@ -5,7 +5,14 @@ from __future__ import annotations
 import math
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+from pydantic_core import PydanticSerializationError
 
 from msgloom.contracts import AttemptIdentity, ResultRef, VersionRef
 from msgloom.preparation import (
@@ -77,6 +84,8 @@ class PreparationPlan(_FrozenModel):
     max_records: int = 100
     max_total_selected_bytes: int = 64 * 1024 * 1024
     max_derived_bytes: int = 16 * 1024 * 1024
+    max_total_derived_bytes: int = 32 * 1024 * 1024
+    max_total_parser_output_bytes: int = 32 * 1024 * 1024
 
     @field_validator("configuration_version", "code_version")
     @classmethod
@@ -85,7 +94,13 @@ class PreparationPlan(_FrozenModel):
             raise ValueError("producer versions must be non-empty")
         return value
 
-    @field_validator("max_records", "max_total_selected_bytes", "max_derived_bytes")
+    @field_validator(
+        "max_records",
+        "max_total_selected_bytes",
+        "max_derived_bytes",
+        "max_total_derived_bytes",
+        "max_total_parser_output_bytes",
+    )
     @classmethod
     def _positive_integer(cls, value: int) -> int:
         if isinstance(value, bool) or value < 1:
@@ -112,6 +127,10 @@ class PreparationPlan(_FrozenModel):
         formats = tuple(item.format for item in self.parser_profiles)
         if len(formats) != len(set(formats)):
             raise ValueError("parser profiles must have unique formats")
+        if self.max_derived_bytes > self.max_total_derived_bytes:
+            raise ValueError(
+                "per-artifact derived bound exceeds aggregate derived bound"
+            )
         if self.claim_lease_seconds <= self.execution_timeout_seconds + 1.0:
             raise ValueError("claim lease must exceed execution budget by one second")
         return self
@@ -122,3 +141,17 @@ class PreparationPlan(_FrozenModel):
             (item for item in self.parser_profiles if item.format is format_),
             None,
         )
+
+
+def revalidate_plan(value: PreparationPlan) -> PreparationPlan:
+    """Reconstruct every nested trusted-plan value through strict JSON validation."""
+    if not isinstance(value, PreparationPlan):
+        raise TypeError("preparation plan has the wrong public type")
+    try:
+        payload = value.model_dump_json(
+            round_trip=True,
+            warnings="error",
+        )
+        return PreparationPlan.model_validate_json(payload, strict=True)
+    except (PydanticSerializationError, ValidationError, TypeError, ValueError):
+        raise ValueError("preparation plan failed closed validation") from None

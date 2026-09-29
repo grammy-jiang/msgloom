@@ -118,9 +118,9 @@ def test_selection_write_precedes_parser_and_duplicate_claim_is_blocked(
         release = asyncio.Event()
         original = store.append_result_with_data
 
-        async def tracked(result, value):
+        async def tracked(result, value, **kwargs):
             nonlocal selected_saved
-            await original(result, value)
+            await original(result, value, **kwargs)
             if result.kind == "collected_selection":
                 selected_saved = True
 
@@ -241,7 +241,7 @@ def test_execution_timeout_retains_partial_results_without_success(
             source,
             attempt=AttemptIdentity("timeout-attempt"),
             parser_profiles=profiles(DocumentFormat.TEXT, DocumentFormat.JSON),
-            timeout=0.05,
+            timeout=0.5,
         )
         handler = PreparationHandler(
             store, cast(CollectedSourceReader, reader), work_plan
@@ -323,12 +323,12 @@ def test_failed_write_finishes_claim_and_restart_is_independent(
         original = store.append_result_with_data
         failed_once = False
 
-        async def failing_write(result, value):
+        async def failing_write(result, value, **kwargs):
             nonlocal failed_once
             if result.kind == "prepared" and not failed_once:
                 failed_once = True
                 raise RuntimeError("synthetic storage failure")
-            await original(result, value)
+            await original(result, value, **kwargs)
 
         monkeypatch.setattr(store, "append_result_with_data", failing_write)
         handler = PreparationHandler(

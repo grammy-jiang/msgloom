@@ -126,3 +126,55 @@ PreparationMode, ParserProfile, DerivedByteArtifact,
 DerivedByteArtifactCodec, DERIVED_BYTES_KIND, and
 DERIVED_BYTES_SCHEMA_VERSION.  No provider, CLI, schema, global registry, or
 shared dependency surface is modified by this lane.
+
+## R2 hardened boundary and identity rules
+
+`PreparationHandler(persistence, reader, plan)` remains the only producer
+constructor. At each `run(request)` boundary it reconstructs the complete
+`PreparationPlan` through strict canonical validation, including nested
+dataclasses, enums, filter rules, parser profiles, limits, finite numeric
+bounds, and replay bindings. Invalid copied/model-mutated plans are blocked
+before source-reader or claim work. Public failures are bounded
+classifications and do not include rejected values.
+
+Replay admission reads only result metadata first. The aggregate canonical
+`collected_selection@1` semantic byte count must fit
+`max_total_selected_bytes` before any semantic payload load and before
+`acquire_claim(required_inputs=...)`. After a selection is available, its
+declared unique saved-evidence byte counts are admitted before attachment/body
+byte loading. `max_derived_bytes` is per derived artifact,
+`max_total_derived_bytes` is aggregate derived UTF-8 input, and
+`max_total_parser_output_bytes` bounds aggregate accepted parser wire output.
+Parser-native limits remain independently enforced.
+
+Every operation-owned append passes the acquired `ClaimToken` to
+`append_result_with_data(..., claim=token)`. Persistence therefore fences the
+write atomically against expiry, reclaim, terminal ownership, and execution
+mismatch. A stale owner cannot publish late prepared/filter/group semantics.
+Claim completion drains under cancellation; a stale cleanup result does not
+replace the original cancellation/failure and cannot produce a COMPLETE
+outcome. There is no implicit lease renewal.
+
+Prepared semantic identity is a `VersionRef(kind="prepared", ...)` derived
+from canonical prepared bytes, distinct from the original source VersionRef.
+Prepared, filter, and group StageResults publish these prepared versions.
+Prepared `input_refs` include the captured selection and every durable
+`derived_bytes@1` artifact created for that record; saved attachment
+references and parser provenance remain in the prepared record/source lineage.
+Parsed-content versions fingerprint the exact composite selection, original
+source, selected component, saved-byte identity, parser identity, parser
+configuration, parser limits, and canonical accepted parser output.
+
+Result IDs include a canonical fingerprint of the complete trusted plan in
+addition to execution, attempt, stage tag, configuration version, and code
+version. Changing parser profiles or other meaning-bearing plan semantics
+therefore creates distinct immutable results even when callers reuse textual
+execution/attempt/configuration identifiers. Historical result/data refs remain
+loadable after restart.
+
+Canonical codec, filtering, grouping, and prepared-version work is moved
+off the event loop as finite owned work. Cancellation/operation timeout drains
+accepted off-thread work before returning and discards results that complete
+after cancellation. The package root imports codecs/models eagerly but loads
+`PreparationHandler` lazily, allowing manager composition to register
+`derived_bytes@1` without a persistence import cycle.
