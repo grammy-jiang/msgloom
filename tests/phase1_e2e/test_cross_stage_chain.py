@@ -176,11 +176,24 @@ def test_saved_a1_chain_survives_restart_with_exact_lineage_and_order(
         if runner.calls != 1 or runner.request_was_saved != [True]:
             pytest.fail("fake model boundary bypassed durable AI request evidence")
 
+        # A current attachment/MIME selection carries a saved A1 provenance
+        # caveat. A5 must surface it and report INCOMPLETE instead of the
+        # model-dependent COMPLETE that existed before trusted propagation.
+        caveat = "captured-current-component-selection"
+        caveated = {
+            record.source
+            for record in records
+            if any(item.code == caveat for item in record.limitations)
+        }
+        if not caveated:
+            pytest.fail("saved A1 component selection did not disclose its caveat")
         report_selection = report_plan(*triaged.result_refs)
         reported = await run_report(
             store, report_selection, identity="acceptance-report"
         )
-        require_status(reported, TerminalStatus.COMPLETE, "A5 did not complete")
+        require_status(
+            reported, TerminalStatus.INCOMPLETE, "A5 hid the saved A1 caveat"
+        )
         report_values = await semantic_values(store, reported.result_refs, "report")
         if len(report_values) != 1 or not isinstance(report_values[0], SavedReport):
             pytest.fail("A5 did not persist one canonical SavedReport")
@@ -189,6 +202,14 @@ def test_saved_a1_chain_survives_restart_with_exact_lineage_and_order(
             item.topic_ref for item in allocations
         }:
             pytest.fail("report lost exact topic identities")
+        for topic in report.topics:
+            carries = any(item.code == caveat for item in topic.limitations)
+            if carries != bool(caveated & set(topic.source_refs)):
+                pytest.fail("A1 caveat reached the wrong report topics")
+        if not any(item.code == caveat for item in report.limitations):
+            pytest.fail("saved report omitted the A1 caveat")
+        if {item.code for item in reported.limitations} != {caveat}:
+            pytest.fail("A5 outcome did not mirror exactly the saved caveat")
         rendered = "\n".join(f"{part.plain_text}\n{part.html}" for part in report.parts)
         for text in ("Parent body", "Current body", "Act on", "synthetic Friday"):
             if text not in rendered:
