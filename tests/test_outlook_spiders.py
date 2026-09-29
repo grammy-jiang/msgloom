@@ -12,6 +12,13 @@ from scrapy.spiderloader import SpiderLoader
 from scrapy.utils.project import get_project_settings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
+from message_ingest.spiders.microsoft.contacts.delta import (
+    MicrosoftContactsDeltaSpider,
+)
+from message_ingest.spiders.microsoft.contacts.snapshot import (
+    MicrosoftContactsDiscoverSpider,
+    MicrosoftContactsSyncSpider,
+)
 from message_ingest.spiders.microsoft.onedrive.content import (
     MicrosoftOneDriveContentSpider,
 )
@@ -42,16 +49,21 @@ from message_ingest.spiders.microsoft.outlook.email.folder_delta import (
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
 from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscoverSpider
+from message_ingest.spiders.microsoft.todo.sync import MicrosoftTodoSyncSpider
 
 
 def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
     loader = SpiderLoader.from_settings(get_project_settings())
     expected = {
+        "microsoft_contacts_delta": MicrosoftContactsDeltaSpider,
+        "microsoft_contacts_discover": MicrosoftContactsDiscoverSpider,
+        "microsoft_contacts_sync": MicrosoftContactsSyncSpider,
         "microsoft_onedrive_content": MicrosoftOneDriveContentSpider,
         "microsoft_onedrive_delta": MicrosoftOneDriveDeltaSpider,
         "microsoft_onedrive_discover": MicrosoftOneDriveDiscoverSpider,
         "microsoft_profile": MicrosoftProfileSpider,
         "microsoft_todo_discover": MicrosoftTodoDiscoverSpider,
+        "microsoft_todo_sync": MicrosoftTodoSyncSpider,
         "outlook_calendar_delta": OutlookCalendarDeltaSpider,
         "outlook_calendar_discover": OutlookCalendarDiscoverSpider,
         "outlook_calendar_full": OutlookCalendarFullSpider,
