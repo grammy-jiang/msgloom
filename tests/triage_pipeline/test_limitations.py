@@ -12,6 +12,7 @@ from msgloom.contracts import (
     Limitation,
     OperationRequest,
     PhaseCapability,
+    StageResult,
     TerminalStatus,
     VersionRef,
 )
@@ -42,7 +43,7 @@ def _request(producer, execution: str) -> OperationRequest:
     )
 
 
-async def _final_data(store, outcome) -> tuple[object, TriageData]:
+async def _final_data(store, outcome) -> tuple[StageResult, TriageData]:
     """Load the exact saved triage result and semantic product."""
     final = await store.get_result(outcome.result_refs[0].result_id)
     if final is None or final.semantic_data_ref is None:
