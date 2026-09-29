@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1
 
-# BASE_IMAGE is replaced by qualification with an official Python image
-# pinned to a sha256 digest.
+# Qualification supplies an official Python slim-bookworm image pinned to an
+# immutable sha256 digest.
 ARG BASE_IMAGE=invalid.invalid/msgloom/must-supply:3.13@sha256:0000000000000000000000000000000000000000000000000000000000000000
 FROM $BASE_IMAGE
 
 ARG WHEEL_SHA256
+ARG WHEEL_FILENAME
 ENV HOME=/nonexistent \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONNOUSERSITE=1 \
@@ -20,12 +21,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY runtime-requirements.txt /tmp/runtime-requirements.txt
-COPY msgloom.whl /tmp/msgloom.whl
-RUN printf '%s  %s\n' "$WHEEL_SHA256" /tmp/msgloom.whl | sha256sum -c - \
+COPY ${WHEEL_FILENAME} /tmp/${WHEEL_FILENAME}
+RUN printf '%s  %s\n' "$WHEEL_SHA256" "/tmp/$WHEEL_FILENAME" | sha256sum -c - \
     && python -m pip install --no-cache-dir --only-binary=:all: --require-hashes \
         -r /tmp/runtime-requirements.txt \
-    && python -m pip install --no-cache-dir --no-deps /tmp/msgloom.whl \
-    && rm -f /tmp/runtime-requirements.txt /tmp/msgloom.whl
+    && python -m pip install --no-cache-dir --no-deps "/tmp/$WHEEL_FILENAME" \
+    && rm -f /tmp/runtime-requirements.txt "/tmp/$WHEEL_FILENAME"
 
 RUN groupadd --gid 10001 msgloom \
     && useradd --uid 10001 --gid 10001 --no-create-home \

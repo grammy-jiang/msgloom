@@ -6,31 +6,35 @@ import argparse
 import json
 import shutil
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import cast
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from deployment.qualification import (
-    Check,
     QualificationError,
     Runner,
     Target,
-    ai_probe_code,
-    container_probe_code,
-    docker_run_argv,
-    entrypoint_help_probe_code,
-    evidence_json,
-    parser_probe_code,
-    persistence_probe_code,
+    required_dependencies,
     sanitize,
     sha256_file,
     stage_context,
-    unique_name,
     validate_lock,
+    validate_resource_specs,
+    validate_resources,
+    validate_seccomp_profile,
     validate_targets,
     wheel_metadata,
 )
+from deployment.release import ReleaseInputError
+from deployment.target import (
+    _host_checks,
+    _qualify_target,
+)
 
-ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_HELPER = ROOT / "scripts" / "qualify_installed_wheel.py"
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
 
@@ -48,24 +52,25 @@ def _package_wheel(
     output_root: Path,
     env_python: Path,
     uv: Path,
+    resources: tuple[str, ...],
     runner: Runner,
 ) -> Path:
     """Use the existing package helper; never build a parallel wheel."""
-    result = runner.run(
-        [
-            str(env_python),
-            str(PACKAGE_HELPER),
-            "--source-root",
-            str(source_root),
-            "--output-root",
-            str(output_root),
-            "--env-python",
-            str(env_python),
-            "--uv",
-            str(uv),
-        ],
-        cwd=ROOT,
-    )
+    command = [
+        str(env_python),
+        str(PACKAGE_HELPER),
+        "--source-root",
+        str(source_root),
+        "--output-root",
+        str(output_root),
+        "--env-python",
+        str(env_python),
+        "--uv",
+        str(uv),
+    ]
+    for resource in resources:
+        command.extend(["--require-resource", resource])
+    result = runner.run(command, cwd=ROOT)
     if result.returncode != 0:
         raise QualificationError("installed-wheel helper failed: " + result.output)
     report = output_root / "qualification.json"
@@ -78,380 +83,147 @@ def _package_wheel(
     return wheel
 
 
-def _run_check(
-    runner: Runner,
-    command: list[str],
-    *,
-    cwd: Path,
-    name: str,
-) -> Check:
-    result = runner.run(command, cwd=cwd)
-    if result.returncode:
-        return Check(name, "fail", result.output or "command failed")
-    return Check(name, "pass", result.output.strip() or "ok")
-
-
-def _probe_json(
-    runner: Runner,
-    image: str,
-    volume: str,
-    seccomp: Path | None,
-    cwd: Path,
-) -> tuple[Check, dict[str, object]]:
-    command = docker_run_argv(
-        image,
-        unique_name("imports"),
-        volume,
-        container_probe_code(),
-        seccomp,
+def _write_report(output_root: Path, report: dict[str, object]) -> None:
+    (output_root / "container-qualification.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
-    result = runner.run(command, cwd=cwd)
-    if result.returncode:
-        return Check("installed-runtime", "fail", result.output), {}
-    try:
-        data = json.loads(result.output)
-    except json.JSONDecodeError:
-        return Check("installed-runtime", "fail", "probe output was not JSON"), {}
-    return Check("installed-runtime", "pass", "imports and native parsers loaded"), data
-
-
-def _help_check(
-    runner: Runner,
-    image: str,
-    volume: str,
-    seccomp: Path | None,
-    cwd: Path,
-    entry_points: object,
-) -> Check:
-    if not isinstance(entry_points, list) or "msgloom" not in entry_points:
-        return Check(
-            "entrypoint-help",
-            "pending",
-            "msgloom console entrypoint is not present in this integration candidate",
-        )
-    code = entrypoint_help_probe_code()
-    return _run_check(
-        runner,
-        docker_run_argv(
-            image,
-            unique_name("help"),
-            volume,
-            code,
-            seccomp,
-        ),
-        cwd=cwd,
-        name="entrypoint-help",
-    )
-
-
-def _resource_check(platform_data: dict[str, object]) -> Check:
-    resources = platform_data.get("resources")
-    if not isinstance(resources, dict):
-        return Check("package-resources", "fail", "resource evidence is missing")
-    missing = sorted(name for name, present in resources.items() if not present)
-    if missing:
-        return Check(
-            "package-resources",
-            "pending",
-            "wheel resources not yet integrated: " + ",".join(missing),
-        )
-    return Check("package-resources", "pass", "templates/prompts/migrations present")
-
-
-def _isolation_checks(
-    runner: Runner,
-    image: str,
-    volume: str,
-    seccomp: Path | None,
-    cwd: Path,
-    skip: bool,
-) -> list[Check]:
-    if skip:
-        detail = "explicitly disabled; must run before deployment acceptance"
-        return [
-            Check("parser-isolation", "pending", detail),
-            Check("ai-offline-isolation", "pending", detail),
-        ]
-    parser = _run_check(
-        runner,
-        docker_run_argv(
-            image,
-            unique_name("parser"),
-            volume,
-            parser_probe_code(),
-            seccomp,
-        ),
-        cwd=cwd,
-        name="parser-isolation",
-    )
-    ai = _run_check(
-        runner,
-        docker_run_argv(
-            image,
-            unique_name("ai"),
-            volume,
-            ai_probe_code(),
-            seccomp,
-        ),
-        cwd=cwd,
-        name="ai-offline-isolation",
-    )
-    return [parser, ai]
-
-
-def _persistence_checks(
-    runner: Runner,
-    image: str,
-    volume: str,
-    seccomp: Path | None,
-    cwd: Path,
-) -> Check:
-    first = _run_check(
-        runner,
-        docker_run_argv(
-            image,
-            unique_name("persist1"),
-            volume,
-            persistence_probe_code(False),
-            seccomp,
-        ),
-        cwd=cwd,
-        name="persistence-first-open",
-    )
-    if first.status != "pass":
-        return Check("persistence-restart", "fail", first.detail)
-    second = _run_check(
-        runner,
-        docker_run_argv(
-            image,
-            unique_name("persist2"),
-            volume,
-            persistence_probe_code(True),
-            seccomp,
-        ),
-        cwd=cwd,
-        name="persistence-second-open",
-    )
-    if second.status != "pass":
-        return Check("persistence-restart", "fail", second.detail)
-    return Check("persistence-restart", "pass", "SQLite reopened from named volume")
-
-
-def _qualify_target(
-    *,
-    target: Target,
-    wheel: Path,
-    wheel_hash: str,
-    wheel_version: str,
-    context: Path,
-    output_root: Path,
-    runner: Runner,
-    seccomp: Path | None,
-    skip_isolation: bool,
-    daemon_architecture: str,
-) -> dict[str, object]:
-    invocation = unique_name(target.python.replace(".", ""))
-    image = invocation
-    volume = invocation + "-data"
-    checks: list[Check] = []
-    image_id = ""
-    platform_data: dict[str, object] = {}
-    try:
-        build = runner.run(
-            [
-                "docker",
-                "build",
-                "--label",
-                f"msgloom.qualification={invocation}",
-                "--build-arg",
-                f"BASE_IMAGE={target.base_image}",
-                "--build-arg",
-                f"WHEEL_SHA256={wheel_hash}",
-                "--tag",
-                image,
-                str(context),
-            ],
-            cwd=output_root,
-        )
-        if build.returncode:
-            checks.append(Check("image-build", "fail", build.output))
-            return evidence_json(
-                checks,
-                target=target,
-                image_id=image_id,
-                wheel_hash=wheel_hash,
-                wheel_version=wheel_version,
-                platform_data=platform_data,
-            )
-        checks.append(Check("image-build", "pass", "digest-pinned image built"))
-        inspect = runner.run(
-            ["docker", "image", "inspect", "--format", "{{.Id}}", image],
-            cwd=output_root,
-        )
-        if inspect.returncode:
-            checks.append(Check("image-identity", "fail", inspect.output))
-            return evidence_json(
-                checks,
-                target=target,
-                image_id=image_id,
-                wheel_hash=wheel_hash,
-                wheel_version=wheel_version,
-                platform_data=platform_data,
-            )
-        image_id = inspect.output.strip()
-        created = runner.run(
-            [
-                "docker",
-                "volume",
-                "create",
-                "--label",
-                f"msgloom.qualification={invocation}",
-                volume,
-            ],
-            cwd=output_root,
-        )
-        if created.returncode:
-            checks.append(Check("persistent-volume", "fail", created.output))
-            return evidence_json(
-                checks,
-                target=target,
-                image_id=image_id,
-                wheel_hash=wheel_hash,
-                wheel_version=wheel_version,
-                platform_data=platform_data,
-            )
-        checks.append(Check("persistent-volume", "pass", "owned named volume created"))
-        runtime, platform_data = _probe_json(
-            runner, image, volume, seccomp, output_root
-        )
-        checks.append(runtime)
-        if runtime.status == "pass":
-            observed = str(platform_data.get("python", ""))
-            if not observed.startswith(target.python + "."):
-                checks.append(
-                    Check("python-version", "fail", "container Python version mismatch")
-                )
-            else:
-                checks.append(Check("python-version", "pass", observed))
-            architecture = str(platform_data.get("architecture", ""))
-            if not architecture:
-                checks.append(
-                    Check("architecture", "fail", "container architecture missing")
-                )
-            elif architecture != daemon_architecture:
-                checks.append(
-                    Check(
-                        "architecture",
-                        "fail",
-                        f"container={architecture};daemon={daemon_architecture}",
-                    )
-                )
-            else:
-                checks.append(Check("architecture", "pass", architecture))
-            platform_data["docker_daemon_architecture"] = daemon_architecture
-            checks.append(_resource_check(platform_data))
-            checks.append(
-                _help_check(
-                    runner,
-                    image,
-                    volume,
-                    seccomp,
-                    output_root,
-                    platform_data.get("entry_points"),
-                )
-            )
-        checks.append(_persistence_checks(runner, image, volume, seccomp, output_root))
-        checks.extend(
-            _isolation_checks(
-                runner,
-                image,
-                volume,
-                seccomp,
-                output_root,
-                skip_isolation,
-            )
-        )
-        return evidence_json(
-            checks,
-            target=target,
-            image_id=image_id,
-            wheel_hash=wheel_hash,
-            wheel_version=wheel_version,
-            platform_data=platform_data,
-        )
-    finally:
-        runner.run(["docker", "volume", "rm", "-f", volume], cwd=output_root)
-        runner.run(["docker", "image", "rm", "-f", image], cwd=output_root)
 
 
 def qualify(
-    args: argparse.Namespace, runner: Runner | None = None
+    args: argparse.Namespace,
+    runner: Runner | None = None,
 ) -> dict[str, object]:
-    """Run the serial three-version qualification and persist exact evidence."""
+    """Run serial qualification and persist evidence after execution starts."""
     selected = runner or Runner()
     targets = tuple(args.target)
-    validate_targets(targets)
+    try:
+        validate_targets(targets)
+    except ReleaseInputError as exc:
+        raise QualificationError(str(exc)) from exc
     source_root = args.source_root.resolve()
     output_root = args.output_root.resolve()
     if source_root == output_root or source_root in output_root.parents:
         raise QualificationError("output root must be outside source checkout")
     if output_root.exists():
         raise QualificationError("output root must not already exist")
-    if args.seccomp_profile is not None:
-        seccomp = args.seccomp_profile.resolve()
-        if not seccomp.is_file():
-            raise QualificationError("seccomp profile is not a regular file")
-    else:
-        seccomp = None
-    daemon = selected.run(
-        ["docker", "info", "--format", "{{.Architecture}}"],
-        cwd=ROOT,
-    )
-    if daemon.returncode or not daemon.output.strip():
-        raise QualificationError("Docker daemon architecture is unavailable")
-    daemon_architecture = daemon.output.strip()
-    output_root.mkdir(parents=True)
-    package_output = output_root / "package"
-    wheel = _package_wheel(
-        source_root=source_root,
-        output_root=package_output,
-        env_python=args.env_python,
-        uv=args.uv,
-        runner=selected,
-    )
-    dependencies, resources, wheel_version = wheel_metadata(wheel)
-    validate_lock(args.runtime_lock, dependencies)
-    wheel_hash = sha256_file(wheel)
-    context = stage_context(output_root, DOCKERFILE, wheel, args.runtime_lock)
-    results = []
     try:
-        for target in targets:
-            results.append(
-                _qualify_target(
-                    target=target,
-                    wheel=wheel,
-                    wheel_hash=wheel_hash,
-                    wheel_version=wheel_version,
-                    context=context,
-                    output_root=output_root,
-                    runner=selected,
-                    seccomp=seccomp,
-                    skip_isolation=args.skip_isolation_preflight,
-                    daemon_architecture=daemon_architecture,
-                )
-            )
-    finally:
-        shutil.rmtree(context, ignore_errors=True)
-    report = {
-        "wheel_sha256": wheel_hash,
-        "wheel_version": wheel_version,
-        "wheel_resources_present": list(resources),
-        "targets": results,
+        seccomp = (
+            None
+            if args.seccomp_profile is None
+            else validate_seccomp_profile(args.seccomp_profile)
+        )
+    except ReleaseInputError as exc:
+        raise QualificationError(str(exc)) from exc
+    resources = tuple(args.require_resource)
+    try:
+        validate_resource_specs(resources)
+    except ReleaseInputError as exc:
+        raise QualificationError(str(exc)) from exc
+    output_root.mkdir(parents=True)
+    report: dict[str, object] = {
+        "release_checks": [],
+        "host_checks": [],
+        "targets": [],
     }
-    (output_root / "container-qualification.json").write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    release_checks = cast(list[dict[str, object]], report["release_checks"])
+    try:
+        daemon = selected.run(
+            ["docker", "info", "--format", "{{.Architecture}}"],
+            cwd=ROOT,
+        )
+        if daemon.returncode or not daemon.output.strip():
+            raise QualificationError("Docker daemon architecture is unavailable")
+        daemon_architecture = daemon.output.strip()
+        if daemon_architecture not in {"aarch64", "arm64"}:
+            raise QualificationError("Docker daemon is not native ARM64")
+        package_output = output_root / "package"
+        wheel = _package_wheel(
+            source_root=source_root,
+            output_root=package_output,
+            env_python=args.env_python,
+            uv=args.uv,
+            resources=resources,
+            runner=selected,
+        )
+        metadata = wheel_metadata(wheel)
+        validate_resources(metadata, resources)
+        required = required_dependencies(metadata, targets)
+        validate_lock(args.runtime_lock, required)
+        wheel_hash = sha256_file(wheel)
+        context = stage_context(output_root, DOCKERFILE, wheel, args.runtime_lock)
+        release_checks.append(
+            {"name": "release-inputs", "status": "pass", "detail": "validated"}
+        )
+        report.update(
+            {
+                "wheel_filename": metadata.filename,
+                "wheel_sha256": wheel_hash,
+                "wheel_version": metadata.version,
+                "required_resources": list(resources),
+                "host_checks": [
+                    asdict(check)
+                    for check in _host_checks(
+                        selected,
+                        args.env_python,
+                        output_root,
+                        args.skip_isolation_preflight,
+                    )
+                ],
+            }
+        )
+        results = cast(list[dict[str, object]], report["targets"])
+        try:
+            for target in targets:
+                results.append(
+                    _qualify_target(
+                        target=target,
+                        wheel_hash=wheel_hash,
+                        wheel_filename=metadata.filename,
+                        wheel_version=metadata.version,
+                        resources=resources,
+                        context=context,
+                        output_root=output_root,
+                        runner=selected,
+                        seccomp=seccomp,
+                        skip_isolation=args.skip_isolation_preflight,
+                        daemon_architecture=daemon_architecture,
+                    )
+                )
+                _write_report(output_root, report)
+        finally:
+            shutil.rmtree(context, ignore_errors=True)
+    except (
+        QualificationError,
+        ReleaseInputError,
+        OSError,
+        ValueError,
+        json.JSONDecodeError,
+    ) as exc:
+        release_checks.append(
+            {
+                "name": "qualification-execution",
+                "status": "fail",
+                "detail": sanitize(str(exc)),
+            }
+        )
+        results = cast(list[dict[str, object]], report["targets"])
+        if not results:
+            results.extend(
+                {
+                    "python_target": target.python,
+                    "base_image": target.base_image,
+                    "checks": [
+                        {
+                            "name": "target-qualification",
+                            "status": "pending",
+                            "detail": "not executed after release qualification failure",
+                        }
+                    ],
+                }
+                for target in targets
+            )
+    _write_report(output_root, report)
     return report
 
 
@@ -463,9 +235,21 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--uv", required=True, type=Path)
     parser.add_argument("--runtime-lock", required=True, type=Path)
     parser.add_argument("--target", required=True, action="append", type=_target)
+    parser.add_argument("--require-resource", action="append", default=[])
     parser.add_argument("--seccomp-profile", type=Path)
     parser.add_argument("--skip-isolation-preflight", action="store_true")
     return parser
+
+
+def _statuses(report: dict[str, object]) -> list[str]:
+    statuses: list[str] = []
+    for key in ("release_checks", "host_checks"):
+        for check in cast(list[dict[str, object]], report.get(key, [])):
+            statuses.append(str(check.get("status", "fail")))
+    for target in cast(list[dict[str, object]], report.get("targets", [])):
+        for check in cast(list[dict[str, object]], target.get("checks", [])):
+            statuses.append(str(check.get("status", "fail")))
+    return statuses
 
 
 def main() -> int:
@@ -475,12 +259,8 @@ def main() -> int:
     except (QualificationError, OSError, ValueError, json.JSONDecodeError) as exc:
         print("container qualification failed: " + sanitize(str(exc)), file=sys.stderr)
         return 1
-    targets = cast(list[dict[str, object]], report["targets"])
-    statuses: list[object] = []
-    for target in targets:
-        checks = cast(list[dict[str, object]], target["checks"])
-        statuses.extend(check["status"] for check in checks)
     print(json.dumps(report, indent=2, sort_keys=True))
+    statuses = _statuses(report)
     if "fail" in statuses:
         return 1
     if "pending" in statuses:

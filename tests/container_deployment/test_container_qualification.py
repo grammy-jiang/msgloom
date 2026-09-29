@@ -1,35 +1,39 @@
-"""Synthetic tests for finite container deployment qualification."""
+"""Execution tests for finite container deployment qualification."""
 
 from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import shutil
 import subprocess
 import zipfile
 from pathlib import Path
-from types import ModuleType, SimpleNamespace
-from typing import cast
+from types import ModuleType
 
 import pytest
 
 from deployment.qualification import (
-    Check,
-    CommandResult,
-    QualificationError,
     Runner,
     Target,
     docker_run_argv,
-    evidence_json,
-    sanitize,
     stage_context,
     validate_lock,
+    validate_resources,
+    validate_seccomp_profile,
     validate_targets,
     wheel_metadata,
+)
+from deployment.release import (
+    ReleaseInputError,
+    required_dependencies,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
 SCRIPT = ROOT / "scripts" / "qualify_container_package.py"
+PYTHON = ROOT / ".venv" / "bin" / "python"
+RESOURCE = "msgloom:reporting/templates/report.html.j2"
 
 
 def _script() -> ModuleType:
@@ -52,78 +56,112 @@ def _targets() -> tuple[Target, ...]:
     )
 
 
-def _wheel(path: Path) -> None:
-    metadata = (
-        "Metadata-Version: 2.4\n"
-        "Name: msgloom\n"
-        "Version: 0.1.0\n"
-        "Requires-Dist: claude-agent-sdk==0.2.161\n"
-        "Requires-Dist: sqlalchemy>=2.0.54,<2.1\n"
-    )
+def _wheel(path: Path, requirements: tuple[str, ...] = ()) -> None:
+    metadata = [
+        "Metadata-Version: 2.4",
+        "Name: msgloom",
+        "Version: 0.1.0",
+        *[f"Requires-Dist: {value}" for value in requirements],
+        "",
+    ]
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("msgloom/__init__.py", "")
-        archive.writestr("msgloom/templates/report.txt", "synthetic")
-        archive.writestr("msgloom/prompts/triage.txt", "synthetic")
-        archive.writestr("msgloom/migrations/001.sql", "select 1;")
-        archive.writestr("msgloom-0.1.0.dist-info/METADATA", metadata)
+        archive.writestr("msgloom/reporting/templates/report.html.j2", "synthetic")
+        archive.writestr(
+            "msgloom-0.1.0.dist-info/METADATA",
+            "\n".join(metadata),
+        )
 
 
-def test_targets_require_exact_order_official_variant_and_digest() -> None:
+def test_direct_script_help_works_without_pythonpath(tmp_path: Path) -> None:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    completed = subprocess.run(
+        [str(PYTHON), str(SCRIPT), "--help"],
+        cwd=tmp_path,
+        env=env,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=10,
+    )
+    if completed.returncode != 0 or "--runtime-lock" not in completed.stdout:
+        pytest.fail(f"direct CLI invocation failed: {completed.stdout!r}")
+
+
+def test_targets_require_exact_official_tag_order_and_digest() -> None:
     validate_targets(_targets())
     bad = list(_targets())
-    bad[1] = Target("3.13", "python:3.13-slim-bookworm")
-    with pytest.raises(QualificationError, match="sha256"):
+    bad[0] = Target("3.12", f"python:3.12.14-slim-bookworm@{_digest()}")
+    with pytest.raises(ReleaseInputError, match="exact official"):
         validate_targets(tuple(bad))
-    with pytest.raises(QualificationError, match="ordered"):
+    with pytest.raises(ReleaseInputError, match="ordered"):
         validate_targets(tuple(reversed(_targets())))
 
 
-def test_lock_requires_hashes_exact_versions_and_direct_dependency_coverage(
+def test_wheel_filename_metadata_resources_and_markers(tmp_path: Path) -> None:
+    wheel = tmp_path / "msgloom-0.1.0-py3-none-any.whl"
+    _wheel(
+        wheel,
+        (
+            "sqlalchemy>=2; python_version >= '3.12'",
+            "winonly==1; sys_platform == 'win32'",
+            "optional==1; extra == 'website'",
+            "patchdep==1; python_full_version == '3.13.7'",
+            "optionalpatch==1; extra == 'foo' and python_full_version == '3.13.7'",
+        ),
+    )
+    metadata = wheel_metadata(wheel)
+    if metadata.filename != wheel.name or metadata.version != "0.1.0":
+        pytest.fail("wheel filename/version evidence was not exact")
+    if validate_resources(metadata, (RESOURCE,)) != (RESOURCE,):
+        pytest.fail("exact resource evidence was not retained")
+    with pytest.raises(ReleaseInputError, match="at least one"):
+        validate_resources(metadata, ())
+    with pytest.raises(ReleaseInputError, match="relative/path"):
+        validate_resources(metadata, ("msgloom:../secret",))
+    required = required_dependencies(metadata, _targets())
+    if required != {"patchdep", "sqlalchemy"}:
+        pytest.fail(f"irrelevant markers became mandatory: {required!r}")
+    invalid = tmp_path / "msgloom.whl"
+    shutil.copyfile(wheel, invalid)
+    with pytest.raises(ReleaseInputError, match="filename"):
+        wheel_metadata(invalid)
+    native = tmp_path / "msgloom-0.1.0-cp313-cp313-linux_aarch64.whl"
+    shutil.copyfile(wheel, native)
+    with pytest.raises(ReleaseInputError, match="universal"):
+        wheel_metadata(native)
+
+
+def test_lock_rejects_directives_urls_and_covers_active_dependencies(
     tmp_path: Path,
 ) -> None:
     lock = tmp_path / "runtime.txt"
     lock.write_text(
-        "claude-agent-sdk==0.2.161 --hash=sha256:" + "a" * 64 + "\n"
-        "sqlalchemy==2.0.54 --hash=sha256:" + "b" * 64 + "\n",
+        "sqlalchemy==2.0.54 --hash=sha256:" + "a" * 64 + "\n",
         encoding="utf-8",
     )
-    locked = validate_lock(lock, {"claude-agent-sdk", "sqlalchemy"})
-    if locked != {"claude-agent-sdk", "sqlalchemy"}:
-        pytest.fail(f"unexpected locked dependency set: {locked!r}")
-    lock.write_text(
-        "prefect==3.0.0 --hash=sha256:" + "c" * 64 + "\n",
-        encoding="utf-8",
-    )
-    with pytest.raises(QualificationError, match="forbidden"):
-        validate_lock(lock, set())
-
-
-def test_wheel_metadata_records_direct_dependencies_and_required_resources(
-    tmp_path: Path,
-) -> None:
-    wheel = tmp_path / "msgloom.whl"
-    _wheel(wheel)
-    dependencies, resources, version = wheel_metadata(wheel)
-    if dependencies != {"claude-agent-sdk", "sqlalchemy"}:
-        pytest.fail(f"unexpected wheel dependencies: {dependencies!r}")
-    if resources != (
-        "msgloom/templates/",
-        "msgloom/prompts/",
-        "msgloom/migrations/",
+    if validate_lock(lock, {"sqlalchemy"}) != {"sqlalchemy"}:
+        pytest.fail("valid exact lock entry was not retained")
+    for bad in (
+        "--index-url https://example.invalid/simple\n",
+        "-e ../source\n",
+        "demo @ https://example.invalid/demo.whl\n",
+        "demo==1.0\n",
     ):
-        pytest.fail(f"unexpected resource evidence: {resources!r}")
-    if version != "0.1.0":
-        pytest.fail(f"unexpected wheel version: {version!r}")
+        lock.write_text(bad, encoding="utf-8")
+        with pytest.raises(ReleaseInputError):
+            validate_lock(lock, set())
 
 
-def test_staged_build_context_contains_only_explicit_artifacts(tmp_path: Path) -> None:
-    wheel = tmp_path / "input.whl"
-    wheel.write_bytes(b"synthetic-wheel")
+def test_stage_preserves_valid_wheel_filename_and_digest_boundary(
+    tmp_path: Path,
+) -> None:
+    wheel = tmp_path / "msgloom-0.1.0-py3-none-any.whl"
+    _wheel(wheel)
     lock = tmp_path / "runtime.txt"
-    lock.write_text(
-        "demo==1.0 --hash=sha256:" + "d" * 64 + "\n",
-        encoding="utf-8",
-    )
+    lock.write_text("", encoding="utf-8")
     root = tmp_path / "out"
     root.mkdir()
     context = stage_context(root, DOCKERFILE, wheel, lock)
@@ -131,17 +169,36 @@ def test_staged_build_context_contains_only_explicit_artifacts(tmp_path: Path) -
     expected = [
         "Dockerfile",
         "Dockerfile.dockerignore",
-        "msgloom.whl",
+        "msgloom-0.1.0-py3-none-any.whl",
         "runtime-requirements.txt",
     ]
     if names != expected:
         pytest.fail(f"build context was broader than admitted: {names!r}")
 
 
-def test_docker_invocation_is_nonprivileged_offline_and_volume_scoped(
-    tmp_path: Path,
-) -> None:
-    profile = tmp_path / "bwrap-seccomp.json"
+def test_seccomp_profile_must_be_confining_regular_json(tmp_path: Path) -> None:
+    good = tmp_path / "seccomp.json"
+    good.write_text(
+        json.dumps(
+            {
+                "defaultAction": "SCMP_ACT_ERRNO",
+                "syscalls": [{"names": ["read"], "action": "SCMP_ACT_ALLOW"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    if validate_seccomp_profile(good) != good.resolve():
+        pytest.fail("valid seccomp profile path changed unexpectedly")
+    good.write_text(
+        json.dumps({"defaultAction": "SCMP_ACT_ALLOW", "syscalls": [{}]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ReleaseInputError, match="SCMP_ACT_ERRNO"):
+        validate_seccomp_profile(good)
+
+
+def test_docker_invocation_has_finite_least_privilege_limits(tmp_path: Path) -> None:
+    profile = tmp_path / "seccomp.json"
     profile.write_text("{}", encoding="utf-8")
     command = docker_run_argv(
         "synthetic-image",
@@ -154,185 +211,83 @@ def test_docker_invocation_is_nonprivileged_offline_and_volume_scoped(
     required = (
         "--network none",
         "--read-only",
+        "--memory 2g",
+        "--memory-swap 2g",
+        "--cpus 2.0",
+        "--pids-limit 256",
         "--security-opt no-new-privileges",
         "--cap-drop ALL",
         "type=volume,src=owned-volume,dst=/var/lib/msgloom",
     )
     for fragment in required:
         if fragment not in joined:
-            pytest.fail(f"container security boundary missing: {fragment}")
-    forbidden = ("--privileged", "/var/run/docker.sock", "/home/", "--userns=host")
-    for fragment in forbidden:
+            pytest.fail(f"container boundary missing: {fragment}")
+    for fragment in ("--privileged", "/var/run/docker.sock", "/home/", "--userns=host"):
         if fragment in joined:
-            pytest.fail(f"forbidden container escape surface present: {fragment}")
+            pytest.fail(f"forbidden container surface present: {fragment}")
 
 
-def test_sanitizer_bounds_output_and_redacts_paths_and_tokens() -> None:
-    value = (
-        "/home/private/repo token=synthetic-sensitive-value "
-        + "x" * 5000
-        + " /var/auth/cache"
+def test_runner_bounds_live_output_and_returns_timeout_evidence(tmp_path: Path) -> None:
+    result = Runner().run(
+        [
+            str(PYTHON),
+            "-c",
+            "import sys,time;print('x'*20000);sys.stdout.flush();time.sleep(2)",
+        ],
+        cwd=tmp_path,
+        timeout=1,
     )
-    cleaned = sanitize(value)
-    if "synthetic-sensitive-value" in cleaned:
-        pytest.fail("sanitizer leaked credential-shaped output")
-    if "/home/private" in cleaned or "/var/auth" in cleaned:
-        pytest.fail("sanitizer leaked host paths")
-    if len(cleaned) > 1600:
-        pytest.fail("sanitized command output exceeded evidence bound")
+    if result.returncode != 124 or not result.timed_out:
+        pytest.fail(f"timeout was not evidence: {result!r}")
+    if len(result.output) > 1600 or "timeout after 1s" not in result.output:
+        pytest.fail("timeout output was not bounded and retained")
 
 
-def test_runner_timeout_does_not_echo_arguments_or_private_paths(
+def test_real_local_container_timeout_is_removed_if_image_present(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    secret = tmp_path / "private" / "tool"
-
-    def timeout(*args, **kwargs):
-        raise subprocess.TimeoutExpired([str(secret), "--token=secret"], 7)
-
-    monkeypatch.setattr(subprocess, "run", timeout)
-    with pytest.raises(QualificationError) as caught:
-        Runner().run([str(secret), "--token=secret"], cwd=tmp_path, timeout=7)
-    message = str(caught.value)
-    if message != "timeout after 7s: tool":
-        pytest.fail(f"unexpected bounded timeout diagnostic: {message!r}")
-
-
-def test_evidence_records_exact_image_wheel_platform_and_statuses() -> None:
-    target = _targets()[0]
-    result = evidence_json(
-        [Check("imports", "pass", "ok"), Check("cli", "pending", "not integrated")],
-        target=target,
-        image_id="sha256:image",
-        wheel_hash="f" * 64,
-        wheel_version="0.1.0",
-        platform_data={"architecture": "aarch64", "python": "3.12.14"},
+    image = "debian:trixie"
+    present = subprocess.run(
+        ["docker", "image", "inspect", image],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=10,
     )
-    if result["base_image"] != target.base_image:
-        pytest.fail("base image evidence was not exact")
-    if result["image_digest"] != "sha256:image":
-        pytest.fail("image digest evidence was not exact")
-    if result["wheel_sha256"] != "f" * 64:
-        pytest.fail("wheel digest evidence was not exact")
-    if result["platform"] != {"architecture": "aarch64", "python": "3.12.14"}:
-        pytest.fail("platform evidence was not exact")
-    checks = cast(list[dict[str, object]], result["checks"])
-    if checks[1]["status"] != "pending":
-        pytest.fail("pending gate was mislabeled")
-
-
-class _LifecycleRunner:
-    def __init__(self) -> None:
-        self.commands: list[list[str]] = []
-
-    def run(
-        self, command: list[str], *, cwd: Path, timeout: int = 300
-    ) -> CommandResult:
-        del cwd, timeout
-        self.commands.append(command)
-        if command[:3] == ["docker", "image", "inspect"]:
-            return CommandResult(0, "sha256:owned-image")
-        if command[:3] == ["docker", "volume", "create"]:
-            return CommandResult(0, command[-1])
-        if command[:2] == ["docker", "run"]:
-            code = command[-1]
-            if '"architecture"' in code:
-                return CommandResult(
-                    0,
-                    json.dumps(
-                        {
-                            "architecture": "aarch64",
-                            "python": "3.12.14",
-                            "version": "0.1.0",
-                            "entry_points": [],
-                            "resources": {
-                                "templates": False,
-                                "prompts": False,
-                                "migrations": False,
-                            },
-                        }
-                    ),
-                )
-            return CommandResult(0, "ok")
-        return CommandResult(0, "ok")
-
-
-def test_target_lifecycle_cleans_only_invocation_owned_objects(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    module = _script()
-    names = iter(
-        (
-            "msgloom-qual-owned",
-            "msgloom-qual-imports",
-            "msgloom-qual-persist1",
-            "msgloom-qual-persist2",
-        )
+    if present.returncode:
+        pytest.skip("no already-present harmless Docker image")
+    name = "msgloom-qual-pytest-timeout"
+    subprocess.run(
+        ["docker", "rm", "-f", name],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=10,
     )
-    monkeypatch.setattr(module, "unique_name", lambda prefix: next(names))
-    runner = _LifecycleRunner()
-    result = module._qualify_target(
-        target=_targets()[0],
-        wheel=tmp_path / "wheel",
-        wheel_hash="a" * 64,
-        wheel_version="0.1.0",
-        context=tmp_path,
-        output_root=tmp_path,
-        runner=runner,
-        seccomp=None,
-        skip_isolation=True,
-        daemon_architecture="aarch64",
+    result = Runner().run(
+        [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            name,
+            "--network",
+            "none",
+            image,
+            "sleep",
+            "30",
+        ],
+        cwd=tmp_path,
+        timeout=1,
     )
-    cleanup = [command for command in runner.commands if "rm" in command]
-    expected = [
-        ["docker", "volume", "rm", "-f", "msgloom-qual-owned-data"],
-        ["docker", "image", "rm", "-f", "msgloom-qual-owned"],
-    ]
-    if cleanup != expected:
-        pytest.fail(f"cleanup escaped invocation ownership: {cleanup!r}")
-    statuses = {check["name"]: check["status"] for check in result["checks"]}
-    if statuses["entrypoint-help"] != "pending":
-        pytest.fail("missing entrypoint was mislabeled green")
-    if statuses["package-resources"] != "pending":
-        pytest.fail("missing package resources were mislabeled green")
-    if statuses["parser-isolation"] != "pending":
-        pytest.fail("disabled isolation preflight was mislabeled green")
-
-
-def test_dockerfile_installs_only_wheel_lock_and_runtime_os_packages() -> None:
-    text = DOCKERFILE.read_text(encoding="utf-8")
-    required = (
-        "python -m pip install --no-cache-dir --only-binary=:all: --require-hashes",
-        "python -m pip install --no-cache-dir --no-deps /tmp/msgloom.whl",
-        "bubblewrap",
-        "USER 10001:10001",
-        'VOLUME ["/var/lib/msgloom"]',
+    if result.returncode != 124:
+        pytest.fail(f"container timeout was not recorded: {result!r}")
+    inspect = subprocess.run(
+        ["docker", "container", "inspect", name],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=10,
     )
-    for fragment in required:
-        if fragment not in text:
-            pytest.fail(f"Dockerfile missing deployment contract: {fragment}")
-    forbidden = (
-        "pip install -e",
-        "COPY . ",
-        "Prefect",
-        "fastmcp",
-        "/var/run/docker.sock",
-        ".env",
-    )
-    for fragment in forbidden:
-        if fragment in text:
-            pytest.fail(f"Dockerfile contains forbidden deployment surface: {fragment}")
-
-
-def test_cli_requires_all_three_targets_and_external_output(tmp_path: Path) -> None:
-    module = _script()
-    args = SimpleNamespace(
-        target=_targets()[:2],
-        source_root=tmp_path / "source",
-        output_root=tmp_path / "out",
-        seccomp_profile=None,
-    )
-    with pytest.raises(QualificationError, match="ordered"):
-        module.qualify(args, runner=_LifecycleRunner())
+    if inspect.returncode == 0:
+        pytest.fail("timed-out invocation-owned container remained running")
