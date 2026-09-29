@@ -267,6 +267,7 @@ class ResultSchemaRegistry:
         schemas = frozenset(
             {
                 ("collected_selection", "1"),
+                ("derived_bytes", "1"),
                 ("prepared", "1"),
                 ("filter_result", "1"),
                 ("group_result", "1"),
@@ -286,6 +287,7 @@ class ResultSchemaRegistry:
             frozenset(
                 {
                     ("collected_selection", "1"),
+                    ("derived_bytes", "1"),
                     ("prepared", "1"),
                     ("filter_result", "1"),
                     ("group_result", "1"),

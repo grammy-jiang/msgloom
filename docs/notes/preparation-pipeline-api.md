@@ -178,3 +178,14 @@ accepted off-thread work before returning and discards results that complete
 after cancellation. The package root imports codecs/models eagerly but loads
 `PreparationHandler` lazily, allowing manager composition to register
 `derived_bytes@1` without a persistence import cycle.
+
+## Default composition and rejected content
+
+The default Phase 1 registries include ``derived_bytes@1`` and require its
+semantic payload. The full selection, derived bytes, prepared record, filter,
+and grouping chain can be loaded after closing and reopening persistence.
+
+A parser rejection, including input validation before child launch, adds the
+``content-parse-failed`` limitation and retains the prepared record and other
+parsed components. An aggregate parser output budget violation still fails
+the operation. It cannot become an ordinary per-content limitation.

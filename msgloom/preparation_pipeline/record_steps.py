@@ -417,14 +417,7 @@ class RecordSteps:
         )
         try:
             output = await parse_isolated(request, content)
-            encoded = await self._run_sync_owned(encode_output, output)
-            state.parser_output_bytes += len(encoded)
-            if state.parser_output_bytes > self._plan.max_total_parser_output_bytes:
-                raise ValueError("aggregate parser output exceeds configured bound")
-            return output
         except asyncio.CancelledError:
-            raise
-        except ValueError:
             raise
         except Exception:  # noqa: BLE001
             state.limitations.append(
@@ -434,6 +427,11 @@ class RecordSteps:
                 )
             )
             return None
+        encoded = await self._run_sync_owned(encode_output, output)
+        state.parser_output_bytes += len(encoded)
+        if state.parser_output_bytes > self._plan.max_total_parser_output_bytes:
+            raise ValueError("aggregate parser output exceeds configured bound")
+        return output
 
     async def _parsed_version(
         self,

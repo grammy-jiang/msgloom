@@ -18,6 +18,7 @@ from msgloom.persistence.errors import (
 from msgloom.preparation.codec import PreparedDataCodec
 from msgloom.preparation.filtering import FilterResultCodec
 from msgloom.preparation.grouping import GroupResultCodec
+from msgloom.preparation_pipeline.codec import DerivedByteArtifactCodec
 from msgloom.sources import CollectedSelectionCodec
 from msgloom.triage.codec import TriageDataCodec
 from msgloom.triage.rule_codec import TriageRuleEvaluationCodec
@@ -64,6 +65,7 @@ class SemanticDataRegistry:
         return cls(
             (
                 CollectedSelectionCodec(),
+                DerivedByteArtifactCodec(),
                 PreparedDataCodec(),
                 FilterResultCodec(),
                 GroupResultCodec(),
