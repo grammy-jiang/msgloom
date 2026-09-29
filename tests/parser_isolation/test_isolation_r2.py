@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import os
 import threading
+import time
 from pathlib import Path
 from typing import Any, cast
 
@@ -17,6 +18,8 @@ from msgloom.preparation import (
     ParserConfig,
     ParserIdentity,
     ParserLimits,
+    ParserOutput,
+    ParserProvenance,
     ParserRequest,
     SavedByteReference,
 )
@@ -66,6 +69,31 @@ def _request(
             container_members=64,
         ),
     )
+
+
+def test_late_synchronous_validation_cannot_return_a_successful_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A blocked event loop cannot cancel its overdue timer into success."""
+    request = _request(wall_time=0.01)
+
+    async def delayed_result(*_args: object) -> ParserOutput:
+        # A synchronous decoder can occupy the loop until its timeout callback
+        # is overdue. asyncio.timeout alone can miss this acceptance boundary.
+        time.sleep(0.05)  # noqa: ASYNC251 - model a blocking native decoder
+        return ParserOutput(
+            provenance=ParserProvenance.from_request(request),
+            blocks=(),
+            limitations=(),
+        )
+
+    monkeypatch.setattr(isolation_runner, "_run_isolated", delayed_result)
+
+    async def exercise() -> None:
+        with pytest.raises(ParserTimeoutError):
+            await _parse_isolated(request, b"synthetic content", _REGISTRY)
+
+    asyncio.run(exercise())
 
 
 def test_cancelled_file_preparation_is_drained_before_return(

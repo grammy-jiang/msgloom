@@ -124,7 +124,13 @@ class ParserConfig:
 
 @dataclass(frozen=True, slots=True)
 class ParserLimits:
-    """Hard ceilings enforced outside the parser implementation."""
+    """Resource ceilings and an acceptance deadline enforced by the caller.
+
+    ``wall_time_seconds`` limits acceptance of a complete isolated result.
+    Accepted parent work and required cleanup drain before timeout returns;
+    their completion can exceed that deadline without making a result valid.
+    Native worker memory and content budgets remain enforced separately.
+    """
 
     wall_time_seconds: float
     memory_bytes: int

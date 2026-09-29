@@ -68,6 +68,8 @@ async def _parse_isolated(
     entry = registry.resolve(request.detected_format)
     if request.parser != entry.identity:
         raise ParserIsolationError("parser identity does not match trusted registry")
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + request.limits.wall_time_seconds
     request_payload = encode_request(request)
     if len(request_payload) > _REQUEST_BYTES:
         raise ParserIsolationError("parser request exceeds IPC ceiling")
@@ -75,8 +77,8 @@ async def _parse_isolated(
     temp_root = Path(tempfile.mkdtemp(prefix="msgloom-parser-"))
     try:
         try:
-            async with asyncio.timeout(request.limits.wall_time_seconds):
-                return await _run_isolated(
+            async with asyncio.timeout_at(deadline):
+                output = await _run_isolated(
                     request, content, entry, request_payload, temp_root
                 )
         except TimeoutError:
@@ -85,6 +87,9 @@ async def _parse_isolated(
             ) from None
     finally:
         await _await_owned(asyncio.to_thread(shutil.rmtree, temp_root))
+    if loop.time() >= deadline:
+        raise ParserTimeoutError("isolated parser exceeded wall-time limit")
+    return output
 
 
 async def _run_isolated(

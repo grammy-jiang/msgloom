@@ -64,9 +64,11 @@ container members, declared expansion, and actual streamed expansion before
 native parser import. PDF and legacy Office inputs require their expected
 signatures.
 
-Wall time starts before preflight/file preparation and covers sandbox launch,
-stdin IPC, parsing/process wait, and bounded result reading. Required cleanup
-runs after that deadline rather than being abandoned by it. On timeout or
+The acceptance deadline starts before request encoding and file preparation.
+It covers sandbox launch, stdin IPC, parsing/process wait, result validation,
+and final cleanup. No successful result returns after that deadline. Accepted
+parent thread work and required cleanup can extend the time until a timeout
+returns; they are drained rather than abandoned. On timeout or
 cancellation, the parent snapshots sandbox descendants with Linux pidfds,
 sends SIGKILL through those race-resistant handles, kills and awaits the
 bubblewrap child, and waits for every captured descendant pidfd to report exit
