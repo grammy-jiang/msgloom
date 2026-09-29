@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import json
 from email.header import Header
 from email.utils import parseaddr
 from hashlib import sha256
@@ -33,10 +34,20 @@ def validate_owner_address(value: str) -> str:
 def build_mime(report: SavedReport, part: ReportPart, destination: str) -> bytes:
     """Build deterministic multipart alternative bytes for one saved part."""
     owner = validate_owner_address(destination)
-    seed = (
-        f"{report.report_ref.identity}:{report.report_ref.version}:"
-        f"{report.policy_ref.identity}:{part.part_number}"
-    ).encode()
+    # Canonical JSON keeps distinct references distinct; colon joining let
+    # "a:b"/"c" and "a"/"b:c" share one Message-ID, which mail clients may
+    # treat as a duplicate and hide.
+    seed = json.dumps(
+        [
+            report.report_ref.identity,
+            report.report_ref.version,
+            report.policy_ref.identity,
+            report.policy_ref.version,
+            part.part_number,
+        ],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
     digest = sha256(seed).hexdigest()
     boundary = f"msgloom-{digest[:40]}"
     message_id = f"<{digest}@msgloom.invalid>"
