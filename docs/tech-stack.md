@@ -100,9 +100,9 @@ Record parser identity, version, settings, source locations and omissions. Evalu
 
 Select credential flows from the approved permission model. Do not request tenant-wide access merely because a convenient API requires it. Authentication renewal and the available history/change guarantees are qualification gates for each adapter.
 
-Use the SDK's supported [throttling and retry behaviour](https://learn.microsoft.com/en-us/graph/throttling) at the request boundary. External retries re-enter the command under the saved-state recovery contract. Do not multiply request retries or blindly retry a command with an unknown external effect.
+Use the implemented Scrapy Graph downloader middleware for [throttling and retry behavior](https://learn.microsoft.com/en-us/graph/throttling) at the request boundary. External retries re-enter the command under the saved-state recovery contract. Do not multiply request retries or blindly retry a command with an unknown external effect.
 
-Record content encoding and whether the HTTP transport decoded the payload. Capture bytes before semantic parsing, with safe metadata; do not persist authentication headers. HTTPX hooks may run before the body has been read, so capture ordering and error paths need an integration test.
+Record content encoding and whether the HTTP transport decoded the payload. Capture bytes before semantic parsing, with safe metadata; do not persist authentication headers. The acquisition pipeline saves raw response evidence before semantic items; capture ordering and error paths remain integration-test requirements.
 
 ## 5. Configuration design
 
@@ -149,7 +149,7 @@ FastMCP **4.x** is the required major version for the future MCP adapter and cur
 
 Keep Cyclopts as the sole CLI framework. Reuse compatible Pydantic, pydantic-settings and AnyIO versions through their public APIs. The [FastMCP 4 upgrade guide](https://gofastmcp.com/getting-started/upgrading/from-fastmcp-3) specifies the MCP Python SDK v2 foundation and a Pydantic 2.12 minimum. Later combined website/server environments must also resolve its Starlette requirement with a compatible FastAPI release; do not assume the old pins remain valid.
 
-FastMCP 4 uses **httpx2** for its own HTTP paths. The Graph adapter keeps the HTTPX transport required by its SDK. This is an explicit provider-boundary exception to dependency reuse, not a reason to replace Graph internals or pass HTTPX clients and exceptions into an httpx2 API. Qualify response capture and error handling independently. No application-wide HTTP transport rewrite is approved here.
+FastMCP 4 uses **httpx2** for its own HTTP paths. The Graph adapter keeps its tested Scrapy transport. This is an explicit provider boundary, not a reason to rewrite acquisition transport or pass Scrapy objects into an httpx2 API. Qualify response capture and error handling independently. No application-wide HTTP transport rewrite is approved here.
 
 Resolve the complete dependency set, including Claude Agent SDK and any MCP SDK constraints, in the compatibility environments. A conflict is a release blocker for that deployment, not permission to force incompatible versions. Exact release metadata, not a v2 dependency list, governs optional task packages. Do not install task extras merely to obtain CLI support.
 
@@ -189,9 +189,9 @@ Use one owner for each quality task. tox, tox-uv, pytest, pytest-xdist and pytes
 | Concern | Selection | Project use |
 | --- | --- | --- |
 | Linting | [Ruff](https://docs.astral.sh/ruff/) | Error, bug-risk, upgrade and security rules. Target Python 3.12-compatible source. |
-| Formatting | [Black](https://black.readthedocs.io/en/stable/) | One code format; do not also run Ruff's formatter. |
-| Import order | [isort](https://isort.readthedocs.io/en/latest/configuration/black_compatibility.html) | Use the Black profile; leave Ruff import-sorting rules disabled. |
-| Static types | [mypy](https://mypy.readthedocs.io/en/stable/) | Strict checks for Application code, with the [Pydantic plugin](https://docs.pydantic.dev/latest/integrations/mypy/). Limit exceptions to named provider boundaries. |
+| Formatting | Ruff formatter | Retain the installed, pinned formatter and existing pre-commit hooks. |
+| Import order | Existing repository conventions | Do not add a second formatter or an import-reordering migration during Phase 1. |
+| Static types | Pyright and live LSP diagnostics | Retain the tested source checks and inspect both changed source and tests through the language server. |
 | Test environments | [tox](https://tox.wiki/en/latest/) and [tox-uv](https://github.com/tox-dev/tox-uv) | Named interpreter and quality environments, using uv for environment creation and installation. |
 | Tests | [pytest](https://docs.pytest.org/en/stable/) | Unit, integration and acceptance tests. |
 | Parallel tests | [pytest-xdist](https://pytest-xdist.readthedocs.io/en/stable/) | Distribute independent tests across a bounded number of workers. |
@@ -246,7 +246,7 @@ flowchart TD
     P -->|Installed entry point| A[Application]
 ```
 
-Use [uv](https://docs.astral.sh/uv/concepts/projects/layout/) for development environments, dependency management and a committed `uv.lock`. Use [setuptools](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html) as the required build backend, with `setuptools.build_meta` declared in `pyproject.toml`. [uv build](https://docs.astral.sh/uv/concepts/projects/build/) invokes that backend; it does not select a second packaging system. Keep the `src/msgloom/` layout.
+Use [uv](https://docs.astral.sh/uv/concepts/projects/layout/) for development environments, dependency management and a committed `uv.lock`. Use [setuptools](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html) as the required build backend, with `setuptools.build_meta` declared in `pyproject.toml`. [uv build](https://docs.astral.sh/uv/concepts/projects/build/) invokes that backend; it does not select a second packaging system. Keep the tested top-level `msgloom/`, `message_ingest/`, and `microsoft_graph/` package layout. Build configuration must include these runtime packages without research or test archives.
 
 `pyproject.toml` owns package metadata, entry points, runtime dependencies, installable extras and development dependency groups. Declare setuptools under build-system requirements, not runtime dependencies. `uv.lock` records the tested dependency resolution; record the build-backend version used for each release.
 
