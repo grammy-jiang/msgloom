@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -9,10 +10,12 @@ from scrapy.exceptions import NotConfigured
 from scrapy.http import Response
 
 from message_ingest.acquisition.microsoft.outlook.email import (
+    MailRuleDecisionOutcome,
     MailRuleEvaluation,
     MailRuleEvaluationState,
     MailRuleEvaluator,
     MailRuleObservation,
+    MailRuleProbeStatus,
     MailRuleRequiredData,
     OutlookMailRuleProbeResult,
     mail_rule_observation_from_item,
@@ -21,6 +24,8 @@ from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook.email._base import (
     OutlookMailCollectionSpider,
 )
+
+logger = logging.getLogger(__name__)
 
 OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY = 1100
 
@@ -60,37 +65,85 @@ class OutlookMailAcquisitionRuleMiddleware:
         response: Response,
         result: AsyncIterator[Any],
     ) -> AsyncIterator[Any]:
-        """Preserve streaming output until policy handling is implemented."""
+        """Preserve source output while applying bounded acquisition policy."""
 
         del response
         async for output in result:
             if isinstance(output, OutlookMailRuleProbeResult):
-                evaluation = self.evaluator.evaluate(
-                    output.observation,
-                    probe=output.probe,
-                )
-                if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
-                    self.spider.mark_run_failed("mail_rule_probe_loop")
-                    continue
-                self._record_terminal(output.observation, evaluation)
+                self._publish_probe_result(output)
+                try:
+                    evaluation = self._evaluate(
+                        output.observation,
+                        probe=output.probe,
+                    )
+                    if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
+                        self._programming_failure(
+                            message_id=output.observation.message_id,
+                            run_id=output.observation.run_id,
+                            phase="probe",
+                            reason="mail_rule_probe_loop",
+                            error_type="InvalidRuleState",
+                        )
+                        continue
+                    self._record_terminal(output.observation, evaluation)
+                except Exception as exc:  # noqa: BLE001 - policy boundary must fail closed
+                    self._programming_failure(
+                        message_id=output.observation.message_id,
+                        run_id=output.observation.run_id,
+                        phase="probe",
+                        reason="mail_rule_evaluation_error",
+                        error_type=type(exc).__name__,
+                    )
                 continue
 
             yield output
             if not isinstance(output, OutlookMailItem):
                 continue
 
-            observation = mail_rule_observation_from_item(output)
-            evaluation = self.evaluator.evaluate(observation, probe=None)
-            if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
-                if evaluation.required_data is not MailRuleRequiredData.BODY:
-                    raise RuntimeError("unsupported Mail rule required-data state")
-                key = self._probe_key(observation)
-                if key in self._scheduled_body_probes:
+            try:
+                observation = mail_rule_observation_from_item(output)
+                evaluation = self._evaluate(observation, probe=None)
+                if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
+                    if evaluation.required_data is not MailRuleRequiredData.BODY:
+                        raise RuntimeError("unsupported Mail rule required-data state")
+                    key = self._probe_key(observation)
+                    if key in self._scheduled_body_probes:
+                        continue
+                    request = self.spider.mail_rule_probe_request(observation)
+                    self._scheduled_body_probes.add(key)
+                    self.crawler.stats.inc_value(
+                        "msgloom/crawl/mail_rules/probe_scheduled_count"
+                    )
+                    logger.debug(
+                        "Outlook Mail rule probe: "
+                        "event=outlook_mail_rule_probe_scheduled "
+                        "run_id=%r message_id=%r probe=body",
+                        observation.run_id,
+                        observation.message_id,
+                        extra={"spider": self.spider},
+                    )
+                    yield request
                     continue
-                self._scheduled_body_probes.add(key)
-                yield self.spider.mail_rule_probe_request(observation)
-                continue
-            self._record_terminal(observation, evaluation)
+                self._record_terminal(observation, evaluation)
+            except Exception as exc:  # noqa: BLE001 - policy boundary preserves source Item
+                self._programming_failure(
+                    message_id=output.message_id,
+                    run_id=output.run_id,
+                    phase="initial",
+                    reason="mail_rule_evaluation_error",
+                    error_type=type(exc).__name__,
+                )
+
+    def _evaluate(
+        self,
+        observation: MailRuleObservation,
+        *,
+        probe=None,
+    ) -> MailRuleEvaluation:
+        evaluation = self.evaluator.evaluate(observation, probe=probe)
+        if not isinstance(evaluation, MailRuleEvaluation):
+            raise TypeError("Mail rule evaluator returned invalid result type")
+        return evaluation
 
     @staticmethod
     def _probe_key(
@@ -101,6 +154,25 @@ class OutlookMailAcquisitionRuleMiddleware:
             observation.evidence_id,
             observation.observation_kind,
             observation.run_id,
+        )
+
+    def _publish_probe_result(self, result: OutlookMailRuleProbeResult) -> None:
+        status = result.probe.status
+        if status is MailRuleProbeStatus.COMPLETE:
+            self.crawler.stats.inc_value(
+                "msgloom/crawl/mail_rules/probe_completed_count"
+            )
+        else:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/probe_failed_count")
+        logger.debug(
+            "Outlook Mail rule probe: "
+            "event=outlook_mail_rule_probe_completed "
+            "run_id=%r message_id=%r status=%s reason=%s",
+            result.observation.run_id,
+            result.observation.message_id,
+            status.value,
+            result.probe.reason_code or "-",
+            extra={"spider": self.spider},
         )
 
     def _record_terminal(
@@ -114,11 +186,84 @@ class OutlookMailAcquisitionRuleMiddleware:
         }:
             raise RuntimeError("Mail rule evaluation did not reach terminal state")
         profile = evaluation.selected_profile
-        if profile is None:
-            raise RuntimeError("validated terminal Mail rule evaluation lost profile")
+        outcome = evaluation.outcome
+        if profile is None or outcome is None:
+            raise RuntimeError("validated terminal Mail rule evaluation lost fields")
+
+        self.crawler.stats.inc_value("msgloom/crawl/mail_rules/evaluated_count")
+        if outcome is MailRuleDecisionOutcome.MATCHED:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/matched_count")
+        elif outcome is MailRuleDecisionOutcome.DEFAULT:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/default_count")
+        elif outcome is MailRuleDecisionOutcome.UNRESOLVED:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/unresolved_count")
+        else:
+            raise RuntimeError("unknown terminal Mail rule outcome")
+
+        if evaluation.stop_rule_id is not None:
+            self.crawler.stats.inc_value(
+                "msgloom/crawl/mail_rules/stop_processing_count"
+            )
+        if evaluation.fallback_used:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/fallback_count")
+
         self.spider.record_mail_rule_profile(
             message_id=observation.message_id,
             profile=profile,
+        )
+
+        if evaluation.state is MailRuleEvaluationState.UNRESOLVED:
+            logger.warning(
+                "Outlook Mail rule unresolved: "
+                "event=outlook_mail_rule_unresolved "
+                "run_id=%r message_id=%r reason=%s profile=%s",
+                observation.run_id,
+                observation.message_id,
+                evaluation.reason_code or "unknown",
+                profile,
+                extra={"spider": self.spider},
+            )
+
+        logger.info(
+            "Outlook Mail rule decision: "
+            "event=outlook_mail_rule_decision "
+            "run_id=%r message_id=%r observation_kind=%s "
+            "ruleset_id=%s ruleset_digest=%s outcome=%s profile=%s "
+            "matched_rules=%s stop_rule=%s probe_used=%s fallback_used=%s",
+            observation.run_id,
+            observation.message_id,
+            observation.observation_kind,
+            evaluation.ruleset_id or "-",
+            evaluation.ruleset_digest or "-",
+            outcome.value,
+            profile,
+            ",".join(evaluation.matched_rule_ids) or "-",
+            evaluation.stop_rule_id or "-",
+            str(evaluation.probe_used).lower(),
+            str(evaluation.fallback_used).lower(),
+            extra={"spider": self.spider},
+        )
+
+    def _programming_failure(
+        self,
+        *,
+        message_id: str,
+        run_id: str | None,
+        phase: str,
+        reason: str,
+        error_type: str,
+    ) -> None:
+        self.spider.mark_run_failed(reason)
+        self.crawler.stats.inc_value("msgloom/crawl/mail_rules/evaluation_error_count")
+        logger.error(
+            "Outlook Mail rule error: event=outlook_mail_rule_error "
+            "run_id=%r message_id=%r phase=%s reason=%s error_type=%s",
+            run_id,
+            message_id,
+            phase,
+            reason,
+            error_type,
+            extra={"spider": self.spider},
         )
 
 
