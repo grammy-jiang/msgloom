@@ -15,6 +15,7 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
+from message_ingest.acquisition.microsoft.outlook.email import MailRuleObservation
 from message_ingest.extensions.microsoft.outlook.calendar.checkpoint import (
     CalendarDeltaSpiderState,
 )
@@ -157,6 +158,50 @@ def test_outlook_requests_are_serializable_for_scrapy_persistent_scheduler(
             pytest.fail("Expected: restored.errback is not None")
         if restored.errback != request.errback:
             pytest.fail("Expected: restored.errback == request.errback")
+
+
+def test_mail_rule_probe_request_serializes_named_callbacks_and_context(
+    tmp_path: Path,
+) -> None:
+    crawler = _crawler(tmp_path, OutlookDiscoverSpider)
+    spider = OutlookDiscoverSpider.from_crawler(crawler)
+    observation = MailRuleObservation(
+        message_id="message-id",
+        run_id="run-id",
+        evidence_id="evidence-id",
+        observation_kind="delta",
+        last_modified_date_time="2026-09-30T03:00:00Z",
+        subject=None,
+        sender_address=None,
+        from_address=None,
+        to_addresses=(),
+        cc_addresses=(),
+        bcc_addresses=(),
+        importance=None,
+        categories=(),
+        has_attachments=None,
+        body_preview=None,
+    )
+
+    request = spider.mail_rule_probe_request(observation)
+    serialized = request.to_dict(spider=spider)
+    restored = request_from_dict(
+        pickle.loads(pickle.dumps(serialized, protocol=4)),
+        spider=spider,
+    )
+
+    if restored.url != request.url:
+        pytest.fail("Probe URL changed during JOBDIR serialization")
+    if restored.cb_kwargs != request.cb_kwargs:
+        pytest.fail("Probe callback context changed during JOBDIR serialization")
+    if restored.meta != request.meta:
+        pytest.fail("Probe request metadata changed during JOBDIR serialization")
+    if restored.headers != request.headers:
+        pytest.fail("Probe representation headers changed during JOBDIR serialization")
+    if restored.callback != spider.parse_mail_rule_probe:
+        pytest.fail("Probe callback must restore as named Spider method")
+    if restored.errback != spider.mail_rule_probe_errback:
+        pytest.fail("Probe errback must restore as named Spider method")
 
 
 def _calendar_crawler(tmp_path: Path):
