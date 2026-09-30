@@ -7,10 +7,10 @@ from scrapy.http import TextResponse
 
 from microsoft_graph.protocol import GraphCollectionPage
 
-from ._base import OutlookMailSpider
+from ._base import OutlookMailCollectionSpider
 
 
-class OutlookDiscoverSpider(OutlookMailSpider):
+class OutlookDiscoverSpider(OutlookMailCollectionSpider):
     """Discover message metadata across a mailbox or one folder."""
 
     name = "outlook_discover"

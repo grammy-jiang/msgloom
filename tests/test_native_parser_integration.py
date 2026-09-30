@@ -99,6 +99,7 @@ def _request(content: bytes, format_: DocumentFormat, profile: str) -> ParserReq
         ),
         (DocumentFormat.DOCX, "word-native-v1", _docx_content()),
     ],
+    ids=("text", "html", "json", "mime", "pdf", "docx"),
 )
 def test_production_parser_preserves_content_and_provenance_in_sandbox(
     format_: DocumentFormat,

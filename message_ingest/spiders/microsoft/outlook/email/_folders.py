@@ -15,10 +15,10 @@ from message_ingest.items.microsoft.outlook.email import (
 )
 from microsoft_graph.protocol import GraphCollectionPage, graph_object
 
-from ._base import OutlookMailSpider
+from ._base import OutlookMailCollectionSpider
 
 
-class OutlookFolderTraversal(OutlookMailSpider):
+class OutlookFolderTraversal(OutlookMailCollectionSpider):
     """
     Own folder inventory and reconciliation during Outlook Mail delta sync.
 

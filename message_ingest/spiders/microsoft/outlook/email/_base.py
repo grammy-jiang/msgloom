@@ -43,3 +43,13 @@ class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
             evidence_id=evidence_id,
             run_id=self.run_id,
         )
+
+
+class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
+    """
+    Mark spiders that emit message observations for acquisition policy.
+
+    Discovery and delta collection share this boundary. Folder lifecycle and
+    Full-profile execution deliberately remain outside it so future Mail rule
+    middleware can be enabled only where an initial message decision exists.
+    """
