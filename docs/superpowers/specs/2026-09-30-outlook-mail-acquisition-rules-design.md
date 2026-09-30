@@ -1,776 +1,999 @@
-# Outlook Mail acquisition rules design
+# Outlook Mail acquisition-policy Spider Middleware design
 
 Date: 2026-09-30
 
 ## Status
 
-This document defines the design for deterministic, user-defined Outlook Mail
-acquisition rules in A1.
+This is the formal design for the first implementation phase of Outlook Mail
+acquisition rules: the Scrapy Spider Middleware boundary.
 
-The prerequisite collection boundary has already been implemented:
+The owner has approved the architectural direction in conversation. This
+document supersedes the earlier version of this file that proposed persisting
+rule-decision sidecar Items in the Mail catalog.
 
-- OutlookDiscoverSpider and OutlookDeltaSpider are Mail collection spiders.
-- OutlookFolderDeltaSpider is not a Mail collection spider.
-- OutlookFullSpider is not a Mail collection spider.
-- no acquisition-rule Spider Middleware exists yet.
+The current approved data-ownership decision is:
 
-Implementation of the rule system must start only after this design is
-reviewed and an implementation plan is approved.
+- Microsoft source observations and acquired evidence remain in the existing
+  acquisition catalog and evidence storage;
+- rule evaluation results are not Mail content and are not persisted in the
+  final Mail database;
+- rule decisions and rule-processing diagnostics are emitted through the
+  existing Scrapy/Python logging and stats system;
+- logs are observability and audit records, not business-control state;
+- later Full-acquisition orchestration must use attempt-local runtime state,
+  not parse logs and not add rule decisions to the Mail database.
+
+The prerequisite Mail collection boundary already exists:
+
+- `OutlookDiscoverSpider` is an `OutlookMailCollectionSpider`;
+- `OutlookDeltaSpider` reaches the same boundary through
+  `OutlookFolderTraversal`;
+- `OutlookFolderDeltaSpider` is not a Mail collection spider;
+- `OutlookFullSpider` is not a Mail collection spider;
+- no acquisition-policy Spider Middleware exists yet.
+
+This specification intentionally defines the middleware integration contract
+before the deterministic RuleEngine is implemented.
 
 ## Goal
 
-Let the owner define deterministic Outlook-like rules over facts they can
-recognize in Outlook, such as sender, recipient, subject, importance,
-categories, attachments, and message body.
+Add a Mail-only Scrapy Spider Middleware that can apply an independently
+implemented deterministic acquisition policy to each Outlook Mail observation.
 
-The rule system has two outputs:
+The middleware answers an acquisition-depth question:
 
-1. an acquisition profile that tells the existing planner whether more source
-   evidence should be acquired for a message; and
-2. local msgloom labels that classify the message without modifying Microsoft
-   Outlook.
+> Given this Outlook Mail observation and the currently available rule data,
+> should msgloom keep only discovery-level evidence, request a bounded rule
+> probe, or select a later Full acquisition profile?
 
-The system must preserve A1 evidence, resume safety, replayability, and the
-existing Microsoft Graph framework boundary.
+The middleware is not a mailbox mutation system and is not a content-deletion
+filter.
+
+Its primary responsibilities are:
+
+1. observe `OutlookMailItem` values emitted by Outlook Mail collection
+   spiders;
+2. preserve every original provider observation unchanged;
+3. call a pure RuleEvaluator contract without implementing matching semantics;
+4. schedule at most one bounded probe when the evaluator reports missing data;
+5. pass probe results back to the evaluator;
+6. emit privacy-safe, searchable rule-decision log events and aggregate stats;
+7. expose bounded attempt-local runtime selection state for a future sync
+   planner handoff;
+8. fail safely when rule data is unresolved or the evaluator/middleware itself
+   fails.
 
 ## Non-goals
 
-V1 does not:
+This phase does not implement:
 
-- modify Outlook rules, categories, folders, read state, flags, or messages;
-- move, delete, forward, or reply to mail;
-- silently import a user's existing Outlook Inbox rules;
-- implement arbitrary boolean expressions or regular expressions;
-- apply Mail rules to Calendar, To Do, OneDrive, Contacts, or Microsoft profile;
-- run acquisition rules inside OutlookFullSpider;
-- re-evaluate historical unchanged catalog records when a rules file changes;
-- replace A2 filtering or A3 triage rules;
-- put rule decisions inside the provider observation represented by
-  OutlookMailItem.
+- sender, recipient, subject, category, importance, attachment, or body matching;
+- Outlook-like rule conditions, exceptions, ordering, or stop-processing
+  semantics beyond the evaluator interface needed by the middleware;
+- TOML rule parsing or validation;
+- import of Microsoft Outlook Inbox rules;
+- persistent rule-decision tables or rule-configuration snapshots;
+- new fields on `OutlookMailItem`;
+- A2 filtering or A3 triage behavior;
+- Full-v1 traversal;
+- Mail attachment traversal;
+- Outlook mutation of any kind;
+- a new logging backend, log file writer, or log rotation subsystem;
+- parsing log files as control state;
+- automatic historical re-evaluation of unchanged messages.
 
-## External semantic baseline
+The later RuleEngine phase will implement deterministic rule semantics against
+the contract defined here.
 
-The design intentionally follows the parts of Outlook Inbox Rules that map to
-msgloom's use case.
+## Terminology
 
-Microsoft documents an Inbox rule as having conditions, exceptions, actions,
-enablement, and an execution sequence. Outlook also exposes "Stop processing
-more rules". Microsoft Graph represents these concepts through messageRule,
-messageRulePredicates, and messageRuleActions.
+### Provider observation
 
-Relevant official references:
+An `OutlookMailItem` emitted from discovery, delta, or reconciliation. It
+represents facts supplied by Microsoft Graph and remains provider/source data.
 
-- [Microsoft Graph messageRule](https://learn.microsoft.com/en-us/graph/api/resources/messagerule?view=graph-rest-1.0)
-- [Microsoft Graph messageRulePredicates](https://learn.microsoft.com/en-us/graph/api/resources/messagerulepredicates?view=graph-rest-1.0)
-- [Manage email messages by using rules in Outlook](https://support.microsoft.com/en-us/outlook/mail/manage-email-messages-by-using-rules-in-outlook)
-- [Stop processing more rules in Outlook](https://support.microsoft.com/en-us/outlook/mail/stop-processing-more-rules-in-outlook)
-- [Microsoft Graph message resource](https://learn.microsoft.com/en-us/graph/api/resources/message?view=graph-rest-1.0)
-- [Get message](https://learn.microsoft.com/en-us/graph/api/message-get?view=graph-rest-1.0)
+### Acquisition policy
 
-The msgloom rules are not Microsoft rules. Outlook provides the user mental
-model and predicate vocabulary; msgloom owns the rule file, actions, evidence,
-and persistence semantics.
+A deterministic owner-controlled policy that selects how much additional
+source evidence msgloom should acquire for a Mail observation.
+
+### Acquisition profile
+
+A stable name for a supported acquisition depth. The rule system is expected
+initially to choose between at least:
+
+- `discovery-only`;
+- `outlook-mail-full-v1`.
+
+The middleware treats profile names as evaluator outputs. It does not implement
+the Full profile.
+
+### RuleEvaluator
+
+A pure deterministic component, implemented later, that consumes one Mail
+observation plus optional probe data and returns an evaluation state.
+
+The evaluator has no Scrapy lifecycle responsibility.
+
+### Probe
+
+A bounded additional Graph request made only because a potentially relevant
+rule cannot be decided from discovery/delta fields alone.
+
+The first expected probe use is complete message body evaluation.
+
+### Runtime selection state
+
+Attempt-local in-memory control information accumulated while the crawler is
+alive. It is not a database record and is not reconstructed by parsing logs.
+
+The future sync planner may consume this state immediately after the collection
+crawler closes in the same process.
+
+## Current project baseline
+
+The repository currently runs:
+
+- Scrapy 2.19.0;
+- Python 3.13;
+- `MicrosoftGraphAddon` for reusable Graph transport components;
+- `MessageIngestLogFormatter` for application item summaries;
+- `MicrosoftGraphScrapyPrivacyFilter` for Scrapy core log sanitization;
+- Scrapy's native Stats Collector;
+- Scrapy `PeriodicLog` for periodic aggregate stats;
+- `OutlookCrawlStatusExtension` for terminal crawl summaries.
+
+The Mail sync workflow is multi-phase:
+
+1. folder delta;
+2. message delta/reconciliation;
+3. after the delta crawler closes, plan Full work;
+4. run one or more `OutlookFullSpider` phases.
+
+Multi-phase Mail sync rejects a shared `JOBDIR`. The standalone delta primitive
+may use `JOBDIR`.
+
+These existing lifecycle choices materially shape this design.
 
 ## Component ownership
 
-### Reusable Microsoft Graph package
+### `microsoft_graph`
 
-microsoft_graph remains unaware of msgloom acquisition rules.
+The reusable `microsoft_graph` package remains unaware of msgloom Mail
+acquisition policy.
 
 It continues to own:
 
-- Graph authentication and transport behavior;
-- safe retry/error handling;
-- provider path and field mechanics;
-- reusable Outlook Mail fields and request construction;
+- Graph authentication and transport;
+- retry/error handling;
+- request representation;
+- provider paths and fields;
 - Graph protocol parsing;
-- representation-aware request identity.
+- generic Graph diagnostics and privacy behavior.
 
-No acquisition-rule model, middleware, persistence, or msgloom configuration
-may be added to microsoft_graph.
+No msgloom rule model, policy evaluator, rule middleware, rule runtime state, or
+rule configuration belongs in this package.
 
-### Msgloom Mail acquisition domain
+### Mail acquisition domain
 
-Rule models, validation, evaluation, and probe planning belong under:
+Rule contracts and the future deterministic RuleEngine belong under:
 
-message_ingest/acquisition/microsoft/outlook/email/
+`message_ingest/acquisition/microsoft/outlook/email/`
 
-Suggested modules:
+The RuleEngine must remain independent of Scrapy.
 
-- rules.py — immutable rule and result contracts;
-- rule_config.py — bounded TOML loading and canonicalization;
-- rule_evaluation.py — pure deterministic evaluation.
-
-These modules must not depend on Scrapy.
+The middleware phase may introduce only the minimum contracts needed to call a
+future engine, such as evaluation states, required-data descriptors, and a
+protocol/interface.
 
 ### Spider Middleware
 
 The Scrapy adapter belongs under:
 
-message_ingest/spidermiddlewares/microsoft/outlook/email.py
+`message_ingest/spidermiddlewares/microsoft/outlook/email.py`
 
-Its responsibilities are limited to:
+Recommended class name:
 
-- observing OutlookMailItem outputs from Mail collection spiders;
-- calling the pure rule evaluator;
-- passing provider Items through unchanged;
-- scheduling a bounded body probe when evaluation needs full body data;
-- replacing an internal probe-result Item with a durable decision sidecar Item.
+`OutlookMailAcquisitionRuleMiddleware`
 
-It must not:
+It owns Scrapy output processing, probe scheduling, logging, aggregate stats,
+and attempt-local runtime selection publication.
 
-- implement predicate semantics itself;
-- persist state directly;
-- perform Full-v1 acquisition;
-- alter provider Items;
-- apply to unrelated Items.
+It must not own predicate semantics.
 
-### Outlook Mail collection spider
+### Mail collection Spider
 
-OutlookMailCollectionSpider is the activation and request-serialization seam.
+`OutlookMailCollectionSpider` is the activation and request-serialization
+seam.
 
-It owns named Spider callbacks and request builders required for rule probes so
-that probe Requests remain compatible with Scrapy JOBDIR serialization.
+It owns:
 
-It must not own rule matching.
+- per-Spider middleware registration;
+- named probe request builders;
+- named probe callbacks/errbacks required for Scrapy request serialization;
+- any minimal attempt-local runtime container that must remain accessible from
+  the crawler after the collection phase.
+
+It must not implement rule matching.
 
 ### Item Pipeline
 
-The existing Outlook Mail pipeline remains the durable-state boundary.
+The existing Outlook Mail pipeline remains responsible only for durable source
+and acquisition state already in its contract.
 
-It may persist an OutlookMailAcquisitionDecisionItem and its canonical rule
-configuration snapshot. It must not mutate the original OutlookMailItem with
-the rule result.
+This design does not add a rule-decision Item and does not add rule-decision
+persistence.
 
-### Sync planner
+Probe evidence that is genuine acquired source evidence may continue through
+the existing evidence path when appropriate. The derived rule decision itself
+does not.
 
-The existing Mail sync planner consumes durable acquisition decisions after the
-collection crawler has fully closed.
+### Observability components
 
-The planner decides which messages require OutlookFullSpider. The middleware
-selects a profile; the Full spider executes that profile.
+The middleware emits safe per-message rule events and increments Scrapy stats.
+
+The existing `OutlookCrawlStatusExtension` remains the natural owner for any
+crawl-level terminal summary that includes rule counters.
+
+The middleware must not install its own logging handler or file writer.
 
 ## Activation contract
 
-The acquisition-rule middleware must never be configured globally in
-message_ingest/settings.py.
+The rule middleware must not be configured globally in
+`message_ingest/settings.py`.
 
-Only Mail collection spiders may activate it:
+Only `OutlookMailCollectionSpider` descendants may register it.
 
-| Spider | Rule middleware |
+The activation matrix is:
+
+| Spider/resource | Rule middleware configured |
 | --- | --- |
-| outlook_discover | yes, when a rules file is configured |
-| outlook_delta | yes, when a rules file is configured |
-| outlook_folder_delta | no |
-| outlook_full | no |
+| `outlook_discover` | yes |
+| `outlook_delta` | yes |
+| `outlook_folder_delta` | no |
+| `outlook_full` | no |
 | Outlook Calendar spiders | no |
 | Microsoft To Do spiders | no |
 | Microsoft OneDrive spiders | no |
 | Microsoft Contacts spiders | no |
 | Microsoft profile spider | no |
 
-OutlookMailCollectionSpider.update_settings() should conditionally add the
-middleware to SPIDER_MIDDLEWARES only when
-MSGLOOM_OUTLOOK_MAIL_RULES_FILE is non-empty.
+The middleware may then raise `NotConfigured` when Mail rule evaluation is not
+enabled for that crawl.
 
-Use Scrapy's component-priority-dictionary helper rather than replacing the
-whole setting.
+This preserves the key distinction:
 
-The intended middleware priority is above the current built-in Spider
-Middleware priorities, for example 1100. On the Spider output path this lets
-Requests emitted by the custom middleware continue through the normal built-in
-MetaCopy, Depth, UrlLength, Referer, and lower-priority middleware.
+- registration is Mail-collection-specific;
+- enablement is configuration-specific.
 
-The implementation must verify this ordering against Scrapy 2.19.0 rather than
-treat the numeric value alone as proof.
+No unrelated Microsoft product should even have this Mail middleware in its
+effective per-Spider component dictionary.
 
-## Configuration entry point
+## Spider Middleware priority and ordering
 
-### Dedicated A1 rules file
+The intended custom middleware priority is `1100`.
 
-A1 rules use a dedicated owner-controlled TOML file.
+Scrapy 2.19.0 currently provides these relevant built-in Spider Middleware
+priorities:
 
-They do not reuse A2 FilterConfig, A3 TriageRuleConfig, or
-msgloom.configuration.OperatorSettings.
+- StartSpiderMiddleware: 25;
+- HttpErrorMiddleware: 50;
+- RefererMiddleware: 700;
+- UrlLengthMiddleware: 800;
+- DepthMiddleware: 900;
+- MetaCopyDetectionMiddleware: 1000.
 
-Reasons:
+Spider output middleware runs in reverse priority order.
 
-- A1 rules control acquisition cost and source evidence.
-- A2/A3 rules operate on already prepared records.
-- message_ingest currently has no dependency on msgloom.
-- reusing A2/A3 models would create a reverse dependency and conflate
-  different lifecycle semantics.
+Placing the Mail acquisition middleware at 1100 means that a probe Request
+created while processing Spider output continues through the lower-priority
+built-ins, including MetaCopyDetection, Depth, UrlLength, Referer, and
+HttpError-related output behavior.
 
-### Scrapy setting
+The implementation test must verify behavior through the real Scrapy
+SpiderMiddlewareManager. The numeric priority alone is not sufficient evidence.
 
-Add:
+The implementation should use Scrapy's component-priority dictionary helper
+rather than overwrite the entire `SPIDER_MIDDLEWARES` setting.
 
-MSGLOOM_OUTLOOK_MAIL_RULES_FILE
+## Middleware API shape
 
-The project default is empty, which means acquisition rules are disabled and
-current behavior remains unchanged.
+Scrapy 2.19.0 supports asynchronous Spider Middleware output.
 
-An environment default may be supplied by MSGLOOM_OUTLOOK_MAIL_RULES_FILE,
-following the existing settings pattern.
+The middleware needs one-to-many behavior:
 
-### CLI
+- one `OutlookMailItem` must always continue downstream;
+- the same Mail Item may additionally cause a probe Request.
 
-Add:
+`BaseSpiderMiddleware.get_processed_item()` is a one-input/one-output helper
+and therefore is not the primary abstraction for this middleware.
 
---rules-file PATH
+The middleware should implement a streaming asynchronous
+`process_spider_output` async generator.
 
-It is valid for:
+Conceptually:
 
-- scrapy microsoft outlook mail discover
-- scrapy microsoft outlook mail delta
-- scrapy microsoft outlook mail sync
+    async for output in result:
+        if output is internal probe result:
+            consume it
+            evaluate it
+            publish final decision
+            continue
 
-It is rejected for:
+        yield output
 
-- outlook mail full;
-- Calendar;
-- To Do;
-- OneDrive;
-- Contacts;
-- profile/auth commands.
+        if output is OutlookMailItem:
+            evaluate it
+            maybe yield one probe Request
 
-The option is applied before CrawlerProcess creation so Spider
-update_settings() can see the final path.
+The implementation must never materialize the callback iterable into a list.
 
-Direct developer scrapy crawl usage may use the Scrapy setting explicitly.
+The middleware does not need a `process_spider_input` hook for the approved
+flow.
 
-### Configuration trust
+## Output preservation invariant
 
-The rules file is owner configuration and therefore instruction.
+Every original `OutlookMailItem` must pass through unchanged.
 
-Message fields matched by a rule remain source data.
+This remains true when:
 
-The loader must:
+- no rule matches;
+- the default profile is discovery-only;
+- a body probe is needed;
+- rule evaluation becomes unresolved;
+- the evaluator raises an unexpected exception;
+- the middleware itself encounters an internal failure after receiving the
+  item.
 
-- read a bounded regular file;
-- reject malformed TOML and unknown fields;
-- reject duplicate rule IDs;
-- reject unsupported predicates or profiles;
-- reject unbounded expressions and regex;
-- produce an immutable validated rule model;
-- canonicalize the semantic model to deterministic JSON bytes;
-- compute the ruleset digest from canonical bytes, not raw TOML formatting.
+The acquisition policy decides additional acquisition depth. It does not decide
+whether the source observation is allowed to exist in the Mail catalog.
 
-Changing comments or harmless TOML formatting must not create a new ruleset
-version. Reordering rules must create a new version because rule order affects
-behavior.
+This invariant prevents local policy changes from rewriting source history.
 
-## V1 rules file model
+All unrelated Spider outputs also pass through unchanged:
 
-Illustrative syntax:
+- normal Requests;
+- `RawHttpEvidenceItem`;
+- folder Items;
+- removal Items;
+- presence sightings;
+- checkpoint candidates;
+- other Mail acquisition Items.
 
-    schema_version = 1
-    ruleset_id = "owner-mail-acquisition"
-    default_profile = "discovery-only"
+An internal rule-probe result is the only output type that the middleware is
+expected to consume rather than forward to Item Pipelines.
 
-    [[rules]]
-    id = "manager-important"
-    name = "Manager mail"
-    enabled = true
-    stop_processing = true
+## RuleEvaluator contract
 
-    [rules.action]
-    profile = "outlook-mail-full-v1"
-    labels = ["vip", "manager"]
+The middleware and RuleEngine are intentionally separated.
 
-    [rules.conditions]
-    from_addresses = ["manager@example.com"]
+The middleware phase defines the interface but not the matching implementation.
 
-    [[rules]]
-    id = "approval-request"
-    name = "Approval request"
-    enabled = true
-    stop_processing = false
+The evaluator must be callable without Scrapy. It receives:
 
-    [rules.action]
-    profile = "outlook-mail-full-v1"
-    labels = ["approval"]
+- the original Mail observation;
+- optional validated probe data;
+- the active immutable rule configuration in the future implementation.
 
-    [rules.conditions]
-    subject_contains = ["approval", "please approve"]
-    body_contains = ["approval required"]
+The evaluator returns a bounded result with one of these lifecycle states:
 
-    [rules.exceptions]
-    from_addresses = ["noreply@example.com"]
+### `FINAL`
 
-The exact TOML spelling may be refined during implementation only if the
-semantic model remains identical.
+The acquisition decision is complete for this observation.
 
-### Rule identity and order
+A FINAL result carries at least:
 
-Each rule has a stable unique id.
+- selected acquisition profile;
+- decision outcome code, such as matched or default;
+- ruleset identity/version when rules are implemented;
+- matched rule identifiers or an equivalent bounded audit reference;
+- optional stop-processing rule identifier;
+- whether a probe participated.
 
-The array order in the TOML file is the execution order. V1 does not add a
-second numeric sequence field.
+### `NEEDS_DATA`
 
-Each rule also has:
+The evaluator cannot decide yet because a potentially relevant predicate needs
+additional source data.
 
-- a human-readable name;
-- enabled;
-- explicit stop_processing;
-- one non-empty conditions object;
-- an optional exceptions object;
-- one action with at least one effect.
+It carries a bounded required-data descriptor.
 
-### Action
+V1 is expected to support only one body/detail probe class.
 
-V1 actions are:
+The middleware must never translate missing required data into a negative
+match.
 
-- optional acquisition profile;
-- zero or more local labels.
+### `UNRESOLVED`
 
-Supported profiles are initially:
+Required source data could not be safely obtained or bound to the original
+observation.
 
-- discovery-only;
-- outlook-mail-full-v1.
+It carries:
 
-Labels are msgloom-local metadata. They never write Outlook categories.
+- a bounded reason code;
+- a fail-safe selected profile.
 
-A matched label-only rule leaves the current profile unchanged.
+The intended V1 fail-safe profile is `outlook-mail-full-v1`.
 
-The current profile starts as default_profile.
+### Programming failure
 
-A later matched rule that supplies a profile replaces the earlier profile.
-Labels accumulate in rule execution order with duplicate values removed by
-first occurrence.
+An exception raised by the evaluator is not an `UNRESOLVED` source-data
+condition. It is a software/integrity failure and follows the separate
+programming-failure contract below.
 
-stop_processing = true stops evaluation after that rule is fully resolved and
-applied.
+## Cheap-first evaluation expectation
 
-## Predicate model
+The RuleEngine phase must evaluate discovery-resolvable conditions before
+requesting body data.
 
-V1 supports predicates that map directly to owner-visible Outlook facts and the
-current discovery representation.
+The middleware only needs to honor `NEEDS_DATA`; it must not know why the
+evaluator reached that result.
 
-Recommended initial set:
+Examples of expected future evaluator behavior:
 
-- from_addresses
-- from_domains
-- sender_addresses
-- to_addresses
-- cc_addresses
-- recipient_addresses
-- subject_equals
-- subject_contains
-- body_contains
-- body_or_subject_contains
-- has_attachments
-- importance
-- categories
+- sender mismatch plus body predicate -> FINAL no-match, no probe;
+- sender match plus unresolved body predicate -> NEEDS_DATA;
+- subject satisfies body-or-subject predicate -> FINAL, no probe;
+- body preview positive match where positive evidence is sufficient -> FINAL;
+- body preview miss -> never treated as complete negative body proof.
 
-Deferred predicates include header matching, message size, sensitivity,
-approval/automatic-message classifiers, meeting classifiers, encryption,
-signature state, and folder display-name matching.
+This keeps rule semantics out of the middleware while ensuring the middleware
+supports efficient evaluation.
 
-Folder display names are intentionally deferred because the current Mail Item
-contains a folder identifier while user-facing folder names require a separate
-catalog lookup and ambiguity policy.
+## Probe contract
 
-### Predicate composition
+### Why the middleware may schedule a probe
 
-Within one rule:
+Microsoft Graph discovery exposes `bodyPreview`, but Outlook-like complete body
+matching cannot use a negative preview as negative proof.
 
-- different condition categories are ANDed;
-- multiple values inside one condition category are ORed;
-- any matching exception suppresses the rule;
-- multiple exception categories are ORed.
+A bounded detail/body probe is therefore required for some future RuleEngine
+results.
 
-No arbitrary nested boolean expression is accepted in V1.
+### Request ownership
 
-No regex is accepted in V1.
+The middleware decides whether a probe is required.
 
-### Text comparison
+The actual Request must be constructed by
+`OutlookMailCollectionSpider` through a named request builder.
 
-V1 uses deterministic Unicode case-folded comparisons for addresses, domains,
-subject substrings, body substrings, and category values unless an individual
-predicate has a stronger exact semantic.
+The Request callback and errback must be named methods on the Spider.
 
-Outer whitespace in configured identities is rejected instead of silently
-trimmed.
+This is required because Scrapy `JOBDIR` serializes callback/errback method
+names relative to the Spider. A middleware-bound callback would not satisfy
+the established resume contract.
 
-Email-domain rules compare the domain portion after address validation and
-case folding.
+### Expected Spider methods
 
-The implementation plan must define finite limits for rules, values, labels,
-and text lengths before code is written.
+The exact names may vary, but the contract should be equivalent to:
 
-## Evaluation state
+- `mail_rule_probe_request(...)`;
+- `parse_mail_rule_probe(...)`;
+- a named error path compatible with the existing Graph acquisition failure
+  model.
 
-The pure evaluator must distinguish four states:
-
-- FINAL — the current ruleset can produce a complete acquisition decision;
-- NEEDS_DATA — the decision is not yet knowable because a potentially relevant
-  body predicate needs full body data;
-- UNRESOLVED — required source data could not be acquired or safely bound;
-- internal per-rule MATCH / NO_MATCH facts used to produce the above.
-
-NO_MATCH is not equivalent to missing data.
-
-The final durable decision has one of:
-
-- matched — one or more enabled rules applied;
-- default — no rule action changed the default decision;
-- unresolved — evaluation could not be completed and fail-safe behavior was
-  used.
-
-## Cheap-first evaluation
-
-The evaluator first resolves predicates available from the discovery Item.
-
-Example:
-
-    from == ceo@example.com
-    AND body contains "Project Phoenix"
-
-If from does not match, the rule is NO_MATCH and no body probe is needed.
-
-If from matches and full body data is unavailable, the rule is NEEDS_DATA.
-
-For body_or_subject_contains, a subject match is sufficient and avoids a probe.
-
-For body_contains, bodyPreview may provide positive evidence when the
-configured text is present in the preview. A negative preview is not negative
-proof, because Microsoft documents bodyPreview as only the first 255 characters
-of the message body.
-
-## Body probe
-
-### Why a probe exists
-
-Outlook server-side rules can evaluate the complete body. A1 discovery cannot.
-
-Microsoft Graph documents bodyPreview as the first 255 characters only.
-Therefore V1 must not approximate a negative body_contains result from
-bodyPreview.
+The callback must not evaluate rules.
 
 ### Probe representation
 
-A rule probe retrieves a minimal message representation containing at least:
+The first expected V1 probe selects only fields needed for rule evaluation and
+version binding.
 
-- id;
-- lastModifiedDateTime;
-- body;
-- bodyPreview;
-- uniqueBody when useful for evidence/debugging.
+The current design expects at least:
 
-The request asks Graph for text body representation using:
+- message id;
+- `lastModifiedDateTime`;
+- full body;
+- body preview when useful for comparison/debug validation.
 
-Prefer: outlook.body-content-type="text"
+`uniqueBody` is not required by the middleware contract unless the later
+RuleEngine explicitly proves it is needed.
 
-and preserves the existing immutable-ID preference.
-
-The body used for the V1 body_contains predicate is the full body, not
-uniqueBody. uniqueBody may be retained as evidence but must not silently
-change Outlook-like body matching semantics.
+The request should ask Graph for text body representation while retaining the
+existing Outlook immutable-ID preference.
 
 ### Mutation fence
 
-The original discovery/delta Item already contains lastModifiedDateTime.
+The body probe must be compatible with the original observation.
 
-A body probe is valid for the original rule decision only when the returned
-message version is compatible with that observation.
+At minimum, the later implementation compares the observed
+`lastModifiedDateTime` with the probed representation.
 
-At minimum V1 compares lastModifiedDateTime.
+If the message changed between the original observation and probe, the probe
+must not be combined with stale metadata to produce a normal deterministic
+match.
 
-If the message changed between discovery and probe, the rule decision becomes
-UNRESOLVED instead of mixing metadata from one version with body from another.
+That condition becomes `UNRESOLVED` and uses the fail-safe profile.
 
-The fail-safe profile is then applied.
+### Internal probe result
 
-### Probe ownership
+The named Spider callback emits a bounded internal result intended for the rule
+middleware.
 
-The middleware decides that a probe is needed.
+It may contain:
 
-OutlookMailCollectionSpider builds the Request and owns the named callback and
-errback required for JOBDIR serialization.
+- message id;
+- original observation identity/version context;
+- probed message version;
+- body text required by the evaluator;
+- evidence reference required for source lineage;
+- run id.
 
-The callback:
+It must not contain arbitrary rule configuration.
 
-1. preserves raw HTTP evidence through the existing A1 evidence path;
-2. emits an internal bounded probe-result Item carrying only fields required
-   for rule evaluation and evidence references.
+The custom middleware, at priority 1100, consumes this internal result before
+it can reach the ordinary Item Pipeline.
 
-The middleware consumes that internal probe-result Item, re-runs the pure
-evaluator, and emits a durable decision sidecar Item.
+If source evidence for the probe is acquired, the callback may separately emit
+the normal source-evidence Item through the existing evidence path.
 
-Probe callbacks must not live on the middleware object.
+### Probe cardinality
 
-## Spider Middleware streaming behavior
+For one Mail observation and one rule-evaluation attempt:
 
-The middleware must preserve Scrapy streaming.
+- at most one V1 body probe may be scheduled;
+- several body-dependent rules share that one probe;
+- the full ruleset is reevaluated after the probe;
+- a second NEEDS_DATA result for the same already-probed data class is treated
+  as an integrity/programming problem, not an unbounded probe loop.
 
-It must not materialize an unbounded callback output iterable into a list.
+## JOBDIR and request serialization
 
-For each ordinary output:
+Standalone Mail delta supports Scrapy `JOBDIR`.
 
-- Requests pass through unchanged.
-- non-Mail Items pass through unchanged.
-- OutlookMailItem always passes through unchanged.
-- an OutlookMailItem may additionally cause one probe Request.
-- an internal rule-probe Item is replaced by an acquisition-decision Item.
+Therefore a queued rule-probe Request must survive:
 
-One message may schedule at most one V1 body probe for one ruleset evaluation.
+1. Request serialization;
+2. clean Spider shutdown;
+3. process restart with the same compatible configuration;
+4. callback/errback reconstruction against the running Spider.
 
-If several rules need body data, the single probe resolves them together and
-the entire ruleset is reevaluated in original order.
+The implementation must test `Request.to_dict(spider=...)` and
+`request_from_dict(..., spider=...)` or an equivalent controlled JOBDIR
+round-trip.
 
-## Original Item versus decision sidecar
+The implementation must not store shared mutable Python objects in Request
+`meta` or `cb_kwargs` and rely on object identity after resume.
 
-The original OutlookMailItem represents Microsoft source observation.
+Only bounded serializable rule-probe context may be carried.
 
-It must not gain fields such as:
+When the RuleEngine/configuration phase is implemented, the semantic ruleset
+identity must become part of the existing execution/JOBDIR context binding so
+a job paused under one ruleset cannot silently resume under another.
 
-- matched rule IDs;
-- acquisition profile;
-- labels;
-- ruleset version;
-- fallback flags.
+That future binding is outside the middleware-only implementation phase, but
+the middleware must not make it impossible.
 
-Those facts are msgloom decisions, not provider facts.
+## Runtime control state
 
-Instead introduce a sidecar Item, conceptually:
+Rule decisions are not persisted to the Mail database.
 
-OutlookMailAcquisitionDecisionItem
+They also must not be recovered by parsing log text.
 
-with bounded fields including:
+For a future multi-phase Mail sync integration, the collection crawler needs a
+bounded attempt-local handoff.
 
-- source ID context supplied by the crawler/pipeline;
-- message_id;
-- run_id;
-- source observation evidence ID;
-- optional probe evidence ID;
-- ruleset ID;
-- ruleset canonical digest;
-- canonical ruleset snapshot or an equivalent durable reference;
-- final decision status;
-- selected acquisition profile;
-- local labels;
-- matched rule IDs in execution order;
-- optional rule ID that stopped processing;
-- fallback-used flag;
-- bounded unresolved reason code.
+The approved direction is:
 
-The Item must not duplicate message body, subject, or arbitrary matching source
-text.
+- retain only the minimum control state needed by the next phase;
+- prefer the set/order of message IDs selected for Full acquisition rather than
+  retaining full rule-decision objects;
+- keep this state in memory on the collection crawler/Spider runtime;
+- expose it through a documented read-only interface after the crawler closes;
+- let `run_graph_workflow(...)` / the Mail sync planner consume it immediately.
 
-## Persistence design
+This is compatible with current Mail sync because multi-phase sync rejects a
+shared `JOBDIR`.
 
-### Why the decision goes through Item Pipeline
+Standalone resumable delta does not automatically launch Full acquisition, so
+it does not require durable cross-process Full-target handoff.
 
-The decision is structured deterministic state produced from a specific source
-observation and ruleset. It therefore belongs in durable Item processing.
+The middleware-only phase may define the runtime-state interface but does not
+modify the Mail sync planner to consume it.
 
-The pipeline provides:
+## Failure handling
 
-- awaited completion;
-- shared catalog write locking;
-- idempotent replay handling;
-- consistent failure observation.
+Failure semantics are deliberately asymmetric.
 
-The middleware must not write SQL directly.
+### Expected source-data failure
 
-### Rule configuration snapshot
+Examples:
 
-A decision must remain explainable after the owner edits the TOML file.
+- probe returns a terminal source response that cannot provide required body
+  data;
+- the provider resource disappeared;
+- a configured acquisition limit prevents usable probe completion;
+- the mutation fence fails because the message changed;
+- the probe representation is valid source evidence but insufficient for the
+  evaluator.
 
-The canonical validated ruleset must therefore be stored durably by digest.
+These become a bounded `UNRESOLVED` rule result.
 
-The preferred V1 implementation is:
+The middleware must:
 
-- the decision Item carries a reference to the same immutable canonical
-  ruleset bytes held by the middleware;
-- the pipeline upserts one ruleset snapshot keyed by canonical digest;
-- the pipeline writes the decision referencing that digest in the same
-  awaited transaction where practical.
+- preserve the original Mail Item;
+- record the safe unresolved event;
+- increment unresolved/fallback stats;
+- select the evaluator-defined fail-safe profile, expected to be Full-v1.
 
-This avoids dependence on the external rules file for historical explanation.
+An expected unresolved condition does not masquerade as NO_MATCH.
 
-The canonical snapshot can contain owner-defined addresses and keywords, so it
-is private catalog data. It must never be put into stat keys or ordinary logs.
+### Evaluator or middleware programming failure
 
-### Decision idempotency
+Examples:
 
-Reprocessing the same source evidence with the same ruleset and same probe
-evidence must not create duplicate logical decisions.
+- unexpected `TypeError`;
+- invalid evaluator output shape;
+- a second identical NEEDS_DATA request after the required probe was already
+  supplied;
+- impossible state transition.
 
-A later source observation or a changed ruleset is a different decision input.
+The middleware must:
 
-The persistence key must therefore bind at least:
+- preserve the original Mail Item if it has already received one;
+- call the existing Spider logical-integrity mechanism with a bounded reason,
+  such as `mail_rule_evaluation_error`;
+- increment an evaluation-error counter;
+- emit an ERROR log containing only the exception class name and safe
+  correlation identifiers;
+- never call `logger.exception()` with arbitrary exception text;
+- never silently convert the bug into NO_MATCH or discovery-only.
 
-- logical source;
-- message ID;
-- source observation evidence/version;
-- ruleset digest;
-- probe evidence/version when a probe participated.
+The existing Mail sync workflow already stops later phases when
+`spider.run_failed` is true. This is the correct integrity behavior for a
+policy engine whose result cannot be trusted.
 
-The table design must not require the message catalog row to have completed
-first. Scrapy Item Pipeline order is per Item, while different Items can
-overlap. The decision write must be safe even if the corresponding semantic
-message Item is still being processed.
+### Probe request failure
 
-## Fail-safe behavior
+The probe must use the existing Graph request/error acquisition path wherever
+possible so transport failure and raw evidence handling are not reimplemented
+inside Spider Middleware.
 
-Rule evaluation must never convert missing required data into NO_MATCH.
+Expected terminal probe failure is translated to a bounded unresolved rule
+condition rather than inventing a second retry system.
 
-If body acquisition fails, is cancelled by a configured size bound, returns an
-unusable representation, or fails the mutation fence:
+## Logging requirements
 
-- decision status is unresolved;
-- fallback_used = true;
-- the selected profile is outlook-mail-full-v1;
-- the reason is recorded as a bounded code;
-- source evidence/failure evidence remains preserved.
+### Principle
 
-The rationale is asymmetric risk: an unresolved acquisition decision should
-prefer extra source acquisition over silently omitting evidence the owner may
-have marked important.
+Rule decisions are operational/audit information, not Mail content.
 
-A failure to parse or validate the owner rules file is different. Explicit
-invalid configuration fails the crawl before Mail decisions are made; it does
-not silently fall back to no rules.
+The middleware uses the existing Python/Scrapy logging system.
 
-## Existing behavior when no rules file exists
+It must not:
 
-No rules file means:
+- open a private log file;
+- add a logging handler;
+- implement rotation;
+- bypass Scrapy logging configuration;
+- serialize full evaluator objects;
+- log raw provider payloads.
 
-- no acquisition-rule Spider Middleware is activated;
-- no rule-decision Items are emitted;
-- no rule probes are issued;
-- Mail sync retains the existing changed-message refresh and incomplete-backlog
-  enrichment behavior.
+### Logger
 
-This is a hard backward-compatibility requirement.
+Use a normal module logger:
 
-## Mail sync behavior when rules are enabled
+`logging.getLogger(__name__)`
 
-After the delta collection crawler closes, the sync planner reads durable
-decisions from that collection run.
+The expected logger namespace is the middleware module, for example:
 
-Messages whose selected profile is outlook-mail-full-v1 become targets for the
-existing OutlookFullSpider.
+`message_ingest.spidermiddlewares.microsoft.outlook.email`
 
-Messages whose selected profile is discovery-only do not.
+### Severity policy
 
-The middleware does not duplicate Full-v1 traversal.
+Per-message final decisions are INFO because the owner explicitly requires
+historical decision audit under ordinary production log levels.
 
-### Historical backlog
+Probe mechanics are DEBUG.
 
-When rules are enabled, the existing generic "enrich every incomplete
-historical backlog message" behavior is disabled for records that have no
-decision under the current collection run.
+Expected unresolved source-data conditions are WARNING.
 
-Enabling or changing rules does not automatically reprocess unchanged history.
+Programming/integrity failures are ERROR.
 
-Reasons:
+This is the fixed severity model:
 
-- rules are acquisition policy for observed source versions;
-- retroactive evaluation may require fresh body probes;
-- silently applying new rules to old observations would mix configuration and
-  evidence time.
-
-A future explicit historical rule-application workflow can be designed
-separately.
-
-The full command remains an explicit operator override and does not require a
-rule decision.
-
-## Discover and delta primitive behavior
-
-outlook mail discover and outlook mail delta remain collection primitives.
-
-With rules enabled they persist decisions and any required probe evidence, but
-they do not automatically start a separate Full crawler.
-
-outlook mail sync remains the normal multi-phase user workflow that consumes
-the decisions and launches Full acquisition.
-
-This preserves the existing command architecture.
-
-## JOBDIR and ruleset binding
-
-Rule configuration affects crawl behavior and therefore must be bound to
-JOBDIR resume identity.
-
-A delta crawl paused with ruleset A must not resume with ruleset B.
-
-The implementation should extend the existing source/catalog JOBDIR context
-mechanism with an optional deterministic execution-context binding.
-
-Requirements:
-
-- no rules file keeps the current source/catalog JOBDIR digest unchanged;
-- an enabled ruleset adds its canonical digest to the job context;
-- changing the semantic ruleset makes the existing JOBDIR fail closed;
-- comments or formatting changes that preserve the canonical ruleset do not
-  invalidate resume;
-- rejection occurs before provider work resumes whenever the existing
-  lifecycle permits it.
-
-Do not create a second generic workflow engine or duplicate Scrapy SpiderState.
-
-## Observability and privacy
-
-Useful stats include counts only:
-
-- messages evaluated;
-- matched/default/unresolved decisions;
-- probes scheduled/completed/failed;
-- profile selection counts;
-- matched-rule count totals;
-- stop-processing count;
-- fallback count.
-
-Do not place these values in stat keys or ordinary logs:
-
-- email addresses;
-- subjects;
-- body text;
-- configured keyword values;
-- local label values;
-- message IDs;
-- attachment IDs;
-- raw ruleset payload.
-
-Rule IDs may also be private. Prefer aggregate counts in normal logs; exact rule
-IDs remain in private durable decision state.
-
-## Testing contract
-
-### Pure rule engine
-
-Unit tests cover:
-
-- AND across condition categories;
-- OR within one category;
-- OR across exceptions;
-- rule order;
-- disabled rules;
-- profile replacement;
-- label accumulation/deduplication;
-- stop-processing;
-- case-folded matching;
-- sender versus from semantics;
-- recipient semantics;
-- positive preview body match;
-- negative preview producing NEEDS_DATA;
-- cheap predicate failure avoiding a body probe;
-- body_or_subject_contains short-circuit;
-- mutation-fence unresolved result;
-- invalid and bounded configurations.
-
-### Component activation matrix
-
-A regression test must prove:
-
-| Component | Middleware loaded |
+| Event class | Level |
 | --- | --- |
-| Outlook Mail discover | yes with config |
-| Outlook Mail delta | yes with config |
+| final rule decision | INFO |
+| probe scheduled/completed | DEBUG |
+| expected unresolved/fallback | WARNING |
+| evaluator/middleware programming failure | ERROR |
+| crawl-level rule summary | INFO |
+
+### Event vocabulary
+
+Log messages use a stable machine-searchable event token.
+
+Recommended events:
+
+- `outlook_mail_rule_decision`;
+- `outlook_mail_rule_probe_scheduled`;
+- `outlook_mail_rule_probe_completed`;
+- `outlook_mail_rule_unresolved`;
+- `outlook_mail_rule_error`;
+- `outlook_mail_rule_summary`.
+
+Human prose around these tokens should stay stable and short.
+
+### Final decision log
+
+One final decision event is emitted per evaluated Mail observation.
+
+The allowlisted fields are:
+
+- `event`;
+- `run_id`;
+- `message_id`;
+- `observation_kind`;
+- `ruleset_id` or semantic ruleset version when available;
+- `ruleset_digest` when available;
+- decision outcome code;
+- selected profile;
+- matched rule identifiers;
+- optional stop-processing rule identifier;
+- probe count or probe-used boolean;
+- fallback-used boolean.
+
+Example shape:
+
+    Outlook Mail rule decision:
+    event=outlook_mail_rule_decision
+    run_id=<opaque-run-id>
+    message_id=<opaque-message-id>
+    observation_kind=delta
+    ruleset_id=owner-mail-acquisition
+    ruleset_digest=<digest>
+    outcome=matched
+    profile=outlook-mail-full-v1
+    matched_rules=r17,r22
+    stop_rule=r22
+    probe_used=true
+    fallback_used=false
+
+The implementation may render this on one physical line. The field vocabulary,
+not whitespace, is the compatibility contract.
+
+### Probe logs
+
+Probe scheduling and completion logs contain only:
+
+- event;
+- run id;
+- message id;
+- bounded probe kind;
+- bounded status/reason code.
+
+They do not contain body data or the Graph request URL.
+
+### Error logs
+
+Programming errors include only:
+
+- event;
+- run id;
+- message id when known;
+- bounded phase;
+- exception class name;
+- bounded integrity reason code.
+
+They must not include:
+
+- exception message text;
+- traceback text from the middleware logger;
+- evaluator repr;
+- rule source values.
+
+### Prohibited log data
+
+The middleware must never intentionally log:
+
+- subject text;
+- body text or body preview;
+- sender or recipient addresses;
+- configured match strings;
+- configured body/subject keywords;
+- local label values;
+- full rule names;
+- raw ruleset TOML;
+- raw canonical rule JSON;
+- Graph URLs;
+- authentication/token data;
+- arbitrary exception text.
+
+Rule IDs are allowed because exact rule correlation is required by the owner,
+but they are user-controlled identifiers and may themselves be sensitive.
+Documentation should recommend stable low-sensitivity rule IDs.
+
+Message IDs and run IDs are already used by current Mail diagnostics and are
+allowed as opaque correlation identifiers. Log storage must still be
+access-controlled.
+
+### Historical explainability limit
+
+Because the owner chose not to persist rule decisions or canonical ruleset
+snapshots in the Mail database, the logging contract does not guarantee exact
+historical rule replay after a configuration file is changed or deleted.
+
+The logs guarantee event-level audit:
+
+- which message was evaluated;
+- which ruleset identity/digest was active;
+- which rule IDs matched;
+- which profile was selected;
+- whether a probe or fallback participated.
+
+Exact reconstruction of the old predicate values requires the deployment to
+retain/version owner configuration separately.
+
+The middleware must not solve that limitation by logging private rule values.
+
+## Log retention boundary
+
+Repository inspection currently shows no project-owned `LOG_FILE`,
+`RotatingFileHandler`, logrotate, or journald retention configuration.
+
+Therefore this feature has two distinct contracts:
+
+### Middleware contract
+
+Emit stable privacy-safe Python/Scrapy LogRecords at the defined levels.
+
+### Deployment contract
+
+Retain, rotate, protect, and optionally index the process log stream long enough
+to satisfy the owner's audit needs.
+
+The middleware implementation must not create a second logging subsystem.
+
+A later deployment change may use Scrapy `LOG_FILE`, systemd/journald, a
+container log driver, or another deployment-standard sink.
+
+Until such retention is configured, the application can produce correct audit
+events but cannot promise they remain available indefinitely.
+
+## Stats requirements
+
+Stats are aggregate observability only.
+
+Recommended counters:
+
+- `msgloom/crawl/mail_rules/evaluated_count`;
+- `msgloom/crawl/mail_rules/matched_count`;
+- `msgloom/crawl/mail_rules/default_count`;
+- `msgloom/crawl/mail_rules/unresolved_count`;
+- `msgloom/crawl/mail_rules/probe_scheduled_count`;
+- `msgloom/crawl/mail_rules/probe_completed_count`;
+- `msgloom/crawl/mail_rules/probe_failed_count`;
+- `msgloom/crawl/mail_rules/stop_processing_count`;
+- `msgloom/crawl/mail_rules/fallback_count`;
+- `msgloom/crawl/mail_rules/evaluation_error_count`.
+
+Do not put identifiers in stat-key labels.
+
+In particular, do not create per-message or per-rule stat-key families.
+
+The existing `PeriodicLog` includes the `msgloom/crawl/` family, so these
+counters naturally participate in current periodic observability.
+
+Stats must never be read as acquisition correctness/control state.
+
+## Crawl-level summary
+
+The existing `OutlookCrawlStatusExtension` already owns terminal Mail crawl
+summaries.
+
+When rule middleware is enabled, it should include bounded aggregate rule
+counters in the existing final summary or emit one additional INFO summary
+event.
+
+The summary must not list message IDs or rule IDs.
+
+The status extension remains observational: it does not decide which messages
+are Full targets.
+
+## Privacy integration
+
+The project already protects Scrapy core logs with:
+
+- `MessageIngestLogFormatter`;
+- `MicrosoftGraphScrapyPrivacyFilter`.
+
+These protections remain active.
+
+However, middleware-authored log messages must be safe at creation time and
+must not rely on the privacy filter to redact them.
+
+Tests must inspect both:
+
+- rendered log text;
+- structured LogRecord extras where the test harness exposes them.
+
+No unsafe object should be attached to `extra` merely because the formatted
+message is safe.
+
+## Backward compatibility
+
+With Mail rules disabled:
+
+- the custom middleware may be absent or raise `NotConfigured`;
+- no probe Requests are scheduled;
+- no per-message rule-decision logs are emitted;
+- no rule counters are incremented;
+- discovery/delta Item output is unchanged;
+- current Mail sync behavior is unchanged;
+- other Microsoft products are unchanged.
+
+This is a hard acceptance requirement.
+
+The first middleware-only implementation must not change the current
+planner-driven Full behavior because the actual RuleEngine and planner handoff
+are separate phases.
+
+## Concurrency and ordering
+
+Current project settings use `CONCURRENT_ITEMS = 1`, but the middleware design
+must not rely on Item Pipeline completion order.
+
+The middleware runs before Item Pipelines and makes no database write.
+
+It may maintain attempt-local runtime selection state keyed by message ID, but
+that state must be updated synchronously with the final evaluation event so
+there is no background task whose completion is inferred from Spider close.
+
+One Mail observation may be reevaluated after a probe.
+
+The implementation must define deterministic overwrite behavior for duplicate
+observations of the same message within one attempt before the runtime handoff
+is connected to the planner.
+
+For the middleware-only phase, duplicate runtime-state updates may use
+last-observation-in-evaluation-order semantics while every decision remains
+independently logged.
+
+The later planner-integration phase must revisit this against delta/reconcile
+ordering before using the state as Full target input.
+
+## Middleware phase implementation boundary
+
+The first implementation phase is allowed to add:
+
+- `OutlookMailAcquisitionRuleMiddleware`;
+- evaluator protocol/result contracts required by the middleware;
+- internal probe-result contract;
+- Mail-collection named probe request/callback seam;
+- Mail-only per-Spider middleware registration;
+- middleware priority 1100;
+- streaming output handling;
+- safe per-message logs;
+- aggregate stats;
+- logical-run integrity handling;
+- attempt-local runtime-state interface;
+- focused middleware/JOBDIR/privacy tests;
+- documentation updates.
+
+It must not add:
+
+- actual Outlook-like predicate evaluation;
+- TOML rules;
+- rules CLI;
+- rule-decision SQL models;
+- rule-decision Item Pipeline code;
+- Mail sync planner consumption;
+- Full-v1 traversal changes.
+
+Tests may inject a deterministic fake evaluator.
+
+## Test contract
+
+### Component activation
+
+Verify effective crawler settings, not only inheritance.
+
+Required matrix:
+
+| Spider/resource | Middleware present in effective Spider Middleware settings |
+| --- | --- |
+| Outlook Mail discover | yes |
+| Outlook Mail delta | yes |
 | Outlook Mail folder delta | no |
 | Outlook Mail full | no |
 | Outlook Calendar | no |
@@ -779,118 +1002,262 @@ A regression test must prove:
 | Contacts | no |
 | Microsoft profile | no |
 
-The test must inspect effective crawler settings, not only class names.
+When rule evaluation is disabled, construction may end in `NotConfigured`
+without changing crawl behavior.
 
-### Middleware integration
+### Streaming output
 
-Use real Scrapy Request/Response/Item objects and the actual Spider Middleware
-manager where ordering matters.
+Using real Scrapy Requests/Responses and the actual middleware manager where
+ordering matters, prove:
 
-Test:
+- Requests pass through;
+- non-Mail Items pass through;
+- original `OutlookMailItem` is preserved;
+- FINAL decision adds no unnecessary Request;
+- NEEDS_DATA emits exactly one probe Request;
+- middleware does not materialize callback output;
+- internal probe result is consumed before Item Pipeline processing.
 
-- non-Mail Items unchanged;
-- original Mail Item always preserved;
-- final decision without probe;
-- one body probe emitted for multiple body predicates;
-- probe Request has the named Spider callback;
-- callback/cb_kwargs survive Request serialization;
-- probe result becomes a decision Item;
-- output remains streaming;
-- middleware priority lets generated Requests pass through the intended
-  built-in middleware chain.
+### Priority behavior
 
-### Persistence
+Prove that a Request emitted by the custom middleware continues through the
+expected lower-priority built-in output middleware chain.
 
-Test:
+At minimum confirm the intended Depth/Referer-compatible behavior rather than
+only comparing numeric priorities.
 
-- ruleset snapshot upsert;
-- decision write;
-- replay idempotency;
-- changed ruleset creates a new decision version;
-- probe evidence participates in identity;
-- decision persistence does not depend on Mail Item completion order;
-- item/pipeline failure marks the run unsafe in the existing integrity path.
+### Probe serialization
 
-### Sync workflow
+Prove:
 
-Test:
+- probe callback is a named Spider method;
+- errback is serializable;
+- required `cb_kwargs`/meta are bounded and serializable;
+- Request `to_dict` / `request_from_dict` round-trip restores the callback;
+- a controlled JOBDIR pause/resume does not increment
+  `scheduler/unserializable` for the probe.
 
-- no rules preserves current behavior;
-- rules-enabled current-run Full selections are honored;
-- discovery-only selections are not enriched;
-- unresolved decisions select Full;
-- generic historical backlog is not automatically enriched with rules enabled;
-- explicit mail full still works independently.
+### Rule lifecycle with fake evaluator
 
-### JOBDIR
+Cover:
 
-Test a controlled pause/resume:
+- FINAL full profile;
+- FINAL discovery-only profile;
+- NEEDS_DATA then FINAL;
+- NEEDS_DATA then UNRESOLVED;
+- duplicate NEEDS_DATA after probe is treated as integrity failure;
+- evaluator exception marks the logical run failed;
+- original Mail Item remains available in all cases.
 
-- same canonical ruleset resumes;
-- formatting-only file change resumes;
-- semantic ruleset change is rejected;
-- no-rules legacy behavior remains unchanged;
-- queued rule-probe Requests restore the named Spider callback and context.
+### Logging
 
-### Full regression
+Capture logs at the relevant levels and verify:
 
-Run the repository's normal serial suite and the supported parallel/nonparallel
-split. The collection must be stable across xdist workers.
+- one INFO final-decision event per final evaluation;
+- DEBUG probe events;
+- WARNING unresolved event;
+- ERROR programming-failure event;
+- message/run/rule correlation fields are present where defined;
+- subject, body, addresses, keywords, labels, URLs, exception message text, and
+  traceback text are absent;
+- the same sensitive values are absent from structured record extras.
 
-## Rollout sequence
+### Stats
 
-Implementation should be split into reviewable stages:
+Verify aggregate counters and ensure no identifier appears in stat-key names.
 
-1. rule contracts, TOML loader, canonical digest, and pure evaluator;
-2. rules-file CLI/setting and JOBDIR context binding;
-3. Mail-only Spider Middleware activation and probe callback contract;
-4. decision sidecar Item and catalog persistence;
-5. Mail sync planner consumption;
-6. integration/resume/privacy tests and documentation;
-7. real Microsoft Graph acceptance using a deliberately small mailbox/sample.
+### Regression
 
-Each stage must keep no-rules behavior green.
+Run:
+
+- the focused Outlook Mail middleware tests;
+- relevant Outlook discover/delta/full/folder-delta tests;
+- logging/privacy tests;
+- JOBDIR/resume tests;
+- Ruff;
+- Pyright;
+- the repository's supported xdist/non-xdist pytest split.
+
+The repository currently supports stable xdist collection after assigning
+explicit IDs to the dynamic native-parser parameterization; that regression
+must remain green.
+
+## Acceptance criteria
+
+The middleware phase is complete only when all of the following are true:
+
+1. only Outlook Mail collection spiders configure the middleware;
+2. unrelated Microsoft products do not configure it;
+3. original Mail observations are never dropped or mutated;
+4. the middleware does not implement rule predicates;
+5. output processing remains streaming;
+6. FINAL, NEEDS_DATA, and UNRESOLVED states are representable;
+7. one Mail observation schedules at most one V1 body probe;
+8. probe callbacks are named Spider methods and survive request serialization;
+9. expected source-data failure selects the fail-safe path without becoming a
+   false NO_MATCH;
+10. programming failure marks the logical run failed without losing the source
+    observation;
+11. per-message final decisions are emitted at INFO;
+12. probe details are DEBUG, unresolved source conditions WARNING, and software
+    failures ERROR;
+13. logs contain the approved correlation fields but no Mail content or
+    configured match values;
+14. stats are aggregate and identifier-free;
+15. rule decisions are not written to the Mail database;
+16. logs are never parsed as business-control state;
+17. no-rules behavior is unchanged;
+18. current Full spider behavior is unchanged;
+19. the supported repository test/lint/type-check suite is green.
+
+## Future RuleEngine phase
+
+The next design/implementation phase will provide the actual deterministic
+Outlook-like rule engine.
+
+It is expected to add:
+
+- bounded owner-controlled configuration;
+- Outlook-like conditions and exceptions;
+- ordered rules and stop-processing;
+- initial predicates over sender/from, recipients, subject, categories,
+  importance, attachments, and body;
+- exact body semantics using NEEDS_DATA rather than a negative
+  `bodyPreview` approximation;
+- canonical ruleset identity/digest;
+- rule configuration binding to resumable job context.
+
+That phase must implement the existing evaluator contract rather than modify
+Scrapy lifecycle behavior.
+
+## Future planner-integration phase
+
+After the RuleEngine is complete, Mail sync can consume the attempt-local Full
+target state from the just-finished delta crawler.
+
+That integration must:
+
+- use runtime state directly;
+- never grep logs;
+- never require a rule-decision SQL table;
+- keep explicit `outlook mail full` as an operator override;
+- define duplicate/current-observation semantics before replacing the current
+  changed-message Full refresh behavior.
+
+Because multi-phase Mail sync already rejects shared `JOBDIR`, this runtime
+handoff does not need to become durable cross-process state.
 
 ## Rejected alternatives
 
 ### Global Spider Middleware
 
-Rejected because project settings are shared by all Microsoft products and
-would load Mail policy into unrelated spiders.
+Rejected because project settings are shared across all Microsoft products.
 
-### Rule middleware on every Outlook Mail spider
+### Middleware on every Outlook Mail spider
 
-Rejected because folder-delta has no message decision and Full is already the
-profile executor.
+Rejected because folder delta has no Mail message decision and Full acquisition
+is already the profile executor.
 
-### Put rules in microsoft_graph
+### Put the middleware in `microsoft_graph`
 
-Rejected because acquisition policy is application behavior, not reusable Graph
-transport/provider mechanics.
+Rejected because msgloom acquisition policy is application behavior, not
+reusable Graph transport/provider behavior.
 
-### Reuse A2/A3 filter models
+### Drop non-matching Mail Items
 
-Rejected because their inputs, lifecycle, actions, and package ownership differ
-from A1 acquisition.
+Rejected because the policy controls acquisition depth, not source evidence
+existence.
 
-### Put rule results inside OutlookMailItem
+### Put rule results on `OutlookMailItem`
 
-Rejected because provider observation and msgloom decision have different
-provenance and versioning.
+Rejected because provider observations and msgloom policy decisions have
+different provenance.
 
-### Let middleware perform Full-v1 acquisition itself
+### Persist an acquisition-decision sidecar Item
+
+Superseded by the owner's current decision. Rule decisions are audit/control
+information and are not part of the final Mail database.
+
+### Use logs as the planner input
+
+Rejected because logs are observability, not correctness/control state.
+
+### Let the middleware implement Full-v1
 
 Rejected because it would duplicate the existing Full spider, attachment
-traversal, surface completion, failure, and resume logic.
+traversal, surface completion, and failure handling.
 
-### Treat bodyPreview miss as body miss
+### Put probe callbacks on the middleware
 
-Rejected because Microsoft documents the preview as only the first 255
-characters.
+Rejected because resumable Scrapy Requests bind named callbacks to the Spider.
 
-### Automatically import Outlook Inbox Rules
+### Treat a negative body preview as a negative body result
 
-Deferred. Outlook rule actions express mailbox-organization intent, not
-necessarily evidence-acquisition intent. A future importer may map selected
-conditions into an owner-reviewed msgloom rule template, but must not silently
-adopt Outlook rules as acquisition policy.
+Rejected because the discovery preview is incomplete.
+
+### Log Mail content for easier debugging
+
+Rejected because it creates a second uncontrolled copy of private mailbox data.
+
+### Give the middleware its own log file
+
+Rejected because it bypasses Scrapy logging configuration and duplicates
+deployment-level retention responsibilities.
+
+## Implementation transition
+
+After the owner reviews and approves this formal specification, the next
+artifact is a detailed implementation plan for the middleware-only phase.
+
+That plan must follow the implementation boundary and acceptance criteria in
+this document. It must not silently reintroduce rule-decision persistence or
+pull the RuleEngine implementation into the middleware phase.
+
+## Evidence base
+
+This design was checked against the repository's active Scrapy 2.19.0 runtime,
+not against an unreleased Scrapy branch.
+
+Framework references:
+
+- Scrapy 2.19 Spider Middleware documentation:
+  [Scrapy 2.19 Spider Middleware](https://docs.scrapy.org/en/2.19/topics/spider-middleware.html)
+- Scrapy jobs and request persistence:
+  [Scrapy 2.19 Jobs](https://docs.scrapy.org/en/2.19/topics/jobs.html)
+- Scrapy Request/Response serialization:
+  [Scrapy 2.19 Requests and Responses](https://docs.scrapy.org/en/2.19/topics/request-response.html)
+- Scrapy logging:
+  [Scrapy 2.19 Logging](https://docs.scrapy.org/en/2.19/topics/logging.html)
+- Scrapy signals and stats:
+  [Scrapy 2.19 Signals](https://docs.scrapy.org/en/2.19/topics/signals.html)
+  and [Scrapy 2.19 Stats](https://docs.scrapy.org/en/2.19/topics/stats.html)
+- Scrapy 2.19 implementation inspected locally:
+  `scrapy.core.spidermw.SpiderMiddlewareManager`,
+  `scrapy.spidermiddlewares.base.BaseSpiderMiddleware`,
+  `scrapy.spidermiddlewares.depth.DepthMiddleware`, and
+  `scrapy.http.Request.to_dict`.
+
+Provider references relevant to the later body-rule implementation:
+
+- Microsoft Graph message resource:
+  [Microsoft Graph message resource](https://learn.microsoft.com/en-us/graph/api/resources/message)
+- Microsoft Graph Get message:
+  [Microsoft Graph Get message](https://learn.microsoft.com/en-us/graph/api/message-get)
+- Microsoft Graph messageRule predicates:
+  [Microsoft Graph message resource](https://learn.microsoft.com/en-us/graph/api/resources/message)rulepredicates
+
+Repository contracts inspected for this design include:
+
+- `message_ingest/spiders/microsoft/outlook/email/_base.py`;
+- `message_ingest/spiders/microsoft/outlook/email/discover.py`;
+- `message_ingest/spiders/microsoft/outlook/email/delta.py`;
+- `message_ingest/spiders/microsoft/outlook/email/_folders.py`;
+- `message_ingest/spiders/microsoft/outlook/email/full.py`;
+- `message_ingest/spiders/microsoft/_graph.py`;
+- `message_ingest/commands/microsoft/outlook/sync.py`;
+- `message_ingest/observability/formatter.py`;
+- `message_ingest/observability/item_summary.py`;
+- `message_ingest/extensions/microsoft/outlook/email/status.py`;
+- `microsoft_graph/extensions/_logfilters.py`;
+- `microsoft_graph/logformatter.py`;
+- `docs/statistics.md`.
