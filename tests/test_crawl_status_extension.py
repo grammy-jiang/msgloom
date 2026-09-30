@@ -257,3 +257,69 @@ def test_late_signal_handler_failure_overrides_completed_final_stats() -> None:
     rendered = record.getMessage()
     if "secret" in rendered or "graph.microsoft.com" in rendered:
         pytest.fail("Expected: signal error log is privacy-safe")
+
+
+def test_rule_summary_logs_aggregate_counts_when_rule_evaluation_ran(
+    caplog,
+) -> None:
+    crawler, spider, extension = _extension(OutlookDiscoverSpider)
+    crawler.stats.set_value("msgloom/crawl/discovery/pagination_exhausted", True)
+    values = {
+        "msgloom/crawl/mail_rules/evaluated_count": 7,
+        "msgloom/crawl/mail_rules/matched_count": 3,
+        "msgloom/crawl/mail_rules/default_count": 2,
+        "msgloom/crawl/mail_rules/unresolved_count": 2,
+        "msgloom/crawl/mail_rules/probe_scheduled_count": 2,
+        "msgloom/crawl/mail_rules/probe_completed_count": 1,
+        "msgloom/crawl/mail_rules/probe_failed_count": 1,
+        "msgloom/crawl/mail_rules/stop_processing_count": 1,
+        "msgloom/crawl/mail_rules/fallback_count": 2,
+        "msgloom/crawl/mail_rules/evaluation_error_count": 1,
+    }
+    for key, value in values.items():
+        crawler.stats.set_value(key, value)
+    caplog.set_level(
+        logging.INFO,
+        logger="message_ingest.extensions.microsoft.outlook.email.status",
+    )
+
+    extension.spider_closed(spider, "finished")
+
+    records = [
+        record
+        for record in caplog.records
+        if "event=outlook_mail_rule_summary" in record.getMessage()
+    ]
+    if len(records) != 1 or records[0].levelno != logging.INFO:
+        pytest.fail("Rule-enabled collection must emit one INFO aggregate summary")
+    rendered = records[0].getMessage()
+    for expected in (
+        "evaluated=7",
+        "matched=3",
+        "default=2",
+        "unresolved=2",
+        "probe_scheduled=2",
+        "probe_completed=1",
+        "probe_failed=1",
+        "stop_processing=1",
+        "fallback=2",
+        "errors=1",
+    ):
+        if expected not in rendered:
+            pytest.fail(f"Rule summary lost aggregate field: {expected}")
+    for private in ("message-secret", "rule-secret", "person@example.test"):
+        if private in rendered:
+            pytest.fail("Rule crawl summary must not contain identifiers")
+
+
+def test_rule_summary_is_absent_when_rule_evaluation_did_not_run(caplog) -> None:
+    _crawler, spider, extension = _extension(OutlookDiscoverSpider)
+    caplog.set_level(
+        logging.INFO,
+        logger="message_ingest.extensions.microsoft.outlook.email.status",
+    )
+
+    extension.spider_closed(spider, "finished")
+
+    if "event=outlook_mail_rule_summary" in caplog.text:
+        pytest.fail("No-rules collection must not emit a Mail rule summary")

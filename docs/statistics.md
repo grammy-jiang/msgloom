@@ -190,6 +190,55 @@ Development HttpCache replays are not counted as network responses. They use
 `msgloom/graph/cache_replay_purpose_count/{purpose}` instead, so a cached
 response does not appear as a transport attempt without a matching request.
 
+## Outlook Mail acquisition-rule observability
+
+The Outlook Mail acquisition-policy Spider Middleware publishes aggregate
+attempt counters under `msgloom/crawl/mail_rules/*`:
+
+- `evaluated_count`
+- `matched_count`
+- `default_count`
+- `unresolved_count`
+- `probe_scheduled_count`
+- `probe_completed_count`
+- `probe_failed_count`
+- `stop_processing_count`
+- `fallback_count`
+- `evaluation_error_count`
+
+These are observability counters only. They are not durable acquisition
+decisions and must never be used to choose Full targets after the fact.
+Per-message runtime selections remain attempt-local control state; logs and
+stats are never parsed as the control plane.
+
+The middleware also emits stable audit event tokens through normal Scrapy/Python
+logging:
+
+- `outlook_mail_rule_decision` at INFO for one terminal decision;
+- `outlook_mail_rule_probe_scheduled` and
+  `outlook_mail_rule_probe_completed` at DEBUG;
+- `outlook_mail_rule_unresolved` at WARNING for expected source-data
+  uncertainty/fallback;
+- `outlook_mail_rule_error` at ERROR for evaluator/middleware programming
+  failures.
+
+`OutlookCrawlStatusExtension` emits one
+`event=outlook_mail_rule_summary` INFO record when a discovery/delta attempt
+actually evaluated at least one message. The summary contains aggregate counts
+only.
+
+Mail rule logs may use opaque run/message IDs, bounded rule IDs, ruleset
+identity/digest, profile names, and bounded reason/error-type tokens for
+correlation. They must not copy subject/body/bodyPreview text, sender or
+recipient addresses, configured match strings, label values, Graph URLs,
+tokens, raw rules, arbitrary exception text, or traceback text.
+
+The repository currently configures safe log formatting/filtering but does not
+own long-term `LOG_FILE`, rotation, journald, or equivalent retention policy.
+The middleware contract is to emit privacy-safe LogRecords. Deployment is
+responsible for retaining, rotating, protecting, and optionally indexing that
+stream for as long as the operator needs audit history.
+
 ## Graph provider retries
 
 Provider-specific 409/429/503/509 handling uses Scrapy's

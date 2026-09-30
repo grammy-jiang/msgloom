@@ -130,8 +130,10 @@ class OutlookCrawlStatusExtension:
 
         if mode == "discovery":
             self._publish_discovery(spider, status, reason)
+            self._publish_mail_rule_summary(spider)
         elif mode == "delta":
             self._publish_delta(spider, status, reason)
+            self._publish_mail_rule_summary(spider)
         elif mode == "full":
             self._publish_full(spider, status, reason)
         else:
@@ -329,6 +331,45 @@ class OutlookCrawlStatusExtension:
             failures,
             graph_retries,
             auth_retries,
+            extra={"spider": spider},
+        )
+
+    def _publish_mail_rule_summary(self, spider) -> None:
+        """Log aggregate rule activity without identifiers or control semantics."""
+        stats = self.crawler.stats
+        evaluated = int(
+            stats.get_value("msgloom/crawl/mail_rules/evaluated_count", 0) or 0
+        )
+        if evaluated <= 0:
+            return
+
+        logger.info(
+            "Outlook Mail rule summary: event=outlook_mail_rule_summary "
+            "evaluated=%s matched=%s default=%s unresolved=%s "
+            "probe_scheduled=%s probe_completed=%s probe_failed=%s "
+            "stop_processing=%s fallback=%s errors=%s",
+            evaluated,
+            int(stats.get_value("msgloom/crawl/mail_rules/matched_count", 0) or 0),
+            int(stats.get_value("msgloom/crawl/mail_rules/default_count", 0) or 0),
+            int(stats.get_value("msgloom/crawl/mail_rules/unresolved_count", 0) or 0),
+            int(
+                stats.get_value("msgloom/crawl/mail_rules/probe_scheduled_count", 0)
+                or 0
+            ),
+            int(
+                stats.get_value("msgloom/crawl/mail_rules/probe_completed_count", 0)
+                or 0
+            ),
+            int(stats.get_value("msgloom/crawl/mail_rules/probe_failed_count", 0) or 0),
+            int(
+                stats.get_value("msgloom/crawl/mail_rules/stop_processing_count", 0)
+                or 0
+            ),
+            int(stats.get_value("msgloom/crawl/mail_rules/fallback_count", 0) or 0),
+            int(
+                stats.get_value("msgloom/crawl/mail_rules/evaluation_error_count", 0)
+                or 0
+            ),
             extra={"spider": spider},
         )
 

@@ -157,6 +157,8 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/acquisition/source_target.py` | Bind one logical source to one hashed provider resource target and refuse target switching. |
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_evaluation.py` | Define Scrapy-independent Mail acquisition-policy observations, evaluator states, terminal decisions, and bounded correlation contracts. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_probe.py` | Define the internal bounded body-probe result passed from Mail collection Spider callbacks back to the rule middleware. |
 | `message_ingest/acquisition/microsoft/outlook/email/profile.py` | Define versioned Outlook Mail full-acquisition completion policy and attachment surface requirements. |
 | `message_ingest/acquisition/microsoft/outlook/email/planner.py` | Select current Mail records with incomplete Full-v1 surfaces from the catalog. |
 | `message_ingest/acquisition/microsoft/outlook/calendar/profile.py` | Define changeKey-aware versioned Calendar full-acquisition completion policy. |
@@ -201,7 +203,8 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/spiders/microsoft/outlook/calendar/_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
 | `message_ingest/spiders/microsoft/outlook/calendar/_base.py` | Compose framework Calendar scopes with msgloom mailbox/evidence behavior. |
 | `message_ingest/extensions/microsoft/outlook/calendar/resume.py` | Validate Calendar window/full JOBDIR scope before saved requests execute. |
-| `message_ingest/spiders/microsoft/outlook/email/_base.py` | Separate Mail message-collection spiders from folder lifecycle and Full-profile execution so collection-only policy can be activated per Spider. |
+| `message_ingest/spiders/microsoft/outlook/email/_base.py` | Own the Mail collection-only activation seam, named JOBDIR-serializable rule probe callbacks, and attempt-local profile handoff state; it does not implement rule matching. |
+| `message_ingest/spidermiddlewares/microsoft/outlook/email.py` | Apply the pure Mail acquisition-policy evaluator at Spider output priority 1100, preserve source Items, schedule bounded probes, and emit privacy-safe rule logs/stats without database persistence. |
 | `message_ingest/spiders/microsoft/outlook/email/_delta_state.py` | Serialize Mail delta execution facts independently of provider cursors. |
 | `message_ingest/spiders/microsoft/outlook/_mailbox.py` | Bind framework mailbox paths/scopes to MSGLOOM_TARGET_MAILBOX and source-target identity. |
 | `message_ingest/spiders/microsoft/outlook/email/folder_delta.py` | Track mailbox folder add/update/remove changes through an independent mailFolder delta cursor. |
