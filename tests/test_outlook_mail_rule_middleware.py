@@ -272,3 +272,108 @@ def test_process_spider_output_remains_streaming() -> None:
         await stream.aclose()
 
     asyncio.run(exercise())
+
+
+from message_ingest.acquisition.microsoft.outlook.email import (
+    MailRuleProbeStatus,
+    MailRuleRequiredData,
+    OutlookMailRuleProbeResult,
+    mail_rule_observation_from_item,
+)
+
+
+def _needs_body() -> MailRuleEvaluation:
+    return MailRuleEvaluation(
+        state=MailRuleEvaluationState.NEEDS_DATA,
+        required_data=MailRuleRequiredData.BODY,
+    )
+
+
+def _complete_probe(item: OutlookMailItem) -> OutlookMailRuleProbeResult:
+    observation = mail_rule_observation_from_item(item)
+    return OutlookMailRuleProbeResult(
+        observation=observation,
+        probe=MailRuleProbeData(
+            status=MailRuleProbeStatus.COMPLETE,
+            body="complete body",
+            last_modified_date_time="2026-09-30T03:00:00Z",
+            evidence_id="probe-evidence",
+        ),
+    )
+
+
+def test_needs_body_schedules_one_probe_after_original_item() -> None:
+    evaluator = SequenceEvaluator([_needs_body()])
+    middleware, _spider = _configured_middleware(evaluator)
+    item = _mail_item()
+
+    actual = _collect(middleware, item)
+
+    if len(actual) != 2 or actual[0] is not item or not isinstance(actual[1], Request):
+        pytest.fail("NEEDS_DATA must preserve Mail Item then emit one probe Request")
+    if actual[1].callback != middleware.spider.parse_mail_rule_probe:
+        pytest.fail("Middleware must delegate probe callback ownership to the Spider")
+
+
+def test_multiple_needs_data_for_same_initial_observation_do_not_schedule_duplicate_probe() -> (
+    None
+):
+    evaluator = SequenceEvaluator([_needs_body(), _needs_body()])
+    middleware, _spider = _configured_middleware(evaluator)
+    first = _mail_item()
+    duplicate = _mail_item()
+
+    actual = _collect(middleware, first, duplicate)
+
+    requests = [output for output in actual if isinstance(output, Request)]
+    items = [output for output in actual if isinstance(output, OutlookMailItem)]
+    if len(requests) != 1:
+        pytest.fail("Same observation must schedule at most one body probe")
+    if items != [first, duplicate]:
+        pytest.fail("Duplicate source observations must both pass through unchanged")
+
+
+def test_probe_result_is_consumed_and_re_evaluated() -> None:
+    evaluator = SequenceEvaluator(
+        [
+            _needs_body(),
+            _final("outlook-mail-full-v1", MailRuleDecisionOutcome.MATCHED),
+        ]
+    )
+    middleware, spider = _configured_middleware(evaluator)
+    item = _mail_item()
+
+    initial = _collect(middleware, item)
+    if len(initial) != 2 or not isinstance(initial[1], Request):
+        pytest.fail("Initial NEEDS_DATA did not schedule its probe")
+    probe_result = _complete_probe(item)
+
+    after_probe = _collect(middleware, probe_result)
+
+    if after_probe:
+        pytest.fail("Internal probe result must be consumed before Item Pipelines")
+    if len(evaluator.calls) != 2 or evaluator.calls[1][1] != probe_result.probe:
+        pytest.fail("Probe result must re-run the evaluator with bounded probe data")
+    if spider.mail_rule_profiles != (("message-1", "outlook-mail-full-v1"),):
+        pytest.fail("Terminal result after probe must update runtime profile state")
+
+
+def test_needs_data_after_probe_marks_integrity_failure_instead_of_looping() -> None:
+    evaluator = SequenceEvaluator([_needs_body(), _needs_body()])
+    middleware, spider = _configured_middleware(evaluator)
+    item = _mail_item()
+
+    initial = _collect(middleware, item)
+    if len(initial) != 2 or not isinstance(initial[1], Request):
+        pytest.fail("Initial NEEDS_DATA did not schedule its probe")
+
+    after_probe = _collect(middleware, _complete_probe(item))
+
+    if after_probe:
+        pytest.fail("Repeated NEEDS_DATA after probe must not emit another Request")
+    if not spider.run_failed:
+        pytest.fail(
+            "Repeated NEEDS_DATA after supplied body must fail policy integrity"
+        )
+    if "mail_rule_probe_loop" not in spider.failure_reasons:
+        pytest.fail("Probe-loop integrity failure reason changed")
