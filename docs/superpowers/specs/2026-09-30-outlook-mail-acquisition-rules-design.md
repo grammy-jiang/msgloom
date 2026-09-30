@@ -945,12 +945,11 @@ The implementation must define deterministic overwrite behavior for duplicate
 observations of the same message within one attempt before the runtime handoff
 is connected to the planner.
 
-For the middleware-only phase, duplicate runtime-state updates may use
-last-observation-in-evaluation-order semantics while every decision remains
-independently logged.
-
-The later planner-integration phase must revisit this against delta/reconcile
-ordering before using the state as Full target input.
+The completed middleware-only phase uses last-observation-in-evaluation-order
+semantics for its provisional profile map while every decision remains
+independently logged. Before planner consumption, the follow-up RuleEngine spec
+replaces that provisional handoff behavior with monotonic strongest-profile
+accumulation so callback ordering cannot downgrade a Full requirement.
 
 ## Middleware phase implementation boundary
 
@@ -1110,42 +1109,20 @@ The middleware phase is complete only when all of the following are true:
 18. current Full spider behavior is unchanged;
 19. the supported repository test/lint/type-check suite is green.
 
-## Future RuleEngine phase
+## RuleEngine and planner follow-up
 
-The next design/implementation phase will provide the actual deterministic
-Outlook-like rule engine.
+The deterministic RuleEngine, universal Mail user-configuration slice,
+composite probe, ruleset/JOBDIR identity, and planner/checkpoint integration are
+now specified separately in:
 
-It is expected to add:
+`docs/superpowers/specs/2026-10-01-outlook-mail-rule-engine-configuration-design.md`
 
-- bounded owner-controlled configuration;
-- Outlook-like conditions and exceptions;
-- ordered rules and stop-processing;
-- initial predicates over sender/from, recipients, subject, categories,
-  importance, attachments, and body;
-- exact body semantics using NEEDS_DATA rather than a negative
-  `bodyPreview` approximation;
-- canonical ruleset identity/digest;
-- rule configuration binding to resumable job context.
-
-That phase must implement the existing evaluator contract rather than modify
-Scrapy lifecycle behavior.
-
-## Future planner-integration phase
-
-After the RuleEngine is complete, Mail sync can consume the attempt-local Full
-target state from the just-finished delta crawler.
-
-That integration must:
-
-- use runtime state directly;
-- never grep logs;
-- never require a rule-decision SQL table;
-- keep explicit `outlook mail full` as an operator override;
-- define duplicate/current-observation semantics before replacing the current
-  changed-message Full refresh behavior.
-
-Because multi-phase Mail sync already rejects shared `JOBDIR`, this runtime
-handoff does not need to become durable cross-process state.
+That specification supersedes the earlier future-phase sketch in this document.
+In particular, planner integration now requires rules-enabled Mail sync to hold
+message-delta checkpoint promotion until required Full work succeeds, so a
+failed Full phase cannot lose a non-persisted policy obligation. The completed
+middleware contracts in this document remain authoritative unless the new spec
+explicitly extends them.
 
 ## Rejected alternatives
 
