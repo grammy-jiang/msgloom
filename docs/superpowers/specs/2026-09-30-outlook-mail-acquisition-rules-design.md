@@ -385,7 +385,8 @@ A FINAL result carries at least:
 
 - selected acquisition profile;
 - decision outcome code, such as matched or default;
-- ruleset identity/version when rules are implemented;
+- internal policy-family identity and effective policy digest when rules are
+  implemented;
 - matched rule identifiers or an equivalent bounded audit reference;
 - optional stop-processing rule identifier;
 - whether a probe participated.
@@ -397,7 +398,10 @@ additional source data.
 
 It carries a bounded required-data descriptor.
 
-V1 is expected to support only one body/detail probe class.
+The completed middleware-only slice supports one BODY probe class. The follow-up
+RuleEngine specification extends `required_data` to a bounded immutable set for
+one composite metadata/body/header/extended-property/type probe without changing
+the one-probe cardinality.
 
 The middleware must never translate missing required data into a negative
 match.
@@ -433,8 +437,12 @@ Examples of expected future evaluator behavior:
 - sender mismatch plus body predicate -> FINAL no-match, no probe;
 - sender match plus unresolved body predicate -> NEEDS_DATA;
 - subject satisfies body-or-subject predicate -> FINAL, no probe;
-- body preview positive match where positive evidence is sufficient -> FINAL;
-- body preview miss -> never treated as complete negative body proof.
+- the middleware carries `bodyPreview` but does not decide how a future engine
+  may use it.
+
+The follow-up RuleEngine specification now deliberately declines to use
+`bodyPreview` as terminal body-matching evidence because V1 defines its own
+deterministic logical-text projection for complete HTML/text bodies.
 
 This keeps rule semantics out of the middleware while ensuring the middleware
 supports efficient evaluation.
@@ -478,12 +486,15 @@ The callback must not evaluate rules.
 The first expected V1 probe selects only fields needed for rule evaluation and
 version binding.
 
-The current design expects at least:
+The middleware-only body-probe slice implemented the then-minimal fields:
 
 - message id;
 - `lastModifiedDateTime`;
 - full body;
 - body preview when useful for comparison/debug validation.
+
+The follow-up RuleEngine specification extends this probe to a composite fact
+model and adds `changeKey` as the authoritative message-version token.
 
 `uniqueBody` is not required by the middleware contract unless the later
 RuleEngine explicitly proves it is needed.
@@ -493,14 +504,15 @@ existing Outlook immutable-ID preference.
 
 ### Mutation fence
 
-The body probe must be compatible with the original observation.
+The body probe must be compatible with the original observation. The
+middleware-only slice preserved `lastModifiedDateTime` on both sides because
+that was the metadata available when this contract was implemented.
 
-At minimum, the later implementation compares the observed
-`lastModifiedDateTime` with the probed representation.
-
-If the message changed between the original observation and probe, the probe
-must not be combined with stale metadata to produce a normal deterministic
-match.
+The follow-up RuleEngine specification supersedes the future-fence detail here:
+Mail discovery/delta adds `changeKey`, which Microsoft Graph defines as the
+message version, and composite-probe evaluation requires exact `changeKey`
+equality. Missing or mismatched version identity becomes an unresolved
+fail-safe result rather than combining stale metadata with probed facts.
 
 That condition becomes `UNRESOLVED` and uses the fail-safe profile.
 
@@ -556,12 +568,11 @@ The implementation must not store shared mutable Python objects in Request
 
 Only bounded serializable rule-probe context may be carried.
 
-When the RuleEngine/configuration phase is implemented, the semantic ruleset
-identity must become part of the existing execution/JOBDIR context binding so
-a job paused under one ruleset cannot silently resume under another.
-
-That future binding is outside the middleware-only implementation phase, but
-the middleware must not make it impossible.
+The follow-up RuleEngine/configuration phase binds effective policy identity to
+the existing execution/JOBDIR context so a job paused under one policy cannot
+silently resume under another. That follow-up also defines a one-time
+backward-compatible disabled-policy marker bootstrap for pre-feature JOBDIRs.
+This binding was outside the middleware-only implementation phase.
 
 ## Runtime control state
 
@@ -724,8 +735,9 @@ The allowlisted fields are:
 - `run_id`;
 - `message_id`;
 - `observation_kind`;
-- `ruleset_id` or semantic ruleset version when available;
-- `ruleset_digest` when available;
+- `ruleset_id` as the fixed internal policy-family identifier when available;
+- no content-derived policy digest; the follow-up RuleEngine spec reserves that
+  digest for private control state;
 - decision outcome code;
 - selected profile;
 - matched rule identifiers;
@@ -740,8 +752,7 @@ Example shape:
     run_id=<opaque-run-id>
     message_id=<opaque-message-id>
     observation_kind=delta
-    ruleset_id=owner-mail-acquisition
-    ruleset_digest=<digest>
+    ruleset_id=outlook-mail-acquisition-rules-v1
     outcome=matched
     profile=outlook-mail-full-v1
     matched_rules=r17,r22
@@ -816,7 +827,8 @@ historical rule replay after a configuration file is changed or deleted.
 The logs guarantee event-level audit:
 
 - which message was evaluated;
-- which ruleset identity/digest was active;
+- which internal policy-family identity was active; the effective policy digest
+  remains private control state under the follow-up RuleEngine specification;
 - which rule IDs matched;
 - which profile was selected;
 - whether a probe or fallback participated.
@@ -1112,17 +1124,17 @@ The middleware phase is complete only when all of the following are true:
 ## RuleEngine and planner follow-up
 
 The deterministic RuleEngine, universal Mail user-configuration slice,
-composite probe, ruleset/JOBDIR identity, and planner/checkpoint integration are
+composite probe, policy/JOBDIR identity, and planner/checkpoint integration are
 now specified separately in:
 
 `docs/superpowers/specs/2026-10-01-outlook-mail-rule-engine-configuration-design.md`
 
 That specification supersedes the earlier future-phase sketch in this document.
 In particular, planner integration now requires rules-enabled Mail sync to hold
-message-delta checkpoint promotion until required Full work succeeds, so a
-failed Full phase cannot lose a non-persisted policy obligation. The completed
-middleware contracts in this document remain authoritative unless the new spec
-explicitly extends them.
+message-delta checkpoint promotion until every rule-required Full target meets
+the current-attempt terminal-completeness gate, so incomplete Full work cannot
+lose a non-persisted policy obligation. The completed middleware contracts in
+this document remain authoritative unless the new spec explicitly extends them.
 
 ## Rejected alternatives
 
@@ -1168,9 +1180,12 @@ traversal, surface completion, and failure handling.
 
 Rejected because resumable Scrapy Requests bind named callbacks to the Spider.
 
-### Treat a negative body preview as a negative body result
+### Treat body preview as complete body truth
 
-Rejected because the discovery preview is incomplete.
+Rejected by the follow-up RuleEngine specification. The discovery preview is
+truncated provider-generated text and is not guaranteed to be equivalent to
+msgloom's complete logical-body projection, so V1 uses it for neither positive
+nor negative terminal body proof.
 
 ### Log Mail content for easier debugging
 
