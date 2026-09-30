@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from pathlib import Path
 
 import pytest
@@ -173,3 +174,22 @@ def test_probe_request_round_trips_through_disk_scheduler_jobdir(
     if crawler2.stats.get_value("scheduler/unserializable", 0):
         pytest.fail("JOBDIR restore reported an unserializable rule probe")
     scheduler2.close("finished")
+
+
+def test_no_rules_disables_mail_rule_middleware_without_warning(
+    caplog,
+) -> None:
+    crawler = get_crawler(OutlookDiscoverSpider)
+    spider = OutlookDiscoverSpider.from_crawler(crawler)
+    crawler.spider = spider
+    caplog.set_level(logging.WARNING, logger="scrapy.middleware")
+
+    manager = SpiderMiddlewareManager.from_crawler(crawler)
+
+    if any(
+        type(middleware).__name__ == "OutlookMailAcquisitionRuleMiddleware"
+        for middleware in manager.middlewares
+    ):
+        pytest.fail("No-rules crawl must not enable Mail acquisition-rule middleware")
+    if "OutlookMailAcquisitionRuleMiddleware" in caplog.text:
+        pytest.fail("Normal no-rules crawl must disable Mail rule middleware silently")

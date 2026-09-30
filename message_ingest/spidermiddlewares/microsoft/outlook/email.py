@@ -57,7 +57,7 @@ class OutlookMailAcquisitionRuleMiddleware:
             )
         evaluator = spider.mail_rule_evaluator
         if evaluator is None:
-            raise NotConfigured("Outlook Mail rule evaluator is not configured")
+            raise NotConfigured
         return cls(crawler, spider, evaluator)
 
     async def process_spider_output(
