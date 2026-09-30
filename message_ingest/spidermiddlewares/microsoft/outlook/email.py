@@ -8,7 +8,12 @@ from typing import Any
 from scrapy.exceptions import NotConfigured
 from scrapy.http import Response
 
-from message_ingest.acquisition.microsoft.outlook.email import MailRuleEvaluator
+from message_ingest.acquisition.microsoft.outlook.email import (
+    MailRuleEvaluationState,
+    MailRuleEvaluator,
+    mail_rule_observation_from_item,
+)
+from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook.email._base import (
     OutlookMailCollectionSpider,
 )
@@ -53,6 +58,19 @@ class OutlookMailAcquisitionRuleMiddleware:
         del response
         async for output in result:
             yield output
+            if not isinstance(output, OutlookMailItem):
+                continue
+            observation = mail_rule_observation_from_item(output)
+            evaluation = self.evaluator.evaluate(observation, probe=None)
+            if evaluation.state is not MailRuleEvaluationState.FINAL:
+                continue
+            profile = evaluation.selected_profile
+            if profile is None:
+                raise RuntimeError("validated final Mail rule evaluation lost profile")
+            self.spider.record_mail_rule_profile(
+                message_id=observation.message_id,
+                profile=profile,
+            )
 
 
 __all__ = [
