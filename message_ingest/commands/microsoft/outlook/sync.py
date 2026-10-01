@@ -19,6 +19,9 @@ from message_ingest.acquisition.microsoft.outlook.email.planner import (
 from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1 as MAIL_FULL_V1,
 )
+from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
+    MailRulePolicy,
+)
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.calendar import (
     OutlookCalendarStore,
@@ -45,8 +48,15 @@ def _reject_shared_jobdir(command: Any) -> None:
         )
 
 
-def run_mail_sync(command: Any, opts) -> None:
-    """Run Mail delta, refresh changed messages, then fill incomplete backlog."""
+def run_mail_sync(
+    command: Any,
+    opts,
+    *,
+    mail_rule_policy: MailRulePolicy,
+) -> None:
+    """Run the legacy rules-disabled Mail sync workflow."""
+    if mail_rule_policy.enabled:
+        raise UsageError("rules_enabled_sync_not_implemented")
     _reject_shared_jobdir(command)
     settings = _settings(command)
     database_url = settings["MSGLOOM_DATABASE_URL"]
@@ -117,6 +127,7 @@ def run_mail_sync(command: Any, opts) -> None:
                 {
                     "page_size": str(opts.page_size or 25),
                     "reconcile_global": "1" if reconcile else "0",
+                    "_mail_rule_policy": mail_rule_policy,
                 },
                 after=after_delta,
                 accepted_final_statuses=frozenset({"completed"}),

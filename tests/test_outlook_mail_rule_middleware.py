@@ -41,9 +41,8 @@ class FakeEvaluator:
 
 
 class RuleEnabledDiscoverSpider(OutlookDiscoverSpider):
-    @classmethod
-    def build_mail_rule_evaluator(cls, crawler):
-        del crawler
+    def build_mail_rule_evaluator(self, policy):
+        del policy
         return FakeEvaluator()
 
 
@@ -106,10 +105,9 @@ class SequenceEvaluator:
 class ConfigurableDiscoverSpider(OutlookDiscoverSpider):
     configured_evaluator: SequenceEvaluator | None = None
 
-    @classmethod
-    def build_mail_rule_evaluator(cls, crawler):
-        del crawler
-        return cls.configured_evaluator
+    def build_mail_rule_evaluator(self, policy):
+        del policy
+        return type(self).configured_evaluator
 
 
 def _mail_item(message_id: str = "message-1") -> OutlookMailItem:

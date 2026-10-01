@@ -6,8 +6,10 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from typing import cast
+from unittest.mock import patch
 
 import pytest
 from scrapy.crawler import CrawlerProcessBase
@@ -77,6 +79,8 @@ def _opts(
     reconcile: bool | None = None,
     operation: str | None = None,
     acquisition_profile: str | None = None,
+    config: Path | None = None,
+    max_enrich: int | None = None,
 ) -> argparse.Namespace:
     return argparse.Namespace(
         section="outlook",
@@ -90,8 +94,9 @@ def _opts(
         max_pages=max_pages,
         reconcile=reconcile,
         operation=operation,
-        max_enrich=None,
+        max_enrich=max_enrich,
         acquisition_profile=acquisition_profile,
+        config=config,
         start=None,
         end=None,
         calendar=None,
@@ -102,8 +107,49 @@ def _run(opts: argparse.Namespace) -> FakeCrawlerProcess:
     command = MicrosoftCommand()
     process = FakeCrawlerProcess()
     command.crawler_process = cast(CrawlerProcessBase, process)
-    command.run([], opts)
+    with (
+        TemporaryDirectory() as config_home,
+        patch.dict(
+            "os.environ",
+            {"XDG_CONFIG_HOME": config_home},
+        ),
+    ):
+        command.run([], opts)
     return process
+
+
+def _public_calls(process: FakeCrawlerProcess):
+    return [
+        (
+            name,
+            {key: value for key, value in kwargs.items() if key != "_mail_rule_policy"},
+        )
+        for name, kwargs in process.calls
+    ]
+
+
+def _mail_config(tmp_path: Path, *, enabled: bool, private: str = "approval") -> Path:
+    path = tmp_path / "msgloom.toml"
+    lines = [
+        "[acquisition.microsoft.outlook.mail]",
+        f"enabled = {'true' if enabled else 'false'}",
+    ]
+    if enabled:
+        lines.extend(
+            (
+                'default_profile = "discovery"',
+                "",
+                "[[acquisition.microsoft.outlook.mail.rules]]",
+                'id = "finance-01"',
+                "sequence = 10",
+                'profile = "full"',
+                "",
+                "[acquisition.microsoft.outlook.mail.rules.conditions]",
+                f'subject_contains = ["{private}"]',
+            )
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def test_discover_maps_cli_options_to_spider_arguments() -> None:
@@ -115,7 +161,7 @@ def test_discover_maps_cli_options_to_spider_arguments() -> None:
             max_pages=3,
         )
     )
-    if process.calls != [
+    if _public_calls(process) != [
         (
             "outlook_discover",
             {"folder": "archive", "page_size": "100", "max_pages": "3"},
@@ -126,7 +172,7 @@ def test_discover_maps_cli_options_to_spider_arguments() -> None:
 
 def test_delta_maps_page_size_and_reconciliation() -> None:
     process = _run(_opts(action="delta", page_size=50, reconcile=False))
-    if process.calls != [
+    if _public_calls(process) != [
         ("outlook_delta", {"page_size": "50", "reconcile_global": "0"})
     ]:
         pytest.fail(f"Unexpected Mail delta mapping: {process.calls!r}")
@@ -255,8 +301,16 @@ def test_identity_gate_failure_uses_microsoft_namespace(tmp_path: Path) -> None:
 def test_mail_sync_dispatches_user_level_workflow(monkeypatch) -> None:
     calls = []
 
-    def fake_sync(command, opts) -> None:
-        calls.append((command, opts.page_size, opts.reconcile, opts.max_enrich))
+    def fake_sync(command, opts, *, mail_rule_policy) -> None:
+        calls.append(
+            (
+                command,
+                opts.page_size,
+                opts.reconcile,
+                opts.max_enrich,
+                mail_rule_policy,
+            )
+        )
 
     import message_ingest.commands.microsoft.outlook.mail as mail_command
 
@@ -267,5 +321,128 @@ def test_mail_sync_dispatches_user_level_workflow(monkeypatch) -> None:
     opts.max_enrich = 12
     command.run([], opts)
 
-    if len(calls) != 1 or calls[0][1:] != (40, False, 12):
+    if len(calls) != 1 or calls[0][1:4] != (40, False, 12):
         pytest.fail(f"Unexpected Mail sync dispatch: {calls!r}")
+    if calls[0][4].enabled:
+        pytest.fail("Rules-disabled default config did not remain disabled")
+
+
+def test_mail_discover_accepts_config_and_passes_frozen_enabled_policy(
+    tmp_path: Path,
+) -> None:
+    config = _mail_config(tmp_path, enabled=True, private="PRIVATE_DISCOVER_POLICY")
+    process = _run(_opts(action="discover", config=config))
+
+    if len(process.calls) != 1:
+        pytest.fail(f"Mail discover did not schedule one crawler: {process.calls!r}")
+    policy = process.calls[0][1].get("_mail_rule_policy")
+    if policy is None or policy.enabled is not True:
+        pytest.fail("Mail discover did not pass the enabled frozen policy")
+    if "PRIVATE_DISCOVER_POLICY" in repr(_public_calls(process)):
+        pytest.fail("Public crawler args exposed private policy content")
+
+
+def test_mail_delta_accepts_config_but_rejects_enabled_policy_before_crawl(
+    tmp_path: Path,
+) -> None:
+    config = _mail_config(tmp_path, enabled=True)
+    command = MicrosoftCommand()
+    process = FakeCrawlerProcess()
+    command.crawler_process = cast(CrawlerProcessBase, process)
+
+    with pytest.raises(UsageError, match="mail sync"):
+        command.run([], _opts(action="delta", config=config))
+
+    if process.calls or process.started:
+        pytest.fail("Enabled-policy standalone delta started a crawl")
+
+
+def test_enabled_mail_sync_rejects_explicit_max_enrich_before_crawl(
+    tmp_path: Path,
+) -> None:
+    config = _mail_config(tmp_path, enabled=True)
+    command = MicrosoftCommand()
+    process = FakeCrawlerProcess()
+    command.crawler_process = cast(CrawlerProcessBase, process)
+
+    with pytest.raises(UsageError, match="max-enrich"):
+        command.run([], _opts(action="sync", config=config, max_enrich=5))
+
+    if process.calls or process.started:
+        pytest.fail("Enabled-policy sync with max-enrich started a crawl")
+
+
+def test_enabled_mail_sync_is_temporarily_fail_closed_until_rule_planner(
+    tmp_path: Path,
+) -> None:
+    config = _mail_config(tmp_path, enabled=True)
+    command = MicrosoftCommand()
+    process = FakeCrawlerProcess()
+    command.crawler_process = cast(CrawlerProcessBase, process)
+
+    with pytest.raises(UsageError, match="rules_enabled_sync_not_implemented"):
+        command.run([], _opts(action="sync", config=config))
+
+    if process.calls or process.started:
+        pytest.fail("Temporary enabled-policy sync gate started a legacy workflow")
+
+
+@pytest.mark.parametrize(
+    ("section", "resource", "action"),
+    (
+        ("outlook", "mail", "full"),
+        ("outlook", "mail", "folder-delta"),
+        ("outlook", "calendar", "discover"),
+        ("todo", "discover", None),
+        ("onedrive", "discover", None),
+        ("contacts", "sync", None),
+        ("profile", None, None),
+        ("auth", "status", None),
+    ),
+)
+def test_config_is_rejected_outside_mail_policy_paths(
+    tmp_path: Path,
+    section: str,
+    resource: str | None,
+    action: str | None,
+) -> None:
+    config = _mail_config(tmp_path, enabled=False)
+    opts = _opts(action=action or "discover", config=config)
+    opts.section = section
+    opts.resource_or_action = resource
+    opts.action = action
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+
+    with pytest.raises(UsageError, match="--config"):
+        command.run([], opts)
+
+
+def test_mail_config_error_is_privacy_safe_at_scrapy_command_boundary(
+    tmp_path: Path,
+) -> None:
+    private = "PRIVATE_REGEX_771"
+    config = tmp_path / "private-customer.toml"
+    config.write_text(
+        """[acquisition.microsoft.outlook.mail]
+enabled = true
+[[acquisition.microsoft.outlook.mail.rules]]
+id = "r1"
+sequence = 1
+profile = "full"
+[acquisition.microsoft.outlook.mail.rules.conditions]
+subject_regex = ["PRIVATE_REGEX_771(?="]
+""",
+        encoding="utf-8",
+    )
+    command = MicrosoftCommand()
+    command.crawler_process = cast(CrawlerProcessBase, FakeCrawlerProcess())
+
+    with pytest.raises(UsageError) as caught:
+        command.run([], _opts(action="discover", config=config))
+
+    rendered = str(caught.value)
+    if private in rendered or str(config) in rendered:
+        pytest.fail("Scrapy command boundary leaked private config material")
+    if "subject_regex" not in rendered or "msgloom-regex-v1" not in rendered:
+        pytest.fail(f"Safe Mail config diagnostic lost useful context: {rendered!r}")

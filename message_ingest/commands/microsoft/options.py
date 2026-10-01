@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 from typing import Any
 
 from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
@@ -77,6 +78,13 @@ def add_microsoft_options(command: Any, parser: argparse.ArgumentParser) -> None
         "--yes",
         action="store_true",
         help="confirm 'auth clear' removal of the local token cache",
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        metavar="FILE",
+        help="select one complete msgloom.toml for Outlook Mail policy",
     )
     parser.add_argument(
         "--mailbox",

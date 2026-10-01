@@ -62,6 +62,18 @@ class Command(ScrapyCommand):
     def run(self, args: list[str], opts: argparse.Namespace) -> None:
         """Dispatch the selected Microsoft hierarchy path."""
         require_no_positional_args(args)
+        config = getattr(opts, "config", None)
+        if config is not None:
+            allowed_config_path = (
+                opts.section == "outlook"
+                and opts.resource_or_action == "mail"
+                and opts.action in {"discover", "delta", "sync"}
+            )
+            if not allowed_config_path:
+                raise UsageError(
+                    "--config is valid only for "
+                    "'microsoft outlook mail {discover,delta,sync}'"
+                )
         if getattr(opts, "mailbox", None) is not None and opts.section != "outlook":
             raise UsageError("--mailbox is valid only below 'microsoft outlook'")
         if opts.section == "profile":

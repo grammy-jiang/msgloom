@@ -67,10 +67,9 @@ class RaisingEvaluator:
 class ObservableDiscoverSpider(OutlookDiscoverSpider):
     configured_evaluator: Any = None
 
-    @classmethod
-    def build_mail_rule_evaluator(cls, crawler):
-        del crawler
-        return cls.configured_evaluator
+    def build_mail_rule_evaluator(self, policy):
+        del policy
+        return type(self).configured_evaluator
 
 
 def _middleware(evaluator):

@@ -14,10 +14,17 @@ from twisted.python.failure import Failure
 from message_ingest.acquisition.microsoft.outlook.email import (
     DISCOVERY_V1,
     FULL_V1,
+    MAIL_RULE_POLICY_FAMILY,
     MailRuleEvaluator,
     MailRuleObservation,
+    MailRulePolicy,
     MailRuleRequiredData,
     OutlookMailRuleProbeResult,
+    effective_mail_policy_digest,
+    parse_mail_rule_policy,
+)
+from message_ingest.acquisition.microsoft.outlook.email.rule_engine import (
+    DeterministicMailRuleEvaluator,
 )
 from message_ingest.acquisition.microsoft.outlook.email.rule_probe import (
     MAIL_RULE_PROBE_MAX_BYTES,
@@ -30,6 +37,7 @@ from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
 from microsoft_graph.protocol import graph_object
 from microsoft_graph.spiders.outlook.mail import OutlookMailSpider as GraphMail
+from msgloom.configuration import load_universal_config
 
 
 class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
@@ -91,24 +99,53 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
             OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY,
         )
 
-    @classmethod
-    def build_mail_rule_evaluator(cls, crawler) -> MailRuleEvaluator | None:
-        """Return the configured pure evaluator; later rule work overrides this."""
-        del crawler
-        return None
+    def build_mail_rule_evaluator(
+        self,
+        policy: MailRulePolicy,
+    ) -> MailRuleEvaluator | None:
+        """Build one process-local deterministic evaluator for an enabled policy."""
+        if not policy.enabled:
+            return None
+        return DeterministicMailRuleEvaluator(policy)
 
-    def __init__(self, *args, **kwargs) -> None:
-        """Initialize attempt-local rule state without durable side effects."""
+    def __init__(
+        self,
+        *args,
+        _mail_rule_policy: MailRulePolicy | None = None,
+        **kwargs,
+    ) -> None:
+        """Consume one private policy without copying it into Scrapy state."""
+        policy = _mail_rule_policy
+        if policy is None:
+            document = load_universal_config()
+            policy = parse_mail_rule_policy(
+                document.outlook_mail_values(),
+                source_label=document.source,
+            )
+        elif not isinstance(policy, MailRulePolicy):
+            raise TypeError("_mail_rule_policy must be a MailRulePolicy")
+
         super().__init__(*args, **kwargs)
-        self._mail_rule_evaluator: MailRuleEvaluator | None = None
+        self._mail_rule_policy_enabled = policy.enabled
+        self._mail_rule_policy_family = MAIL_RULE_POLICY_FAMILY
+        self._mail_rule_policy_digest = effective_mail_policy_digest(policy)
+        self._mail_rule_evaluator = self.build_mail_rule_evaluator(policy)
         self._mail_rule_profiles: dict[str, str] = {}
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        """Bind one evaluator instance after Scrapy has created the crawler."""
-        spider = super().from_crawler(crawler, *args, **kwargs)
-        spider._mail_rule_evaluator = cls.build_mail_rule_evaluator(crawler)
-        return spider
+    @property
+    def mail_rule_policy_enabled(self) -> bool:
+        """Expose only safe enabled/disabled policy state."""
+        return self._mail_rule_policy_enabled
+
+    @property
+    def mail_rule_policy_family(self) -> str:
+        """Expose the fixed non-secret policy family identifier."""
+        return self._mail_rule_policy_family
+
+    @property
+    def mail_rule_policy_digest(self) -> str:
+        """Expose private control-plane identity for JOBDIR binding only."""
+        return self._mail_rule_policy_digest
 
     @property
     def mail_rule_evaluator(self) -> MailRuleEvaluator | None:

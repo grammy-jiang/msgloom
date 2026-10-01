@@ -44,9 +44,8 @@ class NeedsBodyEvaluator:
 
 
 class RuleEnabledDiscoverSpider(OutlookDiscoverSpider):
-    @classmethod
-    def build_mail_rule_evaluator(cls, crawler):
-        del crawler
+    def build_mail_rule_evaluator(self, policy):
+        del policy
         return NeedsBodyEvaluator()
 
 

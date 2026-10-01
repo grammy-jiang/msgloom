@@ -13,6 +13,9 @@ import message_ingest.commands.microsoft.outlook.sync as sync_module
 from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1 as MAIL_FULL_V1,
 )
+from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
+    parse_mail_rule_policy,
+)
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.calendar import (
     OutlookCalendarStore,
@@ -97,7 +100,11 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
         "run_graph_workflow",
         lambda _command, phases: captured.extend(phases),
     )
-    sync_module.run_mail_sync(command, _opts(page_size=50, reconcile=False))
+    sync_module.run_mail_sync(
+        command,
+        _opts(page_size=50, reconcile=False),
+        mail_rule_policy=parse_mail_rule_policy(None),
+    )
 
     if [phase.spider_name for phase in captured] != [
         "outlook_folder_delta",
@@ -210,4 +217,8 @@ def test_multi_phase_sync_rejects_shared_jobdir(tmp_path: Path) -> None:
     command = _command(tmp_path)
     command.settings.set("JOBDIR", str(tmp_path / "job"), priority="cmdline")
     with pytest.raises(Exception, match="shared JOBDIR"):
-        sync_module.run_mail_sync(command, _opts())
+        sync_module.run_mail_sync(
+            command,
+            _opts(),
+            mail_rule_policy=parse_mail_rule_policy(None),
+        )
