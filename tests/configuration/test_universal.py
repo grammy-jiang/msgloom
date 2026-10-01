@@ -246,3 +246,36 @@ def test_configuration_error_string_never_echoes_explicit_path_or_private_value(
     exposed = f"{caught.value}\n{payload!r}\n{formatted}"
     if str(path) in exposed or private_value in exposed:
         pytest.fail("Safe configuration diagnostics exposed private source material")
+
+
+def test_mail_projection_can_ignore_incomplete_known_legacy_section(
+    tmp_path: Path,
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
+        parse_mail_rule_policy,
+    )
+    from msgloom.configuration import load_operator_configuration_from_document
+
+    path = tmp_path / "mixed-incomplete.toml"
+    path.write_text(
+        """
+[acquisition.microsoft.outlook.mail]
+enabled = true
+
+[triage]
+lease_seconds = 10
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    document = _universal_module().load_universal_config(path)
+
+    policy = parse_mail_rule_policy(
+        document.outlook_mail_values(),
+        source_label=document.source,
+    )
+    if not policy.enabled:
+        pytest.fail("Mail projection was blocked by unrelated incomplete triage config")
+
+    with pytest.raises(ConfigurationError):
+        load_operator_configuration_from_document(document)

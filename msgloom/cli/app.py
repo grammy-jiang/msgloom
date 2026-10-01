@@ -18,7 +18,7 @@ app = App(
     name="msgloom",
     help="Finite scheduler-free Phase 1 operator commands.",
 )
-config_app = App(help="Inspect or validate explicit operator configuration.")
+config_app = App(help="Inspect or validate universal msgloom configuration.")
 report_app = App(help="Build, submit, or reconcile saved reports.")
 app.command(config_app, name="config")
 app.command(report_app, name="report")
@@ -48,14 +48,14 @@ def _execution_request(
 
 @config_app.command(name="inspect")
 def config_inspect(
-    config: Path,
     *,
+    config: Path | None = None,
     mounted_secret_dir: Path | None = None,
 ) -> CliRequest:
-    """Inspect one redacted configuration snapshot without constructing adapters."""
+    """Inspect one redacted universal configuration without constructing adapters."""
     return CliRequest(
         action="config-inspect",
-        config_file=str(config),
+        config_file=None if config is None else str(config),
         mounted_secret_dir=(
             None if mounted_secret_dir is None else str(mounted_secret_dir)
         ),
@@ -64,14 +64,14 @@ def config_inspect(
 
 @config_app.command(name="validate")
 def config_validate(
-    config: Path,
     *,
+    config: Path | None = None,
     mounted_secret_dir: Path | None = None,
 ) -> CliRequest:
-    """Validate one explicit configuration without resolving credentials."""
+    """Validate the XDG-default or one explicit universal configuration."""
     return CliRequest(
         action="config-validate",
-        config_file=str(config),
+        config_file=None if config is None else str(config),
         mounted_secret_dir=(
             None if mounted_secret_dir is None else str(mounted_secret_dir)
         ),

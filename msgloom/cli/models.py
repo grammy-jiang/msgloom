@@ -144,7 +144,7 @@ class CliRequest(_ClosedModel):
         "execute",
         "replay",
     ]
-    config_file: Annotated[str, Field(min_length=1, max_length=4096)]
+    config_file: Annotated[str | None, Field(max_length=4096)] = None
     invocation_file: Annotated[str | None, Field(max_length=4096)] = None
     execution: ShortText | None = None
     stage: StageName | ReplayStage | None = None
@@ -153,3 +153,12 @@ class CliRequest(_ClosedModel):
         tuple[ShortText, ...], Field(max_length=32)
     ] = ()
     allowed_secret_files: Annotated[tuple[ShortText, ...], Field(max_length=32)] = ()
+
+    @model_validator(mode="after")
+    def _config_file_contract(self) -> CliRequest:
+        if (
+            self.action not in {"config-inspect", "config-validate"}
+            and self.config_file is None
+        ):
+            raise ValueError("explicit config file is required")
+        return self

@@ -6,10 +6,17 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
+    mail_policy_inspection,
+    parse_mail_rule_policy,
+)
 from msgloom.configuration import (
     ConfigurationError,
     OperatorConfiguration,
+    configuration_error_payload,
     load_operator_configuration,
+    load_operator_configuration_from_document,
+    load_universal_config,
 )
 from msgloom.contracts import OperationOutcome, TerminalStatus
 from msgloom.persistence import Phase1PersistenceError
@@ -63,33 +70,21 @@ async def run_request(
 ) -> CliResult:
     """Run one parsed request without owning or nesting an event loop."""
     try:
-        config_path = Path(request.config_file)
         mounted = (
             None
             if request.mounted_secret_dir is None
             else Path(request.mounted_secret_dir)
         )
+        if request.action in {"config-inspect", "config-validate"}:
+            return _run_config_command(request, mounted)
+
+        if request.config_file is None:
+            return _error("cli_invalid", 2)
+        config_path = Path(request.config_file)
         configuration = load_operator_configuration(
             config_path,
             mounted_secret_dir=mounted,
         )
-        if request.action == "config-inspect":
-            return CliResult(
-                0,
-                {
-                    "status": "ok",
-                    "configuration_version": configuration.version,
-                    "code_version": configuration.code_version,
-                },
-            )
-        if request.action == "config-validate":
-            return CliResult(
-                0,
-                {
-                    "status": "ok",
-                    "configuration_version": configuration.version,
-                },
-            )
         if request.action == "status":
             if request.execution is None:
                 return _error("cli_invalid", 2)
@@ -97,7 +92,13 @@ async def run_request(
             return CliResult(0, {"status": "ok", "saved": saved})
         return await _execute(request, configuration, mounted, dependencies)
     except ConfigurationError as error:
-        return _error(error.code.value, 2)
+        return CliResult(
+            2,
+            {
+                "status": "error",
+                **configuration_error_payload(error),
+            },
+        )
     except InvocationError as error:
         return _error(error.code, 2)
     except StatusError as error:
@@ -110,6 +111,37 @@ async def run_request(
         return _error("invocation_invalid", 2)
     except Exception:  # noqa: BLE001
         return _error("operation_failed", 4)
+
+
+def _run_config_command(
+    request: CliRequest,
+    mounted: Path | None,
+) -> CliResult:
+    document = load_universal_config(
+        None if request.config_file is None else Path(request.config_file)
+    )
+    payload: dict[str, object] = {"status": "ok"}
+
+    operator_values = document.operator_values()
+    if operator_values is not None:
+        configuration = load_operator_configuration_from_document(
+            document,
+            mounted_secret_dir=mounted,
+        )
+        payload["configuration_version"] = configuration.version
+        if request.action == "config-inspect":
+            payload["code_version"] = configuration.code_version
+
+    mail_values = document.outlook_mail_values()
+    if mail_values is not None:
+        policy = parse_mail_rule_policy(
+            mail_values,
+            source_label=document.source,
+        )
+        if request.action == "config-inspect":
+            payload["mail"] = mail_policy_inspection(policy)
+
+    return CliResult(0, payload)
 
 
 async def _execute(
