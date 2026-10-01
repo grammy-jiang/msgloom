@@ -37,7 +37,9 @@ class NeedsBodyEvaluator:
         del observation, probe
         return MailRuleEvaluation(
             state=MailRuleEvaluationState.NEEDS_DATA,
-            required_data=frozenset({MailRuleRequiredData.BODY}),
+            required_data=frozenset(
+                {MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS}
+            ),
         )
 
 
@@ -123,6 +125,10 @@ def test_real_spider_middleware_chain_processes_generated_probe_request(
         pytest.fail("Generated probe must continue through native DepthMiddleware")
     if probe.headers.get(b"Referer") != source_request.url.encode():
         pytest.fail("Generated probe must continue through native RefererMiddleware")
+    if probe.cb_kwargs.get("required_data") != frozenset(
+        {MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS}
+    ):
+        pytest.fail("Real middleware chain lost composite required-data context")
 
 
 def test_probe_request_round_trips_through_disk_scheduler_jobdir(
@@ -147,7 +153,8 @@ def test_probe_request_round_trips_through_disk_scheduler_jobdir(
             ),
         ),
     )
-    request = spider1.mail_rule_probe_request(observation)
+    required_data = frozenset({MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS})
+    request = spider1.mail_rule_probe_request(observation, required_data)
 
     if scheduler1.enqueue_request(request) is not True:
         pytest.fail("Probe request was not accepted by the native Scheduler")
@@ -170,6 +177,8 @@ def test_probe_request_round_trips_through_disk_scheduler_jobdir(
         pytest.fail("Restored JOBDIR errback is not bound to the fresh Spider")
     if restored.cb_kwargs.get("observation") != observation:
         pytest.fail("Restored JOBDIR rule observation context changed")
+    if restored.cb_kwargs.get("required_data") != required_data:
+        pytest.fail("Restored JOBDIR composite required-data context changed")
     if crawler2.stats.get_value("scheduler/dequeued/disk") != 1:
         pytest.fail("Restored rule probe must be read from the JOBDIR disk queue")
     if crawler2.stats.get_value("scheduler/unserializable", 0):

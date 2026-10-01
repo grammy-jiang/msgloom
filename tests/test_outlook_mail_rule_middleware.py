@@ -14,6 +14,7 @@ from message_ingest.acquisition.microsoft.outlook.email.rule_evaluation import (
     MailRuleFacts,
     MailRuleObservation,
     MailRuleProbeData,
+    MailRuleProbeFailure,
 )
 from message_ingest.spidermiddlewares.microsoft.outlook.email import (
     OutlookMailAcquisitionRuleMiddleware,
@@ -34,7 +35,7 @@ class FakeEvaluator:
         del observation, probe
         return MailRuleEvaluation(
             state=MailRuleEvaluationState.FINAL,
-            selected_profile="discovery-only",
+            selected_profile="outlook-mail-discovery-v1",
             outcome=MailRuleDecisionOutcome.DEFAULT,
         )
 
@@ -219,11 +220,11 @@ def test_final_profile_is_recorded_in_attempt_local_state() -> None:
         pytest.fail("FINAL profile must be retained in attempt-local Spider state")
 
 
-def test_later_observation_overwrites_profile_for_same_message() -> None:
+def test_later_discovery_observation_cannot_downgrade_full_profile() -> None:
     evaluator = SequenceEvaluator(
         [
             _final("outlook-mail-full-v1", MailRuleDecisionOutcome.MATCHED),
-            _final("discovery-only", MailRuleDecisionOutcome.DEFAULT),
+            _final("outlook-mail-discovery-v1", MailRuleDecisionOutcome.DEFAULT),
         ]
     )
     middleware, spider = _configured_middleware(evaluator)
@@ -234,17 +235,34 @@ def test_later_observation_overwrites_profile_for_same_message() -> None:
 
     if actual != [first, second]:
         pytest.fail("Duplicate Mail observations must both remain source Items")
-    if spider.mail_rule_profiles != (("message-1", "discovery-only"),):
+    if spider.mail_rule_profiles != (("message-1", "outlook-mail-full-v1"),):
         pytest.fail(
-            "Latest evaluation must overwrite runtime profile without duplicate key"
+            "Later discovery observation must not downgrade prior Full requirement"
         )
+
+
+def test_unknown_profile_marks_programming_integrity_failure() -> None:
+    evaluator = SequenceEvaluator(
+        [_final("unexpected-third-profile", MailRuleDecisionOutcome.MATCHED)]
+    )
+    middleware, spider = _configured_middleware(evaluator)
+    item = _mail_item()
+
+    actual = _collect(middleware, item)
+
+    if actual != [item]:
+        pytest.fail("Unknown profile must not alter source Item output")
+    if not spider.run_failed:
+        pytest.fail("Unknown profile must fail policy integrity")
+    if spider.mail_rule_profiles:
+        pytest.fail("Unknown profile must not enter planner runtime state")
 
 
 def test_process_spider_output_remains_streaming() -> None:
     evaluator = SequenceEvaluator(
         [
-            _final("discovery-only", MailRuleDecisionOutcome.DEFAULT),
-            _final("discovery-only", MailRuleDecisionOutcome.DEFAULT),
+            _final("outlook-mail-discovery-v1", MailRuleDecisionOutcome.DEFAULT),
+            _final("outlook-mail-discovery-v1", MailRuleDecisionOutcome.DEFAULT),
         ]
     )
     middleware, _spider = _configured_middleware(evaluator)
@@ -288,6 +306,18 @@ def _needs_body() -> MailRuleEvaluation:
     return MailRuleEvaluation(
         state=MailRuleEvaluationState.NEEDS_DATA,
         required_data=frozenset({MailRuleRequiredData.BODY}),
+    )
+
+
+def _needs_composite() -> MailRuleEvaluation:
+    return MailRuleEvaluation(
+        state=MailRuleEvaluationState.NEEDS_DATA,
+        required_data=frozenset(
+            {
+                MailRuleRequiredData.BODY,
+                MailRuleRequiredData.HEADERS,
+            }
+        ),
     )
 
 
@@ -339,24 +369,65 @@ def test_multiple_needs_data_for_same_initial_observation_do_not_schedule_duplic
         pytest.fail("Duplicate source observations must both pass through unchanged")
 
 
-def test_non_body_required_data_fails_closed_before_composite_probe_support() -> None:
-    evaluator = SequenceEvaluator(
-        [
-            MailRuleEvaluation(
-                state=MailRuleEvaluationState.NEEDS_DATA,
-                required_data=frozenset({MailRuleRequiredData.HEADERS}),
-            )
-        ]
-    )
+def test_composite_required_data_is_passed_to_one_probe_request() -> None:
+    evaluator = SequenceEvaluator([_needs_composite()])
     middleware, spider = _configured_middleware(evaluator)
     item = _mail_item()
 
     actual = _collect(middleware, item)
 
-    if actual != [item]:
-        pytest.fail("Unsupported transitional required data emitted a Request")
-    if not spider.run_failed:
-        pytest.fail("Unsupported transitional required data must fail policy integrity")
+    if len(actual) != 2 or actual[0] is not item or not isinstance(actual[1], Request):
+        pytest.fail("Composite NEEDS_DATA must preserve Item then emit one Request")
+    request = actual[1]
+    if request.cb_kwargs.get("required_data") != frozenset(
+        {MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS}
+    ):
+        pytest.fail("Middleware did not pass evaluator required-data to the probe")
+    if spider.run_failed:
+        pytest.fail("Supported composite required-data unexpectedly failed the run")
+
+
+def test_partial_probe_is_consumed_and_re_evaluated_once() -> None:
+    evaluator = SequenceEvaluator(
+        [
+            _needs_composite(),
+            _final("outlook-mail-full-v1", MailRuleDecisionOutcome.MATCHED),
+        ]
+    )
+    middleware, spider = _configured_middleware(evaluator)
+    item = _mail_item()
+    initial = _collect(middleware, item)
+    if len(initial) != 2 or not isinstance(initial[1], Request):
+        pytest.fail("Composite NEEDS_DATA did not schedule one Request")
+
+    observation = mail_rule_observation_from_item(item)
+    partial = OutlookMailRuleProbeResult(
+        observation=observation,
+        probe=MailRuleProbeData(
+            status=MailRuleProbeStatus.PARTIAL,
+            facts=MailRuleFacts(
+                change_key="change-1",
+                body="complete body",
+                available_facts=frozenset({MailRuleFact.CHANGE_KEY, MailRuleFact.BODY}),
+            ),
+            evidence_id="probe-evidence",
+            failures=(
+                MailRuleProbeFailure(
+                    fact=MailRuleFact.HEADERS,
+                    reason_code="probe_fact_unavailable",
+                ),
+            ),
+        ),
+    )
+
+    after_probe = _collect(middleware, partial)
+
+    if after_probe:
+        pytest.fail("PARTIAL internal probe must be consumed before Item Pipelines")
+    if len(evaluator.calls) != 2 or evaluator.calls[1][1] != partial.probe:
+        pytest.fail("PARTIAL probe must re-run the evaluator exactly once")
+    if spider.mail_rule_profiles != (("message-1", "outlook-mail-full-v1"),):
+        pytest.fail("Terminal result after PARTIAL probe lost runtime profile")
 
 
 def test_probe_result_is_consumed_and_re_evaluated() -> None:

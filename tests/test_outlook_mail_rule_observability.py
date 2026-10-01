@@ -170,12 +170,22 @@ def test_final_decision_logs_one_info_event_with_safe_correlation_fields(
     if len(records) != 1 or records[0].levelno != logging.INFO:
         pytest.fail("Each terminal Mail evaluation must emit one INFO decision event")
     rendered = records[0].getMessage()
+    if "ruleset_digest" in rendered or "a" * 64 in rendered:
+        pytest.fail("Private effective policy digest leaked into decision log")
+    record = records[0]
+    if hasattr(record, "ruleset_digest"):
+        pytest.fail("Private effective policy digest leaked into LogRecord.extra")
+    stats = middleware.crawler.stats.get_stats()
+    if any(
+        "digest" in str(key).casefold() or "a" * 64 in str(value)
+        for key, value in stats.items()
+    ):
+        pytest.fail("Private effective policy digest leaked into crawler stats")
     for expected in (
         "run_id='run-1'",
         "message_id='message-1'",
         "observation_kind=delta",
         "ruleset_id=ruleset-1",
-        f"ruleset_digest={'a' * 64}",
         "outcome=matched",
         "profile=outlook-mail-full-v1",
         "matched_rules=r1,r2",

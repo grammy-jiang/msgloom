@@ -16,7 +16,6 @@ from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleEvaluator,
     MailRuleObservation,
     MailRuleProbeStatus,
-    MailRuleRequiredData,
     OutlookMailRuleProbeResult,
     mail_rule_observation_from_item,
 )
@@ -42,9 +41,7 @@ class OutlookMailAcquisitionRuleMiddleware:
         self.crawler = crawler
         self.spider = spider
         self.evaluator = evaluator
-        self._scheduled_body_probes: set[tuple[str, str | None, str, str | None]] = (
-            set()
-        )
+        self._scheduled_probes: set[tuple[str, str | None, str, str | None]] = set()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -104,24 +101,27 @@ class OutlookMailAcquisitionRuleMiddleware:
                 observation = mail_rule_observation_from_item(output)
                 evaluation = self._evaluate(observation, probe=None)
                 if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
-                    if evaluation.required_data != frozenset(
-                        {MailRuleRequiredData.BODY}
-                    ):
-                        raise RuntimeError("unsupported Mail rule required-data state")
                     key = self._probe_key(observation)
-                    if key in self._scheduled_body_probes:
+                    if key in self._scheduled_probes:
                         continue
-                    request = self.spider.mail_rule_probe_request(observation)
-                    self._scheduled_body_probes.add(key)
+                    request = self.spider.mail_rule_probe_request(
+                        observation,
+                        evaluation.required_data,
+                    )
+                    self._scheduled_probes.add(key)
                     self.crawler.stats.inc_value(
                         "msgloom/crawl/mail_rules/probe_scheduled_count"
+                    )
+                    required_data = ",".join(
+                        sorted(value.value for value in evaluation.required_data)
                     )
                     logger.debug(
                         "Outlook Mail rule probe: "
                         "event=outlook_mail_rule_probe_scheduled "
-                        "run_id=%r message_id=%r probe=body",
+                        "run_id=%r message_id=%r required_data=%s",
                         observation.run_id,
                         observation.message_id,
+                        required_data,
                         extra={"spider": self.spider},
                     )
                     yield request
@@ -232,13 +232,12 @@ class OutlookMailAcquisitionRuleMiddleware:
             "Outlook Mail rule decision: "
             "event=outlook_mail_rule_decision "
             "run_id=%r message_id=%r observation_kind=%s "
-            "ruleset_id=%s ruleset_digest=%s outcome=%s profile=%s "
+            "ruleset_id=%s outcome=%s profile=%s "
             "matched_rules=%s stop_rule=%s probe_used=%s fallback_used=%s",
             observation.run_id,
             observation.message_id,
             observation.observation_kind,
             evaluation.ruleset_id or "-",
-            evaluation.ruleset_digest or "-",
             outcome.value,
             profile,
             ",".join(evaluation.matched_rule_ids) or "-",

@@ -12,6 +12,8 @@ from scrapy.settings import BaseSettings
 from twisted.python.failure import Failure
 
 from message_ingest.acquisition.microsoft.outlook.email import (
+    DISCOVERY_V1,
+    FULL_V1,
     MailRuleEvaluator,
     MailRuleObservation,
     MailRuleRequiredData,
@@ -198,8 +200,14 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
         )
 
     def record_mail_rule_profile(self, *, message_id: str, profile: str) -> None:
-        """Retain only the latest attempt-local acquisition profile per message."""
-        self._mail_rule_profiles[message_id] = profile
+        """Retain the strongest attempt-local acquisition profile per message."""
+
+        rank = {DISCOVERY_V1: 0, FULL_V1: 1}
+        if profile not in rank:
+            raise ValueError("unsupported Outlook Mail acquisition profile")
+        previous = self._mail_rule_profiles.get(message_id)
+        if previous is None or rank[profile] > rank[previous]:
+            self._mail_rule_profiles[message_id] = profile
 
     @property
     def mail_rule_profiles(self) -> tuple[tuple[str, str], ...]:
