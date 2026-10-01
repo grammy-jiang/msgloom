@@ -238,131 +238,152 @@ class OutlookMailLifecycleStore:
         expected_folder_ids: set[str],
         reconcile_messages: bool,
     ) -> dict[str, int]:
-        """Promote complete folder/message snapshots after Scrapy reaches idle."""
+        """Promote lifecycle through the shared session-scoped implementation."""
+        from message_ingest.sync.microsoft.outlook.email.promotion import (
+            ValidatedMailDeltaRun,
+        )
+
+        validated = ValidatedMailDeltaRun(
+            run_id=run_id,
+            expected_folder_ids=frozenset(expected_folder_ids),
+            reconcile_messages=reconcile_messages,
+            candidate_folder_ids=frozenset(expected_folder_ids),
+        )
         committed_at = self._now()
         with self.catalog.Session() as session, session.begin():
-            folder_candidate = session.scalar(
-                select(MailFolderSnapshotCandidate).filter_by(
+            return self.commit_delta_lifecycle_in_session(
+                session,
+                validated,
+                committed_at=committed_at,
+            )
+
+    def commit_delta_lifecycle_in_session(
+        self,
+        session,
+        validated,
+        *,
+        committed_at: str,
+    ) -> dict[str, int]:
+        """Apply lifecycle promotion inside the caller-owned transaction."""
+        run_id = validated.run_id
+        expected_folder_ids = set(validated.expected_folder_ids)
+        reconcile_messages = validated.reconcile_messages
+        folder_candidate = session.scalar(
+            select(MailFolderSnapshotCandidate).filter_by(
+                source_id=self.source_id,
+                run_id=run_id,
+            )
+        )
+        if folder_candidate is None:
+            raise RuntimeError("complete delta run has no folder snapshot candidate")
+        folder_ids = set(
+            session.scalars(
+                select(MailFolderSighting.folder_id).filter_by(
+                    source_id=self.source_id,
+                    run_id=run_id,
+                )
+            ).all()
+        )
+        if folder_ids != expected_folder_ids:
+            raise RuntimeError(
+                "folder snapshot sightings do not match completed delta folders"
+            )
+        known_folders = set(
+            session.scalars(
+                select(MailFolderRecord.folder_id).filter_by(source_id=self.source_id)
+            ).all()
+        )
+        removed_folders = known_folders - folder_ids
+        for folder_id in folder_ids:
+            self._set_folder_presence(
+                session,
+                folder_id=folder_id,
+                is_present=True,
+                reason=None,
+                run_id=run_id,
+                observed_at=folder_candidate.observed_at,
+                evidence_id=folder_candidate.evidence_id,
+            )
+        for folder_id in removed_folders:
+            self._set_folder_presence(
+                session,
+                folder_id=folder_id,
+                is_present=False,
+                reason="not_in_complete_inventory",
+                run_id=run_id,
+                observed_at=folder_candidate.observed_at,
+                evidence_id=folder_candidate.evidence_id,
+            )
+        if removed_folders:
+            session.execute(
+                delete(DeltaCheckpoint).where(
+                    DeltaCheckpoint.source_id == self.source_id,
+                    DeltaCheckpoint.folder_id.in_(removed_folders),
+                )
+            )
+            session.execute(
+                delete(DeltaCheckpointCandidate).where(
+                    DeltaCheckpointCandidate.source_id == self.source_id,
+                    DeltaCheckpointCandidate.folder_id.in_(removed_folders),
+                )
+            )
+        folder_candidate.committed_at = committed_at
+
+        present_count = absent_count = 0
+        if reconcile_messages:
+            message_candidate = session.scalar(
+                select(MessagePresenceCandidate).filter_by(
                     source_id=self.source_id,
                     run_id=run_id,
                 )
             )
-            if folder_candidate is None:
+            if message_candidate is None:
                 raise RuntimeError(
-                    "complete delta run has no folder snapshot candidate"
+                    "complete reconciled delta run has no message presence candidate"
                 )
-            folder_ids = set(
+            seen_messages = set(
                 session.scalars(
-                    select(MailFolderSighting.folder_id).filter_by(
+                    select(MessagePresenceSighting.message_id).filter_by(
                         source_id=self.source_id,
                         run_id=run_id,
                     )
                 ).all()
             )
-            if folder_ids != expected_folder_ids:
-                raise RuntimeError(
-                    "folder snapshot sightings do not match completed delta folders"
-                )
-            known_folders = set(
+            known_messages = set(
                 session.scalars(
-                    select(MailFolderRecord.folder_id).filter_by(
-                        source_id=self.source_id
-                    )
+                    select(MessageRecord.message_id).filter_by(source_id=self.source_id)
                 ).all()
             )
-            removed_folders = known_folders - folder_ids
-            for folder_id in folder_ids:
-                self._set_folder_presence(
+            for message_id in seen_messages:
+                self._set_message_presence(
                     session,
-                    folder_id=folder_id,
+                    message_id=message_id,
                     is_present=True,
-                    reason=None,
+                    reason="reconciliation_seen",
                     run_id=run_id,
-                    observed_at=folder_candidate.observed_at,
-                    evidence_id=folder_candidate.evidence_id,
+                    observed_at=message_candidate.observed_at,
+                    evidence_id=message_candidate.evidence_id,
                 )
-            for folder_id in removed_folders:
-                self._set_folder_presence(
+            for message_id in known_messages - seen_messages:
+                self._set_message_presence(
                     session,
-                    folder_id=folder_id,
+                    message_id=message_id,
                     is_present=False,
-                    reason="not_in_complete_inventory",
+                    reason="not_in_complete_reconciliation",
                     run_id=run_id,
-                    observed_at=folder_candidate.observed_at,
-                    evidence_id=folder_candidate.evidence_id,
+                    observed_at=message_candidate.observed_at,
+                    evidence_id=message_candidate.evidence_id,
                 )
-            if removed_folders:
-                session.execute(
-                    delete(DeltaCheckpoint).where(
-                        DeltaCheckpoint.source_id == self.source_id,
-                        DeltaCheckpoint.folder_id.in_(removed_folders),
-                    )
-                )
-                session.execute(
-                    delete(DeltaCheckpointCandidate).where(
-                        DeltaCheckpointCandidate.source_id == self.source_id,
-                        DeltaCheckpointCandidate.folder_id.in_(removed_folders),
-                    )
-                )
-            folder_candidate.committed_at = committed_at
+            message_candidate.committed_at = committed_at
+            present_count = len(seen_messages)
+            absent_count = len(known_messages - seen_messages)
 
-            present_count = absent_count = 0
-            if reconcile_messages:
-                message_candidate = session.scalar(
-                    select(MessagePresenceCandidate).filter_by(
-                        source_id=self.source_id,
-                        run_id=run_id,
-                    )
-                )
-                if message_candidate is None:
-                    raise RuntimeError(
-                        "complete reconciled delta run has no message presence candidate"
-                    )
-                seen_messages = set(
-                    session.scalars(
-                        select(MessagePresenceSighting.message_id).filter_by(
-                            source_id=self.source_id,
-                            run_id=run_id,
-                        )
-                    ).all()
-                )
-                known_messages = set(
-                    session.scalars(
-                        select(MessageRecord.message_id).filter_by(
-                            source_id=self.source_id
-                        )
-                    ).all()
-                )
-                for message_id in seen_messages:
-                    self._set_message_presence(
-                        session,
-                        message_id=message_id,
-                        is_present=True,
-                        reason="reconciliation_seen",
-                        run_id=run_id,
-                        observed_at=message_candidate.observed_at,
-                        evidence_id=message_candidate.evidence_id,
-                    )
-                for message_id in known_messages - seen_messages:
-                    self._set_message_presence(
-                        session,
-                        message_id=message_id,
-                        is_present=False,
-                        reason="not_in_complete_reconciliation",
-                        run_id=run_id,
-                        observed_at=message_candidate.observed_at,
-                        evidence_id=message_candidate.evidence_id,
-                    )
-                message_candidate.committed_at = committed_at
-                present_count = len(seen_messages)
-                absent_count = len(known_messages - seen_messages)
-
-            return {
-                "folders_present": len(folder_ids),
-                "folders_absent": len(removed_folders),
-                "messages_present": present_count,
-                "messages_absent": absent_count,
-            }
+        return {
+            "folders_present": len(folder_ids),
+            "folders_absent": len(removed_folders),
+            "messages_present": present_count,
+            "messages_absent": absent_count,
+        }
 
     def _set_folder_presence(
         self,

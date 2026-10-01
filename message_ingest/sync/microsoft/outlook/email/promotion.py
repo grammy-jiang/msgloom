@@ -62,4 +62,43 @@ def validate_mail_delta_run(
     )
 
 
-__all__ = ["ValidatedMailDeltaRun", "validate_mail_delta_run"]
+__all__ = [
+    "ValidatedMailDeltaRun",
+    "promote_validated_mail_delta",
+    "validate_mail_delta_run",
+]
+
+
+def promote_validated_mail_delta(
+    catalog,
+    *,
+    source_id: str,
+    validated: ValidatedMailDeltaRun,
+) -> dict[str, int]:
+    """Atomically promote lifecycle state and message-delta cursors."""
+
+    from datetime import UTC, datetime
+
+    from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
+    from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+        OutlookDeltaCheckpointStore,
+    )
+
+    lifecycle = OutlookMailStore(catalog, source_id=source_id)
+    checkpoints = OutlookDeltaCheckpointStore(catalog, source_id)
+    committed_at = datetime.now(UTC).isoformat()
+    with catalog.writer_session() as session:
+        outcome = lifecycle.commit_delta_lifecycle_in_session(
+            session,
+            validated,
+            committed_at=committed_at,
+        )
+        committed = checkpoints.commit_in_session(
+            session,
+            validated,
+            committed_at=committed_at,
+        )
+        return {
+            **outcome,
+            "committed_folders": committed,
+        }

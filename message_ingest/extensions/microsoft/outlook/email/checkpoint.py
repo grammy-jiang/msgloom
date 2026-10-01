@@ -17,6 +17,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
 from message_ingest.sync.microsoft.outlook.email.promotion import (
+    promote_validated_mail_delta,
     validate_mail_delta_run,
 )
 
@@ -201,28 +202,28 @@ class OutlookDeltaCheckpointExtension:
             raise CloseSpider(reason="policy_completion_required")
 
         try:
-            lifecycle = self.lifecycle.commit_delta_lifecycle(
-                run_id,
-                expected_folder_ids=set(validated.expected_folder_ids),
-                reconcile_messages=validated.reconcile_messages,
+            outcome = promote_validated_mail_delta(
+                self.store.catalog,
+                source_id=self.store.source_id,
+                validated=validated,
             )
+            committed = outcome["committed_folders"]
             stats.set_value(
                 "msgloom/catalog/folder_presence_present_count",
-                lifecycle["folders_present"],
+                outcome["folders_present"],
             )
             stats.set_value(
                 "msgloom/catalog/folder_presence_absent_count",
-                lifecycle["folders_absent"],
+                outcome["folders_absent"],
             )
             stats.set_value(
                 "msgloom/catalog/message_presence_present_count",
-                lifecycle["messages_present"],
+                outcome["messages_present"],
             )
             stats.set_value(
                 "msgloom/catalog/message_presence_absent_count",
-                lifecycle["messages_absent"],
+                outcome["messages_absent"],
             )
-            committed = self.store.commit(run_id)
         except Exception as exc:
             stats.inc_value("msgloom/checkpoint/error_count")
             stats.inc_value("msgloom/checkpoint/commit_error_count")

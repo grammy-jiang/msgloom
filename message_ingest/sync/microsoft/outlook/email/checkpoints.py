@@ -125,44 +125,64 @@ class OutlookDeltaCheckpointStore:
             return {row.folder_id: row for row in rows}
 
     def commit(self, run_id: str) -> int:
-        """
-        Promote all candidates together after the caller validates completion.
+        """Promote one run through the shared session-scoped implementation."""
+        from message_ingest.sync.microsoft.outlook.email.promotion import (
+            ValidatedMailDeltaRun,
+        )
 
-        One transaction updates the committed links and candidate timestamps.
-        Any write failure rolls back the entire promotion, so a partial set of
-        folders cannot become the next run's starting point.
-        """
+        candidates = self.load_candidates(run_id)
+        validated = ValidatedMailDeltaRun(
+            run_id=run_id,
+            expected_folder_ids=frozenset(candidates),
+            reconcile_messages=False,
+            candidate_folder_ids=frozenset(candidates),
+        )
         committed_at = datetime.now(UTC).isoformat()
         with self.catalog.Session() as session, session.begin():
-            candidates = session.scalars(
-                select(DeltaCheckpointCandidate).filter_by(
-                    run_id=run_id,
+            return self.commit_in_session(
+                session,
+                validated,
+                committed_at=committed_at,
+            )
+
+    def commit_in_session(
+        self,
+        session,
+        validated,
+        *,
+        committed_at: str,
+    ) -> int:
+        """Promote validated message-delta cursors in a caller-owned transaction."""
+        run_id = validated.run_id
+        candidates = session.scalars(
+            select(DeltaCheckpointCandidate).filter_by(
+                run_id=run_id,
+                source_id=self.source_id,
+            )
+        ).all()
+        for candidate in candidates:
+            checkpoint = session.scalar(
+                select(DeltaCheckpoint).filter_by(
                     source_id=self.source_id,
+                    folder_id=candidate.folder_id,
                 )
-            ).all()
-            for candidate in candidates:
-                checkpoint = session.scalar(
-                    select(DeltaCheckpoint).filter_by(
+            )
+            if checkpoint is None:
+                session.add(
+                    DeltaCheckpoint(
                         source_id=self.source_id,
                         folder_id=candidate.folder_id,
+                        delta_link=candidate.delta_link,
+                        committed_at=committed_at,
+                        run_id=run_id,
                     )
                 )
-                if checkpoint is None:
-                    session.add(
-                        DeltaCheckpoint(
-                            source_id=self.source_id,
-                            folder_id=candidate.folder_id,
-                            delta_link=candidate.delta_link,
-                            committed_at=committed_at,
-                            run_id=run_id,
-                        )
-                    )
-                else:
-                    checkpoint.delta_link = candidate.delta_link
-                    checkpoint.committed_at = committed_at
-                    checkpoint.run_id = run_id
-                candidate.committed_at = committed_at
-            return len(candidates)
+            else:
+                checkpoint.delta_link = candidate.delta_link
+                checkpoint.committed_at = committed_at
+                checkpoint.run_id = run_id
+            candidate.committed_at = committed_at
+        return len(candidates)
 
 
 class OutlookFolderDeltaCheckpointStore:
