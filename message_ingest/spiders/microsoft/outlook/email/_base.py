@@ -88,11 +88,19 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
     def update_settings(cls, settings: BaseSettings) -> None:
         """Register the Mail-only Spider Middleware without a global setting."""
         super().update_settings(settings)
+        from message_ingest.acquisition.microsoft.outlook.email.policy_context import (
+            OutlookMailPolicyContextExtension,
+        )
         from message_ingest.spidermiddlewares.microsoft.outlook.email import (
             OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY,
             OutlookMailAcquisitionRuleMiddleware,
         )
 
+        settings.setdefault_in_component_priority_dict(
+            "EXTENSIONS",
+            OutlookMailPolicyContextExtension,
+            60,
+        )
         settings.setdefault_in_component_priority_dict(
             "SPIDER_MIDDLEWARES",
             OutlookMailAcquisitionRuleMiddleware,

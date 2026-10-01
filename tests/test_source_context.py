@@ -299,3 +299,15 @@ def test_native_filesystem_cache_does_not_cross_graph_sources(
         pytest.fail("Expected source-one to retrieve its own Graph cache entry")
     if cached_for_two is not None:
         pytest.fail("Expected source-two not to reuse source-one Graph cache entry")
+
+
+def test_project_source_context_extension_priority_remains_50() -> None:
+    from message_ingest import settings as project_settings
+
+    if (
+        project_settings.EXTENSIONS[
+            "message_ingest.acquisition.source_context.SourceContextExtension"
+        ]
+        != 50
+    ):
+        pytest.fail("SourceContextExtension priority must remain 50 before Mail policy")
