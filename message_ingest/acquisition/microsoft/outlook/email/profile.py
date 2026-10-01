@@ -11,6 +11,7 @@ from typing import Any
 
 from microsoft_graph.protocol.attachments import attachment_type_name
 
+DISCOVERY_V1 = "outlook-mail-discovery-v1"
 FULL_V1 = "outlook-mail-full-v1"
 
 TERMINAL_SURFACE_STATUSES = frozenset(
