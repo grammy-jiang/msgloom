@@ -315,3 +315,19 @@ except ConfigurationError as error:
     stdout = run_fifo_probe(code, fifo)
     if stdout.splitlines() != ["READY", "invalid_input"]:
         pytest.fail("configuration FIFO subprocess did not reach and reject the open")
+
+
+def test_legacy_loader_accepts_universal_file_with_acquisition(
+    minimal_toml: Path, tmp_path: Path
+) -> None:
+    universal = tmp_path / "universal.toml"
+    universal.write_text(
+        minimal_toml.read_text(encoding="utf-8")
+        + "\n[acquisition.microsoft.outlook.mail]\nenabled = false\n",
+        encoding="utf-8",
+    )
+
+    configured = load_operator_configuration(universal)
+
+    if configured.code_version != "toml-code":
+        pytest.fail("Legacy loader rejected or changed a known acquisition subtree")

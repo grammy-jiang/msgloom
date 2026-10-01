@@ -5,8 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import stat
-import tomllib
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, cast
@@ -41,9 +39,16 @@ from .models import (
 )
 from .snapshot import make_snapshot
 from .sources import bound_sources
+from .universal import (
+    MAX_CONFIG_BYTES,
+    UniversalConfigDocument,
+    _decode_utf8,
+    _read_bounded,
+    _read_regular_fd,
+    load_universal_config,
+)
 from .validation import canonical_json, strict_model
 
-MAX_CONFIG_BYTES = 256 * 1024
 MAX_SETTINGS_SECRET_BYTES = 64 * 1024
 MAX_PROMPT_BYTES = 64 * 1024
 MAX_SCHEMA_BYTES = 256 * 1024
@@ -57,12 +62,24 @@ def load_operator_configuration(
     command_options: Mapping[str, object] | None = None,
     mounted_secret_dir: Path | None = None,
 ) -> OperatorConfiguration:
-    """Load, validate, redact, and freeze one explicit operator configuration."""
+    """Load one explicit universal document through the legacy operator projection."""
+    document = load_universal_config(config_file)
+    return load_operator_configuration_from_document(
+        document,
+        command_options=command_options,
+        mounted_secret_dir=mounted_secret_dir,
+    )
+
+
+def load_operator_configuration_from_document(
+    document: UniversalConfigDocument,
+    *,
+    command_options: Mapping[str, object] | None = None,
+    mounted_secret_dir: Path | None = None,
+) -> OperatorConfiguration:
+    """Compose the strict legacy operator contract from one universal snapshot."""
     try:
-        config_path = config_file.expanduser().absolute()
-        config_values = _decode_toml_object(
-            _read_bounded(config_path, MAX_CONFIG_BYTES)
-        )
+        config_values = document.operator_values() or {}
         options = dict(command_options or {})
         _check_options(options)
         _check_environment()
@@ -72,7 +89,8 @@ def load_operator_configuration(
             config_values=config_values,
             mounted_values=mounted_values,
         )
-        settings = _resolve_paths(settings, config_path.parent)
+        base_dir = document.path.parent if document.path is not None else Path.cwd()
+        settings = _resolve_paths(settings, base_dir)
         prompt_text, prompt_digest, schema, schema_digest = _triage_files(settings)
         snapshot = make_snapshot(
             settings,
@@ -83,7 +101,7 @@ def load_operator_configuration(
             settings,
             snapshot_version=snapshot.version,
             snapshot=snapshot,
-            base_dir=config_path.parent,
+            base_dir=base_dir,
             prompt_text=prompt_text,
             schema=schema,
         )
@@ -390,49 +408,6 @@ def _read_named_bounded(root_fd: int, name: str, maximum: int) -> bytes | None:
         return _read_regular_fd(fd, maximum)
     finally:
         os.close(fd)
-
-
-def _read_bounded(path: Path, maximum: int) -> bytes:
-    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
-    try:
-        fd = os.open(path, flags)
-    except OSError:
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
-    try:
-        return _read_regular_fd(fd, maximum)
-    finally:
-        os.close(fd)
-
-
-def _read_regular_fd(fd: int, maximum: int) -> bytes:
-    try:
-        info = os.fstat(fd)
-        if not stat.S_ISREG(info.st_mode):
-            raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
-        if info.st_size > maximum:
-            raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
-        data = os.read(fd, maximum + 1)
-    except ConfigurationError:
-        raise
-    except OSError:
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
-    if len(data) > maximum:
-        raise ConfigurationError(ConfigurationErrorCode.INPUT_TOO_LARGE)
-    return data
-
-
-def _decode_utf8(data: bytes) -> str:
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError:
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT) from None
-
-
-def _decode_toml_object(data: bytes) -> dict[str, object]:
-    value = tomllib.loads(_decode_utf8(data))
-    if not isinstance(value, dict) or not value:
-        raise ConfigurationError(ConfigurationErrorCode.INVALID_INPUT)
-    return cast(dict[str, object], value)
 
 
 def _decode_json_value(text: str) -> object:
