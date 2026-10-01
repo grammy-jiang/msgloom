@@ -19,6 +19,7 @@ from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleFact,
     MailRuleFacts,
     MailRuleObservation,
+    MailRuleRequiredData,
 )
 from message_ingest.extensions.microsoft.outlook.calendar.checkpoint import (
     CalendarDeltaSpiderState,
@@ -186,7 +187,8 @@ def test_mail_rule_probe_request_serializes_named_callbacks_and_context(
         ),
     )
 
-    request = spider.mail_rule_probe_request(observation)
+    required_data = frozenset({MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS})
+    request = spider.mail_rule_probe_request(observation, required_data)
     serialized = request.to_dict(spider=spider)
     restored = request_from_dict(
         pickle.loads(pickle.dumps(serialized, protocol=4)),
@@ -197,6 +199,10 @@ def test_mail_rule_probe_request_serializes_named_callbacks_and_context(
         pytest.fail("Probe URL changed during JOBDIR serialization")
     if restored.cb_kwargs != request.cb_kwargs:
         pytest.fail("Probe callback context changed during JOBDIR serialization")
+    if restored.cb_kwargs.get("required_data") != required_data:
+        pytest.fail("Probe required-data frozenset changed during JOBDIR serialization")
+    if "policy" in restored.cb_kwargs or "ruleset_digest" in restored.cb_kwargs:
+        pytest.fail("JOBDIR probe serialized private policy state")
     if restored.meta != request.meta:
         pytest.fail("Probe request metadata changed during JOBDIR serialization")
     if restored.headers != request.headers:

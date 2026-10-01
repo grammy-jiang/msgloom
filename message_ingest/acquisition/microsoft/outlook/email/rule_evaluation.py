@@ -450,6 +450,12 @@ def _discovery_facts(raw: Mapping[str, object]) -> MailRuleFacts:
     )
 
 
+def mail_rule_facts_from_graph(raw: Mapping[str, object]) -> MailRuleFacts:
+    """Project one provider object into the shared bounded discovery-fact model."""
+
+    return _discovery_facts(raw)
+
+
 def mail_rule_observation_from_item(item: OutlookMailItem) -> MailRuleObservation:
     """Project provider JSON into bounded rule facts without raw-payload retention."""
 
@@ -458,7 +464,7 @@ def mail_rule_observation_from_item(item: OutlookMailItem) -> MailRuleObservatio
         run_id=item.run_id,
         evidence_id=item.evidence_id,
         observation_kind=item.observation_kind,
-        facts=_discovery_facts(item.raw),
+        facts=mail_rule_facts_from_graph(item.raw),
     )
 
 
@@ -475,5 +481,6 @@ __all__ = [
     "MailRuleProbeFailure",
     "MailRuleProbeStatus",
     "MailRuleRequiredData",
+    "mail_rule_facts_from_graph",
     "mail_rule_observation_from_item",
 ]

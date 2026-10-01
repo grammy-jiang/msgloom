@@ -79,10 +79,21 @@ class OutlookMailSpider(OutlookMailboxSpider):
             query["$top"] = page_size
         return _query_path(f"{path}/messages", query)
 
-    def message_path(self, message_id: str, *, fields: Sequence[str] = ()) -> str:
-        """Encode one message ID once, optionally selecting provider fields."""
+    def message_path(
+        self,
+        message_id: str,
+        *,
+        fields: Sequence[str] = (),
+        expand: str | None = None,
+    ) -> str:
+        """Encode one message ID once with optional select/expand query fields."""
         path = f"{self._mailbox_path()}/messages/{quote(message_id, safe='')}"
-        return _query_path(path, {"$select": ",".join(fields)} if fields else {})
+        query: dict[str, str | int] = {}
+        if fields:
+            query["$select"] = ",".join(fields)
+        if expand is not None:
+            query["$expand"] = expand
+        return _query_path(path, query)
 
     def message_mime_path(self, message_id: str) -> str:
         """Return the MIME endpoint independently of Accept/cache policy."""

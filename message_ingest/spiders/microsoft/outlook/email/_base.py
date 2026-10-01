@@ -13,13 +13,16 @@ from twisted.python.failure import Failure
 
 from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleEvaluator,
-    MailRuleFact,
-    MailRuleFacts,
     MailRuleObservation,
-    MailRuleProbeData,
-    MailRuleProbeFailure,
-    MailRuleProbeStatus,
+    MailRuleRequiredData,
     OutlookMailRuleProbeResult,
+)
+from message_ingest.acquisition.microsoft.outlook.email.rule_probe import (
+    MAIL_RULE_PROBE_MAX_BYTES,
+    parse_probe_payload,
+    probe_expand,
+    probe_select_fields,
+    request_failure_probe,
 )
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
 from message_ingest.spiders.microsoft.outlook._mailbox import OutlookMailboxSpider
@@ -113,12 +116,23 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
     def mail_rule_probe_request(
         self,
         observation: MailRuleObservation,
+        required_data: frozenset[MailRuleRequiredData] = frozenset(
+            {MailRuleRequiredData.BODY}
+        ),
     ) -> scrapy.Request:
-        """Build one bounded, JOBDIR-serializable body probe request."""
+        """Build one bounded JOBDIR-serializable composite rule probe."""
+
+        fields = probe_select_fields(required_data)
+        prefer = (
+            self.compose_prefer('outlook.body-content-type="text"')
+            if MailRuleRequiredData.BODY in required_data
+            else self.graph_prefer
+        )
         return self.graph_request(
             self.message_path(
                 observation.message_id,
-                fields=("id", "changeKey", "body", "bodyPreview"),
+                fields=fields,
+                expand=probe_expand(required_data),
             ),
             callback=self.parse_mail_rule_probe,
             errback=self.mail_rule_probe_errback,
@@ -126,9 +140,11 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
             cb_kwargs={
                 "purpose": "mail-rule-probe",
                 "observation": observation,
+                "required_data": required_data,
             },
-            prefer=self.compose_prefer('outlook.body-content-type="text"'),
+            prefer=prefer,
             dont_cache=True,
+            download_maxsize=MAIL_RULE_PROBE_MAX_BYTES,
         )
 
     def parse_mail_rule_probe(
@@ -137,82 +153,47 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
         *,
         purpose: str,
         observation: MailRuleObservation,
+        required_data: frozenset[MailRuleRequiredData],
     ) -> Iterator[Any]:
-        """Preserve source evidence and emit one bounded internal probe result."""
+        """Preserve evidence and parse one bounded composite probe result."""
+
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-
         try:
             payload = graph_object(response.json(), context="Outlook Mail rule probe")
-            body = payload.get("body")
-            change_key = payload.get("changeKey")
-            preview = payload.get("bodyPreview")
-            content = body.get("content") if isinstance(body, dict) else None
-            content_type = body.get("contentType") if isinstance(body, dict) else None
-            valid = (
-                payload.get("id") == observation.message_id
-                and isinstance(change_key, str)
-                and isinstance(content, str)
-                and content_type == "text"
+            probe = parse_probe_payload(
+                payload,
+                observation=observation,
+                required_data=required_data,
+                evidence_id=evidence.evidence_id,
             )
         except (TypeError, ValueError):
-            valid = False
-            change_key = None
-            preview = None
-            content = None
-
-        if valid:
-            available = {MailRuleFact.CHANGE_KEY, MailRuleFact.BODY}
-            body_preview = (
-                preview if isinstance(preview, str) and len(preview) <= 1024 else None
-            )
-            if body_preview is not None:
-                available.add(MailRuleFact.BODY_PREVIEW)
-            probe = MailRuleProbeData(
-                status=MailRuleProbeStatus.COMPLETE,
-                facts=MailRuleFacts(
-                    change_key=change_key,
-                    body=content,
-                    body_preview=body_preview,
-                    available_facts=frozenset(available),
-                ),
+            probe = request_failure_probe(
+                required_data=required_data,
                 evidence_id=evidence.evidence_id,
-            )
-        else:
-            probe = MailRuleProbeData(
-                status=MailRuleProbeStatus.FAILED,
-                facts=MailRuleFacts(),
-                evidence_id=evidence.evidence_id,
-                failures=(
-                    MailRuleProbeFailure(
-                        fact=MailRuleFact.BODY,
-                        reason_code="invalid_probe_payload",
-                    ),
-                ),
             )
         yield OutlookMailRuleProbeResult(observation=observation, probe=probe)
 
     def mail_rule_probe_errback(self, failure: Failure) -> Iterator[Any]:
-        """Convert exhausted probe acquisition into bounded unresolved input."""
+        """Convert exhausted composite acquisition into bounded unavailable facts."""
+
         request = self._failure_request(failure)
         observation = request.cb_kwargs.get("observation")
+        required_data = request.cb_kwargs.get("required_data")
         if not isinstance(observation, MailRuleObservation):
             raise TypeError("Mail rule probe failure lost observation context")
+        if not isinstance(required_data, frozenset) or not all(
+            isinstance(value, MailRuleRequiredData) for value in required_data
+        ):
+            raise TypeError("Mail rule probe failure lost required-data context")
 
         evidence = self._failure_evidence_item(failure)
         yield evidence
         yield OutlookMailRuleProbeResult(
             observation=observation,
-            probe=MailRuleProbeData(
-                status=MailRuleProbeStatus.FAILED,
-                facts=MailRuleFacts(),
+            probe=request_failure_probe(
+                required_data=required_data,
                 evidence_id=evidence.evidence_id,
-                failures=(
-                    MailRuleProbeFailure(
-                        fact=MailRuleFact.BODY,
-                        reason_code="probe_request_failed",
-                    ),
-                ),
             ),
         )
 
