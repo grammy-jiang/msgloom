@@ -54,25 +54,6 @@ def evaluate_predicate_block(
     return _and_results(results)
 
 
-_PROBE_GROUPS: dict[str, MailRuleRequiredData] = {
-    "body_contains": MailRuleRequiredData.BODY,
-    "body_regex": MailRuleRequiredData.BODY,
-    "body_or_subject_contains": MailRuleRequiredData.BODY,
-    "body_or_subject_regex": MailRuleRequiredData.BODY,
-    "header_contains": MailRuleRequiredData.HEADERS,
-    "header_regex": MailRuleRequiredData.HEADERS,
-    "sensitivity": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "message_size_min_kb": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "message_size_max_kb": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "item_class_exact": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "item_class_contains": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "item_class_regex": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "is_meeting_request": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "is_meeting_response": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "is_non_delivery_report": MailRuleRequiredData.EXTENDED_PROPERTIES,
-    "is_read_receipt": MailRuleRequiredData.EXTENDED_PROPERTIES,
-}
-
 _RECIPIENT_FACTS: dict[str, MailRuleFact] = {
     "from": MailRuleFact.FROM_RECIPIENT,
     "sender": MailRuleFact.SENDER_RECIPIENT,
@@ -100,8 +81,11 @@ def _evaluate_field(
     facts: MailRuleFacts,
     engine: MailRegexEngine,
 ) -> MailPredicateResult:
-    if field in _PROBE_GROUPS:
-        return _unknown(required=_PROBE_GROUPS[field])
+    from .rule_predicates_probe import evaluate_probe_field
+
+    probe_result = evaluate_probe_field(field, configured, facts, engine)
+    if probe_result is not None:
+        return probe_result
 
     if field in {"subject_exact", "subject_contains", "subject_regex"}:
         mode = field.removeprefix("subject_")
