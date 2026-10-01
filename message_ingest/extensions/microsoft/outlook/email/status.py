@@ -173,7 +173,10 @@ class OutlookCrawlStatusExtension:
         """Map concrete execution facts to a small status vocabulary."""
         if self._known_failure(spider, reason):
             return "failed"
-        if mode == "delta" and reason == "delta_incomplete":
+        if mode == "delta" and reason in {
+            "delta_incomplete",
+            "policy_completion_required",
+        }:
             return "incomplete"
         if reason != "finished":
             return "interrupted"
@@ -188,7 +191,7 @@ class OutlookCrawlStatusExtension:
 
         if mode == "delta":
             outcome = self._checkpoint_outcome()
-            if outcome == "committed":
+            if outcome in {"committed", "deferred"}:
                 return "completed"
             if outcome == "skipped":
                 return "incomplete"
@@ -205,7 +208,7 @@ class OutlookCrawlStatusExtension:
         if not self.crawler.settings.getbool("MSGLOOM_DELTA_CHECKPOINT_ENABLED"):
             return "disabled"
         value = self.crawler.stats.get_value("msgloom/checkpoint/outcome")
-        if value in {"committed", "skipped", "error"}:
+        if value in {"committed", "deferred", "skipped", "error"}:
             return value
         if value == "evaluating":
             return "error"

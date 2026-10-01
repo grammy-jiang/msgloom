@@ -17,9 +17,14 @@ from message_ingest.items.microsoft.outlook.email import (
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
+from message_ingest.sync.microsoft.outlook.email.promotion import ValidatedMailDeltaRun
 from microsoft_graph.protocol import GraphDeltaPage
 
-from ._delta_state import MailDeltaExecutionState, execution_payload
+from ._delta_state import (
+    MailDeltaCommitMode,
+    MailDeltaExecutionState,
+    execution_payload,
+)
 from ._folders import OutlookFolderTraversal
 
 
@@ -42,6 +47,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         *args,
         page_size: str = "25",
         reconcile_global: str = "1",
+        _mail_delta_commit_mode: MailDeltaCommitMode | None = None,
         **kwargs,
     ) -> None:
         """
@@ -50,6 +56,10 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         resume.
         """
         super().__init__(*args, **kwargs)
+        self._mail_delta_commit_mode = self._resolve_mail_delta_commit_mode(
+            _mail_delta_commit_mode
+        )
+        self._validated_delta_run: ValidatedMailDeltaRun | None = None
         self.state: dict[str, Any] = {}
         self.page_size = self._bounded_int(
             page_size, name="page_size", minimum=1, maximum=1000
@@ -63,6 +73,36 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         self._completed_folder_ids: set[str] = set()
         self._delta_links: dict[str, str] = {}
         self._delta_start_scheduled = False
+
+    @property
+    def mail_delta_commit_mode(self) -> MailDeltaCommitMode:
+        """Return the private promotion mode derived from policy/workflow ownership."""
+
+        return self._mail_delta_commit_mode
+
+    @property
+    def validated_delta_run(self) -> ValidatedMailDeltaRun | None:
+        """Expose one attempt-local validated handoff to the owning workflow."""
+
+        return self._validated_delta_run
+
+    def _resolve_mail_delta_commit_mode(
+        self,
+        requested: MailDeltaCommitMode | None,
+    ) -> MailDeltaCommitMode:
+        if requested is not None and not isinstance(requested, MailDeltaCommitMode):
+            raise TypeError("_mail_delta_commit_mode must be MailDeltaCommitMode")
+        if not self.mail_rule_policy_enabled:
+            if requested not in {None, MailDeltaCommitMode.IMMEDIATE}:
+                raise ValueError("disabled Mail policy requires immediate delta commit")
+            return MailDeltaCommitMode.IMMEDIATE
+        if requested is MailDeltaCommitMode.IMMEDIATE:
+            raise ValueError("enabled Mail policy cannot force immediate delta commit")
+        if requested is MailDeltaCommitMode.DEFERRED:
+            return MailDeltaCommitMode.DEFERRED
+        if requested in {None, MailDeltaCommitMode.BLOCKED}:
+            return MailDeltaCommitMode.BLOCKED
+        raise ValueError("invalid Mail delta commit mode")
 
     async def start(self):
         """
@@ -306,6 +346,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
             "folder_inventory_complete": self._folder_inventory_complete,
             "folder_inventory_failed": self._folder_inventory_failed,
             "reconcile_complete": self._reconcile_complete,
+            "reconcile_messages": self.reconcile_global,
             "run_failed": self._run_failed,
             "failure_reasons": set(self._failure_reasons),
         }

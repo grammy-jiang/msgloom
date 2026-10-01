@@ -77,11 +77,14 @@ class GraphPhase:
     spider_args: dict[str, Any]
     after: Callable[[Crawler], Iterable[GraphPhase]] | None = None
     accepted_final_statuses: frozenset[str] | None = None
+    completion_validator: Callable[[Crawler], bool] | None = None
 
 
 def run_graph_workflow(
     command: ScrapyCommand,
     phases: Iterable[GraphPhase],
+    *,
+    on_success: Callable[[tuple[Crawler, ...]], None] | None = None,
 ) -> tuple[Crawler, ...]:
     """Run dynamically planned Graph crawls sequentially in one reactor lifecycle.
 
@@ -96,9 +99,29 @@ def run_graph_workflow(
 
     pending = deque(phases)
     completed: list[Crawler] = []
+    finalized = False
+
+    def finalize_success() -> None:
+        nonlocal finalized
+        if finalized or command.exitcode or process.bootstrap_failed:
+            return
+        finalized = True
+        if on_success is None:
+            return
+        try:
+            on_success(tuple(completed))
+        except Exception as exc:  # noqa: BLE001 - workflow boundary must fail closed
+            command.exitcode = 1
+            logger.error(
+                "Microsoft acquisition workflow finalizer failed: error_type=%s",
+                type(exc).__name__,
+            )
 
     def schedule_next() -> None:
-        if not pending or command.exitcode:
+        if command.exitcode:
+            return
+        if not pending:
+            finalize_success()
             return
         phase = pending.popleft()
         crawler = process.create_crawler(phase.spider_name)
@@ -106,12 +129,32 @@ def run_graph_workflow(
         handle = process.crawl(crawler, **phase.spider_args)
 
         def phase_finished(_result):
+            if process.bootstrap_failed:
+                command.exitcode = 1
+                pending.clear()
+                return
+
             final_status = crawler.stats.get_value("msgloom/final/status")
             status_rejected = (
                 phase.accepted_final_statuses is not None
                 and final_status not in phase.accepted_final_statuses
             )
-            if process.bootstrap_failed or _crawler_failed(crawler) or status_rejected:
+            completion_rejected = False
+            if phase.completion_validator is not None:
+                try:
+                    completion_rejected = not phase.completion_validator(crawler)
+                except Exception as exc:  # noqa: BLE001 - workflow gate must fail closed
+                    completion_rejected = True
+                    logger.error(
+                        "Microsoft acquisition workflow completion gate failed: "
+                        "spider=%s error_type=%s",
+                        phase.spider_name,
+                        type(exc).__name__,
+                    )
+            else:
+                completion_rejected = _crawler_failed(crawler)
+
+            if completion_rejected or status_rejected:
                 command.exitcode = 1
                 pending.clear()
                 if status_rejected:

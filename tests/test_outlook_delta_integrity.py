@@ -284,3 +284,93 @@ def test_checkpoint_snapshot_failure_closes_delta_as_failed(
     CatalogService.from_crawler(crawler).spider_closed(
         spider, "checkpoint_evaluation_failed"
     )
+
+
+def _enabled_policy():
+    from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
+        parse_mail_rule_policy,
+    )
+
+    return parse_mail_rule_policy({"enabled": True})
+
+
+def _complete_candidate(crawler, spider: OutlookDeltaSpider) -> None:
+    spider._started_folder_ids = {"folder-inbox"}
+    spider._completed_folder_ids = {"folder-inbox"}
+    spider._folder_inventory_complete = True
+    spider._reconcile_complete = True
+    pipeline = OutlookMailPipeline.from_crawler(crawler)
+    asyncio.run(
+        pipeline.process_item(
+            OutlookDeltaCheckpointCandidateItem(
+                run_id=spider.run_id,
+                folder_id="folder-inbox",
+                delta_link=(
+                    "https://graph.microsoft.com/v1.0/me/mailFolders/"
+                    "folder-inbox/messages/delta?$deltatoken=pending"
+                ),
+                observed_at="2026-10-01T00:00:00+00:00",
+                evidence_id=None,
+            )
+        )
+    )
+
+
+def test_deferred_delta_validates_without_promoting_cursor_or_lifecycle(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from message_ingest.spiders.microsoft.outlook.email._delta_state import (
+        MailDeltaCommitMode,
+    )
+
+    crawler = _crawler(tmp_path)
+    spider = OutlookDeltaSpider.from_crawler(
+        crawler,
+        _mail_rule_policy=_enabled_policy(),
+        _mail_delta_commit_mode=MailDeltaCommitMode.DEFERRED,
+    )
+    _complete_candidate(crawler, spider)
+    extension = build_from_crawler(OutlookDeltaCheckpointExtension, crawler)
+
+    def forbidden_lifecycle(*_args, **_kwargs):
+        raise AssertionError("deferred delta must not promote lifecycle")
+
+    monkeypatch.setattr(
+        extension.lifecycle,
+        "commit_delta_lifecycle",
+        forbidden_lifecycle,
+    )
+
+    extension.spider_idle(spider)
+
+    if crawler.stats.get_value("msgloom/checkpoint/outcome") != "deferred":
+        pytest.fail("Deferred delta did not publish deferred checkpoint outcome")
+    if spider.validated_delta_run is None:
+        pytest.fail("Deferred delta did not retain validated runtime handoff")
+    if spider.validated_delta_run.run_id != spider.run_id:
+        pytest.fail("Deferred validated run lost run identity")
+    if extension.store.get_delta_link("folder-inbox") is not None:
+        pytest.fail("Deferred delta advanced authoritative cursor")
+
+
+def test_blocked_delta_never_promotes_and_closes_policy_completion_required(
+    tmp_path: Path,
+) -> None:
+    crawler = _crawler(tmp_path)
+    spider = OutlookDeltaSpider.from_crawler(
+        crawler,
+        _mail_rule_policy=_enabled_policy(),
+    )
+    _complete_candidate(crawler, spider)
+    extension = build_from_crawler(OutlookDeltaCheckpointExtension, crawler)
+
+    with pytest.raises(CloseSpider) as caught:
+        extension.spider_idle(spider)
+
+    if caught.value.reason != "policy_completion_required":
+        pytest.fail(f"Blocked delta used wrong close reason: {caught.value.reason!r}")
+    if crawler.stats.get_value("msgloom/checkpoint/outcome") != "skipped":
+        pytest.fail("Blocked delta must publish skipped checkpoint outcome")
+    if extension.store.get_delta_link("folder-inbox") is not None:
+        pytest.fail("Blocked delta advanced authoritative cursor")

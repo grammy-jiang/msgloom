@@ -9,9 +9,15 @@ from scrapy.exceptions import CloseSpider, NotConfigured
 
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.extensions.catalog import CatalogService
+from message_ingest.spiders.microsoft.outlook.email._delta_state import (
+    MailDeltaCommitMode,
+)
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
+)
+from message_ingest.sync.microsoft.outlook.email.promotion import (
+    validate_mail_delta_run,
 )
 
 logger = logging.getLogger(__name__)
@@ -113,7 +119,6 @@ class OutlookDeltaCheckpointExtension:
         completed = snapshot["completed_folder_ids"]
         try:
             candidates = self.store.load_candidates(run_id)
-            candidate_ids = set(candidates)
         except Exception as exc:
             stats.inc_value("msgloom/checkpoint/error_count")
             stats.inc_value("msgloom/checkpoint/candidate_read_error_count")
@@ -127,14 +132,10 @@ class OutlookDeltaCheckpointExtension:
             )
             raise CloseSpider(reason="checkpoint_candidate_load_failed") from exc
 
-        if (
-            snapshot["run_failed"]
-            or snapshot["folder_inventory_failed"]
-            or not snapshot["folder_inventory_complete"]
-            or not snapshot["reconcile_complete"]
-            or started != completed
-            or completed != candidate_ids
-        ):
+        try:
+            validated = validate_mail_delta_run(snapshot, candidates)
+        except ValueError:
+            candidate_ids = set(candidates)
             stats.inc_value("msgloom/checkpoint/commit_skipped_count")
             stats.set_value("msgloom/checkpoint/outcome", "skipped")
             stats.set_value("msgloom/checkpoint/expected_folder_count", len(started))
@@ -147,7 +148,8 @@ class OutlookDeltaCheckpointExtension:
                 len(snapshot["failure_reasons"]),
             )
             logger.warning(
-                "Outlook delta checkpoint commit skipped: run_id=%s started=%s completed=%s candidates=%s failures=%s",
+                "Outlook delta checkpoint commit skipped: "
+                "run_id=%s started=%s completed=%s candidates=%s failures=%s",
                 run_id,
                 len(started),
                 len(completed),
@@ -155,13 +157,54 @@ class OutlookDeltaCheckpointExtension:
                 sorted(snapshot["failure_reasons"]),
                 extra={"spider": spider},
             )
-            raise CloseSpider(reason="delta_incomplete")
+            raise CloseSpider(reason="delta_incomplete") from None
+
+        mode = spider.mail_delta_commit_mode
+        if mode is MailDeltaCommitMode.DEFERRED:
+            spider._validated_delta_run = validated
+            stats.set_value("msgloom/checkpoint/outcome", "deferred")
+            stats.set_value(
+                "msgloom/checkpoint/expected_folder_count",
+                len(validated.expected_folder_ids),
+            )
+            stats.set_value(
+                "msgloom/checkpoint/completed_folder_count",
+                len(validated.expected_folder_ids),
+            )
+            stats.set_value(
+                "msgloom/checkpoint/candidate_folder_count",
+                len(validated.candidate_folder_ids),
+            )
+            logger.info(
+                "Outlook delta checkpoint promotion deferred: run_id=%s folders=%s",
+                run_id,
+                len(validated.candidate_folder_ids),
+                extra={"spider": spider},
+            )
+            return
+
+        if mode is MailDeltaCommitMode.BLOCKED:
+            stats.inc_value("msgloom/checkpoint/commit_skipped_count")
+            stats.set_value("msgloom/checkpoint/outcome", "skipped")
+            stats.set_value(
+                "msgloom/checkpoint/expected_folder_count",
+                len(validated.expected_folder_ids),
+            )
+            stats.set_value(
+                "msgloom/checkpoint/completed_folder_count",
+                len(validated.expected_folder_ids),
+            )
+            stats.set_value(
+                "msgloom/checkpoint/candidate_folder_count",
+                len(validated.candidate_folder_ids),
+            )
+            raise CloseSpider(reason="policy_completion_required")
 
         try:
             lifecycle = self.lifecycle.commit_delta_lifecycle(
                 run_id,
-                expected_folder_ids=started,
-                reconcile_messages=spider.reconcile_global,
+                expected_folder_ids=set(validated.expected_folder_ids),
+                reconcile_messages=validated.reconcile_messages,
             )
             stats.set_value(
                 "msgloom/catalog/folder_presence_present_count",

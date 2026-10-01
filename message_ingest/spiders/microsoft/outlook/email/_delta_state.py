@@ -3,7 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
+
+
+class MailDeltaCommitMode(StrEnum):
+    """Private message-delta promotion ownership mode."""
+
+    IMMEDIATE = "immediate"
+    DEFERRED = "deferred"
+    BLOCKED = "blocked"
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,4 +96,4 @@ def execution_payload(
     }
 
 
-__all__ = ["MailDeltaExecutionState", "execution_payload"]
+__all__ = ["MailDeltaCommitMode", "MailDeltaExecutionState", "execution_payload"]

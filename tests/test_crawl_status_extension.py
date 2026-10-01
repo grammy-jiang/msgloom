@@ -323,3 +323,29 @@ def test_rule_summary_is_absent_when_rule_evaluation_did_not_run(caplog) -> None
 
     if "event=outlook_mail_rule_summary" in caplog.text:
         pytest.fail("No-rules collection must not emit a Mail rule summary")
+
+
+def test_delta_deferred_checkpoint_is_completed_collection_phase() -> None:
+    crawler, spider, extension = _extension(OutlookDeltaSpider)
+    crawler.stats.set_value("msgloom/checkpoint/outcome", "deferred")
+
+    extension.spider_closed(spider, "finished")
+
+    if crawler.stats.get_value("msgloom/final/status") != "completed":
+        pytest.fail("Clean deferred delta must be a completed collection phase")
+    if crawler.stats.get_value("msgloom/final/checkpoint_outcome") != "deferred":
+        pytest.fail("Final status lost deferred checkpoint observation")
+
+
+def test_delta_policy_completion_required_is_incomplete() -> None:
+    crawler, spider, extension = _extension(OutlookDeltaSpider)
+    crawler.stats.set_value("msgloom/checkpoint/outcome", "skipped")
+
+    extension.spider_closed(spider, "policy_completion_required")
+
+    if crawler.stats.get_value("msgloom/final/status") != "incomplete":
+        pytest.fail("Blocked policy delta must be incomplete, not interrupted/failed")
+    if "close:policy_completion_required" not in crawler.stats.get_value(
+        "msgloom/final/reason_codes"
+    ):
+        pytest.fail("Blocked delta final reasons lost policy completion requirement")
