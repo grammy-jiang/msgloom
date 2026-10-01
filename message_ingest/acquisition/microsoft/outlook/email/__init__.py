@@ -20,6 +20,7 @@ from .rule_config import (
     mail_policy_inspection,
     parse_mail_rule_policy,
 )
+from .rule_engine import DeterministicMailRuleEvaluator
 from .rule_evaluation import (
     MailRecipientFact,
     MailRuleDecisionOutcome,
@@ -42,6 +43,7 @@ __all__ = [
     "FULL_V1",
     "MAIL_RULE_POLICY_FAMILY",
     "TERMINAL_SURFACE_STATUSES",
+    "DeterministicMailRuleEvaluator",
     "MailRecipientFact",
     "MailRuleDecisionOutcome",
     "MailRuleDefinition",
