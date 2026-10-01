@@ -1,4 +1,4 @@
-"""Named Spider request/callback contract for Outlook Mail rule probes."""
+"""Named Spider request/callback contract for transitional Mail BODY probes."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
 from message_ingest.acquisition.microsoft.outlook.email import (
+    MailRuleFact,
     MailRuleProbeStatus,
     OutlookMailRuleProbeResult,
     mail_rule_observation_from_item,
@@ -38,6 +39,7 @@ def _observation():
     item = OutlookMailItem.from_graph(
         {
             "id": "message-1",
+            "changeKey": "change-1",
             "lastModifiedDateTime": "2026-09-30T03:00:00Z",
             "bodyPreview": "preview",
         },
@@ -60,15 +62,15 @@ def _response(request, payload: object) -> TextResponse:
     )
 
 
-def test_probe_request_selects_only_rule_fields_and_text_body() -> None:
+def test_probe_request_selects_transitional_body_fields_and_text_body() -> None:
     spider = _spider()
     observation = _observation()
 
     request = spider.mail_rule_probe_request(observation)
 
     query = parse_qs(urlsplit(request.url).query)
-    if query.get("$select") != ["id,lastModifiedDateTime,body,bodyPreview"]:
-        pytest.fail(f"Unexpected rule probe field selection: {query!r}")
+    if query.get("$select") != ["id,changeKey,body,bodyPreview"]:
+        pytest.fail(f"Unexpected transitional probe field selection: {query!r}")
     raw_prefer = request.headers.get("Prefer")
     if raw_prefer is None:
         pytest.fail("Rule probe lost its Prefer header")
@@ -90,13 +92,11 @@ def test_probe_request_uses_named_callback_errback_and_disables_cache() -> None:
         pytest.fail("Rule probe must use the named Spider errback")
     if request.meta.get("dont_cache") is not True:
         pytest.fail("Rule probe must bypass HTTP cache replay")
-    if request.cb_kwargs.get("purpose") != "mail-rule-probe":
-        pytest.fail("Rule probe purpose must survive in callback kwargs")
     if request.cb_kwargs.get("observation") != observation:
         pytest.fail("Rule probe must carry the bounded original observation")
 
 
-def test_successful_probe_emits_raw_evidence_and_internal_result() -> None:
+def test_successful_probe_emits_raw_evidence_and_new_fact_container() -> None:
     spider = _spider()
     observation = _observation()
     request = spider.mail_rule_probe_request(observation)
@@ -104,7 +104,7 @@ def test_successful_probe_emits_raw_evidence_and_internal_result() -> None:
         request,
         {
             "id": "message-1",
-            "lastModifiedDateTime": "2026-09-30T03:00:00Z",
+            "changeKey": "change-1",
             "body": {"contentType": "text", "content": "complete body"},
             "bodyPreview": "preview",
         },
@@ -122,11 +122,19 @@ def test_successful_probe_emits_raw_evidence_and_internal_result() -> None:
     if result.observation != observation:
         pytest.fail("Probe result lost its original bounded observation")
     if result.probe.status is not MailRuleProbeStatus.COMPLETE:
-        pytest.fail("Valid body probe must be COMPLETE")
-    if result.probe.body != "complete body":
+        pytest.fail("Valid BODY probe must be COMPLETE")
+    if result.probe.facts.body != "complete body":
         pytest.fail("Complete body text changed")
-    if result.probe.last_modified_date_time != "2026-09-30T03:00:00Z":
-        pytest.fail("Probe version fence field changed")
+    if result.probe.facts.change_key != "change-1":
+        pytest.fail("Probe changeKey changed")
+    if not {
+        MailRuleFact.BODY,
+        MailRuleFact.CHANGE_KEY,
+        MailRuleFact.BODY_PREVIEW,
+    }.issubset(result.probe.facts.available_facts):
+        pytest.fail("Complete BODY probe lost fact availability")
+    if result.probe.failures:
+        pytest.fail("Complete BODY probe unexpectedly retained failures")
     if result.probe.evidence_id != evidence.evidence_id:
         pytest.fail("Probe result must reference the acquired response evidence")
 
@@ -136,7 +144,7 @@ def test_successful_probe_emits_raw_evidence_and_internal_result() -> None:
     [
         {
             "id": "message-1",
-            "lastModifiedDateTime": "2026-09-30T03:00:00Z",
+            "changeKey": "change-1",
             "body": {},
         },
         {
@@ -145,12 +153,12 @@ def test_successful_probe_emits_raw_evidence_and_internal_result() -> None:
         },
         {
             "id": "different-message",
-            "lastModifiedDateTime": "2026-09-30T03:00:00Z",
+            "changeKey": "change-1",
             "body": {"contentType": "text", "content": "complete body"},
         },
     ],
 )
-def test_malformed_successful_probe_becomes_failed_probe_result(payload) -> None:
+def test_malformed_successful_probe_becomes_failed_fact_result(payload) -> None:
     spider = _spider()
     observation = _observation()
     request = spider.mail_rule_probe_request(observation)
@@ -169,13 +177,19 @@ def test_malformed_successful_probe_becomes_failed_probe_result(payload) -> None
         pytest.fail("Malformed source representation must become a probe result")
     if result.probe.status is not MailRuleProbeStatus.FAILED:
         pytest.fail("Malformed source representation must fail the rule probe")
-    if result.probe.reason_code != "invalid_probe_payload":
+    if result.probe.facts.available_facts:
+        pytest.fail("Failed transitional BODY probe must not retain partial truth")
+    if len(result.probe.failures) != 1:
+        pytest.fail(
+            "Failed transitional BODY probe must expose one bounded fact failure"
+        )
+    if result.probe.failures[0].fact is not MailRuleFact.BODY:
+        pytest.fail("Malformed transitional probe must classify BODY failure")
+    if result.probe.failures[0].reason_code != "invalid_probe_payload":
         pytest.fail("Malformed source representation must use bounded reason code")
 
 
-def test_probe_errback_emits_failure_evidence_and_failed_probe_without_marking_run_failed() -> (
-    None
-):
+def test_probe_errback_emits_failure_evidence_and_failed_fact_result() -> None:
     spider = _spider()
     observation = _observation()
     request = spider.mail_rule_probe_request(observation)
@@ -194,8 +208,10 @@ def test_probe_errback_emits_failure_evidence_and_failed_probe_without_marking_r
         pytest.fail("Probe errback must return a bounded internal failed result")
     if result.probe.status is not MailRuleProbeStatus.FAILED:
         pytest.fail("Exhausted rule probe must be represented as FAILED")
-    if result.probe.reason_code != "probe_request_failed":
+    if result.probe.failures[0].reason_code != "probe_request_failed":
         pytest.fail("Exhausted rule probe reason code changed")
+    if result.probe.facts.available_facts:
+        pytest.fail("Exhausted rule probe must not fabricate source facts")
     if spider.run_failed:
         pytest.fail(
             "Expected rule-probe unavailability must not fail source crawl directly"

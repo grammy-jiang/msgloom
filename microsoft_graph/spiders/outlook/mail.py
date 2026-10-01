@@ -26,6 +26,7 @@ class OutlookMailSpider(OutlookMailboxSpider):
         "sentDateTime",
         "createdDateTime",
         "lastModifiedDateTime",
+        "changeKey",
         "importance",
         "isRead",
         "isDraft",
@@ -42,7 +43,6 @@ class OutlookMailSpider(OutlookMailboxSpider):
     )
     full_fields = discovery_fields + (
         "body",
-        "changeKey",
         "internetMessageHeaders",
         "isDeliveryReceiptRequested",
         "isReadReceiptRequested",

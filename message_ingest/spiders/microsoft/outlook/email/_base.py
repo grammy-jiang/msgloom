@@ -13,8 +13,11 @@ from twisted.python.failure import Failure
 
 from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleEvaluator,
+    MailRuleFact,
+    MailRuleFacts,
     MailRuleObservation,
     MailRuleProbeData,
+    MailRuleProbeFailure,
     MailRuleProbeStatus,
     OutlookMailRuleProbeResult,
 )
@@ -115,7 +118,7 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
         return self.graph_request(
             self.message_path(
                 observation.message_id,
-                fields=("id", "lastModifiedDateTime", "body", "bodyPreview"),
+                fields=("id", "changeKey", "body", "bodyPreview"),
             ),
             callback=self.parse_mail_rule_probe,
             errback=self.mail_rule_probe_errback,
@@ -142,34 +145,50 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
         try:
             payload = graph_object(response.json(), context="Outlook Mail rule probe")
             body = payload.get("body")
-            version = payload.get("lastModifiedDateTime")
+            change_key = payload.get("changeKey")
+            preview = payload.get("bodyPreview")
             content = body.get("content") if isinstance(body, dict) else None
             content_type = body.get("contentType") if isinstance(body, dict) else None
             valid = (
                 payload.get("id") == observation.message_id
-                and isinstance(version, str)
+                and isinstance(change_key, str)
                 and isinstance(content, str)
                 and content_type == "text"
             )
         except (TypeError, ValueError):
             valid = False
-            version = None
+            change_key = None
+            preview = None
             content = None
 
         if valid:
+            available = {MailRuleFact.CHANGE_KEY, MailRuleFact.BODY}
+            body_preview = (
+                preview if isinstance(preview, str) and len(preview) <= 1024 else None
+            )
+            if body_preview is not None:
+                available.add(MailRuleFact.BODY_PREVIEW)
             probe = MailRuleProbeData(
                 status=MailRuleProbeStatus.COMPLETE,
-                body=content,
-                last_modified_date_time=version,
+                facts=MailRuleFacts(
+                    change_key=change_key,
+                    body=content,
+                    body_preview=body_preview,
+                    available_facts=frozenset(available),
+                ),
                 evidence_id=evidence.evidence_id,
             )
         else:
             probe = MailRuleProbeData(
                 status=MailRuleProbeStatus.FAILED,
-                body=None,
-                last_modified_date_time=None,
+                facts=MailRuleFacts(),
                 evidence_id=evidence.evidence_id,
-                reason_code="invalid_probe_payload",
+                failures=(
+                    MailRuleProbeFailure(
+                        fact=MailRuleFact.BODY,
+                        reason_code="invalid_probe_payload",
+                    ),
+                ),
             )
         yield OutlookMailRuleProbeResult(observation=observation, probe=probe)
 
@@ -186,10 +205,14 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
             observation=observation,
             probe=MailRuleProbeData(
                 status=MailRuleProbeStatus.FAILED,
-                body=None,
-                last_modified_date_time=None,
+                facts=MailRuleFacts(),
                 evidence_id=evidence.evidence_id,
-                reason_code="probe_request_failed",
+                failures=(
+                    MailRuleProbeFailure(
+                        fact=MailRuleFact.BODY,
+                        reason_code="probe_request_failed",
+                    ),
+                ),
             ),
         )
 

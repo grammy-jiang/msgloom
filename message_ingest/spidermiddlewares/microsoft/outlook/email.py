@@ -104,7 +104,9 @@ class OutlookMailAcquisitionRuleMiddleware:
                 observation = mail_rule_observation_from_item(output)
                 evaluation = self._evaluate(observation, probe=None)
                 if evaluation.state is MailRuleEvaluationState.NEEDS_DATA:
-                    if evaluation.required_data is not MailRuleRequiredData.BODY:
+                    if evaluation.required_data != frozenset(
+                        {MailRuleRequiredData.BODY}
+                    ):
                         raise RuntimeError("unsupported Mail rule required-data state")
                     key = self._probe_key(observation)
                     if key in self._scheduled_body_probes:
@@ -162,6 +164,8 @@ class OutlookMailAcquisitionRuleMiddleware:
             self.crawler.stats.inc_value(
                 "msgloom/crawl/mail_rules/probe_completed_count"
             )
+        elif status is MailRuleProbeStatus.PARTIAL:
+            self.crawler.stats.inc_value("msgloom/crawl/mail_rules/probe_partial_count")
         else:
             self.crawler.stats.inc_value("msgloom/crawl/mail_rules/probe_failed_count")
         logger.debug(

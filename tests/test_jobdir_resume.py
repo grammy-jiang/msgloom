@@ -15,7 +15,11 @@ from scrapy.utils.misc import build_from_crawler
 from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 
-from message_ingest.acquisition.microsoft.outlook.email import MailRuleObservation
+from message_ingest.acquisition.microsoft.outlook.email import (
+    MailRuleFact,
+    MailRuleFacts,
+    MailRuleObservation,
+)
 from message_ingest.extensions.microsoft.outlook.calendar.checkpoint import (
     CalendarDeltaSpiderState,
 )
@@ -170,17 +174,16 @@ def test_mail_rule_probe_request_serializes_named_callbacks_and_context(
         run_id="run-id",
         evidence_id="evidence-id",
         observation_kind="delta",
-        last_modified_date_time="2026-09-30T03:00:00Z",
-        subject=None,
-        sender_address=None,
-        from_address=None,
-        to_addresses=(),
-        cc_addresses=(),
-        bcc_addresses=(),
-        importance=None,
-        categories=(),
-        has_attachments=None,
-        body_preview=None,
+        facts=MailRuleFacts(
+            change_key="change-1",
+            last_modified_date_time="2026-09-30T03:00:00Z",
+            available_facts=frozenset(
+                {
+                    MailRuleFact.CHANGE_KEY,
+                    MailRuleFact.LAST_MODIFIED_DATE_TIME,
+                }
+            ),
+        ),
     )
 
     request = spider.mail_rule_probe_request(observation)

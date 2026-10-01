@@ -64,6 +64,11 @@ def test_default_start_targets_entire_mailbox_and_has_no_page_limit() -> None:
         pytest.fail('Expected: query["$top"] == ["25"]')
     if "$select" not in query:
         pytest.fail('Expected: "$select" in query')
+    selected = query["$select"][0].split(",")
+    if "changeKey" not in selected:
+        pytest.fail("Discovery field selection lost changeKey")
+    if spider.full_fields.count("changeKey") != 1:
+        pytest.fail("Full field selection must contain changeKey exactly once")
     if request.cb_kwargs != {"purpose": "message-list", "page_number": 1}:
         pytest.fail(
             'Expected: request.cb_kwargs == {"purpose": "message-list", "page_number": 1}'

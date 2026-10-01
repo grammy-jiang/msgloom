@@ -15,6 +15,8 @@ from scrapy.utils.test import get_crawler
 from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleEvaluation,
     MailRuleEvaluationState,
+    MailRuleFact,
+    MailRuleFacts,
     MailRuleObservation,
     MailRuleProbeData,
     MailRuleRequiredData,
@@ -35,7 +37,7 @@ class NeedsBodyEvaluator:
         del observation, probe
         return MailRuleEvaluation(
             state=MailRuleEvaluationState.NEEDS_DATA,
-            required_data=MailRuleRequiredData.BODY,
+            required_data=frozenset({MailRuleRequiredData.BODY}),
         )
 
 
@@ -134,17 +136,16 @@ def test_probe_request_round_trips_through_disk_scheduler_jobdir(
         run_id="run-1",
         evidence_id="evidence-1",
         observation_kind="delta",
-        last_modified_date_time="2026-09-30T03:00:00Z",
-        subject=None,
-        sender_address=None,
-        from_address=None,
-        to_addresses=(),
-        cc_addresses=(),
-        bcc_addresses=(),
-        importance=None,
-        categories=(),
-        has_attachments=None,
-        body_preview=None,
+        facts=MailRuleFacts(
+            change_key="change-1",
+            last_modified_date_time="2026-09-30T03:00:00Z",
+            available_facts=frozenset(
+                {
+                    MailRuleFact.CHANGE_KEY,
+                    MailRuleFact.LAST_MODIFIED_DATE_TIME,
+                }
+            ),
+        ),
     )
     request = spider1.mail_rule_probe_request(observation)
 

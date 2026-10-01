@@ -10,6 +10,8 @@ from message_ingest.acquisition.microsoft.outlook.email.rule_evaluation import (
     MailRuleDecisionOutcome,
     MailRuleEvaluation,
     MailRuleEvaluationState,
+    MailRuleFact,
+    MailRuleFacts,
     MailRuleObservation,
     MailRuleProbeData,
 )
@@ -285,7 +287,7 @@ from message_ingest.acquisition.microsoft.outlook.email import (
 def _needs_body() -> MailRuleEvaluation:
     return MailRuleEvaluation(
         state=MailRuleEvaluationState.NEEDS_DATA,
-        required_data=MailRuleRequiredData.BODY,
+        required_data=frozenset({MailRuleRequiredData.BODY}),
     )
 
 
@@ -295,9 +297,13 @@ def _complete_probe(item: OutlookMailItem) -> OutlookMailRuleProbeResult:
         observation=observation,
         probe=MailRuleProbeData(
             status=MailRuleProbeStatus.COMPLETE,
-            body="complete body",
-            last_modified_date_time="2026-09-30T03:00:00Z",
+            facts=MailRuleFacts(
+                change_key="change-1",
+                body="complete body",
+                available_facts=frozenset({MailRuleFact.CHANGE_KEY, MailRuleFact.BODY}),
+            ),
             evidence_id="probe-evidence",
+            failures=(),
         ),
     )
 
@@ -331,6 +337,26 @@ def test_multiple_needs_data_for_same_initial_observation_do_not_schedule_duplic
         pytest.fail("Same observation must schedule at most one body probe")
     if items != [first, duplicate]:
         pytest.fail("Duplicate source observations must both pass through unchanged")
+
+
+def test_non_body_required_data_fails_closed_before_composite_probe_support() -> None:
+    evaluator = SequenceEvaluator(
+        [
+            MailRuleEvaluation(
+                state=MailRuleEvaluationState.NEEDS_DATA,
+                required_data=frozenset({MailRuleRequiredData.HEADERS}),
+            )
+        ]
+    )
+    middleware, spider = _configured_middleware(evaluator)
+    item = _mail_item()
+
+    actual = _collect(middleware, item)
+
+    if actual != [item]:
+        pytest.fail("Unsupported transitional required data emitted a Request")
+    if not spider.run_failed:
+        pytest.fail("Unsupported transitional required data must fail policy integrity")
 
 
 def test_probe_result_is_consumed_and_re_evaluated() -> None:

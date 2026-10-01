@@ -15,6 +15,8 @@ from message_ingest.acquisition.microsoft.outlook.email import (
     MailRuleDecisionOutcome,
     MailRuleEvaluation,
     MailRuleEvaluationState,
+    MailRuleFact,
+    MailRuleFacts,
     MailRuleObservation,
     MailRuleProbeData,
     MailRuleProbeStatus,
@@ -132,7 +134,7 @@ def _matched(*, probe_used: bool = False) -> MailRuleEvaluation:
 def _needs_body() -> MailRuleEvaluation:
     return MailRuleEvaluation(
         state=MailRuleEvaluationState.NEEDS_DATA,
-        required_data=MailRuleRequiredData.BODY,
+        required_data=frozenset({MailRuleRequiredData.BODY}),
     )
 
 
@@ -141,9 +143,13 @@ def _probe_result(item: OutlookMailItem) -> OutlookMailRuleProbeResult:
         observation=mail_rule_observation_from_item(item),
         probe=MailRuleProbeData(
             status=MailRuleProbeStatus.COMPLETE,
-            body="probe-body-not-for-log",
-            last_modified_date_time="2026-09-30T03:00:00Z",
+            facts=MailRuleFacts(
+                change_key="change-1",
+                body="probe-body-not-for-log",
+                available_facts=frozenset({MailRuleFact.CHANGE_KEY, MailRuleFact.BODY}),
+            ),
             evidence_id="probe-evidence",
+            failures=(),
         ),
     )
 
