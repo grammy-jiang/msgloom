@@ -166,7 +166,7 @@ def _render(pieces: Iterable[tuple[str, str | None]]) -> str:
 
     if rendered and last_kind == "normal":
         rendered[-1] = rendered[-1].rstrip(" ")
-    return "".join(rendered).strip("\n")
+    return "".join(rendered)
 
 
 __all__ = [

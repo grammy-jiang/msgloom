@@ -84,6 +84,18 @@ def test_html_preformatted_text_preserves_whitespace() -> None:
         pytest.fail(f"Pre block boundaries changed: {actual!r}")
 
 
+def test_preformatted_text_preserves_trailing_newline() -> None:
+    actual = _module().logical_mail_body(
+        {
+            "contentType": "html",
+            "content": "<pre>  alpha\n</pre>",
+        }
+    )
+
+    if actual != "  alpha\n":
+        pytest.fail(f"Preformatted trailing whitespace was changed: {actual!r}")
+
+
 def test_html_entities_decode_deterministically() -> None:
     actual = _module().logical_mail_body(
         {"contentType": "html", "content": "<p>A &amp; B &lt; C&nbsp;D</p>"}
