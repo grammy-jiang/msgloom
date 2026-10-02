@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import subprocess
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -416,14 +417,27 @@ def rules_sync_graph_server(tmp_path: Path):
                     self.end_headers()
                     return
 
-                catalog = Catalog(database_url)
+                database_path = database_url.removeprefix("sqlite:///")
+                connection = sqlite3.connect(
+                    f"file:{database_path}?mode=ro",
+                    uri=True,
+                    timeout=5.0,
+                    isolation_level=None,
+                )
                 try:
-                    state["cursor_before_full"] = OutlookDeltaCheckpointStore(
-                        catalog,
-                        "rules-sync-fixture",
-                    ).get_delta_links()
+                    rows = connection.execute(
+                        """
+                        SELECT folder_id, delta_link
+                        FROM delta_checkpoints
+                        WHERE source_id = ?
+                        """,
+                        ("rules-sync-fixture",),
+                    ).fetchall()
                 finally:
-                    catalog.close()
+                    connection.close()
+                state["cursor_before_full"] = {
+                    folder_id: delta_link for folder_id, delta_link in rows
+                }
 
                 self._json(
                     {
