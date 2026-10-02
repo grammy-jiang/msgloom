@@ -108,7 +108,7 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | Package | Responsibility |
 | --- | --- |
 | `message_ingest/extensions/catalog.py` | Own the crawler's catalog, write lock, evidence aliases, and shutdown. |
-| `message_ingest/extensions/microsoft/outlook/email/checkpoint.py` | Commit complete Mail delta rounds after Scrapy becomes idle. |
+| `message_ingest/extensions/microsoft/outlook/email/checkpoint.py` | Validate Mail delta rounds at Scrapy idle and adapt immediate/deferred/blocked commit modes without owning final rules-enabled promotion. |
 | `message_ingest/extensions/microsoft/outlook/email/status.py` | Publish terminal status for Outlook Mail discovery, delta, and full crawls. |
 | `message_ingest/extensions/microsoft/outlook/calendar/checkpoint.py` | Promote complete fixed-window Calendar delta candidates after Scrapy becomes idle. |
 | `microsoft_graph/auth/accounts.py` | Select opaque MSAL account identities without resource semantics. |
@@ -157,10 +157,18 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/acquisition/source_target.py` | Bind one logical source to one hashed provider resource target and refuse target switching. |
 | `message_ingest/acquisition/source_context.py` | Isolate JOBDIR and request identity by logical source/catalog context. |
 | `message_ingest/acquisition/evidence_link.py` | Resolve canonical evidence IDs/timestamps and validate persisted evidence before resource storage. |
-| `message_ingest/acquisition/microsoft/outlook/email/rule_evaluation.py` | Define Scrapy-independent Mail acquisition-policy observations, evaluator states, terminal decisions, and bounded correlation contracts. |
-| `message_ingest/acquisition/microsoft/outlook/email/rule_probe.py` | Define the internal bounded body-probe result passed from Mail collection Spider callbacks back to the rule middleware. |
-| `message_ingest/acquisition/microsoft/outlook/email/profile.py` | Define versioned Outlook Mail full-acquisition completion policy and attachment surface requirements. |
-| `message_ingest/acquisition/microsoft/outlook/email/planner.py` | Select current Mail records with incomplete Full-v1 surfaces from the catalog. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_config.py` | Validate the closed V1 Mail policy vocabulary, profile mapping, rule ordering, bounds, and private effective-policy identity. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_regex.py` | Implement the bounded privacy-safe `msgloom-regex-v1` adapter on pinned Google RE2. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_body.py` | Convert bounded Graph text/HTML message bodies into deterministic logical BODY text for rule evaluation. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_evaluation.py` | Define Scrapy-independent bounded Mail facts, observation/probe contracts, evaluator states, and terminal decisions. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_predicates.py` | Evaluate discovery/metadata predicates and shared tri-state composition without Scrapy/provider I/O. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_predicates_probe.py` | Evaluate BODY/header/extended-property predicates and documented message-class classifications behind the shared predicate API. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_engine.py` | Evaluate ordered Mail rules deterministically, union reachable missing-data requirements, enforce monotonic profiles, and apply fail-safe Full fallback. |
+| `message_ingest/acquisition/microsoft/outlook/email/rule_probe.py` | Define the internal bounded composite-probe result passed from Mail collection Spider callbacks back to the rule middleware. |
+| `message_ingest/acquisition/microsoft/outlook/email/policy_context.py` | Bind the private effective Mail policy identity to JOBDIR before Scheduler construction and reject unsafe resume. |
+| `message_ingest/acquisition/microsoft/outlook/email/full_completion.py` | Verify rule-selected Full-v1 terminal completeness from current-run evidence, including attachment inventory provenance and terminal limitations. |
+| `message_ingest/acquisition/microsoft/outlook/email/profile.py` | Define versioned Outlook Mail discovery/full profiles and Full-v1 attachment surface requirements. |
+| `message_ingest/acquisition/microsoft/outlook/email/planner.py` | Select the legacy rules-disabled catalog backlog of incomplete Full-v1 Mail records. |
 | `message_ingest/acquisition/microsoft/outlook/calendar/profile.py` | Define changeKey-aware versioned Calendar full-acquisition completion policy. |
 | `message_ingest/acquisition/microsoft/outlook/calendar/planner.py` | Select incomplete Calendar Full-v1 targets, optionally scoped to collection runs. |
 | `message_ingest/acquisition/microsoft/outlook/notifications.py` | Classify validated provider resources, coalesce Outlook sync triggers, and select recovery reasons. |
@@ -190,7 +198,7 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/catalog/models/microsoft/onedrive.py` | Define additive source-scoped drive, item, content, and checkpoint tables. |
 | `message_ingest/catalog/stores/microsoft/onedrive.py` | Preserve current metadata, explicit tombstones, content references, and checkpoint candidates. |
 | `message_ingest/extensions/microsoft/onedrive/` | Promote clean delta candidates at Scrapy idle and sanitize native download logs. |
-| `message_ingest/commands/microsoft/outlook/sync.py` | Compose sequential Mail/Calendar collection and planner-driven enrichment phases from existing spiders. |
+| `message_ingest/commands/microsoft/outlook/sync.py` | Compose Mail/Calendar workflows; rules-enabled Mail uses attempt-local Full targets, current-run completion validation, deferred delta promotion, and no legacy global backlog. |
 | `message_ingest/pipelines/microsoft/outlook/email.py` | Route Outlook Mail items through the shared write lock into Mail/checkpoint stores. |
 | `message_ingest/spiders/microsoft/outlook/calendar/discover.py` | Inventory visible calendars through paginated Graph callbacks. |
 | `message_ingest/spiders/microsoft/outlook/calendar/window.py` | Acquire an explicit occurrence-expanded Calendar time window. |
@@ -203,7 +211,7 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/spiders/microsoft/outlook/calendar/_delta_state.py` | Serialize and validate Calendar execution facts independently of cursors. |
 | `message_ingest/spiders/microsoft/outlook/calendar/_base.py` | Compose framework Calendar scopes with msgloom mailbox/evidence behavior. |
 | `message_ingest/extensions/microsoft/outlook/calendar/resume.py` | Validate Calendar window/full JOBDIR scope before saved requests execute. |
-| `message_ingest/spiders/microsoft/outlook/email/_base.py` | Own the Mail collection-only activation seam, named JOBDIR-serializable rule probe callbacks, and attempt-local profile handoff state; it does not implement rule matching. |
+| `message_ingest/spiders/microsoft/outlook/email/_base.py` | Own Mail collection policy activation, one dynamic JOBDIR-serializable composite probe, bounded provider fact parsing, and attempt-local strongest-profile handoff; it does not implement rule matching. |
 | `message_ingest/spidermiddlewares/microsoft/outlook/email.py` | Apply the pure Mail acquisition-policy evaluator at Spider output priority 1100, preserve source Items, schedule bounded probes, and emit privacy-safe rule logs/stats without database persistence. |
 | `message_ingest/spiders/microsoft/outlook/email/_delta_state.py` | Serialize Mail delta execution facts independently of provider cursors. |
 | `message_ingest/spiders/microsoft/outlook/_mailbox.py` | Bind framework mailbox paths/scopes to MSGLOOM_TARGET_MAILBOX and source-target identity. |
@@ -217,7 +225,8 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `message_ingest/catalog/stores/microsoft/outlook/email.py` | Persist/query Outlook Mail, folder, attachment, and enrichment-surface state. |
 | `message_ingest/catalog/stores/microsoft/outlook/_email_lifecycle.py` | Promote complete folder/message presence snapshots and apply explicit folder tombstones. |
 | `message_ingest/catalog/stores/microsoft/outlook/calendar.py` | Persist Calendar inventory, event versions, delta observations, and attachment state. |
-| `message_ingest/sync/microsoft/outlook/email/checkpoints.py` | Own source-scoped candidate queries and atomic checkpoint promotion. |
+| `message_ingest/sync/microsoft/outlook/email/checkpoints.py` | Own source-scoped Mail delta candidate queries and session-scoped checkpoint promotion primitives. |
+| `message_ingest/sync/microsoft/outlook/email/promotion.py` | Validate one Mail delta run and atomically promote message lifecycle plus authoritative delta cursors after immediate or rules-enabled workflow completion. |
 | `message_ingest/extensions/microsoft/outlook/email/folder_checkpoint.py` | Promote complete mailbox-level mailFolder delta cursors at Scrapy idle. |
 
 Catalog model modules are split by persistence domain while `message_ingest.catalog.models` and `message_ingest.catalog` continue to re-export model classes. P0/P1 schema evolution is additive only: new Calendar enrichment/topology and Mail lifecycle/folder-delta tables are created through current metadata without altering existing columns.

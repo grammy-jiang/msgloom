@@ -135,7 +135,7 @@ Traversal/reconciliation examples:
 Checkpoint-owner fields include:
 
 - `msgloom/checkpoint/outcome`:
-  `evaluating|committed|skipped|error`
+  `evaluating|committed|deferred|skipped|error`
 - `msgloom/checkpoint/error_stage`: `snapshot`, `candidate_load`, or `commit`
 - `msgloom/checkpoint/commit_count`
 - `msgloom/checkpoint/commit_skipped_count`
@@ -201,6 +201,7 @@ attempt counters under `msgloom/crawl/mail_rules/*`:
 - `unresolved_count`
 - `probe_scheduled_count`
 - `probe_completed_count`
+- `probe_partial_count`
 - `probe_failed_count`
 - `stop_processing_count`
 - `fallback_count`
@@ -227,11 +228,31 @@ logging:
 actually evaluated at least one message. The summary contains aggregate counts
 only.
 
-Mail rule logs may use opaque run/message IDs, bounded rule IDs, ruleset
-identity/digest, profile names, and bounded reason/error-type tokens for
-correlation. They must not copy subject/body/bodyPreview text, sender or
-recipient addresses, configured match strings, label values, Graph URLs,
+Mail rule logs may use opaque run/message IDs, bounded non-secret rule IDs,
+the fixed policy-family identifier, profile names, and bounded reason/error-type
+tokens for correlation. The private content-derived effective-policy digest is
+control state only and must not appear in logs, stats, `config inspect`, Items,
+or user-facing errors. Logs must not copy subject/body/bodyPreview text, sender
+or recipient addresses, configured match strings, label values, Graph URLs,
 tokens, raw rules, arbitrary exception text, or traceback text.
+
+Rules-enabled Mail sync also records the Full-v1 workflow gate on the Full
+crawler only:
+
+- `msgloom/mail_rules/full_completion`: bounded reason such as
+  `terminal_complete`, `terminal_complete_with_limitations`, or an incomplete
+  reason from the current-run verifier;
+- `msgloom/mail_rules/full_completion_with_limitations`: boolean indicating that
+  a profile-terminal provider limitation (for example an unavailable surface)
+  was accepted as complete.
+
+A clean rules-enabled delta collection reports
+`msgloom/checkpoint/outcome=deferred`; that means the collection run validated
+its durable candidates but did **not** advance the authoritative message cursor.
+The workflow finalizer performs the later atomic lifecycle/cursor promotion only
+after all rule-selected Full targets satisfy their current-run completion gate.
+A low-level active-policy delta without that workflow owner is blocked and closes
+incomplete with reason `policy_completion_required`.
 
 The repository currently configures safe log formatting/filtering but does not
 own long-term `LOG_FILE`, rotation, journald, or equivalent retention policy.
