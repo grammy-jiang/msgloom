@@ -136,6 +136,10 @@ def test_extended_properties_probe_uses_exact_fixed_ids() -> None:
     expand = query.get("$expand")
     if expand is None or len(expand) != 1:
         pytest.fail(f"Missing one extended-property expansion: {query!r}")
+    if not expand[0].startswith("singleValueExtendedProperties("):
+        pytest.fail(
+            f"Graph message expansion used the wrong navigation property: {expand!r}"
+        )
     for property_id in ("Integer 0x0036", "Integer 0x0E08", "String 0x001A"):
         if property_id not in expand[0]:
             pytest.fail(f"Extended-property expansion lost {property_id!r}")
@@ -219,10 +223,10 @@ def test_successful_composite_probe_emits_all_requested_facts() -> None:
                 {"name": "X-Test", "value": "one"},
                 {"name": "Subject", "value": "private-looking but source data"},
             ],
-            "singleValueLegacyExtendedProperties": [
-                {"id": "Integer 0x0036", "value": "2"},
-                {"id": "Integer 0x0E08", "value": "4096"},
-                {"id": "String 0x001A", "value": "IPM.Note"},
+            "singleValueExtendedProperties": [
+                {"id": "Integer 0x36", "value": "2"},
+                {"id": "Integer 0xe08", "value": "4096"},
+                {"id": "String 0x1a", "value": "IPM.Note"},
             ],
         },
     )
@@ -377,7 +381,7 @@ def test_invalid_extended_property_is_partial_not_all_or_nothing(
                 {
                     "id": "message-1",
                     "changeKey": "change-1",
-                    "singleValueLegacyExtendedProperties": properties,
+                    "singleValueExtendedProperties": properties,
                 },
             ),
             **request.cb_kwargs,
@@ -406,9 +410,9 @@ def test_duplicate_extended_property_id_is_bounded_partial_failure() -> None:
                 {
                     "id": "message-1",
                     "changeKey": "change-1",
-                    "singleValueLegacyExtendedProperties": [
+                    "singleValueExtendedProperties": [
                         {"id": "Integer 0x0036", "value": "2"},
-                        {"id": "Integer 0x0036", "value": "3"},
+                        {"id": "Integer 0x36", "value": "3"},
                         {"id": "Integer 0x0E08", "value": "4096"},
                         {"id": "String 0x001A", "value": "IPM.Note"},
                     ],

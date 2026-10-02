@@ -23,8 +23,12 @@ PIDTAG_SENSITIVITY = "Integer 0x0036"
 PIDTAG_MESSAGE_SIZE = "Integer 0x0E08"
 PIDTAG_MESSAGE_CLASS = "String 0x001A"
 
+_PIDTAG_SENSITIVITY_KEY = ("integer", 0x0036)
+_PIDTAG_MESSAGE_SIZE_KEY = ("integer", 0x0E08)
+_PIDTAG_MESSAGE_CLASS_KEY = ("string", 0x001A)
+
 EXTENDED_PROPERTY_EXPAND = (
-    "singleValueLegacyExtendedProperties("
+    "singleValueExtendedProperties("
     "$filter=id eq 'Integer 0x0036' or "
     "id eq 'Integer 0x0E08' or "
     "id eq 'String 0x001A')"
@@ -170,7 +174,7 @@ def parse_probe_payload(
     if MailRuleRequiredData.EXTENDED_PROPERTIES in required_data:
         facts, extended_failures = _with_extended_properties(
             facts,
-            payload.get("singleValueLegacyExtendedProperties"),
+            payload.get("singleValueExtendedProperties"),
         )
         failures.extend(extended_failures)
 
@@ -294,8 +298,8 @@ def _with_extended_properties(
     facts: MailRuleFacts,
     raw_properties: object,
 ) -> tuple[MailRuleFacts, tuple[MailRuleProbeFailure, ...]]:
-    values: dict[str, object] = {}
-    duplicate_ids: set[str] = set()
+    values: dict[tuple[str, int], object] = {}
+    duplicate_ids: set[tuple[str, int]] = set()
     if isinstance(raw_properties, list):
         for item in raw_properties:
             if not isinstance(item, dict):
@@ -303,17 +307,20 @@ def _with_extended_properties(
             property_id = item.get("id")
             if not isinstance(property_id, str):
                 continue
-            if property_id in values:
-                duplicate_ids.add(property_id)
+            key = _canonical_proptag_id(property_id)
+            if key is None:
+                continue
+            if key in values:
+                duplicate_ids.add(key)
             else:
-                values[property_id] = item.get("value")
+                values[key] = item.get("value")
 
     available = set(facts.available_facts)
     failures: list[MailRuleProbeFailure] = []
 
     sensitivity = None
-    if PIDTAG_SENSITIVITY not in duplicate_ids:
-        raw = values.get(PIDTAG_SENSITIVITY)
+    if _PIDTAG_SENSITIVITY_KEY not in duplicate_ids:
+        raw = values.get(_PIDTAG_SENSITIVITY_KEY)
         if isinstance(raw, str) and raw in _SENSITIVITY:
             sensitivity = _SENSITIVITY[raw]
             available.add(MailRuleFact.SENSITIVITY)
@@ -326,8 +333,8 @@ def _with_extended_properties(
         )
 
     message_size = None
-    if PIDTAG_MESSAGE_SIZE not in duplicate_ids:
-        raw = values.get(PIDTAG_MESSAGE_SIZE)
+    if _PIDTAG_MESSAGE_SIZE_KEY not in duplicate_ids:
+        raw = values.get(_PIDTAG_MESSAGE_SIZE_KEY)
         if isinstance(raw, str):
             try:
                 candidate = int(raw, 10)
@@ -345,8 +352,8 @@ def _with_extended_properties(
         )
 
     item_class = None
-    if PIDTAG_MESSAGE_CLASS not in duplicate_ids:
-        raw = values.get(PIDTAG_MESSAGE_CLASS)
+    if _PIDTAG_MESSAGE_CLASS_KEY not in duplicate_ids:
+        raw = values.get(_PIDTAG_MESSAGE_CLASS_KEY)
         if isinstance(raw, str) and len(raw) <= 2_048:
             item_class = raw
             available.add(MailRuleFact.ITEM_CLASS)
@@ -368,6 +375,22 @@ def _with_extended_properties(
         ),
         tuple(failures),
     )
+
+
+def _canonical_proptag_id(value: str) -> tuple[str, int] | None:
+    parts = value.split()
+    if len(parts) != 2:
+        return None
+    property_type, tag = parts
+    if not tag.casefold().startswith("0x"):
+        return None
+    try:
+        number = int(tag, 16)
+    except ValueError:
+        return None
+    if not 0 <= number <= 0xFFFF:
+        return None
+    return property_type.casefold(), number
 
 
 def _failed_probe(
