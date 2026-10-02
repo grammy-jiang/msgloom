@@ -71,8 +71,8 @@ def _parser() -> argparse.ArgumentParser:
             "local catalog. This script is operator-only and is not a CI test."
         )
     )
-    parser.add_argument("--calendar-start", type=_aware, required=True)
-    parser.add_argument("--calendar-end", type=_aware, required=True)
+    parser.add_argument("--calendar-start", type=_aware, default=None)
+    parser.add_argument("--calendar-end", type=_aware, default=None)
     parser.add_argument("--confirm-live", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--output-dir", type=Path, default=None)
@@ -87,7 +87,22 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--calendar-page-size", type=int, default=50)
     parser.add_argument("--require-mail-message", action="store_true")
     parser.add_argument("--require-calendar-event", action="store_true")
+    parser.add_argument("--mail-rule-qualification", action="store_true")
+    parser.add_argument("--mail-rule-message-id", default=None, metavar="MESSAGE_ID")
+    parser.add_argument(
+        "--mail-rule-event-message-id",
+        default=None,
+        metavar="MESSAGE_ID",
+    )
     return parser
+
+
+def _private_message_id(value: str | None, *, option: str) -> str | None:
+    if value is None:
+        return None
+    if not value or value != value.strip() or len(value) > 4096:
+        raise SystemExit(f"{option} is invalid")
+    return value
 
 
 def _output_dir(value: Path | None) -> Path:
@@ -149,6 +164,208 @@ def _run_phase(
         return False
     phases.append(PhaseResult(name=name, status="passed", returncode=0))
     return True
+
+
+def _mail_rule_qualification_command(
+    *,
+    output_dir: Path,
+    source_id: str,
+    mailbox: str | None,
+    page_size: int,
+    message_id: str | None,
+    event_message_id: str | None,
+) -> tuple[list[str], Path]:
+    summary_file = output_dir / "mail-rule-qualification.json"
+    command = [
+        sys.executable,
+        str(ROOT / "scripts" / "microsoft-mail-rule-qualification.py"),
+        "--confirm-live",
+        "--output-dir",
+        str(output_dir),
+        "--summary-file",
+        str(summary_file),
+        "--source-id",
+        source_id,
+        "--mail-page-size",
+        str(page_size),
+    ]
+    if mailbox:
+        command.extend(["--mailbox", mailbox])
+    if message_id:
+        command.extend(["--message-id", message_id])
+    if event_message_id:
+        command.extend(["--event-message-id", event_message_id])
+    return command, summary_file
+
+
+def _read_safe_qualification_summary(path: Path) -> dict[str, bool | int | str]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        raise RuntimeError(
+            "qualification helper produced no valid safe summary"
+        ) from None
+    if not isinstance(payload, dict):
+        raise TypeError("qualification helper summary must be an object")
+    allowed = {
+        "schema_version",
+        "discovery_request_once",
+        "discovery_change_key_available",
+        "normal_target_selected",
+        "event_target_selected",
+        "normal_probe_scheduled_once",
+        "event_probe_scheduled_once",
+        "probe_request_count",
+        "target_count",
+        "single_probe_per_target",
+        "normal_probe_complete",
+        "normal_change_key_available",
+        "normal_body_available",
+        "normal_headers_available",
+        "normal_sensitivity_available",
+        "normal_message_size_bytes_available",
+        "normal_item_class_available",
+        "event_probe_complete",
+        "event_body_content_type_html",
+        "event_logical_body_available",
+        "mail_scope_only",
+        "raw_evidence_count",
+        "run_failed",
+        "failure_reason_count",
+    }
+    if set(payload) - allowed:
+        raise RuntimeError("qualification helper summary contains unknown fields")
+    safe: dict[str, bool | int | str] = {}
+    for key, value in payload.items():
+        if not isinstance(value, (bool, int, str)):
+            raise TypeError("qualification helper summary contains unsafe value")
+        safe[key] = value
+    return safe
+
+
+def _qualification_checks_pass(checks: dict[str, bool | int | str]) -> bool:
+    required = (
+        "discovery_request_once",
+        "discovery_change_key_available",
+        "normal_target_selected",
+        "normal_probe_scheduled_once",
+        "single_probe_per_target",
+        "normal_probe_complete",
+        "normal_change_key_available",
+        "normal_body_available",
+        "normal_headers_available",
+        "normal_sensitivity_available",
+        "normal_message_size_bytes_available",
+        "normal_item_class_available",
+        "mail_scope_only",
+    )
+    return (
+        all(checks.get(key) is True for key in required)
+        and int(checks.get("raw_evidence_count", 0) or 0) > 0
+        and checks.get("run_failed") is False
+        and int(checks.get("failure_reason_count", 0) or 0) == 0
+    )
+
+
+def _event_qualification_passes(checks: dict[str, bool | int | str]) -> bool:
+    return all(
+        checks.get(key) is True
+        for key in (
+            "event_target_selected",
+            "event_probe_scheduled_once",
+            "event_probe_complete",
+            "event_body_content_type_html",
+            "event_logical_body_available",
+        )
+    )
+
+
+def _run_mail_rule_qualification(
+    output_dir: Path,
+    args: argparse.Namespace,
+    started: datetime,
+) -> int:
+    phases: list[PhaseResult] = [
+        PhaseResult("mail-rule-discover", "planned" if args.dry_run else "pending"),
+        PhaseResult("mail-rule-probe", "planned" if args.dry_run else "pending"),
+    ]
+    if args.mail_rule_event_message_id is not None:
+        phases.append(
+            PhaseResult(
+                "mail-rule-event-probe",
+                "planned" if args.dry_run else "pending",
+            )
+        )
+    if args.dry_run:
+        return _finish(output_dir, args, started, phases, {}, overall="planned")
+
+    command, summary_file = _mail_rule_qualification_command(
+        output_dir=output_dir,
+        source_id=args.source_id,
+        mailbox=args.mailbox,
+        page_size=args.mail_page_size,
+        message_id=args.mail_rule_message_id,
+        event_message_id=args.mail_rule_event_message_id,
+    )
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        for phase in phases:
+            phase.status = "failed"
+            phase.returncode = result.returncode
+            phase.detail = (
+                "qualification helper failed; inspect private local artifacts"
+            )
+        return _finish(output_dir, args, started, phases, {}, overall="failed")
+
+    try:
+        checks = _read_safe_qualification_summary(summary_file)
+    except (RuntimeError, TypeError):
+        for phase in phases:
+            phase.status = "failed"
+            phase.detail = "qualification helper summary is invalid"
+        return _finish(output_dir, args, started, phases, {}, overall="failed")
+
+    normal_ok = _qualification_checks_pass(checks)
+    event_selected = checks.get("event_target_selected") is True
+    event_ok = _event_qualification_passes(checks)
+
+    phases[0].status = (
+        "passed" if checks.get("discovery_change_key_available") is True else "failed"
+    )
+    phases[0].returncode = 0
+    phases[1].status = "passed" if normal_ok else "failed"
+    phases[1].returncode = 0
+
+    event_phase = next(
+        (phase for phase in phases if phase.name == "mail-rule-event-probe"),
+        None,
+    )
+    if event_phase is None:
+        event_phase = PhaseResult("mail-rule-event-probe", "pending")
+        phases.append(event_phase)
+    if event_ok:
+        event_phase.status = "passed"
+        event_phase.returncode = 0
+    elif event_selected:
+        event_phase.status = "failed"
+        event_phase.returncode = 0
+    else:
+        event_phase.status = "incomplete"
+        event_phase.detail = "no eventMessage target was available for qualification"
+
+    if not normal_ok:
+        overall = "failed"
+    elif not event_ok:
+        overall = "incomplete"
+    else:
+        overall = "passed"
+    return _finish(output_dir, args, started, phases, checks, overall=overall)
 
 
 def _database_url(output_dir: Path) -> str:
@@ -250,10 +467,14 @@ def _finish(
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if datetime.fromisoformat(args.calendar_start) >= datetime.fromisoformat(
-        args.calendar_end
-    ):
-        raise SystemExit("--calendar-start must be earlier than --calendar-end")
+    args.mail_rule_message_id = _private_message_id(
+        args.mail_rule_message_id,
+        option="--mail-rule-message-id",
+    )
+    args.mail_rule_event_message_id = _private_message_id(
+        args.mail_rule_event_message_id,
+        option="--mail-rule-event-message-id",
+    )
     if not args.dry_run and not args.confirm_live:
         raise SystemExit("live execution requires --confirm-live")
     if not 1 <= args.mail_page_size <= 1000:
@@ -265,11 +486,24 @@ def main(argv: list[str] | None = None) -> int:
     ):
         raise SystemExit("--mailbox must be non-empty without surrounding whitespace")
 
-    mailbox_args = ["--mailbox", args.mailbox] if args.mailbox else []
     started = datetime.now(UTC)
     output_dir = _output_dir(args.output_dir)
     if not args.dry_run:
         output_dir.mkdir(parents=True, exist_ok=False)
+
+    if args.mail_rule_qualification:
+        return _run_mail_rule_qualification(output_dir, args, started)
+
+    if args.calendar_start is None or args.calendar_end is None:
+        raise SystemExit(
+            "--calendar-start and --calendar-end are required outside Mail rule qualification"
+        )
+    if datetime.fromisoformat(args.calendar_start) >= datetime.fromisoformat(
+        args.calendar_end
+    ):
+        raise SystemExit("--calendar-start must be earlier than --calendar-end")
+
+    mailbox_args = ["--mailbox", args.mailbox] if args.mailbox else []
     settings = _settings(output_dir, args.source_id)
     phases: list[PhaseResult] = []
 
