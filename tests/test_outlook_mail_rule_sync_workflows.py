@@ -131,7 +131,8 @@ def _capture_enabled_mail_workflow(
         mail_rule_policy=policy,
     )
     phases = captured["phases"]
-    assert isinstance(phases, tuple)
+    if not isinstance(phases, tuple):
+        pytest.fail("mail sync phases must be a tuple")
     delta = phases[1]
     validated = _validated_delta()
     delta_crawler = SimpleNamespace(
@@ -239,7 +240,8 @@ def test_rules_enabled_delta_refuses_unprofiled_current_observation(
         mail_rule_policy=policy,
     )
     phases = captured["phases"]
-    assert isinstance(phases, tuple)
+    if not isinstance(phases, tuple):
+        pytest.fail("mail sync phases must be a tuple")
     delta = phases[1]
 
     catalog = Catalog(command.settings["MSGLOOM_DATABASE_URL"])

@@ -437,7 +437,8 @@ def test_datetime_ranges_compare_instants_with_inclusive_lower_exclusive_upper(
     at_upper: str,
 ) -> None:
     source = getattr(_facts(), source_field)
-    assert source is not None
+    if source is None:
+        pytest.fail(f"{source_field} fixture unexpectedly missing")
 
     lower = _evaluate({f"{field}_after": at_lower})
     upper = _evaluate({f"{field}_before": at_upper})

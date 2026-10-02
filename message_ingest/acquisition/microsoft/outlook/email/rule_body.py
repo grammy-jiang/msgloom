@@ -145,7 +145,8 @@ def _render(pieces: Iterable[tuple[str, str | None]]) -> str:
         if kind == "boundary":
             pending_boundary = bool(rendered)
             continue
-        assert value is not None
+        if value is None:
+            raise ValueError("non-boundary body piece requires text")
         if kind == "normal" and not value:
             continue
 

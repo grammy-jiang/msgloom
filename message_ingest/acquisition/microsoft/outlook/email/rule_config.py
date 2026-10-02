@@ -207,7 +207,8 @@ class MailRulePredicates(_ClosedFrozenModel):
             return value
         name = info.field_name
         if name in cls._REGEX_FIELDS:
-            assert isinstance(value, tuple)
+            if not isinstance(value, tuple):
+                raise PydanticCustomError("invalid_type", "tuple value required")
             seen: set[str] = set()
             for pattern in value:
                 if pattern in seen:
@@ -221,7 +222,8 @@ class MailRulePredicates(_ClosedFrozenModel):
                     ) from None
             return value
         if name in cls._STRING_LIST_FIELDS:
-            assert isinstance(value, tuple)
+            if not isinstance(value, tuple):
+                raise PydanticCustomError("invalid_type", "tuple value required")
             seen_folded: set[str] = set()
             for item in value:
                 folded = item.casefold()
@@ -230,13 +232,15 @@ class MailRulePredicates(_ClosedFrozenModel):
                 seen_folded.add(folded)
             return value
         if name in cls._ENUM_LIST_FIELDS:
-            assert isinstance(value, tuple)
+            if not isinstance(value, tuple):
+                raise PydanticCustomError("invalid_type", "tuple value required")
             keys = [cast(StrEnum, item).value for item in value]
             if len(keys) != len(set(keys)):
                 raise PydanticCustomError("duplicate_value", "duplicate enum")
             return value
         if name in cls._DATETIME_FIELDS:
-            assert isinstance(value, datetime)
+            if not isinstance(value, datetime):
+                raise PydanticCustomError("invalid_type", "datetime value required")
             if value.tzinfo is None or value.utcoffset() is None:
                 raise PydanticCustomError("invalid_range", "timezone required")
         return value
