@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import replace
 
 import pytest
@@ -72,6 +73,20 @@ class SlowRunner:
         )
 
 
+class BlockingLateRunner:
+    """Return COMPLETE only after blocking past the acceptance deadline."""
+
+    async def run(self, attempt, trace_sink):
+        """Block the event loop so asyncio timeout callbacks cannot run first."""
+        time.sleep(0.03)  # noqa: ASYNC251 - deliberately starve the loop.
+        return AnalysisResponse(
+            attempt=attempt.attempt,
+            status=AttemptStatus.COMPLETE,
+            structured_output={"topics": [], "dispositions": []},
+            trace_count=0,
+        )
+
+
 def test_malformed_output_never_becomes_complete_triage(tmp_path):
     """Unsupported model structure remains explicit incomplete work."""
     asyncio.run(_malformed(tmp_path))
@@ -119,6 +134,36 @@ async def _duplicate(tmp_path):
 def test_finite_deadline_precedes_claim_expiry(tmp_path):
     """Acceptance closes before the configured durable claim can expire."""
     asyncio.run(_stale(tmp_path))
+
+
+def test_late_complete_response_is_rejected_after_event_loop_starvation(tmp_path):
+    """A runner cannot win by blocking the loop past semantic acceptance."""
+    asyncio.run(_blocking_late(tmp_path))
+
+
+async def _blocking_late(tmp_path):
+    store = await open_store(tmp_path / "blocking-late.sqlite")
+    selected, producer, _candidate = setup()
+    await save_selection(store, selected)
+    producer = replace(
+        producer,
+        attempt_limits=replace(producer.attempt_limits, timeout_seconds=0.01),
+        lease_seconds=3.0,
+        operation_timeout_seconds=2.0,
+        cleanup_margin_seconds=0.005,
+    )
+    triage = TriageHandler(store, producer, BlockingLateRunner())
+
+    outcome = await triage.run(request(producer, "blocking-late-exec"))
+
+    if outcome.status is not TerminalStatus.INCOMPLETE:
+        pytest.fail("late COMPLETE response crossed the semantic acceptance deadline")
+    if not outcome.limitations or outcome.limitations[0].code not in {
+        "triage_part_incomplete",
+        "triage_operation_deadline",
+    }:
+        pytest.fail("late response did not surface a bounded deadline limitation")
+    await store.close()
 
 
 async def _stale(tmp_path):

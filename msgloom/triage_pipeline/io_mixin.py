@@ -381,12 +381,17 @@ class _TriageIOMixin:
         record_result(session.request_ref)
         sink = PersistenceTraceSink(session)
         try:
+            loop = asyncio.get_running_loop()
             timeout = min(
                 self._config.attempt_limits.timeout_seconds,
                 ensure_acceptance_time(),
             )
-            async with asyncio.timeout(timeout):
+            attempt_deadline = loop.time() + timeout
+            async with asyncio.timeout_at(attempt_deadline):
                 response = await self._runner.run(analysis, sink)
+            if loop.time() >= attempt_deadline:
+                raise TimeoutError("AI attempt deadline expired")
+            ensure_acceptance_time()
         except TimeoutError:
             terminal, cancelled = await drain(
                 session.finish_diagnostic(
