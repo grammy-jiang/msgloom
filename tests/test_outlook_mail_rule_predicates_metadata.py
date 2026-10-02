@@ -231,6 +231,60 @@ def test_recipient_contains_uses_to_and_cc_name_or_address_but_excludes_bcc() ->
         pytest.fail("recipient_address_contains incorrectly included Bcc")
 
 
+@pytest.mark.parametrize(
+    ("raw", "unavailable_fact"),
+    [
+        ({"recipient_contains": ["primary user"]}, MailRuleFact.CC_RECIPIENTS),
+        ({"recipient_contains": ["finance team"]}, MailRuleFact.TO_RECIPIENTS),
+        (
+            {"recipient_address_contains": ["user@"]},
+            MailRuleFact.CC_RECIPIENTS,
+        ),
+        (
+            {"recipient_address_contains": ["finance@"]},
+            MailRuleFact.TO_RECIPIENTS,
+        ),
+        (
+            {"recipient_address_regex": [r"^user@"]},
+            MailRuleFact.CC_RECIPIENTS,
+        ),
+        (
+            {"recipient_address_regex": [r"^finance@"]},
+            MailRuleFact.TO_RECIPIENTS,
+        ),
+    ],
+)
+def test_recipient_aggregate_known_match_dominates_unavailable_other_list(
+    raw: Mapping[str, object],
+    unavailable_fact: MailRuleFact,
+) -> None:
+    facts = _facts(
+        available_facts=_facts().available_facts - {unavailable_fact},
+    )
+
+    result = _evaluate(raw, facts)
+
+    if result.truth is not _module().MailTruth.TRUE:
+        pytest.fail(
+            f"Known To/Cc aggregate match was hidden by unavailable other list: {raw!r}"
+        )
+    if result.required_data:
+        pytest.fail("Proven aggregate match must not request redundant metadata")
+
+
+def test_recipient_aggregate_no_match_with_unavailable_other_list_is_unknown() -> None:
+    facts = _facts(
+        available_facts=_facts().available_facts - {MailRuleFact.CC_RECIPIENTS},
+    )
+
+    result = _evaluate({"recipient_contains": ["nobody"]}, facts)
+
+    if result.truth is not _module().MailTruth.UNKNOWN:
+        pytest.fail("Unavailable aggregate recipient data must remain UNKNOWN")
+    if result.required_data != frozenset({MailRuleRequiredData.METADATA}):
+        pytest.fail("Unavailable aggregate recipient data must request METADATA")
+
+
 def test_known_empty_collections_are_false_not_unknown() -> None:
     facts = _facts(
         to_recipients=(),

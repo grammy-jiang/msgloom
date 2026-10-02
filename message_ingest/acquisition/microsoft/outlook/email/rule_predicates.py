@@ -207,22 +207,31 @@ def _recipient_field(
         "recipient_address_contains",
         "recipient_address_regex",
     }:
-        needed = {MailRuleFact.TO_RECIPIENTS, MailRuleFact.CC_RECIPIENTS}
-        if not needed.issubset(facts.available_facts):
-            return _unknown(required=MailRuleRequiredData.METADATA)
-        source = facts.to_recipients + facts.cc_recipients
         mode = {
             "recipient_contains": "name_or_address_contains",
             "recipient_address_contains": "address_contains",
             "recipient_address_regex": "address_regex",
         }[field]
-        return _recipient_list_match(
-            None,
-            source,
-            cast(tuple[str, ...], configured),
-            mode,
-            facts,
-            engine,
+        values = cast(tuple[str, ...], configured)
+        return _or_results(
+            (
+                _recipient_list_match(
+                    MailRuleFact.TO_RECIPIENTS,
+                    facts.to_recipients,
+                    values,
+                    mode,
+                    facts,
+                    engine,
+                ),
+                _recipient_list_match(
+                    MailRuleFact.CC_RECIPIENTS,
+                    facts.cc_recipients,
+                    values,
+                    mode,
+                    facts,
+                    engine,
+                ),
+            )
         )
     return None
 
