@@ -38,6 +38,9 @@ def _runtime(root: Path, storage: Path) -> RuntimeIsolation:
             (
                 "import json,sys,sysconfig;"
                 "print(json.dumps({'prefix':sys.prefix,"
+                "'base_prefix':sys.base_prefix,"
+                "'base_exec_prefix':sys.base_exec_prefix,"
+                "'base_executable':getattr(sys,'_base_executable',sys.executable),"
                 "'purelib':sysconfig.get_path('purelib'),"
                 "'executable':sys.executable}))"
             ),
@@ -50,10 +53,22 @@ def _runtime(root: Path, storage: Path) -> RuntimeIsolation:
     values = json.loads(metadata.stdout)
     executable = Path(values["executable"])
     prefix = Path(values["prefix"])
+    base_prefix = Path(values["base_prefix"])
+    base_exec_prefix = Path(values["base_exec_prefix"])
+    base_executable_root = Path(values["base_executable"]).parents[1]
     site_packages = Path(values["purelib"])
     cli = site_packages / "claude_agent_sdk" / "_bundled" / "claude"
-    base = executable.resolve().parents[1]
-    roots = tuple(dict.fromkeys((prefix, base, Path("/lib"))))
+    roots = tuple(
+        dict.fromkeys(
+            (
+                prefix,
+                base_prefix,
+                base_exec_prefix,
+                base_executable_root,
+                Path("/lib"),
+            )
+        )
+    )
     return RuntimeIsolation(
         executable,
         Path("/usr/bin/bwrap"),
