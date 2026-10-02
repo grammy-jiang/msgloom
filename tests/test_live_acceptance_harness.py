@@ -193,3 +193,74 @@ def test_mail_rule_qualification_helper_allows_omitted_private_ids(
 
     if args.message_id is not None or args.event_message_id is not None:
         pytest.fail("Omitted private qualification IDs must remain optional")
+
+
+def _load_live_acceptance_module():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "microsoft_live_acceptance_for_test",
+        SCRIPT,
+    )
+    if spec is None or spec.loader is None:
+        pytest.fail("Could not load Microsoft live acceptance module")
+    module = importlib.util.module_from_spec(spec)
+    import sys
+
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_event_qualification_accepts_text_production_probe_with_separate_html_proof() -> (
+    None
+):
+    module = _load_live_acceptance_module()
+    checks = {
+        "event_target_selected": True,
+        "event_probe_scheduled_once": True,
+        "event_probe_complete": True,
+        "event_body_content_type_html": False,
+        "event_logical_body_available": True,
+        "event_html_request_once": True,
+        "event_html_response_html": True,
+        "event_html_projection_complete": True,
+    }
+
+    if not module._event_qualification_passes(checks):
+        pytest.fail(
+            "Event qualification must accept a production text response when a "
+            "separate no-preference GET proves the HTML projection path"
+        )
+
+
+def test_event_html_qualification_payload_requires_real_html_and_logical_projection() -> (
+    None
+):
+    import importlib.util
+
+    helper = ROOT / "scripts" / "microsoft-mail-rule-qualification.py"
+    spec = importlib.util.spec_from_file_location(
+        "mail_rule_html_qualification_helper", helper
+    )
+    if spec is None or spec.loader is None:
+        pytest.fail("Could not load Mail rule qualification helper")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    html, projected = module._event_html_projection(
+        {
+            "body": {
+                "contentType": "html",
+                "content": "<p>visible</p><table><tr><td>cell</td></tr></table>",
+            }
+        }
+    )
+    if html is not True or projected is not True:
+        pytest.fail("Qualification-only HTML payload did not prove logical projection")
+
+    text_html, text_projected = module._event_html_projection(
+        {"body": {"contentType": "text", "content": "visible"}}
+    )
+    if text_html is not False or text_projected is not False:
+        pytest.fail("Text response must not masquerade as the HTML fallback proof")

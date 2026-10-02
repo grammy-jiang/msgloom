@@ -228,6 +228,9 @@ def _read_safe_qualification_summary(path: Path) -> dict[str, bool | int | str]:
         "event_probe_complete",
         "event_body_content_type_html",
         "event_logical_body_available",
+        "event_html_request_once",
+        "event_html_response_html",
+        "event_html_projection_complete",
         "mail_scope_only",
         "raw_evidence_count",
         "run_failed",
@@ -274,8 +277,10 @@ def _event_qualification_passes(checks: dict[str, bool | int | str]) -> bool:
             "event_target_selected",
             "event_probe_scheduled_once",
             "event_probe_complete",
-            "event_body_content_type_html",
             "event_logical_body_available",
+            "event_html_request_once",
+            "event_html_response_html",
+            "event_html_projection_complete",
         )
     )
 

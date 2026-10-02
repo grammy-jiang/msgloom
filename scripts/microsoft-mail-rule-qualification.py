@@ -28,6 +28,13 @@ from message_ingest.acquisition.microsoft.outlook.email import (
     mail_rule_observation_from_item,
     parse_mail_rule_policy,
 )
+from message_ingest.acquisition.microsoft.outlook.email.rule_body import (
+    MailBodyUnavailable,
+    logical_mail_body,
+)
+from message_ingest.acquisition.microsoft.outlook.email.rule_probe import (
+    MAIL_RULE_PROBE_MAX_BYTES,
+)
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
@@ -171,6 +178,56 @@ class MailRuleQualificationSpider(OutlookDiscoverSpider):
                 )
             self.crawler.stats.inc_value("qualification/probe_request_count")
             yield self.mail_rule_probe_request(observation, _REQUIRED_DATA)
+            if "event" in kinds:
+                yield self._event_html_qualification_request(message_id)
+
+    def _event_html_qualification_request(self, message_id: str):
+        """Read one eventMessage without body-format preference for qualification."""
+
+        self.crawler.stats.inc_value("qualification/event_html_request_count")
+        return self.graph_request(
+            self.message_path(
+                message_id,
+                fields=("id", "changeKey", "body"),
+            ),
+            callback=self.parse_event_html_qualification,
+            errback=self.errback,
+            operation="mail-rule-event-html-qualification",
+            cb_kwargs={
+                "purpose": "mail-rule-event-html-qualification",
+                "message_id": message_id,
+            },
+            prefer=self.graph_prefer,
+            dont_cache=True,
+            download_maxsize=MAIL_RULE_PROBE_MAX_BYTES,
+        )
+
+    def parse_event_html_qualification(
+        self,
+        response: TextResponse,
+        *,
+        purpose: str,
+        message_id: str,
+    ):
+        """Prove documented HTML eventMessage representation separately."""
+
+        evidence = self._raw_http_evidence_item(response, purpose)
+        yield evidence
+        html = projected = False
+        try:
+            payload = response.json()
+            if isinstance(payload, dict) and payload.get("id") == message_id:
+                html, projected = _event_html_projection(payload)
+        except (TypeError, ValueError):
+            pass
+        self.crawler.stats.set_value(
+            "qualification/event_html_response_html",
+            html,
+        )
+        self.crawler.stats.set_value(
+            "qualification/event_html_projection_complete",
+            projected,
+        )
 
     def parse_mail_rule_probe(
         self,
@@ -282,6 +339,24 @@ def _body_content_type(response: TextResponse) -> str | None:
     return content_type.casefold() if isinstance(content_type, str) else None
 
 
+def _event_html_projection(payload: object) -> tuple[bool, bool]:
+    """Return whether a provider payload proves the HTML logical-body path."""
+
+    if not isinstance(payload, dict):
+        return False, False
+    body = payload.get("body")
+    if not isinstance(body, dict):
+        return False, False
+    content_type = body.get("contentType")
+    if not isinstance(content_type, str) or content_type.casefold() != "html":
+        return False, False
+    try:
+        logical_mail_body(body)
+    except MailBodyUnavailable:
+        return True, False
+    return True, True
+
+
 def _bounded_private_id(value: str) -> str:
     if not value or value != value.strip() or len(value) > 4096:
         raise argparse.ArgumentTypeError("private message ID is invalid")
@@ -366,6 +441,18 @@ def _summary(crawler, *, expected_scope: str) -> dict[str, bool | int | str]:
         ),
         "event_logical_body_available": bool(
             stats.get_value("qualification/event_body_available", False)
+        ),
+        "event_html_request_once": (
+            stats.get_value("qualification/event_html_request_count", 0) == 1
+        ),
+        "event_html_response_html": bool(
+            stats.get_value("qualification/event_html_response_html", False)
+        ),
+        "event_html_projection_complete": bool(
+            stats.get_value(
+                "qualification/event_html_projection_complete",
+                False,
+            )
         ),
         "mail_scope_only": scopes == (expected_scope,),
         "raw_evidence_count": int(

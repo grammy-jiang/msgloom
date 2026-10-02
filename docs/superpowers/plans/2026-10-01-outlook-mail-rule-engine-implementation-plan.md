@@ -1613,8 +1613,8 @@ Expected: PASS / zero static errors.
 - Add exact options:
   - `--mail-rule-qualification` enables the Mail RuleEngine qualification path and makes Calendar start/end unnecessary for this mode;
   - `--mail-rule-message-id MESSAGE_ID` optionally selects a private real normal-message target; otherwise the harness chooses one bounded discovered message without printing its ID;
-  - `--mail-rule-event-message-id MESSAGE_ID` optionally supplies a private real eventMessage target for the HTML-body proof.
-- The qualification path calls the same production composite-probe request builder/parser rather than hand-building a second Graph query implementation.
+  - `--mail-rule-event-message-id MESSAGE_ID` optionally supplies a private real eventMessage target for production BODY qualification and the HTML fallback proof.
+- The qualification path calls the same production composite-probe request builder/parser for the RuleEngine probe. For an event target it may additionally issue one qualification-only GET without the body-format preference to prove the HTML fallback; that read is counted separately and is not a second rule probe.
 - Do not print supplied/discovered message IDs, mailbox locator, addresses, subjects, body, headers, regex values, or private digest.
 - Acceptance summary records only booleans/counts/safe reason codes.
 
@@ -1624,8 +1624,9 @@ Expected: PASS / zero static errors.
 - one message GET can retrieve the supported combination of selected metadata/body/headers and all required single-value extended properties, or the implementation/spec is revised before proceeding;
 - extended property IDs parse as designed;
 - existing Mail read scopes are sufficient;
-- a real eventMessage body follows the implemented HTML logical-body path;
-- no second rule probe is required.
+- a real eventMessage succeeds through the production one-probe logical-BODY path even if Graph honors `Prefer: outlook.body-content-type="text"`;
+- a separate qualification-only GET without that body-format preference returns HTML and succeeds through the same logical BODY projector;
+- no second **rule probe** is required.
 
 - [ ] **Step 1: Extend dry-run tests first**
 
@@ -1637,7 +1638,7 @@ Assert `--mail-rule-qualification --dry-run` needs no Calendar window, plans onl
 
 - [ ] **Step 3: Implement bounded read-only qualification phase**
 
-Reuse existing auth/source isolation. Do not add write permissions or provider mutations.
+Reuse existing auth/source isolation. The qualification harness itself remains read-only and does not add Graph write permissions. If the development mailbox contains no eventMessage, a disposable meeting fixture may be created out-of-band with an already-consented development `Calendars.ReadWrite` token only after explicit user authorization; fixture IDs remain private and are never committed. Production RuleEngine scopes remain Mail read-only.
 
 - [ ] **Step 4: Run dry-run GREEN**
 
@@ -1659,7 +1660,7 @@ The run is successful only if the acceptance summary proves all required points 
 
 If the one-GET extended-property shape fails, **stop**: update the design/spec and supported predicate set/probe shape before continuing. Do not silently add a second probe.
 
-If no eventMessage exists in the bounded mailbox sample, record the qualification as incomplete rather than fabricating proof; use an explicitly supplied real eventMessage ID when available.
+If no eventMessage exists in the bounded mailbox sample, record the read-only qualification as incomplete unless an explicitly supplied real eventMessage ID is available. With explicit user authorization, development may create a disposable real meeting fixture out-of-band and rerun the read-only harness against the generated eventMessage; this does not change production permissions or one-probe semantics.
 
 - [ ] **Step 6: Commit Task 18 only after qualification evidence is captured**
 

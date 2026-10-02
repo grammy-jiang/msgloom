@@ -872,10 +872,17 @@ Body predicates operate on a deterministic *logical text body*:
   preserves preformatted whitespace;
 - malformed or unsupported body representations make the BODY fact unavailable.
 
-This HTML path is required because Microsoft Graph v1.0 currently returns
-`eventMessage` bodies only as HTML even when ordinary message GETs support the
-body-content preference. Rule semantics must not depend on beta-only behavior.
-Body rules never match raw HTML markup or raw MIME bytes.
+The HTML path remains a required provider fallback. Microsoft's public Graph
+v1.0 `eventMessage` GET documentation states that event-message bodies are
+returned only as HTML. Real-service qualification on 2026-10-02 additionally
+observed that Graph honored `Prefer: outlook.body-content-type="text"` for a
+real `eventMessageRequest` and returned a text body, while a separate
+qualification-only GET without the body-format preference returned HTML for the
+same provider object. Production rule semantics therefore accept either
+provider representation and normalize both through the deterministic logical
+BODY contract; they do not assume the documentation/runtime discrepancy will
+remain stable. Rule semantics must not depend on beta-only behavior. Body rules
+never match raw HTML markup or raw MIME bytes.
 The policy projection must include text inside ordinary HTML tables because
 Outlook messages frequently use tables for layout. It must not directly reuse
 the preparation helper that intentionally omits table contents for document
@@ -927,8 +934,8 @@ The provider-fact parser is strict and deterministic:
   response order.
 
 The exact single-request `$expand` ability for the needed combination remains a
-real-service qualification gate in section 5.
- The supported V1 predicate set must remain within the Mail read permissions
+real-service qualification gate in section 5. The supported V1 predicate set
+must remain within the Mail read permissions
 already declared by the existing Mail spiders (`Mail.Read` for the signed-in
 mailbox and `Mail.Read.Shared` where the current shared-mailbox path uses it).
 This phase does not add `User.Read`, directory/profile, mailbox-settings, or
@@ -1348,11 +1355,14 @@ the normal Full profile may subsequently use its own existing content budget.
 The rule engine never scans an unbounded provider body.
 
 Real Microsoft Graph tests must verify that the chosen `$select` / `$expand`
-shape can retrieve the required supported facts in one request. Current Graph
-v1.0 documentation explicitly documents expanding a *specific*
-`singleValueLegacyExtendedProperty`; it does not by itself prove that one
-filtered expansion can return every extended property needed by this ruleset.
-This is therefore a qualification gate, not an assumed provider capability.
+shape can retrieve the required supported facts in one request. Microsoft names
+the resource type `singleValueLegacyExtendedProperty`, while the message
+navigation property used by Graph v1.0 is `singleValueExtendedProperties`.
+Documentation for a specific property does not by itself prove that one filtered
+expansion can return every extended property needed by this ruleset. Real-service
+qualification on 2026-10-02 proved the required multi-property combination and
+also showed that provider responses canonicalize proptag IDs by dropping leading
+zeroes; the parser therefore compares canonical property type + numeric tag.
 
 If the real Graph service cannot return the required V1 fact combination in one
 message GET, implementation must stop and revise the supported predicate set or
@@ -2246,8 +2256,13 @@ the selected Mail metadata supplies a stable version token to rule observations.
 
 The message-class extended property and the special-message mappings above must
 be validated against documented source facts, not fixture-only assumptions.
-Qualification must include a real `eventMessage` body case so the
-HTML-to-logical-text path is proven against Graph v1.0 behavior.
+Qualification must include a real `eventMessage` body case. The production
+composite rule probe must still use exactly one probe request for that target and
+produce a logical BODY regardless of whether Graph honors the text-body
+preference. A separate qualification-only, no-body-format-preference GET may be
+used to prove that the same real event message can arrive as HTML and that the
+HTML-to-logical-text fallback succeeds. That qualification-only read is not a
+second RuleEngine probe and is never part of production acquisition.
 
 Dependency qualification must also exercise the pinned `google-re2` build on
 the repository's supported Python 3.12/3.13/3.14 environments; the development
@@ -2397,7 +2412,8 @@ The phase is complete only when all of the following hold:
     use the complete deterministic logical body unless subject truth alone
     resolves a body-or-subject predicate;
 17. text and HTML Graph bodies map to the documented deterministic logical-text
-    body, including real Graph v1.0 `eventMessage` HTML behavior;
+    body, including real Graph v1.0 `eventMessage` text-preference behavior and
+    the separately qualified HTML fallback;
 18. missing initial `changeKey` when a probe is required, missing/malformed
     probe `changeKey`, or a `changeKey` mismatch becomes `UNRESOLVED` with Full
     fallback;
@@ -2445,8 +2461,9 @@ The phase is complete only when all of the following hold:
 38. the pinned `google-re2` dependency is qualified on supported Python
     3.12/3.13/3.14 environments including Linux/aarch64;
 39. real Microsoft Graph qualification proves the actual one-request composite
-    probe shape and the supported extended-property/special-message facts,
-    including an event-message body case;
+    rule-probe shape and the supported extended-property/special-message facts,
+    including a real event-message production probe plus a qualification-only
+    HTML fallback proof;
 40. focused, regression, lint, type-check, native Scrapy lifecycle, JOBDIR,
     privacy, atomicity, and real-Graph qualification tests pass on the project's
     supported runtime.
