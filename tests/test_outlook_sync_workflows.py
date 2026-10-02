@@ -222,3 +222,356 @@ def test_multi_phase_sync_rejects_shared_jobdir(tmp_path: Path) -> None:
             _opts(),
             mail_rule_policy=parse_mail_rule_policy(None),
         )
+
+
+class _Stats:
+    def __init__(self, values: dict[str, object] | None = None) -> None:
+        self.values = dict(values or {})
+
+    def get_value(self, key: str, default=None):
+        return self.values.get(key, default)
+
+    def set_value(self, key: str, value: object) -> None:
+        self.values[key] = value
+
+
+def _enabled_mail_policy():
+    return parse_mail_rule_policy(
+        {
+            "enabled": True,
+            "default_profile": "discovery",
+            "rules": [
+                {
+                    "id": "important",
+                    "sequence": 10,
+                    "profile": "full",
+                    "conditions": {"subject_contains": ["important"]},
+                }
+            ],
+        }
+    )
+
+
+def _validated_delta(run_id: str = "delta-run"):
+    from message_ingest.sync.microsoft.outlook.email.promotion import (
+        ValidatedMailDeltaRun,
+    )
+
+    return ValidatedMailDeltaRun(
+        run_id=run_id,
+        expected_folder_ids=frozenset({"folder-inbox"}),
+        reconcile_messages=False,
+        candidate_folder_ids=frozenset({"folder-inbox"}),
+    )
+
+
+def _capture_enabled_mail_workflow(
+    tmp_path: Path,
+    monkeypatch,
+    *,
+    profiles: tuple[tuple[str, str], ...],
+):
+    from message_ingest.acquisition.microsoft.outlook.email.profile import (
+        DISCOVERY_V1,
+        FULL_V1,
+    )
+
+    del DISCOVERY_V1, FULL_V1
+    command = _command(tmp_path)
+    captured: dict[str, object] = {}
+
+    def capture(_command, phases, *, on_success=None):
+        captured["phases"] = tuple(phases)
+        captured["on_success"] = on_success
+        return ()
+
+    monkeypatch.setattr(sync_module, "run_graph_workflow", capture)
+    catalog = Catalog(command.settings["MSGLOOM_DATABASE_URL"])
+    try:
+        store = OutlookMailStore(catalog, source_id="source-1")
+        for index, (message_id, _profile) in enumerate(profiles):
+            store.record_message(
+                run_id="delta-run",
+                message={
+                    "id": message_id,
+                    "changeKey": f"v-{index}",
+                    "lastModifiedDateTime": NOW,
+                },
+                kind="delta",
+                evidence_id=None,
+                observed_at=NOW,
+            )
+    finally:
+        catalog.close()
+
+    policy = _enabled_mail_policy()
+    sync_module.run_mail_sync(
+        command,
+        _opts(page_size=50, reconcile=False),
+        mail_rule_policy=policy,
+    )
+    phases = captured["phases"]
+    assert isinstance(phases, tuple)
+    delta = phases[1]
+    validated = _validated_delta()
+    delta_crawler = SimpleNamespace(
+        spider=SimpleNamespace(
+            run_id="delta-run",
+            mail_rule_profiles=profiles,
+            validated_delta_run=validated,
+        ),
+        stats=_Stats(),
+    )
+    follow = tuple(delta.after(delta_crawler))
+    return command, captured, phases, delta_crawler, validated, follow
+
+
+def test_rules_enabled_mail_sync_uses_runtime_full_targets_and_skips_legacy_backlog(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.profile import (
+        DISCOVERY_V1,
+        FULL_V1,
+    )
+    from message_ingest.spiders.microsoft.outlook.email._delta_state import (
+        MailDeltaCommitMode,
+    )
+
+    command = _command(tmp_path)
+    catalog = Catalog(command.settings["MSGLOOM_DATABASE_URL"])
+    try:
+        store = OutlookMailStore(catalog, source_id="source-1")
+        store.record_message(
+            run_id="old-run",
+            message={"id": "historical-backlog", "lastModifiedDateTime": NOW},
+            kind="delta",
+            evidence_id=None,
+            observed_at=NOW,
+        )
+    finally:
+        catalog.close()
+
+    command, captured, phases, _delta_crawler, _validated, follow = (
+        _capture_enabled_mail_workflow(
+            tmp_path,
+            monkeypatch,
+            profiles=(
+                ("selected-full", FULL_V1),
+                ("selected-discovery", DISCOVERY_V1),
+            ),
+        )
+    )
+
+    if [phase.spider_name for phase in phases] != [
+        "outlook_folder_delta",
+        "outlook_delta",
+    ]:
+        pytest.fail(f"Rules-enabled collection phases changed: {phases!r}")
+    delta = phases[1]
+    if (
+        delta.spider_args.get("_mail_delta_commit_mode")
+        is not MailDeltaCommitMode.DEFERRED
+    ):
+        pytest.fail("Rules-enabled Mail delta did not use private deferred commit mode")
+    if delta.spider_args.get("_mail_rule_policy") != _enabled_mail_policy():
+        pytest.fail("Rules-enabled Mail delta lost the frozen policy")
+    if len(follow) != 1:
+        pytest.fail(
+            f"Rules-enabled Mail sync planned wrong Full phase count: {follow!r}"
+        )
+    full = follow[0]
+    if full.spider_name != "outlook_full":
+        pytest.fail("Rules-enabled Mail sync did not plan Outlook Full")
+    if full.spider_args.get("message_ids") != "selected-full":
+        pytest.fail(f"Rule-selected Full targets changed: {full.spider_args!r}")
+    if full.spider_args.get("operation") != "refresh":
+        pytest.fail("Rule-selected target must use refresh semantics")
+    if full.spider_args.get("_authoritative_rule_refresh") is not True:
+        pytest.fail("Rule-selected Full target was not authoritative/no-cache")
+    if full.completion_validator is None:
+        pytest.fail("Rule-selected Full phase lost its current-attempt completion gate")
+    if "historical-backlog" in str(full.spider_args):
+        pytest.fail("Legacy incomplete-Full backlog bypassed active Mail rules")
+    if captured.get("on_success") is None:
+        pytest.fail("Rules-enabled workflow did not install the atomic finalizer")
+    if command.exitcode:
+        pytest.fail("Planning a valid rules-enabled workflow changed exitcode")
+
+
+def test_rules_enabled_delta_refuses_unprofiled_current_observation(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.profile import DISCOVERY_V1
+
+    command = _command(tmp_path)
+    captured: dict[str, object] = {}
+
+    def capture(_command, phases, *, on_success=None):
+        captured["phases"] = tuple(phases)
+        captured["on_success"] = on_success
+        return ()
+
+    monkeypatch.setattr(sync_module, "run_graph_workflow", capture)
+    policy = _enabled_mail_policy()
+    sync_module.run_mail_sync(
+        command,
+        _opts(page_size=50, reconcile=False),
+        mail_rule_policy=policy,
+    )
+    phases = captured["phases"]
+    assert isinstance(phases, tuple)
+    delta = phases[1]
+
+    catalog = Catalog(command.settings["MSGLOOM_DATABASE_URL"])
+    try:
+        OutlookMailStore(catalog, source_id="source-1").record_message(
+            run_id="delta-run",
+            message={
+                "id": "observed-but-unprofiled",
+                "changeKey": "v1",
+                "lastModifiedDateTime": NOW,
+            },
+            kind="delta",
+            evidence_id=None,
+            observed_at=NOW,
+        )
+    finally:
+        catalog.close()
+
+    crawler = SimpleNamespace(
+        spider=SimpleNamespace(
+            run_id="delta-run",
+            mail_rule_profiles=(("different-message", DISCOVERY_V1),),
+            validated_delta_run=_validated_delta(),
+        ),
+        stats=_Stats(),
+    )
+    with pytest.raises(RuntimeError, match="do not cover current observations"):
+        tuple(delta.after(crawler))
+
+
+def test_rules_enabled_zero_full_targets_skips_full_phase_but_keeps_finalizer(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.profile import DISCOVERY_V1
+
+    _command_obj, captured, _phases, _delta, _validated, follow = (
+        _capture_enabled_mail_workflow(
+            tmp_path,
+            monkeypatch,
+            profiles=(("discovery-only-message", DISCOVERY_V1),),
+        )
+    )
+
+    if follow:
+        pytest.fail("Discovery-only rules unexpectedly scheduled a Full crawler")
+    if captured.get("on_success") is None:
+        pytest.fail("Zero-Full rules workflow lost its checkpoint finalizer")
+
+
+@pytest.mark.parametrize(
+    ("completion", "reason_codes", "expected"),
+    (
+        (
+            (
+                "terminal_complete_with_limitations",
+                True,
+                {"request_failure:message-detail"},
+            ),
+            ["request_failure:message-detail"],
+            True,
+        ),
+        (
+            (
+                "terminal_complete_with_limitations",
+                True,
+                {"request_failure:message-detail"},
+            ),
+            ["request_failure:message-detail", "item_error"],
+            False,
+        ),
+        (
+            ("incomplete", False, set()),
+            [],
+            False,
+        ),
+    ),
+)
+def test_rule_full_phase_gate_requires_current_completion_and_only_waivable_failures(
+    tmp_path: Path,
+    monkeypatch,
+    completion,
+    reason_codes: list[str],
+    expected: bool,
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.full_completion import (
+        MailFullCompletionResult,
+    )
+    from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
+
+    reason, complete, waivable = completion
+    result = MailFullCompletionResult(
+        complete=complete,
+        with_limitations=reason == "terminal_complete_with_limitations",
+        reason_code=reason,
+        waivable_failure_reasons=frozenset(waivable),
+    )
+    monkeypatch.setattr(sync_module, "verify_current_full_v1", lambda *a, **k: result)
+
+    _command_obj, _captured, _phases, _delta, _validated, follow = (
+        _capture_enabled_mail_workflow(
+            tmp_path,
+            monkeypatch,
+            profiles=(("selected-full", FULL_V1),),
+        )
+    )
+    full = follow[0]
+    stats = _Stats({"msgloom/final/reason_codes": reason_codes})
+    crawler = SimpleNamespace(
+        spider=SimpleNamespace(
+            run_id="full-run",
+            failure_reasons=frozenset(reason_codes),
+        ),
+        stats=stats,
+    )
+
+    actual = full.completion_validator(crawler)
+
+    if actual is not expected:
+        pytest.fail(
+            f"Rules Full completion gate returned {actual!r}, expected {expected!r}"
+        )
+    if stats.get_value("msgloom/mail_rules/full_completion") != reason:
+        pytest.fail("Full completion gate did not publish its bounded result stat")
+
+
+def test_rules_enabled_success_finalizer_promotes_exact_validated_delta_run_once(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from message_ingest.acquisition.microsoft.outlook.email.profile import DISCOVERY_V1
+
+    calls: list[tuple[str, object]] = []
+
+    def promote(catalog, *, source_id: str, validated):
+        del catalog
+        calls.append((source_id, validated))
+        return {"committed_folders": 1}
+
+    monkeypatch.setattr(sync_module, "promote_validated_mail_delta", promote)
+    _command_obj, captured, _phases, delta_crawler, validated, follow = (
+        _capture_enabled_mail_workflow(
+            tmp_path,
+            monkeypatch,
+            profiles=(("discovery-only-message", DISCOVERY_V1),),
+        )
+    )
+    if follow:
+        pytest.fail("Zero-Full fixture unexpectedly planned Full work")
+    finalizer = captured.get("on_success")
+    if not callable(finalizer):
+        pytest.fail("Rules-enabled workflow lost success finalizer")
+
+    finalizer((SimpleNamespace(spider=SimpleNamespace()), delta_crawler))
+
+    if calls != [("source-1", validated)]:
+        pytest.fail("Finalizer did not promote the exact validated delta run once")

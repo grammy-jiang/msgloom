@@ -372,19 +372,29 @@ def test_enabled_mail_sync_rejects_explicit_max_enrich_before_crawl(
         pytest.fail("Enabled-policy sync with max-enrich started a crawl")
 
 
-def test_enabled_mail_sync_is_temporarily_fail_closed_until_rule_planner(
+def test_enabled_mail_sync_dispatches_rules_aware_planner(
     tmp_path: Path,
+    monkeypatch,
 ) -> None:
     config = _mail_config(tmp_path, enabled=True)
     command = MicrosoftCommand()
     process = FakeCrawlerProcess()
     command.crawler_process = cast(CrawlerProcessBase, process)
+    captured: list[object] = []
 
-    with pytest.raises(UsageError, match="rules_enabled_sync_not_implemented"):
-        command.run([], _opts(action="sync", config=config))
+    import message_ingest.commands.microsoft.outlook.mail as mail_command
 
+    def fake_sync(_command, _opts, *, mail_rule_policy) -> None:
+        captured.append(mail_rule_policy)
+
+    monkeypatch.setattr(mail_command, "run_mail_sync", fake_sync)
+
+    command.run([], _opts(action="sync", config=config))
+
+    if len(captured) != 1 or getattr(captured[0], "enabled", False) is not True:
+        pytest.fail("Enabled Mail sync did not reach the rules-aware planner")
     if process.calls or process.started:
-        pytest.fail("Temporary enabled-policy sync gate started a legacy workflow")
+        pytest.fail("Rules-aware planner dispatch unexpectedly started a direct crawl")
 
 
 @pytest.mark.parametrize(

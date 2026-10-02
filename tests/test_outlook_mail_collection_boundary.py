@@ -1,14 +1,19 @@
 """Keep Mail acquisition-policy ownership on collection spiders only."""
 
 import pytest
+from scrapy.crawler import Crawler
 from scrapy.exceptions import NotConfigured
 from scrapy.settings import Settings
+from scrapy.utils.project import get_project_settings
 from scrapy.utils.test import get_crawler
 
 from message_ingest import settings as project_settings
 from message_ingest.acquisition.microsoft.outlook.email import (
     MAIL_RULE_POLICY_FAMILY,
     mail_rule_observation_from_item,
+)
+from message_ingest.acquisition.microsoft.outlook.email.policy_context import (
+    OutlookMailPolicyContextExtension,
 )
 from message_ingest.acquisition.microsoft.outlook.email.rule_config import (
     effective_mail_policy_digest,
@@ -231,3 +236,32 @@ subject_contains = ["approval"]
 
     if not isinstance(spider.mail_rule_evaluator, DeterministicMailRuleEvaluator):
         pytest.fail("Direct crawl did not resolve the XDG Mail policy")
+
+
+def test_rule_components_survive_scrapy_existing_crawler_runner_settings_merge() -> (
+    None
+):
+    """Spider-priority components must survive Scrapy 2.19's Crawler re-merge."""
+    settings = get_project_settings()
+    crawler = Crawler(OutlookDeltaSpider, settings)
+
+    before_middlewares = crawler.settings.getdict("SPIDER_MIDDLEWARES")
+    before_extensions = crawler.settings.getdict("EXTENSIONS")
+    if before_middlewares.get(OutlookMailAcquisitionRuleMiddleware) != (
+        OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY
+    ):
+        pytest.fail("Mail rule middleware missing before runner settings merge")
+    if before_extensions.get(OutlookMailPolicyContextExtension) != 60:
+        pytest.fail("Mail policy extension missing before runner settings merge")
+
+    # Scrapy 2.19 create_crawler(existing_crawler) applies runner settings again.
+    crawler.settings.update(settings)
+
+    after_middlewares = crawler.settings.getdict("SPIDER_MIDDLEWARES")
+    after_extensions = crawler.settings.getdict("EXTENSIONS")
+    if after_middlewares.get(OutlookMailAcquisitionRuleMiddleware) != (
+        OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY
+    ):
+        pytest.fail("Runner settings merge erased Spider Mail rule middleware")
+    if after_extensions.get(OutlookMailPolicyContextExtension) != 60:
+        pytest.fail("Runner settings merge erased Spider Mail policy extension")

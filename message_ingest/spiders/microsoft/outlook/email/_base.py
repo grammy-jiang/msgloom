@@ -101,10 +101,20 @@ class OutlookMailCollectionSpider(OutlookMailSpider, ABC):
             OutlookMailPolicyContextExtension,
             60,
         )
+        settings.set(
+            "EXTENSIONS",
+            settings.getdict("EXTENSIONS"),
+            priority="spider",
+        )
         settings.setdefault_in_component_priority_dict(
             "SPIDER_MIDDLEWARES",
             OutlookMailAcquisitionRuleMiddleware,
             OUTLOOK_MAIL_RULE_MIDDLEWARE_PRIORITY,
+        )
+        settings.set(
+            "SPIDER_MIDDLEWARES",
+            settings.getdict("SPIDER_MIDDLEWARES"),
+            priority="spider",
         )
 
     def build_mail_rule_evaluator(
