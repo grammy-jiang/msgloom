@@ -252,3 +252,45 @@ def test_mail_raw_requests_use_configured_native_scrapy_maxsize() -> None:
     ):
         if request.meta.get("download_maxsize") != 4096:
             pytest.fail("Expected configured Scrapy download_maxsize on raw content")
+
+
+def test_rule_authoritative_refresh_disables_cache_for_every_full_request() -> None:
+    spider = _spider(
+        message_ids="immutable-message-002",
+        operation="refresh",
+        _authoritative_rule_refresh=True,
+    )
+
+    base = asyncio.run(_collect_start(spider))
+    if not base or not all(request.meta.get("dont_cache") is True for request in base):
+        pytest.fail("Authoritative Full base requests did not bypass HTTP cache")
+
+    attachments = spider._attachments_request(
+        "immutable-message-002",
+        page_number=2,
+        url="https://graph.example.test/next",
+        verbatim_url=True,
+    )
+    raw = spider._attachment_raw_request("immutable-message-002", "a1")
+    item = spider._item_attachment_detail_request("immutable-message-002", "a1")
+    for request in (attachments, raw, item):
+        if request.meta.get("dont_cache") is not True:
+            pytest.fail("Authoritative Full child request did not bypass HTTP cache")
+
+
+def test_explicit_full_refresh_preserves_existing_cache_behavior() -> None:
+    spider = _spider(message_ids="immutable-message-002", operation="refresh")
+
+    requests = asyncio.run(_collect_start(spider))
+
+    if any(request.meta.get("dont_cache") is True for request in requests):
+        pytest.fail("Ordinary operator Full unexpectedly became authoritative no-cache")
+
+
+def test_authoritative_rule_refresh_rejects_enrich_operation() -> None:
+    with pytest.raises(ValueError, match="authoritative rule refresh requires refresh"):
+        _spider(
+            message_ids="immutable-message-002",
+            operation="enrich",
+            _authoritative_rule_refresh=True,
+        )

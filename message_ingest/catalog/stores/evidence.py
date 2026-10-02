@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from itertools import batched
+
 from sqlalchemy import select
 
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
+
+_PROVENANCE_QUERY_CHUNK = 500
 
 
 class RawEvidenceStore:
@@ -46,6 +51,22 @@ class RawEvidenceStore:
             if row is None:
                 return None
             return row.evidence_id, row.observed_at
+
+    def run_ids_for(self, evidence_ids: Iterable[str]) -> dict[str, str | None]:
+        """Return run provenance for a bounded set of committed evidence IDs."""
+        normalized = tuple(dict.fromkeys(evidence_ids))
+        if not normalized:
+            return {}
+        result: dict[str, str | None] = {}
+        with self.catalog.Session() as session:
+            for chunk in batched(normalized, _PROVENANCE_QUERY_CHUNK):
+                rows = session.execute(
+                    select(RawHttpEvidence.evidence_id, RawHttpEvidence.run_id).where(
+                        RawHttpEvidence.evidence_id.in_(chunk)
+                    )
+                ).all()
+                result.update({evidence_id: run_id for evidence_id, run_id in rows})
+        return result
 
     def contains(self, evidence_id: str) -> bool:
         """Return whether *evidence_id* references a committed capture."""

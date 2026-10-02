@@ -37,6 +37,8 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
     for Full-v1; they must not vanish from completeness tracking.
     """
 
+    _authoritative_rule_refresh = False
+
     @abstractmethod
     def parse_raw_evidence(
         self,
@@ -204,6 +206,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             },
             verbatim_url=verbatim_url,
             download_maxsize=self._max_raw_content_bytes(),
+            dont_cache=self._authoritative_rule_refresh,
         )
 
     def _attachment_raw_request(
@@ -226,6 +229,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             },
             accept="*/*",
             download_maxsize=self._max_raw_content_bytes(),
+            dont_cache=self._authoritative_rule_refresh,
         )
 
     def _item_attachment_detail_request(
@@ -246,4 +250,5 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                 "attachment_id": attachment_id,
             },
             download_maxsize=self._max_raw_content_bytes(),
+            dont_cache=self._authoritative_rule_refresh,
         )

@@ -38,6 +38,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         message_ids: str = "",
         operation: str = "refresh",
         profile: str = FULL_V1,
+        _authoritative_rule_refresh: bool = False,
         **kwargs,
     ) -> None:
         """
@@ -55,6 +56,11 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         self.operation = operation.strip().lower()
         if self.operation not in {"enrich", "refresh"}:
             raise ValueError("operation must be 'enrich' or 'refresh'")
+        if not isinstance(_authoritative_rule_refresh, bool):
+            raise TypeError("_authoritative_rule_refresh must be bool")
+        if _authoritative_rule_refresh and self.operation != "refresh":
+            raise ValueError("authoritative rule refresh requires refresh operation")
+        self._authoritative_rule_refresh = _authoritative_rule_refresh
         self.profile = profile.strip()
         if self.profile != FULL_V1:
             raise ValueError(f"unsupported profile: {self.profile!r}")
@@ -323,6 +329,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             callback=self.parse_message_detail,
             purpose="message-detail",
             cb_kwargs={"message_id": message_id},
+            dont_cache=self._authoritative_rule_refresh,
         )
 
     def _message_mime_request(self, message_id: str) -> scrapy.Request:
@@ -337,4 +344,5 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             cb_kwargs={"message_id": message_id},
             accept="message/rfc822, */*",
             download_maxsize=self._max_raw_content_bytes(),
+            dont_cache=self._authoritative_rule_refresh,
         )
