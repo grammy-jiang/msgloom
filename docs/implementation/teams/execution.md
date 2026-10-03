@@ -179,8 +179,19 @@ coordinator diff review and test verification before integration.
 
 The message-primitives writer posted in
 [its assigned Chat conversation](https://chatgpt.com/c/6ac13a29-2aa0-83ec-80b7-68e369f7650b)
-and has started edits in its isolated worktree. No worker commit has been
-accepted into the integration branch yet. The channel send failed before its
+and returned commit `42481cdd2525e621476eff5269d750dcb10aadf5`. The coordinator
+verified its exact P0 parent, six owned paths, finished transcript pin, and
+actual source. All 48 focused tests passed in 2.03 seconds. Ruff check, Ruff
+format, and Pyright passed. The files remain below 500 lines, contain no Python
+assert statements, and preserve the provider package boundary. The commit was
+integrated as `8880d3a8b6e2df11bbe06929a23d918642aa2a3c`.
+
+The common model preserves scoped chat/root/reply identities, raw nested
+message fields, version facts, attachment metadata, and hosted-content
+metadata. It neither fetches reference URLs nor claims historical hosted bytes.
+This qualifies the message lane only; the core provider freeze remains pending.
+
+The channel send failed before its
 composer appeared. A read-only Project inventory contained exactly the six
 known P0 conversations and the message writer, so neither topology lane had
 posted at that check.
@@ -191,10 +202,18 @@ probe recovered from an authentication read with no HTTP response and then
 passed authentication, account, history-list, and usage reads in about 193
 seconds. The dispatcher now allows 360 seconds for this bounded probe. Four
 local checks passed for prior-attempt refusal, failed-probe refusal, single-send
-handling, and refusal to retry an unqualified composer. One chat-topology retry
-has passed its probe and is queued under the normal browser controls. One
-channel retry is queued only after a read-only composer check succeeds. The
-memory floor and cooldown remain unchanged.
+handling, and refusal to retry an unqualified composer. The chat-topology retry
+posted in [its assigned conversation](https://chatgpt.com/c/6ac13fd6-c774-83ec-b3ef-bc7c7e93da54).
+Its bounded collector remains active.
+
+The first channel diagnostic exhausted its 900-second capacity wait before
+opening a browser because available memory remained below the 4,000 MB floor.
+It did not qualify the composer. The diagnostic now records startup failures
+as structured results. One bounded external recovery runs another read-only
+composer check and permits one channel retry only if that check passes. Five
+qualification checks passed. Existing no-post evidence, lane locks, native
+account probing, exact base, model/effort pins, memory floor, and cooldown
+remain required. Unrelated browser tabs remain untouched.
 
 The coordinator prepared disjoint composition contracts for the next dependency
 edge. These are drafts, not dispatched implementation. Saved-source handoff
@@ -232,7 +251,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message writer active; topology recovery queued; no integrated lane yet |
+| P1 core provider implementation | Message lane integrated and verified; chat worker active; channel recovery queued |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |

@@ -1,6 +1,6 @@
 # P0 framework extension map
 
-**Status:** accepted with the coordinator correction below; closure pending.
+**Status:** accepted with the coordinator correction below; P0 closure PASS.
 **Input commit:** `7b9a7572b935f0e6ce6a96057b55951190afc8bf`.
 **Task:** `MSGLOOM_TEAMS_A1_P0_A_RECOVERY_20261003_R2`.
 
