@@ -137,9 +137,18 @@ map corrects one ambiguous suggestion: Outlook attachment helpers do not define
 Teams attachment traversal. Teams uses embedded attachment metadata and its own
 hosted-content paths. No new transport or generic framework primitive is needed.
 
+All A-D deliverables are now accepted for closure input. The corrected A map was
+committed at `5bc0bba48e51f3e2fb8a1fcba5a25b1e81b0b1e4`. A fresh baseline run
+passed all **298 tests in 35.67 seconds**. Changed-file pre-commit checks passed.
+The exact closure archive contains 141 committed files and a verified SHA-256
+inventory. One bounded external driver owns the same-conversation P0-E closure
+send and result collection. It preserves the sender's browser/cooldown controls
+and pins `gpt-5-6-thinking` / `max`. A driver start is not a confirmed post or an
+accepted closure verdict; the durable send and result records distinguish them.
+
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
-Dispatch remains gated on accepted P0-A, exact P0-E closure, and a committed
+Dispatch remains gated on exact P0-E closure and a committed
 P0 freeze. A prepared external closure collector rejects stale task IDs,
 candidate mismatches, unfinished replies, wrong model/effort, missing review
 cells, unverified hashes, and unresolved material findings in a PASS result.
