@@ -275,6 +275,38 @@ Worker prompts, replies, hash/pin evidence, process records, and command logs
 remain in the ignored `.superpowers/teams-a1/` directory. Later implementation
 closure reviews remain pending; P0 PASS is not an implementation claim.
 
+## Current channel integration and budget interruption
+
+The channel worker returned `fe1611adfc9aaa9c19e1c564c0ecf80d596680a6`.
+The coordinator verified its exact P0 parent, six owned paths, and finished
+`gpt-5-6-thinking` / `max` transcript. All 25 focused tests passed. Review
+found that a malformed resource-link authority raised `ValueError` instead
+of remaining unresolved. A regression reproduced the failure. The correction
+passed the same 25 tests, Ruff check/format, Pyright, and pre-commit.
+The worker and correction are integrated as `d6cb3fe` and
+`ff4cf7353842a3cfac7aaed897052bdb6fe2dedc`. The integrated Teams/Graph
+regression selection passed **421 tests in 29.98 seconds**. Channel composition
+has an isolated worktree and a frozen two-file ownership contract at that exact
+base. Both composition lanes are queued in the existing bounded ChatGPT
+dispatcher. Each must pass its native account probe before sending. The failed
+chat-composition attempt was confirmed to have no attempted/send record before
+retry; its failure evidence was archived. No worker completion is implied.
+
+New unattended Codex coordinators have been refused by the machine-wide
+usage guard since `2026-10-03T18:38:05Z`. This is a local configured budget
+rule. No provider rate-limit or account-credit conclusion follows from it.
+The supervisor and 15-minute timer continued running, but that did not mean
+implementation was progressing. The initial watchdog failed to expose this
+distinction. It now reports actual coordinator/worker activity, budget refusal,
+and inactivity separately; all 16 watchdog tests and static checks passed.
+The guard and its thresholds remain unchanged.
+
+After the user challenged the interruption, the existing interactive session
+performed the bounded channel integration above without launching a new Codex
+coordinator. Budget refusal still prevents future unattended coordinator
+rotations until the guard permits them. Pending worker outputs and all remaining
+implementation/review gates are retained; the program is not complete.
+
 ## Coordinator continuity
 
 The initial externally configured coordinator reported `gpt-6-astra` with
@@ -300,7 +332,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message and chat topology integrated; composition/channel recovery scheduled |
+| P1 core provider implementation | Message/chat/channel topology integrated; both compositions pending |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
