@@ -140,7 +140,13 @@ class EffectiveStateKey:
 
 @dataclass(frozen=True)
 class FactSpec:
-    """An immutable acquisition fact with current logical-run provenance."""
+    """
+    An immutable acquisition fact with current logical-run provenance.
+
+    The store derives ``revalidated_fact_id`` for equivalent observations. It
+    pins their write-time effective fact and is excluded from retry identity.
+    Missing pins in older equivalent facts fail closed at release time.
+    """
 
     source_id: str
     stream: AcquisitionStream
@@ -162,6 +168,7 @@ class FactSpec:
     authority_revision: str | None = None
     provider_order: int | None = None
     transition_reason: str | None = None
+    revalidated_fact_id: str | None = None
 
     def __post_init__(self) -> None:
         AcquisitionStream(self.stream)
@@ -198,25 +205,26 @@ class FactSpec:
 
     @property
     def fact_id(self) -> str:
-        return source_state_key(asdict(self))
+        material = asdict(self)
+        # Preserve digests of immutable facts created before recovery pins.
+        if self.revalidated_fact_id is None:
+            material.pop("revalidated_fact_id")
+        return source_state_key(material)
 
     @property
     def staging_key(self) -> str:
         """Identify retry before derived advanced/equivalent classification."""
-        return source_state_key(
-            asdict(
-                replace(
-                    self,
-                    storage_relation=(
-                        StorageRelation.AUTHORITY_STAGED
-                        if self.storage_relation == StorageRelation.AUTHORITY_STAGED
-                        else StorageRelation.STALE
-                        if self.storage_relation == StorageRelation.STALE
-                        else StorageRelation.ADVANCED
-                    ),
-                )
-            )
-        )
+        return replace(
+            self,
+            revalidated_fact_id=None,
+            storage_relation=(
+                StorageRelation.AUTHORITY_STAGED
+                if self.storage_relation == StorageRelation.AUTHORITY_STAGED
+                else StorageRelation.STALE
+                if self.storage_relation == StorageRelation.STALE
+                else StorageRelation.ADVANCED
+            ),
+        ).fact_id
 
     @classmethod
     def from_json(cls, value: str) -> FactSpec:

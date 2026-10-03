@@ -158,18 +158,25 @@ class AcquisitionHandoffStore:
 
         Pass ``current_equivalent`` for pre-ledger unchanged domain rows. Without
         a prior advanced fact they cannot create future-only bootstrap work.
+        Equivalent observations pin the exact effective fact they revalidate.
+        A later return to the same semantic state cannot replace that proof.
         """
         if spec.storage_relation == StorageRelation.AUTHORITY_STAGED:
             raise ValueError("Use authority staging for pending provider authority")
         if existing := self._existing_fact(writer, spec):
             return existing
+        spec = replace(spec, revalidated_fact_id=None)
         current = self.current_effective_state(writer, spec.effective_key)
         if (
             spec.storage_relation != StorageRelation.STALE
             and current is not None
             and spec.source_state_key == current["source_state_key"]
         ):
-            spec = replace(spec, storage_relation=StorageRelation.CURRENT_EQUIVALENT)
+            spec = replace(
+                spec,
+                storage_relation=StorageRelation.CURRENT_EQUIVALENT,
+                revalidated_fact_id=current["fact_id"],
+            )
         self._insert_fact(writer, spec)
         if spec.storage_relation == StorageRelation.ADVANCED:
             self._make_effective(writer, spec)
@@ -179,7 +186,11 @@ class AcquisitionHandoffStore:
         self, writer: Writer, spec: FactSpec
     ) -> FactSpec:
         """Retain staging without making it effective before winning promotion."""
-        spec = replace(spec, storage_relation=StorageRelation.AUTHORITY_STAGED)
+        spec = replace(
+            spec,
+            storage_relation=StorageRelation.AUTHORITY_STAGED,
+            revalidated_fact_id=None,
+        )
         if existing := self._existing_fact(writer, spec):
             return existing
         return self._insert_fact(writer, spec)
@@ -226,6 +237,16 @@ class AcquisitionHandoffStore:
         current = self.current_effective_state(writer, spec.effective_key)
         if current is None or current["source_state_key"] != spec.source_state_key:
             return None
+        # Authority winners revalidate in this transaction. Other observations
+        # must still name the exact advancement seen at their own write time.
+        if spec.storage_relation != StorageRelation.AUTHORITY_STAGED:
+            expected = (
+                spec.revalidated_fact_id
+                if spec.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+                else spec.fact_id
+            )
+            if current["fact_id"] != expected:
+                return None
         effective = self._fact(writer, current["fact_id"])
         return effective
 

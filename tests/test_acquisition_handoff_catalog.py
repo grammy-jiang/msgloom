@@ -469,3 +469,24 @@ def test_authority_rejects_ambiguous_final_effective_state(catalog):
             [entry(second)],
             winning_fact_ids=(first.fact_id, second.fact_id),
         )
+
+
+@pytest.mark.parametrize("candidate_run", ["one", "retry"])
+def test_delayed_release_cannot_adopt_later_same_state(catalog, candidate_run):
+    first = stage(catalog, fact(run="one"))
+    retry = stage(catalog, fact(run="retry"))
+    stage(catalog, fact(run="two", state="v2"))
+    latest = stage(catalog, fact(run="three"))
+    candidate = first if candidate_run == "one" else retry
+    release(catalog, group(candidate_run), [entry(candidate)])
+    store = AcquisitionHandoffStore(catalog)
+    if store.list_release_entries("source", Stream.OUTLOOK_MAIL):
+        pytest.fail("Delayed release substituted a later unvalidated fact")
+    revalidated = stage(catalog, fact(run="four"))
+    release(catalog, group("four"), [entry(revalidated)])
+    entries = store.list_release_entries("source", Stream.OUTLOOK_MAIL)
+    if len(entries) != 1:
+        pytest.fail("Fresh revalidation must recover the latest state once")
+    members = store.load_release_facts(entries[0]["release_entry_seq"])
+    if [member.fact_id for member in members] != [latest.fact_id]:
+        pytest.fail("Fresh recovery did not bind its exact advanced fact")

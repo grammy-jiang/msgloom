@@ -44,6 +44,13 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
 )
 
 EXPECTED_TABLES = {
+    "acquisition_effective_states",
+    "acquisition_facts",
+    "acquisition_ledger_metadata",
+    "acquisition_release_entries",
+    "acquisition_release_entry_facts",
+    "acquisition_release_groups",
+    "acquisition_run_outcomes",
     "attachments",
     "contact_collection_completions",
     "contact_delta_checkpoint_candidates",
