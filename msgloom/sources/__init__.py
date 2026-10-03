@@ -6,6 +6,14 @@ from msgloom.sources._snapshot import (
     MAX_COLLECTED_SELECTION_BYTES,
     CollectedSelectionCodec,
 )
+from msgloom.sources.handoff_catalog import HandoffCatalog
+from msgloom.sources.handoff_models import (
+    A1CatalogIdentity,
+    ReleasedFact,
+    ReleaseEntry,
+    ReleaseEntryPage,
+    ReleaseEntryRef,
+)
 from msgloom.sources.models import (
     CollectedAttachment,
     CollectedBody,
@@ -27,6 +35,7 @@ __all__ = [
     "COLLECTED_SELECTION_KIND",
     "COLLECTED_SELECTION_SCHEMA_VERSION",
     "MAX_COLLECTED_SELECTION_BYTES",
+    "A1CatalogIdentity",
     "CollectedAttachment",
     "CollectedBody",
     "CollectedRecord",
@@ -34,6 +43,11 @@ __all__ = [
     "CollectedSelectionCodec",
     "CollectedSourceReader",
     "ContentKind",
+    "HandoffCatalog",
+    "ReleaseEntry",
+    "ReleaseEntryPage",
+    "ReleaseEntryRef",
+    "ReleasedFact",
     "SavedSourceReader",
     "SavedSourceReaderConfig",
     "SourceEvidenceError",
