@@ -204,7 +204,7 @@ seconds. The dispatcher now allows 360 seconds for this bounded probe. Four
 local checks passed for prior-attempt refusal, failed-probe refusal, single-send
 handling, and refusal to retry an unqualified composer. The chat-topology retry
 posted in [its assigned conversation](https://chatgpt.com/c/6ac13fd6-c774-83ec-b3ef-bc7c7e93da54).
-Its bounded collector remains active.
+Its bounded collector has returned the finished result.
 
 The first channel diagnostic exhausted its 900-second capacity wait before
 opening a browser because available memory remained below the 4,000 MB floor.
@@ -229,18 +229,24 @@ The chat writer committed `a014831e35393cfe31afa921a9b7930f06180514` on its
 isolated branch. Coordinator inspection confirms its exact P0 parent and
 three owned files. All 50 focused tests passed in 2.87 seconds. Ruff check,
 Ruff format, Pyright, module-size, no-assert, and provider-boundary checks
-passed. This is candidate validation; final transcript acceptance and
-integration remain pending.
+passed. The finished worker result confirms the exact task, base, candidate,
+and `gpt-5-6-thinking` / `max` pin. The coordinator accepted the unchanged
+validated candidate and integrated it as
+`d85d7c94c2e8f13e465787092d462edb8efbe1b2`.
 
 The coordinator prepared disjoint composition contracts for the next dependency
-edge. These are drafts, not dispatched implementation. A guarded preparation
+edge. A guarded preparation
 command now requires explicit coordinator acceptance of both dependency
 commits and verifies that they are ancestors of the clean integration commit.
 It refuses existing worktrees or manifests so interrupted preparation must be
 inspected. Seven dependency and dry-render checks passed. The existing
 dispatcher now accepts a program-local manifest and uses a separate lock and
 completion record for each composition lane. Its original dispatch and
-single-send protections remain in place. No composition worker has been sent.
+single-send protections remain in place. Chat composition is now queued in its
+own worktree at `d85d7c94c2e8f13e465787092d462edb8efbe1b2`. It owns only
+`chat_composition.py` and its focused test module. Channel composition still
+requires accepted channel topology. The active channel send is waiting under
+the unchanged browser memory floor; no duplicate send is authorized.
 
 Saved-source handoff
 preparation confirmed that both Teams source-type enums already exist. The
@@ -277,7 +283,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message lane integrated and verified; chat worker active; channel recovery queued |
+| P1 core provider implementation | Message and chat topology integrated; chat composition queued; channel send active |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |

@@ -2,7 +2,7 @@
 
 # Microsoft Teams A1 implementation plan
 
-**Status:** P0 frozen; P1 message primitives integrated; topology lanes in progress
+**Status:** P0 frozen; message/chat topology integrated; composition/channel in progress
 **Prepared:** 2026-10-03
 **Integration branch:** `program/a1-teams-spider`
 **Integration worktree:** `/home/grammy-jiang/Projects/msgloom-worktrees/a1-teams-spider`
