@@ -93,6 +93,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
 
             self.crawler.stats.inc_value("msgloom/crawl/calendar/full/attachment_count")
             yield OutlookCalendarAttachmentItem(
+                resource_version=resource_version,
                 event_id=event_id,
                 attachment_id=attachment_id,
                 attachment_type=attachment_type,
@@ -117,6 +118,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                         attachment_type, attachment_id
                     ):
                         yield OutlookCalendarEventSurfaceItem(
+                            run_id=self.run_id,
                             event_id=event_id,
                             surface=surface,
                             status="omitted_size_limit",
@@ -139,6 +141,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
                     )
             else:
                 yield OutlookCalendarEventSurfaceItem(
+                    run_id=self.run_id,
                     event_id=event_id,
                     surface=f"attachment_raw:{attachment_id}",
                     status="unsupported",
@@ -151,6 +154,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
         next_link = page.next_link
         if next_link is None:
             yield OutlookCalendarEventSurfaceItem(
+                run_id=self.run_id,
                 event_id=event_id,
                 surface="attachments",
                 status="acquired",
@@ -188,6 +192,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
             "msgloom/crawl/calendar/full/attachment_content_count"
         )
         yield OutlookCalendarAttachmentContentItem(
+            resource_version=resource_version,
             event_id=event_id,
             attachment_id=attachment_id,
             observed_at=evidence.observed_at,
@@ -195,6 +200,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
             run_id=self.run_id,
         )
         yield OutlookCalendarEventSurfaceItem(
+            run_id=self.run_id,
             event_id=event_id,
             surface=f"attachment_raw:{attachment_id}",
             status="acquired",
@@ -234,6 +240,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
             "msgloom/crawl/calendar/full/item_attachment_detail_count"
         )
         yield OutlookCalendarAttachmentItem(
+            resource_version=resource_version,
             event_id=event_id,
             attachment_id=attachment_id,
             attachment_type=attachment_type,
@@ -245,6 +252,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
             content_bytes_present=content_bytes_present,
         )
         yield OutlookCalendarEventSurfaceItem(
+            run_id=self.run_id,
             event_id=event_id,
             surface=f"item_attachment_detail:{attachment_id}",
             status="acquired",

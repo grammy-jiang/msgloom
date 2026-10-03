@@ -184,6 +184,7 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
             observation_kind="full",
         )
         yield OutlookCalendarEventSurfaceItem(
+            run_id=self.run_id,
             event_id=event_id,
             surface="detail",
             status="acquired",
@@ -219,6 +220,7 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
                     "msgloom/crawl/calendar/full/download_size_limit_omission_count"
                 )
                 yield OutlookCalendarEventSurfaceItem(
+                    run_id=self.run_id,
                     event_id=event_id,
                     surface=surface,
                     status="omitted_size_limit",
@@ -255,6 +257,7 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
         )
         if terminal_status and surface and (event_id := callback_data.get("event_id")):
             yield OutlookCalendarEventSurfaceItem(
+                run_id=self.run_id,
                 event_id=event_id,
                 surface=surface,
                 status=terminal_status,
@@ -397,6 +400,7 @@ class OutlookCalendarFullSpider(OutlookCalendarSeriesTraversal):
                         )
                     else:
                         yield OutlookCalendarEventSurfaceItem(
+                            run_id=self.run_id,
                             event_id=event_id,
                             surface=surface,
                             status="unsupported",

@@ -50,6 +50,7 @@ def _recurring_event(store: OutlookCalendarStore, *, observed_at: str = NOW) -> 
 def _base_surfaces(store: OutlookCalendarStore, *, observed_at: str = NOW) -> None:
     for surface in ("detail", "attachments"):
         store.set_event_surface(
+            run_id="run-1",
             event_id="occurrence-1",
             surface=surface,
             status="acquired",

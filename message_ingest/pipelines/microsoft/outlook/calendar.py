@@ -84,6 +84,7 @@ class OutlookCalendarPipeline:
                 await asyncio.to_thread(
                     self.store.set_event_surface,
                     event_id=item.event_id,
+                    run_id=item.run_id,
                     surface=item.surface,
                     status=item.status,
                     evidence_id=item.evidence_id,

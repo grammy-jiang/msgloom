@@ -57,6 +57,7 @@ def _surface(
     resource_version: str | None = None,
 ) -> None:
     store.set_event_surface(
+        run_id="run-1",
         event_id=event_id,
         surface=surface,
         status=status,

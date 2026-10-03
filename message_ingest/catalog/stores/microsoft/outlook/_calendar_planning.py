@@ -7,6 +7,7 @@ from typing import TypedDict
 
 from sqlalchemy import select
 
+from message_ingest.acquisition.handoff import StorageRelation, canonical_json
 from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarDeltaEventState,
     CalendarEventAttachmentRecord,
@@ -16,6 +17,11 @@ from message_ingest.catalog.models.microsoft.outlook.calendar import (
     CalendarRecord,
     CalendarSeriesTopologyRecord,
 )
+from message_ingest.items.microsoft.outlook.calendar import (
+    OutlookCalendarEventSurfaceItem,
+)
+
+from ._calendar_handoff import CalendarFactStore
 
 
 class CalendarSurfaceState(TypedDict):
@@ -43,12 +49,8 @@ class CalendarAttachmentPlanningState(TypedDict):
     latest_evidence_id: str | None
 
 
-class CalendarPlanningStore:
+class CalendarPlanningStore(CalendarFactStore):
     """Own detached Calendar completeness and workflow planning state."""
-
-    def __init__(self, catalog, *, source_id: str) -> None:
-        self.catalog = catalog
-        self.source_id = source_id
 
     @classmethod
     def _is_older_capture(cls, incoming: str, current: str) -> bool:
@@ -69,11 +71,22 @@ class CalendarPlanningStore:
         status: str,
         evidence_id: str | None,
         observed_at: str,
+        run_id: str,
         profile_version: str | None = None,
         resource_version: str | None = None,
-    ) -> None:
-        """Upsert one event surface without letting older evidence replace it."""
-        with self.catalog.Session() as session, session.begin():
+    ) -> StorageRelation:
+        """Atomically stage the exact surface outcome under writer ownership."""
+        item = OutlookCalendarEventSurfaceItem(
+            event_id=event_id,
+            surface=surface,
+            status=status,
+            evidence_id=evidence_id,
+            observed_at=observed_at,
+            run_id=run_id,
+            profile_version=profile_version,
+            resource_version=resource_version,
+        )
+        with self.catalog.writer_session() as session:
             record = session.scalar(
                 select(CalendarEventSurface).filter_by(
                     source_id=self.source_id,
@@ -94,14 +107,54 @@ class CalendarPlanningStore:
                         resource_version=resource_version,
                     )
                 )
-                return
+                return self._stage_surface(session, item, "created")
             if self._is_older_capture(observed_at, record.observed_at):
-                return
+                return self._stage_surface(session, item, "stale")
+            unchanged = (
+                record.status == status
+                and record.profile_version == profile_version
+                and record.resource_version == resource_version
+                and self._surface_digest(session, record.evidence_id, surface)
+                == self._surface_digest(session, evidence_id, surface)
+            )
             record.status = status
             record.evidence_id = evidence_id
             record.observed_at = observed_at
             record.profile_version = profile_version
             record.resource_version = resource_version
+            return self._stage_surface(
+                session,
+                item,
+                "unchanged" if unchanged else "changed",
+            )
+
+    def _stage_surface(self, session, item, outcome) -> StorageRelation:
+        # Bounded status/profile proof must survive later mutable-row changes.
+        reason = canonical_json(
+            {
+                "status": item.status,
+                "profile_version": item.profile_version,
+            }
+        )
+        fact = self._stage_fact(
+            session,
+            item,
+            resource_kind="calendar_event_surface",
+            identity=item.event_id,
+            parent=item.event_id,
+            component=item.surface,
+            state={
+                "surface": item.surface,
+                "status": item.status,
+                "profile_version": item.profile_version,
+                "resource_version": item.resource_version,
+                "sha256": self._surface_digest(session, item.evidence_id, item.surface),
+            },
+            outcome=outcome,
+            resource_version=item.resource_version,
+            reason=reason,
+        )
+        return fact.storage_relation
 
     def get_event_state(self, *, event_id: str) -> CalendarEventPlanningState | None:
         """Return the current event version and calendar for acquisition planning."""

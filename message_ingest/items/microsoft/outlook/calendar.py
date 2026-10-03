@@ -75,6 +75,7 @@ class OutlookCalendarAttachmentItem:
     run_id: str | None
     calendar_id: str = "default"
     content_bytes_present: bool = False
+    resource_version: str | None = None
 
     @property
     def provider(self) -> GraphOutlookCalendarAttachmentItem:
@@ -112,6 +113,7 @@ class OutlookCalendarAttachmentContentItem:
     observed_at: str
     evidence_id: str | None
     run_id: str | None
+    resource_version: str | None = None
 
 
 @dataclass(slots=True)
@@ -123,6 +125,7 @@ class OutlookCalendarEventSurfaceItem:
     status: str
     observed_at: str
     evidence_id: str | None
+    run_id: str
     profile_version: str | None = None
     resource_version: str | None = None
 
