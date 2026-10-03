@@ -78,6 +78,13 @@ successfully after the shared cooldown expired, with conversation ID
 bounded read-only collector with timeout recovery. The original dispatcher
 still owns A collection. Do not duplicate these sends.
 
+The framework worker's transcript remained at message 219 on an unfinished
+Python tool call for more than 20 minutes. A bounded recovery driver now owns
+one same-conversation finish request, with the same pinned model and effort.
+It checks account access first and preserves the browser cooldown. The original
+dispatcher still owns result collection. The first three P1 file-ownership
+contracts are drafted but cannot dispatch before P0-E closure and the freeze.
+
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
 closure reviews are not yet complete.
