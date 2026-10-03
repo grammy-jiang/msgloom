@@ -76,7 +76,7 @@ successfully after the shared cooldown expired, with conversation ID
 `6ac10eed-b518-83ec-9e67-a02983191572`. Its collector then exited on an uncaught
 120-second read timeout. The coordinator adopted that conversation into a
 bounded read-only collector with timeout recovery. The original dispatcher
-still owns A collection. Do not duplicate these sends.
+has now exited. Its successor owns A collection without sending new prompts.
 
 The framework worker's transcript remained at message 219 on an unfinished
 Python tool call. Its first bounded finish request failed during browser page
@@ -98,11 +98,30 @@ and verify a process-local correction that permits individual reads while
 keeping the exact history-list rule. The installed sender, model/effort pins,
 security checks, and cooldown remain in use; the shared skill is unchanged.
 
-A third bounded finish request uses this correction. A successor collector
-waits for the original dispatcher to exit before taking ownership, so collection
-continues after the original monitor's deadline. No duplicate worker chat is
-created. The same correction is required for the later E closure follow-up
-until the installed routing rule is repaired.
+A third bounded finish request used this correction. It passed the normal
+memory gate but again found no composer, with no visible challenge or login
+prompt. The route correction alone has therefore not restored continuation.
+A later HTTP read still shows the original unfinished 219-message transcript.
+The bounded, read-only diagnostic recorded HTTP 200 for the individual
+conversation with the corrected route. That response arrived after the
+composer timeout and final page snapshot. The snapshot still showed no
+composer, login prompt, or challenge. This proves the route permits the read;
+it does not prove the page can finish loading within the current timeout.
+The diagnostic obeyed the existing memory guard and cooldown. The same route
+correction remains necessary for the later E closure follow-up until the
+installed rule is repaired.
+
+The original A turn has been stalled for more than two hours. One external
+recovery driver uses the diagnostic evidence. It may send one fresh,
+shorter A review only if the diagnostic confirms an absent composer without
+a challenge, login prompt, or relevant authentication refusal; a new HTTP read
+still finds the unchanged unfinished turn; and the account probe succeeds.
+If any condition fails, it exits without sending. A ready composer instead
+returns control to the coordinator for same-conversation recovery. The fresh
+review retains the exact baseline archive and required model/effort, covers
+four bounded cells, and writes separate result and transcript records. Nine
+recovery-condition probes and eight result-validation probes passed. This
+does not qualify P0-A or waive the later independent closure.
 
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
