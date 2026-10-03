@@ -288,8 +288,12 @@ class AcquisitionHandoffStore:
             if existing["input_digest"] != input_digest:
                 raise ValueError("Release identity reused with a different digest")
             return spec.release_group_id
+        applied: set[str] = set()
         for fact_id in sorted(winning):
             candidate = self._fact(writer, fact_id)
+            if candidate.effective_key.digest in applied:
+                raise ValueError("Ambiguous winning effective state")
+            applied.add(candidate.effective_key.digest)
             self._validate_scope(spec, candidate)
             if candidate.storage_relation not in {
                 StorageRelation.AUTHORITY_STAGED,
@@ -314,6 +318,11 @@ class AcquisitionHandoffStore:
             for fact_id, role in entry.facts:
                 candidate = self._fact(writer, fact_id)
                 self._validate_scope(spec, candidate)
+                if candidate.fact_kind == "scoped_state_transition" and (
+                    (entry.scope_kind, entry.scope_identity)
+                    != (candidate.scope_kind, candidate.scope_identity)
+                ):
+                    raise ValueError("Transition entry changes fact scope")
                 if role != "proof":
                     target = (entry.resource_kind, entry.resource_identity)
                     own = (candidate.resource_kind, candidate.resource_identity)

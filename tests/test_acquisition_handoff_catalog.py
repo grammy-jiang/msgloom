@@ -427,3 +427,45 @@ def test_incomplete_profile_entry_cannot_drop_stale_required_members(catalog):
         "source", Stream.OUTLOOK_MAIL
     ):
         pytest.fail("Profile published after dropping a stale required primary")
+
+
+def test_transition_cannot_be_relabelled_to_another_scope(catalog):
+    transition = stage(
+        catalog,
+        replace(
+            fact(),
+            fact_kind=Kind.SCOPED_STATE_TRANSITION,
+            scope_kind="folder",
+            scope_identity="folder-a",
+        ),
+    )
+    with pytest.raises(ValueError, match="scope"):
+        release(
+            catalog,
+            group(),
+            [
+                replace(
+                    entry(transition),
+                    entry_kind="transition",
+                    scope_kind="folder",
+                    scope_identity="folder-b",
+                )
+            ],
+        )
+
+
+def test_authority_rejects_ambiguous_final_effective_state(catalog):
+    store = AcquisitionHandoffStore(catalog)
+    with catalog.writer_session() as session:
+        first = store.stage_authority_fact_in_session(session, fact(state="v1"))
+        second = store.stage_authority_fact_in_session(session, fact(state="v2"))
+    with (
+        pytest.raises(ValueError, match="winning|effective"),
+        catalog.writer_session() as session,
+    ):
+        store.release_authority_group_in_session(
+            session,
+            replace(group(), release_kind=ReleaseKind.AUTHORITY_SCOPE),
+            [entry(second)],
+            winning_fact_ids=(first.fact_id, second.fact_id),
+        )
