@@ -79,11 +79,21 @@ bounded read-only collector with timeout recovery. The original dispatcher
 still owns A collection. Do not duplicate these sends.
 
 The framework worker's transcript remained at message 219 on an unfinished
-Python tool call for more than 20 minutes. A bounded recovery driver now owns
-one same-conversation finish request, with the same pinned model and effort.
-It checks account access first and preserves the browser cooldown. The original
-dispatcher still owns result collection. The first three P1 file-ownership
-contracts are drafted but cannot dispatch before P0-E closure and the freeze.
+Python tool call. Its first bounded finish request failed during browser page
+navigation. A later HTTP adoption check confirmed the same 219 messages, so
+that request did not post. A second bounded same-conversation driver passed
+its account probe and started one finish request. It retains the pinned model
+and effort, explicit dedicated browser, and browser cooldown. The original
+dispatcher still owns result collection.
+
+The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
+worker prompt template is prepared. No P1 worktree or worker has started.
+Dispatch remains gated on accepted P0-A, exact P0-E closure, and a committed
+P0 freeze. A prepared external closure collector rejects stale task IDs,
+candidate mismatches, unfinished replies, wrong model/effort, missing review
+cells, unverified hashes, and unresolved material findings in a PASS result.
+Its local acceptance/rejection probes passed. It has not collected a closure
+verdict and does not replace coordinator review.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
