@@ -217,6 +217,20 @@ remain required. Unrelated browser tabs remain untouched. The second diagnostic
 passed with one visible Project composer and no login or challenge marker.
 The recovery driver then started its one allowed retry with a fresh account
 probe. A successful diagnostic alone does not prove a successful send.
+That probe exceeded the 360-second wrapper timeout before the dispatcher
+created a send-attempt record. Inspection showed that the installed native
+authentication ladder alone can take 540 seconds for four timed-out requests
+and its normal backoff. The coordinator preserved that ladder and added
+credential-free endpoint timing. One bounded retry now allows 900 seconds for
+the native probe. It still requires probe success before a single send and
+retains the browser memory floor, cooldown, and model/effort pins.
+
+The chat writer committed `a014831e35393cfe31afa921a9b7930f06180514` on its
+isolated branch. Coordinator inspection confirms its exact P0 parent and
+three owned files. All 50 focused tests passed in 2.87 seconds. Ruff check,
+Ruff format, Pyright, module-size, no-assert, and provider-boundary checks
+passed. This is candidate validation; final transcript acceptance and
+integration remain pending.
 
 The coordinator prepared disjoint composition contracts for the next dependency
 edge. These are drafts, not dispatched implementation. A guarded preparation
