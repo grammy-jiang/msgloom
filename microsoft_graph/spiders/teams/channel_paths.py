@@ -256,7 +256,11 @@ def resolve_trusted_channel_resource_link(
     """
     if not isinstance(resource_link, str) or not resource_link:
         return None
-    parsed = urlsplit(resource_link)
+    try:
+        parsed = urlsplit(resource_link)
+    except ValueError:
+        # Malformed authorities remain unresolved, like other untrusted links.
+        return None
     if (
         parsed.scheme != "https"
         or parsed.netloc != "graph.microsoft.com"

@@ -210,6 +210,7 @@ def test_trusted_tenant_resource_link_rewrite_is_exact_and_query_preserving():
         "https://graph.microsoft.com/v1.0/teams/a/channels/c",
         "https://graph.microsoft.com/v1.0/tenants/t/teams/a/channels/c/messages",
         "https://graph.microsoft.com/v1.0/tenants//teams/a/channels/c",
+        "https://[invalid]/v1.0/tenants/t/teams/a/channels/c",
     )
     for value in rejected:
         if resolve_trusted_channel_resource_link(value) is not None:
