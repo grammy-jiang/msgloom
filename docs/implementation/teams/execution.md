@@ -4,7 +4,9 @@
 
 The selected production scope is delegated T1 chats and complete T2
 teams/channels. T3, T4, T5, and application-only production profiles are not
-selected. P0 contract closure passed. The P0 freeze adds only the two Teams
+selected. P0 contract closure passed. P0 freeze commit: `e005eed1592f8ca983c1829186603837192b8ea4`.
+
+The P0 freeze adds only the two Teams
 package entry points; provider implementation follows in three isolated lanes.
 
 - Integration branch: `program/a1-teams-spider`.
@@ -156,12 +158,17 @@ cited framework implementation. See the accepted
 [P0 architecture closure](p0-architecture-closure.md). P0 is now closed. The freeze regression rerun passed all **298 tests in
 25.90 seconds**.
 
+P0 freeze commit: `e005eed1592f8ca983c1829186603837192b8ea4`.
+
 The P0 freeze adds only `microsoft_graph/items/teams/__init__.py` and
 `microsoft_graph/spiders/teams/__init__.py`. Three first-tranche P1 contracts
 assign 15 disjoint paths to message primitives, chat topology, and channel
 topology. Each writer receives an isolated worktree at the exact frozen commit,
 focused tests, and a finite local-commit contract. The coordinator retains
 shared exports, settings, catalogs, commands, dependencies, and documentation.
+All three lanes were queued on 2026-10-03 UTC through the bounded external
+dispatcher. Their branches are `program/teams-p1-message`,
+`program/teams-p1-chat-topology`, and `program/teams-p1-channel-topology`.
 Composition starts when its actual message/topology dependencies pass.
 
 The external dispatcher verifies worktree base, branch, prompt hash, and
@@ -199,7 +206,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | First-tranche contracts ready; dispatch follows the P0 freeze |
+| P1 core provider implementation | Three isolated first-tranche writers queued at `e005eed` |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
