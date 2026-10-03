@@ -81,10 +81,28 @@ still owns A collection. Do not duplicate these sends.
 The framework worker's transcript remained at message 219 on an unfinished
 Python tool call. Its first bounded finish request failed during browser page
 navigation. A later HTTP adoption check confirmed the same 219 messages, so
-that request did not post. A second bounded same-conversation driver passed
-its account probe and started one finish request. It retains the pinned model
-and effort, explicit dedicated browser, and browser cooldown. The original
-dispatcher still owns result collection.
+that request did not post. The second same-conversation request also timed
+out during page navigation. A new HTTP adoption check confirmed the unchanged
+219-message transcript and its pinned model/effort. No continuation has posted.
+
+The next coordinator ran the supported browser preflight. The dedicated
+browser answered, but its page showed an incomplete Chat interface with no
+matching composer, login prompt, or challenge. The history-list request returned
+403 while other account reads answered. These are separate observed failures;
+they do not establish an account-wide block. Host load was also high. A bounded,
+read-only page-load diagnostic found a local routing defect: the installed
+sender blocks the history-list URL prefix, which also blocks the individual
+`/backend-api/conversations/{id}` read needed for a continuation. The diagnostic
+recorded that exact read failing. Five routing probes reproduce the old defect
+and verify a process-local correction that permits individual reads while
+keeping the exact history-list rule. The installed sender, model/effort pins,
+security checks, and cooldown remain in use; the shared skill is unchanged.
+
+A third bounded finish request uses this correction. A successor collector
+waits for the original dispatcher to exit before taking ownership, so collection
+continues after the original monitor's deadline. No duplicate worker chat is
+created. The same correction is required for the later E closure follow-up
+until the installed routing rule is repaired.
 
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
