@@ -61,13 +61,17 @@ applies before browser selection; explicitly selecting the dedicated browser
 does not bypass it. Future sends select both `RP_NEWCHAT_FAST=1` and
 `RP_BROWSER_CDP=http://127.0.0.1:9222`.
 
-As of the first fresh coordinator session, A/C/D/E have posted conversations
-and active transcripts, but no accepted final verdicts. B remains queued. The
-existing dispatcher owns its state and collector. Do not duplicate these sends.
+The first fresh coordinator accepted P0-D's harness-design deliverable after
+checking the actual framework and the finished transcript's model/effort.
+See [the fixture harness and 36-case map](p0-fixture-harness.md). P0-E returned
+pre-review PASS; this is not closure of the converged contracts. A/C remain
+in collection. The B retry started at `2026-10-03T14:18:19Z` after the shared
+cooldown expired. The existing dispatcher and recovery script own collection.
+Do not duplicate these sends.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
-reviews are not yet complete.
+closure reviews are not yet complete.
 
 ## Coordinator continuity
 
