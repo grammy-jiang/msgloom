@@ -141,10 +141,20 @@ All A-D deliverables are now accepted for closure input. The corrected A map was
 committed at `5bc0bba48e51f3e2fb8a1fcba5a25b1e81b0b1e4`. A fresh baseline run
 passed all **298 tests in 35.67 seconds**. Changed-file pre-commit checks passed.
 The exact closure archive contains 141 committed files and a verified SHA-256
-inventory. One bounded external driver owns the same-conversation P0-E closure
-send and result collection. It preserves the sender's browser/cooldown controls
-and pins `gpt-5-6-thinking` / `max`. A driver start is not a confirmed post or an
-accepted closure verdict; the durable send and result records distinguish them.
+inventory. The same-conversation P0-E closure posted successfully and returned
+a finished `BLOCKED` result. Its transcript confirms `gpt-5-6-thinking` / `max`.
+The reviewer could access only the old baseline attachment, so it correctly
+declined to verify the exact candidate. This is an input-delivery failure, not
+an architecture finding or closure PASS.
+
+The coordinator preserved that result and independently verified all 141 archive
+members. A corrected request supplies the same exact candidate through the
+existing Raspberry Pi MCP connector. It names the archive hash and an extracted
+read-only review directory. The reviewer must verify those hashes and inspect
+the actual candidate files. One bounded external driver owns this new
+`MCP_R2` request and collection. It preserves the browser/cooldown controls and
+the same model/effort pins. No P1 dispatch is authorized until the corrected
+review returns an accepted PASS.
 
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
@@ -152,8 +162,10 @@ Dispatch remains gated on exact P0-E closure and a committed
 P0 freeze. A prepared external closure collector rejects stale task IDs,
 candidate mismatches, unfinished replies, wrong model/effort, missing review
 cells, unverified hashes, and unresolved material findings in a PASS result.
-Its local acceptance/rejection probes passed. It has not collected a closure
-verdict and does not replace coordinator review.
+Its local acceptance/rejection probes passed. It does not replace coordinator
+review. A prepared P1 dispatcher also checks clean exact-base worktrees, prompt
+hashes, and disjoint ownership. It makes one send attempt per lane, then collects
+externally. Ten result-validation probes passed. It has not been launched.
 
 A source audit found that the initial archive omitted the shared catalog
 service, evidence-item protocol, application fingerprinter, and concrete
