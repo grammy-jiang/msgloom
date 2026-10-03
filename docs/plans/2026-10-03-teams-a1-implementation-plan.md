@@ -2,13 +2,14 @@
 
 # Microsoft Teams A1 implementation plan
 
-**Status:** execution plan draft; implementation not started
+**Status:** P0 qualification in progress; production implementation not started
 **Prepared:** 2026-10-03
 **Integration branch:** `program/a1-teams-spider`
 **Integration worktree:** `/home/grammy-jiang/Projects/msgloom-worktrees/a1-teams-spider`
 **Implementation base:** `46ff93e0e3cd3122743b6048526ebdbd88ea3252`
 **Design authority:** `docs/plans/2026-10-03-teams-a1-readonly-acquisition-plan.md`
 **Closed A1 master baseline:** `9e072eed17672f8380c709a9932ea56dbcbaff85`
+**Actual master at execution start:** `765d3c67c707257514d882310873f8a89f3d866b`
 **Runtime:** Python 3.13.5, Scrapy 2.19.0
 **Live acceptance:** deferred until a suitable Microsoft work/school tenant is available
 
@@ -286,17 +287,26 @@ Equivalent CLI selection:
 codex -m gpt-6-astra -c 'model_reasoning_effort="high"'
 ```
 
-For non-interactive execution, apply the same model/effort to `codex exec`.
-These values match the current local Codex configuration and are therefore the
-qualified default for this implementation round.
+For unattended execution, use `codex-budgeted-manager` with this model and
+effort. Do not start a raw long-running `codex exec` manager. Run
+`codex-usage-guard check` before starting substantial work. Do not start another
+manager when the daily guard is critical.
+
+Update the launcher checkpoint and program ledger after each dispatch or
+integration unit. Run `codex-usage-guard thread --run-id ID` after each major
+unit. Rotate to a fresh session before 35 minutes or 6,000,000 local tokens,
+whichever comes first. The external supervisor owns rotation and waiting;
+coordinators must not sleep, poll, or launch another coordinator themselves.
 
 #### Fallback policy
 
 If the exact selected local model is temporarily unavailable, the coordinator
 must not stop to ask the user. It may use the strongest available model in the
-same tool with the highest supported reasoning effort, record the variance in
-the execution log, and continue. Do not fall back to an OSS/local model unless
-the implementation plan is explicitly revised to allow it.
+same tool within the user's budget rules, record the variance in the execution
+log, and continue. A Codex coordinator must retain `high` effort; never select
+`max` for an unattended manager or orchestration loop. Do not fall back to an
+OSS/local model unless the implementation plan is explicitly revised to allow
+it.
 
 ### 4.2 ChatGPT Chat worker model and effort contract
 
@@ -769,13 +779,17 @@ Create the common Teams message provider model used by both chats and channels.
 Preferred:
 
 ```text
-microsoft_graph/items/teams/__init__.py
 microsoft_graph/items/teams/message.py
 microsoft_graph/protocol/teams.py
 ```
 
 If module size approaches the repository limit, split protocol helpers by
 resource rather than growing one generic file.
+
+The coordinator owns the shared Teams package exports, including
+`microsoft_graph/items/teams/__init__.py` and
+`microsoft_graph/spiders/teams/__init__.py`. Freeze any additional file ownership
+in the lane prompt before dispatch.
 
 **Owned tests**
 
@@ -1237,12 +1251,15 @@ Stable application item/store/pipeline contract.
 
 ```text
 message_ingest/spiders/microsoft/teams/
-  __init__.py
   chat.py
 ```
 
 If hosted-content callbacks become large, use a focused private helper module
 under the same package.
+
+The coordinator owns the shared spider package `__init__.py`. Shared
+hosted-content helpers need explicit ownership before either spider writer
+starts.
 
 **Spider name**
 
@@ -1603,6 +1620,8 @@ Before declaring synthetic implementation complete:
 - Ruff check;
 - Ruff format check;
 - Pyright;
+- live Python LSP diagnostics for `microsoft_graph/`, `message_ingest/`, and
+  `tests/`;
 - Scrapy contracts;
 - pre-commit on changed files.
 
@@ -1752,8 +1771,9 @@ The Teams branch may be proposed for merge only when all are true:
 - any implemented checkpoint/subscription cursor/promotion satisfies the native
   idle + clean-run + free-write-lock gate;
 - source identity correct;
-- master changes are still only the previously closed A1 baseline until the
-  explicit merge action.
+- this program has not changed `master`; preserve unrelated work already
+  present at execution start and record later independent advances without
+  resetting them to the historical A1 baseline.
 
 Do not merge automatically merely because CI is green.
 

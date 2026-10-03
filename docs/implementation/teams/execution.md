@@ -54,8 +54,16 @@ The initial dispatch failed before posting. An authenticated Project read
 confirmed zero conversations. Recovery uses the installed workflow's
 `RP_NEWCHAT_FAST=1` browser-first send path. It avoids an unrelated HTTP
 history-list prerequisite. It does not solve or bypass a security challenge.
-A later auth-lane composer failure occurred before posting and has a bounded
-retry queued after the other sends.
+A later auth-lane composer failure occurred before posting. The shared browser
+cooldown also refused two recovery attempts before they opened a tab. A bounded
+external script will make one retry after that cooldown expires. The cooldown
+applies before browser selection; explicitly selecting the dedicated browser
+does not bypass it. Future sends select both `RP_NEWCHAT_FAST=1` and
+`RP_BROWSER_CDP=http://127.0.0.1:9222`.
+
+As of the first fresh coordinator session, A/C/D/E have posted conversations
+and active transcripts, but no accepted final verdicts. B remains queued. The
+existing dispatcher owns its state and collector. Do not duplicate these sends.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
@@ -68,11 +76,17 @@ The initial externally configured coordinator reported `gpt-6-astra` with
 no in-place effort control. Fresh coordinator sessions must use
 `codex-budgeted-manager` with `gpt-6-astra` and `high`.
 
-The daily usage guard was critical at entry. No new Codex manager may start
-until the guard permits it. A bounded external supervisor is armed to start a
+The daily usage guard was critical at initial entry. The first fresh coordinator
+started at `2026-10-03T14:13:32Z` with `gpt-6-astra` / `high`; its entry guard
+check passed. No new Codex manager may start unless the guard permits it. A
+bounded external supervisor is armed to start a
 fresh coordinator from the durable ledger when work is actionable. It must not
 resume this large context. The current coordinator must release ownership
 before its 35-minute or 6,000,000-token rotation limit.
+
+The first continuation corrected the implementation plan's coordinator budget,
+shared-export ownership, live LSP gate, and obsolete `master` assumption. These
+are execution corrections. The authoritative design remains unchanged.
 
 ## Acceptance state
 
