@@ -67,7 +67,10 @@ See [the fixture harness and 36-case map](p0-fixture-harness.md) and the accepte
 [P0-E pre-review](p0-architecture-pre-review.md). Pre-review PASS is not closure
 of the converged contracts. The corrected [P0-C API contract](p0-api-contract.md) is now accepted for
 converged closure input. Its delta finding is resolved by the existing core
-exclusion; notification semantics remain mandatory. A/B remain in collection.
+exclusion; notification semantics remain mandatory. The corrected
+[P0-B auth contract](p0-auth-scope-contract.md) is also accepted for closure.
+It preserves existing scope tests and adds the requirement to validate effective
+Teams scopes before authentication. A remains in collection.
 The B retry posted
 successfully after the shared cooldown expired, with conversation ID
 `6ac10eed-b518-83ec-9e67-a02983191572`. Its collector then exited on an uncaught
