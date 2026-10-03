@@ -38,6 +38,7 @@ from message_ingest.catalog.models import (
 )
 from message_ingest.catalog.store import Catalog
 from message_ingest.catalog.stores.evidence import RawEvidenceStore
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.catalog.stores.microsoft.outlook import (
     OutlookCalendarStore,
     OutlookMailStore,
@@ -45,6 +46,7 @@ from message_ingest.catalog.stores.microsoft.outlook import (
 from message_ingest.catalog.stores.microsoft.todo import TodoStore
 
 __all__ = [
+    "AcquisitionHandoffStore",
     "AttachmentRecord",
     "Base",
     "CalendarDeltaCheckpoint",

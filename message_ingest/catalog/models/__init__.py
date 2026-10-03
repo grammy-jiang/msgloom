@@ -2,6 +2,15 @@
 
 from .acquisition import RawHttpEvidence, SourceBinding, SourceTargetBinding
 from .base import Base
+from .handoff import (
+    AcquisitionEffectiveState,
+    AcquisitionFact,
+    AcquisitionLedgerMetadata,
+    AcquisitionReleaseEntry,
+    AcquisitionReleaseEntryFact,
+    AcquisitionReleaseGroup,
+    AcquisitionRunOutcome,
+)
 from .microsoft.contacts import (
     ContactCollectionCompletion,
     ContactDeltaCheckpoint,
@@ -74,6 +83,13 @@ from .microsoft.todo import (
 )
 
 __all__ = [
+    "AcquisitionEffectiveState",
+    "AcquisitionFact",
+    "AcquisitionLedgerMetadata",
+    "AcquisitionReleaseEntry",
+    "AcquisitionReleaseEntryFact",
+    "AcquisitionReleaseGroup",
+    "AcquisitionRunOutcome",
     "AttachmentRecord",
     "Base",
     "CalendarDeltaCheckpoint",
