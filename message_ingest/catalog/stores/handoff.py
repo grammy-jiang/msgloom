@@ -29,6 +29,11 @@ from message_ingest.catalog.models.handoff import (
     AcquisitionReleaseEntryFact,
     AcquisitionReleaseGroup,
 )
+from message_ingest.catalog.stores._handoff_guards import install_guards
+from message_ingest.catalog.stores._handoff_validation import (
+    validate_entry,
+    validate_impact,
+)
 
 if TYPE_CHECKING:
     from message_ingest.catalog.store import Catalog
@@ -43,7 +48,7 @@ META = cast(Table, AcquisitionLedgerMetadata.__table__)
 
 
 def initialize_handoff(connection: Connection) -> None:
-    """Initialize identity and immutable-row guards in the schema transaction."""
+    """Initialize identity and row guards in the schema transaction."""
     row = connection.execute(select(META)).mappings().first()
     if row is None:
         connection.execute(
@@ -55,29 +60,16 @@ def initialize_handoff(connection: Connection) -> None:
         )
     elif row["schema_version"] != 1 or row["singleton"] != 1:
         raise ValueError("Unsupported acquisition ledger schema")
-    tables = (
-        FACT.name,
-        GROUP.name,
-        ENTRY.name,
-        MEMBER.name,
-        META.name,
-        "acquisition_run_outcomes",
-    )
-    for table in tables:
-        for operation in ("UPDATE", "DELETE"):
-            connection.exec_driver_sql(
-                f"CREATE TRIGGER IF NOT EXISTS immutable_{table}_{operation} "
-                f"BEFORE {operation} ON {table} BEGIN "
-                "SELECT RAISE(ABORT, 'immutable acquisition ledger row'); END"
-            )
+    install_guards(connection)
 
 
 class AcquisitionHandoffStore:
     """
     Stage and publish under the caller's transaction and freshness decision.
 
-    Mutators never begin, commit, flush, or roll back transactions. Callers must
-    reserve writer ownership before reading freshness state and must propagate
+    Mutators never begin, commit, flush, or roll back transactions.
+    Callers must reserve writer ownership before reading freshness state and
+    must propagate
     errors so the enclosing provider operation rolls back. Core statements work
     with both ORM sessions and Calendar's explicit connection transaction.
     """
@@ -156,8 +148,9 @@ class AcquisitionHandoffStore:
         """
         Stage a provider-accepted write and atomically classify equivalence.
 
-        Pass ``current_equivalent`` for pre-ledger unchanged domain rows. Without
-        a prior advanced fact they cannot create future-only bootstrap work.
+        Pass ``current_equivalent`` for pre-ledger unchanged domain rows.
+        Without a prior advanced fact they cannot create future-only bootstrap
+        work.
         Equivalent observations pin the exact effective fact they revalidate.
         A later return to the same semantic state cannot replace that proof.
         """
@@ -185,7 +178,7 @@ class AcquisitionHandoffStore:
     def stage_authority_fact_in_session(
         self, writer: Writer, spec: FactSpec
     ) -> FactSpec:
-        """Retain staging without making it effective before winning promotion."""
+        """Retain staging without making it effective before promotion."""
         spec = replace(
             spec,
             storage_relation=StorageRelation.AUTHORITY_STAGED,
@@ -256,7 +249,7 @@ class AcquisitionHandoffStore:
         spec: ReleaseGroupSpec,
         entries: Sequence[ReleaseEntrySpec],
     ) -> str:
-        """Publish only still-effective, previously unreleased state impacts."""
+        """Publish still-effective, previously unreleased state impacts."""
         if spec.release_kind == "authority_scope":
             raise ValueError("Authority groups require the authority publication API")
         return self._release(writer, spec, entries, frozenset())
@@ -287,7 +280,7 @@ class AcquisitionHandoffStore:
         entries: Sequence[ReleaseEntrySpec],
         winning: frozenset[str],
     ) -> str:
-        # Stream input digests: group size must not inherit per-entry JSON limits.
+        # Stream input digests so groups do not inherit entry JSON limits.
         material = asdict(spec)
         material.pop("released_at")
         digest = hashlib.sha256(canonical_json(material).encode())
@@ -339,20 +332,7 @@ class AcquisitionHandoffStore:
             for fact_id, role in entry.facts:
                 candidate = self._fact(writer, fact_id)
                 self._validate_scope(spec, candidate)
-                if candidate.fact_kind == "scoped_state_transition" and (
-                    (entry.scope_kind, entry.scope_identity)
-                    != (candidate.scope_kind, candidate.scope_identity)
-                ):
-                    raise ValueError("Transition entry changes fact scope")
-                if role != "proof":
-                    target = (entry.resource_kind, entry.resource_identity)
-                    own = (candidate.resource_kind, candidate.resource_identity)
-                    parent = (
-                        candidate.parent_resource_kind,
-                        candidate.parent_resource_identity,
-                    )
-                    if target not in (own, parent):
-                        raise ValueError("Entry fact has unrelated resource/parent")
+                validate_impact(entry, candidate, role)
                 eligible = self._eligible(writer, candidate, winning)
                 if eligible is not None:
                     members.append((eligible.fact_id, role))
@@ -429,14 +409,14 @@ class AcquisitionHandoffStore:
         if through_seq is not None:
             query = query.where(ENTRY.c.release_entry_seq <= through_seq)
         with self.catalog.Session() as session:
-            return [
-                dict(row)
-                for row in session.execute(
-                    query.order_by(
-                        ENTRY.c.release_entry_seq,
-                    ).limit(limit)
-                ).mappings()
-            ]
+            rows = (
+                session.execute(query.order_by(ENTRY.c.release_entry_seq).limit(limit))
+                .mappings()
+                .all()
+            )
+            for row in rows:
+                validate_entry(session, row)
+            return [dict(row) for row in rows]
 
     def load_release_entry(self, seq: int) -> dict[str, Any] | None:
         with self.catalog.Session() as session:
@@ -449,22 +429,19 @@ class AcquisitionHandoffStore:
                 .mappings()
                 .first()
             )
-            return dict(row) if row else None
+            if row is not None:
+                validate_entry(session, row)
+                return dict(row)
+            return None
 
     def load_release_facts(self, seq: int) -> list[FactSpec]:
         with self.catalog.Session() as session:
-            rows = (
-                session.execute(
-                    select(MEMBER.c.fact_id)
-                    .where(
-                        MEMBER.c.release_entry_seq == seq,
-                    )
-                    .order_by(MEMBER.c.ordinal)
-                    .limit(129)
-                )
-                .scalars()
-                .all()
+            row = (
+                session.execute(select(ENTRY).where(ENTRY.c.release_entry_seq == seq))
+                .mappings()
+                .first()
             )
-            if len(rows) > 128:
-                raise ValueError("Release entry exceeds fact limit")
-            return [self._fact(session, fact_id) for fact_id in rows]
+            if row is None:
+                return []
+            spec = validate_entry(session, row)
+            return [self._fact(session, fact_id) for fact_id, _ in spec.facts]
