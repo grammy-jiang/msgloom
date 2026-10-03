@@ -93,7 +93,8 @@ def _pair(kind: str | None, identity: str | None) -> None:
 
 @dataclass(frozen=True)
 class SourceVersionLocator:
-    """Resolve immutable evidence, observation, or content-capture association.
+    """
+    Resolve immutable evidence, observation, or content-capture association.
 
     Values are identifiers, never filesystem paths or provider payloads. The
     source reader validates the referenced association before loading evidence.

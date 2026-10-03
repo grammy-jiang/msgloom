@@ -379,3 +379,51 @@ def test_same_semantic_state_return_after_change_is_new_work(catalog):
     )
     if len(entries) != 3:
         pytest.fail("Returning to an earlier semantic state lost the new advancement")
+
+
+def test_unchanged_winning_authority_does_not_repeat_entries(catalog):
+    store = AcquisitionHandoffStore(catalog)
+    for run in ("one", "two"):
+        with catalog.writer_session() as session:
+            staged = store.stage_authority_fact_in_session(session, fact(run=run))
+            store.release_authority_group_in_session(
+                session,
+                replace(group(run), release_kind=ReleaseKind.AUTHORITY_SCOPE),
+                [entry(staged)],
+                winning_fact_ids=(staged.fact_id,),
+            )
+    if len(store.list_release_entries("source", Stream.OUTLOOK_MAIL)) != 1:
+        pytest.fail("Unchanged winning authority generated recurring work")
+
+
+def test_incomplete_profile_entry_cannot_drop_stale_required_members(catalog):
+    primary = stage(catalog, fact())
+    component = stage(
+        catalog,
+        replace(
+            fact(state="mime"),
+            fact_kind=Kind.COMPONENT_OBSERVATION,
+            resource_kind="mime",
+            component_kind="mime",
+            parent_resource_kind="message",
+            parent_resource_identity="message-1",
+        ),
+    )
+    stage(catalog, fact(state="v2", run="run-2"))
+    release(
+        catalog,
+        replace(group(), release_kind=ReleaseKind.RESOURCE_PROFILE),
+        [
+            replace(
+                entry(primary),
+                facts=(
+                    (primary.fact_id, "primary"),
+                    (component.fact_id, "component"),
+                ),
+            ),
+        ],
+    )
+    if AcquisitionHandoffStore(catalog).list_release_entries(
+        "source", Stream.OUTLOOK_MAIL
+    ):
+        pytest.fail("Profile published after dropping a stale required primary")

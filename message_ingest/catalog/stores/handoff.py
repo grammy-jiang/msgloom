@@ -73,7 +73,8 @@ def initialize_handoff(connection: Connection) -> None:
 
 
 class AcquisitionHandoffStore:
-    """Stage and publish under the caller's transaction and freshness decision.
+    """
+    Stage and publish under the caller's transaction and freshness decision.
 
     Mutators never begin, commit, flush, or roll back transactions. Callers must
     reserve writer ownership before reading freshness state and must propagate
@@ -132,7 +133,10 @@ class AcquisitionHandoffStore:
         if spec.source_state_key is None:
             raise ValueError("Effective state requires source_state_key")
         values = {"fact_id": spec.fact_id, "source_state_key": spec.source_state_key}
-        if self.current_effective_state(writer, spec.effective_key) is None:
+        current = self.current_effective_state(writer, spec.effective_key)
+        if current is not None and current["source_state_key"] == spec.source_state_key:
+            return
+        if current is None:
             writer.execute(
                 insert(STATE).values(
                     effective_key=spec.effective_key.digest,
@@ -149,7 +153,8 @@ class AcquisitionHandoffStore:
             )
 
     def stage_state_fact_in_session(self, writer: Writer, spec: FactSpec) -> FactSpec:
-        """Stage a provider-accepted write and atomically classify equivalence.
+        """
+        Stage a provider-accepted write and atomically classify equivalence.
 
         Pass ``current_equivalent`` for pre-ledger unchanged domain rows. Without
         a prior advanced fact they cannot create future-only bootstrap work.
@@ -243,7 +248,8 @@ class AcquisitionHandoffStore:
         *,
         winning_fact_ids: Sequence[str],
     ) -> str:
-        """Bind only observations applied by the caller's winning promotion.
+        """
+        Bind only observations applied by the caller's winning promotion.
 
         The provider owns CAS/generation checks and skipped-state decisions.
         Only explicitly applied facts become effective in this transaction.
@@ -304,6 +310,7 @@ class AcquisitionHandoffStore:
             seen.add(impact_key)
             members = []
             changed = False
+            complete = True
             for fact_id, role in entry.facts:
                 candidate = self._fact(writer, fact_id)
                 self._validate_scope(spec, candidate)
@@ -320,7 +327,9 @@ class AcquisitionHandoffStore:
                 if eligible is not None:
                     members.append((eligible.fact_id, role))
                     changed |= role != "proof" and not self._released(writer, eligible)
-            if members and changed:
+                else:
+                    complete = False
+            if members and changed and complete:
                 selected.append(replace(entry, facts=tuple(dict.fromkeys(members))))
         group_hash = hashlib.sha256(canonical_json(asdict(spec)).encode())
         for entry in selected:
