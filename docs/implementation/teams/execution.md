@@ -56,7 +56,7 @@ confirmed zero conversations. Recovery uses the installed workflow's
 history-list prerequisite. It does not solve or bypass a security challenge.
 A later auth-lane composer failure occurred before posting. The shared browser
 cooldown also refused two recovery attempts before they opened a tab. A bounded
-external script will make one retry after that cooldown expires. The cooldown
+external script made one retry after that cooldown expired. The cooldown
 applies before browser selection; explicitly selecting the dedicated browser
 does not bypass it. Future sends select both `RP_NEWCHAT_FAST=1` and
 `RP_BROWSER_CDP=http://127.0.0.1:9222`.
@@ -65,12 +65,15 @@ The first fresh coordinator accepted P0-D's harness-design deliverable after
 checking the actual framework and the finished transcript's model/effort.
 See [the fixture harness and 36-case map](p0-fixture-harness.md) and the accepted
 [P0-E pre-review](p0-architecture-pre-review.md). Pre-review PASS is not closure
-of the converged contracts. A/C remain in collection. The B retry posted
+of the converged contracts. The corrected [P0-C API contract](p0-api-contract.md) is now accepted for
+converged closure input. Its delta finding is resolved by the existing core
+exclusion; notification semantics remain mandatory. A/B remain in collection.
+The B retry posted
 successfully after the shared cooldown expired, with conversation ID
 `6ac10eed-b518-83ec-9e67-a02983191572`. Its collector then exited on an uncaught
 120-second read timeout. The coordinator adopted that conversation into a
 bounded read-only collector with timeout recovery. The original dispatcher
-still owns A/C collection. Do not duplicate these sends.
+still owns A collection. Do not duplicate these sends.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
