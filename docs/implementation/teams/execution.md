@@ -63,11 +63,14 @@ does not bypass it. Future sends select both `RP_NEWCHAT_FAST=1` and
 
 The first fresh coordinator accepted P0-D's harness-design deliverable after
 checking the actual framework and the finished transcript's model/effort.
-See [the fixture harness and 36-case map](p0-fixture-harness.md). P0-E returned
-pre-review PASS; this is not closure of the converged contracts. A/C remain
-in collection. The B retry started at `2026-10-03T14:18:19Z` after the shared
-cooldown expired. The existing dispatcher and recovery script own collection.
-Do not duplicate these sends.
+See [the fixture harness and 36-case map](p0-fixture-harness.md) and the accepted
+[P0-E pre-review](p0-architecture-pre-review.md). Pre-review PASS is not closure
+of the converged contracts. A/C remain in collection. The B retry posted
+successfully after the shared cooldown expired, with conversation ID
+`6ac10eed-b518-83ec-9e67-a02983191572`. Its collector then exited on an uncaught
+120-second read timeout. The coordinator adopted that conversation into a
+bounded read-only collector with timeout recovery. The original dispatcher
+still owns A/C collection. Do not duplicate these sends.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
