@@ -4,7 +4,8 @@
 
 The selected production scope is delegated T1 chats and complete T2
 teams/channels. T3, T4, T5, and application-only production profiles are not
-selected. No Teams production implementation has started at this checkpoint.
+selected. P0 contract closure passed. The P0 freeze adds only the two Teams
+package entry points; provider implementation follows in three isolated lanes.
 
 - Integration branch: `program/a1-teams-spider`.
 - Starting commit: `7b9a7572b935f0e6ce6a96057b55951190afc8bf`.
@@ -147,36 +148,31 @@ The reviewer could access only the old baseline attachment, so it correctly
 declined to verify the exact candidate. This is an input-delivery failure, not
 an architecture finding or closure PASS.
 
-The coordinator preserved that result and independently verified all 141 archive
-members. A corrected request supplies the same exact candidate through the
-existing Raspberry Pi MCP connector. It names the archive hash and an extracted
-read-only review directory. The reviewer must verify those hashes and inspect
-the actual candidate files. One bounded external driver owns this new
-`MCP_R2` request and collection. It preserves the browser/cooldown controls and
-the same model/effort pins. No P1 dispatch is authorized until the corrected
-review returns an accepted PASS.
+The corrected MCP request returned PASS for all four closure cells, with no
+findings. Its finished transcript confirms `gpt-5-6-thinking` / `max`. The
+reviewer verified the exact input hashes. The coordinator also compared all
+141 archive and extracted files with the exact Git blobs and inspected the
+cited framework implementation. See the accepted
+[P0 architecture closure](p0-architecture-closure.md). P0 is now closed. The freeze regression rerun passed all **298 tests in
+25.90 seconds**.
 
-The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
-worker prompt template is prepared. No P1 worktree or worker has started.
-Dispatch remains gated on exact P0-E closure and a committed
-P0 freeze. A prepared external closure collector rejects stale task IDs,
-candidate mismatches, unfinished replies, wrong model/effort, missing review
-cells, unverified hashes, and unresolved material findings in a PASS result.
-Its local acceptance/rejection probes passed. It does not replace coordinator
-review. A prepared P1 dispatcher also checks clean exact-base worktrees, prompt
-hashes, and disjoint ownership. It makes one send attempt per lane, then collects
-externally. Ten result-validation probes passed. It has not been launched.
+The P0 freeze adds only `microsoft_graph/items/teams/__init__.py` and
+`microsoft_graph/spiders/teams/__init__.py`. Three first-tranche P1 contracts
+assign 15 disjoint paths to message primitives, chat topology, and channel
+topology. Each writer receives an isolated worktree at the exact frozen commit,
+focused tests, and a finite local-commit contract. The coordinator retains
+shared exports, settings, catalogs, commands, dependencies, and documentation.
+Composition starts when its actual message/topology dependencies pass.
 
-A source audit found that the initial archive omitted the shared catalog
-service, evidence-item protocol, application fingerprinter, and concrete
-Contacts/To Do idle gates. The closure builder now includes those exact
-committed implementations and their focused tests, alongside the previously
-added scope tests. All 12 supplemental files are available at the candidate
-commit. This supplies review evidence; it does not claim a closure verdict.
+The external dispatcher verifies worktree base, branch, prompt hash, and
+ownership before each single send. It pins Chat workers to
+`gpt-5-6-thinking` / `max` and collects results over HTTP. Send failures require
+adoption checks before recovery. A collected result still requires independent
+coordinator diff review and test verification before integration.
 
-Worker prompts, replies, pin evidence, process records, and command logs are
-kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
-closure reviews are not yet complete.
+Worker prompts, replies, hash/pin evidence, process records, and command logs
+remain in the ignored `.superpowers/teams-a1/` directory. Later implementation
+closure reviews remain pending; P0 PASS is not an implementation claim.
 
 ## Coordinator continuity
 
@@ -202,8 +198,8 @@ are execution corrections. The authoritative design remains unchanged.
 | Gate | State |
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
-| P0 independent contract closure | Pending |
-| P1 core provider implementation | Not started |
+| P0 independent contract closure | PASS; exact candidate and hashes verified |
+| P1 core provider implementation | First-tranche contracts ready; dispatch follows the P0 freeze |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
