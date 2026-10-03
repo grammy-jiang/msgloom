@@ -123,6 +123,14 @@ four bounded cells, and writes separate result and transcript records. Nine
 recovery-condition probes and eight result-validation probes passed. This
 does not qualify P0-A or waive the later independent closure.
 
+The first replacement driver exited before any send because its adoption read
+timed out. The original collector then completed a newer HTTP read and still
+found the unfinished 219-message turn. One bounded retry passed a fresh adoption
+read and the account probe. After waiting under the normal browser memory
+budget, it posted the replacement review in conversation
+`6ac12b13-0a6c-83ec-9d75-0563b50c18c3`. Its bounded collector retains separate
+records and verifies the final transcript pin. No verdict has been accepted.
+
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
 Dispatch remains gated on accepted P0-A, exact P0-E closure, and a committed
@@ -131,6 +139,13 @@ candidate mismatches, unfinished replies, wrong model/effort, missing review
 cells, unverified hashes, and unresolved material findings in a PASS result.
 Its local acceptance/rejection probes passed. It has not collected a closure
 verdict and does not replace coordinator review.
+
+A source audit found that the initial archive omitted the shared catalog
+service, evidence-item protocol, application fingerprinter, and concrete
+Contacts/To Do idle gates. The closure builder now includes those exact
+committed implementations and their focused tests, alongside the previously
+added scope tests. All 12 supplemental files are available at the candidate
+commit. This supplies review evidence; it does not claim a closure verdict.
 
 Worker prompts, replies, pin evidence, process records, and command logs are
 kept in the ignored `.superpowers/teams-a1/` execution directory. Independent
