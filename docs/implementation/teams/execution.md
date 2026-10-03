@@ -245,8 +245,25 @@ completion record for each composition lane. Its original dispatch and
 single-send protections remain in place. Chat composition is now queued in its
 own worktree at `d85d7c94c2e8f13e465787092d462edb8efbe1b2`. It owns only
 `chat_composition.py` and its focused test module. Channel composition still
-requires accepted channel topology. The active channel send is waiting under
-the unchanged browser memory floor; no duplicate send is authorized.
+requires accepted channel topology. The chat-composition probe failed at the
+history listing and reauthentication before any send attempt. The channel
+sender passed its memory gate, then timed out finding the composer. Its final
+snapshot shows one visible composer and no login or challenge marker. This
+may indicate late rendering; it does not prove the exception message's generic
+claim that a handshake was refused. The native cooldown remains in force.
+
+Both drivers exited. One bounded external recovery waits for cooldown expiry,
+checks the Project for unadopted conversations, and runs a read-only native
+composer diagnostic with endpoint timing. Only after those checks pass may it
+queue one retry for each pending lane. Eight adoption, composer, and archival
+safeguard checks passed. All browser limits and model/effort pins remain.
+
+The coordinator also prepared a persistence draft from the actual catalog,
+schema, evidence-linking, and provider contracts. It identifies 24 disjoint
+candidate files and 13 test cells, including active-write cancellation, scoped
+version history, hosted-content observation linkage, deletion, and delivery
+gaps. This is preparation only. No P2 implementation starts before the core
+provider freeze.
 
 Saved-source handoff
 preparation confirmed that both Teams source-type enums already exist. The
@@ -283,7 +300,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message and chat topology integrated; chat composition queued; channel send active |
+| P1 core provider implementation | Message and chat topology integrated; composition/channel recovery scheduled |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
