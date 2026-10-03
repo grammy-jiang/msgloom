@@ -21,6 +21,13 @@ from message_ingest.catalog.models.microsoft.onedrive import (
     OneDriveItemRecord,
     OneDriveRecord,
 )
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from message_ingest.catalog.stores.microsoft._onedrive_handoff import (
+    content_state_key,
+    metadata_fact,
+    stage_content,
+    stage_resync,
+)
 from message_ingest.catalog.stores.microsoft.onedrive_content import (
     content_freshness,
     load_item_versions,
@@ -63,9 +70,16 @@ _ITEM_GRAPH_FIELDS = {
 class OneDriveStore:
     """Persist source-scoped state without treating partial reset as current."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self,
+        catalog: Catalog,
+        *,
+        source_id: str,
+        spider_name: str = "onedrive_store",
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
 
     def persist_drive(self, item: OneDriveDriveItem) -> Outcome:
         """Replace drive metadata only with an equal or later observation."""
@@ -85,8 +99,27 @@ class OneDriveStore:
         if not isinstance(item.evidence_id, str) or not item.evidence_id:
             raise ValueError("OneDrive content requires linked evidence")
         with self.catalog.writer_session() as session:
+            current = session.get(OneDriveContentRecord, (self.source_id, item.item_id))
+            previous = (
+                session.get(
+                    OneDriveContentCapture,
+                    (self.source_id, current.latest_evidence_id),
+                )
+                if current is not None and current.latest_evidence_id
+                else None
+            )
+            previous_key = content_state_key(previous) if previous else None
             outcome = self._upsert_session(session, OneDriveContentRecord, item, {})
             self._append_content_capture(session, item)
+            stage_content(
+                self.catalog,
+                session,
+                source_id=self.source_id,
+                spider_name=self.spider_name,
+                item=item,
+                outcome=outcome,
+                previous_key=previous_key,
+            )
             return outcome
 
     def load_item_versions(self, item_ids: tuple[str, ...]):
@@ -162,12 +195,23 @@ class OneDriveStore:
                     entry_index=item.entry_index,
                 )
             )
+            outcome: Outcome = "unchanged"
             if record is None:
-                session.add(OneDriveDeltaResyncObservation(**values))
-                return "created"
-            if any(getattr(record, name) != value for name, value in values.items()):
+                record = OneDriveDeltaResyncObservation(**values)
+                session.add(record)
+                session.flush()
+                outcome = "created"
+            elif any(getattr(record, name) != value for name, value in values.items()):
                 raise ValueError("OneDrive resync position changed during replay")
-            return "unchanged"
+            stage_resync(
+                self.catalog,
+                session,
+                source_id=self.source_id,
+                spider_name=self.spider_name,
+                item=item,
+                observation_id=record.observation_id,
+            )
+            return outcome
 
     def _upsert(
         self,
@@ -181,6 +225,22 @@ class OneDriveStore:
             return self._upsert_session(session, model, item, overrides)
 
     def _upsert_session(
+        self,
+        session: Session,
+        model: type[OneDriveRecord],
+        item: Observation,
+        overrides: dict[str, object],
+    ) -> Outcome:
+        """Apply current state and stage metadata in the caller transaction."""
+        outcome = self._apply_session(session, model, item, overrides)
+        if isinstance(item, (OneDriveDriveItem, OneDriveItem)):
+            AcquisitionHandoffStore(self.catalog).stage_state_fact_in_session(
+                session,
+                metadata_fact(self.source_id, self.spider_name, item, outcome),
+            )
+        return outcome
+
+    def _apply_session(
         self,
         session: Session,
         model: type[OneDriveRecord],
@@ -249,7 +309,12 @@ class OneDriveStore:
         if record is None:
             session.add(OneDriveContentCapture(**values))
             return
-        if any(getattr(record, name) != value for name, value in values.items()):
+        # A cache revalidation retains the original capture's logical run.
+        if any(
+            getattr(record, name) != value
+            for name, value in values.items()
+            if name != "run_id"
+        ):
             raise ValueError("OneDrive content capture evidence cannot be rewritten")
 
     def persist_candidate(self, item: OneDriveDeltaCheckpointCandidateItem) -> Outcome:

@@ -196,3 +196,76 @@ def test_pipeline_propagates_write_errors_for_checkpoint_integrity(
             pytest.fail("A failed catalog write was counted as durable")
     finally:
         pipeline.close_spider()
+
+
+def test_pipeline_handoff_fact_preserves_actual_spider_and_logical_run(tmp_path):
+    """The domain transaction records the active acquisition path."""
+    from message_ingest.acquisition.handoff import FactSpec
+    from message_ingest.catalog.models.handoff import AcquisitionFact
+    from message_ingest.spiders.microsoft.onedrive.delta import (
+        MicrosoftOneDriveDeltaSpider,
+    )
+
+    crawler = get_crawler(
+        MicrosoftOneDriveDeltaSpider,
+        settings_dict={
+            "MSGLOOM_CATALOG_ENABLED": True,
+            "MSGLOOM_SOURCE_ID": "onedrive-source",
+            "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+        },
+    )
+    pipeline = _pipeline_type().from_crawler(crawler)
+    item = OneDriveItem.from_graph(
+        {"id": "item", "eTag": "v1"},
+        observed_at="2026-09-29T00:00:00Z",
+        evidence_id=None,
+        run_id="logical-run",
+    )
+    try:
+        asyncio.run(pipeline.process_item(item))
+        with pipeline.catalog.Session() as session:
+            payloads = session.scalars(select(AcquisitionFact.payload)).all()
+        if len(payloads) != 1:
+            pytest.fail("Awaited pipeline write did not stage its fact")
+        fact = FactSpec.from_json(payloads[0])
+        if fact.spider_name != "microsoft_onedrive_delta" or fact.run_id != (
+            "logical-run"
+        ):
+            pytest.fail("Fact provenance lost the actual acquisition path")
+    finally:
+        pipeline.close_spider()
+
+
+def test_native_pipeline_fact_failure_rolls_back_and_propagates(tmp_path, monkeypatch):
+    """Native Scrapy processing must await fact failure before item success."""
+    from scrapy.pipelines import ItemPipelineManager
+
+    from message_ingest.catalog.models.handoff import AcquisitionFact
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+
+    crawler = _crawler(tmp_path)
+    pipeline = _pipeline_type().from_crawler(crawler)
+    manager = ItemPipelineManager(pipeline, crawler=crawler)
+    item = OneDriveItem.from_graph(
+        {"id": "item"},
+        observed_at="2026-09-29T00:00:00Z",
+        evidence_id=None,
+        run_id="run",
+    )
+
+    def fail_fact(_store, writer, _spec):
+        writer.flush()
+        raise OSError("injected fact write failure")
+
+    monkeypatch.setattr(AcquisitionHandoffStore, "_insert_fact", fail_fact)
+    try:
+        with pytest.raises(OSError, match="injected fact"):
+            asyncio.run(manager.process_item_async(item))
+        with pipeline.catalog.Session() as session:
+            for model in (OneDriveItemRecord, AcquisitionFact):
+                if session.scalars(select(model)).first() is not None:
+                    pytest.fail("Native pipeline failure left committed state")
+        if crawler.stats.get_value("msgloom/catalog/onedrive/item_created_count"):
+            pytest.fail("Failed fact was counted as a durable item")
+    finally:
+        pipeline.close_spider()
