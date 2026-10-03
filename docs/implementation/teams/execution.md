@@ -213,10 +213,22 @@ as structured results. One bounded external recovery runs another read-only
 composer check and permits one channel retry only if that check passes. Five
 qualification checks passed. Existing no-post evidence, lane locks, native
 account probing, exact base, model/effort pins, memory floor, and cooldown
-remain required. Unrelated browser tabs remain untouched.
+remain required. Unrelated browser tabs remain untouched. The second diagnostic
+passed with one visible Project composer and no login or challenge marker.
+The recovery driver then started its one allowed retry with a fresh account
+probe. A successful diagnostic alone does not prove a successful send.
 
 The coordinator prepared disjoint composition contracts for the next dependency
-edge. These are drafts, not dispatched implementation. Saved-source handoff
+edge. These are drafts, not dispatched implementation. A guarded preparation
+command now requires explicit coordinator acceptance of both dependency
+commits and verifies that they are ancestors of the clean integration commit.
+It refuses existing worktrees or manifests so interrupted preparation must be
+inspected. Seven dependency and dry-render checks passed. The existing
+dispatcher now accepts a program-local manifest and uses a separate lock and
+completion record for each composition lane. Its original dispatch and
+single-send protections remain in place. No composition worker has been sent.
+
+Saved-source handoff
 preparation confirmed that both Teams source-type enums already exist. The
 497-line shared catalog reader needs a separate Teams query module to stay
 below the repository's module limit. The persistence schema must stabilize
