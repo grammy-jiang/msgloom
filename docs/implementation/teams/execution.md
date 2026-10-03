@@ -70,7 +70,8 @@ converged closure input. Its delta finding is resolved by the existing core
 exclusion; notification semantics remain mandatory. The corrected
 [P0-B auth contract](p0-auth-scope-contract.md) is also accepted for closure.
 It preserves existing scope tests and adds the requirement to validate effective
-Teams scopes before authentication. A remains in collection.
+Teams scopes before authentication. The corrected
+[P0-A framework map](p0-framework-map.md) is now accepted for closure.
 The B retry posted
 successfully after the shared cooldown expired, with conversation ID
 `6ac10eed-b518-83ec-9e67-a02983191572`. Its collector then exited on an uncaught
@@ -129,7 +130,12 @@ found the unfinished 219-message turn. One bounded retry passed a fresh adoption
 read and the account probe. After waiting under the normal browser memory
 budget, it posted the replacement review in conversation
 `6ac12b13-0a6c-83ec-9d75-0563b50c18c3`. Its bounded collector retains separate
-records and verifies the final transcript pin. No verdict has been accepted.
+records and verifies the final transcript pin. The finished result passed all
+four framework cells. The coordinator verified its exact task/base and final
+model/effort metadata, then checked the actual framework source. The accepted
+map corrects one ambiguous suggestion: Outlook attachment helpers do not define
+Teams attachment traversal. Teams uses embedded attachment metadata and its own
+hosted-content paths. No new transport or generic framework primitive is needed.
 
 The three first-tranche P1 contracts have 15 disjoint owned paths. Their finite
 worker prompt template is prepared. No P1 worktree or worker has started.
