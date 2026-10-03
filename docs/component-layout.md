@@ -952,6 +952,9 @@ Failures, dropped items, and incomplete traversal prevent promotion. `JOBDIR`
 is rejected until Contacts resume semantics are qualified.
 
 Synthetic acceptance covers recursion, pagination, schema registration,
-ordering, and failure gates. Live acceptance remains pending `Contacts.Read`
-consent. No interactive consent or provider mutation is part of automated
+ordering, and failure gates. Personal-account live acceptance completed on
+2026-10-03 with read-only `Contacts.Read`: both discovery and authoritative
+sync reached terminal Graph pages and the clean snapshot promotion committed.
+The accepted account was empty, so non-empty recursive traversal remains
+covered by synthetic fixtures. No provider mutation is part of automated
 validation. See [the Contacts contract](notes/contacts-sync.md).

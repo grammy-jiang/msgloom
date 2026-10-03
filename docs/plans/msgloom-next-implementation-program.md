@@ -11,6 +11,7 @@
 **Runtime:** Python 3.13.5, Scrapy 2.19.0, SQLAlchemy 2.0.54, MSAL 1.39.0
 **Primary execution goal:** finish Microsoft To Do and OneDrive read-only ingestion, add Contacts, then stop Microsoft source expansion and implement the Phase 1 end-to-end product path A2 Preparation -> A3 Triage -> A5 Reporting.
 **Teams status:** explicitly blocked for real acceptance by the available personal Microsoft account. Teams must not block the rest of Phase 1.
+**A1 closeout:** completed on 2026-10-03. Outlook Mail, Outlook Calendar, To Do, OneDrive, Contacts, and profile acquisition satisfy the Part I exit criteria; Contacts received personal-account `Contacts.Read` live acceptance. Teams remains the documented account-capability blocker. See `docs/notes/a1-closeout.md` for fresh closeout evidence.
 
 ---
 

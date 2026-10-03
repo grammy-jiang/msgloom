@@ -32,6 +32,7 @@ flowchart TD
 | [Phase 1 Logical Design](phase-1/design.md) | Phase 1 only | Detailed rules and acceptance cases for the first release. |
 | [Phase 1 Architecture](phase-1/architecture.md) | Phase 1 only | Deployment, execution sequences, storage writes and recovery. |
 | [Microsoft Graph Live Acceptance](microsoft-live-acceptance.md) | Operator qualification | Read-only real-account smoke workflow and local acceptance evidence. |
+| [A1 Microsoft Collection Closeout](notes/a1-closeout.md) | Phase 1 A1 | Closed source-capability matrix, fresh validation gates and the durable A1-to-A2 boundary. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
 
 A definition belongs to its owner. Other documents use its exact term and link to it. Phase 1 adds restrictions and detail; it does not redefine the complete product.

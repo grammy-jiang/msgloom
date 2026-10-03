@@ -2,7 +2,7 @@
 
 **Lane:** W-CONTACTS
 **Date:** 2026-09-29
-**Status:** synthetic implementation accepted; live Contacts.Read consent pending
+**Status:** implementation and personal-account live acceptance completed
 
 ## Scope and permissions
 
@@ -130,3 +130,26 @@ rather than replacing `docs/component-layout.md` wholesale:
 
 Shared wiring changes are limited to Contacts command selection/dispatch,
 Contacts source/checkpoint settings, and Contacts lifecycle extension registration.
+
+## Manager live acceptance
+
+Read-only personal-account acceptance completed on 2026-10-03 using the
+documented Microsoft Graph Command Line Tools development public client. The
+account granted only `Contacts.Read` for this lane.
+
+An isolated `contacts discover` run completed two real Graph requests with
+HTTP 200 responses: the default Contacts collection and the top-level contact
+folder inventory. Both terminal collection-completion items and their raw
+network evidence were persisted, and source identity was bound successfully.
+
+A subsequent authoritative `contacts sync` against the same isolated catalog
+again completed both Graph requests with HTTP 200 responses. The clean-idle
+snapshot gate committed one promotion generation with no request, callback,
+pipeline, or item-drop failure. The tested account contained no contacts or
+custom contact folders, so the live run validates authentication, transport,
+terminal traversal, evidence persistence, source identity, and empty-snapshot
+promotion. Recursive non-empty folder traversal, pagination, removals, and
+failure gates remain covered by the synthetic integration fixtures.
+
+No Microsoft-side data was created, modified, moved, or deleted. No write
+permission was requested.
