@@ -2,7 +2,7 @@
 
 ## Status
 
-**Status:** Draft for review.
+**Status:** Implementation-ready after internal readiness audit; production implementation not started.
 
 **Design date:** 2026-10-03.
 
@@ -30,11 +30,14 @@ scheduled processing cycle.
 Instead:
 
 1. A1 records exact downstream-relevant acquisition facts durably.
-2. A1 releases only facts covered by a proven semantic completion boundary.
-3. A2 consumes only new immutable releases after its own durable consumer
-   cursor.
-4. A2 freezes exact source selections before parsing.
-5. Historical A1 data remains available as explicit supporting context without
+2. A1 commits a release group only after the group's semantic completion
+   boundary is proven.
+3. That committed group exposes immutable release entries as bounded downstream
+   admission units.
+4. A2 consumes only new immutable release entries after its own durable
+   consumer cursor.
+5. A2 freezes exact source selections before parsing.
+6. Historical A1 data remains available as explicit supporting context without
    becoming primary work merely because it exists in SQLite.
 
 The normal scheduled shape is:
@@ -45,7 +48,10 @@ The normal scheduled shape is:
     durable acquisition facts
         |
         v
-    semantic release manifests
+    committed release groups
+        |
+        v
+    sequenced release entries
         |
         +------------------------------+
                                        |
@@ -163,8 +169,8 @@ A fact is not automatically eligible for A2.
 
 ### Release subject
 
-The smallest semantic unit for which A1 can independently prove that the
-requested acquisition contract is complete enough for downstream use.
+The smallest semantic scope for which A1 can independently prove the requested
+acquisition contract is complete enough to publish downstream effects.
 
 Examples:
 
@@ -176,14 +182,31 @@ Examples:
 - one OneDrive content item;
 - one Contacts custom-folder delta scope.
 
-### Release manifest
+The release subject owns the completion gate. It is not necessarily the unit
+that A2 consumes.
 
-An immutable record declaring that one release subject is downstream eligible
-and naming the exact acquisition facts that establish that released state.
+### Release group
 
-A release may reference facts from more than one logical run only when the
+An immutable atomic publication declaring that one release subject passed its
+completion or authority gate.
+
+The group records coverage/profile/authority metadata shared by all effects
+published by that completion decision.
+
+A group may reference facts from more than one logical run only when the
 current operation explicitly revalidates those older facts as the exact state
 being released.
+
+### Release entry
+
+One immutable, independently pageable downstream effect within a committed
+release group.
+
+Examples include one changed Mail message, one Todo task, one Calendar event
+membership transition, one OneDrive item/content impact, or one context update.
+
+A large traversal/snapshot/delta group can therefore publish many release
+entries atomically while A2 consumes those entries in bounded chunks.
 
 ### Stream
 
@@ -199,8 +222,8 @@ Profile output is operational output, not an A2 stream.
 
 ### A2 consumer cursor
 
-A2-owned durable progress for one A1 catalog, source_id, stream, consumer
-combination.
+A2-owned durable progress for one A1 catalog, source_id, stream, stable
+consumer identity combination.
 
 The cursor belongs to A2. It is never a consumed flag in A1.
 
@@ -237,7 +260,20 @@ facts for diagnostics, retries, or future revalidation without becoming A2
 primary work. A run-level failure does not invalidate another subject in the
 same run when that subject has its own independently proven release contract.
 
-### H5. Authority cannot advance without recoverable downstream publication
+### H5. Downstream-visible state advancement must stage its fact atomically
+
+Every downstream-relevant domain write that can make a new A1 source/component
+state effective must stage the corresponding acquisition fact in the same
+SQLite transaction.
+
+This is required even for non-authoritative discovery/enrichment writes. If a
+domain row could advance without its fact, a retry might later see only
+current-equivalent state and have no durable proof that the new state was never
+released.
+
+A fact-insert failure therefore rolls back the state advancement it describes.
+
+### H6. Authority cannot advance without recoverable downstream publication
 
 When A1 advances an authoritative checkpoint, presence generation, or fixed
 window state, the corresponding release/authority publication state must commit
@@ -246,7 +282,7 @@ in the same SQLite transaction.
 A crash may not leave provider authority advanced with no recoverable
 downstream release.
 
-### H6. Positive observations and authority claims have different gates
+### H7. Positive observations and authority claims have different gates
 
 A provider observation is not the same claim as authoritative absence,
 membership reconciliation, or checkpoint advancement.
@@ -254,7 +290,7 @@ membership reconciliation, or checkpoint advancement.
 Derived absence and winning state transitions are publishable only at the
 existing authority promotion boundary.
 
-### H7. Canonical evidence provenance is independent of logical-run identity
+### H8. Canonical evidence provenance is independent of logical-run identity
 
 HTTP-cache replay may make a current-run semantic item reference evidence
 originally captured in an older run.
@@ -264,20 +300,20 @@ canonical evidence_id.
 
 It must not globally require evidence.run_id to equal run_id.
 
-### H8. Provider time is not publication order
+### H9. Provider time is not publication order
 
 observed_at is provider/evidence provenance, not a downstream watermark.
 
 Release order uses a local monotonic release sequence.
 
-### H9. Release order is not provider semantic chronology
+### H10. Release order is not provider semantic chronology
 
 Concurrent runs can finish in a different order from provider freshness.
 
 A release sequence orders durable admission. It does not replace provider
 versions, CAS revisions, delta ordinals, page/entry ordering, or source times.
 
-### H10. Stale writes cannot become newer primary state
+### H11. Stale writes cannot become newer primary state
 
 Domain persistence must expose whether a fact advanced current state, was
 current-equivalent/replayed, or was stale.
@@ -285,18 +321,18 @@ current-equivalent/replayed, or was stale.
 A stale fact remains audit/history data but cannot create a release claiming a
 new effective primary source state.
 
-### H11. Mutable current projections cannot reconstruct an old release
+### H12. Mutable current projections cannot reconstruct an old release
 
 Every release must name immutable acquisition facts sufficient for A2 to
 reconstruct the exact released source/component state without consulting future
 mutable current rows.
 
-### H12. A1 does not serialize CollectedSelection
+### H13. A1 does not serialize CollectedSelection
 
 CollectedSelection remains an A2-side snapshot. A1 stores provider-neutral
 handoff provenance only.
 
-### H13. Scoped removal stays scoped
+### H14. Scoped removal stays scoped
 
 Examples:
 
@@ -306,16 +342,68 @@ Examples:
 
 The scope is part of the released transition identity.
 
-### H14. Downstream progress is consumer-owned
+### H15. Downstream progress is consumer-owned
 
-A2 advances its cursor only in the same A2 transaction that durably saves the
-immutable workset and exact inputs selected by that cursor advance.
+A2 advances its release-entry cursor only in the same short A2 transaction
+that durably saves the immutable intake workset selected by that cursor
+advance. Expensive A1 evidence reads and selection materialization do not run
+inside that write transaction.
 
-### H15. No silent backup/restore skip
+### H16. No silent backup/restore skip
 
 A2 must verify an anchor for its prior cursor. A restored or replaced A1
 catalog that no longer contains the same cursor anchor fails closed and
 requires explicit recovery/baseline selection.
+
+### H17. Completion scope and consumer unit are separate
+
+One completed release subject may affect an unbounded number of resources.
+
+A1 therefore commits one release group for the completion/authority scope and
+one or more sequenced release entries for individually consumable resource,
+context, component-parent, or transition impacts.
+
+A2 cursors advance over release entries, not over an indivisible scope-level
+manifest.
+
+### H18. Intake failure cannot poison the stream forever
+
+A release entry that cannot currently be materialized within A2 limits or
+because required evidence is unavailable must be durably admitted as held or
+failed input with its exact A1 release reference.
+
+Once that disposition and workset are durable, the cursor may advance. Repair
+or replay is explicit; one bad entry must not permanently block every later
+entry in the stream.
+
+### H19. Release-time freshness is revalidated
+
+An `advanced` fact means that state won when its domain transaction committed;
+it does not grant a permanent right to publish later.
+
+Before a non-authoritative release group creates a resource/component entry, it
+must verify that the candidate source_state_key still represents the effective
+A1 state for that resource/component, or that it is the exact
+current-equivalent recovery of an unreleased advanced state.
+
+A fact superseded by another concurrent run remains immutable history but does
+not become a later primary entry merely because its run finishes later.
+
+Authoritative paths obtain the equivalent protection from their existing
+revision/generation/CAS promotion and create entries only for the winning
+state.
+
+### H20. Cursor admission and preparation completion are separate
+
+Advancing the A2 release-entry cursor atomically creates an immutable intake
+workset and a durable pending-work index entry.
+
+Preparation/Kedro processing may fail after that cursor commit. A later
+invocation must discover the pending workset directly and retry/replay its
+already frozen inputs without rewinding the A1 cursor.
+
+Only a separate short terminal update marks the pending workset completed.
+Failed processing does not erase it and does not require recollection.
 
 ## 4. Why the rejected batch models fail
 
@@ -327,6 +415,7 @@ requires explicit recovery/baseline selection.
 | A1 writes CollectedSelection | rejected | reverses the existing A1/A2 dependency boundary |
 | A2 scans provider tables by run_id | rejected | HTTP-cache canonicalization can produce a current run with no new observation row |
 | raw journal row = immediately consumable | rejected | staged/losing/authority-pending facts must remain hidden until the correct semantic unit is eligible |
+| one scope-level release = one A2 cursor step | rejected | snapshots/deltas/discovery can affect more records than one bounded A2 intake may admit |
 | one global A2 cursor | rejected | one source ID can expose multiple streams and consumers may enable them independently |
 
 ## 5. Contract architecture
@@ -340,12 +429,15 @@ requires explicit recovery/baseline selection.
               Immutable staged fact
                          |
                          v
-             Release-unit completion gate
+             Subject completion gate
                     /           \
              incomplete        complete
                  |                |
                  v                v
-          staged only      Release manifest
+          staged only       Release group
+                                  |
+                                  v
+                         Release entries
                                   |
                        =======================
                                   |
@@ -353,7 +445,7 @@ requires explicit recovery/baseline selection.
                               A2 intake
                                   |
                                   v
-                        bounded release cut
+                      bounded entry-sequence cut
                                   |
                                   v
                        exact reconstruction
@@ -364,12 +456,12 @@ requires explicit recovery/baseline selection.
                                   v
                                 Kedro
 
-For ordinary item persistence, facts and domain writes share the same
-transaction where practical. A semantic release is a separate operation when
-the release subject requires several facts or an end-of-scope proof.
+Every downstream-visible domain state advancement and its acquisition fact
+share one transaction. A release group/entry publication is a separate
+operation when the subject requires several facts or an end-of-scope proof.
 
-For authoritative promotions, authority mutation and its release state share
-one transaction.
+For authoritative promotions, authority mutation plus the release group and
+all entries produced by that authority decision share one transaction.
 
 ## 6. Acquisition fact contract
 
@@ -399,6 +491,8 @@ A fact needs at least the following structural semantics:
     provider_observed_at
 
     storage_relation
+    source_state_key          optional
+    source_version_locator    optional
     authority_revision        optional
     provider_order            optional
 
@@ -446,6 +540,7 @@ The initial vocabulary is:
 
     advanced
     current_equivalent
+    authority_staged
     stale
 
 advanced means the write became the effective stored state for that
@@ -455,13 +550,67 @@ current_equivalent means the acquisition is valid and exact but does not
 advance semantic current state. Cache replay and idempotent re-observation can
 produce this relation.
 
+authority_staged means the provider observation is durable but is not yet
+effective current state. Calendar/Contacts delta staging and OneDrive 410
+resync observations use this relation. Such a fact can become downstream
+eligible only through the winning authority promotion that applies it.
+
 stale means a newer state already wins. A stale fact is retained but cannot
 create a release claiming a newer effective primary source state.
 
 Provider-specific stores may retain richer internal outcomes, but they must map
 to these handoff semantics.
 
-### 6.5 Privacy and payload limits
+Release-entry eligibility follows these source-state rules:
+
+- advanced facts are eligible once their release subject passes its gate;
+- authority_staged facts are eligible only through the winning authority group
+  that applies them;
+- stale facts are never a new effective-source entry;
+- current_equivalent facts do not create repetitive downstream work merely
+  because a full snapshot observed the same state again;
+- a current_equivalent observation may recover a previously staged advanced
+  fact for the same source_state_key when that advanced fact has never belonged
+  to a committed release entry and the current operation revalidates the same
+  state.
+
+source_state_key is an A1-owned canonical digest/identity of the retained source
+or component state, excluding run/capture metadata. It exists to prove
+equivalence and recovery; it is not an A2 parser/content hash.
+
+The ledger also maintains a small mutable acquisition_effective_states index
+keyed by source/stream/resource/component scope. It points to the fact and
+source_state_key that currently win A1 freshness ordering.
+
+The index is updated in the same transaction as the provider-domain write that
+advances state. It is used only for storage-relation classification,
+current-equivalent recovery, and release-time freshness checks. It is not an
+immutable source version and A2 never reconstructs content from it.
+
+This rule preserves failed-run recovery without sending every unchanged To Do
+or Contacts snapshot row back to A2 on every schedule.
+
+At release time, non-authoritative builders also revalidate that the selected
+advanced/recovery state is still effective. `advanced` is a write-time
+outcome, not a release-time freshness guarantee.
+
+### 6.5 Exact source-version locator
+
+A publishable resource/component fact carries a bounded A1-owned
+source_version_locator when the exact provider representation must later become
+an A2 source version.
+
+The locator is independent of release-entry sequence. It identifies the exact
+immutable representation using already durable A1 provenance such as an
+observation key or canonical evidence plus resource/component identity.
+
+A2 maps that locator to VersionRef. Releasing the same exact representation
+again must not require inventing a different source version merely because the
+downstream release entry is newer.
+
+The locator is not an arbitrary path or provider payload.
+
+### 6.6 Privacy and payload limits
 
 The ledger does not duplicate arbitrary provider bodies or message content.
 
@@ -481,21 +630,21 @@ ledger.
 
 ## 7. Release contract
 
-### 7.1 Release granularity
+### 7.1 Group granularity
 
-A release is not universally run-scoped.
+A release group is the semantic completion/authority scope.
 
-The release unit is the smallest semantic subject with an independently
-provable completion contract.
+It can be traversal-scoped, authority-scoped, or one resource-profile target.
+The group is committed atomically: A2 never sees half of one completion
+decision.
 
-This is required for multi-target Full/content spiders: one target must not be
-held forever merely because another target in the same Spider run fails.
+A group is not required to fit in one A2 workset.
 
-### 7.2 Release identity
+### 7.2 Group identity
 
-A release requires these semantics:
+A release group requires these semantics:
 
-    release_id
+    release_group_id
     source_id
     stream
 
@@ -512,34 +661,56 @@ A release requires these semantics:
     coverage_kind
 
     authority_revision  optional
-    release_digest
+    group_digest
 
-release_id is a monotonically increasing local publication sequence. It is an
-admission order, not a provider timestamp.
+group_digest canonically binds the group identity, completion metadata, and the
+ordered identities of the entries it publishes.
 
-release_digest canonically binds the release identity and member facts. It is
-used as a cursor anchor and corruption/restore check.
+### 7.3 Release entries
 
-### 7.3 Release members
+Every downstream-consumable effect is represented by a release entry:
 
-A release manifest names its exact immutable fact IDs.
+    release_entry_seq
+    release_group_id
 
-Conceptually:
+    entry_kind
+    resource_kind
+    resource_identity
 
-    acquisition_release_facts
-        release_id
-        ordinal
-        fact_id
-        role
+    parent_resource_kind      optional
+    parent_resource_identity  optional
 
-A release can reference facts from an earlier run only when the release owner
-revalidates those facts as the exact state that satisfies the current release
-contract. This supports idempotent retry/adoption without reading future
-mutable state.
+    scope_kind                optional
+    scope_identity            optional
 
-### 7.4 Release kinds
+    entry_digest
 
-The initial release families are:
+release_entry_seq is a monotonically increasing local publication sequence. It
+orders downstream admission only; it is not provider time.
+
+An entry names exact immutable fact IDs with bounded roles such as primary,
+component, context, transition, or proof.
+
+A large group can have many entries. All entries become visible atomically when
+the group transaction commits, but A2 may consume the committed entries across
+several bounded intake worksets.
+
+### 7.4 Entry/member semantics
+
+Component changes normally publish an entry for their semantic parent. For
+example, new Mail MIME or attachment bytes produce a Mail-message impact rather
+than an unrelated attachment work item.
+
+A scoped transition can be its own entry when no readable source representation
+exists, for example authoritative absence.
+
+Multiple facts may belong to one entry. One fact can be referenced by later
+groups only after the later release owner revalidates it as the exact state
+satisfying that subject's contract.
+
+### 7.5 Release kinds
+
+The initial group families are:
 
     resource_set
     resource_profile
@@ -553,16 +724,20 @@ authority_scope is appropriate for snapshot/delta promotions.
 
 content_capture is appropriate for explicit OneDrive content.
 
-### 7.5 Release eligibility versus run outcome
+### 7.6 Release eligibility versus run outcome
 
-A run may have no releases, one release, or several releases.
+A run may produce no groups, one group, or several groups.
+
+A group may publish no entries when a completed authority round has no
+downstream-relevant changes; the durable authority outcome can still be
+recorded without forcing an empty A2 work item.
 
 Subject-level completion status and declared terminal limitations are stored on
-the release subject/manifest, not collapsed into one run-wide completion flag.
+the release group, not collapsed into one run-wide completion flag.
 
 A failed multi-target Full run may still contain a target whose profile was
-independently proven terminal-complete. That target can receive its own
-release.
+independently proven terminal-complete. That target can receive its own group
+and entry.
 
 Conversely, a normally closing Spider is not enough to release a scope whose
 completion contract was not established.
@@ -581,14 +756,20 @@ For authority-bearing operations, the following structure is mandatory:
     apply presence/window reconciliation
     advance provider checkpoint/generation
     write promotion-derived transition facts
-    write authority release manifest referencing exact staged/winning facts
+    write one authority release group
+    write all release entries for the winning authority state
+    bind entries to exact staged/winning facts
     mark candidate committed
 
     COMMIT
 
-Observation facts that were already staged earlier in the crawl are referenced,
-not copied. Transition facts that exist only because promotion established a
-new authority state are created in the promotion transaction.
+Observation facts that were already staged earlier in the crawl are
+referenced, not copied. Transition facts that exist only because promotion
+established a new authority state are created in the promotion transaction.
+
+The group and every entry belonging to that authority decision commit with the
+provider checkpoint/generation. A2 can later page those already committed
+entries without weakening the atomic provider decision.
 
 If any required fact/release write fails, the provider authority mutation rolls
 back.
@@ -673,13 +854,13 @@ A logical-run/attempt row records execution-wide facts such as:
 It must not pretend that one run has a single resource-completion value when
 the run can target several independent resources.
 
-Per-subject semantic completion belongs to the release subject/manifest. One
-Mail Full run can therefore be failed overall while Message A has
-terminal-complete Full-v1 and Message B remains incomplete.
+Per-subject semantic completion belongs to the release group. One Mail Full
+run can therefore be failed overall while Message A has terminal-complete
+Full-v1 and Message B remains incomplete.
 
 For a single-scope authority run, the run outcome may additionally state that
-the authority promotion committed, but the release manifest remains the
-downstream contract.
+the authority promotion committed, but the release group and its entries
+remain the downstream contract.
 
 Stats remain observability. Durable outcome rows may be populated from the same
 validated facts but must not rely on parsing logs.
@@ -754,8 +935,8 @@ For rules-enabled sync:
         v
     Mail authority release commits
 
-Per-message Full releases are independent release subjects. The existing
-rules workflow may continue to use its all-selected-target completion validator
+Per-message Full release groups are independent subjects. The existing rules
+workflow may continue to use its all-selected-target completion validator
 as the authority gate for deferred delta promotion; per-message release
 validation is an additional downstream publication decision, not a weakening of
 that authority gate.
@@ -879,22 +1060,27 @@ A fact marked stale cannot produce a release that claims new effective state.
 
 ### 14.2 Current-equivalent replay
 
-A current-equivalent observation can still be required for handoff recovery.
+A current-equivalent observation can still be required for handoff recovery,
+but it does not automatically create repetitive work.
 
 Example:
 
-1. Run A writes a provider state but fails before release.
-2. Run B retries the same provider state.
-3. Domain persistence reports current-equivalent.
-4. Run B successfully proves its release unit.
-5. Run B can release the exact equivalent source facts.
+1. Run A atomically writes a newly advanced provider state plus advanced fact,
+   then fails before the completion subject is released.
+2. Run B retries and observes the same source_state_key.
+3. Domain persistence reports current_equivalent and stages that revalidation.
+4. Run B successfully proves its completion subject.
+5. The release builder sees that the earlier equivalent advanced fact has never
+   belonged to a committed release entry and can publish that exact state once.
 
-This prevents failed earlier work from making a later successful acquisition
-invisible.
+If the equivalent advanced state was already released, Run B creates no new
+resource entry for that unchanged state.
 
-### 14.3 Release sequence
+This prevents both failed-run data loss and repeated full-snapshot churn.
 
-release_id orders committed release manifests.
+### 14.3 Release-entry sequence
+
+release_entry_seq orders committed downstream entries.
 
 It does not decide:
 
@@ -916,37 +1102,108 @@ A2 stores independent cursors by:
     A1 catalog identity
     source_id
     stream
-    consumer kind/version
+    stable consumer_id
 
 At minimum Mail and Calendar must not share one downstream cursor merely because
 they share an Outlook source ID.
 
-### 15.2 Bounded cut
+consumer_id is stable across ordinary parser/rule/configuration changes. Those
+changes are recorded on worksets/results and use explicit replay/rerun policy;
+they do not silently create a fresh source cursor and replay the entire feed.
 
-For one source/stream, A2 chooses a finite release range after its prior cursor:
+The cursor position is:
 
-    (last_release_id, cutoff_release_id]
+    last_release_entry_seq
+    last_release_entry_digest
 
-The range is fixed before downstream parsing begins.
+not the release-group ID.
 
-New A1 releases after the cutoff wait for the next intake.
+### 15.2 Bounded entry cut
 
-### 15.3 Immutable workset
+For one source/stream, A2 chooses a finite entry range after its prior cursor:
 
-Within one A2 transaction:
+    (last_release_entry_seq, cutoff_release_entry_seq]
 
-1. validate the prior cursor anchor;
-2. read the bounded release manifests;
-3. resolve their exact release facts;
-4. map eligible source releases to exact A2-side source selections;
-5. save CollectedSelection snapshots and transition inputs;
-6. save the immutable A2 workset;
-7. advance the consumer cursor to the accepted cutoff;
-8. commit.
+The range is bounded by entry count and intake byte/query budgets before
+downstream preparation begins.
 
-Only after that transaction may Kedro start processing the workset.
+A group with thousands of committed entries can therefore be drained over
+multiple worksets. New A1 entries after the cutoff wait for a later intake.
 
-### 15.4 Existing SavedSourceReader
+### 15.3 Intake claim
+
+Cursor admission is a separate durable work scope from processing an already
+fixed preparation plan.
+
+Phase 1 persistence must add a narrow PREPARE_INTAKE claim kind keyed by the A1
+catalog identity, source_id, stream, and stable consumer_id.
+
+The intake lease is finite and longer than its bounded materialization budget.
+
+### 15.4 Materialization outside the final write transaction
+
+A2 must not hold its SQLite write transaction while reading A1 evidence files
+or constructing potentially large CollectedSelection values.
+
+Under the intake claim it:
+
+1. validates the prior cursor anchor;
+2. reads a bounded committed release-entry cut from A1;
+3. resolves exact entry facts;
+4. constructs exact A2-side source selections/transition inputs;
+5. persists immutable selection StageResults using claim-fenced, append-only
+   writes;
+6. records an explicit held/failure disposition for an entry that cannot be
+   materialized safely.
+
+These steps can use bounded awaited workers and short existing persistence
+transactions.
+
+### 15.5 Atomic workset/cursor finalization
+
+After materialization, one short Phase 1 persistence transaction:
+
+1. revalidates the current intake claim and unchanged prior cursor;
+2. saves one immutable intake workset referencing the selected/held release
+   entries and already durable selection results;
+3. inserts the workset into the durable pending-preparation index;
+4. advances the consumer cursor to the exact cutoff entry sequence/digest;
+5. commits.
+
+A crash before this transaction leaves the cursor unchanged. Previously saved
+immutable selection results are harmless and may be reused by retry.
+
+A crash after commit cannot lose work because the workset and its pending queue
+entry are already durable.
+
+### 15.6 Pending workset processing
+
+Scheduled preparation first drains durable pending worksets independently of
+whether the same invocation also admits newer release entries.
+
+A pending workset references already frozen CollectedSelection/transition
+inputs. Preparation uses those exact inputs and never rereads mutable LIVE A1
+state.
+
+After one workset reaches its accepted terminal preparation outcome, a short
+claim-fenced transaction marks that workset terminal and records its result
+references. A failed/cancelled preparation attempt leaves the workset pending
+for later retry unless an explicit operator action records a terminal
+disposition.
+
+### 15.7 Held entries
+
+A missing/corrupt evidence file, unsupported source type, configured byte
+limit, or other per-entry materialization problem does not allow the intake to
+silently drop that release.
+
+The immutable workset records the exact release entry plus a bounded held/fail
+reason. Once that durable disposition exists, the cursor may advance.
+
+Explicit repair/replay can revisit the held entry later without rewinding
+unrelated later stream progress.
+
+### 15.8 Existing SavedSourceReader and preparation path
 
 The current reader remains useful evidence for the exact-selection design:
 
@@ -957,14 +1214,20 @@ The current reader remains useful evidence for the exact-selection design:
 
 However, list_versions() is not the scheduled handoff API.
 
-The A2 handoff reader must enumerate releases, not the historical source tables.
+A release-aware reader must enumerate release entries and reconstruct source
+versions from release facts/source_version_locator values, never from future
+mutable current projections.
 
-It must also gain Calendar support before Calendar releases become
+It must also gain Calendar support before Calendar entries become
 A2-processable.
 
-### 15.5 State-transition inputs
+After intake has persisted CollectedSelection results, scheduled preparation
+should consume those exact saved selections through the existing replay/exact
+selection path rather than call the LIVE reader again.
 
-Not every release is a CollectedSelection.
+### 15.9 State-transition inputs
+
+Not every release entry is a CollectedSelection.
 
 A2 intake must also preserve typed scoped transitions such as:
 
@@ -977,9 +1240,9 @@ A2 intake must also preserve typed scoped transitions such as:
 A2 policy may decide whether a transition triggers preparation, retirement,
 reconciliation, or context refresh. A1 only supplies the exact scoped fact.
 
-### 15.6 Historical context
+### 15.10 Historical context
 
-A2 primary work comes only from the selected release range.
+A2 primary work comes only from the selected release-entry range.
 
 While processing a primary record, A2 may read older A1 data as supporting
 context, for example an In-Reply-To target.
@@ -1017,9 +1280,14 @@ The implementation must offer an explicit baseline choice.
 
 ### Baseline A: future-only
 
-Create the ledger and start A2 from its genesis release cursor. Existing
-historical A1 rows remain context/replay data but are not automatically admitted
-as new work.
+Create the ledger and start A2 from its genesis release-entry cursor.
+Existing historical A1 rows remain context/replay data but are not automatically
+admitted as new work.
+
+Because pre-ledger current rows have no staged advanced acquisition fact,
+post-ledger current-equivalent observations do not fabricate new work for those
+old rows. Only a genuinely advanced post-ledger state, or explicit historical
+baseline, admits them.
 
 ### Baseline B: explicit historical baseline
 
@@ -1037,12 +1305,12 @@ The baseline must not guess its boundary from timestamps.
 
 A2 stores with every cursor:
 
-    last_release_id
-    last_release_digest
+    last_release_entry_seq
+    last_release_entry_digest
     A1 catalog identity
 
 Before advancing from a nonzero cursor, A2 verifies that the referenced release
-still exists and has the same digest.
+entry still exists and has the same digest.
 
 If it is missing or changed, A2 fails closed.
 
@@ -1061,26 +1329,39 @@ baseline/reconciliation decision.
 The implementation should add new tables rather than add handoff columns to
 every provider table.
 
-A candidate shape is:
+A candidate A1 shape is:
 
     acquisition_facts
-    acquisition_releases
-    acquisition_release_facts
+    acquisition_effective_states
+    acquisition_release_groups
+    acquisition_release_entries
+    acquisition_release_entry_facts
     acquisition_run_outcomes
     acquisition_ledger_metadata
 
-The exact DDL, indexes, uniqueness constraints, and canonical digest format are
-implementation-plan work.
+acquisition_ledger_metadata owns a stable catalog identity and handoff-ledger
+schema version. Existing catalogs receive that identity when the additive
+ledger schema is first initialized; backups preserve it.
 
-The schema must support:
+The exact DDL, indexes, uniqueness constraints, source-version locator encoding,
+entry/group digest format, and sequence allocation are implementation-plan
+work.
 
-- append-only immutable released facts/manifests;
+The A1 schema must support:
+
+- append-only immutable released facts/groups/entries;
+- one mutable effective-state index used only for freshness/equivalence gates;
 - idempotent fact staging;
-- idempotent release creation;
-- bounded lookup by source_id, stream, and release_id;
+- idempotent group/entry publication;
+- bounded lookup by source_id, stream, and release_entry_seq;
 - lookup of unreleased facts by logical run/release subject;
 - transactional inserts from provider stores/promotions;
 - no arbitrary provider payload duplication.
+
+The provider-neutral Phase 1 application database is different: it currently
+uses explicit neutral schema version 3. Consumer cursors, intake worksets, and
+their indexes therefore require an explicit reviewed v3-to-v4 migration rather
+than implicit create_all behavior.
 
 No automatic deletion/compaction is introduced in the first implementation.
 
@@ -1105,11 +1386,14 @@ Own:
 
 - awaited persistence;
 - storage freshness outcome;
-- staging exact acquisition facts beside the domain write.
+- source_state_key/source_version_locator derivation for persisted facts;
+- atomic staging of each acquisition fact with the exact domain state
+  advancement it describes.
 
-Where one semantic item currently requires several independent store
-transactions, implementation may consolidate the transaction or stage enough
-durable facts to make release recovery exact.
+One semantic item may still require several independent domain transactions
+(for example Mail detail plus a surface row), but each individual advancement
+must have its own atomic fact. A later release group binds all facts required
+for subject completeness.
 
 ### Existing authority stores/extensions
 
@@ -1118,23 +1402,130 @@ Own the existing correctness proof and provider promotion.
 They must be extended so authority release creation is inside the same
 transaction as the promotion.
 
+### Handoff release extension
+
+For non-authoritative per-crawler scopes/targets, a narrow Scrapy extension may
+finalize release groups/entries at natural spider_idle after request and item
+pipeline work has drained and while the crawler CatalogService is still open.
+
+It must be disabled for authority scopes whose existing checkpoint/snapshot
+promotion owns publication. It must be idempotent and must not infer completion
+from signal priority.
+
+This keeps direct developer scrapy crawl execution and public Microsoft
+commands on the same acquisition semantics.
+
+### 20.1 A1 transaction insertion matrix
+
+The following matrix is the implementation-readiness map for existing A1
+persistence. Fact transaction names the transaction that must own the fact
+write; no later pipeline may reconstruct it.
+
+| Area | Existing persistence seam | Current outcome | Required handoff change | Release owner |
+| --- | --- | --- | --- | --- |
+| Mail message discovery/delta/detail | OutlookMailStore.record_message() | observation created/replay; current freshness implicit | Return structured storage relation, derive source_state_key, and stage exact message fact in the same session. Preserve immutable observation locator when one is created; cache replay can revalidate an older exact state. | discover scope / Mail authority / per-message Full |
+| Mail positive presence | mark_message_present_in_session() inside record_message() | mutable presence update | No standalone primary entry. Bind presence facts/authority transitions only through the owning Mail release contract. | Mail authority |
+| Mail folder membership removal | record_folder_removal() | append-only observation created/replay | Stage scoped message-in-folder transition fact in the same transaction; never map to global deletion. | Mail authority |
+| Mail folder metadata | upsert_folder() | freshness decision implicit; no return | Return storage relation and stage control-context fact in the same transaction. | discover/folder-delta context |
+| Mail folder tombstone | mark_folder_removed() | mutates folder presence and clears folder message cursors before final checkpoint | Stage exact folder transition/control facts in that transaction; keep them unreleased until winning folder-delta group commits. | folder-delta authority |
+| Mail surface | set_surface() | mutable upsert; stale silently ignored; no run_id | Add logical-run provenance, return storage relation, and stage component fact atomically. | per-message Full |
+| Mail attachment metadata | upsert_attachment() | mutable upsert; stale silently ignored | Add logical-run provenance, return storage relation, and stage component fact atomically. | per-message Full |
+| Mail message-delta authority | promote_validated_mail_delta() + lifecycle/checkpoint session helpers | one writer_session() transaction | In that same transaction write promotion-derived presence transitions, one authority group, and all changed/recovery entries. Rules-enabled finalizer calls the same service after Full obligations pass. | existing immediate/deferred Mail authority owner |
+| Mail folder-delta authority | OutlookFolderDeltaCheckpointStore.commit() | one Session.begin() transaction | Move/retain under strong writer transaction as needed; bind staged folder facts and publish one authority group + entries with checkpoint commit. | existing folder checkpoint extension |
+| Calendar inventory/event | persist_calendar(), persist_event() | created/changed/unchanged/replay/stale | Stage resource/context facts in each existing transaction and map outcomes to ledger relations. | discover/window/per-event Full |
+| Calendar surface | CalendarPlanningStore.set_event_surface() | mutable upsert; stale silently ignored; no outcome/run provenance | Add logical-run provenance, return storage relation, and stage component fact atomically. | per-event Full |
+| Calendar attachment metadata/content | persist_attachment_metadata(), persist_attachment_content() | created/changed/unchanged/stale or acquired/replay | Stage parent-event component facts atomically; normalize outcomes to ledger relation. | per-event Full |
+| Calendar series topology | persist_series_topology() | created/changed/unchanged/stale | Stage parent-event/series component fact atomically. | per-event Full |
+| Calendar delta observation | persist_delta_observation() | append-only created/replay, not current | Stage authority_staged fact in the same transaction. | Calendar fixed-window authority |
+| Calendar delta authority | CalendarDeltaCheckpointStore.commit() + apply_calendar_delta_state() | one explicit BEGIN IMMEDIATE connection transaction | Write derived fixed-window transitions plus group/entries inside this transaction; entries reference only the winning attempt's staged facts. | existing Calendar checkpoint extension |
+| To Do resource | TodoStore._upsert() | created/changed/unchanged/stale | Stage resource/component facts atomically. Snapshot sighting remains separate proof; a sighting failure blocks authority release but does not erase the staged source fact. | discover or snapshot authority |
+| To Do snapshot authority | TodoSnapshotStore.promote_snapshot() + reconcile-presence helper | one snapshot transaction; helper returns only counts | While reconciling, emit exact changed/recovery identity entries and absence/presence transition facts in-session; do not rescan mutable tables after commit. | existing To Do snapshot extension |
+| Contacts folder/contact snapshot | persist_folder(), persist_contact() | created/changed/unchanged/stale | Stage facts in the existing writer_session() together with current state; retain sightings as authority proof. | discover or snapshot authority |
+| Contacts delta observation | ContactsDeltaStore.persist_observation() | ordered staged observation only | Stage authority_staged contact fact in the same writer transaction. | Contacts folder-delta authority |
+| Contacts snapshot authority | ContactsStore.promote_snapshot() | one writer transaction; helpers return counts | Emit exact folder/contact transition identities and group/entries in-session while presence is applied. | existing snapshot promotion extension |
+| Contacts delta authority | ContactsDeltaStore.promote() | one writer transaction applying ordered observations + generation/CAS | Emit entry/transition facts as each winning observation is applied; skipped stale observations do not become primary entries. | existing Contacts delta extension |
+| OneDrive drive/item | OneDriveStore._upsert_session() | created/changed/unchanged/stale | Stage resource/control fact in caller transaction. Delta-mode facts remain unreleased until winning checkpoint; discover facts use traversal release. | discover or OneDrive authority |
+| OneDrive content | persist_content() + immutable OneDriveContentCapture | created/changed/unchanged/stale plus append-only capture | Stage exact item-content component fact in the same writer transaction; content release is per item. | per-item content |
+| OneDrive 410 observation | persist_resync_observation() | ordered staged observation, not current | Stage authority_staged fact atomically with resync observation. | OneDrive authority |
+| OneDrive delta/resync authority | promote_checkpoint() + apply_onedrive_resync_state() | one writer transaction; helper returns counts | Emit exact applied/skipped identities, derived absences, release group, and entries in-session. Normal delta references advanced facts from the run; reset references only winning reset observations. | existing OneDrive checkpoint extension |
+| Profile | raw evidence pipeline only | one-shot command output | No A2 acquisition fact or release entry. | none |
+
+The common A1 ledger writer must support caller-owned SQLAlchemy Session and
+the Calendar Core Connection path without opening nested transactions. Store
+methods remain the owners of domain semantics; the ledger helper owns canonical
+fact/group/entry validation and idempotent inserts.
+
+For a normal current-state write, the ledger helper stages the immutable fact
+and updates acquisition_effective_states only when the provider store has
+already decided the write is not stale. Matching source_state_key maps to
+current_equivalent without replacing the effective fact; a new key maps to
+advanced and atomically replaces the effective pointer. Authority-staged facts
+do not update the effective pointer until the winning promotion applies them.
+
+Candidate/checkpoint/control rows that exist only to prove lifecycle
+completeness need not become downstream entries. They can be referenced by
+bounded release-group proof metadata while resource/context/transition facts
+remain the A2-facing payload.
+
+### 20.2 Release-finalization matrix
+
+| Operation class | Completion proof | Publication action |
+| --- | --- | --- |
+| Additive discovery/inventory | natural spider_idle, run integrity clean, provider-specific pagination/traversal proof | release extension commits one group and entries for unreleased effective facts in the exact configured scope |
+| Explicitly truncated Mail discovery | natural idle + explicit max-pages termination | same as discovery, but coverage_kind=truncated; no absence authority |
+| Calendar window | natural idle + exact scope + pagination exhausted; qualified JOBDIR preserves logical run | one window group; pause/interruption publishes nothing |
+| Mail/Calendar Full | per-target profile verifier at natural idle or workflow phase gate | one group/entry per target proven terminal-complete; another failed target does not erase it |
+| OneDrive explicit content | exact content capture + metadata-version association | one group/entry per successful item |
+| Snapshot/delta authority | existing candidate/traversal proof + winning revision/generation/CAS | authority store writes group + entries in the promotion transaction |
+| Rules-enabled Mail deferred authority | existing delta validation + all selected Full obligations | workflow finalizer invokes the same atomic Mail promotion/release service |
+
+A generic spider_closed publisher is prohibited. Scrapy signal-handler order
+does not establish catalog availability or semantic completion.
+
+### 20.3 A2 persistence insertion matrix
+
+The current provider-neutral Phase 1 database is explicit schema version 3 and
+already owns short BEGIN IMMEDIATE transactions, claim fencing, immutable
+StageResults, semantic-data codecs, and cancellation-safe async wrappers.
+
+The handoff implementation extends that owner rather than creating a Kedro- or
+reader-owned SQLite layer.
+
+| Concern | Existing seam | Required change |
+| --- | --- | --- |
+| Intake ownership | ClaimKind, Phase1Store.acquire_claim() | add PREPARE_INTAKE; claim key binds A1 catalog identity + source + stream + stable consumer_id |
+| Neutral schema | schema_store.py v3 explicit migration | reviewed v3 -> v4 migration adding intake cursor/workset tables and required indexes |
+| Cursor | none | current cursor row keyed by catalog identity + source + stream + stable consumer_id; stores last entry seq/digest |
+| Intake semantic payload | ResultSchemaRegistry, SemanticDataRegistry | register bounded preparation_intake_workset@1 codec containing entry references, exact collected-selection result refs, transition/held dispositions, and cutoff anchor |
+| Selection persistence | existing collected_selection@1 StageResult + semantic data | reuse; release-aware reader produces the exact selection before cursor finalization |
+| Final atomicity | Phase1Store._write_transaction() | new finalize_preparation_intake() validates live intake claim + prior cursor, appends workset result/data, inserts pending-workset state, advances cursor, and fences ownership in one short transaction |
+| Retry | immutable StageResults + unchanged cursor on failed finalization | deterministic selection/result IDs allow harmless reuse; retry reads the same entry range |
+| Pending processing | none | durable workset state indexes pending/terminal processing independently of source cursor progress |
+| Processing | existing PreparationHandler replay path | scheduled handoff drains pending worksets using saved exact selections; it does not call LIVE selection after cursor advance |
+| Bad entry | current Limitation/Failure contracts | intake workset records held disposition and exact release reference before cursor can pass it |
+| Calendar | no current PreparedSourceType/reader adapter | add Calendar release-aware mapping before Calendar entries can become preparation selections |
+
+PreparationHandler remains the finite parser/filter/group producer. Intake is
+a preceding A2 admission step, not a Kedro node and not a replacement for the
+existing PREPARE claim that protects an already fixed preparation plan.
+
 ### Command/workflow coordinator
 
-Owns only release gates that genuinely require post-crawler workflow knowledge,
-for example rules-enabled deferred Mail authority or per-target workflow
-completion validation.
-
-It does not become a generic queue or persistence engine.
+Owns only gates that genuinely cross crawler phases, principally rules-enabled
+deferred Mail authority. It does not become a generic queue or persistence
+engine.
 
 ### A2 handoff reader/intake
 
 Owns:
 
-- per-consumer cursors;
-- release enumeration;
+- PREPARE_INTAKE claim admission;
+- per-consumer release-entry cursors;
+- bounded release-entry enumeration;
 - exact release reconstruction;
 - CollectedSelection;
-- immutable A2 worksets;
+- held entry dispositions;
+- immutable A2 intake worksets;
 - historical supporting-context reads.
 
 ## 21. Implementation prerequisites
@@ -1156,6 +1547,39 @@ Before production handoff implementation is considered complete:
 8. A2 release intake must not use list_versions() as its incremental selector.
 9. A2 must add a Calendar handoff/source adapter before claiming Calendar
    preparation support.
+10. A1 must add a stable acquisition-ledger catalog identity and explicit
+    release-group/release-entry sequence/digest contracts.
+11. Release builders must publish bounded per-resource/transition entries under
+    completion-scope groups so large snapshots/deltas are pageable by A2.
+12. A2 Phase 1 persistence must implement an explicit neutral schema v3-to-v4
+    migration for PREPARE_INTAKE claims, consumer cursors, immutable intake
+    worksets, and pending-workset processing state.
+13. The release-aware source reader must define stable exact source-version
+    locators independent of release-entry sequence and must not reconstruct
+    selections from mutable current tables.
+14. A2 intake must durably represent held/unmaterializable entries before
+    advancing their cursor range.
+15. Non-authoritative release finalization must use a qualified natural-idle
+    lifecycle boundary rather than spider_closed signal ordering.
+16. Every provider/domain store that can advance downstream-visible state must
+    stage its fact in that same transaction; post-pipeline fact insertion is not
+    acceptable.
+17. Each publishable resource/component family must define an A1
+    source_state_key and exact source_version_locator so current-equivalent
+    retry can recover unreleased advanced state without fabricating a new
+    source version.
+18. Non-authoritative release builders must revalidate source_state_key against
+    current effective state in the release transaction so a delayed older run
+    cannot publish after a newer concurrent run supersedes it.
+
+19. A1 must maintain acquisition_effective_states transactionally with
+    downstream-visible state advancement; the index is a freshness gate only
+    and must never become A2 replay truth.
+20. A2 cursor identity must use a stable consumer_id independent of ordinary
+    configuration/code versions; version changes use explicit downstream
+    replay/rerun semantics.
+21. Cursor finalization must create durable pending-workset state in the same
+    transaction so later preparation failure cannot orphan admitted work.
 
 These are implementation tasks inside the frozen architecture, not alternate
 architectures.
@@ -1167,12 +1591,21 @@ architectures.
 Tests must prove:
 
 - domain write failure creates no successful fact/release;
-- fact staging failure fails the owning persistence operation;
+- fact staging failure rolls back the state advancement it describes;
+- no downstream-visible advanced state can commit without its staged fact;
 - repeated exact staging is idempotent;
 - HTTP-cache replay retains current logical run identity while referencing old
   canonical evidence;
 - stale concurrent writes cannot create a newer primary release;
-- released facts are immutable.
+- a previously advanced fact that is superseded before its run completes does
+  not create a later primary release entry;
+- a current-equivalent retry releases a prior unreleased advanced state exactly
+  once;
+- an already released current-equivalent state does not create repetitive A2
+  work;
+- released facts, groups, and entries are immutable;
+- one committed group can expose more entries than one A2 intake limit without
+  requiring the group to be rereleased.
 
 ### Release correctness
 
@@ -1208,10 +1641,18 @@ Tests must prove:
 
 - historical A1 rows before the cursor are not newly admitted;
 - two streams sharing a source ID advance independently;
-- a fixed release cutoff excludes later concurrent releases;
+- one large committed release group can be consumed over several bounded entry
+  cuts without loss or duplication;
+- a fixed release-entry cutoff excludes later concurrent entries;
 - exact release reconstruction is unaffected by newer mutable A1 current state;
-- workset save and cursor advance are atomic;
-- crash before cursor commit safely replays the same release range;
+- evidence/selection materialization does not hold the final cursor write
+  transaction open;
+- workset save, pending-workset insertion, and cursor advance are atomic;
+- crash before cursor commit safely replays the same entry range;
+- crash/failure after cursor commit leaves a discoverable pending workset that
+  can be retried without rewinding the A1 cursor;
+- a materialization failure is durably held and cannot poison all later stream
+  progress;
 - cursor anchor mismatch after restore fails closed;
 - historical context reads do not expand the primary workset.
 
@@ -1263,9 +1704,11 @@ Those probes are review evidence only and did not modify the repository.
 
 This design is ready for implementation planning only when review agrees that:
 
-- fact ledger + release manifest is the durable A1-to-A2 topology;
-- release granularity is semantic-subject/scope completion, not universally
-  command-level or run-level;
+- fact ledger + atomic release groups + sequenced release entries is the
+  durable A1-to-A2 topology;
+- completion granularity is semantic subject/scope while A2 consumption
+  granularity is a bounded release entry, not universally command-level or
+  run-level;
 - authority release is transactionally coupled to provider authority promotion;
 - A1 does not depend on A2 models;
 - A2 owns cursors and immutable worksets;
