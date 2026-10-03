@@ -177,6 +177,32 @@ ownership before each single send. It pins Chat workers to
 adoption checks before recovery. A collected result still requires independent
 coordinator diff review and test verification before integration.
 
+The message-primitives writer posted in
+[its assigned Chat conversation](https://chatgpt.com/c/6ac13a29-2aa0-83ec-80b7-68e369f7650b)
+and has started edits in its isolated worktree. No worker commit has been
+accepted into the integration branch yet. The channel send failed before its
+composer appeared. A read-only Project inventory contained exactly the six
+known P0 conversations and the message writer, so neither topology lane had
+posted at that check.
+
+The chat-topology account probe first failed on the history listing. Its next
+attempt exceeded the dispatcher's 180-second timeout. An instrumented native
+probe recovered from an authentication read with no HTTP response and then
+passed authentication, account, history-list, and usage reads in about 193
+seconds. The dispatcher now allows 360 seconds for this bounded probe. Four
+local checks passed for prior-attempt refusal, failed-probe refusal, single-send
+handling, and refusal to retry an unqualified composer. One chat-topology retry
+has passed its probe and is queued under the normal browser controls. One
+channel retry is queued only after a read-only composer check succeeds. The
+memory floor and cooldown remain unchanged.
+
+The coordinator prepared disjoint composition contracts for the next dependency
+edge. These are drafts, not dispatched implementation. Saved-source handoff
+preparation confirmed that both Teams source-type enums already exist. The
+497-line shared catalog reader needs a separate Teams query module to stay
+below the repository's module limit. The persistence schema must stabilize
+before that reader implementation starts.
+
 Worker prompts, replies, hash/pin evidence, process records, and command logs
 remain in the ignored `.superpowers/teams-a1/` directory. Later implementation
 closure reviews remain pending; P0 PASS is not an implementation claim.
@@ -206,7 +232,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Three isolated first-tranche writers queued at `e005eed` |
+| P1 core provider implementation | Message writer active; topology recovery queued; no integrated lane yet |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
