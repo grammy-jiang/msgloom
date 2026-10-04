@@ -54,6 +54,14 @@ class MicrosoftTeamsBaseSpider(MicrosoftGraphSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         """Reject unsupported resume and unsafe evidence settings before I/O."""
         settings = crawler.settings
+        # Command settings can override provider defaults. Enforce the selected
+        # application profile before construction/auth; standalone providers
+        # retain their consumer-controlled scope policy.
+        required = cls.required_graph_permissions(settings)
+        if set(settings.getlist("MS_GRAPH_SCOPES")) != set(required):
+            raise ValueError(
+                "Teams acquisition requires exactly " + ", ".join(required)
+            )
         if settings.get("JOBDIR"):
             raise ValueError("Teams discovery does not support JOBDIR yet")
         if settings.getint("CONCURRENT_ITEMS") != 1:

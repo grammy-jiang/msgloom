@@ -60,13 +60,6 @@ class MicrosoftTeamsChatDiscoverSpider(
             set[tuple[str, tuple[str, ...], str]],
         ] = {}
 
-    @classmethod
-    def from_crawler(cls, crawler, *args: Any, **kwargs: Any):
-        """Reject any effective delegated scope other than frozen T1."""
-        if crawler.settings.getlist("MS_GRAPH_SCOPES") != ["Chat.Read"]:
-            raise ValueError("Teams chat discovery requires exactly Chat.Read")
-        return super().from_crawler(crawler, *args, **kwargs)
-
     async def start(self) -> AsyncIterator[Any]:
         """Schedule the signed-in user's chat inventory."""
         yield self._chat_request(

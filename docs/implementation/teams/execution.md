@@ -1,12 +1,12 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 08:20 UTC
+## Current progress — 2026-10-04 08:25 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
 accepted locally. Full local convergence passed at code candidate
-`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. One of nine independent P3 reviews is accepted. The other eight reviews and
-any required repair closures remain outstanding.
+`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The lifecycle P3 review is accepted at that candidate. The provider review
+found a scope-override defect, now repaired with 32 focused and 21 integration tests passing. All nine final reviews must name the repaired candidate.
 
 The normal Python 3.13 suite passed all 2,611 tests. The separate serial
 exclusive-state suite passed its one test. All 36 mandatory fixture cells
