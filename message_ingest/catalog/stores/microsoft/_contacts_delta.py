@@ -13,11 +13,13 @@ from message_ingest.catalog.models.microsoft.contacts import (
     ContactRecord,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.contacts import (
     ContactDeltaCheckpointCandidateItem,
     ContactItem,
 )
 
+from ._contacts_handoff import stage_contacts_fact
 from ._contacts_state import (
     ContactsPromotionOrder,
     ContactStateWriter,
@@ -42,6 +44,7 @@ class ContactsDeltaStore:
     def __init__(self, catalog: Catalog, *, source_id: str) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.handoff = AcquisitionHandoffStore(catalog)
         self.state = ContactStateWriter(source_id=source_id)
         self.order = ContactsPromotionOrder(catalog, source_id=source_id)
 
@@ -66,6 +69,7 @@ class ContactsDeltaStore:
                     source_id=self.source_id, folder_id=folder_id, run_id=item.run_id
                 )
             )
+            ordinal = (ordinal or 0) + 1
             removed = item.removed
             reason = removed.get("reason") if isinstance(removed, dict) else None
             session.add(
@@ -73,7 +77,7 @@ class ContactsDeltaStore:
                     source_id=self.source_id,
                     folder_id=folder_id,
                     run_id=item.run_id,
-                    ordinal=(ordinal or 0) + 1,
+                    ordinal=ordinal,
                     contact_id=item.contact_id,
                     is_removed=removed is not None,
                     removed_reason=reason if isinstance(reason, str) else None,
@@ -81,6 +85,14 @@ class ContactsDeltaStore:
                     evidence_id=item.evidence_id,
                     raw=item.raw,
                 )
+            )
+            stage_contacts_fact(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                spider_name="microsoft_contacts_delta",
+                item=item,
+                ordinal=ordinal,
             )
 
     def stage_candidate(self, item: ContactDeltaCheckpointCandidateItem) -> None:

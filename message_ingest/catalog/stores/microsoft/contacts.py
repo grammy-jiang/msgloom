@@ -18,6 +18,7 @@ from message_ingest.catalog.models.microsoft.contacts import (
     ContactsSnapshotState,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.contacts import (
     ContactCollectionCompleteItem,
     ContactDeltaCheckpointCandidateItem,
@@ -29,6 +30,7 @@ type Outcome = Literal["created", "changed", "unchanged", "stale"]
 
 
 from ._contacts_delta import ContactDeltaCheckpointState, ContactsDeltaStore
+from ._contacts_handoff import stage_contacts_fact
 from ._contacts_state import (
     ContactsPromotionOrder,
     ContactStateWriter,
@@ -39,9 +41,17 @@ from ._contacts_state import (
 class ContactsStore:
     """Persist additive provider state and promote only complete clean runs."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self,
+        catalog: Catalog,
+        *,
+        source_id: str,
+        spider_name: str = "microsoft_contacts_discover",
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog)
         self.state = ContactStateWriter(source_id=source_id)
         self.order = ContactsPromotionOrder(catalog, source_id=source_id)
         self.delta = ContactsDeltaStore(catalog, source_id=source_id)
@@ -123,6 +133,14 @@ class ContactsStore:
             else:
                 outcome = "unchanged" if record.raw == item.raw else "changed"
                 self._assign_folder(record, item)
+            stage_contacts_fact(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                spider_name=self.spider_name,
+                item=item,
+                outcome=outcome,
+            )
             self._record_folder_sighting(session, item)
             return outcome
 
@@ -152,6 +170,14 @@ class ContactsStore:
             else:
                 outcome = "unchanged" if record.raw == item.raw else "changed"
                 self.state.assign(record, item.raw, item.observed_at, item.evidence_id)
+            stage_contacts_fact(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                spider_name=self.spider_name,
+                item=item,
+                outcome=outcome,
+            )
             self._record_contact_sighting(session, item, scope_key=scope_key)
             return outcome
 

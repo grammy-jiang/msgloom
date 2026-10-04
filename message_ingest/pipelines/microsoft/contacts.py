@@ -21,10 +21,19 @@ from message_ingest.items.microsoft.contacts import (
 class ContactsPipeline:
     """Await every Contacts catalog write under the crawler's shared lock."""
 
-    def __init__(self, *, service: CatalogService, source_id: str, stats=None) -> None:
+    def __init__(
+        self,
+        *,
+        service: CatalogService,
+        source_id: str,
+        stats=None,
+        spider_name: str = "microsoft_contacts_discover",
+    ) -> None:
         self.service = service
         self.catalog = service.catalog
-        self.store = ContactsStore(self.catalog, source_id=source_id)
+        self.store = ContactsStore(
+            self.catalog, source_id=source_id, spider_name=spider_name
+        )
         self.stats = stats
 
     @classmethod
@@ -36,6 +45,7 @@ class ContactsPipeline:
             service=CatalogService.from_crawler(crawler),
             source_id=crawler.settings["MSGLOOM_SOURCE_ID"],
             stats=crawler.stats,
+            spider_name=crawler.spidercls.name,
         )
 
     async def process_item(self, item: Any) -> Any:

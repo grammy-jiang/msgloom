@@ -77,7 +77,7 @@ class TodoSnapshotStore:
         model, key, values = self._sighting_projection(
             item, run_id, evidence_id, observed_at
         )
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             current = session.get(model, key)
             if current is not None:
                 if _capture_time(observed_at) < _capture_time(current.observed_at):
@@ -103,7 +103,7 @@ class TodoSnapshotStore:
             "observed_at": item.observed_at,
             "evidence_id": evidence_id,
         }
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             current = session.get(TodoTraversalCompletion, key)
             if current is not None:
                 if _capture_time(item.observed_at) < _capture_time(current.observed_at):
@@ -120,7 +120,7 @@ class TodoSnapshotStore:
         base_revision: int | None,
     ) -> TodoSnapshotCandidate:
         """Validate durable traversal proof and persist one terminal candidate."""
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             existing = session.get(TodoSnapshotCandidate, (self.source_id, run_id))
             if existing is not None:
                 if existing.base_revision != base_revision:
@@ -164,7 +164,7 @@ class TodoSnapshotStore:
         base_revision: int | None,
     ) -> dict[str, int]:
         """Atomically CAS the snapshot revision and reconcile all presence keys."""
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             candidate = session.get(TodoSnapshotCandidate, (self.source_id, run_id))
             if candidate is None or candidate.base_revision != base_revision:
                 raise ValueError(

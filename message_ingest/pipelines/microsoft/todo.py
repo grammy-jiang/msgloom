@@ -26,7 +26,9 @@ class TodoPipeline:
         self.crawler = crawler
         self.service = service
         self.catalog = service.catalog
-        self.store = TodoStore(self.catalog, source_id=source_id)
+        self.store = TodoStore(
+            self.catalog, source_id=source_id, spider_name=crawler.spidercls.name
+        )
         self.snapshot_store = TodoSnapshotStore(self.catalog, source_id=source_id)
         self.authoritative = crawler.spidercls.name == "microsoft_todo_sync"
 

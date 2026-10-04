@@ -12,12 +12,15 @@ from message_ingest.catalog.models.microsoft.todo import (
     TodoTaskListRecord,
     TodoTaskRecord,
 )
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.todo import (
     TodoChecklistItem,
     TodoLinkedResourceItem,
     TodoTaskItem,
     TodoTaskListItem,
 )
+
+from ._todo_handoff import stage_todo_fact
 
 if TYPE_CHECKING:
     from message_ingest.catalog import Catalog
@@ -31,9 +34,17 @@ type Outcome = Literal["created", "changed", "unchanged", "stale"]
 class TodoStore:
     """Persist To Do state for one source without inferring removal."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self,
+        catalog: Catalog,
+        *,
+        source_id: str,
+        spider_name: str = "microsoft_todo_discover",
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog)
 
     def persist_task_list(self, item: TodoTaskListItem) -> Outcome:
         """Upsert a list observation without interpreting its built-in kind."""
@@ -58,9 +69,10 @@ class TodoStore:
         Model column names match provider item attributes. Only source and
         capture provenance differ, so no second Graph field mapper is needed.
         Optional values, including empty containers and false booleans, are
-        copied directly. Equal capture times use processing order. Callers
-        serialize writes with
-        :class:`~message_ingest.extensions.catalog.CatalogService`.
+        copied directly. Equal capture times use processing order. Reserve
+        SQLite writer intent
+        before freshness reads and commit state plus its exact fact together.
+        Snapshot sightings remain a separate authority proof write.
         """
         observed = self._capture_time(item.observed_at)
         identity = {
@@ -69,11 +81,19 @@ class TodoStore:
             if column.name != "source_id"
         }
         identity["source_id"] = self.source_id
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             record = session.get(model, identity)
             if record is not None and observed < self._capture_time(
                 record.latest_observed_at
             ):
+                stage_todo_fact(
+                    session,
+                    self.handoff,
+                    source_id=self.source_id,
+                    spider_name=self.spider_name,
+                    item=item,
+                    outcome="stale",
+                )
                 return "stale"
             provenance = {
                 "source_id": self.source_id,
@@ -88,10 +108,19 @@ class TodoStore:
             values.update(provenance)
             if record is None:
                 session.add(model(**values))
-                return "created"
-            outcome = "unchanged" if record.raw == item.raw else "changed"
-            for name, value in values.items():
-                setattr(record, name, value)
+                outcome: Outcome = "created"
+            else:
+                outcome = "unchanged" if record.raw == item.raw else "changed"
+                for name, value in values.items():
+                    setattr(record, name, value)
+            stage_todo_fact(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                spider_name=self.spider_name,
+                item=item,
+                outcome=outcome,
+            )
             return outcome
 
     @staticmethod
