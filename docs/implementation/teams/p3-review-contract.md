@@ -2,7 +2,8 @@
 
 The nine P3 reviews are required before local implementation completion.
 This document defines their inputs and acceptance rules. It records no review
-acceptance. Chat, saved-source, and notification integration remain pending.
+acceptance. Chat, saved-source, and local notification integration are accepted.
+Current review results are recorded in [P3 review status](p3-review-status.md).
 
 ## Freeze the review input
 

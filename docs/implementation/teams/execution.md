@@ -1,11 +1,11 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 07:58 UTC
+## Current progress — 2026-10-04 08:20 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
 accepted locally. Full local convergence passed at code candidate
-`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. Nine independent P3 reviews and
+`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. One of nine independent P3 reviews is accepted. The other eight reviews and
 any required repair closures remain outstanding.
 
 The normal Python 3.13 suite passed all 2,611 tests. The separate serial
@@ -23,8 +23,10 @@ documentation, and configuration files. The inventory SHA-256 is
 All 11 prerequisite gate receipts and source/log hashes passed the freeze
 validator. The fresh native account probe passed after a transient preflight
 HTTP 429. The dedicated browser composer check also passed. One bounded
-external dispatcher now owns all nine queued review sends and their result
-collection. Each lane pins `gpt-5-6-thinking`, `max`, the Raspberry Pi MCP
+external dispatcher owns the remaining original review sends and collection.
+A separate bounded recovery owns the framework lane after its unconfirmed
+first send. The lifecycle/cancellation review is accepted; see
+[P3 review status](p3-review-status.md). Each lane pins `gpt-5-6-thinking`, `max`, the Raspberry Pi MCP
 connector, and the frozen candidate. A queued send is not a confirmed send
 or an accepted review. The supervisor and scheduled watchdog remain active.
 
