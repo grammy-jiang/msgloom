@@ -45,20 +45,20 @@ def add_microsoft_options(command: Any, parser: argparse.ArgumentParser) -> None
     """Add hierarchy selectors and resource-specific options."""
     parser.add_argument(
         "section",
-        choices=("profile", "auth", "outlook", "todo", "onedrive", "contacts"),
+        choices=("profile", "auth", "outlook", "todo", "onedrive", "contacts", "teams"),
         help="Microsoft account, authentication, or product area",
     )
     parser.add_argument(
         "resource_or_action",
         nargs="?",
         metavar="RESOURCE_OR_ACTION",
-        help="auth/To Do/OneDrive/Contacts action or Outlook resource",
+        help="auth/To Do/OneDrive/Contacts action or Outlook/Teams resource",
     )
     parser.add_argument(
         "action",
         nargs="?",
         metavar="ACTION",
-        help="Outlook resource action or first OneDrive content item ID",
+        help="Outlook/Teams resource action or first OneDrive content item ID",
     )
     parser.add_argument(
         "message_ids",

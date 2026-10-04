@@ -84,6 +84,14 @@ adds no checkpoint, absence promotion, scheduler, or authentication flow.
 
 ## Qualification and remaining gates
 
+The coordinator command mapping exposes `scrapy microsoft teams chat discover`
+and `scrapy microsoft teams channel discover`. Each selects its frozen spider
+name through the existing `run_graph` lifecycle. Commands retain native `-s`
+settings priority, including `MSGLOOM_TEAMS_SOURCE_ID`. They reject JOBDIR,
+resource IDs, optional profiles, unrelated flags, and partial-read limits.
+Discovery uses the spider's provider defaults. The command mapping has focused
+validation; actual CLI crawls remain gated on accepted application spiders.
+
 The worker's original 24 tests and static checks passed. Eleven coordinator
 regressions first failed, then passed after the evidence/replay correction.
 Integrated persistence, registration, alias, stale/gap, and base tests passed
