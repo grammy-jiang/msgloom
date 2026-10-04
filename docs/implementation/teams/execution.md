@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 05:27 UTC
+## Current progress — 2026-10-04 05:29 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. Basic chat discovery is now accepted too. The channel worker commit
@@ -57,8 +57,8 @@ uses `6ac1ded8-d344-83ec-889d-ad849fbda195`; saved-source completion uses
 `6ac1e074-145c-83ec-80fb-11888b5a6024`. The original external driver owns
 collection. The serial validator checks task, model/effort, base, actual
 parent, owned paths, clean status, focused tests, and static checks. The chat
-result is now accepted. The A2 result has passed preacceptance and still needs
-coordinator acceptance and public-reader integration. Original worktrees remain
+result is now accepted. The A2 worker is accepted and integrated; public-reader
+integration remains required. Original worktrees remain
 unchanged.
 
 Shared saved-source correction `761b43e` now verifies the exact request body
@@ -85,13 +85,17 @@ It owns nine disjoint files in `.worktrees/teams-notifications`. The frozen task
 is `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_R1`. It must preserve authenticated raw
 inbound evidence, immutable deletion declarations, additive readback facts,
 scoped coverage, and sticky history gaps. Its external driver owns one send and
-collection. Sending has started; confirmation remains pending. This lane adds
-no webhook server, subscription mutation, renewal, or periodic polling.
+collection. The send is confirmed in conversation
+`6ac1e364-7478-83ec-b38f-801e1f02532c` with the required model/effort and MCP
+connector. This lane adds no webhook server, subscription mutation, renewal,
+or periodic polling.
 
 A2 worker `3cf872246d72c42e142f3c1514f9dc8131241166` has passed its independent
-focused and static gates. The three previously failing scoped-ID regressions
-now pass. Coordinator acceptance, integration, public selection replay, and
-inbound-evidence qualification remain required.
+focused and static gates: 13 tests pass in 23.03 seconds. The three previously
+failing scoped-ID regressions now pass. The coordinator verified exact task,
+pins, base, actual parent, owned paths, and clean worker state, then integrated
+the worker at `e457a91453938d710f109c833b5ffffe233b1c17`. Public reader dispatch,
+selection replay, and integrated inbound-evidence qualification remain required.
 
 Full Pyright passed at exact `731a7a82dfd48c939779491963aafbd90d2e3760`
 with zero errors or warnings in 76.39 seconds. The earlier 60-second timeout
@@ -130,7 +134,7 @@ accepted chat and notification coverage plus the final combined gate.
 | --- | --- | --- |
 | Chat spider | `6ac1ded8-d344-83ec-889d-ad849fbda195` | Accepted and integrated |
 | Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1e074-145c-83ec-80fb-11888b5a6024` | Preacceptance passed; coordinator integration pending |
+| Saved-source handoff | `6ac1e074-145c-83ec-80fb-11888b5a6024` | Worker integrated; public reader integration pending |
 
 The command mapping is committed at
 `6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
