@@ -1,19 +1,28 @@
 """Require Teams saved history to verify actual inbound notification bytes."""
 
+import asyncio
 import hashlib
 import sqlite3
 from pathlib import Path
 
 import pytest
 
+from msgloom.sources import SavedSourceReader, SavedSourceReaderConfig
 from msgloom.sources.models import SourceEvidenceError
 from tests.source_reader.test_teams_saved_history import _add_history
-from tests.source_reader.test_teams_saved_source import _adapter, _build_fixture
+from tests.source_reader.test_teams_saved_source import _build_fixture
 
 
-@pytest.mark.parametrize("evidence_id", ("delete", "gap-chat"))
+@pytest.mark.parametrize(
+    ("evidence_id", "origin", "method"),
+    (
+        ("delete", "inbound-webhook", "POST"),
+        ("gap-chat", "inbound-webhook", "POST"),
+        ("gap-chat", "local-gap", "LOCAL"),
+    ),
+)
 def test_saved_notification_history_checks_inbound_bytes(
-    tmp_path: Path, evidence_id: str
+    tmp_path: Path, evidence_id: str, origin: str, method: str
 ) -> None:
     """An intact empty response cannot authenticate a changed inbound request."""
     fixture = _build_fixture(tmp_path)
@@ -34,8 +43,8 @@ def test_saved_notification_history_checks_inbound_bytes(
             "response_body_path = ?, response_body_sha256 = ?, response_body_bytes = 0 "
             "WHERE evidence_id = ?",
             (
-                "inbound-webhook",
-                "POST",
+                origin,
+                method,
                 str(request_path),
                 digest,
                 size,
@@ -45,10 +54,25 @@ def test_saved_notification_history_checks_inbound_bytes(
                 evidence_id,
             ),
         )
-    with _adapter(fixture) as adapter:
-        before = adapter.read(fixture.chat_a)
-    if before.body is None or before.body.content != "before edit":
-        pytest.fail("Valid inbound history changed the earlier message body")
-    request_path.write_bytes(b"altered inbound notification")
-    with _adapter(fixture) as adapter, pytest.raises(SourceEvidenceError):
-        adapter.read(fixture.chat_a)
+
+    async def exercise() -> None:
+        reader = SavedSourceReader(
+            SavedSourceReaderConfig(
+                catalog_path=fixture.database, evidence_roots=(fixture.evidence_root,)
+            )
+        )
+        try:
+            before = await reader.read(fixture.chat_a)
+            if before.body is None or before.body.content != "before edit":
+                pytest.fail("Valid request history changed the earlier message body")
+            if "teams-history-incomplete" not in {
+                limitation.code for limitation in before.limitations
+            }:
+                pytest.fail("Saved gap lost its incomplete-history limitation")
+            request_path.write_bytes(b"altered notification or gap")
+            with pytest.raises(SourceEvidenceError):
+                await reader.read(fixture.chat_a)
+        finally:
+            await reader.close()
+
+    asyncio.run(exercise())

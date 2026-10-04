@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 05:52 UTC
+## Current progress — 2026-10-04 06:09 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
@@ -55,10 +55,19 @@ and exact repaired-candidate closure. No P3 reviewer is accepted yet.
 
 The full normal regression at `c959a6548fbbfcfd7bdf5614562ac6373c03202b`
 finished with 2,530 passes and one failure in an existing triage deadline test.
-The isolated test and 16 parallel diagnostic trials pass. The failure remains
-under investigation; its outcome assertion now reports status, failures, and
-limitations. No assertion was removed or relaxed. A successful full gate is
-still required.
+The isolated test and 16 parallel diagnostic trials pass. Failure-only
+diagnostics were added at `00fafe46551ad7181b09e69fdbf4a8b051339a7f`; no
+assertion was removed or relaxed. A fresh full normal run at that exact commit
+passed all 2,531 tests in 761.99 seconds with unchanged inputs and a JUnit
+receipt. The original failure did not recur; its cause is not established.
+Final convergence must still include accepted N1/N2 and later shared changes.
+
+The reader now also verifies `local-gap` captures against their original
+`LOCAL` request bytes. Five failing regressions exposed selection of the empty
+response. All 73 source-reader tests pass in 102.09 seconds after the correction,
+including public readback, byte tampering, and invalid capture shapes. Ruff,
+format, Pyright, and three live LSP checks pass. This shared correction does not
+accept the unfinished notification worker.
 
 The unfinished N1 protocol draft rejects the current documented basic payload's
 identity-only `resourceData` and OData key resource path. Nine positive cases
