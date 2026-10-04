@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 07:56 UTC
+## Current progress — 2026-10-04 07:58 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
@@ -21,8 +21,12 @@ Its inventory contains 975 files, including 907 tracked source, test,
 documentation, and configuration files. The inventory SHA-256 is
 `a5da64858930628926f3c9195c891eb6c16c69b092e5f4341bd66ea3a5ae7ea1`.
 All 11 prerequisite gate receipts and source/log hashes passed the freeze
-validator. Review dispatch is pending read-path qualification after a
-preflight HTTP 429; the dedicated browser composer check passed.
+validator. The fresh native account probe passed after a transient preflight
+HTTP 429. The dedicated browser composer check also passed. One bounded
+external dispatcher now owns all nine queued review sends and their result
+collection. Each lane pins `gpt-5-6-thinking`, `max`, the Raspberry Pi MCP
+connector, and the frozen candidate. A queued send is not a confirmed send
+or an accepted review. The supervisor and scheduled watchdog remain active.
 
 | Lane | Worker commit | Integration state |
 | --- | --- | --- |
