@@ -359,7 +359,7 @@ are execution corrections. The authoritative design remains unchanged.
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
 | P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
-| P2 application integration and synthetic crawls | Persistence accepted and shared base qualified; downstream dispatch ready |
+| P2 application integration and synthetic crawls | Persistence accepted; chat, channel, and saved-source workers queued |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
 | Notification-driven live acceptance | NOT EXERCISED |
@@ -424,3 +424,17 @@ repaired evidence/replay validation, registered the schema, and qualified the
 shared application base. The combined gate passed 485 tests. See the
 [P2 application contract](p2-application-contract.md). Chat, channel, and
 saved-source lanes can now run independently from the frozen shared commit.
+
+## P2 downstream dispatch — 2026-10-04
+
+The shared application contract is committed at
+`d0c011c4a0524aaa8d9167d51a9f38a47ee43b7f`. All three independent lanes
+are queued through the existing bounded ChatGPT dispatcher from that exact
+commit: chat spider, channel spider, and saved-source handoff. Their isolated
+worktrees own 22 disjoint paths. Every send is pinned to
+`gpt-5-6-thinking` / `max`; final transcript pins still require verification.
+
+The external dispatcher owns each single send and result collection. The
+coordinator must adopt those records rather than repeat a send. The saved-source
+worker supplies a dedicated adapter and an exact shared-dispatch integration
+recipe. Public command and reader registration remain coordinator work.
