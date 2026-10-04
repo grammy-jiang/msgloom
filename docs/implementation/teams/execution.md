@@ -1,9 +1,9 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 05:17 UTC
+## Current progress — 2026-10-04 05:27 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
-application lane are accepted. The channel worker commit
+application lane are accepted. Basic chat discovery is now accepted too. The channel worker commit
 `0d54e9e021d75e9d2b846d3de1d34eaaec9ff994` was integrated at
 `131b28c05ce57fe9e1b91ecff25d406da120a37b`. Coordinator correction
 `49b5bd07fa54faa8ab060a87c59ec5febfba387d` separates encoded resource-link
@@ -56,8 +56,10 @@ Both isolated completion tasks now have confirmed sends with
 uses `6ac1ded8-d344-83ec-889d-ad849fbda195`; saved-source completion uses
 `6ac1e074-145c-83ec-80fb-11888b5a6024`. The original external driver owns
 collection. The serial validator checks task, model/effort, base, actual
-parent, owned paths, clean status, focused tests, and static checks. No result
-is accepted yet. Original worktrees remain unchanged.
+parent, owned paths, clean status, focused tests, and static checks. The chat
+result is now accepted. The A2 result has passed preacceptance and still needs
+coordinator acceptance and public-reader integration. Original worktrees remain
+unchanged.
 
 Shared saved-source correction `761b43e` now verifies the exact request body
 for inbound webhook evidence. Outbound acquisition still verifies the received
@@ -68,6 +70,28 @@ and missed altered notification bytes. All 51 source-reader tests now pass in
 80.73 seconds. Both inbound deletion/gap regressions pass against an isolated,
 hash-pinned A2 draft in 12.60 seconds. Ruff, format, Pyright, live LSP, and
 commit hooks pass. This shared correction does not accept the pending A2 lane.
+
+Chat worker `ec39c13722001825f79f8f4edb627ecc1da2306d` is integrated at
+`b677b6412043f1b4d265e91a2cef62e43a7515cc`. The independent worker gate passed
+19 tests. Shared integration `f67e4d9dbf2a3e0fb131cc07fa82991e48499c79` adds the
+public export, exact SpiderLoader registration, public CLI persistence tests,
+and native chat contracts. The combined gate passed 34 tests in 92.20 seconds,
+including six native Scrapy contracts. Ruff, formatting, Pyright, live LSP for
+17 files, and commit hooks passed. An initial coordinator test-import error was
+corrected before the successful gate.
+
+The local N1/N2 worker is dispatched from exact basic-discovery base `f67e4d9`.
+It owns nine disjoint files in `.worktrees/teams-notifications`. The frozen task
+is `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_R1`. It must preserve authenticated raw
+inbound evidence, immutable deletion declarations, additive readback facts,
+scoped coverage, and sticky history gaps. Its external driver owns one send and
+collection. Sending has started; confirmation remains pending. This lane adds
+no webhook server, subscription mutation, renewal, or periodic polling.
+
+A2 worker `3cf872246d72c42e142f3c1514f9dc8131241166` has passed its independent
+focused and static gates. The three previously failing scoped-ID regressions
+now pass. Coordinator acceptance, integration, public selection replay, and
+inbound-evidence qualification remain required.
 
 Full Pyright passed at exact `731a7a82dfd48c939779491963aafbd90d2e3760`
 with zero errors or warnings in 76.39 seconds. The earlier 60-second timeout
@@ -104,13 +128,13 @@ accepted chat and notification coverage plus the final combined gate.
 
 | Lane | Conversation | State |
 | --- | --- | --- |
-| Chat spider | `6ac1ded8-d344-83ec-889d-ad849fbda195` | Isolated completion active; original stalled |
+| Chat spider | `6ac1ded8-d344-83ec-889d-ad849fbda195` | Accepted and integrated |
 | Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1e074-145c-83ec-80fb-11888b5a6024` | Isolated scoped-coverage repair active |
+| Saved-source handoff | `6ac1e074-145c-83ec-80fb-11888b5a6024` | Preacceptance passed; coordinator integration pending |
 
 The command mapping is committed at
 `6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
-Chat CLI crawls and native callback contracts await chat integration.
+Chat CLI crawls and native callback contracts now pass at `f67e4d9`.
 See the [P2 application contract](p2-application-contract.md).
 
 All original conversations retain `gpt-5-6-thinking` / `max` and their frozen

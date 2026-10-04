@@ -2,7 +2,7 @@
 
 # Microsoft Teams A1 implementation plan
 
-**Status:** P0 and core P1 frozen; P2 persistence and channel spider accepted; chat and A2 workers active
+**Status:** P0 and core P1 frozen; P2 persistence and basic chat/channel discovery accepted; A2 integration and N1/N2 active
 **Prepared:** 2026-10-03
 **Integration branch:** `program/a1-teams-spider`
 **Integration worktree:** `/home/grammy-jiang/Projects/msgloom-worktrees/a1-teams-spider`
