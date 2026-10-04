@@ -1,35 +1,33 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 02:47 UTC
+## Current progress — 2026-10-04 03:00 UTC
 
-P0, core P1, P2 persistence, and the shared application base are accepted.
-All three downstream workers now have confirmed conversations. Their results
-still require exact-commit review and validation:
+P0, core P1, P2 persistence, the shared application base, and the channel
+application lane are accepted. The channel worker commit
+`0d54e9e021d75e9d2b846d3de1d34eaaec9ff994` was integrated at
+`131b28c05ce57fe9e1b91ecff25d406da120a37b`. Coordinator correction
+`49b5bd07fa54faa8ab060a87c59ec5febfba387d` separates encoded resource-link
+segments from opaque IDs and rejects a mismatched channel identity.
+Two failing regressions proved the defects before the correction. All 34
+focused channel tests passed in 28.05 seconds. The native public channel
+command passed an empty-inventory crawl with durable evidence. Ruff, format,
+Pyright, live LSP diagnostics, and changed-file hooks passed.
 
-| Lane | Conversation |
-| --- | --- |
-| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` |
-| Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` |
-| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` |
+| Lane | Conversation | State |
+| --- | --- | --- |
+| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Worker active |
+| Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
+| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Worker active |
 
-The coordinator command mapping is committed at
-`6e1d43c561293367529f8cafa850be221cd5b8f2`. The focused command selection passed
-105 tests in 14.61 seconds. Ruff, format, Pyright, live LSP diagnostics, native
-command help, and changed-file hooks passed. Actual Teams CLI crawls remain
-pending application-spider integration. See the
-[P2 application contract](p2-application-contract.md).
+The command mapping is committed at
+`6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
+Chat CLI crawls and native callback contracts await chat integration.
+See the [P2 application contract](p2-application-contract.md).
 
-The channel recovery preserved a failed attempt with zero send requests, checked
-the Project inventory for duplicates, and qualified the composer before one
-successful send. All workers retain `gpt-5-6-thinking` / `max` and the original
-task/base/ownership contracts. A serial successor validator waits for the
-original validator to exit before checking any missing recovered-lane reports.
-
-Coordinator integration checks now include three draft native CLI crawls.
-All three fail at the accepted candidate because the application spiders are
-not integrated yet. A native Scrapy callback-contract test is also prepared.
+All original conversations retain `gpt-5-6-thinking` / `max` and their frozen
+task/base/ownership contracts. Existing collectors own the remaining results.
 A preliminary saved-source probe found cross-resource coverage leakage when
-an unrelated team ID equals a chat ID. The final worker candidate must receive
+an unrelated team ID equals a chat ID. The finished A2 candidate must receive
 a regression test and repair before acceptance. No active worker file changed.
 
 The existing inbound evidence storage contract passed a local probe with exact
