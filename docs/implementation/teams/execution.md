@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 05:37 UTC
+## Current progress — 2026-10-04 05:52 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
@@ -52,6 +52,19 @@ scan covered 584 files with zero diagnostics. All complete repository, static,
 compatibility, LSP, contracts, and hook gates must run on the converged code.
 The [P3 review contract](p3-review-contract.md) requires nine independent reviews
 and exact repaired-candidate closure. No P3 reviewer is accepted yet.
+
+The full normal regression at `c959a6548fbbfcfd7bdf5614562ac6373c03202b`
+finished with 2,530 passes and one failure in an existing triage deadline test.
+The isolated test and 16 parallel diagnostic trials pass. The failure remains
+under investigation; its outcome assertion now reports status, failures, and
+limitations. No assertion was removed or relaxed. A successful full gate is
+still required.
+
+The unfinished N1 protocol draft rejects the current documented basic payload's
+identity-only `resourceData` and OData key resource path. Nine positive cases
+reproduce this defect; five malformed cases are rejected. Retest and repair the
+finished candidate before N1 acceptance. See the
+[basic notification wire format](n0-notification-contract.md#basic-notification-wire-format).
 
 No approved work/school tenant configuration or consent evidence is available.
 Live T1/T2, repeat acquisition, and webhook acceptance are not exercised.

@@ -74,6 +74,25 @@ accepting encrypted bytes as message data. Basic resource metadata can identify
 a read target but is not a substitute for a full message response.
 [Resource-data security](https://learn.microsoft.com/en-us/graph/change-notifications-with-resource-data).
 
+## Basic notification wire format
+
+The current Teams message page includes identity-only `resourceData` in its
+basic notification example even when `includeResourceData` is false. This
+metadata is distinct from encrypted message content. The example also uses
+OData key syntax such as `teams('team')/channels('channel')/messages('message')`.
+The adapter must accept the documented form and bind every parsed identifier
+to the trusted scope. If identity metadata is present, its ID, type, and resource
+must agree with the event target. Metadata must never become a message body.
+Encrypted content and validation-token envelopes remain outside this local
+basic-notification contract.
+[Basic notification example](https://learn.microsoft.com/en-us/graph/teams-changenotifications-chatmessage#notifications-without-resource-data).
+
+A coordinator probe on 2026-10-04 found that the unfinished N1 draft rejected
+both identity metadata and OData resource paths. Nine positive regression cases
+fail across chats, channel roots, and replies. Five malformed-metadata cases
+are rejected. The finished candidate must be retested and corrected before
+acceptance. This finding does not change the active worker's file ownership.
+
 ## Existing code and required local qualification
 
 Reuse `microsoft_graph/protocol/notifications.py` for basic envelope and
