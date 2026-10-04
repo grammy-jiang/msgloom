@@ -1,5 +1,35 @@
 # Teams A1 execution record
 
+## Current progress — 2026-10-04 02:24 UTC
+
+P0, core P1, P2 persistence, and the shared application base are accepted.
+All three downstream workers now have confirmed conversations. Their results
+still require exact-commit review and validation:
+
+| Lane | Conversation |
+| --- | --- |
+| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` |
+| Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` |
+| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` |
+
+The coordinator command mapping is committed at
+`6e1d43c561293367529f8cafa850be221cd5b8f2`. The focused command selection passed
+105 tests in 14.61 seconds. Ruff, format, Pyright, live LSP diagnostics, native
+command help, and changed-file hooks passed. Actual Teams CLI crawls remain
+pending application-spider integration. See the
+[P2 application contract](p2-application-contract.md).
+
+The channel recovery preserved a failed attempt with zero send requests, checked
+the Project inventory for duplicates, and qualified the composer before one
+successful send. All workers retain `gpt-5-6-thinking` / `max` and the original
+task/base/ownership contracts. A serial successor validator waits for the
+original validator to exit before checking any missing recovered-lane reports.
+
+The 36-fixture crawl matrix, notification intake/reconciliation, complete
+repository/compatibility gates, and nine independent exact-candidate reviews
+remain open. No approved work/school tenant configuration or consent evidence
+is available. Live acceptance and merge remain blocked; `master` is unchanged.
+
 ## Scope and baseline
 
 The selected production scope is delegated T1 chats and complete T2
