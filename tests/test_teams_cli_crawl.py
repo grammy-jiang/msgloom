@@ -53,3 +53,20 @@ def test_public_teams_discovery_persists_empty_inventory(
                     pytest.fail("Persisted response bytes changed")
     finally:
         catalog.close()
+
+
+def test_public_channel_command_rejects_jobdir_before_network(tmp_path: Path) -> None:
+    """Unsupported resume fails at the public command before provider access."""
+    with serve_graph() as fixture:
+        result = crawl(
+            tmp_path,
+            fixture,
+            ["microsoft", "teams", "channel", "discover"],
+            extra_settings={"JOBDIR": str(tmp_path / "job")},
+        )
+        if result.returncode == 0:
+            pytest.fail("Public channel command accepted unsupported JOBDIR")
+        if fixture.seen:
+            pytest.fail("Channel JOBDIR rejection happened after provider access")
+        if "Teams discovery does not support JOBDIR" not in result.stderr:
+            pytest.fail("Channel command failed for an unrelated reason")
