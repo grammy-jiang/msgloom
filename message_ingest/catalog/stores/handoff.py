@@ -153,13 +153,38 @@ class AcquisitionHandoffStore:
         work.
         Equivalent observations pin the exact effective fact they revalidate.
         A later return to the same semantic state cannot replace that proof.
+        An ``advanced`` input is the caller's accepted state change, not a
+        historical replay request. Reapplying an exact capture after another
+        state wins creates a distinct advanced fact pinned to that displaced
+        state; the old fact and every older recovery pin remain immutable.
+        Repeating the currently effective application remains idempotent.
         """
         if spec.storage_relation == StorageRelation.AUTHORITY_STAGED:
             raise ValueError("Use authority staging for pending provider authority")
-        if existing := self._existing_fact(writer, spec):
-            return existing
         spec = replace(spec, revalidated_fact_id=None)
         current = self.current_effective_state(writer, spec.effective_key)
+        existing = self._existing_fact(writer, spec)
+        if (
+            spec.storage_relation != StorageRelation.STALE
+            and current is not None
+            and spec.source_state_key == current["source_state_key"]
+        ):
+            effective = self._fact(writer, current["fact_id"])
+            if (
+                replace(effective, revalidated_fact_id=None).staging_key
+                == spec.staging_key
+            ):
+                return effective
+        if existing is not None:
+            if (
+                spec.storage_relation != StorageRelation.ADVANCED
+                or current is None
+                or spec.source_state_key == current["source_state_key"]
+            ):
+                return existing
+            # Pin the displaced application, not an old same-state fact. The
+            # chain cannot reuse an old identity after multiple A/B/A cycles.
+            spec = replace(spec, revalidated_fact_id=current["fact_id"])
         if (
             spec.storage_relation != StorageRelation.STALE
             and current is not None

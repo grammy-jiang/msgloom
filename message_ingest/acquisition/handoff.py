@@ -143,9 +143,14 @@ class FactSpec:
     """
     An immutable acquisition fact with current logical-run provenance.
 
-    The store derives ``revalidated_fact_id`` for equivalent observations. It
-    pins their write-time effective fact and is excluded from retry identity.
-    Missing pins in older equivalent facts fail closed at release time.
+    The store owns ``revalidated_fact_id`` as a write-time effective-state
+    pin. For equivalent observations it pins the state being revalidated and
+    is excluded from retry identity. Missing equivalent pins fail closed.
+    For an advanced reapplication of an already staged capture, it pins the
+    displaced effective fact instead. This distinguishes the new application
+    without changing provider order, evidence, or source-version identity.
+    Advanced pins participate in identity but never grant recovery rights;
+    an advanced fact must itself remain effective to publish.
     """
 
     source_id: str
@@ -216,7 +221,11 @@ class FactSpec:
         """Identify retry before derived advanced/equivalent classification."""
         return replace(
             self,
-            revalidated_fact_id=None,
+            revalidated_fact_id=(
+                self.revalidated_fact_id
+                if self.storage_relation == StorageRelation.ADVANCED
+                else None
+            ),
             storage_relation=(
                 StorageRelation.AUTHORITY_STAGED
                 if self.storage_relation == StorageRelation.AUTHORITY_STAGED
