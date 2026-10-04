@@ -88,14 +88,8 @@ class SavedSourceReader:
         if limit > self.config.limits.max_list_results:
             raise ValueError("limit exceeds configured listing bound")
         try:
-            if source_type is PreparedSourceType.ONEDRIVE:
-                return await self._gate.run(
-                    self._assembler.list_onedrive_versions,
-                    source_id,
-                    limit,
-                )
             return await self._gate.run(
-                self._catalog.list_versions,
+                self._assembler.list_versions,
                 source_type,
                 source_id,
                 limit,

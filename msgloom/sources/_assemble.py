@@ -29,6 +29,8 @@ from msgloom.sources._mapping import (
     source_time as parse_source_time,
 )
 from msgloom.sources._outlook import OutlookMapper
+from msgloom.sources._teams import TeamsSavedSourceAdapter
+from msgloom.sources._teams_catalog import is_teams_source_type
 from msgloom.sources.models import (
     CollectedAttachment,
     CollectedRecord,
@@ -48,6 +50,7 @@ class RecordAssembler:
         self._catalog = catalog
         self._files = files
         self._outlook_mapper = OutlookMapper(catalog, files)
+        self._teams = TeamsSavedSourceAdapter(catalog, files)
 
     def _evidence(
         self, selected: SelectedVersion
@@ -113,10 +116,25 @@ class RecordAssembler:
                     return tuple(values)
         return tuple(values)
 
+    def list_versions(
+        self, source_type: PreparedSourceType, source_id: str, limit: int
+    ) -> tuple[VersionRef, ...]:
+        """Route bounded enumeration to the provider that owns its selection."""
+        if is_teams_source_type(source_type):
+            return self._teams.list_versions(source_type, source_id, limit)
+        if source_type is PreparedSourceType.ONEDRIVE:
+            return self.list_onedrive_versions(source_id, limit)
+        return self._catalog.list_versions(source_type, source_id, limit)
+
     def read(self, source: VersionRef) -> CollectedRecord:
+        try:
+            source_type = PreparedSourceType(source.kind)
+        except ValueError as exc:
+            raise SourceReferenceError("unsupported saved source kind") from exc
+        if is_teams_source_type(source_type):
+            return self._teams.read(source)
         selected = self._catalog.select(source)
         scope = self._catalog.source_scope(selected.source_id)
-        source_type = PreparedSourceType(source.kind)
         raw, saved, evidence_limits = self._evidence(selected)
         if source_type is PreparedSourceType.OUTLOOK_EMAIL:
             return self._outlook_mapper.map(
