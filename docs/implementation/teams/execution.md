@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 04:15 UTC
+## Current progress — 2026-10-04 04:42 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -36,21 +36,37 @@ detail and messages remain available with durable evidence. The native public
 crawl test passed in 5.04 seconds. Ruff, format, Pyright, live LSP, and commit
 hooks passed.
 
-Both remaining workers stopped progressing after completed tool calls. The
-coordinator retained their original conversations and file ownership. The chat
-continuation returned a send receipt at 03:31 UTC, but the transcript has not
-confirmed that continuation. A receipt alone is not acceptance. The A2
-continuation failed before its composer loaded. A read-only diagnostic found
-HTTP 429 on the conversation read while other account requests succeeded.
+Both remaining original workers stopped after completed tool calls. Fresh
+all-branch reads confirm 196 chat messages and 186 saved-source messages, with
+only each original user prompt. The apparent chat continuation receipt did not
+become a transcript message. Both strict continuation attempts failed before a
+confirmed send. The latest read-only browser diagnostic recorded HTTP 429 on
+the chat read, followed by HTTP 200, but the page still had no loaded turns or
+composer. No login or security challenge was present.
 
-A finite successor waits for the original collectors and validators to exit.
-It also waits at least 30 minutes after the measured 429. Its earliest retry is
-04:18 UTC. It checks all-branch user metadata before any continuation. Each
-eligible lane gets at most one attempt in its existing conversation. The
-sender requires loaded conversation turns and a successful HTTP post response.
-Native security, capacity, cooldown, and lifetime controls remain unchanged.
-The successor owns slow collection and serial preacceptance after the original
-owners release their locks. It cannot integrate or approve worker commits.
+The coordinator copied the exact unfinished drafts into separate recovery
+worktrees. Original files remain unchanged. Each copy retains the original
+`d0c011c` base and a SHA-256 inventory. The chat copy passes 19 focused tests,
+Ruff, and formatting, but has four Pyright errors. The saved-source copy passes
+its original 10 tests and static checks, but the three new coverage-isolation
+regressions still require repair. These results are diagnostic, not acceptance.
+
+Two finite completion tasks are prepared for those isolated copies. Each has
+four explicit completion cells and immutable file ownership. The external
+driver waits for the measured backoff until at least 04:59 UTC, local gates,
+fresh original-stall evidence, Project adoption, and a valid visible composer.
+It sends each new completion task at most once. It does not resend an original
+prompt or edit an original worktree. Original collection remains read-only.
+New result validation independently checks task, model/effort, base, actual
+parent, owned paths, clean status, focused tests, and static checks. Neither
+lineage is accepted merely because a worker returns a result.
+
+Full Pyright passed at exact `731a7a82dfd48c939779491963aafbd90d2e3760`
+with zero errors or warnings in 76.39 seconds. The earlier 60-second timeout
+was insufficient. The earlier live LSP directory checks covered only 50 files
+per directory. An exhaustive manifest now identifies all 584 Python files and
+partitions requests below the tool cap. That full live scan is in progress.
+All final gates remain required after production convergence.
 
 The preliminary full Python 3.13 normal suite at `66ac490` finished with
 2,484 passing tests and five failures in exact schema/export expectations.
@@ -78,9 +94,9 @@ accepted chat and notification coverage plus the final combined gate.
 
 | Lane | Conversation | State |
 | --- | --- | --- |
-| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Send receipt; transcript confirmation and result pending |
+| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Original stalled; isolated completion task prepared |
 | Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Conversation read HTTP 429; guarded continuation queued |
+| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Original stalled; isolated scoped-coverage repair prepared |
 
 The command mapping is committed at
 `6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
