@@ -16,7 +16,7 @@ from message_ingest.spiders.microsoft.outlook import calendar, email
 def test_spider_packages_expose_only_declared_public_surfaces() -> None:
     if spiders.__all__ != ["microsoft"]:
         pytest.fail(f"Unexpected top-level spider exports: {spiders.__all__!r}")
-    if microsoft.__all__ != ["MicrosoftProfileSpider", "outlook"]:
+    if microsoft.__all__ != ["MicrosoftProfileSpider", "outlook", "teams"]:
         pytest.fail(f"Unexpected Microsoft spider exports: {microsoft.__all__!r}")
     if outlook.__all__ != ["calendar", "email"]:
         pytest.fail(f"Unexpected Outlook spider exports: {outlook.__all__!r}")

@@ -48,6 +48,9 @@ from message_ingest.spiders.microsoft.outlook.email.folder_delta import (
 )
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
+from message_ingest.spiders.microsoft.teams.channel import (
+    MicrosoftTeamsChannelDiscoverSpider,
+)
 from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscoverSpider
 from message_ingest.spiders.microsoft.todo.sync import MicrosoftTodoSyncSpider
 
@@ -62,6 +65,7 @@ def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
         "microsoft_onedrive_delta": MicrosoftOneDriveDeltaSpider,
         "microsoft_onedrive_discover": MicrosoftOneDriveDiscoverSpider,
         "microsoft_profile": MicrosoftProfileSpider,
+        "microsoft_teams_channel_discover": MicrosoftTeamsChannelDiscoverSpider,
         "microsoft_todo_discover": MicrosoftTodoDiscoverSpider,
         "microsoft_todo_sync": MicrosoftTodoSyncSpider,
         "outlook_calendar_delta": OutlookCalendarDeltaSpider,

@@ -15,7 +15,7 @@ from message_ingest.items.microsoft.outlook import calendar, email
 def test_item_packages_expose_only_declared_domain_surfaces() -> None:
     if items.__all__ != ["acquisition", "microsoft"]:
         pytest.fail(f"Unexpected item package exports: {items.__all__!r}")
-    if microsoft.__all__ != ["outlook"]:
+    if microsoft.__all__ != ["outlook", "teams"]:
         pytest.fail(f"Unexpected Microsoft item exports: {microsoft.__all__!r}")
     if outlook.__all__ != ["calendar", "email"]:
         pytest.fail(f"Unexpected Outlook item exports: {outlook.__all__!r}")

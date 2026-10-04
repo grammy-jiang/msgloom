@@ -18,7 +18,7 @@ from message_ingest.pipelines.microsoft.outlook import (
 def test_pipeline_packages_expose_resource_surfaces() -> None:
     if pipelines.__all__ != ["evidence", "microsoft"]:
         pytest.fail(f"Unexpected pipeline exports: {pipelines.__all__!r}")
-    if microsoft.__all__ != ["outlook"]:
+    if microsoft.__all__ != ["outlook", "teams"]:
         pytest.fail(f"Unexpected Microsoft pipeline exports: {microsoft.__all__!r}")
     if outlook.__all__ != ["OutlookCalendarPipeline", "OutlookMailPipeline"]:
         pytest.fail(f"Unexpected Outlook pipeline exports: {outlook.__all__!r}")

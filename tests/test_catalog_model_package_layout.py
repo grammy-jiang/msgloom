@@ -1,4 +1,4 @@
-"""Lock SQLAlchemy models into acquisition and Outlook resource domains."""
+"""Lock the additive catalog schema and resource model ownership."""
 
 from __future__ import annotations
 
@@ -119,6 +119,17 @@ PRE_MAIL_BINDING_TABLE_NAMES = {
     "todo_task_presence",
     "todo_task_sightings",
     "todo_traversal_completions",
+    "teams_coverage_current",
+    "teams_coverage_observations",
+    "teams_hosted_content_observations",
+    "teams_message_attachments",
+    "teams_message_current",
+    "teams_message_deletions",
+    "teams_message_observations",
+    "teams_reference_resolution_current",
+    "teams_reference_resolution_observations",
+    "teams_topology_current",
+    "teams_topology_observations",
 }
 MAIL_BINDING_TABLE_NAMES = {
     "mail_application_bindings",
@@ -131,9 +142,7 @@ EXPECTED_TABLES = PRE_MAIL_BINDING_TABLE_NAMES | MAIL_BINDING_TABLE_NAMES
 
 def test_model_package_registers_complete_existing_schema() -> None:
     if set(Base.metadata.tables) != EXPECTED_TABLES:
-        pytest.fail(
-            f"Catalog metadata changed during model split: {sorted(Base.metadata.tables)!r}"
-        )
+        pytest.fail(f"Unexpected catalog tables: {sorted(Base.metadata.tables)!r}")
 
 
 def test_models_live_in_expected_domain_modules() -> None:
