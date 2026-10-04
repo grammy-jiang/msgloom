@@ -27,6 +27,7 @@ from message_ingest.catalog.models.microsoft.todo import (
     TodoTaskSighting,
     TodoTraversalCompletion,
 )
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.todo import (
     TodoChecklistItem,
     TodoLinkedResourceItem,
@@ -35,23 +36,15 @@ from message_ingest.items.microsoft.todo import (
     TodoTraversalCompleteItem,
 )
 
+from ._snapshot_release import SnapshotRelease, _capture_time, _reconcile_presence
+
 _ALLOWED_COMPLETIONS = frozenset(
     {"task_lists", "tasks", "checklist_items", "linked_resources"}
 )
 
 
-def _capture_time(value: str) -> datetime:
-    """Parse one aware ISO-8601 capture time for ordering decisions."""
-    parsed = datetime.fromisoformat(value)
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise ValueError(
-            "To Do snapshot observation timestamps must include a timezone"
-        )
-    return parsed.astimezone(UTC)
-
-
 def _scope_key(kind: str, list_id: str | None, task_id: str | None) -> str:
-    """Encode a collision-free collection scope without rebuilding provider URLs."""
+    """Encode an exact collection scope without rebuilding provider URLs."""
     return json.dumps(
         [kind, list_id, task_id], separators=(",", ":"), ensure_ascii=False
     )
@@ -66,7 +59,7 @@ class TodoSnapshotStore:
         self.source_id = source_id
 
     def load_revision(self) -> int | None:
-        """Return the current authoritative revision, if one has been promoted."""
+        """Return the current promoted authority revision, if any."""
         with self.catalog.Session() as session:
             state = session.get(TodoSnapshotState, self.source_id)
             return None if state is None else state.revision
@@ -119,7 +112,7 @@ class TodoSnapshotStore:
         *,
         base_revision: int | None,
     ) -> TodoSnapshotCandidate:
-        """Validate durable traversal proof and persist one terminal candidate."""
+        """Validate traversal proof and persist one terminal candidate."""
         with self.catalog.writer_session() as session:
             existing = session.get(TodoSnapshotCandidate, (self.source_id, run_id))
             if existing is not None:
@@ -163,7 +156,7 @@ class TodoSnapshotStore:
         *,
         base_revision: int | None,
     ) -> dict[str, int]:
-        """Atomically CAS the snapshot revision and reconcile all presence keys."""
+        """Commit revision, presence, exact facts and release atomically."""
         with self.catalog.writer_session() as session:
             candidate = session.get(TodoSnapshotCandidate, (self.source_id, run_id))
             if candidate is None or candidate.base_revision != base_revision:
@@ -185,6 +178,16 @@ class TodoSnapshotStore:
                 session,
                 run_id=run_id,
                 base_revision=base_revision,
+                revision=revision,
+                observed_at=candidate.observed_at,
+                evidence_id=candidate.evidence_id,
+                committed_at=committed_at,
+            )
+            release = SnapshotRelease(
+                session,
+                AcquisitionHandoffStore(self.catalog),
+                source_id=self.source_id,
+                run_id=run_id,
                 revision=revision,
                 observed_at=candidate.observed_at,
                 evidence_id=candidate.evidence_id,
@@ -218,8 +221,10 @@ class TodoSnapshotStore:
                     ("list_id", "task_id", "linked_resource_id"),
                 ),
             ):
-                counts = self._reconcile_presence(
+                counts = _reconcile_presence(
                     session,
+                    source_id=self.source_id,
+                    release=release,
                     content_model=content_model,
                     sighting_model=sighting_model,
                     presence_model=presence_model,
@@ -230,6 +235,7 @@ class TodoSnapshotStore:
                 )
                 present += counts[0]
                 absent += counts[1]
+            release.publish()
             candidate.committed_at = committed_at
             return {"revision": revision, "present": present, "absent": absent}
 
@@ -269,68 +275,6 @@ class TodoSnapshotStore:
             )
         if result.rowcount != 1:
             raise ValueError("To Do snapshot revision changed during this run")
-
-    def _reconcile_presence(
-        self,
-        session,
-        *,
-        content_model,
-        sighting_model,
-        presence_model,
-        key_names: tuple[str, ...],
-        run_id: str,
-        observed_at: str,
-        evidence_id: str,
-    ) -> tuple[int, int]:
-        candidate_time = _capture_time(observed_at)
-        content_rows = session.scalars(
-            select(content_model).filter_by(source_id=self.source_id)
-        ).all()
-        sighting_rows = session.scalars(
-            select(sighting_model).filter_by(source_id=self.source_id, run_id=run_id)
-        ).all()
-        seen = {
-            tuple(getattr(row, name) for name in key_names) for row in sighting_rows
-        }
-        present = 0
-        absent = 0
-        for content in content_rows:
-            key = tuple(getattr(content, name) for name in key_names)
-            desired = key in seen
-            if (
-                not desired
-                and _capture_time(content.latest_observed_at) > candidate_time
-            ):
-                continue
-            presence_key = (self.source_id, *key)
-            current = session.get(presence_model, presence_key)
-            if (
-                current is not None
-                and _capture_time(current.latest_observed_at) > candidate_time
-            ):
-                continue
-            values = {
-                "is_present": desired,
-                "latest_run_id": run_id,
-                "latest_observed_at": observed_at,
-                "latest_evidence_id": evidence_id,
-            }
-            if current is None:
-                session.add(
-                    presence_model(
-                        source_id=self.source_id,
-                        **dict(zip(key_names, key, strict=True)),
-                        **values,
-                    )
-                )
-            else:
-                for name, value in values.items():
-                    setattr(current, name, value)
-            if desired:
-                present += 1
-            else:
-                absent += 1
-        return present, absent
 
     def _promotion_summary(self, session, revision: int, run_id: str) -> dict[str, int]:
         present = 0

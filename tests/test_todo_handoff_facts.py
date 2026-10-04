@@ -38,7 +38,7 @@ def catalog(tmp_path):
 def test_all_todo_families_stage_exact_facts(
     catalog, cls, model, kind, operation, context, raw, projection
 ):
-    """Missing staging, wrong parent, or capture-based keys lose exact recovery."""
+    """Preserve exact recovery, semantic keys and component parents."""
     store = TodoStore(catalog, source_id="source")
     item = _item(cls, raw=raw, **context)
     getattr(store, operation)(item)
@@ -106,7 +106,7 @@ def test_fact_failure_rolls_back_every_todo_family(
 
 
 def test_unchanged_full_snapshot_recovery_and_no_repeated_work(catalog):
-    """An unreleased snapshot is recovered once without requeueing every run."""
+    """Recover an unreleased snapshot once without repeating work."""
     original_ids: set[str] = set()
     for index, run in enumerate(("failed", "retry", "unchanged"), 1):
         snapshots = _persist_full_snapshot(
@@ -127,8 +127,8 @@ def test_unchanged_full_snapshot_recovery_and_no_repeated_work(catalog):
         snapshots.stage_candidate(run, base_revision=revision)
         snapshots.promote_snapshot(run, base_revision=revision)
         entries = publish(catalog, run, AcquisitionStream.TODO, rows)
-        if len(entries) != 2:
-            pytest.fail("Unchanged full snapshot duplicated list/task impacts")
+        if len(entries) != 8:
+            pytest.fail("Snapshot must retain four exact impacts and four transitions")
         from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
         released = {
@@ -137,13 +137,27 @@ def test_unchanged_full_snapshot_recovery_and_no_repeated_work(catalog):
             for fact in AcquisitionHandoffStore(catalog).load_release_facts(
                 entry["release_entry_seq"]
             )
+            if fact.fact_kind != "scoped_state_transition"
         }
+        transitions = [
+            fact
+            for entry in entries
+            for fact in AcquisitionHandoffStore(catalog).load_release_facts(
+                entry["release_entry_seq"]
+            )
+            if fact.fact_kind == "scoped_state_transition"
+        ]
+        if len(transitions) != 4 or any(
+            fact.run_id != "retry" or fact.authority_revision != "1"
+            for fact in transitions
+        ):
+            pytest.fail("Unchanged snapshot fabricated authority transitions")
         if released != original_ids:
             pytest.fail("Equivalent retry must adopt exact original advanced facts")
 
 
 def test_stale_and_superseded_todo_facts_cannot_publish(catalog):
-    """Delayed completion cannot publish an observation superseded before idle."""
+    """Reject delayed publication of observations superseded before idle."""
     store = TodoStore(catalog, source_id="source")
     item = _item(list_id="list", raw={"title": "old"})
     store.persist_task(item)
@@ -168,7 +182,7 @@ def test_stale_and_superseded_todo_facts_cannot_publish(catalog):
 
 
 def test_task_and_components_have_separate_semantic_versions(catalog):
-    """Expanded child arrays and transport annotations cannot churn task state."""
+    """Keep child arrays and transport data out of task semantic state."""
     store = TodoStore(catalog, source_id="source")
     body = {"content": "x" * 70000, "contentType": "text"}
     raw = {
