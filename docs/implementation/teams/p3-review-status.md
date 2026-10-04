@@ -1,6 +1,6 @@
 # Teams P3 review status
 
-Four reviews are accepted at the original code candidate
+Five reviews are accepted at the original code candidate
 `ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The provider review found a
 confirmed scope-validation defect. The focused repair passes its tests. All nine final
 reviews must name the repaired candidate before local completion.
@@ -19,8 +19,8 @@ that commit do not change the frozen source archive.
 | Evidence/provenance/replay | Accepted PASS at original candidate; final closure required |
 | Persistence/history/deletion | Accepted PASS at original candidate; final closure required |
 | Shared topology | Accepted PASS at original candidate; final closure required |
-| Fixture completeness | Pending |
-| Compatibility | Pending |
+| Fixture completeness | Native ordering and callback-map findings repaired; final closure pending |
+| Compatibility | Accepted PASS at original candidate; final closure required |
 
 The [lifecycle reviewer](https://chatgpt.com/c/6ac2081c-4558-83ec-9477-62b9e8c5e262)
 returned PASS for all three criteria with no findings. The coordinator checked
@@ -97,3 +97,32 @@ sticky history gaps after reconciliation. Durable receipts are
 `.superpowers/teams-a1/p3-r1-evidence-replay-acceptance.json` and
 `.superpowers/teams-a1/p3-r1-persistence-history-deletion-acceptance.json`.
 These acceptances apply only to the original candidate.
+
+## Native evidence-ordering fixture repair
+
+The fixture reviewer reported `FC-NATIVE-ORDER-001`: the earlier pipeline
+manager test awaited each item explicitly and did not prove native callback
+output ordering under delayed persistence. The new production-spider crawl
+holds message-page raw evidence before its real awaited write. At semantic
+entry, it checks a separate SQL session and both exact stored blob digests and
+lengths. The test records hold, release, commit, and semantic entry in order.
+
+A test-only broken-concurrency control makes the native scraper process two
+items at once after initialization. The probe detects the dependent item before
+commit, marks native item-error integrity, and prevents semantic storage.
+Production code and settings guards are unchanged. Both control cases pass.
+The combined ordering, chat-integrity, and channel-integrity suite passes
+14 tests in 36.62 seconds. Ruff, format, Pyright, and two live LSP checks pass.
+
+The 36-cell fixture map now includes this native test in cell 33 and the
+executed channel callback-error test in cell 32 (`FC-CELL32-MAP-001`).
+New exact-candidate full gates and all nine independent closures remain due.
+
+## Compatibility review
+
+The [compatibility reviewer](https://chatgpt.com/c/6ac20c80-bb3c-83ec-bac6-4253c30d03a5)
+returned PASS at the original candidate. The coordinator checked 84 actual MCP
+calls, the exact transcript pins and archive, all 11 gate hashes, ordinary
+JUnit entries, and the separate opt-in FastMCP results in all three Python
+versions. The receipt is `.superpowers/teams-a1/p3-r1-compatibility-acceptance.json`.
+This acceptance does not replace final repaired-candidate closure.
