@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 03:00 UTC
+## Current progress — 2026-10-04 03:19 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -12,6 +12,21 @@ Two failing regressions proved the defects before the correction. All 34
 focused channel tests passed in 28.05 seconds. The native public channel
 command passed an empty-inventory crawl with durable evidence. Ruff, format,
 Pyright, live LSP diagnostics, and changed-file hooks passed.
+
+The integrated Teams/Graph/evidence/saved-source regression passed all 586
+cases in 118.04 seconds at unchanged `2fb7211`. Shared channel exports and
+native callback contracts are committed at `93ef9a6`. Three native contracts
+check production callback output. Public CLI persistence is qualified
+separately because native Scrapy contracts disable item pipelines.
+
+Additional channel integrity qualification is committed at
+`1b523eb39eabd7a00968dcb6f8659f0856e5a3c6`. Item errors, dropped items, and an
+injected failure before raw persistence each mark the actual logical run
+failed. The public command returns a failure exit code. The raw failure case
+leaves zero dependent message rows. Late failures retain five already stored
+observations and their evidence. Native public JOBDIR rejection occurs before
+any fixture request. All three integrity cases and both channel CLI cases
+pass. Ruff, format, Pyright, live LSP, and commit hooks pass.
 
 | Lane | Conversation | State |
 | --- | --- | --- |
@@ -399,7 +414,7 @@ are execution corrections. The authoritative design remains unchanged.
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
 | P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
-| P2 application integration and synthetic crawls | Persistence accepted; downstream no-post failures under bounded recovery |
+| P2 application integration and synthetic crawls | Persistence and channel accepted; original chat/A2 workers active |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
 | Notification-driven live acceptance | NOT EXERCISED |
