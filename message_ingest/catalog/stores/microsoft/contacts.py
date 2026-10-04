@@ -31,6 +31,7 @@ type Outcome = Literal["created", "changed", "unchanged", "stale"]
 
 from ._contacts_delta import ContactDeltaCheckpointState, ContactsDeltaStore
 from ._contacts_handoff import stage_contacts_fact
+from ._contacts_release import ContactsAuthorityRelease
 from ._contacts_state import (
     ContactsPromotionOrder,
     ContactStateWriter,
@@ -58,7 +59,9 @@ class ContactsStore:
 
     @staticmethod
     def scope_key(*, folder_id: str | None, is_default_scope: bool) -> str:
-        """Return an internal scope key without inventing a provider default ID."""
+        """
+        Return an internal scope key without inventing a provider default ID.
+        """
         if is_default_scope:
             if folder_id is not None:
                 raise ValueError("Default Contacts scope cannot have a folder ID")
@@ -72,7 +75,9 @@ class ContactsStore:
         return observation_time(value)
 
     def begin_snapshot_run(self, run_id: str) -> int:
-        """Capture shared authority ownership before snapshot traversal starts."""
+        """
+        Capture shared authority ownership before snapshot traversal starts.
+        """
         return self.order.begin(run_id=run_id, operation="snapshot")
 
     def begin_delta_run(
@@ -98,7 +103,9 @@ class ContactsStore:
     def promote_delta(
         self, *, folder_id: str, run_id: str, base_revision: int | None
     ) -> ContactDeltaCheckpointState:
-        """Promote one clean delta under shared snapshot/delta authority CAS."""
+        """
+        Promote one clean delta under shared snapshot/delta authority CAS.
+        """
         return self.delta.promote(
             folder_id=folder_id, run_id=run_id, base_revision=base_revision
         )
@@ -145,7 +152,9 @@ class ContactsStore:
             return outcome
 
     def persist_contact(self, item: ContactItem) -> Outcome:
-        """Upsert one snapshot contact; delta observations use explicit staging."""
+        """
+        Upsert one snapshot contact; delta observations use explicit staging.
+        """
         if item.observation_kind != "snapshot":
             raise ValueError("Delta contacts must be staged before promotion")
         observed = self._time(item.observed_at)
@@ -182,7 +191,9 @@ class ContactsStore:
             return outcome
 
     def persist_completion(self, item: ContactCollectionCompleteItem) -> None:
-        """Record one terminal collection page for later idle-time validation."""
+        """
+        Record one terminal collection page for later idle-time validation.
+        """
         self._time(item.observed_at)
         self._time(item.run_started_at)
         scope_key = self._completion_scope(item)
@@ -208,7 +219,9 @@ class ContactsStore:
                 setattr(record, name, value)
 
     def promote_snapshot(self, run_id: str) -> dict[str, int]:
-        """Atomically publish presence after durable traversal-completion checks."""
+        """
+        Atomically publish presence after durable traversal-completion checks.
+        """
         committed_at = datetime.now(UTC).isoformat()
         with self.catalog.writer_session() as session:
             completions = session.scalars(
@@ -263,11 +276,19 @@ class ContactsStore:
                     )
                 ).all()
             }
+            release = ContactsAuthorityRelease(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                run_id=run_id,
+                generation=generation + 1,
+            )
+            release.snapshot_sources()
             folder_counts = self._promote_folder_presence(
-                session, folder_sightings, run_id, root
+                session, folder_sightings, run_id, root, release
             )
             contact_counts = self._promote_contact_presence(
-                session, contact_sightings, run_id, by_key, root
+                session, contact_sightings, run_id, by_key, root, release
             )
             if current is None:
                 session.add(
@@ -283,10 +304,16 @@ class ContactsStore:
                 current.latest_run_started_at = started
                 current.committed_at = committed_at
             self.order.advance(session, expected=generation)
+            release.publish(committed_at)
             return {**folder_counts, **contact_counts}
 
     def _promote_folder_presence(
-        self, session, seen: dict[str, ContactFolderSighting], run_id: str, root
+        self,
+        session,
+        seen: dict[str, ContactFolderSighting],
+        run_id: str,
+        root,
+        release: ContactsAuthorityRelease,
     ) -> dict[str, int]:
         known = set(
             session.scalars(
@@ -295,7 +322,7 @@ class ContactsStore:
                 )
             ).all()
         )
-        for folder_id in known:
+        for folder_id in sorted(known):
             identity = {"source_id": self.source_id, "folder_id": folder_id}
             record = session.get(ContactFolderPresence, identity)
             sighting = seen.get(folder_id)
@@ -316,6 +343,14 @@ class ContactsStore:
             else:
                 for name, value in values.items():
                     setattr(record, name, value)
+            release.presence(
+                kind="contact_folder",
+                identity=folder_id,
+                scope="root",
+                observed_at=values["latest_observed_at"],
+                evidence_id=values["latest_evidence_id"],
+                reason="present" if present else "not_in_complete_inventory",
+            )
         return {
             "folders_present": len(seen),
             "folders_absent": len(known - set(seen)),
@@ -328,6 +363,7 @@ class ContactsStore:
         run_id: str,
         completions: dict[tuple[str, str], ContactCollectionCompletion],
         root,
+        release: ContactsAuthorityRelease,
     ) -> dict[str, int]:
         known = set(
             session.execute(
@@ -336,7 +372,7 @@ class ContactsStore:
                 )
             ).all()
         )
-        for scope_key, contact_id in known | set(seen):
+        for scope_key, contact_id in sorted(known | set(seen)):
             identity = {
                 "source_id": self.source_id,
                 "scope_key": scope_key,
@@ -354,6 +390,14 @@ class ContactsStore:
                 run_id=run_id,
                 observed_at=provenance.observed_at,
                 evidence_id=provenance.evidence_id,
+            )
+            release.presence(
+                kind="contact",
+                identity=contact_id,
+                scope=scope_key,
+                observed_at=provenance.observed_at,
+                evidence_id=provenance.evidence_id,
+                reason="present" if present else "not_in_complete_snapshot",
             )
         return {
             "contacts_present": len(seen),

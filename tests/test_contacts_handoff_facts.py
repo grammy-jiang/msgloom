@@ -27,6 +27,8 @@ from message_ingest.items.microsoft.contacts import (
     ContactFolderItem,
     ContactItem,
 )
+from tests._contacts_authority import entries as authority_entries
+from tests._contacts_authority import primary
 from tests._todo_contacts_handoff import facts, publish, reject_facts
 from tests.test_contacts_catalog import _complete, _contact, _folder
 
@@ -151,7 +153,9 @@ def test_snapshot_fact_failure_rolls_back_state_and_sightings(
 
 
 def test_snapshot_retry_adopts_unreleased_state_without_repeating_work(catalog):
-    """A later full unchanged snapshot adopts an unreleased advancement once."""
+    """
+    A later full unchanged snapshot adopts an unreleased advancement once.
+    """
     store = ContactsStore(catalog, source_id="source")
     original_ids: set[str] = set()
     for day, run in enumerate(("failed", "retry", "unchanged"), 1):
@@ -163,16 +167,11 @@ def test_snapshot_retry_adopts_unreleased_state_without_repeating_work(catalog):
             original_ids = {row.fact_id for row in rows}
             continue
         store.promote_snapshot(run)
-        entries = publish(catalog, run, AcquisitionStream.CONTACTS, rows)
-        if len(entries) != 3:
+        released = {fact.fact_id for fact in primary(catalog)}
+        if len(released) != 3:
             pytest.fail("Unchanged snapshot duplicated work or failed recovery")
-        released = {
-            fact.fact_id
-            for entry in entries
-            for fact in AcquisitionHandoffStore(catalog).load_release_facts(
-                entry["release_entry_seq"]
-            )
-        }
+        if run == "unchanged" and authority_entries(catalog, run):
+            pytest.fail("Already released state created new authority entries")
         if released != original_ids:
             pytest.fail("Retry fabricated a new immutable source version")
 
@@ -204,7 +203,9 @@ def stage_delta(store: ContactsStore, run: str, *, day: int = 3) -> None:
 
 
 def test_sparse_delta_stays_authority_staged_and_never_uses_merged_record(catalog):
-    """A sparse delta's immutable locator must not advertise a merged contact."""
+    """
+    A sparse delta's immutable locator must not advertise a merged contact.
+    """
     store = ContactsStore(catalog, source_id="source")
     snapshot(store, "seed", 1)
     store.promote_snapshot("seed")
@@ -229,7 +230,10 @@ def test_sparse_delta_stays_authority_staged_and_never_uses_merged_record(catalo
         for value in ("new title", "original", "deltatoken", "secret")
     ):
         pytest.fail("Provider content or opaque cursor leaked into ledger")
-    if publish(catalog, "early", AcquisitionStream.CONTACTS, [row]):
+    before = AcquisitionHandoffStore(catalog).list_release_entries(
+        "source", AcquisitionStream.CONTACTS
+    )
+    if publish(catalog, "early", AcquisitionStream.CONTACTS, [row]) != before:
         pytest.fail("Sparse delta leaked before winning authority promotion")
     store.promote_delta(folder_id="folder", run_id="delta", base_revision=None)
     with catalog.Session() as session:
@@ -243,13 +247,10 @@ def test_sparse_delta_stays_authority_staged_and_never_uses_merged_record(catalo
             pytest.fail("Existing ordered sparse merge was changed")
         if "companyName" in observation.raw:
             pytest.fail("Immutable delta observation was replaced with merged state")
-    if facts(catalog, "delta")[0] != row:
+    if row not in facts(catalog, "delta"):
         pytest.fail("Promotion mutated the historical provider fact")
-    # Automatic release of winning delta state belongs to Task 9.
-    if AcquisitionHandoffStore(catalog).list_release_entries(
-        "source", AcquisitionStream.CONTACTS
-    ):
-        pytest.fail("Task 4 unexpectedly installed authority publication")
+    if primary(catalog, "delta") != [row]:
+        pytest.fail("Authority release lost the exact winning sparse observation")
 
 
 def test_delta_fact_failure_rolls_back_observation_and_ordinal(catalog):
@@ -277,7 +278,10 @@ def test_stale_generation_never_promotes_sparse_facts(catalog):
     store.promote_snapshot("winner")
     with pytest.raises(RuntimeError, match="generation is stale"):
         store.promote_delta(folder_id="folder", run_id="loser", base_revision=None)
-    if publish(catalog, "loser-release", AcquisitionStream.CONTACTS, [row]):
+    before = AcquisitionHandoffStore(catalog).list_release_entries(
+        "source", AcquisitionStream.CONTACTS
+    )
+    if publish(catalog, "loser-release", AcquisitionStream.CONTACTS, [row]) != before:
         pytest.fail("Stale generation published a contact resource")
     if store.load_delta_checkpoint("folder") is not None:
         pytest.fail("Stale generation advanced its checkpoint")

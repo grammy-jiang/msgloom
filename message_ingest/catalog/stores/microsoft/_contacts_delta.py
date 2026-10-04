@@ -20,6 +20,7 @@ from message_ingest.items.microsoft.contacts import (
 )
 
 from ._contacts_handoff import stage_contacts_fact
+from ._contacts_release import ContactsAuthorityRelease
 from ._contacts_state import (
     ContactsPromotionOrder,
     ContactStateWriter,
@@ -38,6 +39,16 @@ class ContactDeltaCheckpointState:
     committed_at: str
 
 
+@dataclass(frozen=True, slots=True)
+class ContactDeltaApplication:
+    """
+    Return the exact applied/skipped ordinal without changing public results.
+    """
+
+    observation: ContactDeltaObservation
+    applied: bool
+
+
 class ContactsDeltaStore:
     """Own delta staging, ordered application, and opaque cursor promotion."""
 
@@ -51,12 +62,17 @@ class ContactsDeltaStore:
     def begin_run(
         self, *, folder_id: str, run_id: str
     ) -> ContactDeltaCheckpointState | None:
-        """Capture shared promotion ownership before any delta request is sent."""
+        """
+        Capture shared promotion ownership before any delta request is sent.
+        """
         self.order.begin(run_id=run_id, operation=self._operation(folder_id))
         return self.load_checkpoint(folder_id)
 
     def persist_observation(self, item: ContactItem) -> None:
-        """Stage one ordered custom-folder delta entry without changing current state."""
+        """
+        Stage one ordered custom-folder delta entry without changing current
+        state.
+        """
         if item.observation_kind != "delta" or item.is_default_scope:
             raise ValueError("Contacts delta requires a concrete custom-folder scope")
         folder_id = item.folder_id
@@ -96,7 +112,9 @@ class ContactsDeltaStore:
             )
 
     def stage_candidate(self, item: ContactDeltaCheckpointCandidateItem) -> None:
-        """Persist the exact opaque terminal link for later idle-time promotion."""
+        """
+        Persist the exact opaque terminal link for later idle-time promotion.
+        """
         if not item.folder_id.strip() or not item.delta_link or not item.evidence_id:
             raise ValueError(
                 "Contacts delta candidate requires folder, link, and evidence"
@@ -133,7 +151,9 @@ class ContactsDeltaStore:
     def promote(
         self, *, folder_id: str, run_id: str, base_revision: int | None
     ) -> ContactDeltaCheckpointState:
-        """Apply staged observations and cursor under shared snapshot/delta CAS."""
+        """
+        Apply staged observations and cursor under shared snapshot/delta CAS.
+        """
         with self.catalog.writer_session() as session:
             generation = self.order.require_base(
                 session, run_id=run_id, operation=self._operation(folder_id)
@@ -160,8 +180,18 @@ class ContactsDeltaStore:
                 .filter_by(source_id=self.source_id, folder_id=folder_id, run_id=run_id)
                 .order_by(ContactDeltaObservation.ordinal)
             ).all()
+            release = ContactsAuthorityRelease(
+                session,
+                self.handoff,
+                source_id=self.source_id,
+                run_id=run_id,
+                generation=generation + 1,
+                folder_id=folder_id,
+            )
             for observation in observations:
-                self._apply_observation(session, observation)
+                application = self._apply_observation(session, observation)
+                if application.applied:
+                    release.applied_delta(application.observation)
             committed_at = datetime.now(UTC).isoformat()
             if current is None:
                 current = ContactDeltaCheckpoint(
@@ -179,12 +209,16 @@ class ContactsDeltaStore:
                 current.run_id = run_id
                 current.committed_at = committed_at
             self.order.advance(session, expected=generation)
+            release.publish(committed_at)
             session.flush()
             return self._checkpoint_state(current)
 
     def _apply_observation(
         self, session: Session, observation: ContactDeltaObservation
-    ) -> None:
+    ) -> ContactDeltaApplication:
+        """
+        Apply one ordinal and report its exact identity and freshness outcome.
+        """
         scope_key = f"folder:{observation.folder_id}"
         identity = {
             "source_id": self.source_id,
@@ -197,7 +231,7 @@ class ContactsDeltaStore:
             run_id=observation.run_id,
             observed_at=observation.observed_at,
         ):
-            return
+            return ContactDeltaApplication(observation, False)
         if observation.is_removed:
             self.state.set_presence(
                 session,
@@ -208,7 +242,7 @@ class ContactsDeltaStore:
                 observed_at=observation.observed_at,
                 evidence_id=observation.evidence_id,
             )
-            return
+            return ContactDeltaApplication(observation, True)
         record = session.get(ContactRecord, identity)
         raw = dict(record.raw) if record is not None else {}
         raw.update(observation.raw)
@@ -237,6 +271,8 @@ class ContactsDeltaStore:
             observed_at=observation.observed_at,
             evidence_id=observation.evidence_id,
         )
+
+        return ContactDeltaApplication(observation, True)
 
     @staticmethod
     def _operation(folder_id: str) -> str:
