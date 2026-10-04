@@ -275,7 +275,7 @@ Worker prompts, replies, hash/pin evidence, process records, and command logs
 remain in the ignored `.superpowers/teams-a1/` directory. Later implementation
 closure reviews remain pending; P0 PASS is not an implementation claim.
 
-## Current channel integration and budget interruption
+## Channel integration and earlier budget interruption
 
 The channel worker returned `fe1611adfc9aaa9c19e1c564c0ecf80d596680a6`.
 The coordinator verified its exact P0 parent, six owned paths, and finished
@@ -303,9 +303,36 @@ The guard and its thresholds remain unchanged.
 
 After the user challenged the interruption, the existing interactive session
 performed the bounded channel integration above without launching a new Codex
-coordinator. Budget refusal still prevents future unattended coordinator
-rotations until the guard permits them. Pending worker outputs and all remaining
-implementation/review gates are retained; the program is not complete.
+coordinator. Budget refusal prevented subsequent unattended rotations until
+the explicit user authorization recorded below. Pending worker outputs and all
+remaining implementation/review gates are retained; the program is not complete.
+
+## User-authorized automatic continuation
+
+On 2026-10-04, the user explicitly instructed the coordinator to keep this
+program working and wake or resume it whenever it stops. The user also
+authorized continued use of tokens. This creates a daily-critical exception
+for this exact Teams program. The supervisor uses the launcher's supported
+`--allow-daily-critical` flag on every authorized rotation. Global guard
+thresholds remain unchanged. Model pins, session budgets, required reviews,
+tests, live-acceptance boundaries, and the prohibition on merging to `master`
+remain in force.
+
+The 15-minute watchdog now detects actionable work without a coordinator,
+even when a supervisor process is still alive. It preserves a live interactive
+repair lease and a short launch grace period. After confirming a stall, it
+restarts supervision from the durable lane state. Status distinguishes actual
+development from monitor liveness and recognizes the scoped budget exception.
+
+Both composition workers returned finite commits. Chat composition returned
+`872890c0b0476751fb2bf5dd2ab9216ffe8f6bcd` from base
+`d85d7c94c2e8f13e465787092d462edb8efbe1b2`. Channel composition returned
+`eddb0e126e5c2d8e44fadd6dc1e5113e1fac928d` from base
+`ff4cf7353842a3cfac7aaed897052bdb6fe2dedc`. Their completed conversations and
+results are saved in the existing lane records. They await coordinator review,
+focused validation, and integration. Do not duplicate these worker sends.
+The next coordinator must continue through the core provider freeze, P2,
+P3, and all remaining local gates.
 
 ## Coordinator continuity
 
@@ -316,7 +343,7 @@ no in-place effort control. Fresh coordinator sessions must use
 
 The daily usage guard was critical at initial entry. The first fresh coordinator
 started at `2026-10-03T14:13:32Z` with `gpt-6-astra` / `high`; its entry guard
-check passed. No new Codex manager may start unless the guard permits it. A
+check passed. Later launches follow the explicit scoped authorization above. A
 bounded external supervisor is armed to start a
 fresh coordinator from the durable ledger when work is actionable. It must not
 resume this large context. The current coordinator must release ownership
@@ -332,7 +359,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message/chat/channel topology integrated; both compositions pending |
+| P1 core provider implementation | Message/chat/channel topology integrated; both composition commits await review/integration |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |

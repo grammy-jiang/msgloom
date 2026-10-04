@@ -289,8 +289,14 @@ codex -m gpt-6-astra -c 'model_reasoning_effort="high"'
 
 For unattended execution, use `codex-budgeted-manager` with this model and
 effort. Do not start a raw long-running `codex exec` manager. Run
-`codex-usage-guard check` before starting substantial work. Do not start another
-manager when the daily guard is critical.
+`codex-usage-guard check` before starting substantial work. The default policy
+does not start another manager when the daily guard is critical. On 2026-10-04,
+the user explicitly authorized continued execution and automatic resumption
+for `MSGLOOM_TEAMS_A1_AUTONOMOUS_IMPLEMENTATION_20261003`, including at the
+daily critical level. This program's supervisor passes the supported
+`--allow-daily-critical` flag on every authorized launch. The exception is
+recorded in the program ledger and control state. It does not change global
+guard thresholds, other programs, session budgets, or implementation gates.
 
 Update the launcher checkpoint and program ledger after each dispatch or
 integration unit. Run `codex-usage-guard thread --run-id ID` after each major
