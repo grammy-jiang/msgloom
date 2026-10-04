@@ -19,6 +19,9 @@ from message_ingest.acquisition.source_context import (
     SourceContextExtension,
     ensure_jobdir_context,
 )
+from message_ingest.spiders.microsoft.outlook.email.delta import (
+    OutlookDeltaSpider,
+)
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
@@ -274,6 +277,7 @@ def test_malformed_existing_policy_marker_fails_closed(tmp_path: Path) -> None:
 
 
 def _raw_crawler(tmp_path: Path, *, policy):
+    """Use qualified Mail delta to exercise the real JOBDIR guards."""
     jobdir = tmp_path / "job"
     settings = {
         **get_reactor_settings(),
@@ -285,8 +289,8 @@ def _raw_crawler(tmp_path: Path, *, policy):
         "MSGLOOM_SOURCE_IDENTITY_REQUIRED": False,
         "EXTENSIONS": {SourceContextExtension: 50},
     }
-    crawler = Crawler(OutlookDiscoverSpider, settings)
-    spider = OutlookDiscoverSpider.from_crawler(
+    crawler = Crawler(OutlookDeltaSpider, settings)
+    spider = OutlookDeltaSpider.from_crawler(
         crawler,
         _mail_rule_policy=policy,
     )

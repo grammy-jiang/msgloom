@@ -9,50 +9,33 @@ from pathlib import Path
 import pytest
 from scrapy.core.scheduler import Scheduler
 from scrapy.core.spidermw import SpiderMiddlewareManager
+from scrapy.crawler import Crawler
 from scrapy.http import Request, TextResponse
-from scrapy.utils.test import get_crawler
+from scrapy.utils.test import get_crawler, get_reactor_settings
 
 from message_ingest.acquisition.microsoft.outlook.email import (
-    MailRuleEvaluation,
-    MailRuleEvaluationState,
     MailRuleFact,
     MailRuleFacts,
     MailRuleObservation,
-    MailRuleProbeData,
     MailRuleRequiredData,
+    parse_mail_rule_policy,
 )
+from message_ingest.acquisition.source_context import SourceContextExtension
 from message_ingest.items.microsoft.outlook.email import OutlookMailItem
+from message_ingest.spiders.microsoft.outlook.email.delta import (
+    OutlookDeltaSpider,
+)
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
 
 
-class NeedsBodyEvaluator:
-    def evaluate(
-        self,
-        observation: MailRuleObservation,
-        *,
-        probe: MailRuleProbeData | None = None,
-    ) -> MailRuleEvaluation:
-        del observation, probe
-        return MailRuleEvaluation(
-            state=MailRuleEvaluationState.NEEDS_DATA,
-            required_data=frozenset(
-                {MailRuleRequiredData.BODY, MailRuleRequiredData.HEADERS}
-            ),
-        )
-
-
-class RuleEnabledDiscoverSpider(OutlookDiscoverSpider):
-    def build_mail_rule_evaluator(self, policy):
-        del policy
-        return NeedsBodyEvaluator()
-
-
 def _item() -> OutlookMailItem:
+    """Provide version-bound metadata with body and headers still unknown."""
     return OutlookMailItem.from_graph(
         {
             "id": "message-1",
+            "changeKey": "change-1",
             "lastModifiedDateTime": "2026-09-30T03:00:00Z",
             "bodyPreview": "preview",
         },
@@ -64,23 +47,50 @@ def _item() -> OutlookMailItem:
     )
 
 
-def _crawler(tmp_path: Path | None = None):
+def _crawler(tmp_path: Path):
+    """
+    Build qualified Mail delta with real policy and JOBDIR guard setup.
+
+    Both missing fields require one composite probe. Construct the Spider
+    before extensions, matching native crawl initialization so both guards
+    verify the job before the disk Scheduler opens.
+    """
+    policy = parse_mail_rule_policy(
+        {
+            "enabled": True,
+            "default_profile": "discovery",
+            "rules": [
+                {
+                    "id": "body-and-headers",
+                    "sequence": 10,
+                    "profile": "full",
+                    "conditions": {
+                        "body_contains": ["approval"],
+                        "header_contains": ["x-workflow"],
+                    },
+                }
+            ],
+        },
+        source_label="explicit",
+    )
     settings = {
+        **get_reactor_settings(),
+        "REMOTE_CONTROL_ENABLED": False,
+        "TELNETCONSOLE_ENABLED": False,
         "MS_GRAPH_AUTH_METHOD": "none",
         "MSGLOOM_SOURCE_IDENTITY_REQUIRED": False,
+        "MSGLOOM_SOURCE_ID": "source-1",
+        "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+        "EXTENSIONS": {SourceContextExtension: 50},
         "REFERRER_POLICY": "scrapy.spidermiddlewares.referer.DefaultReferrerPolicy",
+        "JOBDIR": str(tmp_path / "job"),
+        "SCHEDULER_DEBUG": True,
+        "SCHEDULER_PRIORITY_QUEUE": "scrapy.pqueues.ScrapyPriorityQueue",
     }
-    if tmp_path is not None:
-        settings.update(
-            {
-                "JOBDIR": str(tmp_path / "job"),
-                "SCHEDULER_DEBUG": True,
-                "SCHEDULER_PRIORITY_QUEUE": "scrapy.pqueues.ScrapyPriorityQueue",
-            }
-        )
-    crawler = get_crawler(RuleEnabledDiscoverSpider, settings_dict=settings)
-    spider = RuleEnabledDiscoverSpider.from_crawler(crawler)
+    crawler = Crawler(OutlookDeltaSpider, settings)
+    spider = OutlookDeltaSpider.from_crawler(crawler, _mail_rule_policy=policy)
     crawler.spider = spider
+    crawler._apply_settings()
     return crawler, spider
 
 

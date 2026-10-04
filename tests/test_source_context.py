@@ -194,6 +194,7 @@ def test_real_cli_rejects_jobdir_from_other_context_before_download(
     database_url = (
         f"sqlite:///{tmp_path / 'two.sqlite3'}" if change == "catalog" else first_db
     )
+    # Qualified Mail delta reaches the source guard with JOBDIR enabled.
     result = subprocess.run(
         [
             sys.executable,
@@ -202,7 +203,7 @@ def test_real_cli_rejects_jobdir_from_other_context_before_download(
             "microsoft",
             "outlook",
             "mail",
-            "discover",
+            "delta",
             "-s",
             f"JOBDIR={jobdir}",
             "-s",
