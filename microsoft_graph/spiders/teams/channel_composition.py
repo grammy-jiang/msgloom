@@ -12,6 +12,7 @@ from microsoft_graph.items.teams.content import (
     parse_hosted_contents,
 )
 from microsoft_graph.items.teams.message import TeamsMessageItem
+from microsoft_graph.protocol import GraphObjectTypeError
 from microsoft_graph.protocol.teams import TeamsMessageIdentity, TeamsMessageLocation
 
 from .channel import MicrosoftTeamsChannelSpider
@@ -42,6 +43,15 @@ def _channel_message_parts(
     return team_id, channel_id, root_message_id, identity.message_id
 
 
+def _channel_collection(resources: Any, **scope: str) -> None:
+    """Validate collection shape and path scope even when no messages exist."""
+    if not isinstance(resources, list):
+        raise GraphObjectTypeError("Teams channel messages must be a JSON array")
+    for name, value in scope.items():
+        if not isinstance(value, str) or not value:
+            raise ValueError(f"Teams channel collection requires a non-empty {name}")
+
+
 def parse_channel_root_messages(
     resources: list[Any],
     *,
@@ -55,6 +65,7 @@ def parse_channel_root_messages(
 
     Envelope and continuation validation remain owned by GraphCollectionPage.
     """
+    _channel_collection(resources, host_team_id=host_team_id, channel_id=channel_id)
     return tuple(
         item_type.from_channel_root_graph(
             resource,
@@ -76,6 +87,12 @@ def parse_channel_replies(
     **item_kwargs: Any,
 ) -> tuple[TeamsMessageItem, ...]:
     """Parse reply collection values under their traversal-path root scope."""
+    _channel_collection(
+        resources,
+        host_team_id=host_team_id,
+        channel_id=channel_id,
+        root_message_id=root_message_id,
+    )
     return tuple(
         item_type.from_channel_reply_graph(
             resource,
