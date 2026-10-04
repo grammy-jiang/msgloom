@@ -359,7 +359,7 @@ are execution corrections. The authoritative design remains unchanged.
 | --- | --- |
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
-| P1 core provider implementation | Message/chat/channel topology integrated; both composition commits await review/integration |
+| P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
 | P2 application integration and synthetic crawls | Not started |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
@@ -373,3 +373,12 @@ tenant resources or administrator-consent evidence were supplied. This is the
 precise current live-acceptance blocker. It does not block local implementation
 or synthetic qualification. A personal Microsoft account cannot satisfy the
 live gate.
+
+## Core provider convergence — 2026-10-04
+
+Both completed composition workers are accepted and integrated. The coordinator
+repaired empty channel-collection validation with a failing-then-passing
+regression. The [core provider freeze](core-provider-freeze.md) records exact
+commits and all 458 affected tests plus static and boundary checks. P2
+persistence is now eligible for dispatch. No application or final gate is
+claimed by this provider freeze.
