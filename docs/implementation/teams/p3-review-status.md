@@ -1,6 +1,6 @@
 # Teams P3 review status
 
-The lifecycle and shared-topology reviews are accepted at the original code candidate
+Four reviews are accepted at the original code candidate
 `ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The provider review found a
 confirmed scope-validation defect. The focused repair passes its tests. All nine final
 reviews must name the repaired candidate before local completion.
@@ -16,8 +16,8 @@ that commit do not change the frozen source archive.
 | Graph-over-Scrapy ownership | Send confirmed; original recovery owns collection |
 | Lifecycle/cancellation | Accepted PASS at original candidate; final repaired-candidate closure required |
 | Privacy/security | Major diagnostic-repr finding repaired; focused checks pass; final closure pending |
-| Evidence/provenance/replay | PASS returned; coordinator evidence validation pending |
-| Persistence/history/deletion | PASS returned; coordinator evidence validation pending |
+| Evidence/provenance/replay | Accepted PASS at original candidate; final closure required |
+| Persistence/history/deletion | Accepted PASS at original candidate; final closure required |
 | Shared topology | Accepted PASS at original candidate; final closure required |
 | Fixture completeness | Pending |
 | Compatibility | Pending |
@@ -81,3 +81,19 @@ The 16 notification, inbound-evidence, and privacy crawl integration tests pass
 in 53.94 seconds.
 Final repaired-candidate convergence and all nine independent closures remain
 required. No original-candidate PASS substitutes for final closure.
+
+## Evidence and persistence reviews
+
+The evidence/replay and persistence/history/deletion reviews are accepted at
+the original candidate. The coordinator verified their exact task, candidate,
+inventory, posted prompt, model, and effort. The evidence reviewer made 117
+actual MCP calls and 38 source reads. The persistence reviewer made 47 MCP
+calls and 17 source reads. The coordinator checked the cited source and 26
+evidence tests plus 22 persistence tests in the archived passing JUnit.
+
+The checks confirm committed canonical evidence, exact inbound request bytes,
+immutable observation selection, explicit deletion without body loss, and
+sticky history gaps after reconciliation. Durable receipts are
+`.superpowers/teams-a1/p3-r1-evidence-replay-acceptance.json` and
+`.superpowers/teams-a1/p3-r1-persistence-history-deletion-acceptance.json`.
+These acceptances apply only to the original candidate.
