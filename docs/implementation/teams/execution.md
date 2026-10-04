@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 06:09 UTC
+## Current progress — 2026-10-04 06:29 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
@@ -74,6 +74,28 @@ identity-only `resourceData` and OData key resource path. Nine positive cases
 reproduce this defect; five malformed cases are rejected. Retest and repair the
 finished candidate before N1 acceptance. See the
 [basic notification wire format](n0-notification-contract.md#basic-notification-wire-format).
+
+The original notification conversation stopped advancing at an unfinished tool
+call. A bounded same-chat continuation could not load the conversation and
+failed before posting. A fresh HTTP read still shows 126 messages and no
+continuation. Project adoption found 18 known conversations. The original
+worker worktree remains unchanged and its collector retains ownership.
+
+A finite repair task, `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_FINISH_R2`, now owns
+an isolated copy of the nine draft files at the same exact `f67e4d9` base.
+Its manifest preserves each file hash. It must repair the documented basic
+notification format, pass focused/static checks, and return a finite commit.
+The frozen draft also has a protocol-test parameter-count collection error;
+this is required repair work. Neither notification lineage is accepted. Only
+one lineage may be integrated after exact task, pins, parent, ownership, diff,
+and validation checks.
+
+A coordinator public-reader draft passes two native integration probes on the
+isolated combined code. Real notification intake, successful reconciliation,
+failed deletion readback, webhook and local gaps, exact inbound bytes, additive
+history, selection replay, and tamper rejection are covered. These tests must
+be promoted and rerun on the accepted notification candidate. The probe does
+not accept the unfinished worker.
 
 No approved work/school tenant configuration or consent evidence is available.
 Live T1/T2, repeat acquisition, and webhook acceptance are not exercised.
