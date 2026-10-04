@@ -1,12 +1,13 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 08:25 UTC
+## Current progress — 2026-10-04 08:37 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
 accepted locally. Full local convergence passed at code candidate
-`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The lifecycle P3 review is accepted at that candidate. The provider review
-found a scope-override defect, now repaired with 32 focused and 21 integration tests passing. All nine final reviews must name the repaired candidate.
+`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The lifecycle and shared-topology P3 reviews are accepted at that candidate.
+Provider and privacy reviewers found scope-override and diagnostic-repr defects.
+Both have focused repairs. All nine final reviews must name the repaired candidate.
 
 The normal Python 3.13 suite passed all 2,611 tests. The separate serial
 exclusive-state suite passed its one test. All 36 mandatory fixture cells
@@ -22,10 +23,10 @@ documentation, and configuration files. The inventory SHA-256 is
 `a5da64858930628926f3c9195c891eb6c16c69b092e5f4341bd66ea3a5ae7ea1`.
 All 11 prerequisite gate receipts and source/log hashes passed the freeze
 validator. The fresh native account probe passed after a transient preflight
-HTTP 429. The dedicated browser composer check also passed. One bounded
-external dispatcher owns the remaining original review sends and collection.
-A separate bounded recovery owns the framework lane after its unconfirmed
-first send. The lifecycle/cancellation review is accepted; see
+HTTP 429. The dedicated browser composer check also passed. All nine review sends are confirmed. A bounded collect-only successor owns
+the original eight lanes after a verified idle-boundary handoff. The separate
+framework recovery owns its confirmed review. No review was resent during the
+collection handoff. The lifecycle and shared-topology reviews are accepted; see
 [P3 review status](p3-review-status.md). Each lane pins `gpt-5-6-thinking`, `max`, the Raspberry Pi MCP
 connector, and the frozen candidate. A queued send is not a confirmed send
 or an accepted review. The supervisor and scheduled watchdog remain active.
@@ -74,7 +75,8 @@ scan covered 584 files with zero diagnostics. All complete repository, static,
 compatibility, LSP, contracts, and hook gates have now passed on the converged
 code candidate above.
 The [P3 review contract](p3-review-contract.md) requires nine independent reviews
-and exact repaired-candidate closure. No P3 reviewer is accepted yet.
+and exact repaired-candidate closure. Original-candidate review acceptance
+does not satisfy final repaired-candidate closure.
 
 The full normal regression at `c959a6548fbbfcfd7bdf5614562ac6373c03202b`
 finished with 2,530 passes and one failure in an existing triage deadline test.

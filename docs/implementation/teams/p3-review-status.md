@@ -1,6 +1,6 @@
 # Teams P3 review status
 
-The lifecycle review is accepted at the original code candidate
+The lifecycle and shared-topology reviews are accepted at the original code candidate
 `ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The provider review found a
 confirmed scope-validation defect. The focused repair passes its tests. All nine final
 reviews must name the repaired candidate before local completion.
@@ -13,12 +13,12 @@ that commit do not change the frozen source archive.
 | Review lane | State |
 | --- | --- |
 | Provider/API/permissions | Major scope-override finding repaired; final closure pending |
-| Graph-over-Scrapy ownership | Pending; bounded recovery owns the first unconfirmed send |
+| Graph-over-Scrapy ownership | Send confirmed; original recovery owns collection |
 | Lifecycle/cancellation | Accepted PASS at original candidate; final repaired-candidate closure required |
-| Privacy/security | Pending |
-| Evidence/provenance/replay | Pending |
-| Persistence/history/deletion | Pending |
-| Shared topology | Pending |
+| Privacy/security | Major diagnostic-repr finding repaired; focused checks pass; final closure pending |
+| Evidence/provenance/replay | PASS returned; coordinator evidence validation pending |
+| Persistence/history/deletion | PASS returned; coordinator evidence validation pending |
+| Shared topology | Accepted PASS at original candidate; final closure required |
 | Fixture completeness | Pending |
 | Compatibility | Pending |
 
@@ -56,3 +56,28 @@ scope overrides. The redundant T1-only forwarding method is removed.
 The focused suite passes 32 tests. Ruff, format, Pyright, and live LSP diagnostics
 pass for the three changed Python files. All 21 native CLI, contract, notification, and public-reader integration tests
 pass in 87.62 seconds. Changed-file pre-commit hooks also pass. Full final convergence and nine exact-candidate closures remain due.
+
+## Shared topology review
+
+The [shared-topology reviewer](https://chatgpt.com/c/6ac20a30-aa60-83ec-bbfb-17edd9ce858c)
+returned PASS for all three criteria. The coordinator verified 113 actual MCP
+calls, 45 source reads, all frozen hashes, and 41 passing JUnit cases. Source
+inspection confirms separate host/receiving identities, discovery/detail
+observations, membership paths, and root-scoped reply identities. The durable
+receipt is `.superpowers/teams-a1/p3-r1-shared-topology-acceptance.json`.
+
+## Acquisition diagnostic privacy repair
+
+The privacy reviewer reported `PS03-RAW-EVIDENCE-REPR`. Generated dataclass
+representations exposed private transport fields, including inbound notification
+`clientState`. Four failing `repr`/`str` regressions reproduced the leak.
+Sensitive raw-evidence and failure fields now use `repr=False`. Exact bytes,
+URLs, headers, errors, and context remain available to persistence. Evidence
+correlation IDs remain visible in diagnostic output.
+
+The focused evidence, privacy, and notification suite passes 67 tests. Ruff,
+format, Pyright, and live LSP checks pass for both changed Python files.
+The 16 notification, inbound-evidence, and privacy crawl integration tests pass
+in 53.94 seconds.
+Final repaired-candidate convergence and all nine independent closures remain
+required. No original-candidate PASS substitutes for final closure.
