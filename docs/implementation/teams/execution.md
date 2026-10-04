@@ -329,10 +329,9 @@ Both composition workers returned finite commits. Chat composition returned
 `d85d7c94c2e8f13e465787092d462edb8efbe1b2`. Channel composition returned
 `eddb0e126e5c2d8e44fadd6dc1e5113e1fac928d` from base
 `ff4cf7353842a3cfac7aaed897052bdb6fe2dedc`. Their completed conversations and
-results are saved in the existing lane records. They await coordinator review,
-focused validation, and integration. Do not duplicate these worker sends.
-The next coordinator must continue through the core provider freeze, P2,
-P3, and all remaining local gates.
+results are saved in the existing lane records. Both commits passed coordinator
+review and integration. The core provider freeze below records their combined
+validation. P2, P3, and all remaining local gates continue from that freeze.
 
 ## Coordinator continuity
 
@@ -380,7 +379,7 @@ Both completed composition workers are accepted and integrated. The coordinator
 repaired empty channel-collection validation with a failing-then-passing
 regression. The [core provider freeze](core-provider-freeze.md) records exact
 commits and all 458 affected tests plus static and boundary checks. P2
-persistence is now eligible for dispatch. No application or final gate is
+persistence was dispatched from that freeze. No application or final gate is
 claimed by this provider freeze.
 
 ## Persistence dispatch — 2026-10-04
@@ -404,3 +403,22 @@ channel traversal, and the saved-source reader. None is dispatched until the
 persistence item/schema contract is accepted. The exact manifests and wake
 state are in `.superpowers/teams-a1/`; all remaining local and live gates above
 remain open.
+
+## Shared fixture transport — 2026-10-04
+
+The coordinator added `tests/teams_support.py` before the persistence result.
+This schema-independent support provides exact request-target matching,
+scripted response sequences, binary bodies, duplicate headers, ordered request
+recording, and isolated native Scrapy process setup. It preserves the project
+`CONCURRENT_ITEMS` value and existing Graph transport components.
+
+Four qualification tests passed in 39.68 seconds. Two run the existing To Do
+application spider through real Scrapy to prove 429/503 retry, literal opaque
+pagination, auth-disabled requests, and durable final-response evidence. The
+other tests verify binary/header fidelity and route replacement. Ruff, format,
+and Pyright passed. These checks qualify the shared test transport; they do
+not replace the mandatory Teams chat/channel semantic crawls.
+
+The persistence writer remains active. Application base/settings, semantic
+fixture helpers, and the three downstream dispatches still require its accepted
+item/schema contract.
