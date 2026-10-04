@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 03:19 UTC
+## Current progress — 2026-10-04 03:43 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -28,11 +28,38 @@ observations and their evidence. Native public JOBDIR rejection occurs before
 any fixture request. All three integrity cases and both channel CLI cases
 pass. Ruff, format, Pyright, live LSP, and commit hooks pass.
 
+The associated-only host fixture is committed at
+`0d68c0bf58f8716a60112c00c1dc53a084344d42`. It proves that opaque associated
+pagination discovers a host absent from joined teams. A denied host detail
+read retains discovery and an explicit coverage gap. Accessible shared-channel
+detail and messages remain available with durable evidence. The native public
+crawl test passed in 5.04 seconds. Ruff, format, Pyright, live LSP, and commit
+hooks passed.
+
+Both remaining workers stopped progressing after completed tool calls. The
+coordinator verified their unchanged transcripts and retained their original
+conversations and file ownership. One bounded chat continuation was confirmed
+at 03:31 UTC with the original model, effort, and MCP connector. The A2 continuation
+failed before its composer loaded after six bounded page-load attempts. A
+read-only diagnostic will identify the failing request before another send.
+Its prepared prompt includes the known cross-resource coverage defect and
+requires collision regressions in both directions. Existing collectors
+remain the sole result owners. No repeated task or replacement chat was sent.
+
+Three additional native crawl cases are committed at
+`742f8bebb42cb6f4737df790244eb4062df0f461`. They cover user, team, and channel
+mentions; custom emoji; two observed reaction versions without invented old
+bodies; full team hydration; a nonempty team with empty channel inventories;
+and readable hosted bytes after explicit message deletion without a historical
+version-binding claim. All three cases passed in 22.74 seconds. Ruff, format,
+Pyright, live LSP, and commit hooks passed. The 36-cell map still requires
+accepted chat and notification coverage plus the final combined gate.
+
 | Lane | Conversation | State |
 | --- | --- | --- |
-| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Worker active |
+| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Continuation confirmed; result pending |
 | Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Worker active |
+| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Page-load failure; no continuation confirmed |
 
 The command mapping is committed at
 `6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
