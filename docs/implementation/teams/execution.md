@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 04:42 UTC
+## Current progress — 2026-10-04 04:50 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -64,9 +64,11 @@ lineage is accepted merely because a worker returns a result.
 Full Pyright passed at exact `731a7a82dfd48c939779491963aafbd90d2e3760`
 with zero errors or warnings in 76.39 seconds. The earlier 60-second timeout
 was insufficient. The earlier live LSP directory checks covered only 50 files
-per directory. An exhaustive manifest now identifies all 584 Python files and
-partitions requests below the tool cap. That full live scan is in progress.
-All final gates remain required after production convergence.
+per directory. The exhaustive live scan now passes all 584 Python files in
+`microsoft_graph/`, `message_ingest/`, and `tests/`. Its 242 request receipts
+prove complete, unique coverage below the tool cap and zero diagnostics. All
+Python input hashes remained unchanged through the scan. All final gates
+remain required after production convergence.
 
 The preliminary full Python 3.13 normal suite at `66ac490` finished with
 2,484 passing tests and five failures in exact schema/export expectations.
