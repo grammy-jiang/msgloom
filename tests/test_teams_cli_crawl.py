@@ -8,11 +8,13 @@ from teams_support import crawl, json_reply, serve_graph
 
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
+from message_ingest.catalog.models.microsoft.teams import TeamsMessageObservation
 
 
 @pytest.mark.parametrize(
     ("resource", "targets"),
     [
+        ("chat", ("/v1.0/me/chats?%24top=50",)),
         (
             "channel",
             ("/v1.0/me/teamwork/associatedTeams", "/v1.0/me/joinedTeams"),
@@ -51,6 +53,43 @@ def test_public_teams_discovery_persists_empty_inventory(
                     pytest.fail("Public command lost source or response provenance")
                 if Path(row.response_body_path).read_bytes() != b'{"value": []}':
                     pytest.fail("Persisted response bytes changed")
+    finally:
+        catalog.close()
+
+
+def test_public_chat_command_links_message_to_durable_evidence(tmp_path: Path) -> None:
+    """Exercise command mapping, default discovery, and all three pipelines."""
+    message = {"id": "message", "etag": "v1", "body": {"content": "saved"}}
+    routes = {
+        "/v1.0/me/chats?%24top=50": {"value": [{"id": "chat", "chatType": "group"}]},
+        "/v1.0/chats/chat/members": {"value": []},
+        "/v1.0/chats/chat/messages?%24top=50": {"value": [message]},
+        "/v1.0/chats/chat/pinnedMessages": {"value": []},
+        "/v1.0/chats/chat/messages/message/hostedContents": {"value": []},
+    }
+    with serve_graph() as fixture:
+        for target, payload in routes.items():
+            fixture.add(target, json_reply(payload))
+        result = crawl(tmp_path, fixture, ["microsoft", "teams", "chat", "discover"])
+        if result.returncode or "ERROR" in result.stderr:
+            pytest.fail(result.stderr[-6000:])
+        if sorted(seen.target for seen in fixture.seen) != sorted(routes):
+            pytest.fail("Public chat discovery missed or invented a follow-up")
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        with catalog.Session() as session:
+            rows = session.scalars(select(TeamsMessageObservation)).all()
+            if len(rows) != 1 or rows[0].raw != message:
+                pytest.fail("Public command did not persist the message observation")
+            evidence = session.get(RawHttpEvidence, rows[0].evidence_id)
+            if evidence is None or evidence.source_id != rows[0].source_id:
+                pytest.fail("Message has no committed same-source evidence")
+            if evidence.observed_at != rows[0].observed_at:
+                pytest.fail("Message evidence capture time differs")
+            if rows[0].source_id != "teams-fixture":
+                pytest.fail("Public command ignored the explicit source setting")
+            if not Path(evidence.response_body_path).is_file():
+                pytest.fail("Message evidence payload was not persisted")
     finally:
         catalog.close()
 
