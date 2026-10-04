@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from outlook_mail_handoff_fixtures import saved_mail_evidence
 from scrapy.settings import Settings
 
 import message_ingest.commands.microsoft.outlook.sync as sync_module
@@ -83,11 +84,17 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
             observed_at=NOW,
         )
         for surface in ("detail", "mime", "attachments"):
+            evidence_id = saved_mail_evidence(
+                catalog,
+                evidence_id=f"complete-{surface}",
+                run_id="older-run",
+            )
             store.set_surface(
+                run_id="older-run",
                 message_id="complete",
                 surface=surface,
                 status="acquired",
-                evidence_id=None,
+                evidence_id=evidence_id,
                 observed_at=NOW,
                 profile_version=MAIL_FULL_V1,
             )

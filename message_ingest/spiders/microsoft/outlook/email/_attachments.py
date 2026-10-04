@@ -104,6 +104,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                         attachment_type, attachment_id
                     ):
                         yield OutlookMessageSurfaceItem(
+                            run_id=self.run_id,
                             message_id=message_id,
                             surface=surface,
                             status="omitted_size_limit",
@@ -119,6 +120,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
                     )
             else:
                 yield OutlookMessageSurfaceItem(
+                    run_id=self.run_id,
                     message_id=message_id,
                     surface=f"attachment_raw:{attachment_id}",
                     status="unsupported",
@@ -140,6 +142,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             return
         # Only the final page proves the attachment inventory is complete.
         yield OutlookMessageSurfaceItem(
+            run_id=self.run_id,
             message_id=message_id,
             surface="attachments",
             status="acquired",
@@ -174,6 +177,7 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
             run_id=self.run_id,
         )
         yield OutlookMessageSurfaceItem(
+            run_id=self.run_id,
             message_id=message_id,
             surface=f"item_attachment_detail:{attachment_id}",
             status="acquired",

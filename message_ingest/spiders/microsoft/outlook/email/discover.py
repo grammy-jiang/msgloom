@@ -15,6 +15,13 @@ class OutlookDiscoverSpider(OutlookMailCollectionSpider):
 
     name = "outlook_discover"
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        """Reject JOBDIR until logical-run resume is separately qualified."""
+        if crawler.settings.get("JOBDIR"):
+            raise ValueError("Outlook Mail discover does not support JOBDIR")
+        return super().from_crawler(crawler, *args, **kwargs)
+
     def __init__(
         self,
         *args,

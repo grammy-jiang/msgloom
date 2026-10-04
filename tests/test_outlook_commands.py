@@ -456,3 +456,20 @@ subject_regex = ["PRIVATE_REGEX_771(?="]
         pytest.fail("Scrapy command boundary leaked private config material")
     if "subject_regex" not in rendered or "msgloom-regex-v1" not in rendered:
         pytest.fail(f"Safe Mail config diagnostic lost useful context: {rendered!r}")
+
+
+@pytest.mark.parametrize("action", ["discover", "full"])
+def test_mail_unqualified_actions_reject_jobdir_before_dispatch(action):
+    """Reject shared queue state at the public command boundary."""
+    from scrapy.settings import Settings
+
+    command = MicrosoftCommand()
+    command.settings = Settings({"JOBDIR": "/tmp/mail-unqualified"})
+    process = FakeCrawlerProcess()
+    command.crawler_process = cast(CrawlerProcessBase, process)
+    with pytest.raises(UsageError, match="does not support JOBDIR"):
+        command.run(
+            [], _opts(action=action, message_ids=["m1"] if action == "full" else [])
+        )
+    if process.calls:
+        pytest.fail("JOBDIR rejection happened after scheduling a crawler")

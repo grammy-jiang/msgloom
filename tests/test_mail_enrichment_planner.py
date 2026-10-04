@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from outlook_mail_handoff_fixtures import saved_mail_evidence
 
 from message_ingest.acquisition.microsoft.outlook.email.planner import (
     pending_full_v1_message_ids,
@@ -41,11 +42,16 @@ def _surface(
     status: str = "acquired",
     profile: str | None = FULL_V1,
 ) -> None:
+    evidence_id = saved_mail_evidence(
+        store.catalog,
+        evidence_id=f"fixture-{message_id}-{surface}",
+    )
     store.set_surface(
+        run_id="fixture-run",
         message_id=message_id,
         surface=surface,
         status=status,
-        evidence_id=None,
+        evidence_id=evidence_id,
         observed_at=NOW,
         profile_version=profile,
     )
@@ -76,6 +82,7 @@ def test_planner_requires_attachment_surfaces_for_current_inventory(
         for surface in ("detail", "mime", "attachments"):
             _surface(store, "m1", surface)
         store.upsert_attachment(
+            run_id="fixture-run",
             message_id="m1",
             attachment={
                 "id": "a1",

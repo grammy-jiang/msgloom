@@ -9,9 +9,6 @@ from scrapy.utils.test import get_crawler
 
 from message_ingest.spiders.microsoft.outlook.email._base import OutlookMailSpider
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
-from message_ingest.spiders.microsoft.outlook.email.discover import (
-    OutlookDiscoverSpider,
-)
 
 
 def _crawler(
@@ -65,13 +62,13 @@ def test_markerless_source_only_jobdir_accepts_enabled_policy_before_scheduler(
 ) -> None:
     from message_ingest.acquisition.source_context import ensure_jobdir_context
 
-    crawler = _crawler(tmp_path, OutlookDiscoverSpider)
+    crawler = _crawler(tmp_path, OutlookDeltaSpider)
     ensure_jobdir_context(
         crawler.settings["JOBDIR"],
         crawler.settings["MSGLOOM_SOURCE_ID"],
         crawler.settings["MSGLOOM_DATABASE_URL"],
     )
-    spider = OutlookDiscoverSpider.from_crawler(
+    spider = OutlookDeltaSpider.from_crawler(
         crawler,
         _mail_rule_policy=_mail_policy_for_jobdir(enabled=True),
     )
@@ -89,7 +86,7 @@ def test_markerless_legacy_jobdir_bootstraps_disabled_policy(
 ) -> None:
     from message_ingest.acquisition.source_context import ensure_jobdir_context
 
-    crawler = _crawler(tmp_path, OutlookDiscoverSpider)
+    crawler = _crawler(tmp_path, OutlookDeltaSpider)
     jobdir = Path(crawler.settings["JOBDIR"])
     ensure_jobdir_context(
         str(jobdir),
@@ -97,7 +94,7 @@ def test_markerless_legacy_jobdir_bootstraps_disabled_policy(
         crawler.settings["MSGLOOM_DATABASE_URL"],
     )
     (jobdir / "spider.state").write_bytes(b"legacy")
-    spider = OutlookDiscoverSpider.from_crawler(
+    spider = OutlookDeltaSpider.from_crawler(
         crawler,
         _mail_rule_policy=_mail_policy_for_jobdir(enabled=False),
     )
@@ -117,7 +114,7 @@ def test_markerless_legacy_jobdir_rejects_enabled_policy(
     )
     from message_ingest.acquisition.source_context import ensure_jobdir_context
 
-    crawler = _crawler(tmp_path, OutlookDiscoverSpider)
+    crawler = _crawler(tmp_path, OutlookDeltaSpider)
     jobdir = Path(crawler.settings["JOBDIR"])
     ensure_jobdir_context(
         str(jobdir),
@@ -125,7 +122,7 @@ def test_markerless_legacy_jobdir_rejects_enabled_policy(
         crawler.settings["MSGLOOM_DATABASE_URL"],
     )
     (jobdir / "spider.state").write_bytes(b"legacy")
-    spider = OutlookDiscoverSpider.from_crawler(
+    spider = OutlookDeltaSpider.from_crawler(
         crawler,
         _mail_rule_policy=_mail_policy_for_jobdir(enabled=True),
     )

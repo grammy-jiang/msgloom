@@ -41,10 +41,15 @@ class OutlookMailPipeline:
         service: CatalogService,
         source_id: str,
         stats=None,
+        spider_name: str = "outlook_mail",
     ) -> None:
         self.service = service
         self.catalog = service.catalog
-        self.store = OutlookMailStore(self.catalog, source_id=source_id)
+        self.store = OutlookMailStore(
+            self.catalog,
+            source_id=source_id,
+            spider_name=spider_name,
+        )
         self.stats = stats
         self._write_lock = service.write_lock
         self.checkpoints = OutlookDeltaCheckpointStore(self.catalog, source_id)
@@ -61,10 +66,11 @@ class OutlookMailPipeline:
             service=CatalogService.from_crawler(crawler),
             source_id=crawler.settings["MSGLOOM_SOURCE_ID"],
             stats=crawler.stats,
+            spider_name=crawler.spidercls.name or "outlook_mail",
         )
 
     def close_spider(self) -> None:
-        """Close the crawler-shared catalog before terminal lifecycle signals."""
+        """Close the shared catalog before terminal lifecycle signals."""
         self.service.close()
 
     async def process_item(self, item):
@@ -102,6 +108,7 @@ class OutlookMailPipeline:
             return self._record_message(item)
         if isinstance(item, OutlookAttachmentItem):
             self.store.upsert_attachment(
+                run_id=item.run_id,
                 message_id=item.message_id,
                 attachment=item.raw,
                 evidence_id=item.evidence_id,
@@ -128,6 +135,7 @@ class OutlookMailPipeline:
             return self._observation_stats("message_folder_removal", created)
         if isinstance(item, OutlookMessageSurfaceItem):
             self.store.set_surface(
+                run_id=item.run_id,
                 message_id=item.message_id,
                 surface=item.surface,
                 status=item.status,
@@ -210,7 +218,7 @@ class OutlookMailPipeline:
                 FULL_V1,
                 "message_detail",
             )
-        created = self.store.record_message(
+        outcome = self.store.record_message(
             run_id=item.run_id,
             message=item.raw,
             kind=kind,
@@ -218,6 +226,8 @@ class OutlookMailPipeline:
             observed_at=item.observed_at,
         )
         self.store.set_surface(
+            run_id=item.run_id,
+            resource_version=outcome.fact.source_state_key,
             message_id=item.message_id,
             surface=surface,
             status="acquired",
@@ -225,7 +235,7 @@ class OutlookMailPipeline:
             observed_at=item.observed_at,
             profile_version=profile,
         )
-        return self._observation_stats(stat_prefix, created)
+        return self._observation_stats(stat_prefix, outcome.observation_created)
 
     @staticmethod
     def _observation_stats(prefix: str, created: bool) -> tuple[str, str]:

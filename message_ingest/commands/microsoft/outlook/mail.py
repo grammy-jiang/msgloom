@@ -35,6 +35,12 @@ def _load_mail_rule_policy(opts: argparse.Namespace) -> MailRulePolicy:
 
 def dispatch_mail(command: Any, opts: argparse.Namespace) -> None:
     """Map Outlook Mail actions to their existing spiders."""
+    if (
+        opts.action in {"discover", "full"}
+        and command.settings is not None
+        and command.settings.get("JOBDIR")
+    ):
+        raise UsageError(f"Outlook Mail {opts.action} does not support JOBDIR")
     if opts.action == "discover":
         if opts.message_ids:
             raise UsageError("Mail discover does not accept MESSAGE_ID values")

@@ -9,6 +9,7 @@ import asyncio
 from pathlib import Path
 
 import pytest
+from outlook_mail_handoff_fixtures import saved_mail_evidence
 from scrapy import Request
 from scrapy.utils.test import get_crawler
 
@@ -35,7 +36,9 @@ def _seed_surface(
     status: str = "acquired",
     profile_version: str | None = FULL_V1,
 ) -> None:
+    saved_mail_evidence(catalog, evidence_id=f"ev-{surface}")
     OutlookMailStore(catalog, source_id="source-1").set_surface(
+        run_id="fixture-run",
         message_id=message_id,
         surface=surface,
         status=status,
@@ -52,6 +55,7 @@ def _seed_attachment(
     attachment_type: str,
 ) -> None:
     OutlookMailStore(catalog, source_id="source-1").upsert_attachment(
+        run_id="fixture-run",
         message_id=message_id,
         attachment={
             "id": attachment_id,

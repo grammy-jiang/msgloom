@@ -32,6 +32,13 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
 
     name = "outlook_full"
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        """Reject JOBDIR until logical-run resume is separately qualified."""
+        if crawler.settings.get("JOBDIR"):
+            raise ValueError("Outlook Mail full does not support JOBDIR")
+        return super().from_crawler(crawler, *args, **kwargs)
+
     def __init__(
         self,
         *args,
@@ -157,6 +164,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         else:
             return
         yield OutlookMessageSurfaceItem(
+            run_id=self.run_id,
             message_id=message_id,
             surface=surface,
             status="acquired",
@@ -193,6 +201,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                     "msgloom/crawl/enrichment/download_size_limit_omission_count"
                 )
                 yield OutlookMessageSurfaceItem(
+                    run_id=self.run_id,
                     message_id=message_id,
                     surface=surface,
                     status="omitted_size_limit",
@@ -223,6 +232,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                 terminal_status,
             )
             yield OutlookMessageSurfaceItem(
+                run_id=self.run_id,
                 message_id=message_id,
                 surface=surface,
                 status=terminal_status,
@@ -306,6 +316,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                         )
                     else:
                         yield OutlookMessageSurfaceItem(
+                            run_id=self.run_id,
                             message_id=message_id,
                             surface=surface,
                             status="unsupported",

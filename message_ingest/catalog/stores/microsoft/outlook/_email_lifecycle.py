@@ -19,13 +19,23 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MessageRecord,
 )
 
+from ._email_folder_facts import mark_folder_removed
+from ._email_handoff import MailPersistenceOutcome
+
 
 class OutlookMailLifecycleStore:
     """Own presence sightings and idle-time snapshot promotion."""
 
-    def __init__(self, catalog, *, source_id: str) -> None:
+    def __init__(
+        self,
+        catalog,
+        *,
+        source_id: str,
+        spider_name: str = "outlook_mail",
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
 
     @staticmethod
     def _now() -> str:
@@ -130,30 +140,16 @@ class OutlookMailLifecycleStore:
         observed_at: str,
         evidence_id: str | None,
         reason: str | None,
-    ) -> None:
-        """Apply an explicit folder-delta tombstone and discard stale message cursors."""
-        with self.catalog.Session() as session, session.begin():
-            self._set_folder_presence(
-                session,
-                folder_id=folder_id,
-                is_present=False,
-                reason=reason or "folder_delta_removed",
-                run_id=run_id or "",
-                observed_at=observed_at,
-                evidence_id=evidence_id,
-            )
-            session.execute(
-                delete(DeltaCheckpoint).where(
-                    DeltaCheckpoint.source_id == self.source_id,
-                    DeltaCheckpoint.folder_id == folder_id,
-                )
-            )
-            session.execute(
-                delete(DeltaCheckpointCandidate).where(
-                    DeltaCheckpointCandidate.source_id == self.source_id,
-                    DeltaCheckpointCandidate.folder_id == folder_id,
-                )
-            )
+    ) -> MailPersistenceOutcome:
+        """Stage the scoped folder tombstone with its domain mutation."""
+        return mark_folder_removed(
+            self,
+            folder_id=folder_id,
+            run_id=run_id,
+            observed_at=observed_at,
+            evidence_id=evidence_id,
+            reason=reason,
+        )
 
     def record_message_sighting(
         self,
@@ -238,7 +234,7 @@ class OutlookMailLifecycleStore:
         expected_folder_ids: set[str],
         reconcile_messages: bool,
     ) -> dict[str, int]:
-        """Promote lifecycle through the shared session-scoped implementation."""
+        """Promote lifecycle through the shared session implementation."""
         from message_ingest.sync.microsoft.outlook.email.promotion import (
             ValidatedMailDeltaRun,
         )
@@ -468,7 +464,7 @@ class OutlookMailLifecycleStore:
             )
 
     def message_presence(self, *, message_id: str) -> bool | None:
-        """Return confirmed mailbox presence, or ``None`` when never reconciled."""
+        """Return mailbox presence, or ``None`` when never reconciled."""
         with self.catalog.Session() as session:
             return session.scalar(
                 select(MessagePresence.is_present).filter_by(
@@ -478,7 +474,7 @@ class OutlookMailLifecycleStore:
             )
 
     def active_message_filter(self):
-        """SQL predicate that keeps legacy/unknown presence and confirmed present."""
+        """Keep legacy/unknown presence and confirmed present rows."""
         return or_(MessagePresence.id.is_(None), MessagePresence.is_present.is_(True))
 
 

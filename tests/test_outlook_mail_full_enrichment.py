@@ -120,6 +120,8 @@ def test_attachment_list_schedules_supported_followups_and_completeness_surface(
     surfaces = [
         value for value in output if isinstance(value, OutlookMessageSurfaceItem)
     ]
+    if any(getattr(surface, "run_id", None) != spider.run_id for surface in surfaces):
+        pytest.fail("Attachment surface producer lost current logical run")
     if len(attachment_items) != 3:
         pytest.fail("Expected: len(attachment_items) == 3")
     if {surface.surface for surface in surfaces} != {
@@ -190,6 +192,8 @@ def test_mime_callback_emits_raw_http_evidence_then_semantic_surface() -> None:
     surface = next(
         value for value in output if isinstance(value, OutlookMessageSurfaceItem)
     )
+    if getattr(surface, "run_id", None) != spider.run_id:
+        pytest.fail("Surface producer lost current logical run")
     if surface.surface != "mime":
         pytest.fail('Expected: surface.surface == "mime"')
 

@@ -38,11 +38,13 @@ from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpide
 def _crawler(
     tmp_path: Path,
     spider_cls: type[OutlookMailSpider] = OutlookDeltaSpider,
+    *,
+    jobdir: bool = True,
 ):
     return get_crawler(
         spider_cls,
         settings_dict={
-            "JOBDIR": str(tmp_path / "job"),
+            "JOBDIR": str(tmp_path / "job") if jobdir else None,
             "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
             "MSGLOOM_SOURCE_ID": "test-source",
         },
@@ -105,7 +107,11 @@ def test_outlook_requests_are_serializable_for_scrapy_persistent_scheduler(
     tmp_path: Path,
     spider_cls: type[OutlookMailSpider],
 ) -> None:
-    crawler = _crawler(tmp_path, spider_cls)
+    crawler = _crawler(
+        tmp_path,
+        spider_cls,
+        jobdir=spider_cls is OutlookDeltaSpider,
+    )
     kwargs = {"message_ids": "message-id"} if spider_cls is OutlookFullSpider else {}
     spider = spider_cls.from_crawler(crawler, **kwargs)
 
@@ -168,7 +174,7 @@ def test_outlook_requests_are_serializable_for_scrapy_persistent_scheduler(
 def test_mail_rule_probe_request_serializes_named_callbacks_and_context(
     tmp_path: Path,
 ) -> None:
-    crawler = _crawler(tmp_path, OutlookDiscoverSpider)
+    crawler = _crawler(tmp_path, OutlookDiscoverSpider, jobdir=False)
     spider = OutlookDiscoverSpider.from_crawler(crawler)
     observation = MailRuleObservation(
         message_id="message-id",
@@ -368,3 +374,12 @@ def test_calendar_state_validates_during_open_and_preserves_rejected_job(
         pytest.fail("Rejected Calendar scope must report failure")
     if (tmp_path / "calendar-job" / "spider.state").read_bytes() != saved:
         pytest.fail("Rejected startup must leave execution state intact")
+
+
+@pytest.mark.parametrize("spider_cls", [OutlookDiscoverSpider, OutlookFullSpider])
+def test_unqualified_mail_spiders_reject_jobdir(tmp_path, spider_cls):
+    """Reject queue reuse without scope-bound logical-run restoration."""
+    crawler = _crawler(tmp_path, spider_cls)
+    kwargs = {"message_ids": "m1"} if spider_cls is OutlookFullSpider else {}
+    with pytest.raises(ValueError, match="does not support JOBDIR"):
+        spider_cls.from_crawler(crawler, **kwargs)

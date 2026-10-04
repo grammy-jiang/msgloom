@@ -86,6 +86,7 @@ class OutlookMessageSurfaceItem:
     status: str
     observed_at: str
     evidence_id: str | None
+    run_id: str | None
     profile_version: str | None = None
 
 
@@ -119,7 +120,7 @@ class OutlookMessagePresenceCandidateItem:
 
 @dataclass(slots=True)
 class OutlookMailFolderRemovalItem:
-    """Explicit folder deletion/removal reported by the mailFolder delta stream."""
+    """Explicit folder removal reported by the mailFolder delta stream."""
 
     folder_id: str
     removed_reason: str | None

@@ -104,6 +104,7 @@ def test_catalog_pipeline_persists_identity_observation_and_surface(
         asyncio.run(
             pipeline.process_item(
                 OutlookMessageSurfaceItem(
+                    run_id="run-surface",
                     message_id="m1",
                     surface="mime",
                     status="acquired",
@@ -430,6 +431,7 @@ def test_surface_stats_use_surface_kind_not_provider_identifier(
         asyncio.run(
             pipeline.process_item(
                 OutlookMessageSurfaceItem(
+                    run_id="run-surface",
                     message_id="m1",
                     surface="attachment_raw:private-attachment-id",
                     status="acquired",

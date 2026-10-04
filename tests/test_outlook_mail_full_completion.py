@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from outlook_mail_handoff_fixtures import saved_mail_evidence
 from sqlalchemy import event
 
 from message_ingest.acquisition.microsoft.outlook.email.full_completion import (
@@ -34,32 +35,15 @@ def _evidence(
     purpose: str,
     origin: str = "network",
 ) -> None:
-    row = RawHttpEvidence(
+    saved_mail_evidence(
+        catalog,
         evidence_id=evidence_id,
         source_id=SOURCE,
         run_id=run_id,
-        purpose=purpose,
         observed_at=NOW,
+        purpose=purpose,
         origin=origin,
-        request_fingerprint=(evidence_id[0] if evidence_id else "0") * 64,
-        request_url="https://example.test/synthetic",
-        request_method="GET",
-        request_headers={},
-        request_body_sha256="0" * 64,
-        request_body_path="",
-        request_body_bytes=0,
-        response_url="https://example.test/synthetic",
-        response_status=200,
-        response_headers={},
-        response_body_sha256="1" * 64,
-        response_body_path="synthetic",
-        response_body_bytes=2,
-        response_flags=[],
-        error_type=None,
-        error_message=None,
     )
-    with catalog.Session() as session, session.begin():
-        session.add(row)
 
 
 def _surface(
@@ -69,6 +53,7 @@ def _surface(
     evidence_id: str,
 ) -> None:
     store.set_surface(
+        run_id=CURRENT_RUN,
         message_id=MESSAGE,
         surface=surface,
         status=status,
@@ -101,6 +86,7 @@ def test_current_run_acquired_surfaces_and_child_are_complete(tmp_path: Path) ->
             purpose="attachment-raw",
         )
         store.upsert_attachment(
+            run_id=CURRENT_RUN,
             message_id=MESSAGE,
             attachment={
                 "id": "a1",
@@ -199,6 +185,7 @@ def test_current_attachment_inventory_requires_current_child_surface(
         store = OutlookMailStore(catalog, source_id=SOURCE)
         _base_current(catalog, store)
         store.upsert_attachment(
+            run_id=CURRENT_RUN,
             message_id=MESSAGE,
             attachment={
                 "id": "a1",
@@ -232,6 +219,7 @@ def test_old_attachment_row_not_seen_in_current_inventory_is_ignored(
         store = OutlookMailStore(catalog, source_id=SOURCE)
         _evidence(catalog, "e-old-meta", run_id=OLD_RUN, purpose="attachments-list")
         store.upsert_attachment(
+            run_id=OLD_RUN,
             message_id=MESSAGE,
             attachment={
                 "id": "deleted-old",

@@ -2,26 +2,33 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from dataclasses import replace
 from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from message_ingest.acquisition.handoff import AcquisitionFactKind as Kind
 from message_ingest.catalog.models.microsoft.outlook.email import (
     AttachmentRecord,
-    MailFolderRecord,
     MessageObservation,
     MessagePresence,
     MessageRecord,
     MessageSurface,
 )
 
-from ._email_lifecycle import OutlookMailLifecycleStore
+from ._email_components import OutlookMailComponentStore
+from ._email_handoff import (
+    MailPersistenceOutcome,
+    is_stale,
+    previous_primary_key,
+    primary_projection,
+    semantic_digest,
+)
 
 
-class OutlookMailStore(OutlookMailLifecycleStore):
+class OutlookMailStore(OutlookMailComponentStore):
     """Own Outlook Mail catalog state for one logical source."""
 
     def record_message(
@@ -32,14 +39,35 @@ class OutlookMailStore(OutlookMailLifecycleStore):
         kind: str,
         evidence_id: str | None,
         observed_at: str,
-    ) -> bool:
-        """Record one message projection and observation transactionally."""
+    ) -> MailPersistenceOutcome:
+        """Commit projection, observation, and exact primary fact together."""
         message_id = message["id"]
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             record = session.scalar(
                 select(MessageRecord).filter_by(
                     source_id=self.source_id,
                     message_id=message_id,
+                )
+            )
+            stale = is_stale(
+                observed_at,
+                record.latest_observed_at if record else None,
+            )
+            projection = primary_projection(message)
+            prior_key = previous_primary_key(
+                session,
+                self.source_id,
+                record.latest_evidence_id if record else None,
+                message_id,
+            )
+            equivalent = bool(
+                record
+                and (
+                    prior_key == semantic_digest(projection)
+                    or (
+                        evidence_id is not None
+                        and record.latest_evidence_id == evidence_id
+                    )
                 )
             )
             if record is None:
@@ -51,9 +79,7 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                 )
                 session.add(record)
 
-            if datetime.fromisoformat(observed_at) >= datetime.fromisoformat(
-                record.latest_observed_at
-            ):
+            if not stale:
                 record.subject = message.get("subject", record.subject)
                 record.internet_message_id = message.get(
                     "internetMessageId", record.internet_message_id
@@ -86,7 +112,7 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                 evidence_id=evidence_id,
             )
 
-            return self._add_observation(
+            observation, created = self._add_observation(
                 session,
                 MessageObservation(
                     observation_id=uuid4().hex,
@@ -101,6 +127,19 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                     removed_reason=None,
                 ),
             )
+            outcome = self._facts().stage(
+                session,
+                run_id=run_id,
+                resource_id=message_id,
+                state=projection,
+                evidence_id=evidence_id,
+                observed_at=observed_at,
+                observation_id=observation.observation_id,
+                resource_version=message.get("changeKey") or None,
+                stale=stale,
+                equivalent=equivalent,
+            )
+            return replace(outcome, observation_created=created)
 
     def record_folder_removal(
         self,
@@ -113,8 +152,8 @@ class OutlookMailStore(OutlookMailLifecycleStore):
         observed_at: str,
     ) -> bool:
         """Record removal from one folder without inferring global deletion."""
-        with self.catalog.Session() as session, session.begin():
-            return self._add_observation(
+        with self.catalog.writer_session() as session:
+            observation, created = self._add_observation(
                 session,
                 MessageObservation(
                     observation_id=uuid4().hex,
@@ -129,9 +168,27 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                     removed_reason=removed_reason,
                 ),
             )
+            self._facts().stage(
+                session,
+                run_id=run_id,
+                resource_id=message_id,
+                kind=Kind.SCOPED_STATE_TRANSITION,
+                component="folder_membership",
+                scope_id=folder_id,
+                state={"is_member": False},
+                evidence_id=evidence_id,
+                observed_at=observed_at,
+                observation_id=observation.observation_id,
+                authority=True,
+                reason="folder_membership_removed",
+            )
+            return created
 
     @staticmethod
-    def _add_observation(session: Session, observation: MessageObservation) -> bool:
+    def _add_observation(
+        session: Session,
+        observation: MessageObservation,
+    ) -> tuple[MessageObservation, bool]:
         """Deduplicate one source/message/kind/evidence observation."""
         if observation.evidence_id is not None:
             existing = session.scalar(
@@ -143,88 +200,9 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                 )
             )
             if existing is not None:
-                return False
+                return existing, False
         session.add(observation)
-        return True
-
-    def set_surface(
-        self,
-        *,
-        message_id: str,
-        surface: str,
-        status: str,
-        evidence_id: str | None,
-        observed_at: str,
-        profile_version: str | None = None,
-    ) -> None:
-        """Upsert one profile surface without letting older evidence win."""
-        with self.catalog.Session() as session, session.begin():
-            record = session.scalar(
-                select(MessageSurface).filter_by(
-                    source_id=self.source_id,
-                    message_id=message_id,
-                    surface=surface,
-                )
-            )
-            if record is None:
-                session.add(
-                    MessageSurface(
-                        source_id=self.source_id,
-                        message_id=message_id,
-                        surface=surface,
-                        status=status,
-                        evidence_id=evidence_id,
-                        observed_at=observed_at,
-                        profile_version=profile_version,
-                    )
-                )
-                return
-            if datetime.fromisoformat(observed_at) < datetime.fromisoformat(
-                record.observed_at
-            ):
-                return
-            record.status = status
-            record.evidence_id = evidence_id
-            record.observed_at = observed_at
-            record.profile_version = profile_version
-
-    def upsert_attachment(
-        self,
-        *,
-        message_id: str,
-        attachment: dict[str, Any],
-        evidence_id: str | None,
-        observed_at: str,
-    ) -> None:
-        """Keep newest metadata for one source/message/attachment key."""
-        attachment_id = attachment["id"]
-        with self.catalog.Session() as session, session.begin():
-            record = session.scalar(
-                select(AttachmentRecord).filter_by(
-                    source_id=self.source_id,
-                    message_id=message_id,
-                    attachment_id=attachment_id,
-                )
-            )
-            if record is None:
-                record = AttachmentRecord(
-                    source_id=self.source_id,
-                    message_id=message_id,
-                    attachment_id=attachment_id,
-                    latest_observed_at=observed_at,
-                )
-                session.add(record)
-            if datetime.fromisoformat(observed_at) < datetime.fromisoformat(
-                record.latest_observed_at
-            ):
-                return
-            record.attachment_type = attachment.get("@odata.type")
-            record.name = attachment.get("name")
-            record.content_type = attachment.get("contentType")
-            record.size = attachment.get("size")
-            record.is_inline = attachment.get("isInline")
-            record.latest_observed_at = observed_at
-            record.latest_evidence_id = evidence_id
+        return observation, True
 
     def list_message_ids(
         self,
@@ -232,7 +210,7 @@ class OutlookMailStore(OutlookMailLifecycleStore):
         run_ids=None,
         observation_kinds=None,
     ) -> list[str]:
-        """Return current message IDs, optionally scoped to crawl observations."""
+        """Return current message IDs, optionally scoped to observations."""
         with self.catalog.Session() as session:
             stmt = (
                 select(MessageRecord.message_id)
@@ -267,7 +245,7 @@ class OutlookMailStore(OutlookMailLifecycleStore):
             return list(session.scalars(stmt).all())
 
     def get_message_state(self, *, message_id: str) -> dict[str, Any] | None:
-        """Return detached message state, or ``None`` for an unknown message."""
+        """Return detached state, or ``None`` for an unknown message."""
         with self.catalog.Session() as session:
             row = session.scalar(
                 select(MessageRecord).filter_by(
@@ -326,50 +304,6 @@ class OutlookMailStore(OutlookMailLifecycleStore):
                 }
                 for row in rows
             ]
-
-    def upsert_folder(
-        self,
-        *,
-        folder: dict[str, Any],
-        evidence_id: str | None,
-        observed_at: str,
-        run_id: str | None = None,
-    ) -> None:
-        """Keep folder metadata while separately tracking current presence."""
-        folder_id = folder["id"]
-        with self.catalog.Session() as session, session.begin():
-            record = session.scalar(
-                select(MailFolderRecord).filter_by(
-                    source_id=self.source_id,
-                    folder_id=folder_id,
-                )
-            )
-            if record is None:
-                record = MailFolderRecord(
-                    source_id=self.source_id,
-                    folder_id=folder_id,
-                    latest_observed_at=observed_at,
-                )
-                session.add(record)
-            if datetime.fromisoformat(observed_at) < datetime.fromisoformat(
-                record.latest_observed_at
-            ):
-                return
-            record.display_name = folder.get("displayName")
-            record.parent_folder_id = folder.get("parentFolderId")
-            record.child_folder_count = folder.get("childFolderCount")
-            record.total_item_count = folder.get("totalItemCount")
-            record.unread_item_count = folder.get("unreadItemCount")
-            record.is_hidden = folder.get("isHidden")
-            record.latest_observed_at = observed_at
-            record.latest_evidence_id = evidence_id
-            self.mark_folder_present_in_session(
-                session,
-                folder_id=folder_id,
-                run_id=run_id,
-                observed_at=observed_at,
-                evidence_id=evidence_id,
-            )
 
 
 __all__ = ["OutlookMailStore"]

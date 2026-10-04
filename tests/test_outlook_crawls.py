@@ -158,7 +158,7 @@ def test_outlook_command_crawls_local_graph_with_native_components(
         "MSGLOOM_DELTA_CHECKPOINT_ENABLED": "True",
         "HTTPCACHE_ENABLED": "False",
         "AUTOTHROTTLE_ENABLED": "False",
-        "JOBDIR": str(tmp_path / "job"),
+        "JOBDIR": str(tmp_path / "job") if mode == "delta" else "",
         "LOG_LEVEL": "INFO",
     }
     for key, value in settings.items():
