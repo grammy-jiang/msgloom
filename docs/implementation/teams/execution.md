@@ -474,3 +474,22 @@ existing test functions. Crawl coverage remains pending. Existing deletion and
 gap tests exercise persistence with constructed items; they do not establish
 notification intake or reconciliation qualification. N0-N2 and independent P3
 reviews remain required. No live or merge gate has changed.
+
+## N0 preparation — 2026-10-04 01:54 UTC
+
+The coordinator rechecked seven current Microsoft notification references.
+The [N0 contract and N1/N2 qualification gates](n0-notification-contract.md)
+are committed at `130a6ad2aa55742a5fc02731ff7fbfd426e0e8cb`.
+Changed-file hooks passed.
+
+The 60-minute versus 4,320-minute subscription maximum remains a documented
+conflict. No renewal timer or maximum constant is enabled. The local intake
+contract will use explicit subscription records and preserve actual validity
+windows. The recheck records the shared tenant quota, lifecycle support,
+basic-notification authentication, rich-envelope exclusion, and failed-readback
+and delivery-gap requirements.
+
+Existing store tests still do not qualify notification intake. N1/N2 production
+work remains gated on accepted basic discovery. The current external recovery
+and validator retain ownership of the three downstream lanes. No additional
+worker prompt was sent during this recheck.
