@@ -359,7 +359,7 @@ are execution corrections. The authoritative design remains unchanged.
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
 | P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
-| P2 application integration and synthetic crawls | Persistence accepted; chat, channel, and saved-source workers queued |
+| P2 application integration and synthetic crawls | Persistence accepted; downstream no-post failures under bounded recovery |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
 | Notification-driven live acceptance | NOT EXERCISED |
@@ -438,3 +438,39 @@ The external dispatcher owns each single send and result collection. The
 coordinator must adopt those records rather than repeat a send. The saved-source
 worker supplies a dedicated adapter and an exact shared-dispatch integration
 recipe. Public command and reader registration remain coordinator work.
+
+## P2 downstream recovery — 2026-10-04 01:32 UTC
+
+The initial downstream dispatcher finished without a confirmed send for any of
+the three lanes. Chat and channel attempts timed out while loading the Project
+composer. The saved-source attempt stopped at a history-list probe with HTTP
+429. A fresh Project inventory contained 12 conversations, all already tracked;
+no downstream worker conversation was found.
+
+A read-only browser trace reproduced the composer timeout. The existing
+selector found a valid editable composer by 75 seconds, after the native
+60-second wait had expired. The page's recorded application endpoints answered
+successfully. This evidence supports a render-timeout diagnosis, not a changed
+selector or an account-wide block.
+
+The task-local sender adapter now gives the same composer wait 180 seconds.
+The installed skill, refusal detection, browser capacity and lifetime, model
+pins, and cooldown remain unchanged. The new cooldown ends at approximately
+01:56:25 UTC. A finite external recovery process will then recheck Project
+adoption and qualify the composer before it archives the no-post attempts and
+queues each original task once. Live qualification of this correction remains
+pending. No worker commit is accepted by this recovery.
+
+A separate bounded validator waits for the existing collectors. It verifies
+finished transcript pins, exact task/base/parent, owned paths, and clean worker
+trees. It runs focused and static gates serially, with separate lane reports,
+and avoids running gates during a prompt send. Seven isolated Git/command
+probes passed, including rejected pins, a dirty tree, failed commands, and
+report separation. Passing reports still require coordinator diff review and
+integration checks.
+
+The durable fixture preparation records all 36 mandatory design cells and 112
+existing test functions. Crawl coverage remains pending. Existing deletion and
+gap tests exercise persistence with constructed items; they do not establish
+notification intake or reconciliation qualification. N0-N2 and independent P3
+reviews remain required. No live or merge gate has changed.
