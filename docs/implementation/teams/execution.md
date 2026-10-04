@@ -1,165 +1,61 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 05:29 UTC
+## Current progress — 2026-10-04 05:37 UTC
 
-P0, core P1, P2 persistence, the shared application base, and the channel
-application lane are accepted. Basic chat discovery is now accepted too. The channel worker commit
-`0d54e9e021d75e9d2b846d3de1d34eaaec9ff994` was integrated at
-`131b28c05ce57fe9e1b91ecff25d406da120a37b`. Coordinator correction
-`49b5bd07fa54faa8ab060a87c59ec5febfba387d` separates encoded resource-link
-segments from opaque IDs and rejects a mismatched channel identity.
-Two failing regressions proved the defects before the correction. All 34
-focused channel tests passed in 28.05 seconds. The native public channel
-command passed an empty-inventory crawl with durable evidence. Ruff, format,
-Pyright, live LSP diagnostics, and changed-file hooks passed.
+P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
+saved-source reader are accepted. Notification intake and reconciliation are
+still active. Full convergence and independent P3 reviews remain required.
 
-The integrated Teams/Graph/evidence/saved-source regression passed all 586
-cases in 118.04 seconds at unchanged `2fb7211`. Shared channel exports and
-native callback contracts are committed at `93ef9a6`. Three native contracts
-check production callback output. Public CLI persistence is qualified
-separately because native Scrapy contracts disable item pipelines.
-
-Additional channel integrity qualification is committed at
-`1b523eb39eabd7a00968dcb6f8659f0856e5a3c6`. Item errors, dropped items, and an
-injected failure before raw persistence each mark the actual logical run
-failed. The public command returns a failure exit code. The raw failure case
-leaves zero dependent message rows. Late failures retain five already stored
-observations and their evidence. Native public JOBDIR rejection occurs before
-any fixture request. All three integrity cases and both channel CLI cases
-pass. Ruff, format, Pyright, live LSP, and commit hooks pass.
-
-The associated-only host fixture is committed at
-`0d68c0bf58f8716a60112c00c1dc53a084344d42`. It proves that opaque associated
-pagination discovers a host absent from joined teams. A denied host detail
-read retains discovery and an explicit coverage gap. Accessible shared-channel
-detail and messages remain available with durable evidence. The native public
-crawl test passed in 5.04 seconds. Ruff, format, Pyright, live LSP, and commit
-hooks passed.
-
-Both remaining original workers stopped after completed tool calls. Fresh
-all-branch reads confirm 196 chat messages and 186 saved-source messages, with
-only each original user prompt. The apparent chat continuation receipt did not
-become a transcript message. Both strict continuation attempts failed before a
-confirmed send. The latest read-only browser diagnostic recorded HTTP 429 on
-the chat read, followed by HTTP 200, but the page still had no loaded turns or
-composer. No login or security challenge was present.
-
-The coordinator copied the exact unfinished drafts into separate recovery
-worktrees. Original files remain unchanged. Each copy retains the original
-`d0c011c` base and a SHA-256 inventory. The chat copy passes 19 focused tests,
-Ruff, and formatting, but has four Pyright errors. The saved-source copy passes
-its original 10 tests and static checks, but the three new coverage-isolation
-regressions still require repair. These results are diagnostic, not acceptance.
-
-Both isolated completion tasks now have confirmed sends with
-`gpt-5-6-thinking` / `max` and the Raspberry Pi MCP connector. Chat completion
-uses `6ac1ded8-d344-83ec-889d-ad849fbda195`; saved-source completion uses
-`6ac1e074-145c-83ec-80fb-11888b5a6024`. The original external driver owns
-collection. The serial validator checks task, model/effort, base, actual
-parent, owned paths, clean status, focused tests, and static checks. The chat
-result is now accepted. The A2 worker is accepted and integrated; public-reader
-integration remains required. Original worktrees remain
-unchanged.
-
-Shared saved-source correction `761b43e` now verifies the exact request body
-for inbound webhook evidence. Outbound acquisition still verifies the received
-response body. Path-free byte references distinguish requests from responses;
-public loading rejects a reference of the wrong kind. Invalid inbound HTTP
-shapes fail closed. The original regression returned an empty response body
-and missed altered notification bytes. All 51 source-reader tests now pass in
-80.73 seconds. Both inbound deletion/gap regressions pass against an isolated,
-hash-pinned A2 draft in 12.60 seconds. Ruff, format, Pyright, live LSP, and
-commit hooks pass. This shared correction does not accept the pending A2 lane.
-
-Chat worker `ec39c13722001825f79f8f4edb627ecc1da2306d` is integrated at
-`b677b6412043f1b4d265e91a2cef62e43a7515cc`. The independent worker gate passed
-19 tests. Shared integration `f67e4d9dbf2a3e0fb131cc07fa82991e48499c79` adds the
-public export, exact SpiderLoader registration, public CLI persistence tests,
-and native chat contracts. The combined gate passed 34 tests in 92.20 seconds,
-including six native Scrapy contracts. Ruff, formatting, Pyright, live LSP for
-17 files, and commit hooks passed. An initial coordinator test-import error was
-corrected before the successful gate.
-
-The local N1/N2 worker is dispatched from exact basic-discovery base `f67e4d9`.
-It owns nine disjoint files in `.worktrees/teams-notifications`. The frozen task
-is `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_R1`. It must preserve authenticated raw
-inbound evidence, immutable deletion declarations, additive readback facts,
-scoped coverage, and sticky history gaps. Its external driver owns one send and
-collection. The send is confirmed in conversation
-`6ac1e364-7478-83ec-b38f-801e1f02532c` with the required model/effort and MCP
-connector. This lane adds no webhook server, subscription mutation, renewal,
-or periodic polling.
-
-A2 worker `3cf872246d72c42e142f3c1514f9dc8131241166` has passed its independent
-focused and static gates: 13 tests pass in 23.03 seconds. The three previously
-failing scoped-ID regressions now pass. The coordinator verified exact task,
-pins, base, actual parent, owned paths, and clean worker state, then integrated
-the worker at `e457a91453938d710f109c833b5ffffe233b1c17`. Public reader dispatch,
-selection replay, and integrated inbound-evidence qualification remain required.
-
-Full Pyright passed at exact `731a7a82dfd48c939779491963aafbd90d2e3760`
-with zero errors or warnings in 76.39 seconds. The earlier 60-second timeout
-was insufficient. The earlier live LSP directory checks covered only 50 files
-per directory. The exhaustive live scan now passes all 584 Python files in
-`microsoft_graph/`, `message_ingest/`, and `tests/`. Its 242 request receipts
-prove complete, unique coverage below the tool cap and zero diagnostics. All
-Python input hashes remained unchanged through the scan. All final gates
-remain required after production convergence.
-
-The preliminary full Python 3.13 normal suite at `66ac490` finished with
-2,484 passing tests and five failures in exact schema/export expectations.
-Commit `7f898dfa32b8e01c433e53619e7bd88a7eefbade` adds the accepted Teams
-exports, concrete channel spider, and 11 additive tables to those expectations.
-All previous entries and exact equality checks remain. All 23 focused tests,
-Ruff, formatting, Pyright, live LSP diagnostics, and commit hooks pass. The
-final full suite remains required after the remaining production integration.
-
-Three coordinator regression cases reproduce the A2 coverage defect for chat,
-channel-root, and channel-reply selections. An unrelated scope with the same
-opaque ID must not contribute coverage. The tests preserve a positive matching
-coverage case. All three fail against the unchanged draft adapter. The prepared
-continuation requests repair and both-direction regression coverage in the
-worker's owned tests. No active worker file changed.
-
-Three additional native crawl cases are committed at
-`742f8bebb42cb6f4737df790244eb4062df0f461`. They cover user, team, and channel
-mentions; custom emoji; two observed reaction versions without invented old
-bodies; full team hydration; a nonempty team with empty channel inventories;
-and readable hosted bytes after explicit message deletion without a historical
-version-binding claim. All three cases passed in 22.74 seconds. Ruff, format,
-Pyright, live LSP, and commit hooks passed. The 36-cell map still requires
-accepted chat and notification coverage plus the final combined gate.
-
-| Lane | Conversation | State |
+| Lane | Worker commit | Integration state |
 | --- | --- | --- |
-| Chat spider | `6ac1ded8-d344-83ec-889d-ad849fbda195` | Accepted and integrated |
-| Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1e074-145c-83ec-80fb-11888b5a6024` | Worker integrated; public reader integration pending |
+| Chat discovery | `ec39c13722001825f79f8f4edb627ecc1da2306d` | Integrated at `b677b641`; shared exports and native CLI/contracts at `f67e4d9` |
+| Channel discovery | `0d54e9e021d75e9d2b846d3de1d34eaaec9ff994` | Integrated at `131b28c`; resource-link identity corrected at `49b5bd0` |
+| Teams saved-source adapter | `3cf872246d72c42e142f3c1514f9dc8131241166` | Integrated at `e457a914`; public dispatch now accepted |
+| Local N1/N2 | Pending | Existing worker and collector retain sole ownership |
 
-The command mapping is committed at
-`6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
-Chat CLI crawls and native callback contracts now pass at `f67e4d9`.
-See the [P2 application contract](p2-application-contract.md).
+Public reader integration `7ada29a0b95453f87ed838e918f405669bdd7bd2` routes bounded Teams
+listing and exact reads through the accepted adapter. Two failing public tests
+proved the missing dispatch before the change. All 68 source-reader tests pass
+in 100.91 seconds. Public list/read/read-many, selection capture, encoded replay
+after catalog changes, and original evidence bytes are covered. A fresh-process
+test forbids acquisition runtime imports. Inbound deletion/gap tamper tests
+verify actual POST bytes. Ruff, format, Pyright, four live LSP checks, and commit
+hooks pass. Shared inbound correction `761b43e` remains in force.
 
-All original conversations retain `gpt-5-6-thinking` / `max` and their frozen
-task/base/ownership contracts. Existing collectors own the remaining results.
-A preliminary saved-source probe found cross-resource coverage leakage when
-an unrelated team ID equals a chat ID. The finished A2 candidate must receive
-a regression test and repair before acceptance. No active worker file changed.
+The accepted adapter includes three scoped-ID collision regressions for chat,
+channel-root, and channel-reply coverage. The coordinator verified exact task,
+model/effort, base, actual parent, owned paths, and clean worker state before
+integration. Earlier unfinished worker lineages are retired and must not be
+reintegrated.
 
-The existing inbound evidence storage contract passed a local probe with exact
-POST bytes, two ordered events, and idempotent aggregate replay. This is not
-notification intake or reconciliation acceptance. See the
-[notification contract](n0-notification-contract.md#local-storage-qualification).
+The chat integration gate passed 34 tests in 92.20 seconds, including six native
+Scrapy contracts and both public CLI crawls. The channel gate passed 34 tests in
+28.05 seconds after two failing resource-link regressions. Additional native
+fixtures qualify associated-only hosts, denied detail, multiple membership
+paths, pipeline failures, durable evidence ordering, direct deletion, mentions,
+reaction history, empty inventories, hosted-content limitations, and JOBDIR
+rejection. The 36-cell map awaits the final combined gate and N1/N2 acceptance.
 
-The [P3 review contract](p3-review-contract.md) defines all nine independent
-review lanes and their exact repaired-candidate closure requirements. The lane
-manifest is preparation only. No P3 reviewer has been dispatched or accepted.
+The N1/N2 task is `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_R1`, based on accepted
+basic-discovery commit `f67e4d9`. Conversation
+`6ac1e364-7478-83ec-b38f-801e1f02532c` has a confirmed `gpt-5-6-thinking` / `max`
+send with the Raspberry Pi MCP connector. Its existing external collector and
+serial validator own collection. The worker owns nine disjoint paths. It must
+preserve trusted subscription/tenant/resource binding, raw inbound evidence,
+immutable deletion facts, additive readback, and sticky history gaps. It adds
+no webhook server, subscription mutation, renewal, or periodic polling. See the
+[notification contract](n0-notification-contract.md).
 
-The 36-fixture crawl matrix, notification intake/reconciliation, complete
-repository/compatibility gates, and nine independent exact-candidate reviews
-remain open. No approved work/school tenant configuration or consent evidence
-is available. Live acceptance and merge remain blocked; `master` is unchanged.
+Earlier full-suite schema/export expectation failures were corrected at
+`7f898df` without removing previous expectations. The exhaustive historical LSP
+scan covered 584 files with zero diagnostics. All complete repository, static,
+compatibility, LSP, contracts, and hook gates must run on the converged code.
+The [P3 review contract](p3-review-contract.md) requires nine independent reviews
+and exact repaired-candidate closure. No P3 reviewer is accepted yet.
+
+No approved work/school tenant configuration or consent evidence is available.
+Live T1/T2, repeat acquisition, and webhook acceptance are not exercised.
+`master` remains unchanged. No merge or live-support claim is made.
 
 ## Scope and baseline
 
