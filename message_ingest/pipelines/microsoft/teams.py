@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable
 from typing import Any
 
@@ -68,12 +67,10 @@ class TeamsPipeline:
     Dispatch pre-parsed Teams items to dedicated stores under one shared lock.
 
     A cancelled coroutine cannot stop an asyncio worker thread. This pipeline
-    temporarily consumes task cancellation while a write is active, drains the
-    worker under the shared lock, then restores and raises cancellation. If the
-    drained write also fails, cancellation remains the externally visible
-    result and the write failure is chained as its cause. Repeated cancellation
-    is restored after the drain. close_spider acquires the same lock, so the
-    catalog cannot close while this pipeline still has an active thread write.
+    uses :meth:`CatalogService.write` to drain a cancelled write under the
+    shared lock, then restore and propagate cancellation. A concurrent write
+    failure remains chained to cancellation. close_spider acquires the lock so
+    the catalog cannot close while this pipeline still has an active thread write.
     """
 
     def __init__(
@@ -155,59 +152,9 @@ class TeamsPipeline:
         else:
             return item
 
-        outcome = await self._write(operation, item, **kwargs)
+        outcome = await self.service.write(operation, item, **kwargs)
         self._record_stats(kind, outcome)
         return item
-
-    async def _write(
-        self,
-        operation: Callable[..., str],
-        item: Any,
-        **kwargs: str,
-    ) -> str:
-        """Hold the shared lock until the worker thread has really completed."""
-        await self.service.write_lock.acquire()
-        worker = asyncio.create_task(asyncio.to_thread(operation, item, **kwargs))
-        cancellation: asyncio.CancelledError | None = None
-        consumed_cancellations = 0
-        current = asyncio.current_task()
-        try:
-            while True:
-                try:
-                    outcome = await asyncio.shield(worker)
-                    break
-                except asyncio.CancelledError as exc:
-                    if current is None or current.cancelling() == 0:
-                        raise
-                    if cancellation is None:
-                        cancellation = exc
-                    pending = current.cancelling()
-                    for _unused in range(pending):
-                        current.uncancel()
-                        consumed_cancellations += 1
-                except BaseException as write_error:
-                    if cancellation is None:
-                        raise
-                    self._restore_cancellation(current, consumed_cancellations)
-                    raise cancellation from write_error
-
-            if cancellation is not None:
-                self._restore_cancellation(current, consumed_cancellations)
-                raise cancellation
-            return outcome
-        finally:
-            self.service.write_lock.release()
-
-    @staticmethod
-    def _restore_cancellation(
-        current: asyncio.Task[Any] | None,
-        count: int,
-    ) -> None:
-        """Restore every consumed cancellation request after worker drain."""
-        if current is None:
-            return
-        for _unused in range(count):
-            current.cancel()
 
     def _trigger_aliases(self, trigger: TeamsMessageTrigger) -> dict[str, str]:
         """Resolve a follow-up trigger through the shared canonical alias map."""

@@ -1,42 +1,35 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 08:58 UTC
+## Current progress — 2026-10-04 10:10 UTC
 
-P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
-saved-source reader are accepted. Notification intake and reconciliation are
-accepted locally. Full local convergence passed at code candidate
-`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. Five P3 reviews are accepted at that candidate: lifecycle, shared topology,
-evidence/replay, persistence/history/deletion, and compatibility.
-Provider and privacy reviewers found scope-override and diagnostic-repr defects.
-Both repairs are committed. Scope validation passes 32 focused and 21
-integration tests. Diagnostic privacy passes 67 focused and 16 integration
-tests. The fixture review also found missing native delayed-evidence ordering proof.
-A real crawl and a detected broken-concurrency control now close that test gap;
-14 focused integration tests pass. Cells 32 and 33 now map explicit callback
-errors and native ordering. Full gates must rerun on the new candidate.
-All nine final reviews must name the repaired candidate.
+P0, core P1, P2 persistence, chat/channel discovery, the public Teams saved-source
+reader, and local notification intake/reconciliation are accepted. All eleven
+local gates passed at `9b56fbfe5a68225b945ec8eeaf1d54e8b6ec2c7e`: 2,636 normal
+tests, one exclusive-state test, all 36 fixture cells, 101 notification cases,
+all six locked Python/FastMCP environments, static checks, native contracts,
+hooks, and actual LSP diagnostics for 774 files in 282 requests.
 
-The normal Python 3.13 suite passed all 2,611 tests. The separate serial
-exclusive-state suite passed its one test. All 36 mandatory fixture cells
-are bound to executed tests in the exact-candidate JUnit results. Ruff,
-format, Pyright, native Scrapy contracts, and changed-file hooks passed.
-Live LSP diagnostics covered all 770 tracked Python files in 278 requests.
-The six locked tox environments passed: Python 3.12, 3.13, and 3.14, plus
-the FastMCP 4 environment for each version.
+All nine independent R3 review sends are confirmed against that exact archived
+candidate with the required model, effort, and MCP connector. The lifecycle
+review found a raw-evidence cancellation race. Three bounded regressions
+confirmed early lock release and native catalog close during an active raw
+write. The correction moves the existing Teams cancellation-drain behavior
+into ``CatalogService.write`` and uses it for both raw and semantic writes.
+Raw pipeline close now waits on the shared lock. Four raw regressions include
+native parallel close with and without cancellation. The focused 21-test gate,
+Ruff, Pyright, and four live LSP diagnostics pass. Integrated validation is
+running. See [the repair record](p3-raw-cancellation-repair.md).
 
-P3 round 1 has an immutable source and evidence archive for that candidate.
-Its inventory contains 975 files, including 907 tracked source, test,
-documentation, and configuration files. The inventory SHA-256 is
-`a5da64858930628926f3c9195c891eb6c16c69b092e5f4341bd66ea3a5ae7ea1`.
-All 11 prerequisite gate receipts and source/log hashes passed the freeze
-validator. The fresh native account probe passed after a transient preflight
-HTTP 429. The dedicated browser composer check also passed. All nine review sends are confirmed. A bounded collect-only successor owns
-the original eight lanes after a verified idle-boundary handoff. The separate
-framework recovery owns its confirmed review. No review was resent during the
-collection handoff. Five original-candidate reviews are accepted; see
-[P3 review status](p3-review-status.md). Each lane pins `gpt-5-6-thinking`, `max`, the Raspberry Pi MCP
-connector, and the frozen candidate. A queued send is not a confirmed send
-or an accepted review. The supervisor and scheduled watchdog remain active.
+The remaining R3 results are still collected by their original owners. Those
+reviews remain tied to the old immutable candidate. After all findings are
+resolved, all required gates and nine independent closures must run on the
+same new exact candidate. No final completion claim is made.
+
+Company T1, T2, repeat acquisition, and webhook acceptance remain
+**BLOCKED / NOT EXERCISED**. No approved work/school tenant configuration or
+consent evidence is available. T3/T4/T5 and application-only production remain
+unselected. Master remains `765d3c67c707257514d882310873f8a89f3d866b`.
+The supervisor and scheduled watchdog remain active. No push or merge occurred.
 
 | Lane | Worker commit | Integration state |
 | --- | --- | --- |

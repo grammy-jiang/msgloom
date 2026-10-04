@@ -59,8 +59,11 @@ set sticky history uncertainty. Explicit deletion retains older message bodies;
 ordinary inventory absence has no deletion or unpin effect.
 
 The pipeline owns type dispatch, bounded stats, and awaited thread writes under
-the existing shared catalog lock. Cancellation drains the writer before releasing
-the lock and propagates cancellation afterward. No provider parsing or traversal
+the existing shared catalog lock. ``CatalogService.write`` supplies the shared
+cancellation-drain contract for both raw evidence and Teams semantic writes.
+Cancellation drains the writer before releasing the lock and propagates
+cancellation afterward. Raw and Teams pipeline close hooks acquire the same
+lock before catalog disposal. No provider parsing or traversal
 belongs in the pipeline or stores.
 
 ## Shared application base
