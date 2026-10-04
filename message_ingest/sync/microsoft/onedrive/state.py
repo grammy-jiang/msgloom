@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import select
@@ -33,6 +34,15 @@ _ITEM_GRAPH_FIELDS = {
 }
 
 
+@dataclass(frozen=True)
+class OneDriveResyncChanges:
+    """Exact final applications and absences from the caller's transaction."""
+
+    applied_observation_ids: tuple[int, ...]
+    absent_item_ids: tuple[str, ...]
+    skipped_observation_ids: tuple[int, ...]
+
+
 def apply_onedrive_resync_state(
     session: Session,
     *,
@@ -42,8 +52,14 @@ def apply_onedrive_resync_state(
     base_revision: int,
     terminal_observed_at: str,
     terminal_evidence_id: str,
-) -> tuple[int, int]:
-    """Apply staged sightings and authoritative absence inside promotion."""
+) -> OneDriveResyncChanges:
+    """
+    Apply state and emit exact identities inside checkpoint promotion.
+
+    The result retains only the last accepted observation per item; skipped
+    timestamps never replace a winner. The caller must publish those facts and
+    derived absences before committing this same transaction.
+    """
     attempt = session.get(
         OneDriveDeltaResyncAttempt, (source_id, run_id, reset_attempt)
     )
@@ -64,7 +80,8 @@ def apply_onedrive_resync_state(
         )
     ).all()
     seen: set[str] = set()
-    applied = 0
+    applied: dict[str, int] = {}
+    skipped: list[int] = []
     for observation in observations:
         seen.add(observation.item_id)
         item = OneDriveItem.from_graph(
@@ -77,11 +94,12 @@ def apply_onedrive_resync_state(
         if record is not None and _capture_time(item.observed_at) < _capture_time(
             record.latest_observed_at
         ):
+            skipped.append(observation.observation_id)
             continue
         values = _item_values(source_id, item)
         if record is None:
             session.add(OneDriveItemRecord(**values))
-            applied += 1
+            applied[item.id] = observation.observation_id
             continue
         if item.deleted is not None:
             for name, graph_name in _ITEM_GRAPH_FIELDS.items():
@@ -89,9 +107,9 @@ def apply_onedrive_resync_state(
                     values.pop(name)
         for name, value in values.items():
             setattr(record, name, value)
-        applied += 1
+        applied[item.id] = observation.observation_id
 
-    absent = 0
+    absent: list[str] = []
     started_at = _capture_time(attempt.started_at)
     for record in session.scalars(
         select(OneDriveItemRecord).filter_by(source_id=source_id, is_deleted=False)
@@ -106,8 +124,8 @@ def apply_onedrive_resync_state(
         record.latest_observed_at = terminal_observed_at
         record.latest_evidence_id = terminal_evidence_id
         record.latest_run_id = run_id
-        absent += 1
-    return applied, absent
+        absent.append(record.item_id)
+    return OneDriveResyncChanges(tuple(applied.values()), tuple(absent), tuple(skipped))
 
 
 def _item_values(source_id: str, item: OneDriveItem) -> dict[str, object]:

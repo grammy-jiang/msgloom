@@ -28,6 +28,9 @@ from message_ingest.catalog.stores.microsoft._onedrive_handoff import (
     stage_content,
     stage_resync,
 )
+from message_ingest.catalog.stores.microsoft._onedrive_release import (
+    publish_checkpoint,
+)
 from message_ingest.catalog.stores.microsoft.onedrive_content import (
     content_freshness,
     load_item_versions,
@@ -380,7 +383,7 @@ class OneDriveStore:
         base_revision: int | None,
         reset_attempt: int | None = None,
     ) -> OneDriveDeltaCheckpoint:
-        """Atomically materialize a winning reset, then advance its exact cursor."""
+        """Commit winning state, exact cursor, and publication in one transaction."""
         with self.catalog.writer_session() as session:
             candidate = session.get(
                 OneDriveDeltaCheckpointCandidate, (self.source_id, run_id)
@@ -428,10 +431,11 @@ class OneDriveStore:
                 raise ValueError(
                     "OneDrive checkpoint revision changed before promotion"
                 )
+            changes = None
             if reset_attempt is not None:
                 if base_revision is None:
                     raise ValueError("OneDrive resync requires an existing checkpoint")
-                apply_onedrive_resync_state(
+                changes = apply_onedrive_resync_state(
                     session,
                     source_id=self.source_id,
                     run_id=run_id,
@@ -440,6 +444,14 @@ class OneDriveStore:
                     terminal_observed_at=candidate.observed_at,
                     terminal_evidence_id=candidate.evidence_id,
                 )
+            publish_checkpoint(
+                self.catalog,
+                session,
+                source_id=self.source_id,
+                candidate=candidate,
+                revision=revision,
+                changes=changes,
+            )
             return OneDriveDeltaCheckpoint(**values)
 
     def _validate_resync_observation(
