@@ -2,7 +2,7 @@
 
 # Microsoft Teams A1 implementation plan
 
-**Status:** P0 and core P1 frozen; P2 persistence and basic chat/channel discovery accepted; public A2 reader accepted; N1/N2 accepted locally; full convergence passed at ac8fb304942c; P3 pending
+**Status:** all local T1/T2 implementation and eleven gates complete at b3039f1fcb5f; nine final independent reviews accepted; company live acceptance BLOCKED / NOT EXERCISED
 **Prepared:** 2026-10-03
 **Integration branch:** `program/a1-teams-spider`
 **Integration worktree:** `/home/grammy-jiang/Projects/msgloom-worktrees/a1-teams-spider`
@@ -12,6 +12,8 @@
 **Actual master at execution start:** `765d3c67c707257514d882310873f8a89f3d866b`
 **Runtime:** Python 3.13.5, Scrapy 2.19.0
 **Live acceptance:** deferred until a suitable Microsoft work/school tenant is available
+
+Final results: [Teams A1 final local implementation report](../implementation/teams/final-report.md).
 
 ## 1. Purpose
 

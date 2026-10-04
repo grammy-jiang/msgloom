@@ -1,128 +1,55 @@
-# Teams P3 review status
+# Teams P3 final local review status
 
-Five reviews are accepted at the original code candidate
-`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. The provider review found a
-confirmed scope-validation defect. The focused repair passes its tests. All nine final
-reviews must name the repaired candidate before local completion.
+All nine final independent reviews are accepted at
+`b3039f1fcb5f14789e92be417d9518671647f7a9`. All eleven local gates pass at
+that candidate. No local finding remains open. Live acceptance remains
+**BLOCKED / NOT EXERCISED**. See the [final report](final-report.md).
 
-The frozen inventory SHA-256 is
-`a5da64858930628926f3c9195c891eb6c16c69b092e5f4341bd66ea3a5ae7ea1`.
-All 11 local gate receipts pass at this candidate. Documentation updates after
-that commit do not change the frozen source archive.
-
-| Review lane | State |
+| Independent review | Final result |
 | --- | --- |
-| Provider/API/permissions | Major scope-override finding repaired; final closure pending |
-| Graph-over-Scrapy ownership | Send confirmed; original recovery owns collection |
-| Lifecycle/cancellation | Accepted PASS at original candidate; final repaired-candidate closure required |
-| Privacy/security | Major diagnostic-repr finding repaired; focused checks pass; final closure pending |
-| Evidence/provenance/replay | Accepted PASS at original candidate; final closure required |
-| Persistence/history/deletion | Accepted PASS at original candidate; final closure required |
-| Shared topology | Accepted PASS at original candidate; final closure required |
-| Fixture completeness | Native ordering and callback-map findings repaired; final closure pending |
-| Compatibility | Accepted PASS at original candidate; final closure required |
+| [Provider/API/permissions](https://chatgpt.com/c/6ac23d8f-1148-83ec-8a2d-74177d07dddb) | PASS |
+| [Graph-over-Scrapy ownership](https://chatgpt.com/c/6ac23e0a-8e4c-83ec-bbe0-91c3b2501d8c) | PASS |
+| [Lifecycle/cancellation](https://chatgpt.com/c/6ac23e43-b574-83ec-ae92-17b161f85ee9) | PASS |
+| [Privacy/security](https://chatgpt.com/c/6ac23f5c-67a4-83ec-ac3a-d18c6a95243f) | PASS |
+| [Evidence/provenance/replay](https://chatgpt.com/c/6ac2401d-4ca0-83ec-b1b8-3a0578aa4707) | PASS |
+| [Persistence/history/deletion](https://chatgpt.com/c/6ac2407a-bd70-83ec-8b09-193e70c9cf96) | PASS |
+| [Shared topology](https://chatgpt.com/c/6ac23f97-5124-83ec-9bee-c8adc10fc30b) | PASS |
+| [Fixture completeness](https://chatgpt.com/c/6ac240fd-cb54-83ec-a924-71d6b4a0e57f) | PASS |
+| [Compatibility](https://chatgpt.com/c/6ac24157-c820-83ec-9f18-5b6031145ecd) | PASS |
 
-The [lifecycle reviewer](https://chatgpt.com/c/6ac2081c-4558-83ec-9477-62b9e8c5e262)
-returned PASS for all three criteria with no findings. The coordinator checked
-the actual `gpt-5-6-thinking` / `max` transcript, exact task and candidate,
-frozen inventory, posted prompt, and source inspection through the MCP connector.
-The coordinator checked the cited source and eight passing JUnit cases for
-terminal requests, item failures, JOBDIR rejection, and cancellation drain.
-The review confirms the existing failure path, awaited serialized writes, and
-explicit unsupported-resume policy. It introduces no checkpoint or promotion.
+Each receipt verifies the actual posted prompt, task, candidate, frozen
+inventory, `gpt-5-6-thinking` / `max` transcript, MCP source-call arguments,
+and cited passing test evidence. Acceptance files are
+`.superpowers/teams-a1/p3-r4-*-acceptance.json`.
+Earlier review decisions apply only to their historical candidate.
 
-The durable acceptance receipt is
-`.superpowers/teams-a1/p3-r1-lifecycle-cancellation-acceptance.json`.
-The HTTP transcript exposes MCP calls and source-read arguments but returns
-empty tool-response text. The coordinator checked the source and saved test
-results directly. No test rerun was needed because production code is unchanged.
+## Resolved findings
 
-This is not final closure. Any production repair requires all nine final
-reviews to name the repaired candidate. Real tenant T1/T2, repeat acquisition,
-and applicable webhook acceptance remain unexecuted. Master remains untouched.
+| Finding | Repair and validation |
+| --- | --- |
+| `P3-PROVIDER-SCOPE-OVERRIDE-001` | Shared Teams base rejects effective permission sets outside the selected profile before construction; ten failing regressions then 32 focused passes |
+| `PS03-RAW-EVIDENCE-REPR` | Private acquisition fields use `repr=False`; four failing regressions then 67 focused passes |
+| `FC-NATIVE-ORDER-001` | Real delayed-evidence crawl checks separate SQL visibility and exact blobs at semantic entry; broken-concurrency control detects overtaking |
+| `FC-CELL32-MAP-001` | Fixture map includes the executed native channel callback-error case |
+| Raw-write cancellation and close races | Shared catalog write drains canceled work; raw close waits for the write lock; four raw regressions pass in the full normal suite |
 
-## Provider scope repair
+The final fixture review received an exact-prompt correction after a diagnosed
+14-character insertion in its original posted prompt. The original result was
+quarantined. The corrected response, send body, newest user prompt, transcript,
+source hashes, and all 36 executed fixture cells were checked before acceptance.
 
-The [provider reviewer](https://chatgpt.com/c/6ac2074e-9bf4-83ec-b310-4ff97f862994)
-reported `P3-PROVIDER-SCOPE-OVERRIDE-001`. Command-priority `MS_GRAPH_SCOPES`
-settings could bypass the frozen T2 and notification profiles. Ten failing
-regressions reproduced extra read, write, application, missing, and empty scope
-sets reaching construction. The existing T1 guard rejected these inputs.
+The final compatibility review accepts the documented serial Python 3.14
+qualification. Original parallel failures remain preserved. No expectations,
+timeouts, coverage, or test selection were weakened. See the
+[exact qualification](final-report.md#python-314-scheduling-qualification).
 
-The shared Teams application base now checks its effective permission set
-before construction. The check uses the selected provider declaration and
-allows a different scope order. Standalone provider consumers keep explicit
-scope overrides. The redundant T1-only forwarding method is removed.
-The focused suite passes 32 tests. Ruff, format, Pyright, and live LSP diagnostics
-pass for the three changed Python files. All 21 native CLI, contract, notification, and public-reader integration tests
-pass in 87.62 seconds. Changed-file pre-commit hooks also pass. Full final convergence and nine exact-candidate closures remain due.
+The transcript service returns empty tool-response text. Actual call arguments,
+source bytes, frozen inventory, and test receipts were checked directly. This
+limitation is explicit in each acceptance record.
 
-## Shared topology review
+## Live boundary
 
-The [shared-topology reviewer](https://chatgpt.com/c/6ac20a30-aa60-83ec-bbfb-17edd9ce858c)
-returned PASS for all three criteria. The coordinator verified 113 actual MCP
-calls, 45 source reads, all frozen hashes, and 41 passing JUnit cases. Source
-inspection confirms separate host/receiving identities, discovery/detail
-observations, membership paths, and root-scoped reply identities. The durable
-receipt is `.superpowers/teams-a1/p3-r1-shared-topology-acceptance.json`.
-
-## Acquisition diagnostic privacy repair
-
-The privacy reviewer reported `PS03-RAW-EVIDENCE-REPR`. Generated dataclass
-representations exposed private transport fields, including inbound notification
-`clientState`. Four failing `repr`/`str` regressions reproduced the leak.
-Sensitive raw-evidence and failure fields now use `repr=False`. Exact bytes,
-URLs, headers, errors, and context remain available to persistence. Evidence
-correlation IDs remain visible in diagnostic output.
-
-The focused evidence, privacy, and notification suite passes 67 tests. Ruff,
-format, Pyright, and live LSP checks pass for both changed Python files.
-The 16 notification, inbound-evidence, and privacy crawl integration tests pass
-in 53.94 seconds.
-Final repaired-candidate convergence and all nine independent closures remain
-required. No original-candidate PASS substitutes for final closure.
-
-## Evidence and persistence reviews
-
-The evidence/replay and persistence/history/deletion reviews are accepted at
-the original candidate. The coordinator verified their exact task, candidate,
-inventory, posted prompt, model, and effort. The evidence reviewer made 117
-actual MCP calls and 38 source reads. The persistence reviewer made 47 MCP
-calls and 17 source reads. The coordinator checked the cited source and 26
-evidence tests plus 22 persistence tests in the archived passing JUnit.
-
-The checks confirm committed canonical evidence, exact inbound request bytes,
-immutable observation selection, explicit deletion without body loss, and
-sticky history gaps after reconciliation. Durable receipts are
-`.superpowers/teams-a1/p3-r1-evidence-replay-acceptance.json` and
-`.superpowers/teams-a1/p3-r1-persistence-history-deletion-acceptance.json`.
-These acceptances apply only to the original candidate.
-
-## Native evidence-ordering fixture repair
-
-The fixture reviewer reported `FC-NATIVE-ORDER-001`: the earlier pipeline
-manager test awaited each item explicitly and did not prove native callback
-output ordering under delayed persistence. The new production-spider crawl
-holds message-page raw evidence before its real awaited write. At semantic
-entry, it checks a separate SQL session and both exact stored blob digests and
-lengths. The test records hold, release, commit, and semantic entry in order.
-
-A test-only broken-concurrency control makes the native scraper process two
-items at once after initialization. The probe detects the dependent item before
-commit, marks native item-error integrity, and prevents semantic storage.
-Production code and settings guards are unchanged. Both control cases pass.
-The combined ordering, chat-integrity, and channel-integrity suite passes
-14 tests in 36.62 seconds. Ruff, format, Pyright, and two live LSP checks pass.
-
-The 36-cell fixture map now includes this native test in cell 33 and the
-executed channel callback-error test in cell 32 (`FC-CELL32-MAP-001`).
-New exact-candidate full gates and all nine independent closures remain due.
-
-## Compatibility review
-
-The [compatibility reviewer](https://chatgpt.com/c/6ac20c80-bb3c-83ec-bac6-4253c30d03a5)
-returned PASS at the original candidate. The coordinator checked 84 actual MCP
-calls, the exact transcript pins and archive, all 11 gate hashes, ordinary
-JUnit entries, and the separate opt-in FastMCP results in all three Python
-versions. The receipt is `.superpowers/teams-a1/p3-r1-compatibility-acceptance.json`.
-This acceptance does not replace final repaired-candidate closure.
+Local closure does not qualify company T1/T2, repeat acquisition, or webhook
+acceptance. T3/T4/T5 and application-only production remain unselected. Master
+remains untouched. Post-live full gates and fresh independent closure are
+required before an explicit merge decision.
