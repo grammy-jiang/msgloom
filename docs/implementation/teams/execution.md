@@ -1,10 +1,28 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 06:59 UTC
+## Current progress — 2026-10-04 07:56 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
-accepted locally. Full convergence and independent P3 reviews remain required.
+accepted locally. Full local convergence passed at code candidate
+`ac8fb304942cbe36788641ce7f55fdfee96f1cdd`. Nine independent P3 reviews and
+any required repair closures remain outstanding.
+
+The normal Python 3.13 suite passed all 2,611 tests. The separate serial
+exclusive-state suite passed its one test. All 36 mandatory fixture cells
+are bound to executed tests in the exact-candidate JUnit results. Ruff,
+format, Pyright, native Scrapy contracts, and changed-file hooks passed.
+Live LSP diagnostics covered all 770 tracked Python files in 278 requests.
+The six locked tox environments passed: Python 3.12, 3.13, and 3.14, plus
+the FastMCP 4 environment for each version.
+
+P3 round 1 has an immutable source and evidence archive for that candidate.
+Its inventory contains 975 files, including 907 tracked source, test,
+documentation, and configuration files. The inventory SHA-256 is
+`a5da64858930628926f3c9195c891eb6c16c69b092e5f4341bd66ea3a5ae7ea1`.
+All 11 prerequisite gate receipts and source/log hashes passed the freeze
+validator. Review dispatch is pending read-path qualification after a
+preflight HTTP 429; the dedicated browser composer check passed.
 
 | Lane | Worker commit | Integration state |
 | --- | --- | --- |
@@ -34,7 +52,8 @@ Scrapy contracts and both public CLI crawls. The channel gate passed 34 tests in
 fixtures qualify associated-only hosts, denied detail, multiple membership
 paths, pipeline failures, durable evidence ordering, direct deletion, mentions,
 reaction history, empty inventories, hosted-content limitations, and JOBDIR
-rejection. The 36-cell map awaits the final combined gate and N1/N2 acceptance.
+rejection. The final combined gate now qualifies the complete 36-cell map,
+including the accepted N1/N2 notification cases.
 
 The accepted N1/N2 successor repairs the documented basic wire format and
 preserves trusted subscription/tenant/resource binding, raw inbound evidence,
@@ -46,7 +65,8 @@ checks. See the [local intake contract](notification-intake.md).
 Earlier full-suite schema/export expectation failures were corrected at
 `7f898df` without removing previous expectations. The exhaustive historical LSP
 scan covered 584 files with zero diagnostics. All complete repository, static,
-compatibility, LSP, contracts, and hook gates must run on the converged code.
+compatibility, LSP, contracts, and hook gates have now passed on the converged
+code candidate above.
 The [P3 review contract](p3-review-contract.md) requires nine independent reviews
 and exact repaired-candidate closure. No P3 reviewer is accepted yet.
 
