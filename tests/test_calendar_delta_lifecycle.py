@@ -26,6 +26,7 @@ from message_ingest.catalog import (
     CalendarDeltaObservation,
     Catalog,
 )
+from message_ingest.catalog.models.handoff import AcquisitionReleaseGroup
 
 PAUSE_SETUP = r"""
 import asyncio
@@ -104,6 +105,8 @@ def _pause(graph_root: str, tmp_path: Path, seen: list[str]) -> str:
     catalog = _catalog(tmp_path)
     try:
         with catalog.Session() as session:
+            if session.scalar(select(AcquisitionReleaseGroup)) is not None:
+                pytest.fail("Incomplete Calendar crawl published authority")
             if session.scalar(select(CalendarDeltaCheckpoint)) is not None:
                 pytest.fail("A paused traversal must not promote a checkpoint")
     finally:
@@ -128,6 +131,9 @@ def test_clean_pause_resumes_queued_page_and_promotes_once(
     catalog = _catalog(tmp_path)
     try:
         with catalog.Session() as session:
+            groups = session.scalars(select(AcquisitionReleaseGroup)).all()
+            if len(groups) != 1:
+                pytest.fail("Resumed Calendar authority must publish exactly once")
             checkpoint = session.scalar(select(CalendarDeltaCheckpoint))
             if checkpoint is None or checkpoint.revision != 1:
                 pytest.fail("Expected one checkpoint after resumed completion")
@@ -178,6 +184,8 @@ def test_delayed_pipeline_failure_blocks_durable_candidate(
             candidate = session.scalar(select(CalendarDeltaCheckpointCandidate))
             if candidate is None or candidate.committed_at is not None:
                 pytest.fail("Expected a durable but uncommitted terminal cursor")
+            if session.scalar(select(AcquisitionReleaseGroup)) is not None:
+                pytest.fail("Incomplete Calendar crawl published authority")
             if session.scalar(select(CalendarDeltaCheckpoint)) is not None:
                 pytest.fail("Failed item processing must block promotion")
     finally:

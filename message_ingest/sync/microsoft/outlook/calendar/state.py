@@ -2,15 +2,29 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, cast
 
 from sqlalchemy import Table, delete, insert, select, update
 from sqlalchemy.engine import Connection
 
-from message_ingest.catalog import (
-    CalendarDeltaEventState,
-    CalendarDeltaObservation,
+from message_ingest.acquisition.handoff import FactSpec, source_state_key
+from message_ingest.catalog import CalendarDeltaEventState
+from message_ingest.catalog.stores.microsoft.outlook._calendar_handoff import (
+    event_projection,
 )
+
+from ._authority_observations import winning_observations
+
+
+@dataclass(frozen=True)
+class CalendarDeltaTransition:
+    """An exact applied final state or derived fixed-window absence."""
+
+    event_id: str
+    is_present: bool
+    fact: FactSpec | None
+    state_changed: bool = True
 
 
 def apply_calendar_delta_state(
@@ -21,39 +35,38 @@ def apply_calendar_delta_state(
     attempt: int,
     revision: int,
     rebaseline: bool,
-) -> int:
+) -> tuple[CalendarDeltaTransition, ...]:
     """
-    Apply one winning delta attempt to the committed fixed-window view.
+    Apply the winning attempt and return its exact final transition identities.
 
-    This runs inside the same transaction that advances the provider checkpoint.
-    A rebaseline clears previous membership first because a restarted initial
-    delta enumerates current membership rather than removals from the old token.
+    The caller owns the checkpoint's explicit writer transaction. Capture
+    locators remain immutable across replay. Provider page/entry order decides
+    the final window state, never release sequence or capture time.
+
+    Rebaseline deletes only this window's old membership. Previously present
+    members missing from the new enumeration produce scoped absence identities
+    while that deletion is applied. No later scan reconstructs the decision.
     """
-    observation_table = cast(Table, CalendarDeltaObservation.__table__)
     state_table = cast(Table, CalendarDeltaEventState.__table__)
-
+    observations = winning_observations(
+        connection,
+        scope=scope,
+        run_id=run_id,
+        attempt=attempt,
+    )
+    previous_present: set[str] = set()
+    initial: dict[str, str | None] = {}
     if rebaseline:
+        for row in connection.execute(
+            select(state_table).filter_by(**scope)
+        ).mappings():
+            initial[str(row["event_id"])] = _window_state_key(row)
+            if row["is_present"]:
+                previous_present.add(str(row["event_id"]))
         connection.execute(delete(state_table).filter_by(**scope))
 
-    observations = (
-        connection.execute(
-            select(observation_table)
-            .filter_by(
-                **scope,
-                run_id=run_id,
-                attempt=attempt,
-            )
-            .order_by(
-                observation_table.c.page_number,
-                observation_table.c.entry_index,
-                observation_table.c.observation_id,
-            )
-        )
-        .mappings()
-        .all()
-    )
-
-    for observation in observations:
+    applied: dict[str, CalendarDeltaTransition] = {}
+    for fact, observation in observations:
         kind = str(observation["kind"])
         if kind not in {"upsert", "removed"}:
             raise ValueError(f"Unsupported Calendar delta observation kind: {kind!r}")
@@ -71,14 +84,13 @@ def apply_calendar_delta_state(
         }
         current = (
             connection.execute(
-                select(state_table.c.id).filter_by(
-                    **scope,
-                    event_id=event_id,
-                )
+                select(state_table).filter_by(**scope, event_id=event_id)
             )
             .mappings()
             .one_or_none()
         )
+        if event_id not in initial:
+            initial[event_id] = _window_state_key(current) if current else None
         if current is None:
             connection.execute(
                 insert(state_table).values(
@@ -87,11 +99,37 @@ def apply_calendar_delta_state(
                     **values,
                 )
             )
-            continue
-        connection.execute(
-            update(state_table)
-            .where(state_table.c.id == current["id"])
-            .values(**values)
+        else:
+            connection.execute(
+                update(state_table)
+                .where(
+                    state_table.c.id == current["id"],
+                )
+                .values(**values)
+            )
+        # Reinsert so final impacts follow their last provider position.
+        applied.pop(event_id, None)
+        applied[event_id] = CalendarDeltaTransition(
+            event_id=event_id,
+            is_present=kind == "upsert",
+            fact=fact,
+            state_changed=fact.source_state_key != initial[event_id],
         )
 
-    return len(observations)
+    for event_id in sorted(previous_present - applied.keys()):
+        applied[event_id] = CalendarDeltaTransition(
+            event_id=event_id,
+            is_present=False,
+            fact=None,
+        )
+    return tuple(applied.values())
+
+
+def _window_state_key(row) -> str:
+    """Compare semantic state before mutation for future-only bootstrap."""
+    return source_state_key(
+        {
+            "event": event_projection(row["raw"]),
+            "kind": row["last_kind"],
+        }
+    )

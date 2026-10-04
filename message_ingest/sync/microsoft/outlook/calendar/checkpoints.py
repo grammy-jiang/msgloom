@@ -1,4 +1,4 @@
-"""Persist Calendar delta candidates and promote one fixed window atomically."""
+"""Persist Calendar candidates and atomic fixed-window promotions."""
 
 from __future__ import annotations
 
@@ -16,8 +16,10 @@ from message_ingest.catalog import (
     CalendarDeltaCheckpointCandidate,
     Catalog,
 )
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.extensions.catalog import CatalogService
 
+from ._authority import publish_calendar_authority
 from .state import apply_calendar_delta_state
 
 
@@ -193,7 +195,9 @@ class CalendarDeltaCheckpointStore:
         must prove that traversal reached its terminal delta link and that all
         required evidence and semantic writes completed successfully. After
         revision CAS succeeds, this same transaction materializes the winning
-        attempt's fixed-window membership before advancing the candidate marker.
+        attempt's fixed-window membership, transition facts, release group
+        and entries before advancing the candidate marker. Any publication
+        failure rolls back the complete authority decision.
         """
         checkpoint_table = cast(Table, CalendarDeltaCheckpoint.__table__)
         candidate_table = cast(Table, CalendarDeltaCheckpointCandidate.__table__)
@@ -227,6 +231,17 @@ class CalendarDeltaCheckpointStore:
                 return self._idempotent_committed_state(
                     current=current,
                     candidate=candidate,
+                )
+
+            newer_attempt = connection.execute(
+                select(candidate_table.c.id)
+                .filter_by(**scope, run_id=run_id)
+                .where(candidate_table.c.attempt > attempt)
+                .limit(1)
+            ).first()
+            if newer_attempt is not None:
+                raise CalendarDeltaCheckpointConflict(
+                    "Calendar attempt superseded before promotion"
                 )
 
             base_revision = candidate["base_revision"]
@@ -264,13 +279,26 @@ class CalendarDeltaCheckpointStore:
                     )
                 )
 
-            apply_calendar_delta_state(
+            transitions = apply_calendar_delta_state(
                 connection,
                 scope=scope,
                 run_id=run_id,
                 attempt=attempt,
                 revision=revision,
                 rebaseline=(base_revision is None or int(candidate["attempt"]) > 0),
+            )
+
+            publish_calendar_authority(
+                connection,
+                AcquisitionHandoffStore(self.catalog),
+                transitions,
+                scope=scope,
+                run_id=run_id,
+                attempt=attempt,
+                revision=revision,
+                committed_at=committed_at,
+                terminal_observed_at=str(candidate["observed_at"]),
+                terminal_evidence_id=str(candidate["evidence_id"]),
             )
 
             connection.execute(
@@ -320,7 +348,7 @@ class CalendarDeltaCheckpointStore:
         current,
         candidate,
     ) -> CalendarDeltaCheckpointState:
-        """Allow repeated idle handling only for the exact committed attempt."""
+        """Repeat idle handling only for the exact committed attempt."""
         if (
             current is None
             or current["run_id"] != candidate["run_id"]
