@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from urllib.parse import quote, urlencode, urlsplit
+from urllib.parse import quote, unquote, urlencode, urlsplit
 
 CHANNEL_SELECT_FIELDS = (
     "id",
@@ -38,6 +38,21 @@ class TrustedChannelResourceLink:
     tenant_path_segment: str
     team_path_segment: str
     channel_path_segment: str
+
+    @property
+    def tenant_id(self) -> str:
+        """Decode the tenant identity once without changing the request path."""
+        return unquote(self.tenant_path_segment, errors="strict")
+
+    @property
+    def team_id(self) -> str:
+        """Return the opaque team ID expected by ordinary path builders."""
+        return unquote(self.team_path_segment, errors="strict")
+
+    @property
+    def channel_id(self) -> str:
+        """Return the opaque channel ID for comparison with resource payloads."""
+        return unquote(self.channel_path_segment, errors="strict")
 
 
 def _segment(value: str, *, name: str) -> str:

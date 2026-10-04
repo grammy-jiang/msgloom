@@ -255,8 +255,10 @@ class ChannelTopologyMixin:
                 continue
 
             if resolved is not None:
-                host_team_id = resolved.team_path_segment
-                host_tenant_id = resolved.tenant_path_segment
+                if resolved.channel_id != raw.get("id"):
+                    raise ValueError("Teams channel resource-link identity mismatch")
+                host_team_id = resolved.team_id
+                host_tenant_id = resolved.tenant_id
                 receiving_team_id = inventory_team_id
                 original_resource_link = resolved.raw
                 detail_path = resolved.request_path
