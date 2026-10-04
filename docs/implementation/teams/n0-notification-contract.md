@@ -113,6 +113,29 @@ contract before dispatch. Public CLI wiring, shared evidence types, and any
 shared registry edits remain coordinator-owned. No webhook exposure or
 subscription mutation is authorized by this local fixture record.
 
+## Local storage qualification
+
+A coordinator probe used the existing native pipeline manager at the required
+200/250/300 priorities. It retained an inbound POST envelope byte for byte in
+`request_body`, with `origin="inbound-webhook"`, no response URL or status, and
+an empty response body. The linked coverage observation retained two ordered
+events. Exact replay left one coverage row. This qualifies the existing storage
+contract only; authentication, webhook delivery, and reconciliation remain open.
+
+N1 can reuse `RawHttpEvidenceItem` and the existing raw pipeline. It must not
+copy the envelope into a fabricated Graph response. Protected request payloads
+may contain `clientState`; logs and semantic rows must not retain that secret.
+A coverage item must aggregate every event for one scope and evidence record
+in an ordered `details` list, or use another explicitly qualified additive
+identity. Emitting conflicting individual facts under that same key fails the
+existing immutable-replay contract.
+
+Deletion observations are also immutable. N2 must not persist a declaration
+and later rewrite its readback fields under the same evidence ID. It needs an
+explicit additive readback association or a qualified durable intake/recovery
+sequence that cannot lose the declaration if readback fails or is canceled.
+The worker contract must settle this before implementation is accepted.
+
 ## Remaining gates
 
 - Local N1/N2 implementation and meaningful raw-intake/reconciliation tests.

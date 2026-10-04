@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 02:24 UTC
+## Current progress — 2026-10-04 02:47 UTC
 
 P0, core P1, P2 persistence, and the shared application base are accepted.
 All three downstream workers now have confirmed conversations. Their results
@@ -24,6 +24,18 @@ the Project inventory for duplicates, and qualified the composer before one
 successful send. All workers retain `gpt-5-6-thinking` / `max` and the original
 task/base/ownership contracts. A serial successor validator waits for the
 original validator to exit before checking any missing recovered-lane reports.
+
+Coordinator integration checks now include three draft native CLI crawls.
+All three fail at the accepted candidate because the application spiders are
+not integrated yet. A native Scrapy callback-contract test is also prepared.
+A preliminary saved-source probe found cross-resource coverage leakage when
+an unrelated team ID equals a chat ID. The final worker candidate must receive
+a regression test and repair before acceptance. No active worker file changed.
+
+The existing inbound evidence storage contract passed a local probe with exact
+POST bytes, two ordered events, and idempotent aggregate replay. This is not
+notification intake or reconciliation acceptance. See the
+[notification contract](n0-notification-contract.md#local-storage-qualification).
 
 The 36-fixture crawl matrix, notification intake/reconciliation, complete
 repository/compatibility gates, and nine independent exact-candidate reviews
