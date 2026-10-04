@@ -95,6 +95,7 @@ BASELINE_FIELDS = {
         "run_id",
         "calendar_id",
         "content_bytes_present",
+        "resource_version",
     ),
 }
 
