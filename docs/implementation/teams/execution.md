@@ -360,7 +360,7 @@ are execution corrections. The authoritative design remains unchanged.
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
 | P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
-| P2 application integration and synthetic crawls | Not started |
+| P2 application integration and synthetic crawls | Persistence worker active; spider and handoff lanes await its contract |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
 | Notification-driven live acceptance | NOT EXERCISED |
@@ -382,3 +382,25 @@ regression. The [core provider freeze](core-provider-freeze.md) records exact
 commits and all 458 affected tests plus static and boundary checks. P2
 persistence is now eligible for dispatch. No application or final gate is
 claimed by this provider freeze.
+
+## Persistence dispatch — 2026-10-04
+
+The P2 persistence writer started from core freeze
+`76cf0322a4b82e1485852085079d183a80aba49a` in its isolated
+`program/teams-p2-persistence` worktree. Its
+[ChatGPT conversation](https://chatgpt.com/c/6ac19ac5-e250-83ec-ba92-0e6710593292)
+uses the required `gpt-5-6-thinking` / `max` pin. The external dispatcher owns
+collection. A final result still requires exact transcript, parent, ownership,
+diff, focused tests, and static validation before integration.
+
+The lane owns 24 dedicated item/model/store/pipeline/test paths. It must preserve
+canonical evidence, observed versions, explicit deletion and delivery-gap facts,
+scoped topology and attachment identity, and hosted-content triggering records.
+It must test write cancellation and keep the catalog lock until the write drains.
+The coordinator owns global registration and later shared spider setup.
+
+Three downstream draft contracts assign disjoint files to chat traversal,
+channel traversal, and the saved-source reader. None is dispatched until the
+persistence item/schema contract is accepted. The exact manifests and wake
+state are in `.superpowers/teams-a1/`; all remaining local and live gates above
+remain open.
