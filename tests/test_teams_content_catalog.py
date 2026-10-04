@@ -186,7 +186,12 @@ def test_hosted_retrieval_links_exact_trigger_across_later_message_edit(
             ("hosted-bytes", bytes_at),
             ("hosted-failure", fail_at),
         ):
-            record_evidence(catalog, evidence_id, observed_at=observed_at)
+            record_evidence(
+                catalog,
+                evidence_id,
+                observed_at=observed_at,
+                body=b"PNG" if evidence_id == "hosted-bytes" else b"{}",
+            )
 
         first = chat_message(
             evidence_id="message-v1",

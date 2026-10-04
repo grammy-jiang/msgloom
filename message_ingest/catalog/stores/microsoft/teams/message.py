@@ -174,6 +174,9 @@ class TeamsMessageStore:
                 if (
                     existing.deletion_kind != item.deletion_kind
                     or existing.readback_evidence_id != effective_readback_evidence
+                    or existing.readback_observed_at != effective_readback_observed
+                    or existing.readback_state != item.readback_state
+                    or existing.declared_deleted_at != item.declared_deleted_at
                 ):
                     raise ValueError("Teams deletion replay changed immutable facts")
                 return "replay"

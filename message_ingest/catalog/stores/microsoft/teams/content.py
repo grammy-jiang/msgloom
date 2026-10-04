@@ -241,6 +241,13 @@ class TeamsContentStore:
                 evidence_id=response_id,
                 observed_at=response_time,
             )
+            # Byte metadata must describe the same durable raw response.
+            # This also validates aliases before an idempotent replay returns.
+            if observation_kind == "bytes" and (
+                content_sha256 != response.response_body_sha256
+                or content_bytes != response.response_body_bytes
+            ):
+                raise ValueError("Teams hosted content differs from response bytes")
             existing = session.scalar(
                 select(TeamsHostedContentObservation).filter_by(
                     source_id=self.source_id,

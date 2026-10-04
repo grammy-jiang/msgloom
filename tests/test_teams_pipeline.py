@@ -190,3 +190,59 @@ def test_pipeline_stats_are_bounded_allowlisted_keys(tmp_path: Path) -> None:
             )
     finally:
         service.close()
+
+
+def test_hosted_trigger_canonicalizes_before_message_linker_mutation(tmp_path):
+    """A scheduled trigger must survive canonicalization of its message item."""
+    from message_ingest.catalog.models.microsoft.teams import (
+        TeamsHostedContentObservation,
+    )
+    from message_ingest.items.microsoft.teams.content import TeamsHostedContentBytesItem
+    from message_ingest.items.microsoft.teams.message import TeamsMessageTrigger
+
+    crawler = _crawler(tmp_path)
+    raw = RawEvidencePipeline.from_crawler(crawler)
+    linker = EvidenceLinkPipeline.from_crawler(crawler)
+    teams = TeamsPipeline.from_crawler(crawler)
+    service = CatalogService.from_crawler(crawler)
+    old_at = "2026-10-04T05:00:00+00:00"
+    new_at = "2026-10-04T06:00:00+00:00"
+    message = chat_message(evidence_id="alias", observed_at=new_at)
+    trigger = TeamsMessageTrigger.from_message(message)
+
+    async def scenario():
+        await raw.process_item(raw_item("canonical", observed_at=old_at))
+        await raw.process_item(
+            raw_item("alias", observed_at=new_at, origin="http_cache")
+        )
+        await linker.process_item(message)
+        await teams.process_item(message)
+        await raw.process_item(raw_item("binary", observed_at=new_at, body=b"PNG"))
+        item = TeamsHostedContentBytesItem.from_bytes(
+            body=b"PNG",
+            source_id=SOURCE,
+            message_identity=message.identity,
+            hosted_content_id="image",
+            trigger=trigger,
+            content_type="image/png",
+            observed_at=new_at,
+            evidence_id="binary",
+            run_id=RUN,
+        )
+        await linker.process_item(item)
+        await teams.process_item(item)
+
+    try:
+        asyncio.run(scenario())
+        with service.catalog.Session() as session:
+            row = session.scalar(select(TeamsHostedContentObservation))
+            if row is None or row.trigger_evidence_id != "canonical":
+                pytest.fail(
+                    "Hosted trigger must resolve the provisional evidence alias"
+                )
+            if row.trigger_observed_at != old_at or row.evidence_id != "binary":
+                pytest.fail(
+                    "Trigger and byte response must keep separate capture facts"
+                )
+    finally:
+        service.close()

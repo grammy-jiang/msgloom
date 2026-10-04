@@ -50,6 +50,14 @@ class TeamsCoverageStore:
                     existing.fact_kind != item.fact_kind
                     or existing.status != item.status
                     or existing.details != item.details
+                    or existing.history_incomplete != item.history_incomplete
+                    or existing.visible_scope != item.visible_scope
+                    or existing.retention_limitations != item.retention_limitations
+                    or existing.subscription_id != item.subscription_id
+                    or existing.subscription_valid_from != item.subscription_valid_from
+                    or existing.subscription_valid_until
+                    != item.subscription_valid_until
+                    or existing.gap_kind != item.gap_kind
                 ):
                     raise ValueError("Teams coverage replay changed immutable facts")
                 return "replay"
