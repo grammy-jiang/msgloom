@@ -1,17 +1,17 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 06:29 UTC
+## Current progress — 2026-10-04 06:59 UTC
 
 P0, core P1, P2 persistence, basic chat/channel discovery, and the public Teams
 saved-source reader are accepted. Notification intake and reconciliation are
-still active. Full convergence and independent P3 reviews remain required.
+accepted locally. Full convergence and independent P3 reviews remain required.
 
 | Lane | Worker commit | Integration state |
 | --- | --- | --- |
 | Chat discovery | `ec39c13722001825f79f8f4edb627ecc1da2306d` | Integrated at `b677b641`; shared exports and native CLI/contracts at `f67e4d9` |
 | Channel discovery | `0d54e9e021d75e9d2b846d3de1d34eaaec9ff994` | Integrated at `131b28c`; resource-link identity corrected at `49b5bd0` |
 | Teams saved-source adapter | `3cf872246d72c42e142f3c1514f9dc8131241166` | Integrated at `e457a914`; public dispatch now accepted |
-| Local N1/N2 | Pending | Existing worker and collector retain sole ownership |
+| Local N1/N2 | `91bf3c338a4d3da481777b35f58982c774a60334` | Integrated at `cdedf00`; shared export and public-reader validation passed |
 
 Public reader integration `7ada29a0b95453f87ed838e918f405669bdd7bd2` routes bounded Teams
 listing and exact reads through the accepted adapter. Two failing public tests
@@ -36,15 +36,12 @@ paths, pipeline failures, durable evidence ordering, direct deletion, mentions,
 reaction history, empty inventories, hosted-content limitations, and JOBDIR
 rejection. The 36-cell map awaits the final combined gate and N1/N2 acceptance.
 
-The N1/N2 task is `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_R1`, based on accepted
-basic-discovery commit `f67e4d9`. Conversation
-`6ac1e364-7478-83ec-b38f-801e1f02532c` has a confirmed `gpt-5-6-thinking` / `max`
-send with the Raspberry Pi MCP connector. Its existing external collector and
-serial validator own collection. The worker owns nine disjoint paths. It must
-preserve trusted subscription/tenant/resource binding, raw inbound evidence,
-immutable deletion facts, additive readback, and sticky history gaps. It adds
-no webhook server, subscription mutation, renewal, or periodic polling. See the
-[notification contract](n0-notification-contract.md).
+The accepted N1/N2 successor repairs the documented basic wire format and
+preserves trusted subscription/tenant/resource binding, raw inbound evidence,
+immutable deletion facts, additive readback, and sticky history gaps. Its exact
+base, parent, task, model/effort, nine owned paths, and clean state were checked.
+Independent preacceptance passed 59 tests in 130.42 seconds and all static
+checks. See the [local intake contract](notification-intake.md).
 
 Earlier full-suite schema/export expectation failures were corrected at
 `7f898df` without removing previous expectations. The exhaustive historical LSP
@@ -69,33 +66,21 @@ including public readback, byte tampering, and invalid capture shapes. Ruff,
 format, Pyright, and three live LSP checks pass. This shared correction does not
 accept the unfinished notification worker.
 
-The unfinished N1 protocol draft rejects the current documented basic payload's
-identity-only `resourceData` and OData key resource path. Nine positive cases
-reproduce this defect; five malformed cases are rejected. Retest and repair the
-finished candidate before N1 acceptance. See the
-[basic notification wire format](n0-notification-contract.md#basic-notification-wire-format).
+Nine previously failing documented-payload cases now pass. A committed
+combined-candidate probe passed all 16 coordinator regressions in 24.55 seconds,
+including native public-reader reconciliation, failed deletion readback, webhook
+and local gaps, exact bytes, additive history, selection replay, and tamper
+rejection. These tests are promoted into the integration suite. Default spider
+discovery and native contracts are included in the combined acceptance gate.
+The combined gate passed 157 tests. Two new fixture failures came from JSON
+encoding of a native comma-separated CLI setting. Both pass after the test-only
+correction (20.82 seconds). No expectation was weakened. Integrated Ruff,
+format, Pyright, live LSP, and changed-file hooks pass.
 
-The original notification conversation stopped advancing at an unfinished tool
-call. A bounded same-chat continuation could not load the conversation and
-failed before posting. A fresh HTTP read still shows 126 messages and no
-continuation. Project adoption found 18 known conversations. The original
-worker worktree remains unchanged and its collector retains ownership.
-
-A finite repair task, `MSGLOOM_TEAMS_A1_N1N2_LOCAL_20261004_FINISH_R2`, now owns
-an isolated copy of the nine draft files at the same exact `f67e4d9` base.
-Its manifest preserves each file hash. It must repair the documented basic
-notification format, pass focused/static checks, and return a finite commit.
-The frozen draft also has a protocol-test parameter-count collection error;
-this is required repair work. Neither notification lineage is accepted. Only
-one lineage may be integrated after exact task, pins, parent, ownership, diff,
-and validation checks.
-
-A coordinator public-reader draft passes two native integration probes on the
-isolated combined code. Real notification intake, successful reconciliation,
-failed deletion readback, webhook and local gaps, exact inbound bytes, additive
-history, selection replay, and tamper rejection are covered. These tests must
-be promoted and rerun on the accepted notification candidate. The probe does
-not accept the unfinished worker.
+The original stalled notification lineage is superseded. Its local collector
+and validator were retired only after successor acceptance and verification
+that neither had an active HTTP or send child. Its worktree and conversation
+remain unchanged. Never integrate both lineages.
 
 No approved work/school tenant configuration or consent evidence is available.
 Live T1/T2, repeat acquisition, and webhook acceptance are not exercised.

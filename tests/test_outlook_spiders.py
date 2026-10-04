@@ -51,6 +51,7 @@ from message_ingest.spiders.microsoft.profile import MicrosoftProfileSpider
 from message_ingest.spiders.microsoft.teams import (
     MicrosoftTeamsChannelDiscoverSpider,
     MicrosoftTeamsChatDiscoverSpider,
+    MicrosoftTeamsNotificationReconcileSpider,
 )
 from message_ingest.spiders.microsoft.todo.discover import MicrosoftTodoDiscoverSpider
 from message_ingest.spiders.microsoft.todo.sync import MicrosoftTodoSyncSpider
@@ -68,6 +69,7 @@ def test_scrapy_discovers_the_concrete_graph_resource_spiders() -> None:
         "microsoft_profile": MicrosoftProfileSpider,
         "microsoft_teams_channel_discover": MicrosoftTeamsChannelDiscoverSpider,
         "microsoft_teams_chat_discover": MicrosoftTeamsChatDiscoverSpider,
+        "microsoft_teams_notification_reconcile": MicrosoftTeamsNotificationReconcileSpider,
         "microsoft_todo_discover": MicrosoftTodoDiscoverSpider,
         "microsoft_todo_sync": MicrosoftTodoSyncSpider,
         "outlook_calendar_delta": OutlookCalendarDeltaSpider,
