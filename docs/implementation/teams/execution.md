@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 03:43 UTC
+## Current progress — 2026-10-04 04:04 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -37,14 +37,35 @@ crawl test passed in 5.04 seconds. Ruff, format, Pyright, live LSP, and commit
 hooks passed.
 
 Both remaining workers stopped progressing after completed tool calls. The
-coordinator verified their unchanged transcripts and retained their original
-conversations and file ownership. One bounded chat continuation was confirmed
-at 03:31 UTC with the original model, effort, and MCP connector. The A2 continuation
-failed before its composer loaded after six bounded page-load attempts. A
-read-only diagnostic will identify the failing request before another send.
-Its prepared prompt includes the known cross-resource coverage defect and
-requires collision regressions in both directions. Existing collectors
-remain the sole result owners. No repeated task or replacement chat was sent.
+coordinator retained their original conversations and file ownership. The chat
+continuation returned a send receipt at 03:31 UTC, but the transcript has not
+confirmed that continuation. A receipt alone is not acceptance. The A2
+continuation failed before its composer loaded. A read-only diagnostic found
+HTTP 429 on the conversation read while other account requests succeeded.
+
+A finite successor waits for the original collectors and validators to exit.
+It also waits at least 30 minutes after the measured 429. Its earliest retry is
+04:18 UTC. It checks all-branch user metadata before any continuation. Each
+eligible lane gets at most one attempt in its existing conversation. The
+sender requires loaded conversation turns and a successful HTTP post response.
+Native security, capacity, cooldown, and lifetime controls remain unchanged.
+The successor owns slow collection and serial preacceptance after the original
+owners release their locks. It cannot integrate or approve worker commits.
+
+The preliminary full Python 3.13 normal suite at `66ac490` finished with
+2,484 passing tests and five failures in exact schema/export expectations.
+Commit `7f898dfa32b8e01c433e53619e7bd88a7eefbade` adds the accepted Teams
+exports, concrete channel spider, and 11 additive tables to those expectations.
+All previous entries and exact equality checks remain. All 23 focused tests,
+Ruff, formatting, Pyright, live LSP diagnostics, and commit hooks pass. The
+final full suite remains required after the remaining production integration.
+
+Three coordinator regression cases reproduce the A2 coverage defect for chat,
+channel-root, and channel-reply selections. An unrelated scope with the same
+opaque ID must not contribute coverage. The tests preserve a positive matching
+coverage case. All three fail against the unchanged draft adapter. The prepared
+continuation requests repair and both-direction regression coverage in the
+worker's owned tests. No active worker file changed.
 
 Three additional native crawl cases are committed at
 `742f8bebb42cb6f4737df790244eb4062df0f461`. They cover user, team, and channel
@@ -57,9 +78,9 @@ accepted chat and notification coverage plus the final combined gate.
 
 | Lane | Conversation | State |
 | --- | --- | --- |
-| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Continuation confirmed; result pending |
+| Chat spider | `6ac1b2eb-8f58-83ec-a8ca-986693df255b` | Send receipt; transcript confirmation and result pending |
 | Channel spider | `6ac1b724-db70-83ec-a08b-2817ef2648e7` | Integrated and corrected |
-| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Page-load failure; no continuation confirmed |
+| Saved-source handoff | `6ac1b431-3b44-83ec-9362-faa138b77f27` | Conversation read HTTP 429; guarded continuation queued |
 
 The command mapping is committed at
 `6e1d43c561293367529f8cafa850be221cd5b8f2`, with 105 focused tests passing.
