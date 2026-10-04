@@ -230,6 +230,9 @@ MSGLOOM_ONEDRIVE_SOURCE_ID = os.getenv(
 MSGLOOM_CONTACTS_SOURCE_ID = os.getenv(
     "MSGLOOM_CONTACTS_SOURCE_ID", "microsoft-contacts-default"
 )
+MSGLOOM_TEAMS_SOURCE_ID = os.getenv(
+    "MSGLOOM_TEAMS_SOURCE_ID", "microsoft-teams-default"
+)
 MSGLOOM_SOURCE_IDENTITY_REQUIRED = True
 # Legacy identity bootstrap must be an explicit invocation-scoped Scrapy
 # setting (for example ``-s ...``), never a sticky environment default.

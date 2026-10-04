@@ -359,7 +359,7 @@ are execution corrections. The authoritative design remains unchanged.
 | Runtime and baseline framework regression | PASS |
 | P0 independent contract closure | PASS; exact candidate and hashes verified |
 | P1 core provider implementation | PASS; all five lanes integrated and 458 affected tests passed |
-| P2 application integration and synthetic crawls | Persistence worker active; spider and handoff lanes await its contract |
+| P2 application integration and synthetic crawls | Persistence accepted and shared base qualified; downstream dispatch ready |
 | P3 complete gates and independent reviews | Not started |
 | T1/T2 company live acceptance | BLOCKED |
 | Notification-driven live acceptance | NOT EXERCISED |
@@ -389,8 +389,8 @@ The P2 persistence writer started from core freeze
 `program/teams-p2-persistence` worktree. Its
 [ChatGPT conversation](https://chatgpt.com/c/6ac19ac5-e250-83ec-ba92-0e6710593292)
 uses the required `gpt-5-6-thinking` / `max` pin. The external dispatcher owns
-collection. A final result still requires exact transcript, parent, ownership,
-diff, focused tests, and static validation before integration.
+collection. Its final exact transcript, parent, ownership, and diff were
+verified. The worker commit and coordinator repairs are now integrated.
 
 The lane owns 24 dedicated item/model/store/pipeline/test paths. It must preserve
 canonical evidence, observed versions, explicit deletion and delivery-gap facts,
@@ -419,6 +419,8 @@ other tests verify binary/header fidelity and route replacement. Ruff, format,
 and Pyright passed. These checks qualify the shared test transport; they do
 not replace the mandatory Teams chat/channel semantic crawls.
 
-The persistence writer remains active. Application base/settings, semantic
-fixture helpers, and the three downstream dispatches still require its accepted
-item/schema contract.
+The persistence writer has finished. The coordinator accepted its contract,
+repaired evidence/replay validation, registered the schema, and qualified the
+shared application base. The combined gate passed 485 tests. See the
+[P2 application contract](p2-application-contract.md). Chat, channel, and
+saved-source lanes can now run independently from the frozen shared commit.

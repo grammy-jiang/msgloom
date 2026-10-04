@@ -11,6 +11,7 @@ from .handoff import (
     AcquisitionReleaseGroup,
     AcquisitionRunOutcome,
 )
+from .microsoft import teams
 from .microsoft.contacts import (
     ContactCollectionCompletion,
     ContactDeltaCheckpoint,
@@ -156,4 +157,5 @@ __all__ = [
     "TodoTaskRecord",
     "TodoTaskSighting",
     "TodoTraversalCompletion",
+    "teams",
 ]

@@ -1,5 +1,5 @@
 """Microsoft item-persistence pipelines."""
 
-from . import outlook
+from . import outlook, teams
 
-__all__ = ["outlook"]
+__all__ = ["outlook", "teams"]
