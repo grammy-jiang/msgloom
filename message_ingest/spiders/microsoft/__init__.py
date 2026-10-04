@@ -1,6 +1,6 @@
 """Microsoft acquisition spiders."""
 
-from . import outlook
+from . import outlook, teams
 from .profile import MicrosoftProfileSpider
 
-__all__ = ["MicrosoftProfileSpider", "outlook"]
+__all__ = ["MicrosoftProfileSpider", "outlook", "teams"]
