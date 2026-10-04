@@ -1,6 +1,6 @@
 # Teams A1 execution record
 
-## Current progress — 2026-10-04 04:04 UTC
+## Current progress — 2026-10-04 04:15 UTC
 
 P0, core P1, P2 persistence, the shared application base, and the channel
 application lane are accepted. The channel worker commit
@@ -97,6 +97,10 @@ The existing inbound evidence storage contract passed a local probe with exact
 POST bytes, two ordered events, and idempotent aggregate replay. This is not
 notification intake or reconciliation acceptance. See the
 [notification contract](n0-notification-contract.md#local-storage-qualification).
+
+The [P3 review contract](p3-review-contract.md) defines all nine independent
+review lanes and their exact repaired-candidate closure requirements. The lane
+manifest is preparation only. No P3 reviewer has been dispatched or accepted.
 
 The 36-fixture crawl matrix, notification intake/reconciliation, complete
 repository/compatibility gates, and nine independent exact-candidate reviews
