@@ -177,7 +177,7 @@ def diagnose(
 
 
 def main() -> int:
-    """Check changed Python source/tests or an explicit development selection."""
+    """Check changed Python files or an explicit development selection."""
     cli = argparse.ArgumentParser()
     cli.add_argument("--root", type=Path, required=True)
     cli.add_argument("--python", required=True)

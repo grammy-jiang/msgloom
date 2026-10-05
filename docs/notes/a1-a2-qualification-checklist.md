@@ -16,7 +16,8 @@ tracked at the preparation base.
 - [ ] Select a clean exact candidate SHA and its exact original review base.
 - [ ] Supply installed interpreter paths for all six matrix environments.
 - [ ] Reserve the host; do not overlap this run with other pytest/tox runs.
-- [ ] Supply a candidate-bound coverage map for the 17 spiders and 13 scenarios.
+- [ ] Supply a candidate-bound coverage map for the 17 spiders and all 13
+      scenarios.
 - [ ] Use a fresh evidence directory outside every source checkout.
 - [ ] Run the complete plan once; retain failures and interruptions.
 - [ ] Obtain the separate independent GPT-6 Astra/max review of the full
@@ -76,12 +77,13 @@ outside this preparation; this runner never installs or upgrades dependencies.
 | Diff | `git diff --check BASE CANDIDATE` and candidate cleanliness checks. |
 | Pre-commit | All configured hooks on all files, existing cache only. |
 | Reverse imports | AST scan of A1 and standalone Graph transport boundaries. |
-| Spider/scenario coverage | Exact 17 names and all 13 executed-test mappings. |
+| Spider/scenario coverage | Exact 17 names and 13 executed-test mappings. |
 | Independent review | External GPT-6 Astra/max, exact candidate and base. |
 
 The A1 selection is intentionally explicit and includes all top-level tests,
 including newly integrated handoff tests. It is not a claim to reproduce the
-historical closeout's exact 2003-test selection. Full normal coverage also runs,
+historical closeout's exact 2003-test selection. Full normal coverage also
+runs,
 so nested application tests cannot disappear from final qualification.
 
 Normal source suites use the committed tox command semantics: `-q -n 4`,
@@ -104,12 +106,14 @@ successful contracts must be reported. No persistent Graph credentials are
 supplied.
 
 The pre-commit adapter requires the inspected version 4.6.2 and a populated
-cache (default `~/.cache/pre-commit`). It reads cache repository mappings and
-blocks clone/environment installation before invoking the actual
-`pre-commit run --all-files`. Missing cache, unhealthy environments or an
-unreviewed adapter version remain unavailable. Hook versions, selection and
-arguments remain those in the committed configuration. A hook that modifies
-the candidate invalidates the run; it is not rerun automatically.
+source cache (default `~/.cache/pre-commit`). The source cache is opened only
+for read-only repository lookup. The real pre-commit Store instead uses a
+fresh per-gate writable metadata sandbox, so `mark_config_used()` cannot alter
+the shared source database. Clone and environment installation are blocked.
+Missing cache, unhealthy environments or an unreviewed adapter version remain
+unavailable. Hook versions, selection and arguments remain those in the
+committed configuration. A hook that modifies the candidate invalidates the
+run; it is not rerun automatically.
 
 ## Exact spider coverage
 
@@ -146,9 +150,11 @@ must match exactly.
 
 The audit checks the installed loader, committed design matrix, candidate
 identity and JUnit artifact digests. It requires mapped cases to have passed
-in the current A1 or full normal 3.13 run. Skips, fabricated node IDs, missing
-rows and stale candidate maps fail. The independent reviewer must still check
-that the mapped tests substantively prove their claimed behavior.
+in the current A1 or full normal 3.13 run. After validation, the exact coverage
+map bytes are copied into the fresh run evidence and hashed there. Later source
+map deletion or mutation cannot remove the reviewed mapping. Skips, fabricated
+node IDs, missing rows and stale candidate maps fail. The independent reviewer
+must still check that mapped tests prove their claimed behavior.
 
 ## Thirteen Task15 scenarios
 
@@ -189,15 +195,20 @@ The reverse scan permits the existing shared configuration imports; it
 rejects A2 imports and standalone Graph reverse dependencies.
 
 Mutable database, evidence, temporary, pytest-cache and coverage paths are
-isolated. Inherited credentials and pytest overrides are not forwarded.
-The wrapper preserves test-internal timeouts; its outer suite ceiling is
-3600 seconds. Smaller command ceilings are visible in the listing. A timeout
-is incomplete evidence, never permission to weaken a test.
+isolated. Coverage-data parent directories are created before launch; normal
+and exclusive suites for one interpreter retain their shared append database.
+Inherited credentials and pytest overrides are not forwarded. The wrapper
+preserves test-internal timeouts; its outer suite ceiling is 3600 seconds.
+Smaller command ceilings are visible in the listing. A timeout is incomplete
+evidence, never permission to weaken a test.
 
-SIGTERM/interrupt handling terminates and reaps the gate process group.
-SIGKILL or power loss can leave running evidence and a surviving child;
-the saved PID/log links support explicit operator cleanup. Such an invocation
-can never be treated as passed or resumed into the same output directory.
+After every gate parent terminates, the runner checks its isolated process
+group. Any surviving descendant makes the gate non-passing, triggers bounded
+SIGTERM/SIGKILL cleanup and hard-stops the invocation. Timeout and interrupt
+handling uses the same group boundary. Direct SIGKILL of the runner or power
+loss can still leave running evidence; saved PID/log links support explicit
+operator cleanup. Such an invocation can never be treated as passed or resumed
+into the same output directory.
 
 CLI exit 0 means listing only. Exit 1 means blocked/failed/interrupted
 execution. Exit 2 means automatic gates passed but mandatory external review

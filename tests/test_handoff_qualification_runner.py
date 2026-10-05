@@ -127,7 +127,7 @@ def test_dependency_failure_blocks_dependent_gate(repository, tmp_path: Path) ->
 def test_candidate_mutation_stops_remaining_gates(
     repository, tmp_path: Path, mutation: str
 ) -> None:
-    """Both a new commit and uncommitted candidate changes invalidate evidence."""
+    """A commit or uncommitted candidate change invalidates evidence."""
     if mutation == "head":
         code = (
             "import subprocess; subprocess.run(['git','-c','user.name=Fixture',"
@@ -183,7 +183,7 @@ def test_signal_interruption_is_durable(repository, tmp_path: Path) -> None:
 def test_complete_manifest_never_claims_external_review(
     repository, tmp_path: Path
 ) -> None:
-    """Successful fake gates retain identity, artifacts and external blockers."""
+    """Successful fake gates retain identity, artifacts and blockers."""
     root, sha = repository
     result = _run(repository, tmp_path, [_gate(), _gate("second")])
     _equal(result["status"], "automated_passed")

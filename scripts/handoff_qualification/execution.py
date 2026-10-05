@@ -1,4 +1,5 @@
-"""Execute a fixed gate plan once and retain fail-closed evidence.
+"""
+Execute a fixed gate plan once and retain fail-closed evidence.
 
 Commands run serially without a shell or retries. Each attempt gets separate
 stdout/stderr files. The manifest is saved before launch and after every gate;
@@ -41,6 +42,7 @@ class Gate:
     coverage: str | None = None
     contracts: bool = False
     runtime: bool = False
+    required_artifacts: tuple[str, ...] = ()
     unavailable: str | None = None
 
 
@@ -99,6 +101,7 @@ def environment(root: Path, runtime: Path, gate: Gate) -> dict[str, str]:
             "XDG_DATA_HOME": str(runtime / "data"),
             "XDG_STATE_HOME": str(runtime / "state"),
             "TMPDIR": str(runtime),
+            "PRE_COMMIT_HOME": str(runtime / "pre-commit-home"),
             "UV_OFFLINE": "1",
             "UV_NO_SYNC": "1",
             "UV_PYTHON_DOWNLOADS": "never",
@@ -113,23 +116,61 @@ def environment(root: Path, runtime: Path, gate: Gate) -> dict[str, str]:
     return env
 
 
-def _stop(process: subprocess.Popen) -> None:
-    """Terminate and reap the entire gate process group on interruption."""
+def _group_members(group: int) -> list[int]:
+    """Return live, non-zombie members of one isolated process group."""
+    members = []
+    for path in Path("/proc").glob("[0-9]*/stat"):
+        try:
+            fields = path.read_text().rsplit(")", 1)[1].split()
+            if int(fields[2]) == group and fields[0] != "Z":
+                members.append(int(path.parent.name))
+        except (OSError, ValueError, IndexError):
+            continue
+    return sorted(members)
+
+
+def _wait_group_empty(group: int, timeout: float) -> list[int]:
+    """Wait briefly for live members of one process group to exit."""
+    deadline = time.monotonic() + timeout
+    while (members := _group_members(group)) and time.monotonic() < deadline:
+        time.sleep(0.01)
+    return members
+
+
+def _kill_group(group: int, sig: signal.Signals) -> None:
+    """Signal only the gate-owned process group if it still exists."""
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        os.killpg(group, sig)
     except ProcessLookupError:
         pass
+
+
+def _cleanup_descendants(
+    process: subprocess.Popen,
+) -> tuple[list[int], list[int]]:
+    """Kill descendants left behind after a gate parent has terminated."""
+    survivors = _group_members(process.pid)
+    if not survivors:
+        return [], []
+    _kill_group(process.pid, signal.SIGTERM)
+    remaining = _wait_group_empty(process.pid, 1)
+    if remaining:
+        _kill_group(process.pid, signal.SIGKILL)
+        remaining = _wait_group_empty(process.pid, 5)
+    return survivors, remaining
+
+
+def _stop(process: subprocess.Popen) -> list[int]:
+    """Terminate and reap the entire gate process group on interruption."""
+    _kill_group(process.pid, signal.SIGTERM)
     try:
         process.wait(timeout=5)
     except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)
+        _kill_group(process.pid, signal.SIGKILL)
         process.wait(timeout=5)
     finally:
-        # Reaping the leader does not prove every descendant honored SIGTERM.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        _kill_group(process.pid, signal.SIGKILL)
+    return _wait_group_empty(process.pid, 5)
 
 
 def _execute(
@@ -149,14 +190,13 @@ def _execute(
     started = time.monotonic()
     try:
         with stdout.open("wb") as out, stderr.open("wb") as err:
+            env = environment(root, directory / "runtime", gate)
+            if coverage_file := env.get("COVERAGE_FILE"):
+                Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)
             process = subprocess.Popen(
                 gate.command,
                 cwd=root,
-                env=environment(
-                    root,
-                    directory / "runtime",
-                    gate,
-                ),
+                env=env,
                 stdout=out,
                 stderr=err,
                 start_new_session=True,
@@ -173,18 +213,30 @@ def _execute(
                 if process.returncode < 0
                 else "failed"
             )
+            survivors, remaining = _cleanup_descendants(process)
+            if survivors:
+                reason = f"gate parent exited with surviving descendants: {survivors}"
+                if remaining:
+                    reason += f"; cleanup incomplete: {remaining}"
+                record.update(status="failed", hard_stop=True, reason=reason)
     except FileNotFoundError as exc:
         record.update(status="unavailable", reason=str(exc))
     except subprocess.TimeoutExpired:
         record.update(status="timed_out", reason="gate timeout; no retry")
         if process is not None:
-            _stop(process)
+            remaining = _stop(process)
             record["exit_code"] = process.returncode
+            if remaining:
+                record["hard_stop"] = True
+                record["reason"] += f"; cleanup incomplete: {remaining}"
     except KeyboardInterrupt:
         record.update(status="interrupted", reason="runner interrupted")
         if process is not None:
-            _stop(process)
+            remaining = _stop(process)
             record["exit_code"] = process.returncode
+            if remaining:
+                record["hard_stop"] = True
+                record["reason"] += f"; cleanup incomplete: {remaining}"
     except OSError as exc:
         record.update(status="failed", reason=str(exc))
     finally:
@@ -286,6 +338,7 @@ def run_plan(
                 "stdout": None,
                 "stderr": None,
                 "attempts": 0,
+                "hard_stop": False,
                 "artifacts": [],
             }
             for gate in gates
@@ -325,6 +378,9 @@ def run_plan(
                 save_manifest(output, result)
                 if not _bound(root, candidate):
                     result["status"] = "candidate_changed"
+                    break
+                if record.get("hard_stop"):
+                    result["status"] = "failed"
                     break
                 if record["status"] in {"interrupted", "timed_out"}:
                     result["status"] = "interrupted"

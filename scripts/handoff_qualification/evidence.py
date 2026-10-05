@@ -27,6 +27,13 @@ def inspect_artifacts(gate: Gate, record: dict, root: Path) -> None:
     """Hash saved evidence and reject absent or unsuccessful test reports."""
     paths = [Path(record[key]) for key in ("stdout", "stderr")]
     try:
+        for value in gate.required_artifacts:
+            path = Path(value)
+            if not path.is_absolute():
+                path = root / path
+            if not path.is_file():
+                raise ValueError(f"required artifact is missing: {path}")
+            paths.append(path)
         if gate.junit:
             path = root / gate.junit
             counts = junit_counts(path)

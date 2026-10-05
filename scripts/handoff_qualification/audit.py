@@ -1,4 +1,6 @@
-"""Check runtime, reverse imports and declared coverage against real evidence."""
+"""
+Check runtime, reverse imports and declared coverage against real evidence.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +10,7 @@ import hashlib
 import importlib
 import importlib.metadata
 import json
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -36,7 +39,7 @@ DESIGN = "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md"
 
 
 def runtime(expected: str, fastmcp: bool) -> dict:
-    """Require the pinned framework and the intended existing interpreter."""
+    """Require the pinned framework and intended existing interpreter."""
     actual = ".".join(str(n) for n in sys.version_info[:3])
     versions = {
         name: importlib.metadata.version(name)
@@ -74,7 +77,8 @@ def runtime(expected: str, fastmcp: bool) -> dict:
 
 
 def reverse_imports(root: Path) -> None:
-    """Reject A1 imports of A2 and transport imports of application packages.
+    """
+    Reject A1 imports of A2 and transport imports of application packages.
 
     Literal dynamic imports are included. Computed dynamic imports in A1 are
     held for manual review rather than assumed to preserve the boundary.
@@ -120,9 +124,8 @@ def reverse_imports(root: Path) -> None:
                     )
                     for name in names
                 ):
-                    findings.append(
-                        f"{path}:{getattr(node, 'lineno', 0)}: forbidden import"
-                    )
+                    line = getattr(node, "lineno", 0)
+                    findings.append(f"{path}:{line}: forbidden import")
     if findings:
         raise ValueError("\n".join(findings))
 
@@ -134,7 +137,8 @@ def validate_coverage(
     base: str,
     candidate: str,
 ) -> None:
-    """Bind all matrix rows to passing JUnit cases for this exact candidate.
+    """
+    Bind all matrix rows to passing JUnit cases for this exact candidate.
 
     This checks traceability, not test adequacy. Independent review must verify
     each case exercises the claimed real Scrapy path or end-to-end scenario.
@@ -159,20 +163,59 @@ def validate_coverage(
                 path, *parts = node.split("::")
                 if not path.startswith("tests/") or not path.endswith(".py"):
                     raise ValueError(f"invalid test path for {name}")
-                classname = ".".join([path[:-3].replace("/", "."), *parts[:-1]])
+                module = path[:-3].replace("/", ".")
+                classname = ".".join([module, *parts[:-1]])
                 if (classname, parts[-1]) not in passed:
                     raise ValueError(f"mapped case did not pass: {node}")
 
 
-def coverage(root: Path, map_path: Path, evidence: Path, base: str, sha: str) -> dict:
-    """Check the loader/design matrix and exact candidate JUnit provenance."""
+def snapshot_validated_coverage_map(
+    map_path: Path,
+    evidence: Path,
+    installed: set[str],
+    passed: set[tuple[str, str]],
+    base: str,
+    candidate: str,
+) -> dict:
+    """Validate then retain the exact coverage-map bytes in fresh evidence."""
+    content = map_path.read_bytes()
+    try:
+        data = json.loads(content)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid coverage map: {exc}") from exc
+    if not isinstance(data, dict):
+        raise TypeError("coverage map must be a JSON object")
+    validate_coverage(data, installed, passed, base, candidate)
+    target = evidence / "spider_coverage" / "coverage-map.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with target.open("xb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+    except FileExistsError as exc:
+        raise ValueError("retained coverage map already exists") from exc
+    return {
+        "path": str(target),
+        "bytes": len(content),
+        "sha256": hashlib.sha256(content).hexdigest(),
+    }
+
+
+def coverage(
+    root: Path,
+    map_path: Path,
+    evidence: Path,
+    base: str,
+    sha: str,
+) -> dict:
+    """Check loader/design matrix and exact candidate JUnit provenance."""
     from scrapy.spiderloader import SpiderLoader
     from scrapy.utils.project import get_project_settings
 
     installed = set(SpiderLoader.from_settings(get_project_settings()).list())
-    design_names = set(
-        re.findall(r"^\| ([a-z_]+) \|", (root / DESIGN).read_text(), re.MULTILINE)
-    )
+    design = (root / DESIGN).read_text()
+    design_names = set(re.findall(r"^\| ([a-z_]+) \|", design, re.MULTILINE))
     if not set(SPIDERS) <= design_names:
         raise ValueError("the committed design does not contain the exact matrix")
     manifest = json.loads((evidence / "manifest.json").read_text())
@@ -186,23 +229,105 @@ def coverage(root: Path, map_path: Path, evidence: Path, base: str, sha: str) ->
         report = Path(gate["junit"])
         digest = hashlib.sha256(report.read_bytes()).hexdigest()
         if not any(
-            a["path"] == str(report) and a["sha256"] == digest
-            for a in gate["artifacts"]
+            artifact["path"] == str(report) and artifact["sha256"] == digest
+            for artifact in gate["artifacts"]
         ):
             raise ValueError("JUnit artifact hash no longer matches manifest")
         for case in ET.parse(report).getroot().iter("testcase"):
-            if not any(
+            unsuccessful = any(
                 case.find(tag) is not None for tag in ("failure", "error", "skipped")
-            ):
+            )
+            if not unsuccessful:
                 passed.add((case.get("classname", ""), case.get("name", "")))
-    content = map_path.read_bytes()
-    validate_coverage(json.loads(content), installed, passed, base, sha)
+    retained = snapshot_validated_coverage_map(
+        map_path,
+        evidence,
+        installed,
+        passed,
+        base,
+        sha,
+    )
     return {
         "spiders": sorted(installed),
         "scenarios": 13,
-        "coverage_map_sha256": hashlib.sha256(content).hexdigest(),
+        "coverage_map": retained,
+        "coverage_map_sha256": retained["sha256"],
         "test_adequacy": "requires independent exact-candidate review",
     }
+
+
+def _docstring_nodes(tree: ast.AST) -> list[ast.Expr]:
+    """Return literal expression nodes that are Python docstrings."""
+    containers = (
+        ast.Module,
+        ast.ClassDef,
+        ast.FunctionDef,
+        ast.AsyncFunctionDef,
+    )
+    expressions = []
+    for node in ast.walk(tree):
+        if not isinstance(node, containers) or not node.body:
+            continue
+        first = node.body[0]
+        if (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            expressions.append(first)
+    return expressions
+
+
+def _python_style(path: Path) -> list[str]:
+    """Check repository structural and prose rules for one Python file."""
+    source = path.read_text()
+    lines = source.splitlines()
+    violations = []
+    if len(lines) >= 500:
+        violations.append(f"{path}: module has {len(lines)} lines; limit is 499")
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        return [f"{path}:{exc.lineno}: syntax error: {exc.msg}"]
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assert):
+            violations.append(f"{path}:{node.lineno}: Python assert prohibited")
+    for expression in _docstring_nodes(tree):
+        start = expression.lineno
+        end = expression.end_lineno or start
+        block = lines[start - 1 : end]
+        if end > start:
+            if block[0].strip() not in {'"""', "'''"}:
+                violations.append(
+                    f"{path}:{start}: multiline docstring opening quote "
+                    "must be separate"
+                )
+            if block[-1].strip() not in {'"""', "'''"}:
+                violations.append(
+                    f"{path}:{end}: multiline docstring closing quote must be separate"
+                )
+        for offset, line in enumerate(block, start):
+            if len(line) > 79:
+                violations.append(
+                    f"{path}:{offset}: docstring prose is {len(line)} columns"
+                )
+    for number, line in enumerate(lines, 1):
+        if line.lstrip().startswith("#") and len(line) > 79:
+            violations.append(f"{path}:{number}: comment prose is {len(line)} columns")
+    return violations
+
+
+def style_violations(paths: list[Path]) -> list[str]:
+    """Return explicit repository-style violations for preparation files."""
+    violations = []
+    for path in paths:
+        if path.suffix == ".py":
+            violations.extend(_python_style(path))
+        elif path.suffix in {".md", ".markdown"}:
+            for number, line in enumerate(path.read_text().splitlines(), 1):
+                if len(line) > 79:
+                    violations.append(f"{path}:{number}: prose is {len(line)} columns")
+    return violations
 
 
 def main() -> int:
@@ -235,7 +360,14 @@ def main() -> int:
     except importlib.metadata.PackageNotFoundError as exc:
         print(f"unavailable runtime dependency: {exc}", file=sys.stderr)
         return 69
-    except (OSError, ValueError, StopIteration, KeyError, ET.ParseError) as exc:
+    except (
+        OSError,
+        TypeError,
+        ValueError,
+        StopIteration,
+        KeyError,
+        ET.ParseError,
+    ) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     print(json.dumps(result, indent=2, sort_keys=True))

@@ -70,7 +70,7 @@ def _pytest(
 
 
 def build_plan(args: argparse.Namespace) -> list[Gate]:
-    """Resolve commands without running tests, installing, or creating paths."""
+    """Resolve commands without running tests or installing packages."""
     root = args.source_root.resolve()
     output = args.output_root.resolve()
     normal = "not exclusive_state and not fastmcp_compat"
@@ -216,7 +216,12 @@ def build_plan(args: argparse.Namespace) -> list[Gate]:
                 "--all-files",
             ),
             timeout=600,
-            env=(("PRE_COMMIT_HOME", str(args.precommit_cache.absolute())),),
+            env=(
+                (
+                    "PRE_COMMIT_SOURCE_CACHE",
+                    str(args.precommit_cache.absolute()),
+                ),
+            ),
             unavailable=None
             if args.precommit_python
             else "supply the installed pre-commit interpreter; no bootstrap permitted",
@@ -245,6 +250,7 @@ def build_plan(args: argparse.Namespace) -> list[Gate]:
             ),
             timeout=180,
             dependencies=("a1", "normal313"),
+            required_artifacts=(str(output / "spider_coverage" / "coverage-map.json"),),
             unavailable=None
             if args.coverage_map
             else "17-spider/13-scenario exact-candidate executed-node map required",

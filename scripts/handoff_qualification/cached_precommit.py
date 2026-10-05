@@ -1,8 +1,10 @@
-"""Run pre-commit 4.6.2 using only already provisioned hook environments.
+"""
+Run pre-commit 4.6.2 from a read-only source cache.
 
-The in-process guards prohibit clone/bootstrap and environment installation.
-They retain the committed hook selection, revisions, arguments and exit codes.
-Unknown adapter versions are unavailable until their installation seams are
+The real pre-commit Store owns a per-gate writable metadata sandbox. Repository
+lookups are redirected to an already provisioned source cache through read-only
+SQLite access. Clone/bootstrap and environment installation remain prohibited.
+Unknown adapter versions are unavailable until their mutation seams are
 reviewed. This module never changes the installed pre-commit package.
 """
 
@@ -18,11 +20,12 @@ from typing import Any, cast
 
 
 def cached_repository(directory: Path, key: str, ref: str) -> str:
-    """Read an existing cache row without creating its database or repository."""
+    """Read one existing cache row without creating files."""
     database = directory / "db.db"
     if not database.is_file():
-        raise RuntimeError("pre-commit cache is unavailable; install prohibited")
-    with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as connection:
+        raise RuntimeError("pre-commit source cache is unavailable; install prohibited")
+    uri = database.resolve().as_uri() + "?mode=ro"
+    with sqlite3.connect(uri, uri=True) as connection:
         row = connection.execute(
             "SELECT path FROM repos WHERE repo = ? AND ref = ?",
             (key, ref),
@@ -32,26 +35,35 @@ def cached_repository(directory: Path, key: str, ref: str) -> str:
     return row[0]
 
 
+def _cache_paths() -> tuple[Path, Path]:
+    """Resolve separate source and writable metadata caches."""
+    source_value = os.environ.get("PRE_COMMIT_SOURCE_CACHE")
+    sandbox_value = os.environ.get("PRE_COMMIT_HOME")
+    if not source_value or not sandbox_value:
+        raise RuntimeError("source cache and metadata sandbox are required")
+    source = Path(source_value).resolve()
+    sandbox = Path(sandbox_value).resolve()
+    if source == sandbox:
+        raise RuntimeError("pre-commit source cache must be read-only isolated")
+    if not (source / "db.db").is_file():
+        raise RuntimeError("pre-commit source cache is unavailable; install prohibited")
+    return source, sandbox
+
+
 def main() -> int:
-    """Apply bootstrap guards before invoking the real pre-commit run command."""
+    """Run with source-cache lookup and bootstrap guards installed."""
     try:
         if importlib.metadata.version("pre-commit") != "4.6.2":
             raise RuntimeError("cached pre-commit adapter requires reviewed 4.6.2")
+        source, sandbox = _cache_paths()
         store = importlib.import_module("pre_commit.store")
         repository = cast(Any, importlib.import_module("pre_commit.repository"))
         entrypoint = importlib.import_module("pre_commit.main")
-        cache = Path(
-            os.environ.get(
-                "PRE_COMMIT_HOME",
-                str(Path.home() / ".cache/pre-commit"),
-            )
-        ).resolve()
-        if not (cache / "db.db").is_file():
-            raise RuntimeError("existing PRE_COMMIT_HOME required; no bootstrap")
 
         def cached(self, repo, ref, deps, make_strategy):
+            del make_strategy
             return cached_repository(
-                Path(self.directory),
+                source,
                 self.db_repo_name(repo, deps),
                 ref,
             )
@@ -63,7 +75,11 @@ def main() -> int:
 
         store.Store._new_repo = cached
         repository._hook_install = no_install
-        print("pre-commit 4.6.2; existing-cache-only; no installation", flush=True)
+        print(
+            "pre-commit 4.6.2; read-only source cache; writable metadata "
+            f"sandbox={sandbox}",
+            flush=True,
+        )
         return entrypoint.main(["run", *sys.argv[1:]])
     except (
         RuntimeError,
