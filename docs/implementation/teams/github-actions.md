@@ -26,6 +26,10 @@ No interpreter, test selection, timeout, or expectation is relaxed for CI.
 Full test runners install the required ``bubblewrap`` system package, as the
 deployment image does. The namespace sentinel test uses the active Python
 runtime and checks its version instead of assuming a system Python path.
+The runner loads Ubuntu's packaged ``bwrap-userns-restrict`` AppArmor profile
+and probes namespace creation before tox. This follows Ubuntu's
+[per-application namespace configuration](https://discourse.ubuntu.com/t/understanding-apparmor-user-namespace-restriction/58007)
+and retains system-wide AppArmor restrictions.
 Each full test job also rebuilds a wheel from the source distribution and
 checks that exact wheel outside the checkout with the existing qualification
 script. Coverage, tox logs, and package reports are retained as artifacts.
