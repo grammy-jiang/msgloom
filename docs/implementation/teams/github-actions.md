@@ -23,6 +23,9 @@ Six separate jobs run the existing ``py312``, ``py313``, ``py314``, and three
 FastMCP tox environments. Tox retains locked dependencies, coverage, four
 workers for ordinary tests, and the separate serial exclusive-state suite.
 No interpreter, test selection, timeout, or expectation is relaxed for CI.
+Full test runners install the required ``bubblewrap`` system package, as the
+deployment image does. The namespace sentinel test uses the active Python
+runtime and checks its version instead of assuming a system Python path.
 Each full test job also rebuilds a wheel from the source distribution and
 checks that exact wheel outside the checkout with the existing qualification
 script. Coverage, tox logs, and package reports are retained as artifacts.
