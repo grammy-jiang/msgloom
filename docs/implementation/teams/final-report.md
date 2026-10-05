@@ -1,20 +1,32 @@
-# Teams A1 final local implementation report
+# Teams A1 implementation result and acceptance status
 
-All locally executable T1/T2 implementation, validation, and independent review
-work is complete. Company-account acceptance is **BLOCKED / NOT EXERCISED**.
-The branch remains isolated. No push or merge occurred.
+**Updated: 2026-10-05.** The selected T1/T2 scope has completed local
+implementation, validation, independent review, feature-branch publication,
+and GitHub Actions qualification. Company-account acceptance remains
+**BLOCKED / NOT EXERCISED**. T3/T4/T5 are outside this delivery. No merge into
+`master` occurred.
+
+In this report, "complete" applies to the selected local T1/T2 work and its
+CI delivery. It does not claim complete Teams/Microsoft 365 coverage or
+successful acquisition from a real company tenant.
 
 ## Exact candidate and scope
 
-- Reviewed code: `b3039f1fcb5f14789e92be417d9518671647f7a9`.
+- Independently reviewed core code:
+  `b3039f1fcb5f14789e92be417d9518671647f7a9`.
+- Pushed implementation and CI candidate:
+  `e01286f29c9fa0b52872240c05dd5696314d6b56`.
 - Branch: `program/a1-teams-spider`.
 - Preserved master: `765d3c67c707257514d882310873f8a89f3d866b`.
 - Frozen review inventory SHA-256:
   `eb5509b7ed977eaf2d8a1fd86b32e89921bb5bc631a95c6c3ca2f7347517df21`.
 - Runtime: Python 3.13.5, Scrapy 2.19.0, Linux aarch64.
 
-The final reporting commit changes documentation only. Code, tests, dependency
-pins, and configuration remain identical to the reviewed candidate.
+The original local reporting commit, `0b42e9a`, changed documentation only.
+The later CI delivery added runner configuration and corrected two test
+fixtures. Production implementation remains identical to the reviewed core
+candidate. The historical local gates and later hosted gates are recorded
+separately below.
 
 The implementation covers delegated T1 chats and T2 teams/channels. It adds
 native discovery commands, evidence-linked observations and history, scoped
@@ -33,7 +45,39 @@ unselected. The notification path is local basic intake/reconciliation. It is
 not a deployed webhook or subscription manager. The documented subscription
 lifetime conflict remains unresolved; no guessed renewal timer is enabled.
 
-## Local validation
+## Scope selection and optional profiles
+
+The implementation mandate selected **T1 + T2** as the required production
+target. It explicitly required T3/T4/T5 to be selected separately before
+implementation and prohibited requesting optional permissions merely to claim
+broader completion. This explicit scope decision is why those profiles were
+not included in this development round.
+
+"Optional" means that each profile can be selected and delivered separately.
+Each has its own data coverage, permission requirements, tests, and live
+acceptance gates. Once a profile is selected, local implementation and
+synthetic testing can proceed before company-account acceptance. Missing
+company consent is therefore a live-acceptance boundary, not the reason the
+unselected profiles were left out of this round.
+
+| Profile | Data covered | Delivery status |
+| --- | --- | --- |
+| T1: core chats | One-on-one, group, and meeting-chat messages, members, pins, and supported message content | Local implementation, tests, and review complete; live acceptance pending |
+| T2: core teams/channels | Teams, channel topology and membership, channel messages and replies | Local implementation, tests, and review complete; live acceptance pending |
+| T3: Teams context | Tags, tab configuration, installed apps, and resource-specific permission-grant records | Not selected or delivered in this round |
+| T4: meeting and virtual-event artifacts | Meeting details, attendance, transcripts, recordings, and webinar/town-hall metadata | Not selected or delivered in this round |
+| T5: adjacent Microsoft 365 services | Selected group calendars/conversations, SharePoint files, OneNote, Planner, Shifts, Presence, and Viva Learning; Viva Engage remains a separate future lane | Not selected or delivered as part of this Teams round; individual services require separate selection |
+
+Meeting-chat messages are part of T1; meeting recordings and transcripts are
+part of T4. A channel discussion about a Planner task is part of T2; its tab
+configuration belongs to T3, and the underlying task belongs to the selected
+Planner lane in T5. Preserving a reference does not claim acquisition of the
+referenced optional resource.
+
+See the [design permission profiles](../../plans/2026-10-03-teams-a1-readonly-acquisition-plan.md#8-permission-profiles)
+and [implementation scope](../../plans/2026-10-03-teams-a1-implementation-plan.md#2-scope).
+
+## Historical local validation at b3039f1
 
 All eleven gate receipts bind to the exact reviewed code candidate.
 
@@ -72,6 +116,33 @@ coverage, test selection, expectations, and timeouts. The original failed logs,
 controlled reproduction, and exact override remain in the review packet.
 The independent compatibility reviewer accepted this qualification. This report
 does not claim that the original parallel Python 3.14 runs passed.
+
+## Published candidate and hosted validation
+
+The feature branch was pushed at
+`e01286f29c9fa0b52872240c05dd5696314d6b56`.
+[GitHub Actions run 37308130348](https://github.com/grammy-jiang/msgloom/actions/runs/37308130348)
+completed successfully at that exact candidate:
+
+- all seven jobs passed;
+- Python 3.12, 3.13, and 3.14 each passed the native four-worker normal suite
+  with 2,639 passed and one existing conditional Docker-image test skipped;
+- each interpreter passed the separate serial exclusive-state test;
+- all three FastMCP compatibility jobs passed;
+- all three rebuilt-wheel qualification steps passed outside the checkout;
+- Ruff, format, Pyright, native Scrapy contracts, and pre-commit passed.
+
+The CI repairs provisioned Bubblewrap and a pinned Noble-compatible AppArmor
+profile, qualified the active Python interpreter in the sandbox test, and
+separated a synthetic cleanup lease from the unchanged semantic deadline.
+The [CI qualification record](github-actions.md) explains those changes.
+The [independent CI closure review](https://chatgpt.com/c/6ac38b8a-1614-83ec-a9e8-af77b92e9b5e)
+returned PASS for this exact candidate with no remaining findings.
+
+These hosted results supplement the historical local qualification. They do
+not replace company-tenant acquisition, repeat-acquisition, or notification
+acceptance. The background coordinator and its progress timer were shut down
+after the local and CI work completed.
 
 ## Independent reviews and repairs
 
@@ -118,6 +189,11 @@ Program evidence remains under `.superpowers/teams-a1/`:
   preserved original fixture-prompt mismatch.
 - `final-local-verification.json` records final source, gate, review, worker
   integration, Git, and live-prerequisite checks.
+- `github-ci/final-verification.json` records the pushed candidate, seven
+  hosted jobs, three wheel checks, and exact-candidate CI review.
+- `github-ci/session-closure-20261005.json` records the final in-chat audit,
+  unchanged master, completed background shutdown, and preserved historical
+  worker drafts whose repaired replacements are already integrated.
 - `progress.md` preserves the durable execution history and recovery decisions.
 
 ## External live gate and next action
