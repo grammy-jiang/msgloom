@@ -15,6 +15,7 @@ from scripts.handoff_qualification import (
     cached_precommit,
     execution,
     live_lsp,
+    process_boundary,
 )
 
 
@@ -477,6 +478,17 @@ def test_abrupt_runner_loss_leaves_linked_running_evidence(repository, tmp_path)
                 os.killpg(int(marker.read_text()), signal.SIGKILL)
             except ProcessLookupError:
                 pass
+        manifest = output / "manifest.json"
+        if manifest.is_file():
+            gate = json.loads(manifest.read_text())["gates"][0]
+            boundary = gate.get("ownership_boundary", {}).get("path")
+            if boundary:
+                deadline = time.monotonic() + 1
+                path = Path(boundary)
+                while path.exists() and time.monotonic() < deadline:
+                    process_boundary.discard_empty(path)
+                    if path.exists():
+                        time.sleep(0.01)
 
 
 def test_runtime_requires_exact_313_patch(monkeypatch):

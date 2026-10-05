@@ -16,6 +16,7 @@ tracked at the preparation base.
 - [ ] Select a clean exact candidate SHA and its exact original review base.
 - [ ] Supply installed interpreter paths for all six matrix environments.
 - [ ] Reserve the host; do not overlap this run with other pytest/tox runs.
+- [ ] Run on Linux cgroup v2 with a writable delegated child and `cgroup.kill`.
 - [ ] Supply a candidate-bound coverage map for the 17 spiders and all 13
       scenarios.
 - [ ] Use a fresh evidence directory outside every source checkout.
@@ -202,13 +203,22 @@ preserves test-internal timeouts; its outer suite ceiling is 3600 seconds.
 Smaller command ceilings are visible in the listing. A timeout is incomplete
 evidence, never permission to weaken a test.
 
-After every gate parent terminates, the runner checks its isolated process
-group. Any surviving descendant makes the gate non-passing, triggers bounded
-SIGTERM/SIGKILL cleanup and hard-stops the invocation. Timeout and interrupt
-handling uses the same group boundary. Direct SIGKILL of the runner or power
-loss can still leave running evidence; saved PID/log links support explicit
-operator cleanup. Such an invocation can never be treated as passed or resumed
-into the same output directory.
+Before a gate command executes, a wrapper moves itself into a fresh delegated
+cgroup-v2 child and acknowledges admission to the runner. Descendants inherit
+that boundary even when they call `setsid()` or start a new process group. The
+runner also acts as a child subreaper so orphaned owned descendants can be
+reaped. Normal parent exit with any remaining owned process is non-passing and
+hard-stops later gates. Cleanup sends bounded SIGTERM only after PID/start-time
+and cgroup ownership revalidation, then uses `cgroup.kill` for the complete
+subtree if needed. Timeout and runner interruption use the same boundary.
+
+The platform prerequisite is Linux cgroup v2 with permission to create a child
+below the runner's current delegated cgroup and with `cgroup.kill` available.
+The runner probes this before launching a gate and fails closed if unavailable.
+Direct SIGKILL of the runner or power loss can still leave running evidence.
+The saved PID, cgroup path and log links support explicit operator cleanup.
+Such an invocation can never be treated as passed or resumed into the same
+output directory.
 
 CLI exit 0 means listing only. Exit 1 means blocked/failed/interrupted
 execution. Exit 2 means automatic gates passed but mandatory external review

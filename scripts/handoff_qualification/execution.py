@@ -20,6 +20,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from . import process_boundary
 from .evidence import inspect_artifacts
 
 EXTERNAL_REVIEW = {
@@ -116,63 +117,6 @@ def environment(root: Path, runtime: Path, gate: Gate) -> dict[str, str]:
     return env
 
 
-def _group_members(group: int) -> list[int]:
-    """Return live, non-zombie members of one isolated process group."""
-    members = []
-    for path in Path("/proc").glob("[0-9]*/stat"):
-        try:
-            fields = path.read_text().rsplit(")", 1)[1].split()
-            if int(fields[2]) == group and fields[0] != "Z":
-                members.append(int(path.parent.name))
-        except (OSError, ValueError, IndexError):
-            continue
-    return sorted(members)
-
-
-def _wait_group_empty(group: int, timeout: float) -> list[int]:
-    """Wait briefly for live members of one process group to exit."""
-    deadline = time.monotonic() + timeout
-    while (members := _group_members(group)) and time.monotonic() < deadline:
-        time.sleep(0.01)
-    return members
-
-
-def _kill_group(group: int, sig: signal.Signals) -> None:
-    """Signal only the gate-owned process group if it still exists."""
-    try:
-        os.killpg(group, sig)
-    except ProcessLookupError:
-        pass
-
-
-def _cleanup_descendants(
-    process: subprocess.Popen,
-) -> tuple[list[int], list[int]]:
-    """Kill descendants left behind after a gate parent has terminated."""
-    survivors = _group_members(process.pid)
-    if not survivors:
-        return [], []
-    _kill_group(process.pid, signal.SIGTERM)
-    remaining = _wait_group_empty(process.pid, 1)
-    if remaining:
-        _kill_group(process.pid, signal.SIGKILL)
-        remaining = _wait_group_empty(process.pid, 5)
-    return survivors, remaining
-
-
-def _stop(process: subprocess.Popen) -> list[int]:
-    """Terminate and reap the entire gate process group on interruption."""
-    _kill_group(process.pid, signal.SIGTERM)
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        _kill_group(process.pid, signal.SIGKILL)
-        process.wait(timeout=5)
-    finally:
-        _kill_group(process.pid, signal.SIGKILL)
-    return _wait_group_empty(process.pid, 5)
-
-
 def _execute(
     root: Path,
     output: Path,
@@ -187,20 +131,39 @@ def _execute(
     record.update(stdout=str(stdout), stderr=str(stderr), attempts=1)
     save_manifest(output, manifest)
     process = None
+    boundary = None
     started = time.monotonic()
     try:
         with stdout.open("wb") as out, stderr.open("wb") as err:
             env = environment(root, directory / "runtime", gate)
             if coverage_file := env.get("COVERAGE_FILE"):
                 Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)
-            process = subprocess.Popen(
-                gate.command,
-                cwd=root,
-                env=env,
-                stdout=out,
-                stderr=err,
-                start_new_session=True,
-            )
+            boundary = process_boundary.create(gate.name)
+            record["ownership_boundary"] = {
+                "kind": "cgroup_v2",
+                "path": str(boundary),
+            }
+            ready_read, ready_write = os.pipe()
+            try:
+                command = process_boundary.wrapped_command(
+                    boundary, gate.command, ready_write
+                )
+                process = subprocess.Popen(
+                    command,
+                    cwd=root,
+                    env=env,
+                    stdout=out,
+                    stderr=err,
+                    start_new_session=True,
+                    pass_fds=(ready_write,),
+                )
+                os.close(ready_write)
+                ready_write = -1
+                process_boundary.wait_ready(ready_read, process)
+            finally:
+                os.close(ready_read)
+                if ready_write >= 0:
+                    os.close(ready_write)
             record["pid"] = process.pid
             save_manifest(output, manifest)
             record["exit_code"] = process.wait(timeout=gate.timeout)
@@ -213,33 +176,47 @@ def _execute(
                 if process.returncode < 0
                 else "failed"
             )
-            survivors, remaining = _cleanup_descendants(process)
-            if survivors:
-                reason = f"gate parent exited with surviving descendants: {survivors}"
-                if remaining:
-                    reason += f"; cleanup incomplete: {remaining}"
+            cleanup = process_boundary.cleanup(boundary, process)
+            if cleanup.initial:
+                record["owned_survivors"] = cleanup.initial_json()
+                reason = "gate parent exited with surviving owned descendants"
+                if cleanup.remaining:
+                    record["cleanup_remaining"] = cleanup.remaining_json()
+                    reason += "; cleanup incomplete"
                 record.update(status="failed", hard_stop=True, reason=reason)
     except FileNotFoundError as exc:
         record.update(status="unavailable", reason=str(exc))
     except subprocess.TimeoutExpired:
         record.update(status="timed_out", reason="gate timeout; no retry")
-        if process is not None:
-            remaining = _stop(process)
+        if process is not None and boundary is not None:
+            cleanup = process_boundary.cleanup(boundary, process)
             record["exit_code"] = process.returncode
-            if remaining:
+            if cleanup.initial:
+                record["owned_on_timeout"] = cleanup.initial_json()
+            if cleanup.remaining:
                 record["hard_stop"] = True
-                record["reason"] += f"; cleanup incomplete: {remaining}"
+                record["cleanup_remaining"] = cleanup.remaining_json()
+                record["reason"] += "; cleanup incomplete"
     except KeyboardInterrupt:
         record.update(status="interrupted", reason="runner interrupted")
-        if process is not None:
-            remaining = _stop(process)
+        if process is not None and boundary is not None:
+            cleanup = process_boundary.cleanup(boundary, process)
             record["exit_code"] = process.returncode
-            if remaining:
+            if cleanup.initial:
+                record["owned_on_interrupt"] = cleanup.initial_json()
+            if cleanup.remaining:
                 record["hard_stop"] = True
-                record["reason"] += f"; cleanup incomplete: {remaining}"
+                record["cleanup_remaining"] = cleanup.remaining_json()
+                record["reason"] += "; cleanup incomplete"
     except OSError as exc:
-        record.update(status="failed", reason=str(exc))
+        record.update(status="failed", hard_stop=True, reason=str(exc))
+        if process is not None and boundary is not None:
+            cleanup = process_boundary.cleanup(boundary, process)
+            record["exit_code"] = process.returncode
+            if cleanup.remaining:
+                record["cleanup_remaining"] = cleanup.remaining_json()
     finally:
+        process_boundary.discard_empty(boundary)
         record["duration_seconds"] = round(time.monotonic() - started, 3)
         record["finished_at"] = _now()
         inspect_artifacts(gate, record, root)
@@ -253,6 +230,7 @@ def _preflight(root: Path, base: str, candidate: str) -> None:
         raise ValueError("source root must be the repository root")
     if not _bound(root, candidate):
         raise ValueError("candidate HEAD mismatch or non-clean worktree")
+    process_boundary.check_supported()
     subprocess.run(
         ["git", "-C", str(root), "merge-base", "--is-ancestor", base, candidate],
         check=True,
@@ -353,7 +331,10 @@ def run_plan(
     signal.signal(signal.SIGTERM, interrupt)
     try:
         _preflight(root, base, candidate)
-        with lock_path(root).open("a") as lock:
+        with (
+            process_boundary.child_subreaper(),
+            lock_path(root).open("a") as lock,
+        ):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             for gate, record in zip(gates, result["gates"], strict=True):
                 if not _bound(root, candidate):
