@@ -41,6 +41,8 @@ jobs:
         run: >-
           npx --yes --package pyright@1.1.413 pyright
           --pythonpath .venv/bin/python microsoft_graph message_ingest msgloom tests
+      - name: Native Scrapy callback contracts against local Graph fixtures
+        run: uv run --no-sync pytest -q -n 0 tests/test_teams_native_contracts.py
       - name: Existing pre-commit checks on the branch changes
         env:
           BASE_BRANCH: ${{ github.base_ref }}
