@@ -26,10 +26,35 @@ No interpreter, test selection, timeout, or expectation is relaxed for CI.
 Full test runners install the required ``bubblewrap`` system package, as the
 deployment image does. The namespace sentinel test uses the active Python
 runtime and checks its version instead of assuming a system Python path.
-The runner loads Ubuntu's packaged ``bwrap-userns-restrict`` AppArmor profile
-and probes namespace creation before tox. This follows Ubuntu's
-[per-application namespace configuration](https://discourse.ubuntu.com/t/understanding-apparmor-user-namespace-restriction/58007)
-and retains system-wide AppArmor restrictions.
+
+Ubuntu 24.04's ``apparmor`` package owns ``/etc/apparmor.d/abi/4.0`` but does
+not install ``bwrap-userns-restrict`` into ``/etc/apparmor.d``. The matching
+Noble ``apparmor-profiles`` package keeps the purpose-built profile under
+``/usr/share/apparmor/extra-profiles/`` instead. Canonical recommends adding
+that upstream profile when it is absent rather than disabling the global
+user-namespace restriction. The Noble 4.0.1 package copy is byte-for-byte the
+AppArmor ``v4.0.1`` profile at upstream commit
+``b0eb95457bc2de401920308869d016e696c73664`` with SHA-256
+``11d39094f044f0cda0febb3ad517b830301da6b2ce929664af09ee9e4dd264f9``.
+
+CI therefore vendors only that exact upstream file at
+``.github/apparmor/bwrap-userns-restrict`` instead of installing the broader
+experimental profile package. The isolation step verifies the pinned digest
+and Noble's 4.0 ABI file, loads the profile directly with ``apparmor_parser``,
+then runs the real bwrap namespace probe before tox. The repository owns only
+the vendored CI policy source; Ubuntu continues to own the parser, ABI,
+tunables, and system-wide restriction. The profile deliberately gives bwrap
+the namespace/capability access needed to construct the sandbox and stacks
+children into ``unpriv_bwrap``, where capabilities are denied. No sysctl is
+relaxed and no unconfined replacement profile is used. See Canonical's
+[namespace restriction guidance](https://discourse.ubuntu.com/t/understanding-apparmor-user-namespace-restriction/58007),
+Ubuntu's
+[Noble AppArmor file list](https://packages.ubuntu.com/noble/arm64/apparmor/filelist),
+the
+[Noble profile-package file list](https://packages.ubuntu.com/noble-updates/all/apparmor-profiles/filelist),
+and the
+[immutable upstream profile](https://gitlab.com/apparmor/apparmor/-/blob/b0eb95457bc2de401920308869d016e696c73664/profiles/apparmor/profiles/extras/bwrap-userns-restrict).
+
 Each full test job also rebuilds a wheel from the source distribution and
 checks that exact wheel outside the checkout with the existing qualification
 script. Coverage, tox logs, and package reports are retained as artifacts.
