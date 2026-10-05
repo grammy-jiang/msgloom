@@ -16,6 +16,11 @@ from tests.handoff_qualification.commands import (
     contacts_args,
     contacts_crawl,
 )
+from tests.handoff_qualification.faults import (
+    arm_release_probe,
+    disarm_release_probe,
+    release_failure_problem,
+)
 from tests.handoff_qualification.feed import (
     authority,
     feed,
@@ -110,7 +115,7 @@ def test_todo_large_group_pages_and_unchanged_round(tmp_path, graph_server):
 
 @pytest.mark.parametrize("failure", ["incomplete", "release"])
 def test_todo_incomplete_and_release_failure_preserve_authority(
-    tmp_path, graph_server, failure
+    tmp_path, graph_server, failure, monkeypatch
 ):
     """
     Partial traversal and late entry failure cannot publish scoped absence.
@@ -118,9 +123,11 @@ def test_todo_incomplete_and_release_failure_preserve_authority(
     origin, state, _seen, _pages = graph_server
     successful(todo._crawl(tmp_path, origin, action="sync"))
     before = authority(tmp_path, "todo")
+    marker = None
     if failure == "release":
         state["mode"] = "empty"
         reject_entries(tmp_path)
+        marker = arm_release_probe(tmp_path, monkeypatch)
         settings = {}
     else:
         settings = {
@@ -134,6 +141,11 @@ def test_todo_incomplete_and_release_failure_preserve_authority(
     if result.returncode != 1 or authority(tmp_path, "todo") != before:
         pytest.fail("Failed snapshot changed authority or immutable publication")
     if failure == "release":
+        if marker is None:
+            pytest.fail("Release-failure probe was not armed")
+        if problem := release_failure_problem(result, marker, "todo"):
+            pytest.fail(problem)
+        disarm_release_probe(monkeypatch)
         restore_entries(tmp_path)
         successful(todo._crawl(tmp_path, origin, action="sync"))
         absent = [
@@ -149,7 +161,9 @@ def test_todo_incomplete_and_release_failure_preserve_authority(
             pytest.fail("Retry lost exact source-scoped absence")
 
 
-def test_contacts_snapshot_identity_churn_and_atomic_failure(tmp_path, contacts_server):
+def test_contacts_snapshot_identity_churn_and_atomic_failure(
+    tmp_path, contacts_server, monkeypatch
+):
     """Recursive contact and folder authority must bind exact scopes."""
     origin, state, _seen = contacts_server
     successful(contacts_crawl(tmp_path, origin))
@@ -171,9 +185,13 @@ def test_contacts_snapshot_identity_churn_and_atomic_failure(tmp_path, contacts_
     before = authority(tmp_path, "contacts")
     state["mode"] = "empty"
     reject_entries(tmp_path)
+    marker = arm_release_probe(tmp_path, monkeypatch)
     result = contacts_crawl(tmp_path, origin)
     if result.returncode != 1 or authority(tmp_path, "contacts") != before:
         pytest.fail("Contacts release failure partially advanced authority")
+    if problem := release_failure_problem(result, marker, "contacts"):
+        pytest.fail(problem)
+    disarm_release_probe(monkeypatch)
     restore_entries(tmp_path)
     successful(contacts_crawl(tmp_path, origin))
     added = feed(tmp_path, "contacts-fixture", "contacts")[len(first) :]
@@ -340,7 +358,7 @@ def test_calendar_410_winning_attempt_is_window_scoped(tmp_path):
         no_churn(before, feed(tmp_path, "calendar-qualification", "outlook_calendar"))
 
 
-def test_calendar_release_failure_preserves_prior_window(tmp_path):
+def test_calendar_release_failure_preserves_prior_window(tmp_path, monkeypatch):
     """
     Late SQLite publication failure must roll back checkpoint and membership.
     """
@@ -349,9 +367,13 @@ def test_calendar_release_failure_preserves_prior_window(tmp_path):
         before = authority(tmp_path, "outlook_calendar")
         state["calendar"] = "reset"
         reject_entries(tmp_path)
+        marker = arm_release_probe(tmp_path, monkeypatch)
         result = calendar(tmp_path, origin)
         if result.returncode != 1 or authority(tmp_path, "outlook_calendar") != before:
             pytest.fail("Calendar publication failure partially committed authority")
+        if problem := release_failure_problem(result, marker, "calendar"):
+            pytest.fail(problem)
+        disarm_release_probe(monkeypatch)
         restore_entries(tmp_path)
         successful(calendar(tmp_path, origin))
         if [g["authority_revision"] for g in groups(tmp_path)] != ["1", "2"]:
@@ -402,7 +424,9 @@ def test_onedrive_failed_reset_then_exact_winner(tmp_path, resync_server):
         pytest.fail("Reset release substituted a mutable current item locator")
 
 
-def test_onedrive_release_failure_preserves_prior_authority(tmp_path, resync_server):
+def test_onedrive_release_failure_preserves_prior_authority(
+    tmp_path, resync_server, monkeypatch
+):
     """
     Late entry failure preserves reset materialization and provider cursor.
     """
@@ -411,11 +435,15 @@ def test_onedrive_release_failure_preserves_prior_authority(tmp_path, resync_ser
     before = authority(tmp_path, "onedrive")
     items = rows(tmp_path, "onedrive_items")
     reject_entries(tmp_path)
+    marker = arm_release_probe(tmp_path, monkeypatch)
     failed = drive._crawl(tmp_path, origin)
     if failed.returncode != 1 or authority(tmp_path, "onedrive") != before:
         pytest.fail("Failed reset release partially advanced authority")
     if rows(tmp_path, "onedrive_items") != items:
         pytest.fail("Failed reset release committed materialized item changes")
+    if problem := release_failure_problem(failed, marker, "onedrive"):
+        pytest.fail(problem)
+    disarm_release_probe(monkeypatch)
     restore_entries(tmp_path)
     state["reset_started"] = False
     successful(drive._crawl(tmp_path, origin))

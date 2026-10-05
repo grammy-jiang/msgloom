@@ -3,6 +3,7 @@ Inspect immutable publication through SQLite and the bounded public reader.
 """
 
 import asyncio
+import hashlib
 import json
 import sqlite3
 from contextlib import closing
@@ -102,6 +103,35 @@ def staged(root: Path):
     ]
 
 
+def publication_metadata(root: Path) -> str:
+    """
+    Return only fact/group/entry metadata subject to the privacy contract.
+    """
+    return "\n".join(
+        row["payload"]
+        for table in ("acquisition_facts", *LEDGER_TABLES[:2])
+        for row in rows(root, table)
+    )
+
+
+def retained_evidence_with(root: Path, *values: str) -> list[str]:
+    """
+    Find integrity-verified retained response bodies containing all values.
+    """
+    needles = tuple(value.encode() for value in values)
+    matches = []
+    for row in rows(root, "raw_http_evidence"):
+        body = Path(row["response_body_path"]).read_bytes()
+        if (
+            hashlib.sha256(body).hexdigest() != row["response_body_sha256"]
+            or len(body) != row["response_body_bytes"]
+        ):
+            pytest.fail("Retained HTTP evidence failed digest or size verification")
+        if all(needle in body for needle in needles):
+            matches.append(row["evidence_id"])
+    return matches
+
+
 def wait_staged(root: Path):
     """
     Await the actual pipeline write while a later HTTP request is held.
@@ -178,11 +208,7 @@ def feed(root: Path, source: str, stream: Stream, *, limit: int = 7):
                 pytest.fail("Bounded pages duplicated a release")
         finally:
             await reader.close()
-        metadata = "\n".join(
-            row["payload"]
-            for table in ("acquisition_facts", *LEDGER_TABLES[:2])
-            for row in rows(root, table)
-        )
+        metadata = publication_metadata(root)
         if any(
             value in metadata
             for value in (

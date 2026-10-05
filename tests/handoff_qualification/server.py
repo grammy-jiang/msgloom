@@ -11,6 +11,13 @@ from urllib.parse import parse_qs, urlsplit
 START = "2026-09-27T00:00:00+00:00"
 END = "2026-10-04T00:00:00+00:00"
 OTHER_END = "2026-10-05T00:00:00+00:00"
+DOWNLOAD_PATH = "/qualification/onedrive/preauthenticated-never-requested"
+DOWNLOAD_SENTINEL = "task10-r2-downloadurl-sentinel-5d6c0f"
+
+
+def onedrive_download_url(origin: str) -> str:
+    """Return the distinctive preauthenticated URL supplied by this fixture."""
+    return f"{origin}{DOWNLOAD_PATH}?token={DOWNLOAD_SENTINEL}"
 
 
 @contextmanager
@@ -36,7 +43,15 @@ def local_graph():
             elif split.path == "/v1.0/me/drive/root/delta":
                 payload = {
                     "value": [
-                        {"id": "kept", "name": "kept", "eTag": "v1", "file": {}},
+                        {
+                            "id": "kept",
+                            "name": "kept",
+                            "eTag": "v1",
+                            "file": {},
+                            "@microsoft.graph.downloadUrl": onedrive_download_url(
+                                origin
+                            ),
+                        },
                         {"id": "absent", "name": "absent", "eTag": "a1", "file": {}},
                     ],
                     "@odata.deltaLink": origin + "/v1.0/me/drive/root/delta?round=2",
