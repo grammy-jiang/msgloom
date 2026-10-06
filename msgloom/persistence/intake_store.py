@@ -45,6 +45,7 @@ from msgloom.persistence.intake_records import (
     workset_ref,
     workset_state,
 )
+from msgloom.persistence.intake_scheduling import select_pending
 from msgloom.persistence.records import (
     INTAKE_CURSORS,
     INTAKE_HELD_ENTRIES,
@@ -237,6 +238,28 @@ class PreparationIntakeStore(ABC):
             return tuple(
                 workset_state(row) for row in connection.execute(query).mappings()
             )
+
+    def select_preparation_intake_worksets(
+        self,
+        scope: IntakeScope,
+        *,
+        limit: int = 100,
+    ) -> tuple[IntakeWorksetState, ...]:
+        """
+        Durably rotate bounded pending discovery independently of admission.
+
+        The selection position commits before return, so failed processing or
+        a restart cannot pin discovery to the oldest workset. Fixed cycle
+        ceilings preserve turns despite continuing admissions. Selection grants
+        no processing claim and changes no admission or completion state.
+        Callers that may stop before attempting every selected item must use
+        ``limit=1`` immediately before each attempt. Crashes leave all selected
+        work pending for a later rotation.
+        """
+        page_bounds(limit, 0)
+        scope_key = scope.claim_key()
+        with self._write_transaction() as connection:
+            return select_pending(connection, scope_key, limit)
 
     def list_preparation_intake_held_entries(
         self,

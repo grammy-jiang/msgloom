@@ -255,6 +255,21 @@ class Phase1Persistence:
             )
         )
 
+    async def select_preparation_intake_worksets(
+        self,
+        scope: IntakeScope,
+        *,
+        limit: int = 100,
+    ) -> tuple[IntakeWorksetState, ...]:
+        """Drain durable discovery rotation before cancellation can escape."""
+        return await self._call(
+            partial(
+                self._store.select_preparation_intake_worksets,
+                scope,
+                limit=limit,
+            )
+        )
+
     async def list_preparation_intake_held_entries(
         self,
         scope: IntakeScope,
