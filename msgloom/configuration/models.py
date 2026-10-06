@@ -21,6 +21,7 @@ from msgloom.preparation.filtering import FilterConfig
 from msgloom.preparation.isolation.registry import PRODUCTION_REGISTRY
 from msgloom.preparation_pipeline import ParserProfile
 from msgloom.reporting import RendererConfig, ReportPolicy
+from msgloom.sources.handoff_models import A1CatalogIdentity
 from msgloom.triage import TriageRuleConfig
 
 _PHASE1 = frozenset(
@@ -185,11 +186,19 @@ class PreparationIntakeTarget(_ClosedModel):
     """Pin stable cursor identity and finite per-target scheduling budgets."""
 
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    expected_catalog: A1CatalogIdentity
     source_id: ShortText
     stream: Literal["outlook_mail", "outlook_calendar", "todo", "contacts", "onedrive"]
     consumer_id: ShortText
     max_entries: Annotated[int, Field(ge=1, le=1000)] = 100
     max_pending_worksets: Annotated[int, Field(ge=1, le=100)] = 10
+
+    @field_validator("expected_catalog")
+    @classmethod
+    def _catalog_pin(cls, value: A1CatalogIdentity) -> A1CatalogIdentity:
+        if not value.catalog_identity.strip():
+            raise ValueError("expected catalog identity must be non-empty")
+        return value
 
     @field_validator("source_id", "consumer_id")
     @classmethod

@@ -114,6 +114,14 @@ def acquire_one(root: Path) -> bytes:
 
 def configuration(root: Path):
     """Load strict operator config with one bounded stable intake consumer."""
+    from message_ingest.catalog import Catalog
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+
+    catalog = Catalog(f"sqlite:///{root / 'catalog.sqlite3'}")
+    try:
+        identity = AcquisitionHandoffStore(catalog).catalog_identity()
+    finally:
+        catalog.close()
     return load_operator_configuration(
         minimal_config(root / "operator.toml"),
         command_options={
@@ -137,6 +145,10 @@ def configuration(root: Path):
                 "max_records": 1,
                 "intake_targets": [
                     {
+                        "expected_catalog": {
+                            "catalog_identity": identity,
+                            "schema_version": 1,
+                        },
                         "source_id": SOURCE,
                         "stream": "outlook_mail",
                         "consumer_id": CONSUMER,

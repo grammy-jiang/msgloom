@@ -33,7 +33,7 @@ Final handoff qualification remains pending.
 | `msgloom/persistence/intake_store.py` | Commit the workset, pending state, and cursor atomically under the intake claim. |
 | `msgloom/persistence/intake_scheduling.py` | Discover pending work with durable bounded rotation. |
 | `msgloom/persistence/intake_completion.py` | Require exact accepted preparation proof before workset finalization. |
-| `msgloom/preparation_pipeline/scheduled.py` | Await bounded pending replay and fresh admission for each configured target. |
+| `msgloom/preparation_pipeline/scheduled.py` | Verify each trusted catalog pin before bounded pending replay and fresh admission. |
 | `msgloom/preparation_pipeline/transitions.py` | Save accepted `prepared_transitions` from exact frozen scope facts. |
 | `msgloom/cli/app.py` and `msgloom/configuration/models.py` | Expose one finite command and strict reusable target configuration. |
 

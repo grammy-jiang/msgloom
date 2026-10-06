@@ -157,12 +157,21 @@ operator TOML document; this fragment is not a complete configuration:
 
 ~~~toml
 [[preparation.intake_targets]]
+expected_catalog = { catalog_identity = "trusted-catalog-id", schema_version = 1 }
 source_id = "configured-a1-source"
 stream = "outlook_mail"
 consumer_id = "daily-preparation"
 max_entries = 100
 max_pending_worksets = 10
 ~~~
+
+`expected_catalog` is mandatory trusted operator configuration. Copy the identity
+from the intended catalog or a known saved cursor during explicit setup or
+reconciliation. Never populate it automatically from the current file at startup.
+A mismatch fails before pending replay, claims, or fresh source admission.
+An explicit approved baseline needs a matching pin for subsequent scheduling;
+a mismatch does not authorize baseline creation. All target fields affect the
+configuration version, so reload invocation versions after changing them.
 
 `source_id` must match the saved A1 source binding. Supported streams are
 `outlook_mail`, `outlook_calendar`, `todo`, `contacts`, and `onedrive`. Keep

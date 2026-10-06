@@ -24,6 +24,14 @@ def scheduled_api():
 
 def configuration(saved, tmp_path):
     """Load real strict configuration with one stable consumer."""
+    from message_ingest.catalog import Catalog
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+
+    catalog = Catalog(f"sqlite:///{saved['database']}")
+    try:
+        identity = AcquisitionHandoffStore(catalog).catalog_identity()
+    finally:
+        catalog.close()
     return load_operator_configuration(
         minimal_config(tmp_path / "operator.toml"),
         command_options={
@@ -36,6 +44,10 @@ def configuration(saved, tmp_path):
                 "parser_profiles": [],
                 "intake_targets": [
                     {
+                        "expected_catalog": {
+                            "catalog_identity": identity,
+                            "schema_version": 1,
+                        },
                         "source_id": "synthetic-source",
                         "stream": "todo",
                         "consumer_id": "stable",
@@ -53,7 +65,12 @@ def test_target_rejects_credentials_coercion_and_empty_consumer():
     if not hasattr(config_models, "PreparationIntakeTarget"):
         pytest.fail("closed intake target configuration is missing")
     model = config_models.PreparationIntakeTarget
-    valid = {"source_id": "source", "stream": "todo", "consumer_id": "stable"}
+    valid = {
+        "source_id": "source",
+        "stream": "todo",
+        "consumer_id": "stable",
+        "expected_catalog": {"catalog_identity": "fixture", "schema_version": 1},
+    }
     for change in (
         {"password": "secret"},
         {"max_entries": "2"},

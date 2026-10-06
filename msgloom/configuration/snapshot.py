@@ -61,6 +61,7 @@ def make_snapshot(
     if settings.preparation is not None:
         item = settings.preparation
         payload["preparation"] = {
+            "intake_targets": _digest(item.intake_targets),
             "semantics": _digest(
                 {
                     "filter": item.filter_config,

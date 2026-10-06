@@ -71,6 +71,10 @@ class ScheduledPreparationHandler:
                 )
             async with asyncio.timeout(budget):
                 catalog = await reader.catalog.catalog_identity()
+            # Trusted pins precede pending replay, claims, and fresh intake.
+            # Never infer a new scope from a replaced file at the same path.
+            if any(target.expected_catalog != catalog for target in targets):
+                raise ValueError("scheduled catalog differs from trusted pin")
             for target in targets:
                 scope = IntakeScope(
                     catalog=catalog,
