@@ -19,6 +19,7 @@ from tests.preparation_pipeline.helpers import profiles
 @pytest.mark.parametrize("count", [513, 1024])
 def test_full_large_workset_keeps_every_accepted_output(tmp_path, count, monkeypatch):
     """Disjoint real replay plans must finalize the complete admitted cut."""
+
     class WorksetClock(datetime):
         @classmethod
         def now(cls, tz=None):
