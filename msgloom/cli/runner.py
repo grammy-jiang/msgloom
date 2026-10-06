@@ -37,6 +37,7 @@ from .models import (
     ReportBuildInvocation,
     ReportReconcileInvocation,
     ReportSubmitInvocation,
+    ScheduledPrepareInvocation,
     StageName,
     TriageInvocation,
 )
@@ -187,6 +188,7 @@ async def _execute(
         invocation,
         (
             PrepareInvocation,
+            ScheduledPrepareInvocation,
             TriageInvocation,
             ReportBuildInvocation,
             ReportSubmitInvocation,

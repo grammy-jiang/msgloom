@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic_settings import (
@@ -181,9 +181,30 @@ class SecretBinding(_ClosedModel):
         return self
 
 
+class PreparationIntakeTarget(_ClosedModel):
+    """Pin stable cursor identity and finite per-target scheduling budgets."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    source_id: ShortText
+    stream: Literal["outlook_mail", "outlook_calendar", "todo", "contacts", "onedrive"]
+    consumer_id: ShortText
+    max_entries: Annotated[int, Field(ge=1, le=1000)] = 100
+    max_pending_worksets: Annotated[int, Field(ge=1, le=100)] = 10
+
+    @field_validator("source_id", "consumer_id")
+    @classmethod
+    def _identity(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("intake identity must be non-empty")
+        return value
+
+
 class PreparationSettings(_ClosedModel):
     """Reusable A2 semantics and finite producer budgets."""
 
+    intake_targets: Annotated[
+        tuple[PreparationIntakeTarget, ...], Field(max_length=32)
+    ] = ()
     filter_config: FilterConfig
     parser_profiles: Annotated[tuple[ParserProfile, ...], Field(max_length=16)]
     execution_timeout_seconds: Annotated[float, Field(gt=0.0, le=600.0)] = 120.0
@@ -216,6 +237,13 @@ class PreparationSettings(_ClosedModel):
 
     @model_validator(mode="after")
     def _usable_operation(self) -> PreparationSettings:
+        keys = tuple(
+            (t.source_id, t.stream, t.consumer_id) for t in self.intake_targets
+        )
+        if len(set(keys)) != len(keys):
+            raise ValueError("intake targets must be unique")
+        if any(t.max_entries > self.max_records for t in self.intake_targets):
+            raise ValueError("intake entry budget exceeds preparation max_records")
         formats = tuple(profile.format for profile in self.parser_profiles)
         if len(formats) != len(set(formats)):
             raise ValueError("parser profiles must have unique formats")

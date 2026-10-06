@@ -222,6 +222,7 @@ def _compose(
     if settings.preparation is not None and source_reader is not None:
         item = settings.preparation
         operations[PhaseCapability.PREPARE] = PreparationOperationData(
+            intake_targets=item.intake_targets,
             filter_config=item.filter_config,
             parser_profiles=item.parser_profiles,
             configuration_version=snapshot_version,

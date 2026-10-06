@@ -38,6 +38,7 @@ from .models import (
     AIRuntimeSettings,
     ConfigurationSnapshot,
     OperatorSettings,
+    PreparationIntakeTarget,
     SecretBinding,
 )
 from .validation import strict_model
@@ -58,6 +59,8 @@ class PreparationOperationData:
     max_derived_bytes: int
     max_total_derived_bytes: int
     max_total_parser_output_bytes: int
+
+    intake_targets: tuple[PreparationIntakeTarget, ...] = ()
 
     def plan(
         self,

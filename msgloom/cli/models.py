@@ -28,6 +28,7 @@ class StageName(StrEnum):
     """Finite executable stages exposed by the operator CLI."""
 
     PREPARE = "prepare"
+    PREPARE_SCHEDULED = "prepare-scheduled"
     TRIAGE = "triage"
     REPORT_BUILD = "report-build"
     REPORT_SUBMIT = "report-submit"
@@ -73,6 +74,16 @@ class PrepareInvocation(InvocationBase):
     def _no_parameters(self) -> PrepareInvocation:
         if self.parameters:
             raise ValueError("preparation invocation parameters are unsupported")
+        return self
+
+
+class ScheduledPrepareInvocation(InvocationBase):
+    """Run configured intake targets without mutable caller selections."""
+
+    @model_validator(mode="after")
+    def _no_parameters(self) -> ScheduledPrepareInvocation:
+        if self.parameters:
+            raise ValueError("scheduled preparation parameters are unsupported")
         return self
 
 
@@ -127,6 +138,7 @@ class ReportReconcileInvocation(_ClosedModel):
 
 Invocation = (
     PrepareInvocation
+    | ScheduledPrepareInvocation
     | TriageInvocation
     | ReportBuildInvocation
     | ReportSubmitInvocation

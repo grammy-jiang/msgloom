@@ -107,6 +107,14 @@ def prepare(
     )
 
 
+@app.command(name="prepare-scheduled")
+def prepare_scheduled(config: Path, invocation: Path) -> CliRequest:
+    """Run one finite configured intake and exact replay cycle."""
+    return _execution_request(
+        "execute", StageName.PREPARE_SCHEDULED, config, invocation, None, (), ()
+    )
+
+
 @app.command
 def triage(
     config: Path,

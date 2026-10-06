@@ -20,6 +20,7 @@ from .models import (
     ReportBuildInvocation,
     ReportReconcileInvocation,
     ReportSubmitInvocation,
+    ScheduledPrepareInvocation,
     StageName,
     TriageInvocation,
 )
@@ -41,6 +42,8 @@ def load_invocation(path: Path, stage: StageName) -> BaseModel:
     model: type[BaseModel]
     if stage is StageName.PREPARE:
         model = PrepareInvocation
+    elif stage is StageName.PREPARE_SCHEDULED:
+        model = ScheduledPrepareInvocation
     elif stage is StageName.TRIAGE:
         model = TriageInvocation
     elif stage is StageName.REPORT_BUILD:

@@ -45,6 +45,7 @@ from .models import (
     ReportBuildInvocation,
     ReportReconcileInvocation,
     ReportSubmitInvocation,
+    ScheduledPrepareInvocation,
     TriageInvocation,
 )
 
@@ -99,6 +100,7 @@ async def execute_invocation(
     configuration: OperatorConfiguration,
     invocation: (
         PrepareInvocation
+        | ScheduledPrepareInvocation
         | TriageInvocation
         | ReportBuildInvocation
         | ReportSubmitInvocation
@@ -109,6 +111,8 @@ async def execute_invocation(
 ) -> OperationOutcome:
     """Execute one already-decoded finite invocation inside an existing loop."""
     _configuration_gate(configuration, invocation.configuration_version)
+    if isinstance(invocation, ScheduledPrepareInvocation):
+        return await _scheduled_prepare(configuration, invocation)
     if isinstance(invocation, PrepareInvocation):
         return await _prepare(configuration, invocation)
     if isinstance(invocation, TriageInvocation):
@@ -158,6 +162,7 @@ async def load_and_execute(
     config_file: Path,
     invocation: (
         PrepareInvocation
+        | ScheduledPrepareInvocation
         | TriageInvocation
         | ReportBuildInvocation
         | ReportSubmitInvocation
@@ -183,6 +188,30 @@ async def load_and_execute(
         ),
         dependencies=dependencies,
     )
+
+
+async def _scheduled_prepare(configuration, invocation) -> OperationOutcome:
+    """Admit scheduled PREPARE before constructing any source reader."""
+    from msgloom.preparation_pipeline.scheduled import ScheduledPreparationHandler
+
+    operation = configuration.operation(PhaseCapability.PREPARE)
+    if not isinstance(operation, PreparationOperationData):
+        raise TypeError("trusted preparation configuration is unavailable")
+    request = _request(invocation, PhaseCapability.PREPARE, ())
+    persistence = await _open(configuration)
+    try:
+        return await Application(
+            persistence,
+            trusted_admissions=configuration.admissions,
+            prepare_factory=lambda: ScheduledPreparationHandler(
+                persistence,
+                configuration.source_reader_config(),
+                operation,
+                AttemptIdentity(invocation.attempt),
+            ),
+        ).run(request)
+    finally:
+        await persistence.close()
 
 
 async def _prepare(
@@ -377,6 +406,7 @@ async def _report_submit(
 
 def _request(
     invocation: PrepareInvocation
+    | ScheduledPrepareInvocation
     | TriageInvocation
     | ReportBuildInvocation
     | ReportSubmitInvocation,
