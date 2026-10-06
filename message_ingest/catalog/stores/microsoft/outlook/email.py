@@ -39,6 +39,7 @@ class OutlookMailStore(OutlookMailComponentStore):
         kind: str,
         evidence_id: str | None,
         observed_at: str,
+        selection_id: str | None = None,
     ) -> MailPersistenceOutcome:
         """Commit projection, observation, and exact primary fact together."""
         message_id = message["id"]
@@ -139,7 +140,33 @@ class OutlookMailStore(OutlookMailComponentStore):
                 stale=stale,
                 equivalent=equivalent,
             )
-            return replace(outcome, observation_created=created)
+            if selection_id is not None:
+                from message_ingest.acquisition.microsoft.outlook.email.profile import (
+                    FULL_V1,
+                )
+
+                from ._email_associations import MailAssociations
+
+                associations = MailAssociations(self)
+                associations.bind_primary(session, selection_id, outcome, evidence_id)
+                if kind == "detail":
+                    associations.retain(
+                        session,
+                        message_id=message_id,
+                        selection_id=selection_id,
+                        resource_version=outcome.fact.source_state_key,
+                        parent_evidence_id=evidence_id,
+                        component="detail",
+                        resource_id=message_id,
+                        status="acquired",
+                        profile_version=FULL_V1,
+                        evidence_id=evidence_id,
+                        observed_at=observed_at,
+                        run_id=run_id,
+                    )
+            return replace(
+                outcome, observation_created=created, selection_id=selection_id
+            )
 
     def record_folder_removal(
         self,
@@ -243,6 +270,32 @@ class OutlookMailStore(OutlookMailComponentStore):
                 MessageRecord.message_id,
             )
             return list(session.scalars(stmt).all())
+
+    def full_binding_state(self, *, message_id: str) -> dict[str, Any]:
+        """Return a coherent exact application and selected inventory."""
+        from ._email_inventory import binding_state
+
+        return binding_state(self, message_id)
+
+    def full_binding_complete(self, *, message_id: str) -> bool:
+        """Require every Full obligation after immutable binding validation."""
+        from message_ingest.acquisition.microsoft.outlook.email.profile import (
+            attachment_required_surfaces,
+            surface_is_complete,
+        )
+
+        state = self.full_binding_state(message_id=message_id)
+        surfaces = state["surfaces"]
+        required = ["detail", "mime", "attachments"]
+        if surfaces.get("attachments", {}).get("status") == "acquired":
+            for attachment in state["attachments"]:
+                required.extend(
+                    attachment_required_surfaces(
+                        attachment["attachment_type"],
+                        attachment["attachment_id"],
+                    )
+                )
+        return all(surface_is_complete(surfaces, name) for name in required)
 
     def get_message_state(self, *, message_id: str) -> dict[str, Any] | None:
         """Return detached state, or ``None`` for an unknown message."""

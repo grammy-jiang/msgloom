@@ -1,4 +1,6 @@
-"""Shared SQLite engine and session lifecycle for the local acquisition catalog."""
+"""
+Shared SQLite engine and session lifecycle for the local acquisition catalog.
+"""
 
 from __future__ import annotations
 
@@ -19,7 +21,9 @@ from message_ingest.catalog.stores.evidence import RawEvidenceStore
 
 
 class Catalog:
-    """Own one SQLite engine/session factory shared by domain persistence stores."""
+    """
+    Own one SQLite engine/session factory shared by domain persistence stores.
+    """
 
     def __init__(self, database_url: str) -> None:
         """Create the SQLite schema and restrict local file permissions."""
@@ -78,17 +82,24 @@ class Catalog:
         :class:`Catalog` instances targeting one file therefore wait at the
         database boundary instead of deadlocking during a deferred lock
         upgrade. Commit and rollback remain owned by this context.
+
+        Cleanup only touches the original surviving driver. SQLAlchemy
+        invalidation closes that driver, so rollback then clears transaction
+        bookkeeping without reconnecting or replacing the initiating error.
+        Invalidation can destroy an in-memory database; cleanup does not
+        restore it. A failure after a completed ``COMMIT`` cannot undo it.
         """
         with self.engine.connect() as connection:
+            pool_connection = connection.connection
             driver = cast(
                 sqlite3.Connection,
-                connection.connection.driver_connection,
+                pool_connection.driver_connection,
             )
             previous_autocommit = driver.autocommit
             driver.autocommit = True
             try:
-                connection.exec_driver_sql("BEGIN IMMEDIATE")
                 try:
+                    connection.exec_driver_sql("BEGIN IMMEDIATE")
                     with (
                         Session(
                             bind=connection,
@@ -99,7 +110,12 @@ class Catalog:
                         yield session
                     connection.exec_driver_sql("COMMIT")
                 except BaseException:
-                    if driver.in_transaction:
+                    if (
+                        not connection.closed
+                        and pool_connection.is_valid
+                        and pool_connection.driver_connection is driver
+                        and driver.in_transaction
+                    ):
                         connection.exec_driver_sql("ROLLBACK")
                     raise
                 finally:
@@ -108,7 +124,12 @@ class Catalog:
             finally:
                 if connection.in_transaction():
                     connection.rollback()
-                driver.autocommit = previous_autocommit
+                if (
+                    not connection.closed
+                    and pool_connection.is_valid
+                    and pool_connection.driver_connection is driver
+                ):
+                    driver.autocommit = previous_autocommit
 
     def close(self) -> None:
         """Dispose the engine after outstanding pipeline work finishes."""

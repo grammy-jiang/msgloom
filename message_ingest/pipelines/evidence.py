@@ -63,7 +63,9 @@ class RawEvidencePipeline:
         )
 
     def close_spider(self) -> None:
-        """Close the crawler-shared catalog before terminal lifecycle signals."""
+        """
+        Close the crawler-shared catalog before terminal lifecycle signals.
+        """
         self.service.close()
 
     async def process_item(self, item):
@@ -73,14 +75,30 @@ class RawEvidencePipeline:
 
         Return the item only after its evidence can be referenced. The
         configured serial callback output ensures dependent semantic items
-        cannot overtake this stage.
+        cannot overtake this stage. Keep one accepted worker under the shared
+        lock until it terminates, even across repeated caller cancellation.
+        A cancelled call publishes no success. An ordinary worker failure
+        takes precedence, retaining caller cancellation as its cause.
         """
         if not isinstance(item, RawHttpEvidenceItem):
             return item
         async with self._write_lock:
-            canonical_id, observed_at, stat_keys = await asyncio.to_thread(
-                self._persist_sync, item
-            )
+            write = asyncio.create_task(asyncio.to_thread(self._persist_sync, item))
+            cancellation: asyncio.CancelledError | None = None
+            try:
+                while not write.done():
+                    try:
+                        await asyncio.shield(write)
+                    except asyncio.CancelledError as error:
+                        if cancellation is None:
+                            cancellation = error
+                canonical_id, observed_at, stat_keys = write.result()
+            except Exception as error:
+                if cancellation is not None:
+                    raise error from cancellation
+                raise
+            if cancellation is not None:
+                raise cancellation
         provisional_id = item.evidence_id
         self.service.register_evidence_alias(provisional_id, canonical_id, observed_at)
         item.evidence_id = canonical_id

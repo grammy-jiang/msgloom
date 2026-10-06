@@ -173,3 +173,33 @@ def test_same_change_key_new_run_still_enters_scoped_backlog(tmp_path: Path) -> 
             pytest.fail("Expected same-version event sighting in current-run planner")
     finally:
         catalog.close()
+
+
+def test_no_work_plan_revalidates_exact_facts_before_release(tmp_path):
+    """Skipping acquisition must still require immutable completion proof."""
+    import importlib
+
+    from _full_completion_fixtures import seed_target
+
+    catalog = Catalog(f"sqlite:///{tmp_path / 'no-work.sqlite3'}")
+    try:
+        store = seed_target(catalog, "calendar")
+        if pending_full_v1_targets(store, event_ids=("one",)):
+            pytest.fail("Fixture did not produce a no-work plan")
+        try:
+            module = importlib.import_module(
+                "message_ingest.acquisition.microsoft.outlook.calendar.full_completion"
+            )
+        except ModuleNotFoundError:
+            pytest.fail("No-work plan has no per-target revalidation verifier")
+        proof = module.verify_full_v1_target(
+            catalog,
+            source_id="source",
+            run_id="no-work-run",
+            event_id="one",
+            require_current_attempt=False,
+        )
+        if not proof.complete or not proof.required_facts:
+            pytest.fail("No-work target lacked exact immutable proof")
+    finally:
+        catalog.close()

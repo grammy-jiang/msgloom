@@ -80,18 +80,17 @@ class OutlookCalendarPipeline:
             self._outcome("series_topology", outcome)
             return item
         if isinstance(item, OutlookCalendarEventSurfaceItem):
-            async with self._write_lock:
-                await asyncio.to_thread(
-                    self.store.set_event_surface,
-                    event_id=item.event_id,
-                    run_id=item.run_id,
-                    surface=item.surface,
-                    status=item.status,
-                    evidence_id=item.evidence_id,
-                    observed_at=item.observed_at,
-                    profile_version=item.profile_version,
-                    resource_version=item.resource_version,
-                )
+            await self._write(
+                self.store.set_event_surface,
+                event_id=item.event_id,
+                run_id=item.run_id,
+                surface=item.surface,
+                status=item.status,
+                evidence_id=item.evidence_id,
+                observed_at=item.observed_at,
+                profile_version=item.profile_version,
+                resource_version=item.resource_version,
+            )
             surface_kind = item.surface.split(":", maxsplit=1)[0]
             self._inc(
                 "msgloom/calendar/surface_item_processed_count/"
@@ -103,15 +102,43 @@ class OutlookCalendarPipeline:
             self._outcome("delta_observation", outcome)
             return item
         if isinstance(item, OutlookCalendarDeltaCheckpointCandidateItem):
-            async with self._write_lock:
-                await asyncio.to_thread(self._persist_delta_candidate, item)
+            await self._write(self._persist_delta_candidate, item)
             self._inc("msgloom/calendar/delta_candidate_processed_count")
             return item
         return item
 
-    async def _write(self, operation, item) -> str:
+    async def _write(self, operation, *args, **kwargs):
+        """
+        Retain accepted work and the shared lock until the worker finishes.
+
+        Repeated caller cancellation cannot detach an accepted write from
+        Scrapy's item-processing lifetime. Worker errors retain their identity
+        and take precedence, with cancellation as their cause. A successful
+        canceled write may commit, but cannot publish stats or a downstream
+        item. Gathering errors as results avoids unobserved shield failures.
+        Each store retains its existing transaction boundary.
+        """
         async with self._write_lock:
-            return await asyncio.to_thread(operation, item)
+            write = asyncio.create_task(asyncio.to_thread(operation, *args, **kwargs))
+            completion = asyncio.gather(write, return_exceptions=True)
+            cancellation: asyncio.CancelledError | None = None
+            try:
+                while not completion.done():
+                    try:
+                        await asyncio.shield(completion)
+                    except asyncio.CancelledError as error:
+                        if cancellation is None:
+                            cancellation = error
+                outcome = completion.result()[0]
+                if isinstance(outcome, BaseException):
+                    raise outcome
+            except Exception as error:
+                if cancellation is not None:
+                    raise error from cancellation
+                raise
+            if cancellation is not None:
+                raise cancellation
+            return outcome
 
     def _persist_delta_candidate(
         self,

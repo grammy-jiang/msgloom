@@ -101,7 +101,8 @@ def test_reopen_installs_missing_insert_guards(tmp_path, table, conflict):
         triggers = (
             connection.exec_driver_sql(
                 "SELECT name FROM sqlite_master WHERE type='trigger' "
-                "AND sql LIKE '%BEFORE INSERT%'"
+                "AND sql LIKE '%BEFORE INSERT%' AND tbl_name = ?",
+                (table,),
             )
             .scalars()
             .all()

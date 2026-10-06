@@ -1,4 +1,6 @@
-"""Raw HTTP evidence persistence backed by the shared catalog session factory."""
+"""
+Raw HTTP evidence persistence backed by the shared catalog session factory.
+"""
 
 from __future__ import annotations
 
@@ -19,8 +21,13 @@ class RawEvidenceStore:
         self.catalog = catalog
 
     def record(self, evidence: RawHttpEvidence) -> str:
-        """Insert an HTTP capture once, retaining the original row on replay."""
-        with self.catalog.Session() as session, session.begin():
+        """
+        Reserve writer intent before checking for an immutable capture replay.
+
+        Keep the first row unchanged, including conflicting replay metadata.
+        The catalog owns commit, rollback and driver mode restoration.
+        """
+        with self.catalog.writer_session() as session:
             existing = session.get(RawHttpEvidence, evidence.evidence_id)
             if existing is not None:
                 return existing.evidence_id
@@ -53,7 +60,9 @@ class RawEvidenceStore:
             return row.evidence_id, row.observed_at
 
     def run_ids_for(self, evidence_ids: Iterable[str]) -> dict[str, str | None]:
-        """Return run provenance for a bounded set of committed evidence IDs."""
+        """
+        Return run provenance for a bounded set of committed evidence IDs.
+        """
         normalized = tuple(dict.fromkeys(evidence_ids))
         if not normalized:
             return {}

@@ -215,10 +215,19 @@ def test_resource_version_change_advances_terminal_surface_with_same_evidence(se
 def test_mime_key_does_not_depend_on_detail_callback_order(setup):
     crawler, _, store = setup
     capture(crawler, body=b"same MIME")
+    from test_outlook_mail_handoff_facts import MESSAGE
+
+    from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+        primary_projection,
+        semantic_digest,
+    )
+
+    selected = semantic_digest(primary_projection(MESSAGE))
     first = store.set_surface(
         run_id="r1",
         message_id="m1",
         surface="mime",
+        resource_version=selected,
         status="acquired",
         evidence_id="e1",
         observed_at=NOW,
@@ -228,6 +237,7 @@ def test_mime_key_does_not_depend_on_detail_callback_order(setup):
         run_id="r2",
         message_id="m1",
         surface="mime",
+        resource_version=selected,
         status="acquired",
         evidence_id="e1",
         observed_at=LATER,

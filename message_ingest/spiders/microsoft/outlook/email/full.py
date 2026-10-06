@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+from uuid import uuid4
 
 import scrapy
 from scrapy.exceptions import DownloadCancelledError
@@ -15,6 +16,10 @@ from message_ingest.acquisition.microsoft.outlook.email.profile import (
     attachment_required_surfaces,
     attachment_type_name,
     surface_is_complete,
+)
+from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+    primary_projection,
+    semantic_digest,
 )
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.extensions.catalog import CatalogService
@@ -76,8 +81,9 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
 
     async def start(self):
         """
-        Refresh always requests the three base surfaces; enrich plans only
-        gaps.
+        Select exact detail before scheduling the remaining Full surfaces.
+
+        Enrich skips only a profile with validated immutable bindings.
 
         Read catalog state off the event loop. Async start must yield normally,
         while synchronous callbacks can delegate output with ``yield from``.
@@ -100,9 +106,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         self.crawler.stats.set_value("msgloom/crawl/enrichment/profile", self.profile)
         for message_id in self.message_ids:
             if self.operation == "refresh":
-                yield self._message_detail_request(message_id)
-                yield self._message_mime_request(message_id)
-                yield self._attachments_request(message_id, page_number=1)
+                yield self._message_detail_request(message_id, acquire_components=True)
                 continue
 
             state = await asyncio.to_thread(self._load_enrichment_state, message_id)
@@ -123,15 +127,37 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         *,
         purpose: str,
         message_id: str,
+        acquire_components: bool = False,
+        selection_id: str | None = None,
     ):
         """Record message detail and the complete provider response."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
         self.logger.debug("Fetched Outlook message detail: message_id=%s", message_id)
         self.crawler.stats.inc_value("msgloom/crawl/enrichment/message_detail_count")
+        payload = graph_object(response.json(), context="Outlook message detail")
+        if payload.get("id") != message_id:
+            raise ValueError("Full detail identity does not match selected target")
+        if acquire_components:
+            # Select from these exact bytes before scheduling child Requests.
+            # Their pipeline writes may finish before or after detail; no
+            # mutable latest-row lookup establishes their parent association.
+            pin = {
+                "resource_version": semantic_digest(primary_projection(payload)),
+                "primary_observed_at": evidence.observed_at,
+                "selection_id": selection_id,
+                "parent_evidence_id": evidence.evidence_id,
+            }
+            yield self._message_mime_request(message_id, **pin)
+            yield self._attachments_request(
+                message_id,
+                page_number=1,
+                **pin,
+            )
         yield OutlookMailDetailItem(
             message_id=message_id,
-            raw=graph_object(response.json(), context="Outlook message detail"),
+            raw=payload,
+            selection_id=selection_id,
             source_response_url=response.url,
             observed_at=evidence.observed_at,
             evidence_id=evidence.evidence_id,
@@ -145,6 +171,10 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         purpose: str,
         message_id: str,
         attachment_id: str | None = None,
+        resource_version: str | None = None,
+        primary_observed_at: str | None = None,
+        selection_id: str | None = None,
+        parent_evidence_id: str | None = None,
     ):
         """
         Emit raw bytes first, then mark the matching MIME or attachment surface
@@ -167,6 +197,10 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             run_id=self.run_id,
             message_id=message_id,
             surface=surface,
+            resource_version=resource_version,
+            primary_observed_at=primary_observed_at,
+            selection_id=selection_id,
+            parent_evidence_id=parent_evidence_id,
             status="acquired",
             observed_at=evidence.observed_at,
             evidence_id=evidence.evidence_id,
@@ -187,6 +221,29 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         purpose = callback_data.get("purpose", "unknown")
         evidence = self._failure_evidence_item(failure)
         yield evidence
+        if purpose == "message-detail" and callback_data.get("selection_id"):
+            # No primary bytes exist to bind a failed detail selection.
+            yield self._request_failure_item(failure, evidence)
+            return
+        if purpose == "attachments-list" and callback_data.get("selection_id"):
+            inventory_status = (
+                "omitted_size_limit"
+                if failure.check(DownloadCancelledError)
+                else {
+                    401: "unauthorized",
+                    403: "unauthorized",
+                    404: "unavailable",
+                    410: "unavailable",
+                    405: "unsupported",
+                }.get(evidence.response_status or 0)
+            )
+            if inventory_status:
+                yield self._inventory_page_item(
+                    evidence, callback_data, inventory_status
+                )
+            if inventory_status != "omitted_size_limit":
+                yield self._request_failure_item(failure, evidence)
+            return
         if failure.check(DownloadCancelledError) and purpose in {
             "message-mime",
             "attachments-list",
@@ -204,6 +261,10 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                     run_id=self.run_id,
                     message_id=message_id,
                     surface=surface,
+                    resource_version=callback_data.get("resource_version"),
+                    primary_observed_at=callback_data.get("primary_observed_at"),
+                    selection_id=callback_data.get("selection_id"),
+                    parent_evidence_id=callback_data.get("parent_evidence_id"),
                     status="omitted_size_limit",
                     observed_at=evidence.observed_at,
                     evidence_id=evidence.evidence_id,
@@ -235,6 +296,10 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                 run_id=self.run_id,
                 message_id=message_id,
                 surface=surface,
+                resource_version=callback_data.get("resource_version"),
+                primary_observed_at=callback_data.get("primary_observed_at"),
+                selection_id=callback_data.get("selection_id"),
+                parent_evidence_id=callback_data.get("parent_evidence_id"),
                 status=terminal_status,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
@@ -270,49 +335,49 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             catalog,
             source_id=self.crawler.settings["MSGLOOM_SOURCE_ID"],
         )
-        return {
-            "surfaces": store.get_surfaces(message_id=message_id),
-            "attachments": store.get_attachments(message_id=message_id),
-        }
+        return store.full_binding_state(message_id=message_id)
 
     def _full_enrich_outputs(self, message_id: str, state: dict[str, Any]):
         """
-        Stream missing profile surfaces using the persisted attachment
-        inventory.
+        Plan existing gaps only after validating their immutable primary pin.
 
-        When attachment inventory is incomplete, fetch it before planning child
-        surfaces. An unsupported child retains the original metadata evidence
-        and observation time.
+        An invalid detail forces exact target reacquisition. Valid partial
+        profiles keep the existing missing-surface traversal and cache policy.
         """
         surfaces = state["surfaces"]
-
-        if not surface_is_complete(surfaces, "detail"):
-            yield self._message_detail_request(message_id)
+        if not state.get("resource_version") or not surface_is_complete(
+            surfaces, "detail"
+        ):
+            yield self._message_detail_request(message_id, acquire_components=True)
+            return
+        pin = {
+            "resource_version": state["resource_version"],
+            "primary_observed_at": state["primary_observed_at"],
+            "selection_id": state["selection_id"],
+            "parent_evidence_id": state["parent_evidence_id"],
+        }
         if not surface_is_complete(surfaces, "mime"):
-            yield self._message_mime_request(message_id)
-
+            yield self._message_mime_request(message_id, **pin)
         if not surface_is_complete(surfaces, "attachments"):
-            yield self._attachments_request(message_id, page_number=1)
+            yield self._attachments_request(message_id, page_number=1, **pin)
             return
         if surfaces["attachments"]["status"] != "acquired":
             return
-
         for attachment in state["attachments"]:
             attachment_id = attachment["attachment_id"]
             attachment_type = attachment["attachment_type"]
-            required = attachment_required_surfaces(
-                attachment_type,
-                attachment_id,
-            )
-            for surface in required:
+            for surface in attachment_required_surfaces(attachment_type, attachment_id):
                 if surface_is_complete(surfaces, surface):
                     continue
                 if surface.startswith("attachment_raw:"):
-                    normalized = attachment_type_name(attachment_type)
-                    if normalized in {"fileAttachment", "itemAttachment"}:
+                    if attachment_type_name(attachment_type) in {
+                        "fileAttachment",
+                        "itemAttachment",
+                    }:
                         yield self._attachment_raw_request(
                             message_id,
                             attachment_id,
+                            **pin,
                         )
                     else:
                         yield OutlookMessageSurfaceItem(
@@ -323,14 +388,21 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                             observed_at=attachment["latest_observed_at"],
                             evidence_id=attachment["latest_evidence_id"],
                             profile_version=FULL_V1,
+                            **pin,
                         )
                 elif surface.startswith("item_attachment_detail:"):
                     yield self._item_attachment_detail_request(
                         message_id,
                         attachment_id,
+                        **pin,
                     )
 
-    def _message_detail_request(self, message_id: str) -> scrapy.Request:
+    def _message_detail_request(
+        self,
+        message_id: str,
+        *,
+        acquire_components: bool = False,
+    ) -> scrapy.Request:
         """
         Acquire full JSON fields without changing the shared discovery
         representation.
@@ -339,11 +411,23 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             self.message_path(message_id, fields=self.full_fields),
             callback=self.parse_message_detail,
             purpose="message-detail",
-            cb_kwargs={"message_id": message_id},
+            cb_kwargs={
+                "message_id": message_id,
+                "acquire_components": acquire_components,
+                "selection_id": uuid4().hex,
+            },
             dont_cache=self._authoritative_rule_refresh,
         )
 
-    def _message_mime_request(self, message_id: str) -> scrapy.Request:
+    def _message_mime_request(
+        self,
+        message_id: str,
+        *,
+        resource_version: str | None = None,
+        primary_observed_at: str | None = None,
+        selection_id: str | None = None,
+        parent_evidence_id: str | None = None,
+    ) -> scrapy.Request:
         """
         Acquire the MIME representation with its own request fingerprint
         headers.
@@ -352,7 +436,13 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
             self.message_mime_path(message_id),
             callback=self.parse_raw_evidence,
             purpose="message-mime",
-            cb_kwargs={"message_id": message_id},
+            cb_kwargs={
+                "message_id": message_id,
+                "resource_version": resource_version,
+                "primary_observed_at": primary_observed_at,
+                "selection_id": selection_id,
+                "parent_evidence_id": parent_evidence_id,
+            },
             accept="message/rfc822, */*",
             download_maxsize=self._max_raw_content_bytes(),
             dont_cache=self._authoritative_rule_refresh,

@@ -6,6 +6,7 @@ output.
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -16,6 +17,7 @@ from scrapy.utils.test import get_crawler
 from message_ingest.items.microsoft.outlook.email import (
     OutlookAttachmentItem,
     OutlookMailDetailItem,
+    OutlookMailInventoryPageItem,
     OutlookMessageSurfaceItem,
 )
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
@@ -37,6 +39,23 @@ async def _collect_start(spider: OutlookFullSpider) -> list[Request]:
         if not isinstance(value, Request):
             pytest.fail("Expected: isinstance(value, Request)")
         requests.append(value)
+        if value.cb_kwargs.get("acquire_components"):
+            payload = json.loads((FIXTURES / "message_detail.json").read_text())
+            payload["id"] = value.cb_kwargs["message_id"]
+            response = TextResponse(
+                value.url,
+                request=value,
+                body=json.dumps(payload).encode(),
+                encoding="utf-8",
+            )
+            requests.extend(
+                child
+                for child in spider.parse_message_detail(
+                    response,
+                    **value.cb_kwargs,
+                )
+                if isinstance(child, Request)
+            )
     return requests
 
 
@@ -124,7 +143,12 @@ def test_attachment_list_schedules_supported_followups_and_completeness_surface(
         pytest.fail("Attachment surface producer lost current logical run")
     if len(attachment_items) != 3:
         pytest.fail("Expected: len(attachment_items) == 3")
-    if {surface.surface for surface in surfaces} != {
+    pages = [
+        value for value in output if isinstance(value, OutlookMailInventoryPageItem)
+    ]
+    if len(pages) != 1 or pages[0].status != "acquired":
+        pytest.fail("Terminal selected inventory page was not retained")
+    if {surface.surface for surface in surfaces} | {"attachments"} != {
         "attachments",
         "attachment_raw:attachment-reference-001",
     }:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
@@ -17,9 +18,11 @@ from message_ingest.acquisition.handoff import (
 )
 from message_ingest.acquisition.handoff import (
     AcquisitionStream,
+    EffectiveStateKey,
     FactSpec,
     SourceVersionLocator,
     StorageRelation,
+    canonical_json,
 )
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
 from message_ingest.catalog.models.handoff import AcquisitionFact
@@ -42,6 +45,7 @@ class MailPersistenceOutcome:
     fact: FactSpec
     storage_relation: StorageRelation
     observation_created: bool = False
+    selection_id: str | None = None
 
 
 def semantic_digest(value: object) -> str:
@@ -88,6 +92,44 @@ def verified_digest(session: Session, source_id: str, evidence_id: str | None) -
     if digest != row.response_body_sha256 or size != row.response_body_bytes:
         raise ValueError("Saved Mail component digest or size mismatch")
     return digest
+
+
+def surface_reason(status: str, profile_version: str | None) -> str:
+    """
+    Encode the closed Mail outcome and bounded profile in immutable metadata.
+
+    The locator owns the exact parent key. Never decode outcomes from a hash,
+    provider bytes, or a later mutable surface. Unknown statuses are rejected;
+    profile names are identifiers, never arbitrary provider payload.
+    """
+    from message_ingest.acquisition.microsoft.outlook.email.profile import (
+        TERMINAL_SURFACE_STATUSES,
+    )
+
+    if status not in TERMINAL_SURFACE_STATUSES:
+        raise ValueError("Unknown Mail surface status")
+    if profile_version is not None and not re.fullmatch(
+        r"[A-Za-z0-9_.-]{1,128}", profile_version
+    ):
+        raise ValueError("Invalid Mail surface profile")
+    return canonical_json({"status": status, "profile_version": profile_version})
+
+
+def decode_surface_reason(reason: str | None) -> tuple[str, str | None]:
+    """Reject missing, noncanonical or unsupported outcome metadata."""
+    if not reason or len(reason) > 256:
+        raise ValueError("Missing or oversized Mail surface metadata")
+    value = json.loads(reason)
+    if not isinstance(value, dict) or set(value) != {"status", "profile_version"}:
+        raise ValueError("Invalid Mail surface metadata fields")
+    status, profile = value["status"], value["profile_version"]
+    if not isinstance(status, str) or (
+        profile is not None and not isinstance(profile, str)
+    ):
+        raise ValueError("Invalid Mail surface metadata types")
+    if surface_reason(status, profile) != reason:
+        raise ValueError("Noncanonical Mail surface metadata")
+    return status, profile
 
 
 def previous_primary_key(
@@ -196,6 +238,64 @@ class MailFactWriter:
             fact = self.ledger.stage_state_fact_in_session(session, spec)
             relation = StorageRelation(fact.storage_relation)
         return MailPersistenceOutcome(fact, relation)
+
+    def effective_fact(
+        self,
+        session: Session,
+        resource_kind: str,
+        resource_id: str,
+        component: str | None = None,
+        parent_id: str | None = None,
+    ) -> FactSpec | None:
+        """Read one exact effective fact for planning or freshness."""
+        key = EffectiveStateKey(
+            source_id=self.source_id,
+            stream=AcquisitionStream.OUTLOOK_MAIL,
+            resource_kind=resource_kind,
+            resource_identity=resource_id,
+            component_kind=component,
+            parent_resource_kind="message" if parent_id else None,
+            parent_resource_identity=parent_id,
+        )
+        current = self.ledger.current_effective_state(session, key)
+        if current is None:
+            return None
+        row = session.get(AcquisitionFact, current["fact_id"])
+        return FactSpec.from_json(row.payload) if row else None
+
+    def parent_is_stale(
+        self,
+        session: Session,
+        message_id: str,
+        version: str | None,
+        observed_at: str | None,
+    ) -> bool:
+        """
+        Reject a pinned older parent even when its component arrived later.
+
+        A not-yet-persisted newer detail may legitimately precede its primary
+        pipeline write. A matching semantic primary remains valid on cache
+        replay regardless of the canonical evidence's original run.
+        """
+        from message_ingest.catalog.models.microsoft.outlook.email import (
+            MessageRecord,
+        )
+
+        if version is None or observed_at is None:
+            return False
+        current = self.effective_fact(session, "message", message_id)
+        if current is None or current.source_state_key == version:
+            return False
+        row = session.scalar(
+            select(MessageRecord).filter_by(
+                source_id=self.source_id,
+                message_id=message_id,
+            )
+        )
+        return row is not None and (
+            datetime.fromisoformat(observed_at)
+            <= datetime.fromisoformat(row.latest_observed_at)
+        )
 
     def run_primary_version(
         self,

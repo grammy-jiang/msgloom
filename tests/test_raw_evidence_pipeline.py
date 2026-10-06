@@ -357,3 +357,130 @@ def test_native_pipeline_manager_blocks_mail_catalog_on_missing_evidence(
         if count != 0:
             pytest.fail("Expected Mail catalog stage not to run after link failure")
     asyncio.run(manager.close_spider_async())
+
+
+@pytest.mark.parametrize("phase", ["before_acceptance", "during_accepted_write"])
+def test_public_raw_pipeline_cancellation_drains_accepted_worker(
+    tmp_path, monkeypatch, phase
+):
+    """Keep accepted persistence and resource lifetime inside cancellation."""
+    import json
+    import sqlite3
+    import threading
+
+    crawler = get_crawler(
+        settings_dict={
+            "ITEM_PIPELINES": {
+                "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
+            },
+            "MSGLOOM_CATALOG_ENABLED": True,
+            "MSGLOOM_RAW_EVIDENCE_ENABLED": True,
+            "MSGLOOM_DATABASE_URL": f"sqlite:///{tmp_path / 'catalog.sqlite3'}",
+            "MSGLOOM_RAW_EVIDENCE_DIR": str(tmp_path / "raw"),
+            "MSGLOOM_SOURCE_ID": "source-1",
+        }
+    )
+    manager = ItemPipelineManager.from_crawler(crawler)
+    pipeline = next(
+        p for p in manager.middlewares if isinstance(p, RawEvidencePipeline)
+    )
+    service = pipeline.service
+    finish = threading.Event()
+    report: dict[str, object] = {
+        "phase": phase,
+        "worker_entered": False,
+        "worker_committed": False,
+    }
+
+    async def exercise():
+        loop = asyncio.get_running_loop()
+        accepted, drained = asyncio.Event(), asyncio.Event()
+        original = pipeline.catalog.evidence.record
+
+        def gated_record(evidence):
+            report["worker_entered"] = True
+            report["blobs_before_sql"] = (
+                Path(evidence.request_body_path).read_bytes() == b""
+                and Path(evidence.response_body_path).read_bytes() == b'{"value":[]}'
+            )
+            loop.call_soon_threadsafe(accepted.set)
+            try:
+                if not finish.wait(5):
+                    raise RuntimeError("Raw worker release barrier expired")
+                result = original(evidence)
+                report["worker_committed"] = True
+                return result
+            finally:
+                loop.call_soon_threadsafe(drained.set)
+
+        async def checkpoint():
+            reached = asyncio.Event()
+            loop.call_soon(reached.set)
+            await reached.wait()
+
+        monkeypatch.setattr(pipeline.catalog.evidence, "record", gated_record)
+        if phase == "before_acceptance":
+            await service.write_lock.acquire()
+        task = asyncio.create_task(manager.process_item_async(_raw_item()))
+        try:
+            if phase == "during_accepted_write":
+                await asyncio.wait_for(accepted.wait(), 5)
+            else:
+                await checkpoint()
+            task.cancel()
+            await checkpoint()
+            report["cancel_completed_before_drain"] = task.done()
+            report["lock_held_before_drain"] = service.write_lock.locked()
+            report["alias_before_drain"] = dict(service.evidence_aliases)
+            report["success_stats_before_drain"] = crawler.stats.get_value(
+                "msgloom/evidence/response_persisted_count", 0
+            )
+            if task.done():
+                with pytest.raises(asyncio.CancelledError):
+                    await task
+                await manager.close_spider_async()
+            report["service_closed_before_drain"] = service._closed
+            finish.set()
+            if phase == "during_accepted_write":
+                await asyncio.wait_for(drained.wait(), 5)
+            with pytest.raises(asyncio.CancelledError):
+                await asyncio.wait_for(task, 5)
+        finally:
+            finish.set()
+            if report["worker_entered"]:
+                await asyncio.wait_for(drained.wait(), 5)
+            if phase == "before_acceptance":
+                service.write_lock.release()
+            await manager.close_spider_async()
+            pipeline.catalog.close()
+
+    asyncio.run(exercise())
+    with sqlite3.connect(tmp_path / "catalog.sqlite3") as connection:
+        report["evidence_rows"] = connection.execute(
+            "SELECT COUNT(*) FROM raw_http_evidence"
+        ).fetchone()[0]
+    report["alias_after_drain"] = dict(service.evidence_aliases)
+    report["success_stats_after_drain"] = crawler.stats.get_value(
+        "msgloom/evidence/response_persisted_count", 0
+    )
+    (tmp_path / "cancellation.json").write_text(json.dumps(report, indent=2))
+    if report["alias_before_drain"] or report["success_stats_before_drain"]:
+        pytest.fail("Cancelled raw write published success before durability")
+    if report["alias_after_drain"] or report["success_stats_after_drain"]:
+        pytest.fail("Cancelled raw stage fabricated successful completion")
+    if phase == "before_acceptance":
+        if report["worker_entered"] or report["evidence_rows"]:
+            pytest.fail("Cancellation before acceptance started persistence")
+        if not report["cancel_completed_before_drain"]:
+            pytest.fail("Unaccepted cancellation did not complete")
+    else:
+        if not report["blobs_before_sql"] or not report["worker_committed"]:
+            pytest.fail("Accepted fixture did not execute real blob/SQL persistence")
+        if report["evidence_rows"] != 1:
+            pytest.fail("Accepted real worker did not persist exactly one capture")
+        if (
+            report["cancel_completed_before_drain"]
+            or not report["lock_held_before_drain"]
+            or report["service_closed_before_drain"]
+        ):
+            pytest.fail(f"Raw cancellation escaped its accepted worker: {report}")

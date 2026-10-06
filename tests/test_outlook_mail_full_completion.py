@@ -352,3 +352,59 @@ def test_bulk_evidence_provenance_queries_are_chunked(tmp_path: Path) -> None:
             )
     finally:
         catalog.close()
+
+
+def test_per_target_proof_preserves_all_selected_authority_gate(tmp_path):
+    """A complete target must not promote a workflow with a failed sibling."""
+    from _full_completion_fixtures import seed_target
+    from sqlalchemy import delete
+
+    from message_ingest.acquisition.microsoft.outlook.email import full_completion
+    from message_ingest.catalog.models.microsoft.outlook.email import MessageSurface
+
+    catalog = _catalog(tmp_path)
+    try:
+        seed_target(catalog, "mail")
+        seed_target(catalog, "mail", "two")
+        # Failed acquisition leaves a required surface absent. The Mail store
+        # rejects failure statuses instead of publishing terminal facts.
+        with catalog.writer_session() as session:
+            session.execute(
+                delete(MessageSurface).where(
+                    MessageSurface.source_id == "source",
+                    MessageSurface.message_id == "two",
+                    MessageSurface.surface == "mime",
+                )
+            )
+        verifier = getattr(full_completion, "verify_full_v1_target", None)
+        if verifier is None:
+            pytest.fail("Mail per-target Full-v1 verifier is missing")
+        result = verifier(
+            catalog,
+            source_id="source",
+            run_id="run",
+            message_id="one",
+            require_current_attempt=True,
+        )
+        if not result.complete or result.resource_identity != "one":
+            pytest.fail("Independent complete Mail target did not produce proof")
+        if len(result.required_facts) != 4:
+            pytest.fail("Mail proof omitted primary or required base facts")
+        if verifier(
+            catalog,
+            source_id="source",
+            run_id="run",
+            message_id="two",
+            require_current_attempt=True,
+        ).complete:
+            pytest.fail("Failed Mail target became complete")
+        aggregate = verify_current_full_v1(
+            catalog,
+            source_id="source",
+            run_id="run",
+            message_ids=("one", "two"),
+        )
+        if aggregate.complete:
+            pytest.fail("Per-target success weakened all-selected authority")
+    finally:
+        catalog.close()

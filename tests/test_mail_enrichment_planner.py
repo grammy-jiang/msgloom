@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 from outlook_mail_handoff_fixtures import saved_mail_evidence
+from test_mail_inventory_bindings import seed_inventory
 
 from message_ingest.acquisition.microsoft.outlook.email.planner import (
     pending_full_v1_message_ids,
@@ -25,13 +27,30 @@ def _store(tmp_path: Path) -> tuple[Catalog, OutlookMailStore]:
 def _message(
     store: OutlookMailStore, message_id: str, *, observed_at: str = NOW
 ) -> None:
-    store.record_message(
-        run_id="run-1",
-        message={"id": message_id, "hasAttachments": False},
-        kind="delta",
-        evidence_id=None,
+    payload = {"id": message_id, "hasAttachments": False}
+    evidence_id = saved_mail_evidence(
+        store.catalog,
+        evidence_id=f"primary-{message_id}",
+        body=json.dumps(payload).encode(),
         observed_at=observed_at,
     )
+    store.record_message(
+        run_id="fixture-run",
+        message=payload,
+        kind="delta",
+        selection_id=f"selection-{message_id}",
+        evidence_id=evidence_id,
+        observed_at=observed_at,
+    )
+
+
+def _pin(store, message_id):
+    """Read the fixture's explicitly selected primary fact."""
+    with store.catalog.Session() as session:
+        fact = store._facts().effective_fact(session, "message", message_id)
+        if fact is None:
+            pytest.fail("Missing primary fixture")
+        return fact.source_state_key
 
 
 def _surface(
@@ -42,6 +61,18 @@ def _surface(
     status: str = "acquired",
     profile: str | None = FULL_V1,
 ) -> None:
+    if surface == "attachments":
+        seed_inventory(
+            store,
+            message_id,
+            f"selection-{message_id}",
+            _pin(store, message_id),
+            f"primary-{message_id}",
+            [],
+            status=status,
+            profile=profile,
+        )
+        return
     evidence_id = saved_mail_evidence(
         store.catalog,
         evidence_id=f"fixture-{message_id}-{surface}",
@@ -49,6 +80,9 @@ def _surface(
     store.set_surface(
         run_id="fixture-run",
         message_id=message_id,
+        resource_version=_pin(store, message_id),
+        selection_id=f"selection-{message_id}",
+        parent_evidence_id=f"primary-{message_id}",
         surface=surface,
         status=status,
         evidence_id=evidence_id,
@@ -81,15 +115,13 @@ def test_planner_requires_attachment_surfaces_for_current_inventory(
         _message(store, "m1")
         for surface in ("detail", "mime", "attachments"):
             _surface(store, "m1", surface)
-        store.upsert_attachment(
-            run_id="fixture-run",
-            message_id="m1",
-            attachment={
-                "id": "a1",
-                "@odata.type": "#microsoft.graph.itemAttachment",
-            },
-            evidence_id=None,
-            observed_at=NOW,
+        seed_inventory(
+            store,
+            "m1",
+            "selection-m1",
+            _pin(store, "m1"),
+            "primary-m1",
+            [{"id": "a1", "@odata.type": "#microsoft.graph.itemAttachment"}],
         )
         _surface(store, "m1", "attachment_raw:a1")
         if pending_full_v1_message_ids(store) != ("m1",):

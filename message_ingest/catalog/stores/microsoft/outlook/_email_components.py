@@ -14,10 +14,12 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MessageSurface,
 )
 
+from ._email_associations import DeferredMailCapture, MailAssociations, projection
 from ._email_handoff import (
     MailFactWriter,
     MailPersistenceOutcome,
     is_stale,
+    surface_reason,
     verified_digest,
 )
 from ._email_lifecycle import OutlookMailLifecycleStore
@@ -40,14 +42,36 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
         observed_at: str,
         profile_version: str | None = None,
         resource_version: str | None = None,
-    ) -> MailPersistenceOutcome:
+        primary_observed_at: str | None = None,
+        selection_id: str | None = None,
+        parent_evidence_id: str | None = None,
+        capture_id: str | None = None,
+    ) -> MailPersistenceOutcome | DeferredMailCapture:
         """
         Persist one surface with logical provenance and semantic component key.
 
-        Byte components use verified saved bytes; terminal limitations exclude
-        attempt/evidence identity. Neither can overwrite newer observed state.
+        Byte components use verified saved bytes. Every component key includes
+        status, profile, and the exact selected primary association; no run or
+        evidence identity participates. A callback pin is independent of item
+        completion order. Neither component can overwrite newer observed state.
         """
         with self.catalog.writer_session() as session:
+            if selection_id is not None:
+                return MailAssociations(self).retain(
+                    session,
+                    message_id=message_id,
+                    selection_id=selection_id,
+                    resource_version=resource_version,
+                    parent_evidence_id=parent_evidence_id,
+                    component=surface,
+                    resource_id=message_id,
+                    status=status,
+                    profile_version=profile_version,
+                    evidence_id=evidence_id,
+                    observed_at=observed_at,
+                    run_id=run_id,
+                    capture_id=capture_id,
+                )
             record = session.scalar(
                 select(MessageSurface).filter_by(
                     source_id=self.source_id,
@@ -55,8 +79,12 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                     surface=surface,
                 )
             )
-            stale = is_stale(observed_at, record.observed_at if record else None)
             writer = self._facts()
+            stale = is_stale(
+                observed_at, record.observed_at if record else None
+            ) or writer.parent_is_stale(
+                session, message_id, resource_version, primary_observed_at
+            )
             version = resource_version or writer.run_primary_version(
                 session,
                 run_id,
@@ -69,9 +97,7 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 "resource_version": version,
             }
             if status == "acquired":
-                # Saved bytes carry their own version; callback ordering must
-                # not change a MIME/raw component key.
-                state.pop("resource_version")
+                # Equal bytes only revalidate the same exact parent binding.
                 if surface == "discovery" and version:
                     state["representation"] = version
                 else:
@@ -110,6 +136,7 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 component=surface,
                 parent_id=message_id,
                 resource_version=version,
+                reason=surface_reason(status, profile_version),
                 stale=stale,
                 equivalent=equivalent,
             )
@@ -122,7 +149,13 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
         attachment: dict[str, Any],
         evidence_id: str | None,
         observed_at: str,
-    ) -> MailPersistenceOutcome:
+        resource_version: str | None = None,
+        primary_observed_at: str | None = None,
+        profile_version: str | None = None,
+        selection_id: str | None = None,
+        parent_evidence_id: str | None = None,
+        capture_id: str | None = None,
+    ) -> MailPersistenceOutcome | DeferredMailCapture:
         """
         Stage retained metadata separately from raw and expanded detail.
 
@@ -138,6 +171,23 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
             "is_inline": attachment.get("isInline"),
         }
         with self.catalog.writer_session() as session:
+            if selection_id is not None:
+                return MailAssociations(self).retain(
+                    session,
+                    message_id=message_id,
+                    selection_id=selection_id,
+                    resource_version=resource_version,
+                    parent_evidence_id=parent_evidence_id,
+                    component="attachment_metadata",
+                    resource_id=attachment_id,
+                    status="acquired",
+                    profile_version=profile_version,
+                    evidence_id=evidence_id,
+                    observed_at=observed_at,
+                    run_id=run_id,
+                    capture_id=capture_id,
+                    metadata=projection(attachment),
+                )
             record = session.scalar(
                 select(AttachmentRecord).filter_by(
                     source_id=self.source_id,
@@ -145,7 +195,11 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                     attachment_id=attachment_id,
                 )
             )
-            stale = is_stale(observed_at, record.latest_observed_at if record else None)
+            stale = is_stale(
+                observed_at, record.latest_observed_at if record else None
+            ) or self._facts().parent_is_stale(
+                session, message_id, resource_version, primary_observed_at
+            )
             equivalent = bool(
                 record
                 and all(getattr(record, k) == v for k, v in fields.items())
@@ -168,15 +222,30 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 run_id=run_id,
                 resource_id=attachment_id,
                 resource_kind="attachment",
-                state={"id": attachment_id, **fields},
+                state={
+                    "id": attachment_id,
+                    **fields,
+                    "resource_version": resource_version,
+                    "status": "acquired",
+                    "profile_version": profile_version,
+                },
                 kind=Kind.COMPONENT_OBSERVATION,
                 component="attachment_metadata",
                 parent_id=message_id,
+                resource_version=resource_version,
+                reason=surface_reason("acquired", profile_version),
                 evidence_id=evidence_id,
                 observed_at=observed_at,
                 stale=stale,
                 equivalent=equivalent,
             )
+
+    def record_inventory_page(self, item):
+        """Commit an immutable page and all eligible applications."""
+        from ._email_inventory import record_page
+
+        with self.catalog.writer_session() as session:
+            return record_page(self, session, item)
 
     def upsert_folder(
         self,

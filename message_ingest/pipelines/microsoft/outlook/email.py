@@ -18,6 +18,7 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookMailDetailItem,
     OutlookMailFolderItem,
     OutlookMailFolderRemovalItem,
+    OutlookMailInventoryPageItem,
     OutlookMailItem,
     OutlookMailRemovalItem,
     OutlookMessagePresenceCandidateItem,
@@ -74,9 +75,22 @@ class OutlookMailPipeline:
         self.service.close()
 
     async def process_item(self, item):
-        """Await one Outlook Mail domain transaction for supported items."""
+        """
+        Await supported Mail writes while retaining accepted worker ownership.
+
+        One worker holds the existing write lock through real completion,
+        including repeated caller cancellation. Ordinary worker errors take
+        precedence and retain cancellation as their cause. A successful
+        cancelled worker may have committed, but publishes no success stats or
+        downstream item. Each existing store transaction keeps its own atomic
+        boundary; the worker does not combine them into one transaction.
+        The awaited completion future retains errors as results until their
+        single disposition here, avoiding cancelled-shield exception logging
+        even when a caller is still draining the worker.
+        """
         supported = (
             OutlookMailItem,
+            OutlookMailInventoryPageItem,
             OutlookMailDetailItem,
             OutlookAttachmentItem,
             OutlookMailFolderItem,
@@ -92,8 +106,48 @@ class OutlookMailPipeline:
         if not isinstance(item, supported):
             return item
 
+        if (
+            isinstance(
+                item,
+                (
+                    OutlookAttachmentItem,
+                    OutlookMessageSurfaceItem,
+                    OutlookMailInventoryPageItem,
+                ),
+            )
+            and item.parent_evidence_id is not None
+        ):
+            parent_id, _ = self.service.resolve_evidence(
+                item.parent_evidence_id,
+                item.observed_at,
+            )
+            if parent_id is None or not await asyncio.to_thread(
+                self.catalog.evidence.contains, parent_id
+            ):
+                raise ValueError("Mail parent evidence has not been persisted")
+            item.parent_evidence_id = parent_id
         async with self._write_lock:
-            stat_keys = await asyncio.to_thread(self._process_item_sync, item)
+            write = asyncio.create_task(
+                asyncio.to_thread(self._process_item_sync, item)
+            )
+            completion = asyncio.gather(write, return_exceptions=True)
+            cancellation: asyncio.CancelledError | None = None
+            try:
+                while not completion.done():
+                    try:
+                        await asyncio.shield(completion)
+                    except asyncio.CancelledError as error:
+                        if cancellation is None:
+                            cancellation = error
+                stat_keys = completion.result()[0]
+                if isinstance(stat_keys, BaseException):
+                    raise stat_keys
+            except Exception as error:
+                if cancellation is not None:
+                    raise error from cancellation
+                raise
+            if cancellation is not None:
+                raise cancellation
         for stat_key in stat_keys:
             self._inc(stat_key)
         logger.debug(
@@ -106,11 +160,20 @@ class OutlookMailPipeline:
     def _process_item_sync(self, item) -> tuple[str, ...]:
         if isinstance(item, (OutlookMailItem, OutlookMailDetailItem)):
             return self._record_message(item)
+        if isinstance(item, OutlookMailInventoryPageItem):
+            self.store.record_inventory_page(item)
+            return ("msgloom/catalog/inventory_page_processed_count",)
         if isinstance(item, OutlookAttachmentItem):
             self.store.upsert_attachment(
                 run_id=item.run_id,
                 message_id=item.message_id,
                 attachment=item.raw,
+                resource_version=item.resource_version,
+                primary_observed_at=item.primary_observed_at,
+                selection_id=item.selection_id,
+                parent_evidence_id=item.parent_evidence_id,
+                capture_id=item.capture_id,
+                profile_version=FULL_V1,
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
             )
@@ -142,6 +205,11 @@ class OutlookMailPipeline:
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
                 profile_version=item.profile_version,
+                resource_version=item.resource_version,
+                primary_observed_at=item.primary_observed_at,
+                selection_id=item.selection_id,
+                parent_evidence_id=item.parent_evidence_id,
+                capture_id=item.capture_id,
             )
             surface_kind = item.surface.split(":", maxsplit=1)[0]
             return (
@@ -222,19 +290,22 @@ class OutlookMailPipeline:
             run_id=item.run_id,
             message=item.raw,
             kind=kind,
+            selection_id=getattr(item, "selection_id", None),
             evidence_id=item.evidence_id,
             observed_at=item.observed_at,
         )
-        self.store.set_surface(
-            run_id=item.run_id,
-            resource_version=outcome.fact.source_state_key,
-            message_id=item.message_id,
-            surface=surface,
-            status="acquired",
-            evidence_id=item.evidence_id,
-            observed_at=item.observed_at,
-            profile_version=profile,
-        )
+        if outcome.selection_id is None:
+            self.store.set_surface(
+                run_id=item.run_id,
+                resource_version=outcome.fact.source_state_key,
+                primary_observed_at=item.observed_at,
+                message_id=item.message_id,
+                surface=surface,
+                status="acquired",
+                evidence_id=item.evidence_id,
+                observed_at=item.observed_at,
+                profile_version=profile,
+            )
         return self._observation_stats(stat_prefix, outcome.observation_created)
 
     @staticmethod

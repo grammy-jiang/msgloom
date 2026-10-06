@@ -37,6 +37,7 @@ class OutlookMailDetailItem:
     observed_at: str
     evidence_id: str | None
     run_id: str | None
+    selection_id: str | None = None
 
 
 @dataclass(slots=True)
@@ -47,6 +48,11 @@ class OutlookAttachmentItem(GraphOutlookAttachmentItem):
     observed_at: str
     evidence_id: str | None
     run_id: str | None
+    resource_version: str | None = None
+    primary_observed_at: str | None = None
+    selection_id: str | None = None
+    parent_evidence_id: str | None = None
+    capture_id: str | None = None
 
 
 @dataclass(slots=True)
@@ -88,6 +94,31 @@ class OutlookMessageSurfaceItem:
     evidence_id: str | None
     run_id: str | None
     profile_version: str | None = None
+    resource_version: str | None = None
+    primary_observed_at: str | None = None
+    selection_id: str | None = None
+    parent_evidence_id: str | None = None
+    capture_id: str | None = None
+
+
+@dataclass(slots=True)
+class OutlookMailInventoryPageItem:
+    """One native traversal page with exact selected metadata captures."""
+
+    message_id: str
+    selection_id: str
+    resource_version: str
+    parent_evidence_id: str
+    inventory_id: str
+    page_id: str
+    previous_page_id: str | None
+    page_number: int
+    member_capture_ids: tuple[str, ...]
+    status: str
+    profile_version: str
+    evidence_id: str
+    observed_at: str
+    run_id: str
 
 
 @dataclass(slots=True)
@@ -161,6 +192,7 @@ __all__ = [
     "OutlookMailDetailItem",
     "OutlookMailFolderItem",
     "OutlookMailFolderRemovalItem",
+    "OutlookMailInventoryPageItem",
     "OutlookMailItem",
     "OutlookMailRemovalItem",
     "OutlookMessagePresenceCandidateItem",
