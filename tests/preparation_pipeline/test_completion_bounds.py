@@ -1,12 +1,13 @@
 """Keep complete replay manifests within the frozen producer output bound."""
 
 from dataclasses import replace
-from functools import partial
+from datetime import UTC, datetime
 
 import pytest
 
 from msgloom.contracts import ResultRef, TerminalStatus
-from msgloom.persistence import DependencyNotReadyError, intake_store
+from msgloom.persistence import DependencyNotReadyError, intake_store, preparation_proof
+from msgloom.persistence import store as persistence_store
 from msgloom.preparation import DocumentFormat, DocumentLocation
 from msgloom.sources import CollectedBody, ContentKind
 from msgloom.sources._snapshot import capture_selection
@@ -18,11 +19,19 @@ from tests.preparation_pipeline.helpers import profiles
 @pytest.mark.parametrize("count", [513, 1024])
 def test_full_large_workset_keeps_every_accepted_output(tmp_path, count, monkeypatch):
     """Disjoint real replay plans must finalize the complete admitted cut."""
+    class WorksetClock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 1, 1, tzinfo=UTC).astimezone(tz)
+
+    # This checks output bounds, not replay speed. Keep the admission, plan,
+    # and completion fences on one clock so host load cannot expire a claim.
+    # Real claim validation still runs; monkeypatch restores time after this
+    # test, including before the separate expired-owner regressions.
+    for module in (persistence_store, intake_store, preparation_proof):
+        monkeypatch.setattr(module, "datetime", WorksetClock)
     store = h.store(tmp_path / "neutral.db")
     try:
-        monkeypatch.setattr(
-            h, "processing_claim", partial(h.processing_claim, lease=180)
-        )
         value, saved, owner, selections = c.admit(store, count=count)
         refs = []
         for start in range(0, count, 100):
