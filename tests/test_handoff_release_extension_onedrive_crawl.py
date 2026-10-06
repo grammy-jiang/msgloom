@@ -92,17 +92,61 @@ def run(tmp_path, root, mode, *, direct=False, setup="", failure=False):
         + setup
         + "\nimport sys\nfrom scrapy.cmdline import execute\nexecute(['scrapy', *sys.argv[1:]])"
     )
-    result = subprocess.run(
-        [sys.executable, "-c", code, *command],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        timeout=30,
-        check=False,
+    argv = [sys.executable, "-c", code, *command]
+    evidence_path = tmp_path / f"onedrive-{mode}-subprocess.json"
+    try:
+        result = subprocess.run(
+            argv,
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = (
+            exc.stdout.decode(errors="replace")
+            if isinstance(exc.stdout, bytes)
+            else exc.stdout
+        )
+        stderr = (
+            exc.stderr.decode(errors="replace")
+            if isinstance(exc.stderr, bytes)
+            else exc.stderr
+        )
+        evidence_path.write_text(
+            json.dumps(
+                {
+                    "argv": argv,
+                    "exit_code": None,
+                    "stdout": stdout or "",
+                    "stderr": stderr or "",
+                    "timeout_seconds": exc.timeout,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        pytest.fail(f"Native {mode} crawl timed out: {stderr or ''}")
+    evidence_path.write_text(
+        json.dumps(
+            {
+                "argv": argv,
+                "exit_code": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "timeout_seconds": None,
+            },
+            indent=2,
+        )
+        + "\n"
     )
     if not failure and (result.returncode or "ERROR" in result.stderr):
         pytest.fail(result.stderr)
-    if failure and not any(
+    if isinstance(failure, str):
+        if failure not in result.stderr:
+            pytest.fail(f"Missing injected failure {failure!r}: {result.stderr}")
+    elif failure and not any(
         marker in result.stderr
         for marker in ("failure_count", "item_error", "spider_error")
     ):
@@ -194,7 +238,13 @@ async def failed(self, item):
     return await original(self, item)
 OneDrivePipeline.process_item = failed
 """
-    run(tmp_path, server[0], "discover", setup=setup, failure=True)
+    run(
+        tmp_path,
+        server[0],
+        "discover",
+        setup=setup,
+        failure=f"injected {failure} failure",
+    )
     if read(tmp_path)[0]:
         pytest.fail("Failed native inventory published a release")
 
@@ -223,7 +273,13 @@ async def failed(self, item):
     return await original(self, item)
 OneDrivePipeline.process_item = failed
 """
-    run(tmp_path, server[0], "content", setup=setup, failure=True)
+    run(
+        tmp_path,
+        server[0],
+        "content",
+        setup=setup,
+        failure=f"injected {failure} failure",
+    )
     groups, _ = read(tmp_path)
     content = [group for group in groups if group["release_kind"] == "content_capture"]
     if {group["subject_identity"] for group in content} != {"one"}:
