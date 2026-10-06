@@ -6,6 +6,10 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine, inspect, select
+from test_catalog_model_package_layout import (
+    MAIL_BINDING_TABLE_NAMES,
+    PRE_MAIL_BINDING_TABLE_NAMES,
+)
 
 from message_ingest.catalog import Base, Catalog
 from message_ingest.catalog.models.microsoft.contacts import (
@@ -24,6 +28,7 @@ from message_ingest.items.microsoft.contacts import (
 
 
 def test_contacts_schema_is_additive_and_preserves_existing_data(tmp_path):
+    """Add Contacts and Mail bindings while preserving pre-Mail history."""
     url = f"sqlite:///{tmp_path / 'existing.sqlite3'}"
     expected = {
         "contact_folders",
@@ -45,23 +50,44 @@ def test_contacts_schema_is_additive_and_preserves_existing_data(tmp_path):
         Base.metadata.create_all(
             engine,
             tables=[
-                table
-                for name, table in Base.metadata.tables.items()
-                if name not in expected
+                Base.metadata.tables[name]
+                for name in sorted(PRE_MAIL_BINDING_TABLE_NAMES - set(expected))
             ],
         )
         with engine.begin() as connection:
             connection.exec_driver_sql("CREATE TABLE preserved (value TEXT)")
             connection.exec_driver_sql("INSERT INTO preserved VALUES ('old data')")
+            connection.exec_driver_sql(
+                "CREATE INDEX preserved_value ON preserved(value)"
+            )
+            before_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
         before = set(inspect(engine).get_table_names())
     finally:
         engine.dispose()
     catalog = Catalog(url)
     try:
         schema = inspect(catalog.engine)
-        if set(schema.get_table_names()) - before != expected:
+        if (
+            set(schema.get_table_names()) - before
+            != expected | MAIL_BINDING_TABLE_NAMES
+        ):
             pytest.fail("Contacts schema initialization was not additive")
         with catalog.engine.connect() as connection:
+            after_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
+            if not before_schema.items() <= after_schema.items():
+                pytest.fail(
+                    "Additive initialization changed existing schema or indexes"
+                )
             if (
                 connection.exec_driver_sql("SELECT value FROM preserved").scalar()
                 != "old data"

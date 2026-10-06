@@ -8,6 +8,10 @@ from threading import Barrier, Thread
 
 import pytest
 from scrapy.utils.test import get_crawler
+from test_catalog_model_package_layout import (
+    MAIL_BINDING_TABLE_NAMES,
+    PRE_MAIL_BINDING_TABLE_NAMES,
+)
 
 from message_ingest.acquisition.source_identity import (
     SourceIdentity,
@@ -205,6 +209,7 @@ def test_every_source_bearing_table_requires_legacy_bootstrap(
 def test_upgrade_adds_binding_table_without_changing_legacy_rows(
     tmp_path: Path,
 ) -> None:
+    """Add source and Mail bindings without claiming legacy source rows."""
     from sqlalchemy import create_engine, func, inspect, select
 
     from message_ingest.catalog import Base, Catalog
@@ -213,9 +218,8 @@ def test_upgrade_adds_binding_table_without_changing_legacy_rows(
     url = f"sqlite:///{path}"
     engine = create_engine(url)
     legacy_tables = [
-        table
-        for table in Base.metadata.sorted_tables
-        if table is not SourceBinding.__table__
+        Base.metadata.tables[name]
+        for name in sorted(PRE_MAIL_BINDING_TABLE_NAMES - {"source_bindings"})
     ]
     Base.metadata.create_all(engine, tables=legacy_tables)
     with engine.begin() as connection:
@@ -229,6 +233,12 @@ def test_upgrade_adds_binding_table_without_changing_legacy_rows(
                 latest_observed_at="2026-09-27T00:00:00+00:00",
             )
         )
+        before_schema = {
+            name: sql
+            for name, sql in connection.exec_driver_sql(
+                "SELECT name, sql FROM sqlite_master"
+            )
+        }
     before_tables = set(inspect(engine).get_table_names())
     engine.dispose()
     if "source_bindings" in before_tables:
@@ -237,8 +247,22 @@ def test_upgrade_adds_binding_table_without_changing_legacy_rows(
     catalog = Catalog(url)
     try:
         after_tables = set(inspect(catalog.engine).get_table_names())
-        if "source_bindings" not in after_tables:
-            pytest.fail("Expected additive source_bindings table on reopen")
+        if (
+            after_tables - before_tables
+            != {"source_bindings"} | MAIL_BINDING_TABLE_NAMES
+        ):
+            pytest.fail("Expected only source identity and Mail binding additions")
+        with catalog.engine.connect() as connection:
+            after_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
+            if not before_schema.items() <= after_schema.items():
+                pytest.fail(
+                    "Source identity migration changed existing schema or indexes"
+                )
         with catalog.Session() as session:
             message_count = session.scalar(
                 select(func.count()).select_from(Base.metadata.tables["messages"])

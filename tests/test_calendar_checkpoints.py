@@ -10,6 +10,11 @@ import pytest
 from calendar_checkpoint_helpers import _candidate, _observation, _store, _url
 from sqlalchemy import create_engine, insert, inspect, select
 from sqlalchemy.exc import DBAPIError
+from test_catalog_model_package_layout import (
+    EXPECTED_TABLES,
+    MAIL_BINDING_TABLE_NAMES,
+    PRE_MAIL_BINDING_TABLE_NAMES,
+)
 
 from message_ingest.catalog import (
     Base,
@@ -401,6 +406,7 @@ def test_concurrent_promotions_allow_one_revision_advance(
 def test_opening_previous_schema_adds_calendar_delta_tables_only(
     tmp_path: Path,
 ) -> None:
+    """Add delta and Mail tables without changing the existing catalog."""
     url = _url(tmp_path)
     delta_tables = {
         "calendar_delta_checkpoints",
@@ -409,7 +415,8 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
         "calendar_delta_observations",
     }
     previous_tables = [
-        table for table in Base.metadata.sorted_tables if table.name not in delta_tables
+        Base.metadata.tables[name]
+        for name in sorted(PRE_MAIL_BINDING_TABLE_NAMES - delta_tables)
     ]
     engine = create_engine(url)
     try:
@@ -423,13 +430,32 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
                     raw={"id": "calendar-legacy", "name": "Legacy"},
                 )
             )
+            before_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
+        before_tables = set(inspect(engine).get_table_names())
     finally:
         engine.dispose()
 
     catalog = Catalog(url)
     try:
-        if set(inspect(catalog.engine).get_table_names()) != set(Base.metadata.tables):
+        after_tables = set(inspect(catalog.engine).get_table_names())
+        if after_tables - before_tables != delta_tables | MAIL_BINDING_TABLE_NAMES:
+            pytest.fail("Expected only Calendar delta and Mail binding additions")
+        if after_tables != EXPECTED_TABLES:
             pytest.fail("Expected additive Calendar delta schema initialization")
+        with catalog.engine.connect() as connection:
+            after_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
+            if not before_schema.items() <= after_schema.items():
+                pytest.fail("Calendar migration changed existing schema or indexes")
         with catalog.Session() as session:
             row = session.scalar(
                 select(CalendarRecord).filter_by(

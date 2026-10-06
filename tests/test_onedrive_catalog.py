@@ -6,6 +6,10 @@ from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, inspect, select
+from test_catalog_model_package_layout import (
+    MAIL_BINDING_TABLE_NAMES,
+    PRE_MAIL_BINDING_TABLE_NAMES,
+)
 
 from message_ingest.catalog import Base, Catalog, RawHttpEvidence
 
@@ -85,6 +89,7 @@ def _candidate(items, *, run_id="run", base_revision=None, **changes):
 
 
 def test_onedrive_schema_is_additive_and_uses_source_scope(api, tmp_path):
+    """Add OneDrive and Mail bindings to a fixed pre-Mail table population."""
     expected = {
         "onedrive_drives": ("source_id",),
         "onedrive_items": ("source_id", "item_id"),
@@ -101,26 +106,47 @@ def test_onedrive_schema_is_additive_and_uses_source_scope(api, tmp_path):
         Base.metadata.create_all(
             engine,
             tables=[
-                table
-                for name, table in Base.metadata.tables.items()
-                if name not in expected
+                Base.metadata.tables[name]
+                for name in sorted(PRE_MAIL_BINDING_TABLE_NAMES - set(expected))
             ],
         )
         with engine.begin() as connection:
             connection.exec_driver_sql("CREATE TABLE preserved (value TEXT)")
             connection.exec_driver_sql("INSERT INTO preserved VALUES ('old data')")
+            connection.exec_driver_sql(
+                "CREATE INDEX preserved_value ON preserved(value)"
+            )
+            before_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
         before = set(inspect(engine).get_table_names())
     finally:
         engine.dispose()
     catalog = Catalog(url)
     try:
         schema = inspect(catalog.engine)
-        if set(schema.get_table_names()) - before != set(expected):
-            pytest.fail("OneDrive must add only its own tables")
+        if (
+            set(schema.get_table_names()) - before
+            != set(expected) | MAIL_BINDING_TABLE_NAMES
+        ):
+            pytest.fail("OneDrive and Mail bindings must be the only added tables")
         for table, keys in expected.items():
             if tuple(schema.get_pk_constraint(table)["constrained_columns"]) != keys:
                 pytest.fail(f"OneDrive table has wrong identity: {table}")
         with catalog.engine.connect() as connection:
+            after_schema = {
+                name: sql
+                for name, sql in connection.exec_driver_sql(
+                    "SELECT name, sql FROM sqlite_master"
+                )
+            }
+            if not before_schema.items() <= after_schema.items():
+                pytest.fail(
+                    "Additive initialization changed existing schema or indexes"
+                )
             if connection.exec_driver_sql("SELECT value FROM preserved").scalar() != (
                 "old data"
             ):

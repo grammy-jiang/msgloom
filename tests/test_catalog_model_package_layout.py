@@ -43,7 +43,10 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MessageSurface,
 )
 
-EXPECTED_TABLES = {
+# Frozen table population before Mail bindings (131bf35^). Migration fixtures
+# omit only their target tables from this set; they do not copy current ORM
+# additions into a supposed legacy catalog without the owning schema guards.
+PRE_MAIL_BINDING_TABLE_NAMES = {
     "acquisition_effective_states",
     "acquisition_facts",
     "acquisition_ledger_metadata",
@@ -117,6 +120,13 @@ EXPECTED_TABLES = {
     "todo_task_sightings",
     "todo_traversal_completions",
 }
+MAIL_BINDING_TABLE_NAMES = {
+    "mail_application_bindings",
+    "mail_component_captures",
+    "mail_inventory_members",
+    "mail_inventory_pages",
+}
+EXPECTED_TABLES = PRE_MAIL_BINDING_TABLE_NAMES | MAIL_BINDING_TABLE_NAMES
 
 
 def test_model_package_registers_complete_existing_schema() -> None:
