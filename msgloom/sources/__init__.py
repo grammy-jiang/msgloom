@@ -30,6 +30,12 @@ from msgloom.sources.models import (
     SourceReferenceError,
 )
 from msgloom.sources.reader import SavedSourceReader
+from msgloom.sources.release_models import (
+    ReleasedInput,
+    ScopedTransition,
+    SupportingContext,
+)
+from msgloom.sources.release_reader import ReleaseSourceReader
 
 __all__ = [
     "COLLECTED_SELECTION_KIND",
@@ -47,13 +53,17 @@ __all__ = [
     "ReleaseEntry",
     "ReleaseEntryPage",
     "ReleaseEntryRef",
+    "ReleaseSourceReader",
     "ReleasedFact",
+    "ReleasedInput",
     "SavedSourceReader",
     "SavedSourceReaderConfig",
+    "ScopedTransition",
     "SourceEvidenceError",
     "SourceEvidenceLimitError",
     "SourceMetadata",
     "SourceReaderError",
     "SourceReaderLimits",
     "SourceReferenceError",
+    "SupportingContext",
 ]

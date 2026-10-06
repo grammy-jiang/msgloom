@@ -10,7 +10,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from message_ingest.catalog.models import Base
+from message_ingest.catalog import Catalog
 from message_ingest.catalog.models.acquisition import RawHttpEvidence, SourceBinding
 from message_ingest.catalog.models.microsoft.contacts import (
     ContactDeltaObservation,
@@ -86,7 +86,9 @@ def saved_catalog(tmp_path: Path) -> dict[str, object]:
     evidence_root.mkdir()
     (evidence_root / "empty.bin").write_bytes(b"")
     engine = create_engine(f"sqlite:///{database}")
-    Base.metadata.create_all(engine)
+    # Install the same immutable guards as acquisition before ORM seeding.
+    catalog = Catalog(f"sqlite:///{database}")
+    catalog.close()
 
     with Session(engine) as session, session.begin():
         session.add(

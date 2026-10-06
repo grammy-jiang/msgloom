@@ -1,4 +1,6 @@
-"""Validated immutable prepared-source contracts for downstream Phase 1 stages."""
+"""
+Validated immutable prepared-source contracts for downstream Phase 1 stages.
+"""
 
 from __future__ import annotations
 
@@ -18,6 +20,7 @@ from msgloom.preparation.contracts import (
 class PreparedSourceType(StrEnum):
     """Provider-neutral source categories retained from collection."""
 
+    OUTLOOK_CALENDAR = "outlook_calendar"
     OUTLOOK_EMAIL = "outlook_email"
     TEAMS_CHANNEL_MESSAGE = "teams_channel_message"
     TEAMS_CHAT_MESSAGE = "teams_chat_message"
@@ -132,7 +135,9 @@ class SourceMapping(_FrozenModel):
 
 
 class FilteringDecision(_FrozenModel):
-    """Explicit filtering disposition and the exact rule version when matched."""
+    """
+    Explicit filtering disposition and the exact rule version when matched.
+    """
 
     disposition: FilteringDisposition
     rule_ref: VersionRef | None = None
@@ -151,7 +156,8 @@ class PreparedRecord(_FrozenModel):
     """
     Preserve one source version for deterministic filtering and grouping.
 
-    Raw source bytes are referenced, never embedded. Parser output is structured
+    Raw source bytes are referenced, never embedded.
+    Parser output is structured
     semantic data and retains ordered blocks, tables, links, and locations.
     """
 
