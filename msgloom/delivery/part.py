@@ -187,23 +187,35 @@ class PartSubmitter:
                 status = TerminalStatus.FAILED
             await self._persistence.finish_claim(claim, status, effect)
             claim = None
-        except asyncio.CancelledError:
-            effect = await self._settle_interrupted(
-                claim, effect, report, part_plan, assessments, progress
-            )
-            progress.effects.append(effect)
-            raise
         except (
+            asyncio.CancelledError,
             Phase1PersistenceError,
             RuntimeError,
             TimeoutError,
             TypeError,
             ValueError,
-        ):
+        ) as error:
             progress.incomplete = True
-            effect = await self._settle_interrupted(
-                claim, effect, report, part_plan, assessments, progress
+            # Settlement publishes recovered truth even if a terminal write
+            # fails. Drain it before propagating the first cancellation.
+            settlement = asyncio.create_task(
+                self._settle_interrupted(
+                    claim, effect, report, part_plan, assessments, progress
+                )
             )
+            cancelled = error if isinstance(error, asyncio.CancelledError) else None
+            while not settlement.done():
+                try:
+                    await asyncio.wait((settlement,), return_when=asyncio.ALL_COMPLETED)
+                except asyncio.CancelledError as stop:
+                    if cancelled is None:
+                        cancelled = stop
+            if cancelled is not None:
+                if not settlement.cancelled():
+                    settlement.exception()
+                raise cancelled
+            settlement.result()
+            return
         progress.effects.append(effect)
 
     async def _prepare_attempt(
@@ -319,32 +331,36 @@ class PartSubmitter:
         part_plan: SubmissionPartPlan,
         assessments: tuple[VersionRef, ...],
         progress: DeliveryProgress,
-    ) -> ExternalEffectState:
-        if claim is None:
-            return (
+    ) -> None:
+        """Publish recovered truth even when terminal acknowledgement fails."""
+        try:
+            if claim is None:
+                return
+            recovered = await self._recover_durable_effect(
+                claim, report, part_plan, assessments, progress
+            )
+            if recovered is not None:
+                effect = recovered
+            if effect is ExternalEffectState.PENDING:
+                effect = ExternalEffectState.UNKNOWN
+            status = (
+                TerminalStatus.COMPLETE
+                if effect
+                in {
+                    ExternalEffectState.ACCEPTED,
+                    ExternalEffectState.CONFIRMED,
+                }
+                else TerminalStatus.FAILED
+            )
+            await self._finish_known(claim, status, effect)
+        finally:
+            # Receipt recovery may already have extended the durable prefix.
+            # A later cleanup error must not discard that prefix or its effect.
+            progress.effects.append(
                 ExternalEffectState.UNKNOWN
                 if effect is ExternalEffectState.PENDING
                 else effect
             )
-        recovered = await self._recover_durable_effect(
-            claim, report, part_plan, assessments, progress
-        )
-        if recovered is not None:
-            effect = recovered
-        elif effect is ExternalEffectState.PENDING:
-            await self._finish_unknown(claim)
-            return ExternalEffectState.UNKNOWN
-        status = (
-            TerminalStatus.COMPLETE
-            if effect
-            in {
-                ExternalEffectState.ACCEPTED,
-                ExternalEffectState.CONFIRMED,
-            }
-            else TerminalStatus.FAILED
-        )
-        await self._finish_known(claim, status, effect)
-        return effect
 
     async def _recover_durable_effect(
         self,
@@ -399,12 +415,6 @@ class PartSubmitter:
         except asyncio.CancelledError:
             await cancel_and_drain(task)
             raise
-
-    async def _finish_unknown(self, claim: ClaimToken) -> None:
-        with suppress(Phase1PersistenceError):
-            await self._persistence.finish_claim(
-                claim, TerminalStatus.FAILED, ExternalEffectState.UNKNOWN
-            )
 
     async def _finish_known(
         self,
