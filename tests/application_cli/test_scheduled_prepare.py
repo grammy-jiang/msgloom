@@ -61,7 +61,7 @@ def test_target_rejects_credentials_coercion_and_empty_consumer():
         {"max_pending_worksets": 0},
     ):
         with pytest.raises(ValidationError):
-            model(**(valid | change))
+            model.model_validate(valid | change, strict=True)
 
 
 @pytest.mark.parametrize("new_work", [False, True])

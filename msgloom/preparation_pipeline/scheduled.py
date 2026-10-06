@@ -35,7 +35,9 @@ class ScheduledPreparationHandler:
 
     Caller owns persistence. This handler owns its source reader. Existing
     pending work is considered before intake. Each pending failure consumes one
-    budget unit; new intake still advances independently. Transition work stays
+    budget unit; new intake still advances independently. Pending selection is
+    currently admission-ordered; durable rotation requires the separate store
+    selector integration. Transition work stays
     pending because the reviewed completion API has no transition output proof.
     """
 
@@ -56,6 +58,8 @@ class ScheduledPreparationHandler:
         reader = ReleaseSourceReader(self._source)
         outputs: list[ResultRef] = []
         pending = False
+        incomplete = False
+        budget = self._operation.execution_timeout_seconds
         try:
             targets = sorted(
                 self._operation.intake_targets,
@@ -65,7 +69,8 @@ class ScheduledPreparationHandler:
                 return OperationOutcome(
                     request.execution, request.capability, TerminalStatus.COMPLETE
                 )
-            catalog = await reader.catalog.catalog_identity()
+            async with asyncio.timeout(budget):
+                catalog = await reader.catalog.catalog_identity()
             for target in targets:
                 scope = IntakeScope(
                     catalog=catalog,
@@ -74,73 +79,119 @@ class ScheduledPreparationHandler:
                     consumer_id=target.consumer_id,
                 )
                 try:
-                    states = await self._persistence.list_preparation_intake_worksets(
-                        scope,
-                        limit=target.max_pending_worksets,
-                    )
+                    async with asyncio.timeout(budget):
+                        states = (
+                            await self._persistence.list_preparation_intake_worksets(
+                                scope,
+                                limit=target.max_pending_worksets,
+                            )
+                        )
                     for state in states:
-                        refs, accepted = await self._process(
+                        refs, accepted, status = await self._bounded_process(
                             state.workset,
                             reader,
                             request,
                         )
                         outputs.extend(refs)
                         pending |= not accepted
-                    saved = await PreparationIntakeService(
-                        self._persistence,
-                        reader,
-                    ).run(
-                        scope,
-                        execution=request.execution,
-                        attempt=self._attempt,
-                        configuration_version=self._operation.configuration_version,
-                        code_version=self._operation.code_version,
-                        limit=target.max_entries,
-                        lease_seconds=self._operation.claim_lease_seconds,
-                    )
-                    if saved is not None:
-                        if len(states) < target.max_pending_worksets:
-                            refs, accepted = await self._process(
-                                ResultRef(
-                                    saved.result_id, saved.kind, saved.schema_version
-                                ),
-                                reader,
-                                request,
+                        incomplete |= status is TerminalStatus.INCOMPLETE
+                    # Materialization receives its own finite budget, shorter
+                    # than the intake claim lease. Cancellation drains accepted
+                    # persistence operations before leaving this context.
+                    async with asyncio.timeout(budget):
+                        saved = await PreparationIntakeService(
+                            self._persistence,
+                            reader,
+                        ).run(
+                            scope,
+                            execution=request.execution,
+                            attempt=self._attempt,
+                            configuration_version=self._operation.configuration_version,
+                            code_version=self._operation.code_version,
+                            limit=target.max_entries,
+                            lease_seconds=self._operation.claim_lease_seconds,
+                        )
+                    if saved is not None and len(states) < target.max_pending_worksets:
+                        refs, accepted, status = await self._bounded_process(
+                            ResultRef(
+                                saved.result_id, saved.kind, saved.schema_version
+                            ),
+                            reader,
+                            request,
+                        )
+                        outputs.extend(refs)
+                        pending |= not accepted
+                        incomplete |= status is TerminalStatus.INCOMPLETE
+                    # A full processed page is not proof of an empty queue.
+                    # This bounded read also includes newly admitted work.
+                    async with asyncio.timeout(budget):
+                        remaining = (
+                            await self._persistence.list_preparation_intake_worksets(
+                                scope,
+                                limit=1,
                             )
-                            outputs.extend(refs)
-                            pending |= not accepted
-                        else:
-                            pending = True
+                        )
+                    pending |= bool(remaining)
                 except asyncio.CancelledError:
                     raise
                 except Exception:  # noqa: BLE001
-                    # A failed target cannot fabricate progress for another.
-                    # The Application outcome exposes a fixed safe limitation.
                     pending = True
+        except asyncio.CancelledError:
+            raise
+        except Exception:  # noqa: BLE001
+            pending = True
         finally:
             await reader.close()
+        limitations = []
+        if pending:
+            limitations.append(
+                Limitation(
+                    "scheduled-work-pending", "Some scheduled work remains pending."
+                )
+            )
+        if incomplete:
+            limitations.append(
+                Limitation(
+                    "scheduled-preparation-incomplete",
+                    "Accepted preparation reported incomplete output.",
+                )
+            )
         return OperationOutcome(
             request.execution,
             request.capability,
-            TerminalStatus.INCOMPLETE if pending else TerminalStatus.COMPLETE,
+            TerminalStatus.INCOMPLETE
+            if pending or incomplete
+            else TerminalStatus.COMPLETE,
             result_refs=tuple(dict.fromkeys(outputs)),
-            limitations=(
-                Limitation(
-                    "scheduled-work-pending", "Some scheduled work remains pending."
-                ),
-            )
-            if pending
-            else (),
+            limitations=tuple(limitations),
         )
+
+    async def _bounded_process(self, reference, reader, request):
+        """
+        Charge one work unit for failure and bound the whole replay cut.
+
+        All replay plans share this deadline, including finalization. Half the
+        configured lease surplus is reserved for cancellation and claim cleanup.
+        Awaited store and reader workers are drained; none are detached at exit.
+        """
+        execution = self._operation.execution_timeout_seconds
+        margin = (self._operation.claim_lease_seconds - execution) / 2
+        try:
+            async with asyncio.timeout(execution + margin):
+                return await self._process(reference, reader, request)
+        except asyncio.CancelledError:
+            raise
+        except Exception:  # noqa: BLE001
+            return (), False, TerminalStatus.FAILED
 
     async def _process(self, reference, reader, request):
         """Fence exact replay outputs with the separate workset claim."""
         saved = await self._persistence.get_result(reference.result_id)
         if saved is None or saved.semantic_data_ref is None:
-            return (), False
+            return (), False, TerminalStatus.FAILED
         workset = await self._persistence.load_semantic_data(saved.semantic_data_ref)
         if not isinstance(workset, PreparationIntakeWorkset) or workset.transitions:
-            return (), False
+            return (), False, TerminalStatus.FAILED
         claim = await self._persistence.acquire_claim(
             workset_claim_key(reference.result_id),
             ClaimKind.PREPARE,
@@ -155,12 +206,12 @@ class ScheduledPreparationHandler:
             for ref in workset.selection_refs:
                 selected = await self._persistence.get_result(ref.result_id)
                 if selected is None or selected.semantic_data_ref is None:
-                    return (), False
+                    return (), False, TerminalStatus.FAILED
                 value = await self._persistence.load_semantic_data(
                     selected.semantic_data_ref,
                 )
                 if not isinstance(value, CollectedSelection):
-                    return (), False
+                    return (), False, TerminalStatus.FAILED
                 plans.append(
                     SelectionPlan(
                         source=value.source,
@@ -168,31 +219,57 @@ class ScheduledPreparationHandler:
                         replay_selection=value.selection,
                     )
                 )
-            outputs = ()
+            outputs: list[ResultRef] = []
             status = TerminalStatus.COMPLETE
-            if plans:
+            # A source version can occur in several distinct release entries.
+            # Split only at exact frozen-input boundaries; each accepted plan
+            # contributes its whole disjoint manifest to the existing proof.
+            batches: list[list[SelectionPlan]] = []
+            for selection in plans:
+                if (
+                    not batches
+                    or len(batches[-1]) >= self._operation.max_records
+                    or selection.source in {p.source for p in batches[-1]}
+                ):
+                    batches.append([])
+                batches[-1].append(selection)
+            for selections in batches:
                 plan = self._operation.plan(
                     mode=PreparationMode.REPLAY,
                     attempt=self._attempt,
-                    selections=tuple(plans),
+                    selections=tuple(selections),
                 )
                 outcome = await PreparationHandler(
                     self._persistence,
                     reader,
                     plan,
-                ).run(replace(request, target_inputs=tuple(p.source for p in plans)))
-                status, outputs = outcome.status, outcome.result_refs
-            if status not in {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}:
-                return outputs, False
+                ).run(
+                    replace(
+                        request,
+                        target_inputs=tuple(p.source for p in selections),
+                    )
+                )
+                outputs.extend(outcome.result_refs)
+                if outcome.status not in {
+                    TerminalStatus.COMPLETE,
+                    TerminalStatus.INCOMPLETE,
+                }:
+                    status = outcome.status
+                    return tuple(outputs), False, status
+                if outcome.status is TerminalStatus.INCOMPLETE:
+                    status = TerminalStatus.INCOMPLETE
             await self._persistence.finalize_preparation_intake_workset(
                 reference.result_id,
                 status,
-                outputs,
+                tuple(outputs),
                 claim=claim,
             )
-            return outputs, True
+            return tuple(outputs), True, status
         except asyncio.CancelledError:
             status = TerminalStatus.CANCELLED
+            raise
+        except Exception:
+            status = TerminalStatus.FAILED
             raise
         finally:
             try:
