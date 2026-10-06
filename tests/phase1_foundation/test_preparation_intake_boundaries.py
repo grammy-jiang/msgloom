@@ -142,7 +142,7 @@ def test_terminal_output_references_are_bounded_before_database_work(tmp_path):
     store.finalize_preparation_intake(saved, value, claim=token)
     owner = h.processing_claim(store, saved)
     try:
-        with pytest.raises(ValueError, match="bounded"):
+        with pytest.raises(DependencyNotReadyError, match="bounded"):
             store.finalize_preparation_intake_workset(
                 saved.result_id,
                 TerminalStatus.COMPLETE,

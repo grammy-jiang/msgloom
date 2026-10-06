@@ -44,6 +44,53 @@ class CompletionProof:
     receipts: tuple[AcceptedPreparationProof, ...]
 
 
+@dataclass(frozen=True)
+class CompletionInputs:
+    """Carry frozen selection payloads and metadata into completion proof."""
+
+    results: dict[ResultRef, StageResult]
+    selections: dict[ResultRef, CollectedSelection]
+
+
+def load_completion_inputs(
+    connection: Connection,
+    workset: PreparationIntakeWorkset,
+    output_count: int,
+    registry: ResultSchemaRegistry,
+    semantic_registry: SemanticDataRegistry,
+) -> CompletionInputs:
+    """Bound caller output count using only saved, frozen producer inputs."""
+    results: dict[ResultRef, StageResult] = {}
+    selections: dict[ResultRef, CollectedSelection] = {}
+    for ref in workset.selection_refs:
+        result = saved_result(connection, ref, registry)
+        if result.semantic_data_ref is None:
+            raise DependencyNotReadyError("preparation proof lacks semantic data")
+        value = load_semantic_data(
+            connection, result.semantic_data_ref, semantic_registry
+        )
+        if not isinstance(value, CollectedSelection):
+            raise DependencyNotReadyError("frozen input is not a collected selection")
+        results[ref], selections[ref] = result, value
+
+    # RecordSteps emits prepared + filter, at most one derived metadata result,
+    # one primary body result, and one result per alternate body. Attachments
+    # use saved-byte references inside prepared data, not separate outputs.
+    # StageSteps groups partition records, so there is at most one group per
+    # selection, even when the workset uses several disjoint replay plans.
+    # Reject before scanning, hashing, or serializing any caller references.
+    # Reuse these inputs in the exact proof and final metadata rechecks.
+    output_bound = sum(
+        4 + int(value.record.body is not None) + len(value.record.alternate_bodies)
+        for value in selections.values()
+    )
+    if output_count > output_bound:
+        raise DependencyNotReadyError(
+            "terminal result references must be bounded by frozen inputs"
+        )
+    return CompletionInputs(results, selections)
+
+
 def completion_receipts(
     connection: Connection,
     workset: PreparationIntakeWorkset,
@@ -153,6 +200,7 @@ def recheck_completion(
 def validate_completion(
     connection: Connection,
     workset: PreparationIntakeWorkset,
+    frozen_inputs: CompletionInputs,
     refs: tuple[ResultRef, ...],
     claim: ClaimToken,
     status: TerminalStatus,
@@ -170,8 +218,9 @@ def validate_completion(
     proves transition processing, so transitions remain pending until one is
     explicitly supported; a neighboring prepared record cannot discharge them.
 
-    Read semantic data only here, before writer ownership. Return immutable
-    metadata for the final transaction to recheck without reading payloads.
+    Reuse the bounded frozen-input snapshots. Read output semantic data here,
+    before writer ownership. Return immutable metadata for the final transaction
+    to recheck without reading payloads.
     """
     if workset.transitions:
         raise DependencyNotReadyError(
@@ -179,15 +228,16 @@ def validate_completion(
         )
     if workset.selections and not refs:
         raise ValueError("readable intake workset requires processing output")
-    results: dict[ResultRef, StageResult] = {}
-    values: dict[ResultRef, object] = {}
-    for ref in (*workset.selection_refs, *refs):
+    results = frozen_inputs.results
+    selections = frozen_inputs.selections
+    values: dict[ResultRef, object] = dict(selections)
+
+    for ref in refs:
         result = saved_result(connection, ref, registry)
-        if ref in refs:
-            if result.execution != claim.execution:
-                raise StaleClaimError("terminal output belongs to another execution")
-            if ref.kind not in _OUTPUT_KINDS or ref.schema_version != "1":
-                raise DependencyNotReadyError("result is not a preparation output")
+        if result.execution != claim.execution:
+            raise StaleClaimError("terminal output belongs to another execution")
+        if ref.kind not in _OUTPUT_KINDS or ref.schema_version != "1":
+            raise DependencyNotReadyError("result is not a preparation output")
         if result.semantic_data_ref is None:
             raise DependencyNotReadyError("preparation proof lacks semantic data")
         results[ref] = result
@@ -196,13 +246,6 @@ def validate_completion(
             result.semantic_data_ref,
             semantic_registry,
         )
-
-    selections: dict[ResultRef, CollectedSelection] = {}
-    for ref in workset.selection_refs:
-        value = values[ref]
-        if not isinstance(value, CollectedSelection):
-            raise DependencyNotReadyError("frozen input is not a collected selection")
-        selections[ref] = value
 
     covered: set[ResultRef] = set()
     for ref in refs:

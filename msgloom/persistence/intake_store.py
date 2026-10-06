@@ -33,6 +33,7 @@ from msgloom.persistence.errors import (
     UnknownResultSchemaError,
 )
 from msgloom.persistence.intake_completion import (
+    load_completion_inputs,
     recheck_completion,
     validate_completion,
 )
@@ -314,41 +315,24 @@ class PreparationIntakeStore(ABC):
         processing and this final update. Existing plan claims remain separate.
         FAILED, CANCELLED, and BLOCKED attempts leave the index pending.
         Accepted plan outputs must cover every frozen selection with exact
-        semantic lineage. Proof is loaded before this short writer transaction;
+        semantic lineage. Their count is bounded by the frozen producer inputs,
+        including derived body/metadata outputs and groups. Frozen inputs bound
+        caller references before scanning, hashing, or serializing them. Proof
+        is loaded before this short writer transaction;
         only saved metadata and accepted plan attempts are rechecked inside it.
         """
         if status not in {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}:
             raise ValueError(
                 "only accepted preparation outcomes can finish intake work"
             )
-        if type(result_refs) is not tuple or len(result_refs) > 1024:
+        if type(result_refs) is not tuple:
             raise ValueError("terminal result references must be bounded")
-        if any(
-            not isinstance(ref, ResultRef)
-            or any(
-                not part.strip() or len(part.encode()) > 2048
-                for part in (ref.result_id, ref.kind, ref.schema_version)
-            )
-            for ref in result_refs
-        ):
-            raise ValueError("terminal result references must be bounded")
-        if len(set(result_refs)) != len(result_refs):
-            raise ValueError("duplicate terminal result references")
         ref = workset_ref(result_id)
         if claim.kind is not ClaimKind.PREPARE or claim.claim_key != workset_claim_key(
             result_id
         ):
             raise StaleClaimError("processing claim does not own this workset")
-        values = {
-            "state": "terminal",
-            "terminal_status": status.value,
-            "result_refs": encode_result_refs(result_refs),
-            "terminal_claim_token": claim.token,
-            "terminal_execution_id": claim.execution.value,
-            "terminal_attempt_id": claim.attempt.value,
-        }
         with self.engine.connect() as connection:
-            self._require_terminal_history(connection, result_id, values)
             saved = saved_result(connection, ref, self.registry)
             if saved.semantic_data_ref is None:
                 raise ValueError("intake workset lacks its semantic payload")
@@ -359,9 +343,37 @@ class PreparationIntakeStore(ABC):
             )
             if not isinstance(workset, PreparationIntakeWorkset):
                 raise TypeError("intake workset has an invalid semantic payload")
+            inputs = load_completion_inputs(
+                connection,
+                workset,
+                len(result_refs),
+                self.registry,
+                self.semantic_registry,
+            )
+            if any(
+                not isinstance(ref, ResultRef)
+                or any(
+                    not part.strip() or len(part.encode()) > 2048
+                    for part in (ref.result_id, ref.kind, ref.schema_version)
+                )
+                for ref in result_refs
+            ):
+                raise ValueError("terminal result references must be bounded")
+            if len(set(result_refs)) != len(result_refs):
+                raise ValueError("duplicate terminal result references")
+            values = {
+                "state": "terminal",
+                "terminal_status": status.value,
+                "result_refs": encode_result_refs(result_refs),
+                "terminal_claim_token": claim.token,
+                "terminal_execution_id": claim.execution.value,
+                "terminal_attempt_id": claim.attempt.value,
+            }
+            self._require_terminal_history(connection, result_id, values)
             proof = validate_completion(
                 connection,
                 workset,
+                inputs,
                 result_refs,
                 claim,
                 status,

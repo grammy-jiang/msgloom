@@ -67,8 +67,8 @@ def _references(refs: tuple[ResultRef, ...]) -> str:
     """
     Encode closed, unique references with a four-MiB metadata ceiling.
 
-    Manual manifests may exceed intake's 1024-output ceiling; no proof is
-    truncated. Intake independently rejects a manifest exceeding its bound.
+    Intake also bounds aggregate output counts from its frozen selections.
+    Each accepted plan retains this metadata ceiling; no proof is truncated.
     """
     if (
         type(refs) is not tuple
