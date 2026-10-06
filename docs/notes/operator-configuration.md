@@ -235,18 +235,57 @@ context changes retain their scope in accepted `prepared_transitions` results.
 
 Missing or corrupt evidence creates a held entry disposition. This permits
 later valid entries to progress but does not claim the held content was
-prepared. Retain the workset and evidence for operator inspection. Catalog
-identity or cursor-anchor mismatch blocks admission; restore consistent
-catalog/store/evidence state and investigate before continuing. Do not reset
-or edit the cursor to bypass that check. This command has no automatic
+prepared. Retain the workset and evidence for operator inspection. Within an
+existing catalog scope, intake rejects catalog identity or cursor-anchor
+mismatch. A different catalog identity at the start of a new scheduled
+invocation selects another scope, without comparison to the old cursor.
+Restore consistent catalog, Phase 1 store, and evidence state together; do
+not rely on catalog replacement to recover an existing scope. Do not reset
+or edit the cursor to bypass anchor checks. This command has no automatic
 reconciliation or historical-baseline option.
 
 Future-only intake does not admit unchanged pre-ledger historical records.
-Explicit historical baseline support needs follow-on integration and operator
-documentation. Manual `prepare` and explicit preparation replay keep their
-existing exact-selection contracts. See the
+Manual `prepare` and explicit preparation replay keep their existing
+exact-selection contracts. See the
 [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff).
 Final handoff qualification and independent acceptance remain pending.
+
+### Explicit historical baseline
+
+`HistoricalBaselineService.run` is an async service API, not a CLI option.
+The caller supplies an `IntakeScope`, a `sources` tuple of 1 to 1024 unique
+exact `VersionRef` values, and a nonblank `approval_id`. The caller owns the
+approval decision; the service records that identifier. It also requires
+execution and attempt identities, `configuration_version`, and `code_version`.
+The caller owns the reader and persistence lifetimes.
+
+Use a new consumer scope with no prior workset and no advanced cursor. The
+service rejects an initialized scope, even after its baseline has completed.
+Each selected version must belong to the approved source and stream. The
+service does not discover history, expand a timestamp range, or manufacture
+release entries. Calendar input identifies an exact saved event observation;
+`a1_released_source` input resolves an exact immutable acquisition fact without
+expanding mutable full-profile projections. Other supported versions use the
+existing exact-selection reader. Unavailable or invalid evidence and versions
+outside the approved scope fail admission. Source-reader byte and query limits
+still apply.
+
+Before reading the approved evidence, the service captures the current release
+anchor for that source and stream, or genesis if no release exists. With saved
+evidence verified, it saves exact selections before atomically committing one
+immutable starting workset, its pending state, and the cursor. The workset
+records the approval identifier, exact versions, saved selection references,
+and cutoff. Later incremental intake starts after that cutoff. Releases at
+or below the cutoff are not separately admitted by later intake; the explicit
+version list defines the baseline content. Releases after the cutoff remain
+future work.
+
+A failure before atomic admission may leave reusable exact selections but no
+workset or cursor progress. A new attempt captures the then-current cutoff;
+it does not preserve a failed attempt's cutoff. After successful admission,
+retry preparation from the saved pending workset through scheduled preparation.
+Do not rerun baseline admission or change its immutable input. Baseline support
+is integrated; final handoff gates and independent acceptance remain pending.
 
 ## Secrets
 

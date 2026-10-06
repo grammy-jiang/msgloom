@@ -100,6 +100,14 @@ results prepare facts for downstream use; they do not perform global deletion
 or retirement. Missing or corrupt evidence receives a durable held disposition
 instead of a fabricated selection. Later valid entries can still advance.
 
+`HistoricalBaselineService.run` provides explicit historical admission for a
+new consumer scope. It accepts caller-approved bounded exact versions, verifies
+saved evidence, saves selections, and commits one immutable starting workset
+with its pending state and release cutoff. Incremental intake then continues
+after that cutoff. It does not discover historical records or create release
+entries. See [historical baseline operation](../notes/operator-configuration.md#explicit-historical-baseline)
+for the service API and retry limits.
+
 The `prepare-scheduled` CLI runs one finite invocation and awaits writes,
 worker cleanup, and reader closure. The external scheduler owns timing and
 repeated invocation. Manual `prepare` and explicit preparation replay remain

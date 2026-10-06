@@ -119,6 +119,8 @@ continue collecting while A2 prepares the saved selections.
 See [scheduled preparation configuration](operator-configuration.md#scheduled-preparation)
 and the [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff)
 for operation and recovery. Existing pre-ledger records are not automatically
-admitted by future-only intake. Explicit historical baseline admission is
-outside this integrated documentation and still needs follow-on integration
-and qualification.
+admitted by future-only intake. The integrated
+[historical baseline service](operator-configuration.md#explicit-historical-baseline)
+admits caller-approved exact versions for a new consumer scope without
+creating release entries. Its immutable starting workset uses the normal
+pending preparation path. Final handoff qualification remains pending.

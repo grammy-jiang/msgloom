@@ -29,6 +29,7 @@ Final handoff qualification remains pending.
 | `message_ingest/extensions/handoff.py` | Join native lifecycle completion to eligible non-authoritative publication. |
 | `msgloom/sources/release_reader.py` | Read exact committed release entries and verify saved evidence without calling a live crawler. |
 | `msgloom/preparation_pipeline/intake.py` | Capture a bounded cutoff, save exact selections, and admit entries as selections, scoped transitions, or held dispositions. |
+| `msgloom/preparation_pipeline/historical_baseline.py` | Admit caller-approved exact historical versions as one starting workset for a new consumer scope. |
 | `msgloom/persistence/intake_store.py` | Commit the workset, pending state, and cursor atomically under the intake claim. |
 | `msgloom/persistence/intake_scheduling.py` | Discover pending work with durable bounded rotation. |
 | `msgloom/persistence/intake_completion.py` | Require exact accepted preparation proof before workset finalization. |
@@ -39,8 +40,11 @@ Final handoff qualification remains pending.
 Evidence precedes semantics. The Reader rejects evidence that does not match
 its immutable references. Intake saves selections before committing cursor
 progress. A crash before cursor finalization permits exact retry; a later
-preparation failure leaves the admitted workset pending. Cursor anchors reject
-catalog replacement, restore behind the cursor, and changed prior entries.
+preparation failure leaves the admitted workset pending. Within an existing
+catalog identity, cursor-anchor checks reject restore behind the cursor and
+a changed cursor entry. A different catalog identity at the start of a new
+scheduled invocation selects another cursor scope; it is not compared with
+the old catalog cursor.
 No parser runs inside an A1 authority transaction or the short intake commit.
 
 See [Phase 1 architecture](phase-1/architecture.md#durable-incremental-handoff)
