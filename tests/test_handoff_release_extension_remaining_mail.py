@@ -53,13 +53,16 @@ def test_native_mail_cache_release_retains_effective_policy(
         command.extend(["-s", f"{key}={value}"])
     before = None
     for enabled in (False, True):
-        runner = RUN_COMMAND
+        extension = "message_ingest.extensions.handoff.HandoffReleaseExtension"
+        runner = RUN_COMMAND.replace(
+            'execute(["scrapy",',
+            "import message_ingest.settings as settings\n"
+            f'settings.EXTENSIONS[{extension!r}] = None\nexecute(["scrapy",',
+        )
         if enabled:
             runner = runner.replace(
-                'execute(["scrapy",',
-                "import message_ingest.settings as settings\n"
-                'settings.EXTENSIONS["message_ingest.extensions.handoff.'
-                'HandoffReleaseExtension"] = 70\nexecute(["scrapy",',
+                f"settings.EXTENSIONS[{extension!r}] = None",
+                f"settings.EXTENSIONS[{extension!r}] = 70",
             )
         result = subprocess.run(
             [sys.executable, "-c", runner, graph_server, *command],

@@ -32,8 +32,8 @@ from message_ingest.spiders.microsoft.outlook.calendar.full import OutlookCalend
 for cls in (OutlookFullSpider, OutlookCalendarFullSpider):
     cls.graph_root = sys.argv[1]
     cls.allowed_domains = ["127.0.0.1"]
-if sys.argv[2] == "enabled":
-    settings.EXTENSIONS["message_ingest.extensions.handoff.HandoffReleaseExtension"] = 70
+extension = "message_ingest.extensions.handoff.HandoffReleaseExtension"
+settings.EXTENSIONS[extension] = 70 if sys.argv[2] == "enabled" else None
 sys.path.insert(0, str(__import__("pathlib").Path.cwd() / "tests"))
 from handoff_full_crawl_helpers import install_failure
 install_failure(sys.argv[3])
