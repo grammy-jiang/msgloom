@@ -122,7 +122,7 @@ class HistoricalBaselineService:
             )
         values = []
         for source in sources:
-            value = await self._reader.read_selection(source)
+            value = await self._reader.read_baseline_selection(source)
             stream = {
                 "outlook_email": "outlook_mail",
                 "contact": "contacts",

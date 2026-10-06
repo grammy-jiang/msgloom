@@ -3,11 +3,17 @@
 import asyncio
 import sqlite3
 
+from msgloom.contracts import VersionRef
+from msgloom.sources._historical_baseline import selection as baseline_selection
 from msgloom.sources._release_assemble import reconstruct
 from msgloom.sources._release_evidence import ReleaseEvidence
 from msgloom.sources.handoff_catalog import HandoffCatalog
 from msgloom.sources.handoff_models import ReleaseEntry, ReleaseEntryRef
-from msgloom.sources.models import SavedSourceReaderConfig, SourceReferenceError
+from msgloom.sources.models import (
+    CollectedSelection,
+    SavedSourceReaderConfig,
+    SourceReferenceError,
+)
 from msgloom.sources.reader import SavedSourceReader
 from msgloom.sources.release_models import ReleasedInput, SupportingContext
 
@@ -19,6 +25,20 @@ class ReleaseSourceReader(SavedSourceReader):
         """Pin catalog and evidence roots without opening A1 write services."""
         super().__init__(config)
         self.catalog = HandoffCatalog(config.catalog_path, config.limits)
+
+    async def read_baseline_selection(self, source: VersionRef) -> CollectedSelection:
+        """Resolve approved history separately from manual LIVE/REPLAY reads."""
+        self._revalidate_config()
+        if source.kind not in {"outlook_calendar", "a1_released_source"}:
+            return await self.read_selection(source)
+        try:
+            return await self._gate.run(
+                lambda: baseline_selection(
+                    source, ReleaseEvidence(self._catalog, self._files)
+                )
+            )
+        except (sqlite3.Error, ValueError, TypeError, KeyError, RecursionError):
+            raise SourceReferenceError("Invalid exact baseline input") from None
 
     async def read_entry(
         self,
