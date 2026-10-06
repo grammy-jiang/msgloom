@@ -43,6 +43,11 @@ def test_exact_selection_and_pending_workset(saved_catalog, tmp_path):
 
 
 def test_fixed_cutoff_excludes_concurrent_release(saved_catalog, tmp_path, monkeypatch):
+    from dataclasses import replace
+
+    from message_ingest.acquisition.handoff import source_state_key
+    from tests.source_reader.release_nonmail_helpers import fact, publish
+
     first = release(saved_catalog)
 
     async def check():
@@ -51,7 +56,26 @@ def test_fixed_cutoff_excludes_concurrent_release(saved_catalog, tmp_path, monke
 
         async def capture(*args):
             cutoff = await original(*args)
-            release(saved_catalog, suffix="later")
+            # A new run of equivalent state emits no entry. Publish a changed
+            # state so the first cutoff must exclude a real later release.
+            item = fact(
+                "todo",
+                "todo_task",
+                '["list","task"]',
+                "ev-todo-old",
+                scope_kind="todo_list",
+                scope_identity="list",
+            )
+            publish(
+                saved_catalog,
+                [
+                    replace(
+                        item,
+                        run_id="run-later",
+                        source_state_key=source_state_key({"revision": "later"}),
+                    )
+                ],
+            )
             return cutoff
 
         monkeypatch.setattr(reader.catalog, "max_release_entry_seq", capture)
@@ -62,6 +86,28 @@ def test_fixed_cutoff_excludes_concurrent_release(saved_catalog, tmp_path, monke
                 or workset.cutoff.last_release_entry_seq != first
             ):
                 pytest.fail("Concurrent A1 release escaped the fixed cutoff")
+            monkeypatch.setattr(reader.catalog, "max_release_entry_seq", original)
+            later = await reader.catalog.max_release_entry_seq(
+                scope.source_id, scope.stream
+            )
+            next_workset = await payload(
+                persistence, await run(service, scope, identity="next")
+            )
+            if (
+                next_workset.previous != workset.cutoff
+                or tuple(e.release_entry_seq for e in next_workset.entries) != (later,)
+                or later <= first
+                or next_workset.cutoff.last_release_entry_seq != later
+            ):
+                pytest.fail("Next intake lost or repeated the deferred release")
+            if await run(service, scope, identity="empty") is not None:
+                pytest.fail("Deferred release was admitted more than once")
+            if (
+                await persistence.get_preparation_intake_cursor(scope)
+                != next_workset.cutoff
+                or len(await persistence.list_preparation_intake_worksets(scope)) != 2
+            ):
+                pytest.fail("Deferred release lost its durable workset or cursor")
         finally:
             await reader.close()
             await persistence.close()

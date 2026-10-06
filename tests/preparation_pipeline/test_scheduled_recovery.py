@@ -293,16 +293,51 @@ def test_unaccepted_plan_keeps_work_pending(
     async def unaccepted(self, request):
         return OperationOutcome(request.execution, request.capability, status)
 
+    original = PreparationHandler.run
     monkeypatch.setattr(PreparationHandler, "run", unaccepted)
 
     async def check():
         persistence, scope, handler, request = await context(saved_catalog, tmp_path)
         try:
+            before = await persistence.get_preparation_intake_cursor(scope)
+            committed = await persistence.list_preparation_intake_worksets(scope)
+            if len(committed) != 1 or before.last_release_entry_seq == 0:
+                pytest.fail("Fixture needs one committed workset and cursor")
             outcome = await handler.run(request)
-            if not await persistence.list_preparation_intake_worksets(scope):
-                pytest.fail("unaccepted plan discharged pending work")
+            pending = await persistence.list_preparation_intake_worksets(scope)
+            if tuple(s.workset for s in pending) != (committed[0].workset,):
+                pytest.fail("unaccepted plan discharged or replaced pending work")
+            if await persistence.get_preparation_intake_cursor(scope) != before:
+                pytest.fail("failed preparation rewound the committed cursor")
             if outcome.status is not TerminalStatus.INCOMPLETE:
                 pytest.fail("unaccepted plan did not report remaining work")
+            monkeypatch.setattr(PreparationHandler, "run", original)
+            retry = ScheduledPreparationHandler(
+                persistence,
+                handler._source,
+                handler._operation,
+                AttemptIdentity("fresh-retry"),
+            )
+            await retry.run(
+                replace(request, execution=ExecutionIdentity("fresh-retry"))
+            )
+            states = await persistence.list_preparation_intake_worksets(
+                scope, pending_only=False
+            )
+            if (
+                len(states) != 1
+                or states[0].workset != committed[0].workset
+                or states[0].state != "terminal"
+                or states[0].terminal_status
+                not in (TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE)
+                or not any(ref.kind == "prepared" for ref in states[0].result_refs)
+            ):
+                pytest.fail("Fresh retry did not prepare the same committed workset")
+            if (
+                await persistence.list_preparation_intake_worksets(scope)
+                or await persistence.get_preparation_intake_cursor(scope) != before
+            ):
+                pytest.fail("Successful retry left pending work or rewound cursor")
         finally:
             await persistence.close()
 
