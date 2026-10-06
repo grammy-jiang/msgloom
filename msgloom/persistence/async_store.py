@@ -239,7 +239,7 @@ class Phase1Persistence:
         scope: IntakeScope,
         *,
         limit: int = 100,
-        after_seq: int = 0,
+        after_seq: int | None = None,
         pending_only: bool = True,
     ) -> tuple[IntakeWorksetState, ...]:
         """

@@ -157,6 +157,16 @@ class PreparationIntakeStore(ABC):
             require_claim_publication(connection, claim, result, now=datetime.now(UTC))
             if read_cursor(connection, workset.scope) != workset.previous:
                 raise StaleClaimError("preparation intake cursor changed")
+            if (
+                workset.baseline_approval is not None
+                and connection.execute(
+                    select(INTAKE_WORKSETS.c.result_id)
+                    .where(INTAKE_WORKSETS.c.scope_key == workset.scope.claim_key())
+                    .limit(1)
+                ).first()
+                is not None
+            ):
+                raise ValueError("historical baseline already initialized")
             for ref in workset.selection_refs:
                 saved_result(connection, ref, self.registry)
             append_semantic_data(connection, encoded)
@@ -166,7 +176,8 @@ class PreparationIntakeStore(ABC):
                     result_id=result.result_id,
                     scope_key=workset.scope.claim_key(),
                     cutoff_release_entry_seq=workset.cutoff.last_release_entry_seq,
-                    cutoff_release_entry_digest=workset.cutoff.last_release_entry_digest,
+                    cutoff_release_entry_digest=workset.cutoff.last_release_entry_digest
+                    or "",
                     state="pending",
                     result_refs=encode_result_refs(()),
                 )
@@ -185,6 +196,13 @@ class PreparationIntakeStore(ABC):
                 "last_release_entry_seq": workset.cutoff.last_release_entry_seq,
                 "last_release_entry_digest": workset.cutoff.last_release_entry_digest,
             }
+            if workset.cutoff.last_release_entry_seq == 0:
+                # Genesis has no cursor row. The immutable workset indexes the
+                # once-only baseline; future release admission inserts cursor.
+                require_claim_publication(
+                    connection, claim, result, now=datetime.now(UTC)
+                )
+                return
             if workset.previous.last_release_entry_seq == 0:
                 connection.execute(
                     INTAKE_CURSORS.insert().values(
@@ -205,17 +223,23 @@ class PreparationIntakeStore(ABC):
         scope: IntakeScope,
         *,
         limit: int = 100,
-        after_seq: int = 0,
+        after_seq: int | None = None,
         pending_only: bool = True,
     ) -> tuple[IntakeWorksetState, ...]:
-        """Page pending or all worksets in monotonic admission order."""
-        page_bounds(limit, after_seq)
+        """
+        Page pending or all worksets in monotonic admission order.
+
+        ``None`` starts before genesis; explicit zero skips its baseline row.
+        """
+        page_bounds(limit, 0 if after_seq is None else after_seq)
         if type(pending_only) is not bool:
             raise ValueError("pending_only must be a boolean")
         table = INTAKE_WORKSETS
         query = select(table).where(
             table.c.scope_key == scope.claim_key(),
-            table.c.cutoff_release_entry_seq > after_seq,
+            table.c.cutoff_release_entry_seq >= 0
+            if after_seq is None
+            else table.c.cutoff_release_entry_seq > after_seq,
         )
         if pending_only:
             query = query.where(table.c.state == "pending")

@@ -249,7 +249,7 @@ def validate_completion(
     before writer ownership. Return immutable metadata for the final transaction
     to recheck without reading payloads.
     """
-    if workset.selections and not refs:
+    if workset.selection_refs and not refs:
         raise ValueError("readable intake workset requires processing output")
     results = frozen_inputs.results
     selections = frozen_inputs.selections

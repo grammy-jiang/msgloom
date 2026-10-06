@@ -73,7 +73,7 @@ def workset_state(row) -> IntakeWorksetState:
         workset=workset_ref(row["result_id"]),
         cutoff=IntakeAnchor(
             last_release_entry_seq=row["cutoff_release_entry_seq"],
-            last_release_entry_digest=row["cutoff_release_entry_digest"],
+            last_release_entry_digest=row["cutoff_release_entry_digest"] or None,
         ),
         state=row["state"],
         terminal_status=(

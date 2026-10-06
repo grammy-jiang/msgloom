@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from msgloom.contracts import ResultRef, TerminalStatus
+from msgloom.contracts import ResultRef, TerminalStatus, VersionRef
 from msgloom.sources.handoff_models import (
     A1CatalogIdentity,
     Digest,
@@ -137,18 +137,20 @@ class HeldIntakeEntry(_IntakeModel):
 
 class PreparationIntakeWorkset(_IntakeModel):
     """
-    Freeze one nonempty ordered cut with explicit disposition of every entry.
+    Freeze one ordered release cut or an explicitly approved historical scope.
 
     Sequence gaps are legal because A1 publication is global across streams.
     The caller verifies A1 anchors and enumerates the complete bounded stream
-    cut before this contract is finalized. Persistence never reads A1 here.
+    cut before this contract is finalized. Historical baselines instead bind
+    exact source versions and saved selections without fabricated entries.
+    Persistence never reads A1 here.
     """
 
     scope: IntakeScope
     previous: IntakeAnchor
     cutoff: IntakeAnchor
     entries: Annotated[
-        tuple[ReleaseEntryRef, ...], Field(min_length=1, max_length=MAX_INTAKE_ENTRIES)
+        tuple[ReleaseEntryRef, ...], Field(max_length=MAX_INTAKE_ENTRIES)
     ]
     selections: Annotated[
         tuple[IntakeSelection, ...], Field(max_length=MAX_INTAKE_ENTRIES)
@@ -162,9 +164,37 @@ class PreparationIntakeWorkset(_IntakeModel):
     configuration_version: Identifier
     code_version: Identifier
 
+    baseline_approval: Identifier | None = None
+    baseline_sources: Annotated[
+        tuple[VersionRef, ...], Field(max_length=MAX_INTAKE_ENTRIES)
+    ] = ()
+    baseline_selections: Annotated[
+        tuple[ResultRef, ...], Field(max_length=MAX_INTAKE_ENTRIES)
+    ] = ()
+
     @model_validator(mode="after")
     def _accounted_cut(self) -> PreparationIntakeWorkset:
         self.scope.claim_key()
+        if self.baseline_approval is not None:
+            if (
+                self.entries
+                or self.selections
+                or self.transitions
+                or self.held
+                or self.previous != IntakeAnchor()
+                or not self.baseline_sources
+                or len(set(self.baseline_sources)) != len(self.baseline_sources)
+                or len(self.baseline_sources) != len(self.baseline_selections)
+                or len(set(self.baseline_selections)) != len(self.baseline_selections)
+                or any(
+                    (ref.kind, ref.schema_version) != ("collected_selection", "1")
+                    for ref in self.baseline_selections
+                )
+            ):
+                raise ValueError("invalid explicit historical baseline")
+            return self
+        if self.baseline_sources or self.baseline_selections or not self.entries:
+            raise ValueError("incremental workset requires release entries")
         sequences = tuple(ref.release_entry_seq for ref in self.entries)
         if sequences != tuple(sorted(set(sequences))):
             raise ValueError("release entries must be unique and ordered")
@@ -210,7 +240,9 @@ class PreparationIntakeWorkset(_IntakeModel):
     @property
     def selection_refs(self) -> tuple[ResultRef, ...]:
         """Return deterministic unique dependencies for the workset result."""
-        return tuple(dict.fromkeys(item.result for item in self.selections))
+        return self.baseline_selections or tuple(
+            dict.fromkeys(item.result for item in self.selections)
+        )
 
 
 class IntakeWorksetState(_IntakeModel):

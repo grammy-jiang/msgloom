@@ -24,8 +24,15 @@ class PreparationIntakeWorksetCodec:
         """
         if not isinstance(value, PreparationIntakeWorkset):
             raise TypeError("intake payload must be a PreparationIntakeWorkset")
+        data = value.model_dump(mode="json", round_trip=True, warnings="error")
+        # Preserve the exact pre-baseline encoding of incremental worksets.
+        if value.baseline_approval is None:
+            for key in ("baseline_approval", "baseline_sources", "baseline_selections"):
+                if data[key]:
+                    raise ValueError("baseline fields require explicit approval")
+                del data[key]
         payload = json.dumps(
-            value.model_dump(mode="json", round_trip=True, warnings="error"),
+            data,
             allow_nan=False,
             ensure_ascii=False,
             sort_keys=True,
