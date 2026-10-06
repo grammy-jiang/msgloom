@@ -301,7 +301,10 @@ def test_cached_todo_traversal_releases_current_run_with_old_canonical_evidence(
                 encoding="utf-8",
                 flags=["cached"] if cached else [],
             )
-            for item in request.callback(response, **request.cb_kwargs):
+            callback = request.callback
+            if callback is None:
+                raise RuntimeError("Traversal fixture request has no callback")
+            for item in callback(response, **request.cb_kwargs):
                 if isinstance(item, Request):
                     pending.append(item)
                     continue

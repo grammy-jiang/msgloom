@@ -109,6 +109,9 @@ EXTENSIONS = {
     "message_ingest.extensions.microsoft.todo.snapshot.TodoSnapshotExtension": 520,
     "message_ingest.extensions.microsoft.contacts.checkpoint.ContactsSnapshotPromotionExtension": 521,
     "message_ingest.extensions.microsoft.contacts.checkpoint.ContactsDeltaCheckpointExtension": 522,
+    # Resource gates exclude authority and Profile crawls. Native idle and
+    # persisted completion proof govern publication, not extension priority.
+    "message_ingest.extensions.handoff.HandoffReleaseExtension": 523,
     "message_ingest.extensions.microsoft_graph.privacy.MicrosoftGraphLogPrivacyExtension": 525,
     "microsoft_graph.extensions.onedrive.OneDriveContentPrivacyExtension": 530,
     "message_ingest.extensions.microsoft.outlook.email.status.OutlookCrawlStatusExtension": 550,
