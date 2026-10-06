@@ -255,7 +255,12 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
         observed_at: str,
         run_id: str | None = None,
     ) -> MailPersistenceOutcome:
-        """Persist folder context atomically; delta awaits authority."""
+        """
+        Persist observed folder metadata and its exact context fact together.
+
+        Metadata is accepted source observation. Folder-delta presence remains
+        staged by the lifecycle helper until the cursor transaction wins.
+        """
         folder_id = folder["id"]
         fields = {
             "display_name": folder.get("displayName"),

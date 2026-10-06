@@ -19,8 +19,8 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MessageRecord,
 )
 
-from ._email_folder_facts import mark_folder_removed
-from ._email_handoff import MailPersistenceOutcome
+from ._email_handoff import is_stale
+from ._email_release_folders import mark_folder_present_in_session, mark_folder_removed
 
 
 class OutlookMailLifecycleStore:
@@ -79,77 +79,9 @@ class OutlookMailLifecycleStore:
         record.latest_observed_at = observed_at
         record.latest_evidence_id = evidence_id
 
-    def mark_folder_present_in_session(
-        self,
-        session,
-        *,
-        folder_id: str,
-        run_id: str | None,
-        observed_at: str,
-        evidence_id: str | None,
-    ) -> None:
-        """Record folder presence and this run's inventory sighting."""
-        presence = session.scalar(
-            select(MailFolderPresence).filter_by(
-                source_id=self.source_id,
-                folder_id=folder_id,
-            )
-        )
-        if presence is None:
-            session.add(
-                MailFolderPresence(
-                    source_id=self.source_id,
-                    folder_id=folder_id,
-                    is_present=True,
-                    removed_reason=None,
-                    latest_run_id=run_id,
-                    latest_observed_at=observed_at,
-                    latest_evidence_id=evidence_id,
-                )
-            )
-        elif observed_at >= presence.latest_observed_at:
-            presence.is_present = True
-            presence.removed_reason = None
-            presence.latest_run_id = run_id
-            presence.latest_observed_at = observed_at
-            presence.latest_evidence_id = evidence_id
-        if run_id:
-            existing = session.scalar(
-                select(MailFolderSighting.id).filter_by(
-                    source_id=self.source_id,
-                    run_id=run_id,
-                    folder_id=folder_id,
-                )
-            )
-            if existing is None:
-                session.add(
-                    MailFolderSighting(
-                        source_id=self.source_id,
-                        run_id=run_id,
-                        folder_id=folder_id,
-                        observed_at=observed_at,
-                        evidence_id=evidence_id,
-                    )
-                )
+    mark_folder_present_in_session = mark_folder_present_in_session
 
-    def mark_folder_removed(
-        self,
-        *,
-        folder_id: str,
-        run_id: str | None,
-        observed_at: str,
-        evidence_id: str | None,
-        reason: str | None,
-    ) -> MailPersistenceOutcome:
-        """Stage the scoped folder tombstone with its domain mutation."""
-        return mark_folder_removed(
-            self,
-            folder_id=folder_id,
-            run_id=run_id,
-            observed_at=observed_at,
-            evidence_id=evidence_id,
-            reason=reason,
-        )
+    mark_folder_removed = mark_folder_removed
 
     def record_message_sighting(
         self,
@@ -300,8 +232,9 @@ class OutlookMailLifecycleStore:
                 observed_at=folder_candidate.observed_at,
                 evidence_id=folder_candidate.evidence_id,
             )
+        applied_absences = set()
         for folder_id in removed_folders:
-            self._set_folder_presence(
+            applied = self._set_folder_presence(
                 session,
                 folder_id=folder_id,
                 is_present=False,
@@ -310,6 +243,9 @@ class OutlookMailLifecycleStore:
                 observed_at=folder_candidate.observed_at,
                 evidence_id=folder_candidate.evidence_id,
             )
+            if applied:
+                applied_absences.add(folder_id)
+        removed_folders = applied_absences
         if removed_folders:
             session.execute(
                 delete(DeltaCheckpoint).where(
@@ -391,12 +327,44 @@ class OutlookMailLifecycleStore:
         run_id: str,
         observed_at: str,
         evidence_id: str | None,
-    ) -> None:
+    ) -> bool:
+        """
+        Return whether this inventory may change presence and its cursor.
+
+        Accepted folder metadata can be newer than committed presence while
+        a folder-delta transition is staged. Such metadata also blocks an
+        older inventory absence before any fact or cursor deletion is made.
+        """
         record = session.scalar(
             select(MailFolderPresence).filter_by(
                 source_id=self.source_id,
                 folder_id=folder_id,
             )
+        )
+        from message_ingest.sync.microsoft.outlook.email._release import stage_presence
+
+        if record and is_stale(observed_at, record.latest_observed_at):
+            return False
+        if not is_present:
+            metadata_observed_at = session.scalar(
+                select(MailFolderRecord.latest_observed_at).filter_by(
+                    source_id=self.source_id,
+                    folder_id=folder_id,
+                )
+            )
+            if is_stale(observed_at, metadata_observed_at):
+                return False
+        stage_presence(
+            self,
+            session,
+            record,
+            "mail_folder",
+            folder_id,
+            is_present,
+            run_id,
+            observed_at,
+            evidence_id,
+            reason,
         )
         if record is None:
             session.add(
@@ -410,12 +378,13 @@ class OutlookMailLifecycleStore:
                     latest_evidence_id=evidence_id,
                 )
             )
-            return
+            return True
         record.is_present = is_present
         record.removed_reason = reason
         record.latest_run_id = run_id
         record.latest_observed_at = observed_at
         record.latest_evidence_id = evidence_id
+        return True
 
     def _set_message_presence(
         self,
@@ -433,6 +402,22 @@ class OutlookMailLifecycleStore:
                 source_id=self.source_id,
                 message_id=message_id,
             )
+        )
+        from message_ingest.sync.microsoft.outlook.email._release import stage_presence
+
+        if record and is_stale(observed_at, record.latest_observed_at):
+            return
+        stage_presence(
+            self,
+            session,
+            record,
+            "message",
+            message_id,
+            is_present,
+            run_id,
+            observed_at,
+            evidence_id,
+            reason,
         )
         if record is None:
             session.add(

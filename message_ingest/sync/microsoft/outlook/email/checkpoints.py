@@ -262,13 +262,20 @@ class OutlookFolderDeltaCheckpointStore:
             )
 
     def commit(self, run_id: str) -> None:
+        """
+        Commit only a folder candidate that still wins under the writer lock.
+
+        Retained candidates carry the observation time for committed cursors.
+        An older delayed candidate or a displaced committed run cannot rewind
+        authority, even when its original release group contains no entries.
+        """
         from message_ingest.catalog import (
             FolderDeltaCheckpoint,
             FolderDeltaCheckpointCandidate,
         )
 
         committed_at = datetime.now(UTC).isoformat()
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             candidate = session.scalar(
                 select(FolderDeltaCheckpointCandidate).filter_by(
                     source_id=self.source_id,
@@ -280,6 +287,20 @@ class OutlookFolderDeltaCheckpointStore:
             checkpoint = session.scalar(
                 select(FolderDeltaCheckpoint).filter_by(source_id=self.source_id)
             )
+            if checkpoint is not None and checkpoint.run_id != run_id:
+                current = session.scalar(
+                    select(FolderDeltaCheckpointCandidate).filter_by(
+                        source_id=self.source_id,
+                        run_id=checkpoint.run_id,
+                    )
+                )
+                if (
+                    candidate.committed_at is not None
+                    or current is None
+                    or datetime.fromisoformat(candidate.observed_at)
+                    < datetime.fromisoformat(current.observed_at)
+                ):
+                    raise RuntimeError("folder delta candidate displaced")
             if checkpoint is None:
                 session.add(
                     FolderDeltaCheckpoint(
@@ -293,6 +314,16 @@ class OutlookFolderDeltaCheckpointStore:
                 checkpoint.delta_link = candidate.delta_link
                 checkpoint.committed_at = committed_at
                 checkpoint.run_id = run_id
+            from ._release import release_mail_authority
+
+            release_mail_authority(
+                self.catalog,
+                session,
+                source_id=self.source_id,
+                run_id=run_id,
+                committed_at=committed_at,
+                subject="folder_delta",
+            )
             candidate.committed_at = committed_at
 
 

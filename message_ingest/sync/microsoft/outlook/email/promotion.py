@@ -79,15 +79,36 @@ def promote_validated_mail_delta(
 
     from datetime import UTC, datetime
 
+    from sqlalchemy import select
+
+    from message_ingest.catalog.models.microsoft.outlook.email import (
+        DeltaCheckpointCandidate,
+    )
     from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
     from message_ingest.sync.microsoft.outlook.email.checkpoints import (
         OutlookDeltaCheckpointStore,
     )
 
+    from ._release import release_mail_authority
+
     lifecycle = OutlookMailStore(catalog, source_id=source_id)
     checkpoints = OutlookDeltaCheckpointStore(catalog, source_id)
     committed_at = datetime.now(UTC).isoformat()
     with catalog.writer_session() as session:
+        candidate_ids = frozenset(
+            session.scalars(
+                select(DeltaCheckpointCandidate.folder_id).filter_by(
+                    source_id=source_id,
+                    run_id=validated.run_id,
+                )
+            )
+        )
+        if not (
+            candidate_ids
+            == validated.candidate_folder_ids
+            == validated.expected_folder_ids
+        ):
+            raise ValueError("Persisted delta candidate set changed")
         outcome = lifecycle.commit_delta_lifecycle_in_session(
             session,
             validated,
@@ -97,6 +118,14 @@ def promote_validated_mail_delta(
             session,
             validated,
             committed_at=committed_at,
+        )
+        release_mail_authority(
+            catalog,
+            session,
+            source_id=source_id,
+            run_id=validated.run_id,
+            committed_at=committed_at,
+            subject="message_delta",
         )
         return {
             **outcome,

@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from scrapy.http import TextResponse
 from scrapy.utils.test import get_crawler
+from sqlalchemy import text
 
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
@@ -140,10 +141,63 @@ def test_folder_delta_removal_clears_message_cursor(tmp_path: Path) -> None:
             evidence_id=None,
             reason="deleted",
         )
+        folders = OutlookFolderDeltaCheckpointStore(catalog, "source-1")
+        folder_cursor = "https://graph.test/me/mailFolders/delta?$deltatoken=done"
+        folders.write_candidate(
+            run_id="folder-delta-run",
+            delta_link=folder_cursor,
+            observed_at="2026-09-28T01:00:00+00:00",
+        )
+        if store.folder_presence(folder_id="gone") is not True:
+            pytest.fail("Staged folder removal changed committed presence")
+        if checkpoints.get_delta_link("gone") != (
+            "https://graph.test/gone?$deltatoken=old"
+        ):
+            pytest.fail("Staged folder removal changed the message cursor")
+        if folders.get_delta_link() is not None:
+            pytest.fail("Staged folder candidate advanced the folder cursor")
+        with catalog.Session() as session:
+            release_count = session.execute(
+                text("SELECT count(*) FROM acquisition_release_groups")
+            ).scalar_one()
+        if release_count != 0:
+            pytest.fail("Staged folder removal published an authority release")
+
+        folders.commit("folder-delta-run")
         if store.folder_presence(folder_id="gone") is not False:
             pytest.fail("Expected folder delta tombstone to mark folder absent")
         if checkpoints.get_delta_link("gone") is not None:
             pytest.fail("Expected folder removal to clear stale message delta cursor")
+        if folders.get_delta_link() != folder_cursor:
+            pytest.fail("Expected committed folder delta cursor")
+        with catalog.Session() as session:
+            groups = [
+                json.loads(payload)
+                for payload in session.scalars(
+                    text("SELECT payload FROM acquisition_release_groups")
+                )
+            ]
+            entries = [
+                json.loads(payload)
+                for payload in session.scalars(
+                    text("SELECT payload FROM acquisition_release_entries")
+                )
+            ]
+        if len(groups) != 1 or (
+            groups[0]["source_id"],
+            groups[0]["owner_run_id"],
+            groups[0]["subject_kind"],
+        ) != ("source-1", "folder-delta-run", "folder_delta"):
+            pytest.fail("Expected one matching folder authority release")
+        if not any(
+            entry["entry_kind"] == "transition"
+            and entry["resource_kind"] == "mail_folder"
+            and entry["resource_identity"] == "gone"
+            and entry["scope_kind"] == "mail_folder"
+            and entry["scope_identity"] == "gone"
+            for entry in entries
+        ):
+            pytest.fail("Folder authority release omitted the scoped removal")
     finally:
         catalog.close()
 
