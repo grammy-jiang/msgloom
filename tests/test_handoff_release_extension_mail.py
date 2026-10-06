@@ -16,8 +16,12 @@ from sqlalchemy import select
 from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.acquisition.handoff import AcquisitionStream
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
-from message_ingest.catalog.models.handoff import AcquisitionReleaseGroup
+from message_ingest.catalog.models.handoff import (
+    AcquisitionFact,
+    AcquisitionReleaseGroup,
+)
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.extensions.handoff import HandoffReleaseExtension
 from message_ingest.pipelines.evidence import RawEvidencePipeline
@@ -61,7 +65,7 @@ def extension(crawler):
 
 def parse_page(case, *, next_link=False, cached=False):
     crawler, spider, _ = case
-    payload = {"value": [{"id": "one", "subject": "A message"}]}
+    payload: dict[str, object] = {"value": [{"id": "one", "subject": "A message"}]}
     if next_link:
         payload["@odata.nextLink"] = "https://graph.microsoft.com/v1.0/me/messages?p=2"
     request = spider._message_list_request(
@@ -104,9 +108,9 @@ def test_mail_discovery_releases_exact_scope_once(mail_case, truncated):
     extension(crawler).spider_idle(spider)
     extension(crawler).spider_idle(spider)
     entries = releases(mail_case)
-    if len(entries) != 2 or {
+    if len(entries) != 1 or {
         json.loads(row["payload"])["entry_kind"] for row in entries
-    } != {"resource", "component"}:
+    } != {"resource"}:
         pytest.fail("Completed Mail discovery did not release its positive message")
     with service.catalog.Session() as session:
         groups = session.scalars(select(AcquisitionReleaseGroup.payload)).all()
@@ -156,7 +160,7 @@ def test_mail_cache_completion_retains_original_capture(mail_case):
     spider.run_id = "replay"
     parse_page(mail_case, cached=True)
     extension(crawler).spider_idle(spider)
-    if len(releases(mail_case)) != 2:
+    if len(releases(mail_case)) != 1:
         pytest.fail("Cached Mail completion did not recover unreleased state")
     with service.catalog.Session() as session:
         evidence = session.scalars(select(RawHttpEvidence)).all()
@@ -165,3 +169,68 @@ def test_mail_cache_completion_retains_original_capture(mail_case):
         pytest.fail("Cache replay changed canonical capture ownership")
     if group["owner_run_id"] != "replay":
         pytest.fail("Mail discovery release lost its logical run")
+
+
+def test_mail_discovery_preserves_context_and_staged_surfaces(mail_case):
+    """Discovery owns messages and folders; Full retains component ownership."""
+    crawler, spider, service = mail_case
+    parse_page(mail_case)
+    store = OutlookMailStore(service.catalog, source_id="source")
+    store.upsert_folder(
+        folder={"id": "inbox", "displayName": "Inbox"},
+        run_id="run",
+        evidence_id=None,
+        observed_at="2026-10-07T00:00:00Z",
+    )
+    with service.catalog.Session() as session:
+        before = dict(
+            session.execute(
+                select(AcquisitionFact.fact_id, AcquisitionFact.payload)
+            ).all()
+        )
+    if not any(
+        json.loads(payload)["component_kind"] == "discovery"
+        for payload in before.values()
+    ):
+        pytest.fail("Fixture omitted its persisted discovery surface")
+    extension(crawler).spider_idle(spider)
+    entries = [json.loads(row["payload"]) for row in releases(mail_case)]
+    expected = {
+        ("resource", "message", "one", "primary"),
+        ("context", "mail_folder", "inbox", "context"),
+    }
+    actual = {
+        (
+            entry["entry_kind"],
+            entry["resource_kind"],
+            entry["resource_identity"],
+            entry["facts"][0][1],
+        )
+        for entry in entries
+    }
+    if len(entries) != 2 or actual != expected:
+        pytest.fail("Discovery crossed Mail ownership or lost folder context")
+    with service.catalog.Session() as session:
+        after = dict(
+            session.execute(
+                select(AcquisitionFact.fact_id, AcquisitionFact.payload)
+            ).all()
+        )
+    if after != before:
+        pytest.fail("Publication changed immutable Full-owned component facts")
+
+
+def test_mail_discovery_revalidates_current_primary(mail_case):
+    """A later writer can displace a message before discovery reaches idle."""
+    crawler, spider, service = mail_case
+    parse_page(mail_case)
+    OutlookMailStore(service.catalog, source_id="source").record_message(
+        run_id="later-run",
+        message={"id": "one", "subject": "Newer message"},
+        kind="discovery",
+        evidence_id=None,
+        observed_at="2099-01-01T00:00:00Z",
+    )
+    extension(crawler).spider_idle(spider)
+    if releases(mail_case):
+        pytest.fail("Discovery released displaced primary or unowned surface")

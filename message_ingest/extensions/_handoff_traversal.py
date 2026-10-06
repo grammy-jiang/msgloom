@@ -123,6 +123,18 @@ def release_traversal(catalog, writer, source, spider):
     selected = {}
     for payload in payloads:
         fact = FactSpec.from_json(payload)
+        # Mail discovery owns positive messages and folder context only.
+        # Discovery surfaces are acquisition bookkeeping; surfaces and
+        # attachments publish through the exact parent-bound Full contract.
+        # Retain their staged facts without creating standalone impacts here.
+        if stream == AcquisitionStream.OUTLOOK_MAIL and (
+            fact.fact_kind,
+            fact.resource_kind,
+        ) not in {
+            ("resource_observation", "message"),
+            ("control_context", "mail_folder"),
+        }:
+            continue
         if fact.storage_relation not in {"advanced", "current_equivalent"}:
             continue
         current = store.current_effective_state(writer, fact.effective_key)

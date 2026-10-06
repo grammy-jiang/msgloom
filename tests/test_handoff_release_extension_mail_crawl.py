@@ -79,7 +79,7 @@ def test_native_mail_discovery_release(
             for row in entries
             if json.loads(row["payload"])["entry_kind"] == "resource"
         ]
-        if len(primary) != count or len(groups) != 1:
+        if len(entries) != count or len(primary) != count or len(groups) != 1:
             pytest.fail("Native discovery lost positive entries or its group")
         group = json.loads(groups[0])
         if group["coverage_kind"] != coverage or group["authority_revision"]:
