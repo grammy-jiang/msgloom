@@ -18,6 +18,9 @@ from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailSto
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookFolderDeltaCheckpointStore,
 )
+from tests.handoff_qualification.release_assertions import (
+    assert_release_contract,
+)
 
 ROOT = Path(__file__).parents[1]
 MESSAGE_ID = "sync-message-1"
@@ -283,3 +286,52 @@ def test_mail_sync_delta_then_full_refresh_in_one_scrapy_process(
                 pytest.fail(f"Expected Mail Full-v1 version on {surface!r}")
     finally:
         catalog.close()
+
+    assert_release_contract(
+        tmp_path / "catalog.sqlite3",
+        source_id="sync-fixture",
+        stream="outlook_mail",
+        expected_groups={
+            ("folder_delta", "sync-fixture"): ("authority_scope", True, 2),
+            ("message_delta", "sync-fixture"): ("authority_scope", True, 2),
+            ("message", MESSAGE_ID): ("resource_profile", False, 1),
+        },
+        expected_entries={
+            ("folder_delta", "sync-fixture"): (
+                ("context", "mail_folder", "folder-inbox", (("context", None),)),
+                (
+                    "transition",
+                    "mail_folder",
+                    "folder-inbox",
+                    (("transition", "folder_presence"),),
+                ),
+            ),
+            ("message_delta", "sync-fixture"): (
+                ("resource", "message", MESSAGE_ID, (("primary", None),)),
+                (
+                    "component",
+                    "message_surface",
+                    MESSAGE_ID,
+                    (("component", "discovery"),),
+                ),
+            ),
+            ("message", MESSAGE_ID): (
+                (
+                    "resource",
+                    "message",
+                    MESSAGE_ID,
+                    (
+                        ("primary", None),
+                        ("component", "detail"),
+                        ("component", "mime"),
+                        ("component", "attachments"),
+                    ),
+                ),
+            ),
+        },
+        expected_fact_spiders={
+            "outlook_delta",
+            "outlook_folder_delta",
+            "outlook_full",
+        },
+    )

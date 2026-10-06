@@ -32,6 +32,9 @@ from message_ingest.catalog.models.microsoft.todo import (
     TodoTaskRecord,
     TodoTraversalCompletion,
 )
+from tests.handoff_qualification.release_assertions import (
+    assert_release_contract,
+)
 
 ROOT = Path(__file__).parents[1]
 LIST_ID = "private-list/+%2F"
@@ -268,6 +271,41 @@ def test_real_todo_command_crawls_all_surfaces_and_preserves_evidence(
                 pytest.fail("A missing provider web URL must remain valid")
             if session.scalars(select(SourceTargetBinding)).first() is not None:
                 pytest.fail("To Do must not create Outlook source-target bindings")
+        context_facts = (("context", None),)
+        primary_facts = (("primary", None),)
+        checklist_facts = (("component", "checklist_item"),)
+        linked_facts = (("component", "linked_resource"),)
+        list_identity = f'["{LIST_ID}"]'
+        flagged_identity = '["flagged"]'
+        task_identity = f'["{LIST_ID}","{TASK_ID}"]'
+        second_identity = f'["{LIST_ID}","second"]'
+        check_one_identity = f'["{LIST_ID}","{TASK_ID}","check-one"]'
+        check_two_identity = f'["{LIST_ID}","{TASK_ID}","check-two"]'
+        link_one_identity = f'["{LIST_ID}","{TASK_ID}","link-one"]'
+        link_two_identity = f'["{LIST_ID}","{TASK_ID}","link-two"]'
+        check_kind = "todo_checklist_item"
+        link_kind = "todo_linked_resource"
+        assert_release_contract(
+            tmp_path / "catalog.sqlite3",
+            source_id="todo-fixture",
+            stream="todo",
+            expected_groups={
+                ("todo_discovery", "source"): ("resource_set", False, 8),
+            },
+            expected_entries={
+                ("todo_discovery", "source"): (
+                    ("context", "todo_task_list", list_identity, context_facts),
+                    ("context", "todo_task_list", flagged_identity, context_facts),
+                    ("resource", "todo_task", task_identity, primary_facts),
+                    ("resource", "todo_task", second_identity, primary_facts),
+                    ("component", check_kind, check_one_identity, checklist_facts),
+                    ("component", check_kind, check_two_identity, checklist_facts),
+                    ("component", link_kind, link_one_identity, linked_facts),
+                    ("component", link_kind, link_two_identity, linked_facts),
+                ),
+            },
+            expected_fact_spiders={"microsoft_todo_discover"},
+        )
         # An empty later inventory must not remove any previously observed row.
         state["mode"] = "empty"
         second = _crawl(tmp_path, origin)
