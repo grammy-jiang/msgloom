@@ -22,7 +22,7 @@ def scheduled_api():
     return models.ScheduledPrepareInvocation
 
 
-def configuration(saved, tmp_path):
+def configuration(saved, tmp_path, *, expected_catalog=None):
     """Load real strict configuration with one stable consumer."""
     from message_ingest.catalog import Catalog
     from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
@@ -45,7 +45,7 @@ def configuration(saved, tmp_path):
                 "intake_targets": [
                     {
                         "expected_catalog": {
-                            "catalog_identity": identity,
+                            "catalog_identity": expected_catalog or identity,
                             "schema_version": 1,
                         },
                         "source_id": "synthetic-source",
@@ -126,3 +126,34 @@ def test_scheduled_denied_before_intake(saved_catalog, tmp_path):
     outcome = asyncio.run(execute_invocation(config, invocation))
     if outcome.status is not TerminalStatus.BLOCKED:
         pytest.fail("scheduled intake bypassed trusted PREPARE admission")
+
+
+def test_stale_scheduled_invocation_rejected_before_io(saved_catalog, tmp_path):
+    """A changed trusted pin invalidates old authority before opening stores."""
+    from pathlib import Path
+
+    from sqlalchemy.engine import make_url
+
+    first = configuration(saved_catalog, tmp_path)
+    invocation = scheduled_api()(
+        configuration_version=first.version,
+        execution="stale",
+        attempt="stale",
+        caller="operator-cli",
+        authority_ref="owner-approved",
+    )
+    changed = configuration(
+        saved_catalog, tmp_path, expected_catalog="explicit-replacement"
+    )
+    database = make_url(changed.database_url).database
+    if database is None:
+        pytest.fail("Fixture must use a real SQLite path")
+    if Path(database).exists():
+        pytest.fail("Fixture unexpectedly opened A2 persistence")
+    # Remove the fixture catalog after trusted loading. A stale invocation
+    # must reject before either the A1 reader or A2 persistence opens it.
+    Path(saved_catalog["database"]).unlink()
+    with pytest.raises(ValueError, match="invocation configuration version"):
+        asyncio.run(execute_invocation(changed, invocation))
+    if Path(database).exists() or Path(saved_catalog["database"]).exists():
+        pytest.fail("Stale invocation opened a store before rejection")

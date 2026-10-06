@@ -194,3 +194,105 @@ def test_baseline_retry_reuses_saved_selections(saved_catalog, tmp_path, monkeyp
             await persistence.close()
 
     asyncio.run(check())
+
+
+@pytest.mark.parametrize("existing_release", [False, True])
+def test_matching_pin_schedules_explicit_historical_baseline(
+    saved_catalog, tmp_path, existing_release
+):
+    """Replay only approved history, then continue after its captured anchor."""
+    from msgloom.contracts import AttemptIdentity, ExecutionIdentity, TerminalStatus
+    from msgloom.preparation_pipeline.historical_baseline import (
+        HistoricalBaselineService,
+    )
+    from msgloom.preparation_pipeline.scheduled import ScheduledPreparationHandler
+    from msgloom.sources.release_reader import ReleaseSourceReader
+    from tests.preparation_pipeline.test_scheduled_recovery import context
+
+    initial = release(saved_catalog) if existing_release else 0
+
+    async def check():
+        persistence, scope, handler, request = await context(
+            saved_catalog, tmp_path, entries=0
+        )
+        reader = ReleaseSourceReader(handler._source)
+        try:
+            target = handler._operation.intake_targets[0]
+            if target.expected_catalog != scope.catalog:
+                pytest.fail("Fixture lacks the matching trusted catalog pin")
+            versions = await reader.list_versions(
+                PreparedSourceType.TODO, source_id=scope.source_id, limit=10
+            )
+            approved = tuple(v for v in versions if "todo-old" in v.version)
+            baseline = await run(
+                HistoricalBaselineService(persistence, reader),
+                scope,
+                sources=approved,
+                approval_id="explicit-operator-approval",
+            )
+            frozen = await payload(persistence, baseline)
+            await reader.close()
+            outcome = await handler.run(request)
+            states = await persistence.list_preparation_intake_worksets(
+                scope, pending_only=False
+            )
+            if (
+                len(states) != 1
+                or states[0].workset.result_id != baseline.result_id
+                or states[0].state != "terminal"
+                or states[0].terminal_status
+                not in {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}
+                or not any(ref.kind == "prepared" for ref in outcome.result_refs)
+            ):
+                pytest.fail("Scheduled handler did not accept baseline replay")
+            prepared = [ref for ref in outcome.result_refs if ref.kind == "prepared"]
+            if len(prepared) != 1:
+                pytest.fail("Scheduled baseline widened the approved history")
+            result = await persistence.get_result(prepared[0].result_id)
+            if (await payload(persistence, result)).source != approved[0]:
+                pytest.fail("Scheduled baseline prepared an unapproved version")
+            cursor = await persistence.get_preparation_intake_cursor(scope)
+            if cursor != frozen.cutoff or cursor.last_release_entry_seq != initial:
+                pytest.fail("Scheduled replay changed the baseline cursor")
+            sequence = publish(
+                saved_catalog,
+                [
+                    replace(
+                        fact(
+                            "todo",
+                            "todo_task",
+                            '["list","task"]',
+                            "ev-todo-new",
+                            scope_kind="todo_list",
+                            scope_identity="list",
+                        ),
+                        source_state_key=source_state_key({"version": "future"}),
+                    )
+                ],
+            )
+            successor = ScheduledPreparationHandler(
+                persistence,
+                handler._source,
+                handler._operation,
+                AttemptIdentity("future-scheduled"),
+            )
+            await successor.run(
+                replace(request, execution=ExecutionIdentity("future-scheduled"))
+            )
+            states = await persistence.list_preparation_intake_worksets(
+                scope, pending_only=False
+            )
+            cursor = await persistence.get_preparation_intake_cursor(scope)
+            if (
+                len(states) != 2
+                or any(state.state != "terminal" for state in states)
+                or cursor.last_release_entry_seq != sequence
+            ):
+                pytest.fail("Scheduled successor lost or duplicated release work")
+            if await payload(persistence, baseline) != frozen:
+                pytest.fail("Scheduled replay mutated the explicit baseline")
+        finally:
+            await reader.close()
+            await persistence.close()
+
+    asyncio.run(check())

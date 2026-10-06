@@ -31,9 +31,10 @@ from tests.preparation_pipeline.helpers import filter_config
 
 
 class MemoryCatalog:
-    def __init__(self, identity, anchor_ok):
+    def __init__(self, identity, anchor_ok, anchor_digest):
         self.identity = A1CatalogIdentity(catalog_identity=identity, schema_version=1)
         self.anchor_ok = anchor_ok
+        self.anchor_digest = anchor_digest
         self.queries = []
 
     async def catalog_identity(self):
@@ -48,7 +49,7 @@ class MemoryCatalog:
             catalog=self.identity,
             source_id="source",
             stream="todo",
-            entry_digest="a" * 64,
+            entry_digest=self.anchor_digest,
         )
 
     async def max_release_entry_seq(self, source, stream):
@@ -75,6 +76,7 @@ async def scenario(
     seed,
     catalog_identity,
     anchor_ok,
+    anchor_digest="a" * 64,
     expected="old",
     consumer="consumer",
     stream="todo",
@@ -92,13 +94,13 @@ async def scenario(
         connect_args={"autocommit": True, "check_same_thread": False},
     )
     initialize_schema(store.engine)
+    scope = IntakeScope(
+        catalog=A1CatalogIdentity(catalog_identity="old", schema_version=1),
+        source_id="source",
+        stream="todo",
+        consumer_id="consumer",
+    )
     if seed:
-        scope = IntakeScope(
-            catalog=A1CatalogIdentity(catalog_identity="old", schema_version=1),
-            source_id="source",
-            stream="todo",
-            consumer_id="consumer",
-        )
         with store.engine.connect() as connection:
             connection.execute(
                 INTAKE_CURSORS.insert().values(
@@ -130,11 +132,12 @@ async def scenario(
         max_total_parser_output_bytes=1024,
         intake_targets=(target,),
     )
-    catalog = MemoryCatalog(catalog_identity, anchor_ok)
+    catalog = MemoryCatalog(catalog_identity, anchor_ok, anchor_digest)
     reader = MemoryReader(catalog)
     request = OperationRequest(
         ExecutionIdentity(name), "operator", PhaseCapability.PREPARE
     )
+    before = await persistence.get_preparation_intake_cursor(scope)
     sql = []
     event.listen(
         store.engine, "before_cursor_execute", lambda *args: sql.append(args[2])
@@ -153,13 +156,21 @@ async def scenario(
             outcome = await handler.run(request)
         if not reader.closed:
             raise RuntimeError("Scheduled handler did not close reader")
+        handler_sql = tuple(sql)
+        after = await persistence.get_preparation_intake_cursor(scope)
+        worksets = await persistence.list_preparation_intake_worksets(
+            scope, pending_only=False
+        )
         return {
             "name": name,
             "status": outcome.status.value,
             "limitations": [x.code for x in outcome.limitations],
             "queries": catalog.queries,
             "reader_closed": reader.closed,
-            "sql": sql,
+            "sql": handler_sql,
+            "cursor_before": before,
+            "cursor_after": after,
+            "worksets": worksets,
         }
     finally:
         await persistence.close()
@@ -236,3 +247,22 @@ def test_explicit_catalog_scopes_and_restore_controls(options, status):
     row = asyncio.run(scenario("control", **options))
     if row["status"] != status or not row["reader_closed"]:
         pytest.fail(f"Catalog scope control failed: {row}")
+
+
+def test_changed_digest_rejects_scheduled_restore():
+    """A divergent copy must not advance the matching catalog's cursor."""
+    row = asyncio.run(
+        scenario(
+            "divergent-copy",
+            seed=True,
+            catalog_identity="old",
+            anchor_ok=True,
+            anchor_digest="b" * 64,
+        )
+    )
+    if row["status"] != "incomplete" or row["worksets"]:
+        pytest.fail("Changed cursor digest was silently accepted")
+    if row["cursor_after"] != row["cursor_before"]:
+        pytest.fail("Rejected restore changed the durable cursor")
+    if row["queries"] != ["catalog_identity", "catalog_identity", "anchor:9"]:
+        pytest.fail("Divergent restore reached release discovery")
