@@ -7,18 +7,22 @@ import sys
 import pytest
 from sqlalchemy import select
 from test_outlook_crawls import ROOT, RUN_COMMAND, graph_server
-from test_outlook_mail_handoff_facts import publish
 
 from message_ingest.acquisition.handoff import FactSpec
 from message_ingest.catalog import Catalog
-from message_ingest.catalog.models.handoff import AcquisitionFact
+from message_ingest.catalog.models.handoff import (
+    AcquisitionFact,
+    AcquisitionReleaseEntry,
+)
 from message_ingest.catalog.models.microsoft.outlook.email import MessageObservation
-from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 
 __all__ = ["graph_server"]
 
 
-def test_real_scrapy_http_cache_replay_retains_logical_run(tmp_path, graph_server):
+@pytest.mark.parametrize("interrupted", [False, True])
+def test_real_scrapy_http_cache_replay_retains_logical_run(
+    tmp_path, graph_server, interrupted
+):
     """Exercise native HttpCacheMiddleware and the enabled pipeline chain."""
     settings = {
         "MS_GRAPH_AUTH_METHOD": "none",
@@ -47,11 +51,42 @@ def test_real_scrapy_http_cache_replay_retains_logical_run(tmp_path, graph_serve
         args.extend(["-s", f"{key}={value}"])
     first_run = set()
     first_facts = []
-    for attempt in range(2):
+    released_entries = []
+    interrupt = """
+from pathlib import Path
+original_parse = OutlookDiscoverSpider.parse
+
+def interrupted_parse(self, response, **kwargs):
+    yield from original_parse(self, response, **kwargs)
+    if kwargs.get("page_number") == 2:
+        Path(__file__).with_suffix(".interrupted").write_text("page-2")
+        raise RuntimeError("controlled traversal interruption")
+
+OutlookDiscoverSpider.parse = interrupted_parse
+"""
+    for attempt in range(3):
+        command = list(args)
+        if interrupted and attempt == 0:
+            runner = tmp_path / "interrupted_discovery.py"
+            runner.write_text(
+                f"import sys\nsys.path.insert(0, {str(ROOT)!r})\n"
+                + RUN_COMMAND.replace(
+                    'execute(["scrapy",', interrupt + '\nexecute(["scrapy",'
+                )
+            )
+            command = [sys.executable, str(runner), *args[3:]]
         result = subprocess.run(
-            args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+            command, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
         )
-        if result.returncode or "ERROR" in result.stderr:
+        (tmp_path / f"crawl-{attempt}.stderr.log").write_text(result.stderr)
+        (tmp_path / f"crawl-{attempt}.stdout.log").write_text(result.stdout)
+        if interrupted and attempt == 0:
+            marker = tmp_path / "interrupted_discovery.interrupted"
+            if not marker.exists() or marker.read_text() != "page-2":
+                pytest.fail("First traversal missed the controlled interruption")
+            if "'spider_exceptions/RuntimeError': 1" not in result.stderr:
+                pytest.fail("Controlled callback failure did not reach Scrapy")
+        elif result.returncode or "ERROR" in result.stderr:
             pytest.fail(result.stderr)
         if attempt and "'httpcache/hit':" not in result.stderr:
             pytest.fail("Second crawl did not exercise native HTTP cache")
@@ -66,14 +101,25 @@ def test_real_scrapy_http_cache_replay_retains_logical_run(tmp_path, graph_serve
                     f for f in all_facts if f.fact_kind == "resource_observation"
                 ]
                 count = len(session.scalars(select(MessageObservation)).all())
+                entries = [
+                    (row.release_entry_seq, row.payload)
+                    for row in session.scalars(select(AcquisitionReleaseEntry))
+                ]
             if attempt == 0:
                 first_facts = primary
                 first_run = {f.run_id for f in primary}
                 if len(first_run) != 1 or not primary:
                     pytest.fail("First real crawl did not stage primary state")
+                if interrupted:
+                    if entries:
+                        pytest.fail("Interrupted traversal published staged facts")
+                else:
+                    if len(entries) != len(primary):
+                        pytest.fail("Completed discovery did not publish every target")
+                    released_entries = entries
                 continue
             replay = [f for f in primary if f.run_id not in first_run]
-            if len(replay) != len(first_facts) or count != len(first_facts):
+            if len(replay) != attempt * len(first_facts) or count != len(first_facts):
                 pytest.fail("Cache run lost provenance or duplicated observations")
             old = {f.resource_identity: f for f in first_facts}
             for fact in replay:
@@ -86,13 +132,18 @@ def test_real_scrapy_http_cache_replay_retains_logical_run(tmp_path, graph_serve
                     pytest.fail(
                         "Real cache replay changed source state or canonical evidence"
                     )
-            store = OutlookMailStore(catalog, source_id="source")
-            entries = publish(store, replay[0], replay[0].run_id)
-            if len(entries) != 1:
-                pytest.fail("Real cache replay did not recover its unreleased state")
-            if json.loads(entries[0]["payload"])["facts"][0][0] != (
-                old[replay[0].resource_identity].fact_id
-            ):
-                pytest.fail("Recovery did not bind the exact original advanced fact")
+            if len(entries) != len(first_facts):
+                pytest.fail("Cache recovery lost or duplicated release entries")
+            published = {
+                json.loads(payload)["resource_identity"]: json.loads(payload)["facts"][
+                    0
+                ][0]
+                for _, payload in entries
+            }
+            if published != {key: fact.fact_id for key, fact in old.items()}:
+                pytest.fail("Publication did not bind the original advanced facts")
+            if released_entries and entries != released_entries:
+                pytest.fail("Already published cache replay created repeated work")
+            released_entries = entries
         finally:
             catalog.close()

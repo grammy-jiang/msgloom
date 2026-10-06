@@ -221,10 +221,11 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
         purpose = callback_data.get("purpose", "unknown")
         evidence = self._failure_evidence_item(failure)
         yield evidence
-        if purpose == "message-detail" and callback_data.get("selection_id"):
-            # No primary bytes exist to bind a failed detail selection.
-            yield self._request_failure_item(failure, evidence)
-            return
+        # Failed detail still has a terminal diagnostic, but no primary
+        # bytes exist to bind that diagnostic to a selected application.
+        selection_id = (
+            None if purpose == "message-detail" else callback_data.get("selection_id")
+        )
         if purpose == "attachments-list" and callback_data.get("selection_id"):
             inventory_status = (
                 "omitted_size_limit"
@@ -263,7 +264,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                     surface=surface,
                     resource_version=callback_data.get("resource_version"),
                     primary_observed_at=callback_data.get("primary_observed_at"),
-                    selection_id=callback_data.get("selection_id"),
+                    selection_id=selection_id,
                     parent_evidence_id=callback_data.get("parent_evidence_id"),
                     status="omitted_size_limit",
                     observed_at=evidence.observed_at,
@@ -298,7 +299,7 @@ class OutlookFullSpider(OutlookAttachmentTraversal):
                 surface=surface,
                 resource_version=callback_data.get("resource_version"),
                 primary_observed_at=callback_data.get("primary_observed_at"),
-                selection_id=callback_data.get("selection_id"),
+                selection_id=selection_id,
                 parent_evidence_id=callback_data.get("parent_evidence_id"),
                 status=terminal_status,
                 observed_at=evidence.observed_at,

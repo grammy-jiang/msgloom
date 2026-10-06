@@ -62,10 +62,11 @@ def test_forbidden_full_surface_becomes_terminal_unauthorized() -> None:
         pytest.fail("Expected: failure.observed_at == evidence.observed_at")
 
 
-def test_missing_message_detail_becomes_terminal_unavailable() -> None:
+@pytest.mark.parametrize("status", [404, 410])
+def test_missing_message_detail_becomes_terminal_unavailable(status) -> None:
     spider = _spider()
     request = spider._message_detail_request("m1")
-    output = list(spider.errback(_failure(request, 404)))
+    output = list(spider.errback(_failure(request, status)))
     if not isinstance(output[0], RawHttpEvidenceItem):
         pytest.fail("Expected: isinstance(output[0], RawHttpEvidenceItem)")
     surface = next(
@@ -75,6 +76,10 @@ def test_missing_message_detail_becomes_terminal_unavailable() -> None:
         pytest.fail('Expected: surface.surface == "detail"')
     if surface.status != "unavailable":
         pytest.fail('Expected: surface.status == "unavailable"')
+    if surface.selection_id is not None or surface.resource_version is not None:
+        pytest.fail("Missing primary bytes cannot establish a selection binding")
+    if surface.evidence_id != output[0].evidence_id:
+        pytest.fail("Terminal diagnostic lost its preceding HTTP evidence")
 
 
 def test_method_not_allowed_attachment_raw_becomes_terminal_unsupported() -> None:

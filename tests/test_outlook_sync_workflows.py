@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 from outlook_mail_handoff_fixtures import saved_mail_evidence
 from scrapy.settings import Settings
+from test_mail_inventory_bindings import seed_inventory
 
 import message_ingest.commands.microsoft.outlook.sync as sync_module
 from message_ingest.acquisition.microsoft.outlook.email.profile import (
@@ -76,14 +78,23 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
             evidence_id=None,
             observed_at=NOW,
         )
-        store.record_message(
+        raw = {"id": "complete", "lastModifiedDateTime": NOW}
+        primary_evidence = saved_mail_evidence(
+            catalog,
+            evidence_id="complete-primary",
             run_id="older-run",
-            message={"id": "complete", "lastModifiedDateTime": NOW},
-            kind="delta",
-            evidence_id=None,
             observed_at=NOW,
+            body=json.dumps(raw).encode(),
         )
-        for surface in ("detail", "mime", "attachments"):
+        primary = store.record_message(
+            run_id="older-run",
+            message=raw,
+            kind="detail",
+            selection_id="complete-selection",
+            evidence_id=primary_evidence,
+            observed_at=NOW,
+        ).fact
+        for surface in ("detail", "mime"):
             evidence_id = saved_mail_evidence(
                 catalog,
                 evidence_id=f"complete-{surface}",
@@ -97,7 +108,19 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
                 evidence_id=evidence_id,
                 observed_at=NOW,
                 profile_version=MAIL_FULL_V1,
+                resource_version=primary.source_state_key,
+                selection_id="complete-selection",
+                parent_evidence_id=primary_evidence,
             )
+        seed_inventory(
+            store,
+            "complete",
+            "complete-selection",
+            primary.source_state_key,
+            primary_evidence,
+            [],
+            when=NOW,
+        )
     finally:
         catalog.close()
 
@@ -229,3 +252,55 @@ def test_multi_phase_sync_rejects_shared_jobdir(tmp_path: Path) -> None:
             _opts(),
             mail_rule_policy=parse_mail_rule_policy(None),
         )
+
+
+def test_mail_sync_keeps_unbound_terminal_surfaces_in_backlog(tmp_path, monkeypatch):
+    """Legacy mutable completion labels cannot suppress exact acquisition."""
+    command = _command(tmp_path)
+    catalog = Catalog(command.settings["MSGLOOM_DATABASE_URL"])
+    try:
+        store = OutlookMailStore(catalog, source_id="source-1")
+        store.record_message(
+            run_id="historical",
+            message={"id": "legacy"},
+            kind="delta",
+            evidence_id=None,
+            observed_at=NOW,
+        )
+        for surface in ("detail", "mime", "attachments"):
+            evidence = saved_mail_evidence(
+                catalog,
+                evidence_id=f"legacy-{surface}",
+                run_id="historical",
+            )
+            store.set_surface(
+                run_id="historical",
+                message_id="legacy",
+                surface=surface,
+                status="acquired",
+                evidence_id=evidence,
+                observed_at=NOW,
+                profile_version=MAIL_FULL_V1,
+            )
+    finally:
+        catalog.close()
+    captured = []
+    monkeypatch.setattr(
+        sync_module,
+        "run_graph_workflow",
+        lambda _command, phases: captured.extend(phases),
+    )
+    sync_module.run_mail_sync(
+        command,
+        _opts(),
+        mail_rule_policy=parse_mail_rule_policy(None),
+    )
+    follow = list(
+        captured[1].after(SimpleNamespace(spider=SimpleNamespace(run_id="new-delta")))
+    )
+    if len(follow) != 1 or follow[0].spider_args != {
+        "message_ids": "legacy",
+        "operation": "enrich",
+        "profile": MAIL_FULL_V1,
+    }:
+        pytest.fail("Unbound historical surface labels suppressed exact acquisition")

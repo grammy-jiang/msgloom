@@ -6,6 +6,7 @@ items.
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 
 import pytest
@@ -80,9 +81,38 @@ def test_discovery_stats_cover_mode_pages_messages_and_continuation() -> None:
 
 def test_full_mode_records_target_message_count() -> None:
     spider = _spider(OutlookFullSpider, message_ids="one,two")
+    if not isinstance(spider, OutlookFullSpider):
+        pytest.fail("Expected the requested Full spider")
     output = asyncio.run(_collect_start(spider))
-    if len(output) != 6:
-        pytest.fail("Expected: len(output) == 6")
+    requests = [item for item in output if isinstance(item, Request)]
+    if len(requests) != len(output):
+        pytest.fail("Initial Full output must contain only selection requests")
+    if len(output) != 2:
+        pytest.fail("Expected one detail selection request per target")
+    if {request.cb_kwargs["message_id"] for request in requests} != {"one", "two"}:
+        pytest.fail("Initial requests lost the selected target identities")
+    for request in requests:
+        if request.cb_kwargs["purpose"] != "message-detail":
+            pytest.fail("Component request preceded exact primary selection")
+        response = TextResponse(
+            request.url,
+            request=request,
+            encoding="utf-8",
+            body=json.dumps({"id": request.cb_kwargs["message_id"]}).encode(),
+        )
+        children = [
+            item
+            for item in spider.parse_message_detail(response, **request.cb_kwargs)
+            if isinstance(item, Request)
+        ]
+        if {child.cb_kwargs["purpose"] for child in children} != {
+            "message-mime",
+            "attachments-list",
+        }:
+            pytest.fail("Selected detail did not schedule both Full components")
+        for child in children:
+            if child.cb_kwargs["selection_id"] != request.cb_kwargs["selection_id"]:
+                pytest.fail("Full component lost its exact primary selection")
     if spider.crawler.stats.get_value("msgloom/crawl/mode") != "full":
         pytest.fail(
             'Expected: spider.crawler.stats.get_value("msgloom/crawl/mode") == "full"'

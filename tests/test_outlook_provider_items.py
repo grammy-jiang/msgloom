@@ -44,6 +44,7 @@ BASELINE_FIELDS = {
         "observed_at",
         "evidence_id",
         "run_id",
+        "selection_id",
     ),
     "OutlookAttachmentItem": (
         "message_id",
@@ -54,6 +55,11 @@ BASELINE_FIELDS = {
         "observed_at",
         "evidence_id",
         "run_id",
+        "resource_version",
+        "primary_observed_at",
+        "selection_id",
+        "parent_evidence_id",
+        "capture_id",
     ),
     "OutlookMailFolderItem": (
         "folder_id",
@@ -208,3 +214,22 @@ def test_folder_and_attachment_mapping_preserves_provider_fields():
     item = OutlookAttachmentItem.from_graph(raw, message_id="message")
     if item.attachment_type != raw["@odata.type"] or item.raw is not raw:
         pytest.fail("Provider attachment mapper must not apply storage policy")
+
+
+def test_added_mail_provenance_preserves_legacy_constructor_arguments():
+    """Original positional fields still construct with absent optional pins."""
+    detail = email.OutlookMailDetailItem("message", {}, "url", "time", None, "run")
+    attachment = email.OutlookAttachmentItem(
+        "message", "attachment", "type", {}, "url", "time", None, "run"
+    )
+    if detail.selection_id is not None:
+        pytest.fail("Optional detail selection changed its legacy default")
+    for name in (
+        "resource_version",
+        "primary_observed_at",
+        "selection_id",
+        "parent_evidence_id",
+        "capture_id",
+    ):
+        if getattr(attachment, name) is not None:
+            pytest.fail("Optional attachment binding changed legacy defaults")
