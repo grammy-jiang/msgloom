@@ -261,7 +261,12 @@ class Phase1Persistence:
         *,
         limit: int = 100,
     ) -> tuple[IntakeWorksetState, ...]:
-        """Drain durable discovery rotation before cancellation can escape."""
+        """
+        Drain durable discovery rotation before cancellation can escape.
+
+        Use ``limit=1`` immediately before each attempt unless every selected
+        item is guaranteed an attempt. Selection grants no processing claim.
+        """
         return await self._call(
             partial(
                 self._store.select_preparation_intake_worksets,

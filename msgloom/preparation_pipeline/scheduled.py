@@ -35,10 +35,10 @@ class ScheduledPreparationHandler:
 
     Caller owns persistence. This handler owns its source reader. Existing
     pending work is considered before intake. Each pending failure consumes one
-    budget unit; new intake still advances independently. Pending selection is
-    currently admission-ordered; durable rotation requires the separate store
-    selector integration. Transition work stays
-    pending because the reviewed completion API has no transition output proof.
+    budget unit; new intake still advances independently. Each attempt reserves
+    one durable discovery turn, so failures cannot monopolize later invocations.
+    Transition work stays pending because the reviewed completion API has no
+    transition output proof.
     """
 
     def __init__(
@@ -79,16 +79,17 @@ class ScheduledPreparationHandler:
                     consumer_id=target.consumer_id,
                 )
                 try:
-                    async with asyncio.timeout(budget):
-                        states = (
-                            await self._persistence.list_preparation_intake_worksets(
-                                scope,
-                                limit=target.max_pending_worksets,
+                    attempted = 0
+                    for _ in range(target.max_pending_worksets):
+                        async with asyncio.timeout(budget):
+                            states = await self._persistence.select_preparation_intake_worksets(
+                                scope, limit=1
                             )
-                        )
-                    for state in states:
+                        if not states:
+                            break
+                        attempted += 1
                         refs, accepted, status = await self._bounded_process(
-                            state.workset,
+                            states[0].workset,
                             reader,
                             request,
                         )
@@ -111,17 +112,22 @@ class ScheduledPreparationHandler:
                             limit=target.max_entries,
                             lease_seconds=self._operation.claim_lease_seconds,
                         )
-                    if saved is not None and len(states) < target.max_pending_worksets:
-                        refs, accepted, status = await self._bounded_process(
-                            ResultRef(
-                                saved.result_id, saved.kind, saved.schema_version
-                            ),
-                            reader,
-                            request,
-                        )
-                        outputs.extend(refs)
-                        pending |= not accepted
-                        incomplete |= status is TerminalStatus.INCOMPLETE
+                    if saved is not None and attempted < target.max_pending_worksets:
+                        # Fresh admission shares the same durable rotation.
+                        # Selection grants no claim or completion authority.
+                        async with asyncio.timeout(budget):
+                            states = await self._persistence.select_preparation_intake_worksets(
+                                scope, limit=1
+                            )
+                        if states:
+                            refs, accepted, status = await self._bounded_process(
+                                states[0].workset,
+                                reader,
+                                request,
+                            )
+                            outputs.extend(refs)
+                            pending |= not accepted
+                            incomplete |= status is TerminalStatus.INCOMPLETE
                     # A full processed page is not proof of an empty queue.
                     # This bounded read also includes newly admitted work.
                     async with asyncio.timeout(budget):
