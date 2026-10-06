@@ -267,6 +267,7 @@ class ResultSchemaRegistry:
         schemas = frozenset(
             {
                 ("collected_selection", "1"),
+                ("preparation_intake_workset", "1"),
                 ("derived_bytes", "1"),
                 ("prepared", "1"),
                 ("filter_result", "1"),
@@ -290,6 +291,7 @@ class ResultSchemaRegistry:
             frozenset(
                 {
                     ("collected_selection", "1"),
+                    ("preparation_intake_workset", "1"),
                     ("derived_bytes", "1"),
                     ("prepared", "1"),
                     ("filter_result", "1"),
@@ -316,7 +318,7 @@ class ResultSchemaRegistry:
         *,
         semantic_data_required: bool = False,
     ) -> ResultSchemaRegistry:
-        """Return a registry extended by one explicitly reviewed producer schema."""
+        """Return a registry adding one explicitly reviewed producer schema."""
         _require_text(kind, "result kind")
         _require_text(schema_version, "result schema version")
         key = (kind, schema_version)

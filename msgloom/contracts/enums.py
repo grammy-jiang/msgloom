@@ -41,6 +41,7 @@ class ClaimKind(StrEnum):
     """Durable Phase 1 work scopes that exclude duplicate execution."""
 
     PREPARE = "prepare"
+    PREPARE_INTAKE = "prepare_intake"
     TRIAGE = "triage"
     REPORT_BUILD = "report_build"
     REPORT_SUBMIT = "report_submit"

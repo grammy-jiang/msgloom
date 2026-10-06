@@ -221,3 +221,83 @@ def test_runner_interruption_cleans_new_session_child(
     finally:
         if child is not None:
             _kill(child)
+
+
+@pytest.mark.parametrize("gate_exit", [0, 23])
+def test_active_gate_reaps_orphan_without_consuming_gate_status(
+    tmp_path: Path,
+    gate_exit: int,
+) -> None:
+    """An adopted exited child disappears while its gate is still running."""
+    orphan_parent = (
+        "import os,time; pid=os.fork(); "
+        "print(pid,flush=True) if pid else None; "
+        "time.sleep(0.15) if not pid else None; os._exit(0)"
+    )
+    code = (
+        "import pathlib,subprocess,sys,time; "
+        f"p=subprocess.run([sys.executable,'-c',{orphan_parent!r}],"
+        "capture_output=True,text=True,check=True); "
+        "pid=int(p.stdout.strip()); print(pid,flush=True); "
+        "path=pathlib.Path(f'/proc/{pid}/stat'); "
+        "deadline=time.monotonic()+2\n"
+        "while path.exists() and time.monotonic()<deadline: time.sleep(0.01)\n"
+        "print(path.read_text() if path.exists() else 'reaped',flush=True)\n"
+        f"sys.exit(41 if path.exists() else {gate_exit})"
+    )
+    output = tmp_path / "active-orphan"
+    output.mkdir()
+    record: dict = {}
+    gate = execution.Gate("orphan", (sys.executable, "-c", code), timeout=5)
+    with execution.process_boundary.child_subreaper():
+        try:
+            execution._execute(tmp_path, output, gate, record, {"gates": [record]})
+            observed = Path(record["stdout"]).read_text()
+            if record["exit_code"] != gate_exit:
+                pytest.fail(f"adopted orphan blocked gate: {record!r}; {observed}")
+            _equal(record["status"], "passed" if gate_exit == 0 else "failed")
+        finally:
+            if "stdout" in record:
+                rows = Path(record["stdout"]).read_text().splitlines()
+                if rows:
+                    try:
+                        os.waitpid(int(rows[0]), os.WNOHANG)
+                    except ChildProcessError:
+                        pass
+
+
+def test_active_gate_preserves_unrelated_adopted_status(tmp_path: Path) -> None:
+    """Reaping a gate never consumes an orphan outside its cgroup boundary."""
+    parent_code = (
+        "import os; pid=os.fork(); "
+        "print(pid,flush=True) if pid else None; os._exit(0 if pid else 37)"
+    )
+    output = tmp_path / "unrelated-orphan"
+    output.mkdir()
+    record: dict = {}
+    gate = execution.Gate(
+        "owned", (sys.executable, "-c", "import time; time.sleep(0.1)")
+    )
+    with execution.process_boundary.child_subreaper():
+        parent = subprocess.run(
+            [sys.executable, "-c", parent_code],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        orphan = int(parent.stdout.strip())
+        try:
+            execution._execute(tmp_path, output, gate, record, {"gates": [record]})
+            _equal(record["exit_code"], 0)
+            try:
+                pid, status = os.waitpid(orphan, os.WNOHANG)
+            except ChildProcessError:
+                pytest.fail("gate reaping consumed an unrelated orphan's status")
+            _equal(pid, orphan)
+            _equal(os.waitstatus_to_exitcode(status), 37)
+        finally:
+            try:
+                os.waitpid(orphan, os.WNOHANG)
+            except ChildProcessError:
+                pass

@@ -26,7 +26,7 @@ from tests.container_deployment.helpers import daemon_result
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
 SCRIPT = ROOT / "scripts" / "qualify_container_package.py"
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(sys.executable)
 RESOURCE = "msgloom:reporting/templates/report.html.j2"
 
 

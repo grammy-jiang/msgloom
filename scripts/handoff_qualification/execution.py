@@ -166,7 +166,7 @@ def _execute(
                     os.close(ready_write)
             record["pid"] = process.pid
             save_manifest(output, manifest)
-            record["exit_code"] = process.wait(timeout=gate.timeout)
+            record["exit_code"] = process_boundary.wait(boundary, process, gate.timeout)
             record["status"] = (
                 "passed"
                 if process.returncode == 0

@@ -53,9 +53,7 @@ claim = await persistence.acquire_claim(
     ClaimKind.TRIAGE,
     execution,
     attempt,
-    required_inputs=(
-        ResultRef(result.result_id, result.kind, result.schema_version),
-    ),
+    required_inputs=(ResultRef(result.result_id, result.kind, result.schema_version),),
 )
 ```
 

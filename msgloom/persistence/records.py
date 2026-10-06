@@ -1,4 +1,4 @@
-"""Typed SQLAlchemy table and row conversion helpers for Phase 1 persistence."""
+"""Typed SQLAlchemy table and row conversions for Phase 1 persistence."""
 
 from __future__ import annotations
 
@@ -35,6 +35,11 @@ from msgloom.persistence.codecs import (
 from msgloom.persistence.models import (
     ClaimAttemptRecord,
     OperationOutcomeRecord,
+    PreparationIntakeCursorRecord,
+    PreparationIntakeHeldEntryRecord,
+    PreparationIntakeWorksetRecord,
+    PreparationPlanProofRecord,
+    PreparationResultBindingRecord,
     ReconciliationRecord,
     SchemaMetadataRecord,
     SemanticDataRecord,
@@ -45,6 +50,11 @@ from msgloom.persistence.models import (
 # SQLAlchemy's declarative typing exposes __table__ as FromClause even though
 # mapped declarative classes own concrete Table instances at runtime. Keep the
 # narrow casts here rather than suppressing Core insert/update/delete checking.
+PREPARATION_PLAN_PROOFS = cast(Table, PreparationPlanProofRecord.__table__)
+PREPARATION_RESULT_BINDINGS = cast(Table, PreparationResultBindingRecord.__table__)
+INTAKE_CURSORS = cast(Table, PreparationIntakeCursorRecord.__table__)
+INTAKE_WORKSETS = cast(Table, PreparationIntakeWorksetRecord.__table__)
+INTAKE_HELD_ENTRIES = cast(Table, PreparationIntakeHeldEntryRecord.__table__)
 CLAIM_ATTEMPTS = cast(Table, ClaimAttemptRecord.__table__)
 OPERATION_OUTCOMES = cast(Table, OperationOutcomeRecord.__table__)
 RECONCILIATIONS = cast(Table, ReconciliationRecord.__table__)

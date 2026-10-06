@@ -196,6 +196,47 @@ def _reap_known(
             continue
 
 
+def _reap_adopted(boundary: Path, process: subprocess.Popen) -> None:
+    """
+    Reap adopted gate children without consuming the gate's exit status.
+
+    Exited children disappear from ``cgroup.procs`` before they are reaped.
+    Read this runner's children instead, then verify each recorded identity
+    still belongs to the gate boundary. Unrelated children remain untouched.
+    """
+    members = []
+    for path in Path("/proc/self/task").glob("*/children"):
+        try:
+            children = path.read_text().split()
+        except FileNotFoundError:
+            continue
+        for value in children:
+            identity = _stat_identity(int(value))
+            if identity is not None and _still_owned(boundary, identity):
+                members.append(identity)
+    _reap_known(tuple(members), exclude_pid=process.pid)
+
+
+def wait(boundary: Path, process: subprocess.Popen, timeout: float) -> int:
+    """
+    Wait for a gate while reaping only its adopted orphan descendants.
+
+    The direct child's :class:`subprocess.Popen` owns its exit status.
+    Reaping does not signal processes or change the gate's timeout budget;
+    existing cleanup still owns live descendants on exit or interruption.
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        _reap_adopted(boundary, process)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(process.args, timeout)
+        try:
+            return process.wait(timeout=min(0.05, remaining))
+        except subprocess.TimeoutExpired:
+            continue
+
+
 def _wait_empty(
     boundary: Path,
     timeout: float,

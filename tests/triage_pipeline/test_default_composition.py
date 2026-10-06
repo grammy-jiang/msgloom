@@ -1,4 +1,4 @@
-"""Check default producing composition and owned cancellation at stage boundaries."""
+"""Check default producer composition and owned stage cancellation."""
 
 import asyncio
 from dataclasses import replace
@@ -13,6 +13,7 @@ from msgloom.persistence import Phase1Persistence
 from msgloom.preparation import DocumentFormat
 from msgloom.preparation_pipeline import PreparationHandler
 from msgloom.reporting import SavedReport
+from msgloom.reporting import handler as reporting_handler
 from msgloom.sources import CollectedSourceReader
 from msgloom.triage import Development, EvidenceKind, Priority, TriageEvidence
 from msgloom.triage_pipeline import TriageHandler
@@ -24,11 +25,14 @@ from tests.reporting.helpers import plan as report_plan
 from tests.reporting.test_handler import _handler as report_handler
 from tests.reporting.test_handler import _request as report_request
 from tests.triage_pipeline.helpers import FakeRunner, save_selection, setup
+from tests.triage_pipeline.test_deadline_boundaries import deadline_clock
 from tests.triage_pipeline.test_handler import request as triage_request
 
 
-def test_default_prepare_triage_report_chain_survives_restart(tmp_path: Path) -> None:
-    """Compose actual producers and native parsers with only an injected AI runner."""
+def test_default_prepare_triage_report_chain_survives_restart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Compose real producers and parsers with an injected AI runner."""
 
     async def exercise() -> None:
         url = f"sqlite:///{tmp_path / 'composed.db'}"
@@ -89,9 +93,18 @@ def test_default_prepare_triage_report_chain_survives_restart(tmp_path: Path) ->
                     f"Default A3 did not consume the actual A2 chain: {triaged}"
                 )
             plan = report_plan(*triaged.result_refs)
-            reported = await report_handler(store, plan).run(report_request(plan))
+            # Isolate semantic reporting/restart checks from host scheduling.
+            # Keep the real five-second timeout and ten-second claim lease.
+            with (
+                deadline_clock(monkeypatch) as clock,
+                monkeypatch.context() as scoped,
+            ):
+                scoped.setattr(reporting_handler, "monotonic", clock.time)
+                reported = await report_handler(store, plan).run(report_request(plan))
             if reported.status is not TerminalStatus.COMPLETE:
-                pytest.fail("Default reporting did not consume actual A3 output")
+                pytest.fail(
+                    f"Default reporting did not consume actual A3 output: {reported}"
+                )
             values = {}
             for ref in (
                 *prepared.result_refs,
@@ -142,7 +155,7 @@ def test_default_prepare_triage_report_chain_survives_restart(tmp_path: Path) ->
 def test_cancelled_rule_work_keeps_cancellation_after_late_validation_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A late owned rule failure cannot replace caller cancellation or retain a claim."""
+    """Preserve cancellation and release the claim after late rule failure."""
 
     async def exercise() -> None:
         store = await Phase1Persistence.open(f"sqlite:///{tmp_path / 'cancel.db'}")

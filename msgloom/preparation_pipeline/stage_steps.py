@@ -250,10 +250,16 @@ async def _finish_uninterrupted(
     *,
     suppress_stale: bool = False,
     preserve_cancellation: bool = False,
+    accepted_preparation_results: tuple[ResultRef, ...] | None = None,
 ) -> bool:
-    """Drain claim completion without allowing stale cleanup to mask ownership."""
+    """Drain completion before propagating cancellation or stale ownership."""
     task = asyncio.create_task(
-        persistence.finish_claim(token, status, ExternalEffectState.NONE)
+        persistence.finish_claim(
+            token,
+            status,
+            ExternalEffectState.NONE,
+            accepted_preparation_results=accepted_preparation_results,
+        )
     )
     cancelled = False
     while not task.done():

@@ -5,12 +5,15 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import replace
+from datetime import timedelta
 
 import pytest
 
 from msgloom.ai import AnalysisResponse, AttemptStatus, TrustedPolicy
+from msgloom.ai_evidence import TerminalEvidence
 from msgloom.contracts import (
     ExecutionIdentity,
+    ExternalEffectState,
     OperationRequest,
     PhaseCapability,
     TerminalStatus,
@@ -29,6 +32,11 @@ from msgloom.triage import (
 from msgloom.triage_input import TrustedInputVersions
 from msgloom.triage_pipeline import TriageHandler, TriageMode
 from tests.triage_pipeline.helpers import FakeRunner, open_store, save_selection, setup
+from tests.triage_pipeline.test_deadline_boundaries import (
+    DeadlineRunner,
+    deadline_clock,
+    saved_result_kinds,
+)
 
 
 def request(producer, execution):
@@ -59,32 +67,17 @@ class MalformedRunner:
         )
 
 
-class SlowRunner:
-    """Delay beyond the deliberately tiny synthetic claim lease."""
+class BlockingLateRunner(DeadlineRunner):
+    """Return valid COMPLETE after blocking past the attempt deadline."""
+
+    blocked_seconds = 0.0
 
     async def run(self, attempt, trace_sink):
-        """Return only after claim ownership has expired."""
-        await asyncio.sleep(0.08)
-        return AnalysisResponse(
-            attempt=attempt.attempt,
-            status=AttemptStatus.COMPLETE,
-            structured_output={"topics": [], "dispositions": []},
-            trace_count=0,
-        )
-
-
-class BlockingLateRunner:
-    """Return COMPLETE only after blocking past the acceptance deadline."""
-
-    async def run(self, attempt, trace_sink):
-        """Block the event loop so asyncio timeout callbacks cannot run first."""
+        """Block the loop before advancing the controlled clocks by 30 ms."""
+        started = time.perf_counter()
         time.sleep(0.03)  # noqa: ASYNC251 - deliberately starve the loop.
-        return AnalysisResponse(
-            attempt=attempt.attempt,
-            status=AttemptStatus.COMPLETE,
-            structured_output={"topics": [], "dispositions": []},
-            trace_count=0,
-        )
+        self.blocked_seconds = time.perf_counter() - started
+        return await super().run(attempt, trace_sink)
 
 
 def test_malformed_output_never_becomes_complete_triage(tmp_path):
@@ -109,7 +102,7 @@ async def _malformed(tmp_path):
 
 
 def test_duplicate_admission_does_not_repeat_model_work(tmp_path):
-    """A terminal durable claim prevents a second execution of the same plan."""
+    """Prevent repeated plan execution through the terminal durable claim."""
     asyncio.run(_duplicate(tmp_path))
 
 
@@ -131,69 +124,131 @@ async def _duplicate(tmp_path):
     await store.close()
 
 
-def test_finite_deadline_precedes_claim_expiry(tmp_path):
+def test_finite_deadline_precedes_claim_expiry(tmp_path, monkeypatch):
     """Acceptance closes before the configured durable claim can expire."""
-    asyncio.run(_stale(tmp_path))
+    asyncio.run(_stale(tmp_path, monkeypatch))
 
 
-def test_late_complete_response_is_rejected_after_event_loop_starvation(tmp_path):
+def test_late_complete_response_is_rejected_after_event_loop_starvation(
+    tmp_path, monkeypatch
+):
     """A runner cannot win by blocking the loop past semantic acceptance."""
-    asyncio.run(_blocking_late(tmp_path))
+    asyncio.run(_blocking_late(tmp_path, monkeypatch))
 
 
-async def _blocking_late(tmp_path):
-    store = await open_store(tmp_path / "blocking-late.sqlite")
-    selected, producer, _candidate = setup()
-    await save_selection(store, selected)
-    producer = replace(
-        producer,
-        attempt_limits=replace(producer.attempt_limits, timeout_seconds=0.01),
-        lease_seconds=3.0,
-        operation_timeout_seconds=2.0,
-        cleanup_margin_seconds=0.005,
-    )
-    triage = TriageHandler(store, producer, BlockingLateRunner())
+async def _blocking_late(tmp_path, monkeypatch):
+    path = tmp_path / "blocking-late.sqlite"
+    store = await open_store(path)
+    try:
+        selected, producer, candidate = setup()
+        await save_selection(store, selected)
+        producer = replace(
+            producer,
+            attempt_limits=replace(producer.attempt_limits, timeout_seconds=0.01),
+            lease_seconds=3.0,
+            operation_timeout_seconds=2.0,
+            cleanup_margin_seconds=0.005,
+        )
+        # Keep host scheduling outside this attempt-deadline invariant. The
+        # runner still blocks synchronously before advancing both clocks.
+        with deadline_clock(monkeypatch) as clock:
+            runner = BlockingLateRunner(clock, candidate, 0.03)
+            triage = TriageHandler(store, producer, runner)
+            outcome = await triage.run(request(producer, "blocking-late-exec"))
+            inspection = await store.inspect_claim(producer.claim_key)
 
-    outcome = await triage.run(request(producer, "blocking-late-exec"))
+        if (
+            outcome.status is not TerminalStatus.INCOMPLETE
+            or tuple(item.code for item in outcome.limitations)
+            != ("triage_part_incomplete",)
+            or outcome.failures
+            or outcome.external_effect is not ExternalEffectState.NONE
+        ):
+            pytest.fail(f"late COMPLETE response was not rejected: {outcome}")
+        if runner.calls != 1 or runner.blocked_seconds < 0.03:
+            pytest.fail(f"runner did not exercise synchronous starvation: {outcome}")
+        if "triage" in saved_result_kinds(path, "blocking-late-exec"):
+            pytest.fail(f"late response published durable final triage: {outcome}")
+        terminals = [ref for ref in outcome.result_refs if ref.kind == "ai_response"]
+        if len(terminals) != 1:
+            pytest.fail(f"missing exact terminal AI evidence: {outcome}")
+        saved = await store.get_result(terminals[0].result_id)
+        if saved is None or saved.semantic_data_ref is None:
+            pytest.fail(f"terminal AI evidence was not durable: {outcome}")
+        evidence = await store.load_semantic_data(saved.semantic_data_ref)
+        if (
+            not isinstance(evidence, TerminalEvidence)
+            or evidence.response.failure_code != "attempt_deadline"
+            or evidence.transport_eligible
+        ):
+            pytest.fail(f"late response was not fenced by attempt deadline: {outcome}")
+        if inspection.current_token is not None or len(inspection.attempts) != 1:
+            pytest.fail(f"live claim was not released: {inspection}; {outcome}")
+        attempt = inspection.attempts[0]
+        if (
+            attempt.token.execution != outcome.execution
+            or attempt.terminal_status is not TerminalStatus.INCOMPLETE
+            or attempt.external_effect is not ExternalEffectState.NONE
+            or attempt.finished_at != attempt.started_at + timedelta(seconds=0.03)
+        ):
+            pytest.fail(
+                f"unexpected live-owner terminal state: {inspection}; {outcome}"
+            )
+    finally:
+        await store.close()
 
-    if outcome.status is not TerminalStatus.INCOMPLETE:
-        pytest.fail("late COMPLETE response crossed the semantic acceptance deadline")
-    if not outcome.limitations or outcome.limitations[0].code not in {
-        "triage_part_incomplete",
-        "triage_operation_deadline",
-    }:
-        pytest.fail("late response did not surface a bounded deadline limitation")
-    await store.close()
 
+async def _stale(tmp_path, monkeypatch):
+    path = tmp_path / "stale.sqlite"
+    store = await open_store(path)
+    try:
+        selected, producer, candidate = setup()
+        await save_selection(store, selected)
+        tiny_limits = replace(producer.attempt_limits, timeout_seconds=0.01)
+        producer = replace(
+            producer,
+            attempt_limits=tiny_limits,
+            lease_seconds=0.04,
+            operation_timeout_seconds=0.03,
+            cleanup_margin_seconds=0.005,
+        )
+        # Isolate acceptance expiry from host scheduling during durable drain.
+        # A genuinely expired lease must still fail, as boundary tests verify.
+        with deadline_clock(monkeypatch) as clock:
+            runner = DeadlineRunner(clock, candidate, 0.026)
+            triage = TriageHandler(store, producer, runner)
+            outcome = await triage.run(request(producer, "stale-exec"))
+            inspection = await store.inspect_claim(producer.claim_key)
 
-async def _stale(tmp_path):
-    store = await open_store(tmp_path / "stale.sqlite")
-    selected, producer, _candidate = setup()
-    await save_selection(store, selected)
-    tiny_limits = replace(producer.attempt_limits, timeout_seconds=0.01)
-    producer = replace(
-        producer,
-        attempt_limits=tiny_limits,
-        lease_seconds=0.04,
-        operation_timeout_seconds=0.03,
-        cleanup_margin_seconds=0.005,
-    )
-    triage = TriageHandler(store, producer, SlowRunner())
-
-    outcome = await triage.run(request(producer, "stale-exec"))
-
-    if outcome.status is not TerminalStatus.INCOMPLETE:
-        pytest.fail("finite operation deadline was allowed to complete")
-    if not outcome.limitations or outcome.limitations[0].code not in {
-        "triage_part_incomplete",
-        "triage_operation_deadline",
-    }:
-        pytest.fail("finite acceptance deadline was not surfaced explicitly")
-    await store.close()
+        if outcome.status is not TerminalStatus.INCOMPLETE:
+            pytest.fail(f"finite deadline did not remain incomplete: {outcome}")
+        if (
+            tuple(item.code for item in outcome.limitations)
+            != ("triage_operation_deadline",)
+            or outcome.failures
+        ):
+            pytest.fail(f"finite acceptance deadline was not explicit: {outcome}")
+        if runner.calls != 1 or "triage" in saved_result_kinds(path, "stale-exec"):
+            pytest.fail("late valid COMPLETE response escaped deadline rejection")
+        if inspection.current_token is not None or len(inspection.attempts) != 1:
+            pytest.fail(
+                f"finite operation did not release its live claim: {inspection}"
+            )
+        attempt = inspection.attempts[0]
+        if (
+            attempt.terminal_status is not TerminalStatus.INCOMPLETE
+            or attempt.finished_at is None
+            or not attempt.started_at
+            < attempt.finished_at
+            < attempt.started_at + timedelta(seconds=0.04)
+        ):
+            pytest.fail(f"deadline did not finish before claim expiry: {inspection}")
+    finally:
+        await store.close()
 
 
 def test_changed_prompt_replay_reuses_saved_context_and_prior_topic(tmp_path):
-    """Replay loads exact saved context and can preserve supported topic identity."""
+    """Replay saved context and preserve supported topic identity."""
     asyncio.run(_changed_prompt(tmp_path))
 
 
@@ -374,7 +429,7 @@ class BlockingRunner:
 
 
 def test_repeated_cancellation_drains_evidence_and_releases_claim(tmp_path):
-    """Repeated cancellation preserves cancellation and prevents silent restart."""
+    """Preserve repeated cancellation and prevent silent restart."""
     asyncio.run(_cancelled(tmp_path))
 
 

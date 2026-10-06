@@ -38,7 +38,11 @@ from msgloom.persistence.errors import (
     ImmutableRecordError,
     SemanticDataReferenceError,
     StaleClaimError,
-    UnknownResultSchemaError,
+)
+from msgloom.persistence.intake_store import PreparationIntakeStore
+from msgloom.persistence.preparation_proof import (
+    accept_preparation_results,
+    bind_preparation_result,
 )
 from msgloom.persistence.reconciliation import (
     ClaimInspection,
@@ -70,8 +74,8 @@ _SAFE_RETRY_EFFECTS = frozenset(
 )
 
 
-class Phase1Store:
-    """Own synchronous SQLite transactions for the neutral application schema."""
+class Phase1Store(PreparationIntakeStore):
+    """Own SQLite transactions for the neutral application schema."""
 
     def __init__(
         self,
@@ -143,7 +147,7 @@ class Phase1Store:
         require_new: bool = False,
         claim: ClaimToken | None = None,
     ) -> None:
-        """Atomically append a result/data pair, optionally requiring a new id."""
+        """Append a result/data pair atomically."""
         self._require_schema(result.kind, result.schema_version)
         reference = result.semantic_data_ref
         if reference is None:
@@ -163,6 +167,7 @@ class Phase1Store:
                 require_claim_publication(
                     connection, claim, result, now=datetime.now(UTC)
                 )
+            bind_preparation_result(connection, result, claim)
             append_semantic_data(connection, encoded)
             append_stage_result(connection, result, require_new=require_new)
             if claim is not None:
@@ -235,7 +240,7 @@ class Phase1Store:
         required_inputs: tuple[ResultRef, ...],
         lease_seconds: float,
     ) -> ClaimToken:
-        """Atomically validate dependencies and acquire or reclaim one scope."""
+        """Validate dependencies and acquire or reclaim one scope."""
         if not claim_key.strip():
             raise ValueError("claim key must be non-empty")
         lease = validate_lease_seconds(lease_seconds)
@@ -310,7 +315,7 @@ class Phase1Store:
     def mark_external_effect(
         self, token: ClaimToken, effect: ExternalEffectState
     ) -> None:
-        """Persist effect state before or after a future external submission."""
+        """Persist effect state surrounding a future external submission."""
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
         with self._write_transaction() as connection:
@@ -350,8 +355,21 @@ class Phase1Store:
         token: ClaimToken,
         status: TerminalStatus,
         effect: ExternalEffectState,
+        *,
+        accepted_preparation_results: tuple[ResultRef, ...] | None = None,
     ) -> None:
-        """Finish an attempt and release only effects that are safe to retry."""
+        """Finish a claim, optionally recording exact producer acceptance."""
+        if accepted_preparation_results is not None:
+            with self._write_transaction() as connection:
+                accept_preparation_results(
+                    connection,
+                    token,
+                    status,
+                    effect,
+                    accepted_preparation_results,
+                    self.registry,
+                )
+            return
         claims = WORK_CLAIMS
         attempts = CLAIM_ATTEMPTS
         with self._write_transaction() as connection:
@@ -461,12 +479,6 @@ class Phase1Store:
                         "required semantic data schema mismatches its stage result"
                     )
                 load_semantic_data(connection, data_ref, self.semantic_registry)
-
-    def _require_schema(self, kind: str, schema_version: str) -> None:
-        if not self.registry.supports(kind, schema_version):
-            raise UnknownResultSchemaError(
-                f"unregistered result schema: {kind!r} version {schema_version!r}"
-            )
 
     @contextmanager
     def _write_transaction(self):

@@ -37,6 +37,7 @@ from msgloom.sources import (
 from msgloom.sources._snapshot import capture_selection
 
 from .helpers import open_store, plan, profiles
+from .timeout_support import HandlerDeadlineControl
 
 
 def _fixture():
@@ -108,7 +109,9 @@ def _output(request) -> ParserOutput:
 def test_selection_write_precedes_parser_and_duplicate_claim_is_blocked(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Parser cannot start before selection durability; duplicate work blocks."""
+    """
+    Parser cannot start before selection durability; duplicate work blocks.
+    """
 
     async def exercise() -> None:
         source, reader = _fixture()
@@ -228,10 +231,14 @@ def test_execution_timeout_retains_partial_results_without_success(
         source, reader = _fixture()
         store = await open_store(tmp_path / "timeout.sqlite3")
         entered = asyncio.Event()
+        parser_cancelled = asyncio.Event()
 
         async def waiting_parser(_request, _content):
             entered.set()
-            await asyncio.Event().wait()
+            try:
+                await asyncio.Event().wait()
+            finally:
+                parser_cancelled.set()
 
         monkeypatch.setattr(
             "msgloom.preparation_pipeline.record_steps.parse_isolated",
@@ -241,12 +248,19 @@ def test_execution_timeout_retains_partial_results_without_success(
             source,
             attempt=AttemptIdentity("timeout-attempt"),
             parser_profiles=profiles(DocumentFormat.TEXT, DocumentFormat.JSON),
-            timeout=0.5,
+            timeout=0.05,
         )
         handler = PreparationHandler(
             store, cast(CollectedSourceReader, reader), work_plan
         )
-        outcome = await handler.run(_request("timeout-execution", source))
+        control = HandlerDeadlineControl(entered)
+        # Arm the same real asyncio deadline at parser entry so this test owns
+        # parser cancellation, not variable SQLite/thread startup latency.
+        with control.installed():
+            outcome = await asyncio.wait_for(
+                handler.run(_request("timeout-execution", source)),
+                timeout=3.0,
+            )
         if outcome.status is not TerminalStatus.INCOMPLETE:
             pytest.fail("execution timeout did not report incomplete operation")
         kinds = {ref.kind for ref in outcome.result_refs}
@@ -254,8 +268,10 @@ def test_execution_timeout_retains_partial_results_without_success(
             pytest.fail("timeout discarded already durable evidence")
         if "prepared" in kinds:
             pytest.fail("timeout published prepared success after parser deadline")
-        if not entered.is_set():
-            pytest.fail("timeout test never reached parser barrier")
+        if not entered.is_set() or not parser_cancelled.is_set():
+            pytest.fail("execution timeout did not cancel the active parser")
+        if control.arm_count != 1 or control.active_watchers:
+            pytest.fail("parser deadline control did not arm and clean up exactly once")
         await store.close()
 
     asyncio.run(exercise())
@@ -264,7 +280,9 @@ def test_execution_timeout_retains_partial_results_without_success(
 def test_parse_failure_is_visible_and_downstream_partial_results_survive(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Opaque parser failure becomes a limitation, not fabricated empty success."""
+    """
+    Opaque parser failure becomes a limitation, not fabricated empty success.
+    """
 
     async def exercise() -> None:
         source, reader = _fixture()
@@ -307,7 +325,9 @@ def test_parse_failure_is_visible_and_downstream_partial_results_survive(
 def test_failed_write_finishes_claim_and_restart_is_independent(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A failed prepared write leaves evidence durable and releases safe claim."""
+    """
+    A failed prepared write leaves evidence durable and releases safe claim.
+    """
 
     async def exercise() -> None:
         source, reader = _fixture()

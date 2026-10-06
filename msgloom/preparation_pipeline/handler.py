@@ -112,6 +112,7 @@ class PreparationHandler(RecordSteps, StageSteps):
 
         loop = asyncio.get_running_loop()
         deadline = loop.time() + self._plan.execution_timeout_seconds
+        accepted = False
         state = RunState([], [], token)
         terminal = TerminalStatus.FAILED
         try:
@@ -139,6 +140,10 @@ class PreparationHandler(RecordSteps, StageSteps):
                     filter_refs,
                     state,
                 )
+                # Observe cancellation before handing normal completion
+                # to persistence.
+                await asyncio.sleep(0)
+                accepted = True
                 terminal = (
                     TerminalStatus.INCOMPLETE
                     if state.limitations
@@ -153,6 +158,7 @@ class PreparationHandler(RecordSteps, StageSteps):
             )
             raise
         except TimeoutError:
+            accepted = False
             terminal = TerminalStatus.INCOMPLETE
             state.limitations.append(
                 Limitation(
@@ -161,6 +167,7 @@ class PreparationHandler(RecordSteps, StageSteps):
                 )
             )
         except StaleClaimError:
+            accepted = False
             terminal = TerminalStatus.FAILED
             state.limitations.append(
                 Limitation(
@@ -187,7 +194,11 @@ class PreparationHandler(RecordSteps, StageSteps):
             )
 
         owned = await _finish_uninterrupted(
-            self._persistence, token, terminal, suppress_stale=True
+            self._persistence,
+            token,
+            terminal,
+            suppress_stale=True,
+            accepted_preparation_results=tuple(state.refs) if accepted else None,
         )
         if not owned:
             terminal = TerminalStatus.FAILED
@@ -208,7 +219,7 @@ class PreparationHandler(RecordSteps, StageSteps):
         )
 
     async def _preflight_replay(self) -> Limitation | None:
-        """Bound replay metadata before semantic payload or claim validation loads."""
+        """Bound replay metadata before payload or claim validation loads."""
         if self._plan.mode is not PreparationMode.REPLAY:
             return None
         total = 0

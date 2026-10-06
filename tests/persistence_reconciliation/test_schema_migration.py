@@ -56,7 +56,18 @@ def test_schema_v2_migrates_additively_without_losing_data(tmp_path: Path) -> No
 
         connection = sqlite3.connect(path)
         try:
-            connection.execute("DROP TABLE phase1_reconciliations")
+            for table in (
+                "phase1_preparation_result_bindings",
+                "phase1_preparation_plan_proofs",
+                "phase1_preparation_intake_held_entries",
+                "phase1_preparation_intake_worksets",
+                "phase1_preparation_intake_cursors",
+                "phase1_reconciliations",
+            ):
+                connection.execute(f"DROP TABLE {table}")
+            connection.execute(
+                "DELETE FROM phase1_schema_metadata WHERE key='preparation_proof_revision'"
+            )
             connection.execute(
                 "UPDATE phase1_schema_metadata SET value = '2' "
                 "WHERE key = 'schema_version'"
@@ -85,8 +96,10 @@ def test_schema_v2_migrates_additively_without_losing_data(tmp_path: Path) -> No
                 )
             finally:
                 connection.close()
-            if metadata.get("schema_version") != "3":
-                pytest.fail("Explicit migration did not persist exact v3 metadata")
+            if metadata.get("schema_version") != "4":
+                pytest.fail(
+                    "Explicit migration did not persist exact v4 metadata through v3"
+                )
             if metadata.get("migration_sentinel") != "preserve-me":
                 pytest.fail("Explicit migration changed unrelated metadata")
         finally:
@@ -106,7 +119,18 @@ def test_malformed_schema_fails_closed_without_partial_changes(
 
         connection = sqlite3.connect(path)
         try:
-            connection.execute("DROP TABLE phase1_reconciliations")
+            for table in (
+                "phase1_preparation_result_bindings",
+                "phase1_preparation_plan_proofs",
+                "phase1_preparation_intake_held_entries",
+                "phase1_preparation_intake_worksets",
+                "phase1_preparation_intake_cursors",
+                "phase1_reconciliations",
+            ):
+                connection.execute(f"DROP TABLE {table}")
+            connection.execute(
+                "DELETE FROM phase1_schema_metadata WHERE key='preparation_proof_revision'"
+            )
             connection.execute(
                 "UPDATE phase1_schema_metadata SET value = '2' "
                 "WHERE key = 'schema_version'"

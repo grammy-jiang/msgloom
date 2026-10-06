@@ -8,6 +8,7 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 import time
 import zipfile
 from pathlib import Path
@@ -34,7 +35,7 @@ from deployment.release import (
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
 SCRIPT = ROOT / "scripts" / "qualify_container_package.py"
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(sys.executable)
 RESOURCE = "msgloom:reporting/templates/report.html.j2"
 
 

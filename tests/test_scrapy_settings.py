@@ -5,6 +5,8 @@ contracts.
 
 from __future__ import annotations
 
+import runpy
+
 import pytest
 from scrapy import Spider
 from scrapy.crawler import Crawler
@@ -226,7 +228,9 @@ def test_project_registers_custom_outlook_commands() -> None:
     "spider_cls",
     [OutlookDiscoverSpider, OutlookDeltaSpider, OutlookFullSpider],
 )
-def test_outlook_mail_resource_owns_graph_scope(spider_cls) -> None:
+def test_outlook_mail_resource_owns_graph_scope(
+    spider_cls, monkeypatch: pytest.MonkeyPatch
+) -> None:
     if project_settings.MS_GRAPH_AUTH_ENABLED is not False:
         pytest.fail("Expected project-wide Graph auth to be disabled")
     if project_settings.MS_GRAPH_SCOPES != []:
@@ -235,7 +239,11 @@ def test_outlook_mail_resource_owns_graph_scope(spider_cls) -> None:
         pytest.fail("Expected source identity required by default")
     if project_settings.MSGLOOM_SOURCE_IDENTITY_BOOTSTRAP_CONFIRM != "":
         pytest.fail("Expected source identity bootstrap confirmation default empty")
-    if project_settings.MS_GRAPH_AUTH_ALLOW_INTERACTIVE is not True:
+    # Read defaults without changing the module used by actual crawls.
+    with monkeypatch.context() as defaults_env:
+        defaults_env.delenv("MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH", raising=False)
+        defaults = runpy.run_path(project_settings.__file__)
+    if defaults["MS_GRAPH_AUTH_ALLOW_INTERACTIVE"] is not True:
         pytest.fail("Expected interactive auth allowed by default for manual crawls")
     crawler = get_crawler(spider_cls)
     if crawler.settings.getbool("MS_GRAPH_AUTH_ENABLED") is not True:
@@ -343,3 +351,11 @@ def test_periodic_log_uses_native_extension_with_safe_filters() -> None:
 
     if project_settings.PERIODIC_LOG_TIMING_ENABLED is not False:
         pytest.fail("Expected: project_settings.PERIODIC_LOG_TIMING_ENABLED is False")
+
+
+def test_explicit_noninteractive_auth_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep actual qualifier commands noninteractive despite default probes."""
+    monkeypatch.setenv("MSGLOOM_MS_ALLOW_INTERACTIVE_AUTH", "0")
+    configured = runpy.run_path(project_settings.__file__)
+    if configured["MS_GRAPH_AUTH_ALLOW_INTERACTIVE"] is not False:
+        pytest.fail("Expected explicit noninteractive override to disable auth")

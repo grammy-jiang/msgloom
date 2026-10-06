@@ -20,7 +20,7 @@ class StatusError(ValueError):
 
 
 def read_saved_status(database_url: str, execution: str) -> dict[str, object]:
-    """Read one saved terminal outcome without creating or migrating a database."""
+    """Read a saved terminal outcome without database creation or migration."""
     path = _database_path(database_url)
     if not path.is_file():
         raise StatusError("status_store_unavailable")
@@ -74,7 +74,8 @@ def _require_schema(connection: sqlite3.Connection) -> None:
     row = connection.execute(
         "SELECT value FROM phase1_schema_metadata WHERE key = 'schema_version'"
     ).fetchone()
-    if row is None or row[0] != "3":
+    # Schema v4 adds intake tables; the saved outcome layout is unchanged.
+    if row is None or row[0] not in {"3", "4"}:
         raise StatusError("status_store_incompatible")
 
 

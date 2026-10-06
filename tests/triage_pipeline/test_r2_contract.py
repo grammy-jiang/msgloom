@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections import Counter
 from dataclasses import replace
 
 import pytest
@@ -19,7 +20,7 @@ from msgloom.contracts import (
     TerminalStatus,
 )
 from msgloom.persistence import StaleClaimError
-from msgloom.triage import TriageCandidate
+from msgloom.triage import TriageCandidate, TriageData
 from msgloom.triage_input import PartState
 from msgloom.triage_pipeline import TriageHandler
 from msgloom.triage_pipeline.codecs import TriagePartState, TriagePartStateCodec
@@ -30,6 +31,10 @@ from tests.triage_pipeline.helpers import (
     open_store,
     save_selection,
     setup,
+)
+from tests.triage_pipeline.test_deadline_boundaries import (
+    deadline_clock,
+    saved_result_kinds,
 )
 from tests.triage_pipeline.test_handler import request
 
@@ -60,14 +65,18 @@ class TraceRunner(FakeRunner):
 
 
 class BarrierRunner:
-    """Block until the handler-enforced attempt deadline cancels this runner."""
+    """
+    Block until the handler-enforced attempt deadline cancels this runner.
+    """
 
     def __init__(self) -> None:
         self.started = asyncio.Event()
         self.calls = 0
 
     async def run(self, attempt, trace_sink):
-        """Expose a controlled barrier without implementing a private timeout."""
+        """
+        Expose a controlled barrier without implementing a private timeout.
+        """
         self.calls += 1
         self.started.set()
         await asyncio.Event().wait()
@@ -75,7 +84,9 @@ class BarrierRunner:
 
 
 def test_injected_runner_deadline_keeps_event_loop_responsive(tmp_path):
-    """The handler enforces attempt time and pure work does not starve the loop."""
+    """
+    The handler enforces attempt time and pure work does not starve the loop.
+    """
     asyncio.run(_deadline(tmp_path))
 
 
@@ -114,7 +125,9 @@ async def _deadline(tmp_path):
 
 
 def test_trace_and_terminal_prefix_preserve_durable_order(tmp_path):
-    """Incomplete/success evidence ordering is request, trace, then terminal."""
+    """
+    Incomplete/success evidence ordering is request, trace, then terminal.
+    """
     asyncio.run(_trace_order(tmp_path))
 
 
@@ -151,7 +164,9 @@ async def _trace_order(tmp_path):
 
 
 def test_empty_context_still_carries_time_timezone_and_snapshot_basis(tmp_path):
-    """An empty selected-file set still gives the model captured time context."""
+    """
+    An empty selected-file set still gives the model captured time context.
+    """
     asyncio.run(_context_basis(tmp_path))
 
 
@@ -247,7 +262,9 @@ async def _two_facade_reclaim(tmp_path):
 
 
 def test_nested_model_copy_mutation_is_rejected_before_io(tmp_path, monkeypatch):
-    """Strict operation-boundary reconstruction catches nested model-copy bypass."""
+    """
+    Strict operation-boundary reconstruction catches nested model-copy bypass.
+    """
     asyncio.run(_bad_nested_config(tmp_path, monkeypatch))
 
 
@@ -300,7 +317,9 @@ async def _changed_policy(tmp_path, monkeypatch):
 
 
 def test_part_state_codec_rejects_incoherent_model_copy():
-    """Closed part-state codec rejects a bypassed complete/failure combination."""
+    """
+    Closed part-state codec rejects a bypassed complete/failure combination.
+    """
     value = TriagePartState(
         part_ref=SemanticDataRef(
             "part",
@@ -318,49 +337,110 @@ def test_part_state_codec_rejects_incoherent_model_copy():
         TriagePartStateCodec().encode(malformed)
 
 
-def test_split_input_success_requires_each_part_to_cover_its_source(tmp_path):
-    """A successful split can complete only when every part is explicitly covered."""
-    asyncio.run(_split_success(tmp_path))
+def test_split_input_success_requires_each_part_to_cover_its_source(
+    tmp_path, monkeypatch
+):
+    """
+    A successful split can complete only when every part is explicitly covered.
+    """
+    asyncio.run(_split_success(tmp_path, monkeypatch))
 
 
-async def _split_success(tmp_path):
-    store = await open_store(tmp_path / "split-success.sqlite")
-    base_selected, base, candidate = setup()
-    source = with_large_cell(
-        record("source-1", body="Synthetic approval is requested."),
-        "x" * 6_000,
-    )
-    selected = selection((source,)).model_copy(
-        update={"versions": base_selected.versions}
-    )
-    await save_selection(store, selected)
-    plan = replace(
-        base.plan,
-        prepared_results=tuple(item.result_ref for item in selected.prepared),
-        filter_results=tuple(item.result_ref for item in selected.filters),
-        group_results=tuple(item.result_ref for item in selected.groups),
-        roles=selected.roles,
-    )
-    producer = replace(
-        base,
-        plan=plan,
-        filter_config=selected.filter_config,
-        rule_config=selected.rules.evaluation.config,
-        input_config=config(max_part_bytes=4096, max_parts=64),
-        max_parts=64,
-    )
-    runner = FakeRunner(store, [candidate] * 64)
-    triage = TriageHandler(store, producer, runner)
+async def _split_success(tmp_path, monkeypatch):
+    path = tmp_path / "split-success.sqlite"
+    store = await open_store(path)
+    try:
+        base_selected, base, candidate = setup()
+        source = with_large_cell(
+            record("source-1", body="Synthetic approval is requested."),
+            "x" * 6_000,
+        )
+        selected = selection((source,)).model_copy(
+            update={"versions": base_selected.versions}
+        )
+        await save_selection(store, selected)
+        plan = replace(
+            base.plan,
+            prepared_results=tuple(item.result_ref for item in selected.prepared),
+            filter_results=tuple(item.result_ref for item in selected.filters),
+            group_results=tuple(item.result_ref for item in selected.groups),
+            roles=selected.roles,
+        )
+        producer = replace(
+            base,
+            plan=plan,
+            filter_config=selected.filter_config,
+            rule_config=selected.rules.evaluation.config,
+            input_config=config(max_part_bytes=4096, max_parts=64),
+            max_parts=64,
+        )
+        runner = FakeRunner(store, [candidate] * 64)
+        triage = TriageHandler(store, producer, runner)
 
-    outcome = await triage.run(request(producer, "split-success-exec"))
+        # This checks multipart semantics, not instrumented host throughput.
+        # Retain real timeout/SQLite paths and all configured finite limits.
+        with deadline_clock(monkeypatch):
+            outcome = await triage.run(request(producer, "split-success-exec"))
+            inspection = await store.inspect_claim(producer.claim_key)
 
-    if outcome.status is not TerminalStatus.COMPLETE or runner.calls < 2:
-        pytest.fail(f"fully covered split input did not complete: {outcome}")
-    await store.close()
+        if (
+            outcome.status is not TerminalStatus.COMPLETE
+            or outcome.limitations
+            or outcome.failures
+            or outcome.external_effect is not ExternalEffectState.NONE
+            or runner.calls != 26
+            or runner.request_was_saved != [True] * 26
+        ):
+            pytest.fail(f"fully covered split input did not complete: {outcome}")
+        kinds = Counter(saved_result_kinds(path, outcome.execution.value))
+        if kinds["triage"] != 1 or any(
+            kinds[kind] != 26
+            for kind in (
+                "triage_input_part",
+                "ai_request",
+                "ai_response",
+                "triage_part_state",
+            )
+        ):
+            pytest.fail(f"multipart durable coverage is incomplete: {kinds}; {outcome}")
+        if len(outcome.result_refs) != 1 or outcome.result_refs[0].kind != "triage":
+            pytest.fail(f"missing exact final triage reference: {outcome}")
+        final = await store.get_result(outcome.result_refs[0].result_id)
+        if (
+            final is None
+            or final.execution != outcome.execution
+            or final.status is not TerminalStatus.COMPLETE
+            or not final.acceptable
+            or final.semantic_data_ref is None
+            or final.source_versions != (source.source,)
+            or sum(ref.kind == "triage_part_state" for ref in final.input_refs) != 26
+        ):
+            pytest.fail(f"invalid durable multipart final triage: {final}; {outcome}")
+        data = await store.load_semantic_data(final.semantic_data_ref)
+        if not isinstance(data, TriageData) or {
+            ref for topic in data.topics for ref in topic.source_refs
+        } != {source.source}:
+            pytest.fail(f"final multipart semantics lost source coverage: {outcome}")
+        if inspection.current_token is not None or len(inspection.attempts) != 1:
+            pytest.fail(f"multipart claim was not released: {inspection}; {outcome}")
+        attempt = inspection.attempts[0]
+        if (
+            attempt.token.execution != outcome.execution
+            or attempt.token.attempt != final.attempt
+            or attempt.terminal_status is not TerminalStatus.COMPLETE
+            or attempt.external_effect is not ExternalEffectState.NONE
+            or attempt.finished_at != attempt.started_at
+        ):
+            pytest.fail(f"incorrect COMPLETE owner state: {inspection}; {outcome}")
+    finally:
+        await store.close()
 
 
 def test_empty_part_candidate_cannot_borrow_coverage_from_other_part(tmp_path):
-    """An empty split response cannot be completed by another part using its source."""
+    """
+    An empty split response cannot be completed by another part using its
+    source.
+    """
     asyncio.run(_empty_part(tmp_path))
 
 

@@ -61,7 +61,9 @@ def ensure_acceptance_time() -> float:
 
 
 async def cpu_bound[T](operation: Callable[..., T], *args: Any) -> T:
-    """Run owned pure work off-loop and drain it before propagating cancellation."""
+    """
+    Run owned pure work off-loop and drain it before propagating cancellation.
+    """
     result, cancelled = await drain(asyncio.to_thread(operation, *args))
     if cancelled:
         raise asyncio.CancelledError

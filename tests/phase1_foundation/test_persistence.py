@@ -1,4 +1,4 @@
-"""Durability, claim, lineage, and cancellation tests for Phase 1 persistence."""
+"""Test durable claims, lineage, and cancellation in Phase 1."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import threading
 import time
 from dataclasses import replace
 from pathlib import Path
+from queue import Empty
 
 import pytest
 
@@ -202,11 +203,15 @@ def test_dependent_claim_requires_durable_acceptable_input(tmp_path: Path) -> No
     asyncio.run(exercise())
 
 
-def _claim_process(database_url: str, gate, results) -> None:
+def _claim_process(database_url: str, gate, results, ready) -> None:
+    """Announce store readiness before contending for one durable claim."""
+
     async def exercise() -> None:
         persistence = await Phase1Persistence.open(database_url)
         try:
-            gate.wait()
+            ready.put(multiprocessing.current_process().pid)
+            if not gate.wait(timeout=10):
+                raise TimeoutError("Claim contention start barrier expired")
             try:
                 await persistence.acquire_claim(
                     "prepare:source-1",
@@ -228,6 +233,7 @@ def _claim_process(database_url: str, gate, results) -> None:
 
 
 def test_duplicate_claim_is_excluded_across_processes(tmp_path: Path) -> None:
+    """Bound startup separately from simultaneous real claim contention."""
     database_url = _url(tmp_path / "phase1.sqlite3")
 
     async def initialize() -> None:
@@ -238,20 +244,52 @@ def test_duplicate_claim_is_excluded_across_processes(tmp_path: Path) -> None:
     context = multiprocessing.get_context("spawn")
     gate = context.Event()
     results = context.Queue()
+    ready = context.Queue()
     processes = [
-        context.Process(target=_claim_process, args=(database_url, gate, results))
+        context.Process(
+            target=_claim_process, args=(database_url, gate, results, ready)
+        )
         for _ in range(2)
     ]
-    for process in processes:
-        process.start()
-    gate.set()
-    observed = sorted(results.get(timeout=10) for _ in processes)
-    for process in processes:
-        process.join(timeout=10)
-        if process.exitcode != 0:
-            pytest.fail(f"Claim worker exited with {process.exitcode}")
-    if observed != ["acquired", "blocked"]:
-        pytest.fail(f"Expected one durable claim winner, got {observed!r}")
+    started = []
+    phase = "startup"
+    try:
+        for process in processes:
+            process.start()
+            started.append(process)
+        startup_deadline = time.monotonic() + 10
+        ready_pids = {
+            ready.get(timeout=max(0, startup_deadline - time.monotonic()))
+            for _ in processes
+        }
+        if ready_pids != {process.pid for process in processes}:
+            pytest.fail(f"Claim workers reported invalid readiness: {ready_pids}")
+        gate.set()
+        phase = "result delivery"
+        observed = sorted(results.get(timeout=10) for _ in processes)
+        for process in processes:
+            process.join(timeout=10)
+            if process.exitcode != 0:
+                pytest.fail(f"Claim worker exited with {process.exitcode}")
+        if observed != ["acquired", "blocked"]:
+            pytest.fail(f"Expected one durable claim winner, got {observed!r}")
+    except Empty:
+        pytest.fail(
+            f"Claim worker {phase} timed out; "
+            f"exit codes: {[process.exitcode for process in started]}"
+        )
+    finally:
+        for process in started:
+            if process.is_alive():
+                process.terminate()
+        for process in started:
+            process.join(timeout=10)
+            if process.is_alive():
+                process.kill()
+                process.join(timeout=10)
+        for queue in (ready, results):
+            queue.cancel_join_thread()
+            queue.close()
 
 
 def test_stale_attempt_cannot_release_newer_claim(tmp_path: Path) -> None:

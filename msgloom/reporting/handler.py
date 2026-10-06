@@ -87,7 +87,10 @@ class ReportBuildHandler:
         self._history_resolver = history_resolver
 
     async def run(self, request: OperationRequest) -> OperationOutcome:
-        """Validate, admit metadata, claim, build, and publish within one deadline."""
+        """
+        Validate, admit metadata, claim, build, and publish
+        within one deadline.
+        """
         mismatch = self._request_mismatch(request)
         if mismatch is not None:
             return self._failed(request, "request_binding_invalid", mismatch)
@@ -274,7 +277,10 @@ class ReportBuildHandler:
     async def _load_inputs(
         self,
     ) -> tuple[tuple[ResultRef, StageResult, TriageData], ...]:
-        """Reload bounded metadata after claim, then resolve admitted semantic data."""
+        """
+        Reload bounded metadata after claim, then resolve
+        admitted semantic data.
+        """
         admitted, _history = await self._inspect_inputs()
         return await self._load_admitted(admitted)
 

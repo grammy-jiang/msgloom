@@ -26,10 +26,17 @@ from msgloom.persistence.reconciliation import (
 )
 from msgloom.persistence.semantic import SemanticDataRegistry
 from msgloom.persistence.store import Phase1Store
+from msgloom.preparation_pipeline.intake_models import (
+    IndexedHeldIntakeEntry,
+    IntakeAnchor,
+    IntakeScope,
+    IntakeWorksetState,
+    PreparationIntakeWorkset,
+)
 
 
 class Phase1Persistence:
-    """Bound and await synchronous SQLite work without nesting an event loop."""
+    """Await bounded SQLite work without nesting an event loop."""
 
     def __init__(self, store: Phase1Store, *, max_concurrent_threads: int = 1) -> None:
         if max_concurrent_threads < 1:
@@ -53,7 +60,7 @@ class Phase1Persistence:
         semantic_registry: SemanticDataRegistry | None = None,
         max_concurrent_threads: int = 1,
     ) -> Phase1Persistence:
-        """Open and validate the neutral schema without leaking on cancellation."""
+        """Open the neutral schema without leaking on cancellation."""
         if max_concurrent_threads < 1:
             raise ValueError("max_concurrent_threads must be positive")
         selected = registry or ResultSchemaRegistry.phase1()
@@ -106,7 +113,7 @@ class Phase1Persistence:
         require_new: bool = False,
         claim: ClaimToken | None = None,
     ) -> None:
-        """Atomically persist a result/data pair with optional claim fencing."""
+        """Atomically persist a result/data pair with optional claim fences."""
         if claim is None and not require_new:
             await self._call(self._store.append_result_with_data, result, value)
             return
@@ -124,7 +131,7 @@ class Phase1Persistence:
         await self._call(operation)
 
     async def load_semantic_data(self, reference: SemanticDataRef) -> object:
-        """Load and validate semantic data through its exact integrity reference."""
+        """Load semantic data through its exact integrity reference."""
         return await self._call(self._store.load_semantic_data, reference)
 
     async def get_result(self, result_id: str) -> StageResult | None:
@@ -165,7 +172,7 @@ class Phase1Persistence:
     async def mark_external_effect(
         self, token: ClaimToken, effect: ExternalEffectState
     ) -> None:
-        """Await effect-state persistence before a caller changes retry policy."""
+        """Save effect state before a caller changes retry policy."""
         await self._call(self._store.mark_external_effect, token, effect)
 
     async def finish_claim(
@@ -173,9 +180,21 @@ class Phase1Persistence:
         token: ClaimToken,
         status: TerminalStatus,
         effect: ExternalEffectState,
+        *,
+        accepted_preparation_results: tuple[ResultRef, ...] | None = None,
     ) -> None:
-        """Await terminal attempt storage before any safe claim release."""
-        await self._call(self._store.finish_claim, token, status, effect)
+        """Drain terminal history and optional exact preparation acceptance."""
+        if accepted_preparation_results is None:
+            await self._call(self._store.finish_claim, token, status, effect)
+            return
+        operation = partial(
+            self._store.finish_claim,
+            token,
+            status,
+            effect,
+            accepted_preparation_results=accepted_preparation_results,
+        )
+        await self._call(operation)
 
     async def reconcile_external_effect(
         self, request: ReconciliationRequest
@@ -191,6 +210,88 @@ class Phase1Persistence:
             self._store.inspect_claim, claim_key, history_limit=history_limit
         )
         return await self._call(operation)
+
+    async def get_preparation_intake_cursor(self, scope: IntakeScope) -> IntakeAnchor:
+        """Await the stable consumer cursor read."""
+        return await self._call(self._store.get_preparation_intake_cursor, scope)
+
+    async def finalize_preparation_intake(
+        self,
+        result: StageResult,
+        workset: PreparationIntakeWorkset,
+        *,
+        claim: ClaimToken,
+    ) -> None:
+        """
+        Drain atomic workset/pending/cursor finalization before cancellation.
+        """
+        await self._call(
+            partial(
+                self._store.finalize_preparation_intake,
+                result,
+                workset,
+                claim=claim,
+            )
+        )
+
+    async def list_preparation_intake_worksets(
+        self,
+        scope: IntakeScope,
+        *,
+        limit: int = 100,
+        after_seq: int = 0,
+        pending_only: bool = True,
+    ) -> tuple[IntakeWorksetState, ...]:
+        """
+        Await bounded pending discovery independent of source cursor progress.
+        """
+        return await self._call(
+            partial(
+                self._store.list_preparation_intake_worksets,
+                scope,
+                limit=limit,
+                after_seq=after_seq,
+                pending_only=pending_only,
+            )
+        )
+
+    async def list_preparation_intake_held_entries(
+        self,
+        scope: IntakeScope,
+        *,
+        limit: int = 100,
+        after_seq: int = 0,
+    ) -> tuple[IndexedHeldIntakeEntry, ...]:
+        """Await bounded operator/replay lookup of held admissions."""
+        return await self._call(
+            partial(
+                self._store.list_preparation_intake_held_entries,
+                scope,
+                limit=limit,
+                after_seq=after_seq,
+            )
+        )
+
+    async def finalize_preparation_intake_workset(
+        self,
+        result_id: str,
+        status: TerminalStatus,
+        result_refs: tuple[ResultRef, ...],
+        *,
+        claim: ClaimToken,
+    ) -> None:
+        """
+        Drain the claim-fenced terminal update without hiding pending work.
+        """
+        await self._call(
+            partial(
+                self._store.finalize_preparation_intake_workset,
+                result_id,
+                status,
+                result_refs,
+                claim=claim,
+            )
+        )
 
     async def close(self) -> None:
         """
