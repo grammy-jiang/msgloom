@@ -316,7 +316,7 @@ class PreparationIntakeStore(ABC):
         FAILED, CANCELLED, and BLOCKED attempts leave the index pending.
         Accepted plan outputs must cover every frozen selection with exact
         semantic lineage. Their count is bounded by the frozen producer inputs,
-        including derived body/metadata outputs and groups. Frozen inputs bound
+        including derived body/metadata, groups, and one transition tuple. Inputs bound
         caller references before scanning, hashing, or serializing them. Proof
         is loaded before this short writer transaction;
         only saved metadata and accepted plan attempts are rechecked inside it.
@@ -373,6 +373,7 @@ class PreparationIntakeStore(ABC):
             proof = validate_completion(
                 connection,
                 workset,
+                ref,
                 inputs,
                 result_refs,
                 claim,

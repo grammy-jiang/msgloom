@@ -44,6 +44,8 @@ from msgloom.persistence.records import (
 _ACCEPTED = {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}
 _KINDS = {
     "collected_selection",
+    "preparation_intake_workset",
+    "prepared_transitions",
     "derived_bytes",
     "prepared",
     "filter_result",
@@ -119,7 +121,17 @@ def bind_preparation_result(
     current = require_current_claim(connection, token, now=datetime.now(UTC))
     inputs = decode_result_refs(current["required_inputs"])
     _references(inputs)
-    if any(ref.kind != "collected_selection" for ref in inputs):
+    transition_plan = (
+        len(inputs) == 1 and inputs[0].kind == "preparation_intake_workset"
+    )
+    if transition_plan:
+        if result.kind != "prepared_transitions" or result.input_refs != inputs:
+            raise DependencyNotReadyError(
+                "transition plan requires its exact workset root"
+            )
+    elif result.kind in {"prepared_transitions", "preparation_intake_workset"} or any(
+        ref.kind != "collected_selection" for ref in inputs
+    ):
         raise DependencyNotReadyError(
             "preparation plan inputs must be exact selections"
         )
@@ -196,6 +208,15 @@ def _manifest(
         raise DependencyNotReadyError(
             "accepted manifest differs from exact publications"
         )
+    roots = decode_result_refs(plan["required_inputs"])
+    if (
+        roots
+        and roots[0].kind == "preparation_intake_workset"
+        and (
+            len(roots) != 1 or len(refs) != 1 or refs[0].kind != "prepared_transitions"
+        )
+    ):
+        raise DependencyNotReadyError("transition plan needs one exact publication")
     results = tuple(saved_result(connection, ref, registry) for ref in refs)
     for result in results:
         if (

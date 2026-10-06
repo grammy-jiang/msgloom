@@ -268,6 +268,7 @@ class ResultSchemaRegistry:
             {
                 ("collected_selection", "1"),
                 ("preparation_intake_workset", "1"),
+                ("prepared_transitions", "1"),
                 ("derived_bytes", "1"),
                 ("prepared", "1"),
                 ("filter_result", "1"),
@@ -292,6 +293,7 @@ class ResultSchemaRegistry:
                 {
                     ("collected_selection", "1"),
                     ("preparation_intake_workset", "1"),
+                    ("prepared_transitions", "1"),
                     ("derived_bytes", "1"),
                     ("prepared", "1"),
                     ("filter_result", "1"),

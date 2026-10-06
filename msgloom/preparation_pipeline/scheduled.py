@@ -24,6 +24,7 @@ from .handler import PreparationHandler
 from .intake import PreparationIntakeService
 from .intake_models import IntakeScope, PreparationIntakeWorkset, workset_claim_key
 from .models import PreparationMode, SelectionPlan
+from .transitions import prepare_transitions
 
 if TYPE_CHECKING:
     from msgloom.configuration.composition import PreparationOperationData
@@ -37,8 +38,7 @@ class ScheduledPreparationHandler:
     pending work is considered before intake. Each pending failure consumes one
     budget unit; new intake still advances independently. Each attempt reserves
     one durable discovery turn, so failures cannot monopolize later invocations.
-    Transition work stays pending because the reviewed completion API has no
-    transition output proof.
+    Transition facts receive their own exact accepted preparation manifest.
     """
 
     def __init__(
@@ -196,7 +196,7 @@ class ScheduledPreparationHandler:
         if saved is None or saved.semantic_data_ref is None:
             return (), False, TerminalStatus.FAILED
         workset = await self._persistence.load_semantic_data(saved.semantic_data_ref)
-        if not isinstance(workset, PreparationIntakeWorkset) or workset.transitions:
+        if not isinstance(workset, PreparationIntakeWorkset):
             return (), False, TerminalStatus.FAILED
         claim = await self._persistence.acquire_claim(
             workset_claim_key(reference.result_id),
@@ -264,6 +264,18 @@ class ScheduledPreparationHandler:
                     return tuple(outputs), False, status
                 if outcome.status is TerminalStatus.INCOMPLETE:
                     status = TerminalStatus.INCOMPLETE
+            if workset.transitions:
+                outputs.extend(
+                    await prepare_transitions(
+                        self._persistence,
+                        reference,
+                        request,
+                        self._attempt,
+                        configuration_version=self._operation.configuration_version,
+                        code_version=self._operation.code_version,
+                        lease_seconds=self._operation.claim_lease_seconds,
+                    )
+                )
             await self._persistence.finalize_preparation_intake_workset(
                 reference.result_id,
                 status,

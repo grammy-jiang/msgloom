@@ -31,9 +31,16 @@ from msgloom.preparation.filtering import FilterResult
 from msgloom.preparation.grouping import GroupResult
 from msgloom.preparation_pipeline.codec import DerivedByteArtifact
 from msgloom.preparation_pipeline.intake_models import PreparationIntakeWorkset
+from msgloom.preparation_pipeline.transitions import PreparedTransitions
 from msgloom.sources import CollectedSelection
 
-_OUTPUT_KINDS = {"derived_bytes", "prepared", "filter_result", "group_result"}
+_OUTPUT_KINDS = {
+    "derived_bytes",
+    "prepared",
+    "filter_result",
+    "group_result",
+    "prepared_transitions",
+}
 
 
 @dataclass(frozen=True)
@@ -84,6 +91,9 @@ def load_completion_inputs(
         4 + int(value.record.body is not None) + len(value.record.alternate_bodies)
         for value in selections.values()
     )
+    # A transition producer emits one tuple for the exact workset, not one
+    # result per fact. Selection-only and held-only bounds stay unchanged.
+    output_bound += int(bool(workset.transitions))
     if output_count > output_bound:
         raise DependencyNotReadyError(
             "terminal result references must be bounded by frozen inputs"
@@ -94,6 +104,7 @@ def load_completion_inputs(
 def completion_receipts(
     connection: Connection,
     workset: PreparationIntakeWorkset,
+    workset_ref: ResultRef,
     refs: tuple[ResultRef, ...],
     status: TerminalStatus,
     registry: ResultSchemaRegistry,
@@ -121,6 +132,9 @@ def completion_receipts(
         load_accepted_preparation(connection, token, registry) for token in tokens
     )
     covered: set[ResultRef] = set()
+    expected_roots = set(workset.selection_refs)
+    if workset.transitions:
+        expected_roots.add(workset_ref)
     for proof in proofs:
         raw = proof.plan["required_inputs"]
         if len(raw.encode()) > 4 * 1024 * 1024:
@@ -133,7 +147,7 @@ def completion_receipts(
             or len(roots) > 1024
             or len(set(roots)) != len(roots)
             or covered.intersection(roots)
-            or not set(roots).issubset(workset.selection_refs)
+            or not set(roots).issubset(expected_roots)
         ):
             raise DependencyNotReadyError("plan frozen inputs are foreign or overlap")
         manifest = tuple(
@@ -151,6 +165,12 @@ def completion_receipts(
                 raise DependencyNotReadyError(
                     "output substitutes another plan's inputs"
                 )
+            if result.kind == "prepared_transitions":
+                if roots != (workset_ref,) or result.input_refs != roots:
+                    raise DependencyNotReadyError(
+                        "transition receipt has a foreign root"
+                    )
+                prepared_roots.add(workset_ref)
             if result.kind == "prepared" and result.input_refs:
                 prepared_roots.add(result.input_refs[0])
         if prepared_roots != set(roots):
@@ -158,7 +178,7 @@ def completion_receipts(
                 "plan does not prepare its complete frozen inputs"
             )
         covered.update(roots)
-    if covered != set(workset.selection_refs):
+    if covered != expected_roots:
         raise DependencyNotReadyError("accepted plans do not cover frozen inputs")
     if proofs:
         aggregate = (
@@ -191,7 +211,14 @@ def recheck_completion(
         if saved_result(connection, ref, registry) != expected:
             raise ImmutableRecordError("preparation proof changed before commit")
     if (
-        completion_receipts(connection, workset, refs, status, registry)
+        completion_receipts(
+            connection,
+            workset,
+            ResultRef(saved.result_id, saved.kind, saved.schema_version),
+            refs,
+            status,
+            registry,
+        )
         != proof.receipts
     ):
         raise ImmutableRecordError("accepted preparation proof changed")
@@ -200,6 +227,7 @@ def recheck_completion(
 def validate_completion(
     connection: Connection,
     workset: PreparationIntakeWorkset,
+    workset_ref: ResultRef,
     frozen_inputs: CompletionInputs,
     refs: tuple[ResultRef, ...],
     claim: ClaimToken,
@@ -214,18 +242,13 @@ def validate_completion(
     dependencies are included in that same outcome. Selections are roots, never
     outputs. A prepared record proves coverage; ancillary outputs must trace
     through those exact records. Accepted INCOMPLETE records remain legitimate.
-    Held entries already have durable dispositions. No current result contract
-    proves transition processing, so transitions remain pending until one is
-    explicitly supported; a neighboring prepared record cannot discharge them.
+    Held entries already have durable dispositions. Transition tuples require
+    their exact workset root and a separate accepted producer receipt.
 
     Reuse the bounded frozen-input snapshots. Read output semantic data here,
     before writer ownership. Return immutable metadata for the final transaction
     to recheck without reading payloads.
     """
-    if workset.transitions:
-        raise DependencyNotReadyError(
-            "transition processing has no accepted output proof"
-        )
     if workset.selections and not refs:
         raise ValueError("readable intake workset requires processing output")
     results = frozen_inputs.results
@@ -251,6 +274,20 @@ def validate_completion(
     for ref in refs:
         result, value = results[ref], values[ref]
         inputs = result.input_refs
+        if ref.kind == "prepared_transitions":
+            if (
+                not isinstance(value, PreparedTransitions)
+                or value.transitions != workset.transitions
+                or inputs != (workset_ref,)
+                or result.source_versions
+                or result.prepared_versions
+                or result.topic_versions
+                or result.status is not TerminalStatus.COMPLETE
+            ):
+                raise DependencyNotReadyError(
+                    "transition output differs from frozen facts"
+                )
+            continue
         if len(inputs) > len(results) or len(inputs) != len(set(inputs)):
             raise DependencyNotReadyError("preparation output dependencies are invalid")
         if any(item not in results for item in inputs):
@@ -294,7 +331,9 @@ def validate_completion(
     if covered != set(selections):
         raise DependencyNotReadyError("preparation outputs do not cover frozen inputs")
     snapshots = tuple(results.values())
-    receipts = completion_receipts(connection, workset, refs, status, registry)
+    receipts = completion_receipts(
+        connection, workset, workset_ref, refs, status, registry
+    )
     return CompletionProof(snapshots, receipts)
 
 

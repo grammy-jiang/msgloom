@@ -21,6 +21,7 @@ from msgloom.preparation.filtering import FilterResultCodec
 from msgloom.preparation.grouping import GroupResultCodec
 from msgloom.preparation_pipeline.codec import DerivedByteArtifactCodec
 from msgloom.preparation_pipeline.intake_codec import PreparationIntakeWorksetCodec
+from msgloom.preparation_pipeline.transitions import PreparedTransitionsCodec
 from msgloom.reporting.codec import ReportCodec
 from msgloom.reporting.selection_codec import ReportSelectionCodec
 from msgloom.sources import CollectedSelectionCodec
@@ -71,6 +72,7 @@ class SemanticDataRegistry:
             (
                 CollectedSelectionCodec(),
                 PreparationIntakeWorksetCodec(),
+                PreparedTransitionsCodec(),
                 DerivedByteArtifactCodec(),
                 ReportSelectionCodec(),
                 ReportCodec(),
