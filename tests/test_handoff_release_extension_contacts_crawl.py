@@ -50,9 +50,12 @@ def test_public_contacts_discover_releases_complete_additive_traversal(
         )
         with catalog.Session() as session:
             groups = [
-                json.loads(payload)
-                for payload in session.scalars(
-                    select(AcquisitionReleaseGroup.payload)
+                (release_group_id, json.loads(payload))
+                for release_group_id, payload in session.execute(
+                    select(
+                        AcquisitionReleaseGroup.release_group_id,
+                        AcquisitionReleaseGroup.payload,
+                    )
                 ).all()
             ]
             if session.get(ContactsSnapshotState, "contacts-fixture") is not None:
@@ -60,7 +63,7 @@ def test_public_contacts_discover_releases_complete_additive_traversal(
 
         if len(groups) != 1:
             pytest.fail("Public Contacts discovery did not release one group")
-        group = groups[0]
+        release_group_id, group = groups[0]
         expected_group = {
             "source_id": "contacts-fixture",
             "stream": "contacts",
@@ -94,7 +97,7 @@ def test_public_contacts_discover_releases_complete_additive_traversal(
         }
         if actual_entries != expected_entries:
             pytest.fail("Contacts discovery lost or changed positive impacts")
-        if {row["release_group_id"] for row in rows} != {group["release_group_id"]}:
+        if {row["release_group_id"] for row in rows} != {release_group_id}:
             pytest.fail("Contacts entries did not share one atomic group")
 
         for row, payload in zip(rows, payloads, strict=True):
