@@ -5,6 +5,7 @@ from __future__ import annotations
 import scrapy
 from scrapy.http import TextResponse
 
+from message_ingest.acquisition.handoff import canonical_json
 from microsoft_graph.protocol import GraphCollectionPage
 
 from ._base import OutlookMailCollectionSpider
@@ -40,6 +41,25 @@ class OutlookDiscoverSpider(OutlookMailCollectionSpider):
             page_size, name="page_size", minimum=1, maximum=1000
         )
         self.max_pages = self._bounded_int(max_pages, name="max_pages", minimum=0)
+        # Mail discovery rejects JOBDIR. This attempt-local control proof is
+        # consumed only at native idle after all evidence and item writes.
+        self.discovery_completion = None
+
+    def discovery_scope(self):
+        """Bind the exact target and effective selection policy to release."""
+        return canonical_json(
+            {
+                "mailbox": self.target_mailbox or "me",
+                "folder": self.folder or None,
+                "page_size": self.page_size,
+                "max_pages": self.max_pages,
+                "fields": self.discovery_fields,
+                "order_by": "receivedDateTime desc",
+                "policy_family": self.mail_rule_policy_family,
+                "policy_enabled": self.mail_rule_policy_enabled,
+                "policy_digest": self.mail_rule_policy_digest,
+            }
+        )
 
     async def start(self):
         """
@@ -91,6 +111,7 @@ class OutlookDiscoverSpider(OutlookMailCollectionSpider):
         @returns requests 0 0
         """
         evidence = self._raw_http_evidence_item(response, purpose)
+        scope = self.discovery_scope()
         yield evidence
         page = GraphCollectionPage.from_payload(
             response.json(),
@@ -122,6 +143,7 @@ class OutlookDiscoverSpider(OutlookMailCollectionSpider):
 
         next_link = page.next_link
         if not next_link:
+            self.discovery_completion = (self.run_id, scope, "complete", evidence)
             self.crawler.stats.set_value(
                 "msgloom/crawl/discovery/pagination_exhausted", True
             )
@@ -134,6 +156,7 @@ class OutlookDiscoverSpider(OutlookMailCollectionSpider):
             )
             return
         if self.max_pages and page_number >= self.max_pages:
+            self.discovery_completion = (self.run_id, scope, "truncated", evidence)
             self.crawler.stats.inc_value("msgloom/crawl/discovery/truncated_count")
             self.logger.warning(
                 "Outlook discovery stopped by explicit max_pages limit: page=%s max_pages=%s",

@@ -16,6 +16,7 @@ from message_ingest.items.acquisition import AcquisitionFailureItem, RawHttpEvid
 from message_ingest.items.microsoft.onedrive import OneDriveContentItem
 
 from ._base import OneDriveSpider
+from ._handoff import completion
 
 # Location, Content-Location, Link, Refresh, Set-Cookie, and arbitrary vendor
 # headers may expose credentials or download URLs. Retain entity facts only.
@@ -64,6 +65,7 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
         ):
             raise ValueError("item_ids must be a nonempty JSON array of IDs")
         self.item_ids = tuple(dict.fromkeys(values))
+        self.handoff_completions = {}
 
     async def start(self) -> AsyncIterator[Any]:
         """Bind known metadata versions before scheduling explicit downloads."""
@@ -132,6 +134,7 @@ class MicrosoftOneDriveContentSpider(OneDriveSpider):
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
         )
+        self.handoff_completions[item_id] = completion(self, evidence, item_id)
         self.crawler.stats.inc_value("msgloom/crawl/onedrive/content/item_count")
 
     def content_errback(self, failure: Failure) -> Iterator[Any]:

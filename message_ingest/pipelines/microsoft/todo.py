@@ -1,4 +1,4 @@
-"""Persist Microsoft To Do provider state and authoritative snapshot proof."""
+"""Persist Microsoft To Do state and durable traversal completion proof."""
 
 from __future__ import annotations
 
@@ -30,7 +30,6 @@ class TodoPipeline:
             self.catalog, source_id=source_id, spider_name=crawler.spidercls.name
         )
         self.snapshot_store = TodoSnapshotStore(self.catalog, source_id=source_id)
-        self.authoritative = crawler.spidercls.name == "microsoft_todo_sync"
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -54,8 +53,6 @@ class TodoPipeline:
                 TodoTraversalCompleteItem,
             ),
         ):
-            return item
-        if isinstance(item, TodoTraversalCompleteItem) and not self.authoritative:
             return item
         async with self.service.write_lock:
             outcome, kind = await asyncio.to_thread(self._persist, item)
@@ -87,8 +84,9 @@ class TodoPipeline:
         else:
             outcome = self.store.persist_linked_resource(item)
             kind = "linked_resource"
-        if self.authoritative:
-            self.snapshot_store.record_sighting(item)
+        # Both modes need the exact discovered child scopes for completion.
+        # Sightings alone never promote authoritative presence.
+        self.snapshot_store.record_sighting(item)
         return outcome, kind
 
 

@@ -9,6 +9,7 @@ from message_ingest.items.microsoft.onedrive import OneDriveDriveItem, OneDriveI
 from microsoft_graph.protocol import GraphCollectionPage
 
 from ._base import OneDriveSpider
+from ._handoff import completion, discovery_scope
 
 
 class MicrosoftOneDriveDiscoverSpider(OneDriveSpider):
@@ -19,6 +20,9 @@ class MicrosoftOneDriveDiscoverSpider(OneDriveSpider):
     def __init__(self, *args, page_size: str = "100", **kwargs) -> None:
         """Validate the collection page bound before scheduling requests."""
         super().__init__(*args, **kwargs)
+        self.handoff_drive_id = None
+        self.handoff_drive = None
+        self.handoff_completion = None
         self.page_size = self._bounded_int(
             page_size, name="page_size", minimum=1, maximum=1000
         )
@@ -36,12 +40,15 @@ class MicrosoftOneDriveDiscoverSpider(OneDriveSpider):
         """Emit drive evidence and metadata, then request root children."""
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
-        yield OneDriveDriveItem.from_graph(
+        drive = OneDriveDriveItem.from_graph(
             response.json(),
             observed_at=evidence.observed_at,
             evidence_id=evidence.evidence_id,
             run_id=self.run_id,
         )
+        yield drive
+        self.handoff_drive_id = drive.id
+        self.handoff_drive = completion(self, evidence, discovery_scope(self))
         self.crawler.stats.inc_value("msgloom/crawl/onedrive/discover/drive_count")
         yield self._request(
             self.root_children_path(page_size=self.page_size),
@@ -81,3 +88,5 @@ class MicrosoftOneDriveDiscoverSpider(OneDriveSpider):
                 cb_kwargs={},
                 verbatim_url=True,
             )
+        else:
+            self.handoff_completion = completion(self, evidence, discovery_scope(self))

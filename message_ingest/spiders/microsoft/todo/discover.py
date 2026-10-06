@@ -83,10 +83,8 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
         *,
         list_id: str | None = None,
         task_id: str | None = None,
-    ) -> TodoTraversalCompleteItem | None:
-        """Build terminal traversal proof only for authoritative sync runs."""
-        if not self.authoritative_snapshot:
-            return None
+    ) -> TodoTraversalCompleteItem:
+        """Build durable proof for additive and authoritative traversal."""
         return TodoTraversalCompleteItem(
             collection_kind=collection_kind,
             list_id=list_id,
@@ -138,8 +136,8 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
                 cb_kwargs={},
                 verbatim_url=True,
             )
-        elif completion := self._completion_item("task_lists", evidence):
-            yield completion
+        else:
+            yield self._completion_item("task_lists", evidence)
 
     def parse_tasks(
         self, response: TextResponse, *, purpose: str, list_id: str
@@ -182,8 +180,8 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
                 cb_kwargs={"list_id": list_id},
                 verbatim_url=True,
             )
-        elif completion := self._completion_item("tasks", evidence, list_id=list_id):
-            yield completion
+        else:
+            yield self._completion_item("tasks", evidence, list_id=list_id)
 
     def parse_checklist_items(
         self, response: TextResponse, *, purpose: str, list_id: str, task_id: str
@@ -214,10 +212,10 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
                 cb_kwargs={"list_id": list_id, "task_id": task_id},
                 verbatim_url=True,
             )
-        elif completion := self._completion_item(
-            "checklist_items", evidence, list_id=list_id, task_id=task_id
-        ):
-            yield completion
+        else:
+            yield self._completion_item(
+                "checklist_items", evidence, list_id=list_id, task_id=task_id
+            )
 
     def parse_linked_resources(
         self, response: TextResponse, *, purpose: str, list_id: str, task_id: str
@@ -248,7 +246,7 @@ class MicrosoftTodoDiscoverSpider(MicrosoftTodoSpider, MicrosoftGraphSpider):
                 cb_kwargs={"list_id": list_id, "task_id": task_id},
                 verbatim_url=True,
             )
-        elif completion := self._completion_item(
-            "linked_resources", evidence, list_id=list_id, task_id=task_id
-        ):
-            yield completion
+        else:
+            yield self._completion_item(
+                "linked_resources", evidence, list_id=list_id, task_id=task_id
+            )

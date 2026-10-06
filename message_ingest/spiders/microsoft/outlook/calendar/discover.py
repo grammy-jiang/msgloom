@@ -12,6 +12,7 @@ from message_ingest.items.microsoft.outlook.calendar import OutlookCalendarItem
 from microsoft_graph.protocol import GraphCollectionPage
 
 from ._base import OutlookCalendarSpider
+from ._handoff import terminal_completion
 
 
 class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
@@ -27,6 +28,7 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
     ) -> None:
         """Validate Calendar inventory arguments."""
         super().__init__(*args, **kwargs)
+        self.handoff_completion: dict[str, str] | None = None
         self.page_size = self._bounded_int(
             page_size, name="page_size", minimum=1, maximum=1000
         )
@@ -105,6 +107,7 @@ class OutlookCalendarDiscoverSpider(OutlookCalendarSpider):
 
         next_link = page.next_link
         if next_link is None:
+            self.handoff_completion = terminal_completion(self, evidence)
             self.crawler.stats.set_value(
                 "msgloom/crawl/calendar/inventory_exhausted",
                 True,

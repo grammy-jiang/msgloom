@@ -196,8 +196,12 @@ def test_traversal_emits_evidence_then_items_and_fetches_both_relations():
         ):
             pytest.fail("Task/list context must be explicit")
         output = _parse(request, {"value": [{"id": "relation", "isChecked": False}]})
-        if not isinstance(output[0], RawHttpEvidenceItem) or len(output) != 2:
-            pytest.fail("Relation responses must emit evidence before their item")
+        if (
+            len(output) != 3
+            or not isinstance(output[0], RawHttpEvidenceItem)
+            or not isinstance(output[2], todo.TodoTraversalCompleteItem)
+        ):
+            pytest.fail("Relation pages need evidence, item, then completion proof")
         if output[1].evidence_id != output[0].evidence_id:
             pytest.fail("Semantic item lost its response evidence")
         if (
@@ -244,8 +248,13 @@ def test_all_collections_follow_opaque_links_and_preserve_serializable_context(
     restored = request_from_dict(continuation.to_dict(spider=spider), spider=spider)
     if restored.callback != request.callback or restored.errback != spider.errback:
         pytest.fail("Callbacks and errbacks must use the shared serializable contract")
-    if len(_parse(request, {"value": []})) != 1:
-        pytest.fail("Empty terminal pages must not infer removal")
+    terminal = _parse(request, {"value": []})
+    if len(terminal) != 2 or not isinstance(
+        terminal[1], todo.TodoTraversalCompleteItem
+    ):
+        pytest.fail("Empty terminal pages need control proof, not removal items")
+    if terminal[1].evidence_id != terminal[0].evidence_id:
+        pytest.fail("Terminal control proof must retain response evidence")
     if request.callback is None:
         pytest.fail("Collection request lost its callback")
     output = request.callback(_response(request, {"value": None}), **request.cb_kwargs)

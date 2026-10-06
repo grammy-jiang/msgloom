@@ -13,6 +13,7 @@ from microsoft_graph.protocol import GraphCollectionPage, graph_object
 from microsoft_graph.protocol.calendar import calendar_window
 
 from ._base import OutlookCalendarSpider
+from ._handoff import terminal_completion
 from ._resume_state import CalendarScopedExecutionState, execution_payload
 
 
@@ -43,6 +44,7 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
         )
         self.state: dict[str, Any] = {}
         self._job_resumed = False
+        self.handoff_completion: dict[str, str] | None = None
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -141,6 +143,8 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
 
         next_link = page.next_link
         if next_link is None:
+            self.handoff_completion = terminal_completion(self, evidence)
+            self._persist_execution_state()
             self.crawler.stats.set_value(
                 "msgloom/crawl/calendar/pagination_exhausted",
                 True,
@@ -157,6 +161,8 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
 
     def _resume_scope(self) -> dict[str, object]:
         return {
+            "source_id": self.crawler.settings.get("MSGLOOM_SOURCE_ID"),
+            "mailbox": self.target_mailbox or "me",
             "start_datetime": self.start_datetime,
             "end_datetime": self.end_datetime,
             "calendar_id": self.calendar_id,
@@ -174,6 +180,8 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
         self._run_failed = restored.run_failed
         self._failure_reasons = set(restored.failure_reasons)
         self._job_resumed = resumed
+        saved = self.state.get("msgloom_calendar_window", {})
+        self.handoff_completion = saved.get("handoff_completion")
         self._persist_execution_state()
 
     def _persist_execution_state(self) -> None:
@@ -182,6 +190,10 @@ class OutlookCalendarWindowSpider(OutlookCalendarSpider):
             scope=self._resume_scope(),
             run_failed=self._run_failed,
             failure_reasons=self._failure_reasons,
+        )
+
+        self.state["msgloom_calendar_window"]["handoff_completion"] = (
+            self.handoff_completion
         )
 
     def mark_run_failed(self, reason: str) -> None:
