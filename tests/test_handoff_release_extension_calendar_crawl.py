@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 import pytest
+from handoff_release_reader_helpers import bind_fixture_source, read_published
 from sqlalchemy import select
 from test_calendar_crawls import (
     DISCOVER_COMMAND,
@@ -85,6 +86,7 @@ def read(tmp_path):
 @pytest.mark.parametrize("window", [False, True])
 @pytest.mark.parametrize("direct", [False, True])
 def test_calendar_native_release(tmp_path, calendar_server, window, direct):
+    bind_fixture_source(tmp_path / "catalog.sqlite3", "calendar-fixture")
     root, _ = calendar_server
     run(tmp_path, root, window=window, direct=direct)
     groups, entries = read(tmp_path)
@@ -93,6 +95,21 @@ def test_calendar_native_release(tmp_path, calendar_server, window, direct):
     expected = "resource" if window else "context"
     if {json.loads(row["payload"])["entry_kind"] for row in entries} != {expected}:
         pytest.fail("Calendar traversal published the wrong entry kind")
+    if not direct:
+        reads = read_published(
+            tmp_path / "catalog.sqlite3",
+            tmp_path / "raw",
+            "calendar-fixture",
+            "outlook_calendar",
+        )
+        kind, prefix = (
+            ("calendar_event", "event") if window else ("calendar", "calendar")
+        )
+        if {
+            (entry.entry_kind, entry.resource_kind, entry.resource_identity)
+            for entry, _ in reads
+        } != {(expected, kind, f"{prefix}-{index}") for index in (1, 2, 3)}:
+            pytest.fail("Calendar Reader lost exact typed fixture entries")
 
 
 def test_calendar_jobdir_pause_resume_releases_one_group(tmp_path, calendar_server):

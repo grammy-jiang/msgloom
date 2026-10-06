@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import pytest
+from handoff_release_reader_helpers import bind_fixture_source, read_published
 from sqlalchemy import select
 from test_outlook_crawls import ROOT, RUN_COMMAND, graph_server
 
@@ -24,6 +25,7 @@ def test_native_mail_discovery_release(
     tmp_path, graph_server, direct, max_pages, count, coverage
 ):
     """Opt in locally while preserving default global activation policy."""
+    bind_fixture_source(tmp_path / "mail.db", "source")
     runner = RUN_COMMAND.replace(
         'execute(["scrapy",',
         "import message_ingest.settings as settings\n"
@@ -82,5 +84,24 @@ def test_native_mail_discovery_release(
         group = json.loads(groups[0])
         if group["coverage_kind"] != coverage or group["authority_revision"]:
             pytest.fail("Native discovery changed coverage or absence authority")
+        if not direct:
+            reads = read_published(
+                tmp_path / "mail.db", tmp_path / "raw", "source", "outlook_mail"
+            )
+            expected = {
+                (
+                    json.loads(row["payload"])["entry_kind"],
+                    json.loads(row["payload"])["resource_kind"],
+                    json.loads(row["payload"])["resource_identity"],
+                )
+                for row in entries
+            }
+            if {
+                (entry.entry_kind, entry.resource_kind, entry.resource_identity)
+                for entry, _ in reads
+            } != expected:
+                pytest.fail("Mail Reader lost typed published entries")
+            if any(entry.group.coverage_kind != coverage for entry, _ in reads):
+                pytest.fail("Mail Reader changed complete/truncated coverage")
     finally:
         catalog.close()

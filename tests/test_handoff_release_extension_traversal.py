@@ -4,6 +4,7 @@ import asyncio
 import json
 
 import pytest
+from handoff_release_reader_helpers import bind_fixture_source, read_published
 from outlook_mail_handoff_fixtures import saved_mail_evidence
 from scrapy import Request, signals
 from scrapy.crawler import Crawler
@@ -35,8 +36,9 @@ from tests.test_todo_sync import _persist_full_snapshot
 
 
 @pytest.fixture(params=["todo", "contacts"])
-def traversal(request, tmp_path):
+def traversal(request, tmp_path, monkeypatch):
     family = request.param
+    bind_fixture_source(tmp_path / "catalog.db", "source")
     cls = (
         MicrosoftTodoDiscoverSpider
         if family == "todo"
@@ -60,6 +62,23 @@ def traversal(request, tmp_path):
     crawler.spider = spider
     service = CatalogService.from_crawler(crawler)
     if family == "todo":
+
+        def save_todo(catalog, **kwargs):
+            """Save the exact objects used by the existing store fixture."""
+            return saved_mail_evidence(
+                catalog,
+                **kwargs,
+                body=json.dumps(
+                    {
+                        "value": [
+                            {"id": value}
+                            for value in ("list-a", "task-a", "check-a", "link-a")
+                        ]
+                    }
+                ).encode(),
+            )
+
+        monkeypatch.setattr("tests.test_todo_sync._evidence", save_todo)
         _persist_full_snapshot(
             service.catalog,
             source_id="source",
@@ -79,6 +98,25 @@ def traversal(request, tmp_path):
                 source_id="source",
                 run_id="run",
             )
+        for evidence_id, body in (
+            ("evidence-folder", {"id": "folder", "displayName": ""}),
+            (
+                "evidence-contact",
+                {
+                    "value": [
+                        {"id": "contact", "displayName": "", "companyName": "original"},
+                        {"id": "default-contact", "displayName": ""},
+                    ]
+                },
+            ),
+        ):
+            saved_mail_evidence(
+                service.catalog,
+                evidence_id=evidence_id,
+                source_id="source",
+                run_id="run",
+                body=json.dumps(body).encode(),
+            )
     yield crawler, spider, service, family
     service.close()
 
@@ -90,7 +128,7 @@ def rows(case):
     )
 
 
-def test_complete_discovery_releases_positive_state_once(traversal):
+def test_complete_discovery_releases_positive_state_once(traversal, tmp_path):
     crawler, spider, service, _family = traversal
     extension = HandoffReleaseExtension.from_crawler(crawler)
     extension.spider_idle(spider)
@@ -101,6 +139,25 @@ def test_complete_discovery_releases_positive_state_once(traversal):
         groups = session.scalars(select(AcquisitionReleaseGroup.payload)).all()
     if len(groups) != 1 or json.loads(groups[0])["release_kind"] != "resource_set":
         pytest.fail("Discovery needs one non-authoritative traversal group")
+    reads = read_published(
+        tmp_path / "catalog.db",
+        tmp_path / "mail-fixture-evidence",
+        "source",
+        "todo" if _family == "todo" else "contacts",
+    )
+    expected = {
+        (
+            json.loads(row["payload"])["entry_kind"],
+            json.loads(row["payload"])["resource_kind"],
+            json.loads(row["payload"])["resource_identity"],
+        )
+        for row in rows(traversal)
+    }
+    if {
+        (entry.entry_kind, entry.resource_kind, entry.resource_identity)
+        for entry, _ in reads
+    } != expected:
+        pytest.fail("Traversal Reader lost typed resource/component/context entries")
 
 
 def test_missing_collection_blocks_discovery(traversal):

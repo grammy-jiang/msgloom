@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Thread
 
 import pytest
+from handoff_release_reader_helpers import bind_fixture_source, read_published
 from sqlalchemy import select
 
 from message_ingest.acquisition.handoff import AcquisitionStream
@@ -127,6 +128,7 @@ def read(tmp_path):
 @pytest.mark.parametrize("direct", [False, True])
 @pytest.mark.parametrize("partial", [False, True])
 def test_native_inventory_and_independent_content(tmp_path, server, direct, partial):
+    bind_fixture_source(tmp_path / "catalog.db", "onedrive-fixture")
     root, state = server
     run(tmp_path, root, "discover", direct=direct)
     groups, entries = read(tmp_path)
@@ -147,6 +149,27 @@ def test_native_inventory_and_independent_content(tmp_path, server, direct, part
         entry["resource_kind"] != "onedrive_item" for entry in components
     ):
         pytest.fail("Content entries lost their semantic parent")
+    if not direct:
+        reads = read_published(
+            tmp_path / "catalog.db", tmp_path / "raw", "onedrive-fixture", "onedrive"
+        )
+        expected_ids = {"one"} if partial else {"one", "two"}
+        content_reads = [
+            (entry, value) for entry, value in reads if entry.entry_kind == "component"
+        ]
+        if {entry.resource_identity for entry, _ in content_reads} != expected_ids:
+            pytest.fail("Reader changed successful content targets")
+        for entry, value in content_reads:
+            if value.selection is None or len(value.components) != 1:
+                pytest.fail("Reader omitted content-only parent reconstruction")
+            parent_bytes = value.selection.record.source_bytes
+            component_bytes = value.components[0].record.source_bytes
+            if (
+                parent_bytes is None
+                or component_bytes is None
+                or (parent_bytes.reference == component_bytes.reference)
+            ):
+                pytest.fail("Content parent did not retain distinct metadata evidence")
 
 
 @pytest.mark.parametrize("failure", ["callback", "item"])
