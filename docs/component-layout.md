@@ -14,6 +14,40 @@ agree on this version. `scrapy.cfg` selects `message_ingest.settings` and uses
 `message_ingest` as the deployment project name. The root Python distribution
 remains `msgloom`.
 
+## Durable collection-to-preparation handoff
+
+The integrated handoff keeps Scrapy component ownership unchanged. Spiders
+still own traversal, pipelines await persistence, and extensions or workflows
+own completion gates. A1 does not import A2 source-reader or preparation code.
+Final handoff qualification remains pending.
+
+| Component | Responsibility |
+| --- | --- |
+| `message_ingest/acquisition/handoff.py` | Define provider-independent immutable fact and release contracts. |
+| `message_ingest/catalog/stores/handoff.py` | Store catalog identity, staged facts, release groups, and pageable entries under transaction guards. |
+| Provider catalog stores | Commit effective state with its fact and publish authority with the winning checkpoint and lifecycle changes. |
+| `message_ingest/extensions/handoff.py` | Join native lifecycle completion to eligible non-authoritative publication. |
+| `msgloom/sources/release_reader.py` | Read exact committed release entries and verify saved evidence without calling a live crawler. |
+| `msgloom/preparation_pipeline/intake.py` | Capture a bounded cutoff, save exact selections, and admit entries as selections, scoped transitions, or held dispositions. |
+| `msgloom/persistence/intake_store.py` | Commit the workset, pending state, and cursor atomically under the intake claim. |
+| `msgloom/persistence/intake_scheduling.py` | Discover pending work with durable bounded rotation. |
+| `msgloom/persistence/intake_completion.py` | Require exact accepted preparation proof before workset finalization. |
+| `msgloom/preparation_pipeline/scheduled.py` | Await bounded pending replay and fresh admission for each configured target. |
+| `msgloom/preparation_pipeline/transitions.py` | Save accepted `prepared_transitions` from exact frozen scope facts. |
+| `msgloom/cli/app.py` and `msgloom/configuration/models.py` | Expose one finite command and strict reusable target configuration. |
+
+Evidence precedes semantics. The Reader rejects evidence that does not match
+its immutable references. Intake saves selections before committing cursor
+progress. A crash before cursor finalization permits exact retry; a later
+preparation failure leaves the admitted workset pending. Cursor anchors reject
+catalog replacement, restore behind the cursor, and changed prior entries.
+No parser runs inside an A1 authority transaction or the short intake commit.
+
+See [Phase 1 architecture](phase-1/architecture.md#durable-incremental-handoff)
+and [scheduled preparation](notes/operator-configuration.md#scheduled-preparation).
+The original [handoff contract](superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md)
+remains the governing design; this section does not declare final acceptance.
+
 ## Microsoft Graph framework structure
 
 ```text

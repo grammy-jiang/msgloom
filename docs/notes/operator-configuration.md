@@ -147,6 +147,107 @@ baseline. The later CLI supplies those exact typed plans directly. If a
 reviewed bounded plan codec is added, a future configuration revision may
 add explicit plan-file references without changing the current semantics.
 
+## Scheduled preparation
+
+`msgloom prepare-scheduled` runs one finite A2 intake and preparation cycle.
+It reads saved A1 data and does not start collection or install a scheduler.
+Configure the existing `source`, `preparation.filter_config`, parser profiles,
+storage, and trusted `a2_prepare` admission first. Add targets to the same
+operator TOML document; this fragment is not a complete configuration:
+
+~~~toml
+[[preparation.intake_targets]]
+source_id = "configured-a1-source"
+stream = "outlook_mail"
+consumer_id = "daily-preparation"
+max_entries = 100
+max_pending_worksets = 10
+~~~
+
+`source_id` must match the saved A1 source binding. Supported streams are
+`outlook_mail`, `outlook_calendar`, `todo`, `contacts`, and `onedrive`. Keep
+`consumer_id` stable across scheduled runs and retries. It identifies cursor
+progress within the catalog/source/stream scope. A new consumer ID creates a
+separate intake scope; it is not a recovery command for the existing scope.
+
+At most 32 targets are accepted. Each source/stream/consumer tuple must be
+unique. `max_entries` defaults to 100 and permits 1 through 1000; it must not
+exceed `preparation.max_records`. `max_pending_worksets` defaults to 10 and
+permits 1 through 100. These are entry-admission and workset-attempt limits,
+not a promise to drain the backlog in one invocation. A failed pending attempt
+consumes a work unit. Durable rotation allows other pending work to progress.
+Each target still gets one bounded fresh intake after pending processing.
+
+The existing execution timeout and claim lease apply to bounded operations.
+The claim lease must exceed the execution timeout by more than one second.
+Each target and workset is awaited sequentially. The complete multi-target
+invocation can take longer than one operation timeout; allow time for all
+configured bounds and cleanup in the external scheduler's process deadline.
+
+Inspect the effective configuration version before creating an invocation:
+
+~~~console
+msgloom config inspect --config operator.toml
+~~~
+
+Write a bounded JSON invocation file. Replace the configuration version with
+the returned value and use the caller/authority pair from the trusted
+admission. Give each later scheduled invocation or retry a new execution and
+attempt identity. Retain the same target `consumer_id` in configuration.
+
+~~~json
+{
+  "schema_version": "1",
+  "configuration_version": "REPLACE_WITH_INSPECTED_VERSION",
+  "execution": "scheduled-2026-10-07-001",
+  "attempt": "scheduled-2026-10-07-001-attempt-1",
+  "caller": "operator-cli",
+  "authority_ref": "owner-approved"
+}
+~~~
+
+Run the command with two positional file paths:
+
+~~~console
+msgloom prepare-scheduled operator.toml scheduled-invocation.json
+msgloom status operator.toml scheduled-2026-10-07-001
+~~~
+
+The scheduled envelope accepts no source selections, mode, or nonempty
+parameters. Configuration version and trusted PREPARE admission are checked
+before source intake. An empty target list is a finite no-work operation.
+The command returns result references and limitation codes. Exit 0 means
+`complete`; exit 3 means `blocked`; other terminal outcomes, including
+`incomplete`, use exit 4. Input/configuration failures use exit 2.
+`scheduled-work-pending` reports work that remains pending or a failed intake;
+`scheduled-preparation-incomplete` reports accepted preparation with incomplete
+output. Read the saved outcome and limitations before deciding the next run.
+
+### Scheduled recovery boundary
+
+Intake freezes a release cutoff and saves immutable selections. The cursor,
+workset, and pending index commit together. Cursor progress means admission;
+it does not mean parsing succeeded. New A1 entries after the cutoff wait for
+a later intake. A retry after preparation failure finds the existing pending
+workset and replays its saved selections without rewinding the cursor.
+Completion requires exact accepted preparation receipts. Scoped removals and
+context changes retain their scope in accepted `prepared_transitions` results.
+
+Missing or corrupt evidence creates a held entry disposition. This permits
+later valid entries to progress but does not claim the held content was
+prepared. Retain the workset and evidence for operator inspection. Catalog
+identity or cursor-anchor mismatch blocks admission; restore consistent
+catalog/store/evidence state and investigate before continuing. Do not reset
+or edit the cursor to bypass that check. This command has no automatic
+reconciliation or historical-baseline option.
+
+Future-only intake does not admit unchanged pre-ledger historical records.
+Explicit historical baseline support needs follow-on integration and operator
+documentation. Manual `prepare` and explicit preparation replay keep their
+existing exact-selection contracts. See the
+[collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff).
+Final handoff qualification and independent acceptance remain pending.
+
 ## Secrets
 
 SecretBinding stores only:

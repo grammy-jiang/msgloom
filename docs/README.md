@@ -35,7 +35,13 @@ flowchart TD
 | [A1 Microsoft Collection Closeout](notes/a1-closeout.md) | Phase 1 A1 | Closed source-capability matrix, fresh validation gates and the durable A1-to-A2 boundary. |
 | [A1 to A2 Handoff Contract](superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md) | Phase 1 A1/A2 boundary | Implementation-ready transactional fact/release-entry contract for incremental scheduled handoff and replay. |
 | [A1 to A2 Handoff Implementation Plan](superpowers/plans/2026-10-03-a1-a2-handoff-implementation-plan.md) | Phase 1 A1/A2 implementation | Readiness-reviewed task/DAG plan for ledger integration, A2 intake, recovery, and scheduled preparation. |
+| [Operator Configuration](notes/operator-configuration.md#scheduled-preparation) | Finite A2 operation | Stable scheduled intake targets, invocation format, pending-work retry, and recovery. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
+
+The integrated incremental handoff is documented in the
+[Phase 1 collection/preparation boundary](phase-1/architecture.md#durable-incremental-handoff).
+Final handoff gates and independent acceptance remain pending. The closed A1
+source-capability closeout is unchanged.
 
 A definition belongs to its owner. Other documents use its exact term and link to it. Phase 1 adds restrictions and detail; it does not redefine the complete product.
 

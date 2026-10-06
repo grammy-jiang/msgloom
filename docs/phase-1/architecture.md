@@ -35,7 +35,8 @@ flowchart TD
 
 Validate only resources required by the requested operation. Help or configuration inspection must not launch Claude Code or require source credentials. Bind one Configuration version per run.
 
-Processing, reporting and replay may have different external triggers. Each invocation consumes eligible saved work according to its request, not merely information newer than the last timer tick. Exact subcommand names and purposes remain for implementation design.
+Processing, reporting and replay may have different external triggers. Each invocation consumes eligible saved work according to its request, not merely information newer than the last timer tick. The implemented incremental A2 command is `prepare-scheduled`; other stage
+commands keep their explicit saved-input contracts.
 
 The scheduler waits for process completion and inspects its status. Use an argument list, never message content interpolated into shell commands. Disable blind retry of operations with possible external effects: a nonzero exit after partial delivery is not permission to resend every part.
 
@@ -68,6 +69,43 @@ Keep page continuation separate from a completed collection round. Follow all pa
 A raw page that cannot be parsed remains durable pending work. It must not vanish because collection advanced. An invalid continuation starts explicit recovery using the source-specific strategy in Technology Stack.
 
 File writes use a temporary file, verification and atomic replacement on the same filesystem before the ORM transaction records completion. Interruption may leave an unreferenced file; it must not create a successful result pointing at missing content.
+
+### Durable incremental handoff
+
+The integrated handoff implementation extends collection with immutable
+acquisition facts, release groups, and ordered release entries in the A1
+catalog. Source stores record facts with effective state changes. Lifecycle
+and workflow gates publish eligible entries. Authority checkpoint promotion,
+lifecycle changes, and the corresponding release commit atomically. A2 does
+not infer new work by scanning mutable current rows or comparing timestamps.
+
+`ReleaseSourceReader` reconstructs exact committed source versions and verifies
+their evidence. `PreparationIntakeService` captures a finite release cutoff.
+Entries published after that cutoff wait for another intake. It saves exact
+selection results before a short transaction commits the immutable workset,
+pending index, and cursor together in the separate Phase 1 store. The cursor
+binds catalog, source, stream, consumer, entry sequence, and entry digest.
+
+A scheduled invocation first attempts pending work within configured bounds,
+then admits one bounded release page per target. It uses exact saved selections
+in REPLAY mode. Pending discovery rotates durably so one failed workset cannot
+consume every later invocation. New admission can progress even when an older
+workset still needs preparation. A failed or cancelled attempt does not rewind
+the committed intake cursor or discard the pending workset.
+
+Workset completion requires accepted preparation receipts for the exact saved
+inputs. Scoped removals and context changes produce `prepared_transitions`
+results with the original entry, fact, resource, and scope identities. These
+results prepare facts for downstream use; they do not perform global deletion
+or retirement. Missing or corrupt evidence receives a durable held disposition
+instead of a fabricated selection. Later valid entries can still advance.
+
+The `prepare-scheduled` CLI runs one finite invocation and awaits writes,
+worker cleanup, and reader closure. The external scheduler owns timing and
+repeated invocation. Manual `prepare` and explicit preparation replay remain
+available. See [operator configuration](../notes/operator-configuration.md#scheduled-preparation)
+for exact command syntax, stable consumer identity, limits, and recovery.
+Final handoff gates and independent acceptance remain pending.
 
 ## 4. Preparation and AI execution
 

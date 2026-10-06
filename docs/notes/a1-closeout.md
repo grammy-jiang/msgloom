@@ -95,3 +95,30 @@ awaitable and must not block the caller event loop. A1 uses Scrapy's async
 runtime and awaits bounded worker execution for blocking persistence where
 required. Downstream implementation choices must preserve that application
 contract without requiring A1 to be redesigned.
+
+## Additive durable handoff extension
+
+The A1 source-capability closeout above remains closed. The integrated
+handoff extension adds a release ledger to the existing catalog. It does not
+add a Microsoft product or change the read-only acquisition boundary. Final
+handoff qualification and independent acceptance remain pending; the closeout
+counts above are historical A1 evidence, not handoff gate results.
+
+A1 records immutable acquisition facts with the state they describe. Eligible
+completion publishes release groups and ordered release entries. Authority
+publication stays in the transaction that promotes its provider checkpoint
+and lifecycle state. Staged authority facts do not become downstream work
+before that gate succeeds.
+
+A2 reads committed entries through `ReleaseSourceReader`. It saves exact
+selections and a bounded workset in its separate Phase 1 store. Cursor
+advancement records durable admission, not successful parsing. Pending
+worksets remain available for a later finite scheduled invocation. A1 can
+continue collecting while A2 prepares the saved selections.
+
+See [scheduled preparation configuration](operator-configuration.md#scheduled-preparation)
+and the [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff)
+for operation and recovery. Existing pre-ledger records are not automatically
+admitted by future-only intake. Explicit historical baseline admission is
+outside this integrated documentation and still needs follow-on integration
+and qualification.
