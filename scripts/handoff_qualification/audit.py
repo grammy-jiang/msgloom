@@ -66,8 +66,8 @@ def runtime(expected: str, fastmcp: bool) -> dict:
         raise ValueError("pytest must satisfy the committed >=8,<9 constraint")
     if fastmcp:
         versions["fastmcp"] = importlib.metadata.version("fastmcp")
-        if versions["fastmcp"] != "4.0.10":
-            raise ValueError("FastMCP must remain exactly 4.0.10")
+        if versions["fastmcp"] != "4.0.11":
+            raise ValueError("FastMCP must remain exactly 4.0.11")
     return {
         "python": actual,
         "executable": sys.executable,

@@ -52,7 +52,7 @@ Run from the candidate repository root. Do not resolve interpreter executable
 symlinks: doing so can discard virtual-environment identity. The normal 3.13
 runtime must be Python 3.13.5; every environment must have Scrapy 2.19.0,
 pytest 8, pytest-cov 7.1.0 and pytest-xdist 3.8.0. Compatibility environments
-also require FastMCP 4.0.10.
+also require FastMCP 4.0.11.
 
 The inspected host has Python 3.13.5 with Scrapy 2.19.0 at the existing
 `.venv/bin/python`. Its existing `.tox/py313-fastmcp4/bin/python` has the
@@ -68,7 +68,7 @@ outside this preparation; this runner never installs or upgrades dependencies.
 | A1-focused | All top-level `tests/test_*.py` plus `tests/source_reader`. |
 | Normal/default coverage | Full pytest selection on Python 3.13.5. |
 | Serial exclusive state | `exclusive_state and not fastmcp_compat`, `-n 0`. |
-| FastMCP compatibility | Opt-in file and marker, FastMCP 4.0.10, `-n 0`. |
+| FastMCP compatibility | Opt-in file and marker, FastMCP 4.0.11, `-n 0`. |
 | Python matrix | Normal, serial and FastMCP groups on 3.12/3.13/3.14. |
 | Ruff | `python -m ruff check .`. |
 | Format | `python -m ruff format --check .`. |
