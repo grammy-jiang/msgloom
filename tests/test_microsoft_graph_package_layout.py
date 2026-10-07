@@ -63,7 +63,7 @@ def test_graph_components_have_no_nested_scrapy_package() -> None:
 
 def test_graph_package_does_not_depend_on_message_ingest() -> None:
     root = Path(__file__).parents[1] / "microsoft_graph"
-    forbidden = ("message_ingest", "sqlalchemy")
+    forbidden = ("message_ingest", "msgloom", "sqlalchemy")
     for path in root.rglob("*.py"):
         tree = ast.parse(path.read_text(), filename=str(path))
         for node in ast.walk(tree):
@@ -93,7 +93,7 @@ import sys
 
 class ForbidConsumer(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
-        if fullname.split(".")[0] in {"message_ingest", "sqlalchemy"}:
+        if fullname.split(".")[0] in {"message_ingest", "msgloom", "sqlalchemy"}:
             raise ImportError(f"Forbidden framework dependency: {fullname}")
 
 sys.meta_path.insert(0, ForbidConsumer())
@@ -140,3 +140,34 @@ for module in pkgutil.walk_packages(
     )
     if result.returncode:
         pytest.fail(result.stderr)
+
+
+def test_framework_dataclasses_do_not_store_application_identity() -> None:
+    """Keep durable acquisition identity out of provider value objects."""
+    root = Path(__file__).parents[1] / "microsoft_graph"
+    forbidden = {"source_id", "run_id", "evidence_id"}
+    for path in root.rglob("*.py"):
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            decorators = [
+                decorator.func if isinstance(decorator, ast.Call) else decorator
+                for decorator in node.decorator_list
+            ]
+            if not any(
+                isinstance(decorator, ast.Name)
+                and decorator.id == "dataclass"
+                or isinstance(decorator, ast.Attribute)
+                and decorator.attr == "dataclass"
+                for decorator in decorators
+            ):
+                continue
+            for field in node.body:
+                if not isinstance(field, ast.AnnAssign):
+                    continue
+                if isinstance(field.target, ast.Name) and field.target.id in forbidden:
+                    pytest.fail(
+                        f"{path.relative_to(root.parent)}:{field.lineno} "
+                        f"{node.name}.{field.target.id} stores application identity"
+                    )
