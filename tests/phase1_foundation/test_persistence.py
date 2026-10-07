@@ -203,14 +203,16 @@ def test_dependent_claim_requires_durable_acceptable_input(tmp_path: Path) -> No
     asyncio.run(exercise())
 
 
-def _claim_process(database_url: str, gate, results, ready) -> None:
+def _claim_process(
+    database_url: str, gate, results, ready, startup_deadline: float
+) -> None:
     """Announce store readiness before contending for one durable claim."""
 
     async def exercise() -> None:
         persistence = await Phase1Persistence.open(database_url)
         try:
             ready.put(multiprocessing.current_process().pid)
-            if not gate.wait(timeout=10):
+            if not gate.wait(timeout=max(0, startup_deadline - time.monotonic())):
                 raise TimeoutError("Claim contention start barrier expired")
             try:
                 await persistence.acquire_claim(
@@ -245,9 +247,13 @@ def test_duplicate_claim_is_excluded_across_processes(tmp_path: Path) -> None:
     gate = context.Event()
     results = context.Queue()
     ready = context.Queue()
+    # Readiness includes spawn and store opening, before claim contention.
+    # Parent and children share this bound; neither resets it on progress.
+    startup_deadline = time.monotonic() + 60
     processes = [
         context.Process(
-            target=_claim_process, args=(database_url, gate, results, ready)
+            target=_claim_process,
+            args=(database_url, gate, results, ready, startup_deadline),
         )
         for _ in range(2)
     ]
@@ -257,18 +263,22 @@ def test_duplicate_claim_is_excluded_across_processes(tmp_path: Path) -> None:
         for process in processes:
             process.start()
             started.append(process)
-        startup_deadline = time.monotonic() + 10
         ready_pids = {
             ready.get(timeout=max(0, startup_deadline - time.monotonic()))
             for _ in processes
         }
         if ready_pids != {process.pid for process in processes}:
             pytest.fail(f"Claim workers reported invalid readiness: {ready_pids}")
+        # Only real contention and worker exit consume this independent bound.
+        contention_deadline = time.monotonic() + 10
         gate.set()
         phase = "result delivery"
-        observed = sorted(results.get(timeout=10) for _ in processes)
+        observed = sorted(
+            results.get(timeout=max(0, contention_deadline - time.monotonic()))
+            for _ in processes
+        )
         for process in processes:
-            process.join(timeout=10)
+            process.join(timeout=max(0, contention_deadline - time.monotonic()))
             if process.exitcode != 0:
                 pytest.fail(f"Claim worker exited with {process.exitcode}")
         if observed != ["acquired", "blocked"]:
