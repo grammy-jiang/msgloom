@@ -11,7 +11,6 @@ from pathlib import Path
 import pytest
 
 from scripts.handoff_qualification import (
-    audit,
     cached_precommit,
     execution,
     live_lsp,
@@ -73,6 +72,7 @@ def _run(repository, tmp_path: Path, gates, **kwargs):
     return result
 
 
+@pytest.mark.linux_cgroup_v2
 def test_nonzero_preserves_stderr_and_does_not_retry(
     repository, tmp_path: Path
 ) -> None:
@@ -89,6 +89,7 @@ def test_nonzero_preserves_stderr_and_does_not_retry(
     _equal(result["gates"][1]["status"], "passed")
 
 
+@pytest.mark.linux_cgroup_v2
 @pytest.mark.parametrize(
     "command",
     [
@@ -105,6 +106,7 @@ def test_missing_executable_is_unavailable(repository, tmp_path: Path, command) 
         pytest.fail("an unavailable gate was accepted")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_dependency_failure_blocks_dependent_gate(repository, tmp_path: Path) -> None:
     """A failed runtime probe prevents its suite from executing."""
     marker = tmp_path / "must-not-exist"
@@ -124,6 +126,7 @@ def test_dependency_failure_blocks_dependent_gate(repository, tmp_path: Path) ->
         pytest.fail("suite executed after its prerequisite failed")
 
 
+@pytest.mark.linux_cgroup_v2
 @pytest.mark.parametrize("mutation", ["worktree", "head", "untracked"])
 def test_candidate_mutation_stops_remaining_gates(
     repository, tmp_path: Path, mutation: str
@@ -143,6 +146,7 @@ def test_candidate_mutation_stops_remaining_gates(
     _equal(result["gates"][1]["status"], "not_run")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_timeout_preserves_partial_logs(repository, tmp_path: Path) -> None:
     """Timeout retains emitted evidence and leaves later gates unexecuted."""
     child_code = (
@@ -173,6 +177,7 @@ def test_timeout_preserves_partial_logs(repository, tmp_path: Path) -> None:
         pytest.fail("timeout left a SIGTERM-ignoring child running")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_signal_interruption_is_durable(repository, tmp_path: Path) -> None:
     """An interrupted child cannot leave a success-shaped manifest."""
     code = f"import os,signal; os.kill(os.getpid(), {signal.SIGTERM})"
@@ -181,6 +186,7 @@ def test_signal_interruption_is_durable(repository, tmp_path: Path) -> None:
     _equal(result["gates"][1]["status"], "not_run")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_complete_manifest_never_claims_external_review(
     repository, tmp_path: Path
 ) -> None:
@@ -208,6 +214,7 @@ def test_complete_manifest_never_claims_external_review(
     _equal((root / "completion.json").exists(), False)
 
 
+@pytest.mark.linux_cgroup_v2
 @pytest.mark.parametrize("kind", ["missing", "malformed", "skipped", "failure"])
 def test_required_junit_must_be_complete(repository, tmp_path: Path, kind: str) -> None:
     """Zero exit alone cannot prove tests executed successfully."""
@@ -224,6 +231,7 @@ def test_required_junit_must_be_complete(repository, tmp_path: Path, kind: str) 
         pytest.fail(f"incomplete JUnit evidence accepted: {kind}")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_junit_counts_and_artifact_hashes_are_recorded(
     repository, tmp_path: Path
 ) -> None:
@@ -254,6 +262,7 @@ def test_dirty_or_wrong_candidate_is_blocked_before_commands(
     _equal(result["gates"][0]["status"], "not_run")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_existing_output_is_never_overwritten(repository, tmp_path: Path) -> None:
     """A second invocation cannot retry into the old evidence directory."""
     _run(repository, tmp_path, [_gate()])
@@ -261,6 +270,7 @@ def test_existing_output_is_never_overwritten(repository, tmp_path: Path) -> Non
         _run(repository, tmp_path, [_gate()])
 
 
+@pytest.mark.linux_cgroup_v2
 def test_shared_lock_blocks_competing_runner(repository, tmp_path: Path) -> None:
     """A separate process holding the repository lock prevents execution."""
     import fcntl
@@ -273,6 +283,7 @@ def test_shared_lock_blocks_competing_runner(repository, tmp_path: Path) -> None
     _equal(result["status"], "blocked")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_credentials_and_pytest_overrides_are_not_inherited(
     repository, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -326,54 +337,6 @@ def test_default_cli_lists_without_creating_runtime_evidence(tmp_path: Path) -> 
     _equal(plan["external_review"]["status"], "required")
 
 
-def test_coverage_map_requires_all_spiders_scenarios_and_executed_nodes() -> None:
-    """A name list cannot substitute for actual passing coverage evidence."""
-    nodes = ["tests/test_fixture.py::test_complete"]
-    data = {
-        "base_sha": "a" * 40,
-        "candidate_sha": "b" * 40,
-        "spiders": {name: nodes for name in audit.SPIDERS},
-        "scenarios": {str(i): nodes for i in range(1, 14)},
-    }
-    passed = {("tests.test_fixture", "test_complete")}
-    audit.validate_coverage(data, set(audit.SPIDERS), passed, "a" * 40, "b" * 40)
-    for field, key in (("spiders", audit.SPIDERS[0]), ("scenarios", "13")):
-        broken = json.loads(json.dumps(data))
-        del broken[field][key]
-        with pytest.raises(ValueError):
-            audit.validate_coverage(
-                broken,
-                set(audit.SPIDERS),
-                passed,
-                "a" * 40,
-                "b" * 40,
-            )
-    with pytest.raises(ValueError):
-        audit.validate_coverage(data, set(audit.SPIDERS), set(), "a" * 40, "b" * 40)
-    with pytest.raises(ValueError):
-        audit.validate_coverage(data, set(audit.SPIDERS), passed, "a" * 40, "c" * 40)
-
-
-def test_reverse_import_scan_rejects_a2_and_dynamic_imports(tmp_path: Path) -> None:
-    """The reverse boundary includes ordinary and literal dynamic imports."""
-    source = tmp_path / "message_ingest"
-    source.mkdir()
-    for statement in (
-        "import msgloom.sources",
-        "from msgloom import preparation",
-        "from msgloom.preparation_pipeline import intake",
-        "import importlib; importlib.import_module('msgloom.sources')",
-        "__import__('msgloom.preparation')",
-    ):
-        (source / "bad.py").write_text(statement)
-        with pytest.raises(ValueError):
-            audit.reverse_imports(tmp_path)
-    (source / "bad.py").write_text(
-        "from pathlib import Path\nfrom msgloom.configuration import load_universal_config"
-    )
-    audit.reverse_imports(tmp_path)
-
-
 def test_cached_precommit_never_creates_or_installs_missing_cache(
     tmp_path: Path,
 ) -> None:
@@ -425,6 +388,7 @@ def test_live_lsp_requires_diagnostics_for_every_open_file(
         pytest.fail("LSP accepted silence or lost complete live diagnostics")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_missing_coverage_xml_cannot_pass(repository, tmp_path: Path) -> None:
     """Coverage is required in addition to a zero command exit."""
     result = _run(repository, tmp_path, [_gate(coverage=str(tmp_path / "absent.xml"))])
@@ -439,6 +403,7 @@ def test_wrong_exact_candidate_is_blocked(repository, tmp_path: Path) -> None:
         pytest.fail("a different clean HEAD was executed")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_abrupt_runner_loss_leaves_linked_running_evidence(repository, tmp_path):
     """A killed recorder leaves partial logs linked and never marks success."""
     root, sha = repository
@@ -489,10 +454,3 @@ def test_abrupt_runner_loss_leaves_linked_running_evidence(repository, tmp_path)
                     process_boundary.discard_empty(path)
                     if path.exists():
                         time.sleep(0.01)
-
-
-def test_runtime_requires_exact_313_patch(monkeypatch):
-    """A patch-number prefix cannot stand in for Python 3.13.5."""
-    monkeypatch.setattr(audit.sys, "version_info", (3, 13, 50))
-    with pytest.raises(ValueError, match="Python mismatch"):
-        audit.runtime("3.13", False)

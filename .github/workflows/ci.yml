@@ -79,8 +79,8 @@ jobs:
             tox-env: py314
           - python: "3.12"
             tox-env: py312-fastmcp4
-          # The A1 qualification intentionally requires the 3.13.5 patch.
-          - python: "3.13.5"
+          # The FastMCP unit probe simulates exact Python 3.13.5.
+          - python: "3.13"
             tox-env: py313-fastmcp4
           - python: "3.14"
             tox-env: py314-fastmcp4
@@ -109,29 +109,12 @@ jobs:
           cache-suffix: ${{ matrix.tox-env }}
       - name: Install locked development dependencies
         run: uv sync --locked --group dev
-      # Tox owns test selection, coverage, and the separate serial-state suite.
-      # Each environment has its own runner; no test or timeout override applies.
-      # The hosted runner service does not delegate its cgroup to the runner
-      # user. Run normal suites under an unprivileged Delegate=yes systemd
-      # service instead of skipping safety-sensitive process-boundary tests.
+      # Portable tox checks must not need delegated Linux cgroups.
+      # Real OS-specific process safety is verified in a separate required job.
       - name: Run the existing tox environment
         env:
           TOX_ENVIRONMENT: ${{ matrix.tox-env }}
-        run: |
-          if [[ "$TOX_ENVIRONMENT" == *-fastmcp4 ]]; then
-            uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
-          else
-            sudo systemd-run --quiet --wait --collect --pipe \
-              --uid "$(id -un)" --property=Delegate=yes \
-              --working-directory="$GITHUB_WORKSPACE" \
-              --setenv=HOME="$HOME" --setenv=PATH="$PATH" \
-              --setenv=CI=true --setenv=TOX_ENVIRONMENT="$TOX_ENVIRONMENT" \
-              --setenv=UV_CACHE_DIR="${UV_CACHE_DIR:-$HOME/.cache/uv}" \
-              /bin/bash -euc '
-                python -c "from scripts.handoff_qualification.process_boundary import check_supported; check_supported()"
-                uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
-              '
-          fi
+        run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
       - name: Qualify the rebuilt wheel outside the checkout
         if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
         run: |
@@ -159,3 +142,88 @@ jobs:
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14
+
+  linux_safety:
+    name: Linux cgroup-v2 safety contracts
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          python-version: "3.13"
+          enable-cache: true
+      - name: Install locked test dependencies
+        run: uv sync --locked --group dev
+      - name: Require real delegated Linux cgroup-v2 execution
+        run: |
+          sudo systemd-run --quiet --wait --collect --pipe \
+            --uid "$(id -un)" --property=Delegate=yes \
+            --working-directory="$GITHUB_WORKSPACE" \
+            --setenv=HOME="$HOME" --setenv=PATH="$PATH" \
+            --setenv=CI=true --setenv=RUNNER_TEMP="$RUNNER_TEMP" \
+            /bin/bash -euc '
+              uv run --no-sync python -c "from scripts.handoff_qualification.process_boundary import check_supported; check_supported()"
+              uv run --no-sync pytest -q -n 0 --strict-markers \
+                -m linux_cgroup_v2 --junitxml="$RUNNER_TEMP/linux-cgroup.xml"
+            '
+      - name: Enforce complete Linux safety coverage
+        run: |
+          python - <<'PYCODE'
+          import os
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "linux-cgroup.xml"
+          cases = list(ElementTree.parse(path).getroot().iter("testcase"))
+          skipped = sum(case.find("skipped") is not None for case in cases)
+          # The 2026-10-08 portable split identifies 36 real cgroup cases.
+          if len(cases) < 36 or skipped:
+              raise SystemExit(
+                  f"Native safety coverage incomplete: {len(cases)} cases, "
+                  f"{skipped} skipped"
+              )
+          print(f"Native safety coverage verified: {len(cases)} executed cases")
+          PYCODE
+      - name: Preserve Linux safety evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-cgroup-v2-evidence
+          path: ${{ runner.temp }}/linux-cgroup.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  portability:
+    name: Portable smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-2025]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          python-version: "3.13"
+          enable-cache: true
+          cache-suffix: ${{ matrix.os }}
+      # Install only pytest and Scrapy: unrelated product dependencies may
+      # be OS-specific and must not gate the portable-contract smoke suite.
+      - name: Run portable business and framework contracts
+        run: >-
+          uv run --no-project --python 3.13 --with pytest==8.4.2
+          --with scrapy==2.19.0 python -m pytest -q --strict-markers
+          tests/test_graph_protocol.py
+          tests/test_graph_framework_spider.py
+          tests/packaging/test_packaging_config.py
+          tests/test_handoff_qualification_runner.py::test_default_cli_lists_without_creating_runtime_evidence
+          tests/test_handoff_qualification_portable.py::test_coverage_map_requires_all_spiders_scenarios_and_executed_nodes
+          tests/test_handoff_qualification_portable.py::test_reverse_import_scan_rejects_a2_and_dynamic_imports

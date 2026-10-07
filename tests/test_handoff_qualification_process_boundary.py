@@ -12,6 +12,8 @@ import pytest
 
 from scripts.handoff_qualification import execution
 
+pytestmark = pytest.mark.linux_cgroup_v2
+
 
 def _equal(actual: object, expected: object) -> None:
     """Fail explicitly when observable values differ."""

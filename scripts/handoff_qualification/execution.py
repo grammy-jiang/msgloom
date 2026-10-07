@@ -8,7 +8,6 @@ a killed runner therefore leaves running/not-run evidence, never success.
 
 from __future__ import annotations
 
-import fcntl
 import hashlib
 import json
 import os
@@ -345,6 +344,9 @@ def run_plan(
     signal.signal(signal.SIGTERM, interrupt)
     try:
         _preflight(root, base, candidate)
+        # Native locking is loaded only after platform preflight succeeds.
+        import fcntl
+
         with (
             process_boundary.child_subreaper(),
             lock_path(root).open("a") as lock,
