@@ -36,12 +36,32 @@ jobs:
         run: uv sync --locked --group dev
       - name: Ruff checks
         run: |
-          uv run --no-sync ruff check microsoft_graph message_ingest msgloom tests
-          uv run --no-sync ruff format --check microsoft_graph message_ingest msgloom tests
+          uv run --no-sync ruff check microsoft_graph message_ingest msgloom scripts tests
+          uv run --no-sync ruff format --check microsoft_graph message_ingest msgloom scripts tests
       - name: Pyright
         run: >-
           npx --yes --package pyright@1.1.413 pyright
           --pythonpath .venv/bin/python microsoft_graph message_ingest msgloom tests
+      # Pin upstream actionlint's published archive by SHA-256; no Go
+      # toolchain or mutable installer is needed on the CI runner.
+      - name: Actionlint workflow validation
+        run: |
+          archive="$RUNNER_TEMP/actionlint_1.7.12_linux_arm64.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_arm64.tar.gz \
+            --output "$archive"
+          printf '%s  %s\n' \
+            '325e971b6ba9bfa504672e29be93c24981eeb1c07576d730e9f7c8805afff0c6' \
+            "$archive" | sha256sum --check --strict -
+          tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color=false
+      # Reuse existing A1-to-A2 / Graph import boundary checks.  Keep these
+      # separate from handoff runtime qualification (which requires cgroups).
+      - name: Architecture boundaries
+        run: |
+          uv run --no-sync python -c 'from pathlib import Path; from scripts.handoff_qualification.audit import reverse_imports; reverse_imports(Path.cwd())'
+          uv run --no-sync python -m pytest -q -n 0 \
+            tests/test_microsoft_graph_package_layout.py::test_graph_package_does_not_depend_on_message_ingest
       - name: Native Scrapy callback contracts against local Graph fixtures
         run: uv run --no-sync pytest -q -n 0 tests/test_teams_native_contracts.py
       - name: Existing pre-commit checks on the branch changes

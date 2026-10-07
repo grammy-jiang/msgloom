@@ -22,7 +22,9 @@ def _without_download_urls(value: Any) -> Any:
         return clean
     if isinstance(value, list):
         clean = [_without_download_urls(child) for child in value]
-        return value if all(a is b for a, b in zip(value, clean)) else clean
+        return (
+            value if all(a is b for a, b in zip(value, clean, strict=True)) else clean
+        )
     return value
 
 

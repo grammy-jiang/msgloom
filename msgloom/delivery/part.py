@@ -213,7 +213,7 @@ class PartSubmitter:
             if cancelled is not None:
                 if not settlement.cancelled():
                     settlement.exception()
-                raise cancelled
+                raise cancelled from None
             settlement.result()
             return
         progress.effects.append(effect)

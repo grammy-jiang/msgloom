@@ -212,6 +212,7 @@ def _projection(raw):
                     "isInline",
                 )
             ),
+            strict=True,
         )
     )
 

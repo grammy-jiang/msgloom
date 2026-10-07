@@ -402,7 +402,7 @@ class _TriageIOMixin:
             )
             await self._record_terminal_prefix(terminal)
             if cancelled:
-                raise asyncio.CancelledError
+                raise asyncio.CancelledError from None
             state_ref = await self._save_part_state(
                 request,
                 claim,
@@ -436,7 +436,7 @@ class _TriageIOMixin:
             )
             await self._record_terminal_prefix(terminal)
             if cancelled:
-                raise asyncio.CancelledError
+                raise asyncio.CancelledError from None
             state_ref = await self._save_part_state(
                 request,
                 claim,

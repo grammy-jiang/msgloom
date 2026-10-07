@@ -236,7 +236,7 @@ def inventory_manifest(session, capture, data, primary_id):
     if pages is None:
         return None
     members = {}
-    for page, pd, entries in pages:
+    for _page, pd, entries in pages:
         for member in entries:
             value = json.loads(member.payload)
             if member.member_id in members and members[member.member_id] != value:

@@ -235,7 +235,7 @@ def test_native_inventory_and_independent_content(tmp_path, server, direct, part
         ]
         if {entry.resource_identity for entry, _ in content_reads} != expected_ids:
             pytest.fail("Reader changed successful content targets")
-        for entry, value in content_reads:
+        for _entry, value in content_reads:
             if value.selection is None or len(value.components) != 1:
                 pytest.fail("Reader omitted content-only parent reconstruction")
             parent_bytes = value.selection.record.source_bytes
