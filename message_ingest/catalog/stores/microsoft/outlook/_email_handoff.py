@@ -27,15 +27,9 @@ from message_ingest.acquisition.handoff import (
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
 from message_ingest.catalog.models.handoff import AcquisitionFact
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
-from microsoft_graph.spiders.outlook.mail import OutlookMailSpider
 
 if TYPE_CHECKING:
     from message_ingest.catalog.store import Catalog
-
-_PRIMARY_FIELDS = set(OutlookMailSpider.discovery_fields) - {
-    "changeKey",
-    "webLink",
-}
 
 
 @dataclass(frozen=True)
@@ -71,7 +65,13 @@ def primary_projection(message: dict[str, Any]) -> dict[str, Any]:
     change_key = message.get("changeKey")
     if change_key:
         return {"changeKey": change_key}
-    return {k: v for k, v in message.items() if k in _PRIMARY_FIELDS}
+    # Defer profile loading because the acquisition package imports the store.
+    from message_ingest.acquisition.microsoft.outlook.email.profile import (
+        DISCOVERY_FIELDS,
+    )
+
+    primary_fields = set(DISCOVERY_FIELDS) - {"changeKey", "webLink"}
+    return {k: v for k, v in message.items() if k in primary_fields}
 
 
 def is_stale(observed_at: str, previous: str | None) -> bool:

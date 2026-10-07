@@ -23,6 +23,11 @@ from message_ingest.acquisition.microsoft.outlook.email import (
     effective_mail_policy_digest,
     parse_mail_rule_policy,
 )
+from message_ingest.acquisition.microsoft.outlook.email.profile import (
+    DISCOVERY_FIELDS,
+    FOLDER_FIELDS,
+    FULL_FIELDS,
+)
 from message_ingest.acquisition.microsoft.outlook.email.rule_engine import (
     DeterministicMailRuleEvaluator,
 )
@@ -44,10 +49,14 @@ class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
     """
     Add Mail provenance and failure context to provider acquisition.
 
-    The framework Mail base owns scopes, fields, and immutable-ID preference.
-    This adapter adds provenance and failure callback context, using
+    The framework Mail base owns scopes and immutable-ID preference.
+    This adapter selects acquisition fields and adds failure context, using
     the msgloom Graph base for evidence and logical run integrity.
     """
+
+    discovery_fields = DISCOVERY_FIELDS
+    full_fields = FULL_FIELDS
+    folder_fields = FOLDER_FIELDS
 
     failure_context_keys: ClassVar[tuple[str, ...]] = (
         "message_id",

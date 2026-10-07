@@ -1,4 +1,4 @@
-"""Reusable Outlook Mail scopes, fields, paths, and representation."""
+"""Reusable Outlook Mail scopes, paths, and representation."""
 
 from collections.abc import Sequence
 from typing import ClassVar
@@ -13,50 +13,6 @@ class OutlookMailSpider(OutlookMailboxSpider):
     graph_prefer = 'IdType="ImmutableId"'
     graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read",)
     shared_graph_permissions: ClassVar[tuple[str, ...]] = ("Mail.Read.Shared",)
-    discovery_fields = (
-        "id",
-        "subject",
-        "from",
-        "sender",
-        "toRecipients",
-        "ccRecipients",
-        "bccRecipients",
-        "replyTo",
-        "receivedDateTime",
-        "sentDateTime",
-        "createdDateTime",
-        "lastModifiedDateTime",
-        "changeKey",
-        "importance",
-        "isRead",
-        "isDraft",
-        "hasAttachments",
-        "conversationId",
-        "conversationIndex",
-        "inferenceClassification",
-        "flag",
-        "categories",
-        "bodyPreview",
-        "parentFolderId",
-        "webLink",
-        "internetMessageId",
-    )
-    full_fields = discovery_fields + (
-        "body",
-        "internetMessageHeaders",
-        "isDeliveryReceiptRequested",
-        "isReadReceiptRequested",
-        "uniqueBody",
-    )
-    folder_fields = (
-        "id",
-        "displayName",
-        "parentFolderId",
-        "childFolderCount",
-        "totalItemCount",
-        "unreadItemCount",
-        "isHidden",
-    )
 
     def messages_path(
         self,

@@ -58,9 +58,10 @@ def test_mail_resource_paths_and_query_bytes(mailbox, root):
         != f"{root}/mailFolders?{query}"
     ):
         pytest.fail("Folder inventory query changed")
-    query = urlencode({"$select": ",".join(mail.full_fields)})
+    fields = ("id", "body", "internetMessageHeaders")
+    query = urlencode({"$select": ",".join(fields)})
     if (
-        mail.message_path(identifier, fields=mail.full_fields)
+        mail.message_path(identifier, fields=fields)
         != f"{root}/messages/{encoded}?{query}"
     ):
         pytest.fail("Message detail query changed")

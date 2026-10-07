@@ -1,5 +1,5 @@
 """
-Define when Full-v1 enrichment may skip an already resolved surface.
+Define selected Mail fields and Full-v1 enrichment completeness.
 
 A terminal result is complete only for the same profile version. This lets a
 future profile retry surfaces that an older profile could not acquire.
@@ -13,6 +13,51 @@ from microsoft_graph.protocol.attachments import attachment_type_name
 
 DISCOVERY_V1 = "outlook-mail-discovery-v1"
 FULL_V1 = "outlook-mail-full-v1"
+
+DISCOVERY_FIELDS = (
+    "id",
+    "subject",
+    "from",
+    "sender",
+    "toRecipients",
+    "ccRecipients",
+    "bccRecipients",
+    "replyTo",
+    "receivedDateTime",
+    "sentDateTime",
+    "createdDateTime",
+    "lastModifiedDateTime",
+    "changeKey",
+    "importance",
+    "isRead",
+    "isDraft",
+    "hasAttachments",
+    "conversationId",
+    "conversationIndex",
+    "inferenceClassification",
+    "flag",
+    "categories",
+    "bodyPreview",
+    "parentFolderId",
+    "webLink",
+    "internetMessageId",
+)
+FULL_FIELDS = DISCOVERY_FIELDS + (
+    "body",
+    "internetMessageHeaders",
+    "isDeliveryReceiptRequested",
+    "isReadReceiptRequested",
+    "uniqueBody",
+)
+FOLDER_FIELDS = (
+    "id",
+    "displayName",
+    "parentFolderId",
+    "childFolderCount",
+    "totalItemCount",
+    "unreadItemCount",
+    "isHidden",
+)
 
 TERMINAL_SURFACE_STATUSES = frozenset(
     {
