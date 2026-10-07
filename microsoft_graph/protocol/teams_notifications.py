@@ -57,10 +57,9 @@ def _opaque(value: object, *, name: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class TeamsTrustedSubscription:
-    """Caller-trusted source, tenant, scope, secret, and validity binding."""
+    """Caller-trusted tenant, scope, secret, and validity binding."""
 
     subscription_id: str
-    source_id: str
     tenant_id: str
     scope_kind: TeamsNotificationScopeKind
     client_state: str = field(repr=False)
@@ -73,7 +72,6 @@ class TeamsTrustedSubscription:
     def __post_init__(self) -> None:
         """Require exactly one trusted chat or channel scope and valid window."""
         _opaque(self.subscription_id, name="subscription_id")
-        _opaque(self.source_id, name="source_id")
         _opaque(self.tenant_id, name="tenant_id")
         _opaque(self.client_state, name="client_state")
         start = _utc(self.valid_from, name="valid_from")
@@ -103,7 +101,6 @@ class TeamsTrustedSubscription:
             subscription_id=_opaque(
                 value.get("subscription_id"), name="subscription_id"
             ),
-            source_id=_opaque(value.get("source_id"), name="source_id"),
             tenant_id=_opaque(value.get("tenant_id"), name="tenant_id"),
             scope_kind=scope_kind,
             client_state=_opaque(value.get("client_state"), name="client_state"),
@@ -116,7 +113,7 @@ class TeamsTrustedSubscription:
 
     @property
     def scope(self) -> tuple[str, ...]:
-        """Return the durable coverage scope independent of envelope bytes."""
+        """Return the trusted resource scope independent of envelope bytes."""
         if self.scope_kind == "chat-messages":
             return (self.chat_id or "",)
         return (self.host_team_id or "", self.channel_id or "")

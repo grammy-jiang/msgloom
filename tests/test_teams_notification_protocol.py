@@ -31,7 +31,6 @@ def _trusted(
 ) -> TeamsTrustedSubscription:
     return TeamsTrustedSubscription(
         subscription_id=subscription_id,
-        source_id="teams-source",
         tenant_id=tenant_id,
         scope_kind=scope_kind,
         client_state=SECRET,
@@ -181,7 +180,6 @@ def test_invalid_trusted_window_is_rejected() -> None:
     with pytest.raises(ValueError, match="valid"):
         TeamsTrustedSubscription(
             subscription_id="sub",
-            source_id="source",
             tenant_id="tenant",
             scope_kind="chat-messages",
             client_state=SECRET,

@@ -14,7 +14,6 @@ from microsoft_graph.protocol.teams_notifications import (
 def _trusted(location: str) -> TeamsTrustedSubscription:
     return TeamsTrustedSubscription(
         subscription_id="sub",
-        source_id="source",
         tenant_id="tenant",
         scope_kind="chat-messages" if location == "chat" else "channel-messages",
         client_state="synthetic-secret",

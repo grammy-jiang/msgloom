@@ -143,16 +143,19 @@ def load_trusted_subscriptions(
     for value in values:
         if not isinstance(value, Mapping):
             raise NotificationInputError("trusted subscription entry must be an object")
+        bound_source = value.get("source_id")
+        if not isinstance(bound_source, str) or not bound_source:
+            raise NotificationInputError("trusted subscription record is invalid")
+        if bound_source != source_id:
+            raise NotificationInputError(
+                "trusted subscription source does not match crawl"
+            )
         try:
             record = TeamsTrustedSubscription.from_mapping(value)
         except (TypeError, ValueError) as exc:
             raise NotificationInputError(
                 "trusted subscription record is invalid"
             ) from exc
-        if record.source_id != source_id:
-            raise NotificationInputError(
-                "trusted subscription source does not match crawl"
-            )
         if record.subscription_id in result:
             raise NotificationInputError("trusted subscription IDs must be unique")
         result[record.subscription_id] = record
