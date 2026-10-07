@@ -246,19 +246,17 @@ def test_team_representations_keep_discovery_and_detail_observations_distinct():
         "createdDateTime": None,
         "future": {"flags": [0, False, ""]},
     }
-    associated = TeamsTeamItem.from_associated(
-        raw, detail_limitation="detail GET denied for this observation"
-    )
+    associated = TeamsTeamItem.from_associated(raw)
     joined = TeamsTeamItem.from_joined(raw)
     detail = TeamsTeamItem.from_detail(raw)
     if associated.raw is not raw or detail.raw is not raw:
         pytest.fail("Team parser copied or replaced provider JSON")
-    if associated.detail_complete or joined.detail_complete:
-        pytest.fail("Discovery team representations must remain explicitly partial")
-    if associated.detail_limitation != "detail GET denied for this observation":
-        pytest.fail("Concrete partial-detail limitation was not preserved")
-    if not detail.detail_complete or detail.detail_limitation is not None:
-        pytest.fail("Full team detail state was not preserved separately")
+    if (associated.representation, joined.representation, detail.representation) != (
+        "associated",
+        "joined",
+        "detail",
+    ):
+        pytest.fail("Provider team representation facts were not preserved")
     if (associated.display_name, associated.description, associated.tenant_id) != (
         "",
         False,
@@ -312,9 +310,15 @@ def test_channel_topology_preserves_host_receiving_tenants_and_resource_link():
         incoming.receiving_tenant_id,
     ) != ("host-team", "host-tenant", "receiving-team", "receiving-tenant"):
         pytest.fail("Host and receiving topology contexts were conflated")
-    if incoming.detail_complete or incoming.layout_type is not None:
+    if (
+        incoming.representation != "incomingChannels"
+        or incoming.layout_type is not None
+    ):
         pytest.fail("Discovery projection must not masquerade as full detail")
-    if not detail.detail_complete or detail.original_resource_link != resource_link:
+    if (
+        detail.representation != "detail"
+        or detail.original_resource_link != resource_link
+    ):
         pytest.fail("Detail hydration must remain a separate observation")
     if (
         incoming.display_name,
