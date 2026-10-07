@@ -29,16 +29,36 @@ jobs:
           version: "0.12.21"
           python-version: "3.13"
           enable-cache: true
+      - name: Classify documentation-only changes
+        id: change_scope
+        shell: bash
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_PYTHON: 3.13
+        run: |
+          uv run --no-project --python "$CI_PYTHON" python \
+            scripts/quality/ci_change_scope.py \
+            --event "$GITHUB_EVENT_NAME" --base "$CI_BASE_SHA" \
+            --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
+      # Cache the installed hook environments, especially Gitleaks' Go build.
+      # Revision changes invalidate this store; the uv cache is independent.
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/pre-commit
+          key: precommit-v1-${{ runner.os }}-${{ runner.arch }}-py313-node24-${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Install locked development dependencies
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: uv sync --locked --group dev
       - name: Ruff checks
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: |
           uv run --no-sync ruff check microsoft_graph message_ingest msgloom scripts tests
           uv run --no-sync ruff format --check microsoft_graph message_ingest msgloom scripts tests
       - name: Pyright
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: >-
           npx --yes --package pyright@1.1.413 pyright
           --pythonpath .venv/bin/python microsoft_graph message_ingest msgloom tests
@@ -58,11 +78,13 @@ jobs:
       # Reuse existing A1-to-A2 / Graph import boundary checks.  Keep these
       # separate from handoff runtime qualification (which requires cgroups).
       - name: Architecture boundaries
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: |
           uv run --no-sync python -c 'from pathlib import Path; from scripts.handoff_qualification.audit import reverse_imports; reverse_imports(Path.cwd())'
           uv run --no-sync python -m pytest -q -n 0 \
             tests/test_microsoft_graph_package_layout.py::test_graph_package_does_not_depend_on_message_ingest
       - name: Native Scrapy callback contracts against local Graph fixtures
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: uv run --no-sync pytest -q -n 0 tests/test_teams_native_contracts.py
       - name: Existing pre-commit checks on the branch changes
         env:
@@ -108,8 +130,26 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-suffix: ${{ matrix.tox-env }}
+      - name: Classify documentation-only changes
+        id: change_scope
+        shell: bash
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_PYTHON: ${{ matrix.python }}
+        run: |
+          uv run --no-project --python "$CI_PYTHON" python \
+            scripts/quality/ci_change_scope.py \
+            --event "$GITHUB_EVENT_NAME" --base "$CI_BASE_SHA" \
+            --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
       - name: Install required process isolation
-        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' && !contains(matrix.tox-env, 'fastmcp') }}
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends apparmor bubblewrap
@@ -121,29 +161,28 @@ jobs:
           bwrap --die-with-parent --unshare-all \
             --ro-bind /usr /usr --ro-bind /lib /lib \
             --proc /proc --dev /dev /usr/bin/true
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-        with:
-          version: "0.12.21"
-          python-version: ${{ matrix.python }}
-          enable-cache: true
-          cache-suffix: ${{ matrix.tox-env }}
+      - name: Docs-only fast path (runtime suites unchanged)
+        if: ${{ steps.change_scope.outputs.docs_only == 'true' }}
+        run: echo "Docs-only diff; all non-docs changes still require every tox matrix."
       - name: Install locked development dependencies
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: uv sync --locked --group dev
       # Portable tox checks must not need delegated Linux cgroups.
       # Real OS-specific process safety is verified in a separate required job.
       - name: Run the existing tox environment
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         env:
           TOX_ENVIRONMENT: ${{ matrix.tox-env }}
         run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
       # Evaluate coverage after both tox phases. The first pytest invocation
       # cannot be gated independently because its coverage is incomplete.
       - name: Enforce line and branch coverage budgets
-        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' && !contains(matrix.tox-env, 'fastmcp') }}
         run: >-
           uv run --no-sync python scripts/quality/coverage_gate.py
           .tox/${{ matrix.tox-env }}/coverage.xml
       - name: Qualify the rebuilt wheel outside the checkout
-        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' && !contains(matrix.tox-env, 'fastmcp') }}
         run: |
           uv venv "$RUNNER_TEMP/wheel-env"
           uv export --locked --no-dev --no-emit-project \
@@ -158,7 +197,7 @@ jobs:
             --require-resource msgloom.reporting:templates/report.txt.j2 \
             --require-resource msgloom.reporting:templates/report.html.j2
       - name: Preserve coverage and qualification evidence
-        if: ${{ always() }}
+        if: ${{ always() && steps.change_scope.outputs.docs_only != 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: evidence-${{ matrix.tox-env }}
@@ -178,14 +217,31 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.12.21"
           python-version: "3.13"
           enable-cache: true
+      - name: Classify documentation-only changes
+        id: change_scope
+        shell: bash
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_PYTHON: 3.13
+        run: |
+          uv run --no-project --python "$CI_PYTHON" python \
+            scripts/quality/ci_change_scope.py \
+            --event "$GITHUB_EVENT_NAME" --base "$CI_BASE_SHA" \
+            --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Docs-only fast path (kernel contracts unchanged)
+        if: ${{ steps.change_scope.outputs.docs_only == 'true' }}
+        run: echo "Docs-only diff; kernel safety suite remains required for code changes."
       - name: Install locked test dependencies
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: uv sync --locked --group dev
       - name: Require real delegated Linux cgroup-v2 execution
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: |
           sudo systemd-run --quiet --wait --collect --pipe \
             --uid "$(id -un)" --property=Delegate=yes \
@@ -198,6 +254,7 @@ jobs:
                 -m linux_cgroup_v2 --junitxml="$RUNNER_TEMP/linux-cgroup.xml"
             '
       - name: Enforce complete Linux safety coverage
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: |
           python - <<'PYCODE'
           import os
@@ -216,7 +273,7 @@ jobs:
           print(f"Native safety coverage verified: {len(cases)} executed cases")
           PYCODE
       - name: Preserve Linux safety evidence
-        if: ${{ always() }}
+        if: ${{ always() && steps.change_scope.outputs.docs_only != 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: linux-cgroup-v2-evidence
@@ -236,15 +293,31 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.12.21"
           python-version: "3.13"
           enable-cache: true
           cache-suffix: ${{ matrix.os }}
+      - name: Classify documentation-only changes
+        id: change_scope
+        shell: bash
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_PYTHON: 3.13
+        run: |
+          uv run --no-project --python "$CI_PYTHON" python \
+            scripts/quality/ci_change_scope.py \
+            --event "$GITHUB_EVENT_NAME" --base "$CI_BASE_SHA" \
+            --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Docs-only fast path (portable contracts unchanged)
+        if: ${{ steps.change_scope.outputs.docs_only == 'true' }}
+        run: echo "Docs-only diff; portable smoke is mandatory for code changes."
       # Install only dependencies used by these portable contracts; unrelated
       # product dependencies must not gate the cross-platform smoke suite.
       - name: Run portable business and framework contracts
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: >-
           uv run --no-project --python 3.13 --with pytest==8.4.2
           --with scrapy==2.19.0 --with sqlalchemy==2.0.54
