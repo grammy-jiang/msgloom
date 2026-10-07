@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from scrapy.utils.request import request_from_dict
@@ -57,6 +58,24 @@ def _callback_context() -> dict[str, Any]:
         "chat_id": "chat/A+=%2F",
         "purpose": {"kind": "messages", "falsey": [0, False, ""]},
     }
+
+
+@pytest.mark.parametrize("page_size", [None, 7, 50])
+def test_message_request_uses_only_caller_selected_page_size(
+    page_size: int | None,
+) -> None:
+    spider = _spider()
+    kwargs: dict[str, Any] = {} if page_size is None else {"page_size": page_size}
+    request = spider.chat_messages_request(
+        "chat",
+        callback=spider.parse_messages,
+        errback=spider.application_errback,
+        **kwargs,
+    )
+    query = parse_qs(urlsplit(request.url).query)
+    expected = {} if page_size is None else {"$top": [str(page_size)]}
+    if query != expected:
+        pytest.fail("Composition must not supply a selected acquisition page size")
 
 
 def test_message_requests_use_named_application_callbacks_and_prefer() -> None:

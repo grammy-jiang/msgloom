@@ -1,4 +1,4 @@
-"""Pin the standalone Microsoft Teams T1 chat topology contract."""
+"""Pin the standalone Microsoft Teams chat topology contract."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from microsoft_graph.items.teams.chat import (
 from microsoft_graph.spiders.teams.chat import MicrosoftTeamsChatSpider
 
 
-def test_t1_scope_and_frozen_paths_encode_opaque_ids_once() -> None:
+def test_chat_paths_encode_opaque_ids_without_selecting_application_profile() -> None:
     spider = MicrosoftTeamsChatSpider(name="provider")
     chat_id = "19:A/B+=%2F ?é#@thread.v2"
     message_id = "msg/A+=%2F ?#"
@@ -44,23 +44,23 @@ def test_t1_scope_and_frozen_paths_encode_opaque_ids_once() -> None:
     ]
     for actual, expected in cases:
         if actual != expected:
-            pytest.fail(f"Teams T1 path changed: {actual!r} != {expected!r}")
+            pytest.fail(f"Teams chat path changed: {actual!r} != {expected!r}")
 
     chat_query = parse_qs(urlsplit(spider.chats_path()).query)
     message_query = parse_qs(urlsplit(spider.chat_messages_path(chat_id)).query)
-    if chat_query != {"$top": ["50"]} or message_query != {"$top": ["50"]}:
-        pytest.fail("Frozen chat/message inventories must default to $top=50")
+    if chat_query or message_query:
+        pytest.fail("Provider inventories must leave page-size choice to consumers")
 
     settings = Settings()
     spider.update_settings(settings)
-    if spider.required_graph_permissions(settings) != ("Chat.Read",):
-        pytest.fail("T1 chat provider must require Chat.Read only")
-    if settings.getlist("MS_GRAPH_SCOPES") != ["Chat.Read"]:
-        pytest.fail("T1 chat provider must not request optional or write scopes")
+    if spider.required_graph_permissions(settings):
+        pytest.fail("Provider paths must not select application permissions")
+    if settings.getlist("MS_GRAPH_SCOPES"):
+        pytest.fail("Provider helpers must not request application scopes")
 
 
 @pytest.mark.parametrize("page_size", [1, 17, 50])
-def test_chat_and_message_page_size_accepts_only_frozen_bounds(page_size: int) -> None:
+def test_chat_and_message_page_size_accepts_provider_bounds(page_size: int) -> None:
     spider = MicrosoftTeamsChatSpider(name="provider")
     for path in (
         spider.chats_path(page_size=page_size),

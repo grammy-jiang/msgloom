@@ -1,10 +1,12 @@
 """Qualify the Teams chat application spider boundary and startup contract."""
 
 import asyncio
+import json
 
 import pytest
 from scrapy import Request
 from scrapy.crawler import Crawler
+from scrapy.http import TextResponse
 from scrapy.settings import Settings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
@@ -86,3 +88,28 @@ def test_chat_spider_rejects_jobdir_before_network() -> None:
     crawler = Crawler(MicrosoftTeamsChatDiscoverSpider, settings)
     with pytest.raises(ValueError, match="JOBDIR"):
         MicrosoftTeamsChatDiscoverSpider.from_crawler(crawler)
+
+
+def test_chat_discovery_selects_message_page_size_in_application() -> None:
+    crawler = Crawler(MicrosoftTeamsChatDiscoverSpider, _settings())
+    spider = MicrosoftTeamsChatDiscoverSpider.from_crawler(crawler)
+    request = asyncio.run(_first_start_request(spider))
+    response = TextResponse(
+        request.url,
+        request=request,
+        body=json.dumps({"value": [{"id": "chat-1", "chatType": "oneOnOne"}]}).encode(),
+        encoding="utf-8",
+    )
+    output = list(spider.parse_chats(response, **request.cb_kwargs))
+    messages = next(
+        value
+        for value in output
+        if isinstance(value, Request) and value.callback == spider.parse_chat_messages
+    )
+    if (
+        messages.url
+        != "https://graph.microsoft.com/v1.0/chats/chat-1/messages?%24top=50"
+    ):
+        pytest.fail("Application message traversal must retain selected page size")
+    if messages.headers.get("Prefer") != b"include-unknown-enum-members":
+        pytest.fail("Application message traversal must retain representation headers")

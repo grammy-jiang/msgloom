@@ -94,8 +94,8 @@ class MicrosoftTeamsChatCompositionSpider(MicrosoftTeamsChatSpider):
     Build chat-message requests without owning application response callbacks.
 
     Consumers supply named callbacks, named errbacks, and callback context.
-    This provider layer only binds frozen T1 paths to required representation
-    headers and common pure models.
+    This provider layer binds chat paths to required representation headers
+    and common pure models. Consumers select permissions and page sizes.
     """
 
     def chat_messages_request(
@@ -105,7 +105,7 @@ class MicrosoftTeamsChatCompositionSpider(MicrosoftTeamsChatSpider):
         callback: Callable[..., Any],
         errback: Callable[..., Any],
         cb_kwargs: dict[str, Any] | None = None,
-        page_size: int = 50,
+        page_size: int | None = None,
         modified_after: str | None = None,
         modified_before: str | None = None,
         operation: str = "teams-chat-messages",

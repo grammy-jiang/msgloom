@@ -28,6 +28,7 @@ from ._chat_content import (
     hosted_item_outputs,
 )
 from ._chat_messages import message_page_outputs, targeted_message_outputs
+from ._chat_profile import CHAT_DISCOVERY_PAGE_SIZE, CHAT_DISCOVERY_SCOPES
 
 
 class MicrosoftTeamsChatDiscoverSpider(
@@ -44,6 +45,7 @@ class MicrosoftTeamsChatDiscoverSpider(
     """
 
     name = "microsoft_teams_chat_discover"
+    graph_permissions: ClassVar[tuple[str, ...]] = CHAT_DISCOVERY_SCOPES
     failure_context_keys: ClassVar[tuple[str, ...]] = (
         "chat_id",
         "message_id",
@@ -63,7 +65,7 @@ class MicrosoftTeamsChatDiscoverSpider(
     async def start(self) -> AsyncIterator[Any]:
         """Schedule the signed-in user's chat inventory."""
         yield self._chat_request(
-            self.chats_path(),
+            self.chats_path(page_size=CHAT_DISCOVERY_PAGE_SIZE),
             callback=self.parse_chats,
             purpose="teams-chat-list",
             cb_kwargs={},
@@ -164,6 +166,7 @@ class MicrosoftTeamsChatDiscoverSpider(
             message_purpose = "teams-chat-messages"
             yield self.chat_messages_request(
                 item.chat_id,
+                page_size=CHAT_DISCOVERY_PAGE_SIZE,
                 callback=self.parse_chat_messages,
                 errback=self.errback,
                 cb_kwargs={

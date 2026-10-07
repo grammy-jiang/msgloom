@@ -1,9 +1,8 @@
-"""Microsoft Teams delegated chat scope and frozen v1.0 path helpers."""
+"""Microsoft Teams chat v1.0 paths and provider query constraints."""
 
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import ClassVar
 from urllib.parse import quote, urlencode
 
 from microsoft_graph.spiders.graph import MicrosoftGraphSpider
@@ -11,15 +10,13 @@ from microsoft_graph.spiders.graph import MicrosoftGraphSpider
 
 class MicrosoftTeamsChatSpider(MicrosoftGraphSpider):
     """
-    Supply T1 chat paths without traversal, parsing, or application state.
+    Supply chat paths without traversal, parsing, or application state.
 
     IDs are opaque provider path segments and are encoded exactly once here.
     Consumers own callbacks, evidence ordering, continuation traversal, and
-    semantic persistence. Collection helpers select only the frozen T1 query
-    options.
+    semantic persistence. Consumers also select permissions and page sizes;
+    collection helpers validate provider bounds without selecting a profile.
     """
-
-    graph_permissions: ClassVar[tuple[str, ...]] = ("Chat.Read",)
 
     @staticmethod
     def _segment(value: str, *, name: str) -> str:
@@ -66,10 +63,12 @@ class MicrosoftTeamsChatSpider(MicrosoftGraphSpider):
         """Append a newly constructed query while preserving option order."""
         return f"{path}?{urlencode(query)}" if query else path
 
-    def chats_path(self, *, page_size: int = 50) -> str:
-        """List the signed-in user's chats with the frozen page-size query."""
-        size = self._page_size(page_size)
-        return self._query_path("/me/chats", [("$top", size)])
+    def chats_path(self, *, page_size: int | None = None) -> str:
+        """List the signed-in user's chats with an optional caller page size."""
+        query: list[tuple[str, str | int]] = []
+        if page_size is not None:
+            query.append(("$top", self._page_size(page_size)))
+        return self._query_path("/me/chats", query)
 
     def chat_path(self, chat_id: str) -> str:
         """Address one chat by its opaque provider ID."""
@@ -84,7 +83,7 @@ class MicrosoftTeamsChatSpider(MicrosoftGraphSpider):
         self,
         chat_id: str,
         *,
-        page_size: int = 50,
+        page_size: int | None = None,
         modified_after: str | None = None,
         modified_before: str | None = None,
     ) -> str:
@@ -94,7 +93,9 @@ class MicrosoftTeamsChatSpider(MicrosoftGraphSpider):
         A bounded window always uses descending lastModifiedDateTime order and
         matching strict gt/lt predicates, as required by Graph.
         """
-        query: list[tuple[str, str | int]] = [("$top", self._page_size(page_size))]
+        query: list[tuple[str, str | int]] = []
+        if page_size is not None:
+            query.append(("$top", self._page_size(page_size)))
         if (modified_after is None) != (modified_before is None):
             raise ValueError(
                 "modified_after and modified_before must be supplied together"
