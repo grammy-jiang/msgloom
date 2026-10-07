@@ -118,7 +118,7 @@ class EvidenceFiles:
     def reference(row: EvidenceRow) -> SavedByteReference:
         """Create a path-free byte reference from catalog integrity metadata."""
         return SavedByteReference(
-            reference=f"a1-response:{row.evidence_id}",
+            reference=f"a1-{row.body_kind}:{row.evidence_id}",
             sha256=row.response_body_sha256,
             byte_count=row.response_body_bytes,
         )
@@ -221,11 +221,10 @@ class EvidenceFiles:
 
     @staticmethod
     def evidence_id(reference: SavedByteReference) -> str:
-        """Decode only adapter-issued response references; never accept URIs."""
-        prefix = "a1-response:"
-        if not reference.reference.startswith(prefix):
-            raise SourceReferenceError("saved byte reference is not an A1 response")
-        evidence_id = reference.reference[len(prefix) :]
+        """Decode an A1 body reference; the reader verifies its exact body kind."""
+        prefix, separator, evidence_id = reference.reference.partition(":")
+        if not separator or prefix not in {"a1-response", "a1-request"}:
+            raise SourceReferenceError("saved byte reference is not an A1 body")
         if not evidence_id or ":" in evidence_id:
             raise SourceReferenceError("saved byte reference is malformed")
         return evidence_id

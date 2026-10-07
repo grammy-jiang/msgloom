@@ -12,20 +12,8 @@ from urllib.parse import quote, unquote
 from msgloom.contracts import VersionRef
 from msgloom.preparation.records import PreparedSourceType
 from msgloom.sources._catalog_path import CatalogPath
+from msgloom.sources._evidence import EvidenceRow
 from msgloom.sources.models import SourceReaderLimits, SourceReferenceError
-
-
-@dataclass(frozen=True, slots=True)
-class EvidenceRow:
-    """Credential-free fields required to verify one saved response body."""
-
-    evidence_id: str
-    source_id: str
-    observed_at: str
-    purpose: str | None
-    response_body_sha256: str
-    response_body_path: str
-    response_body_bytes: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,17 +100,19 @@ class ReadOnlyCatalog:
         return VersionRef("source_scope", row["source_id"], row["bound_at"])
 
     def evidence(self, evidence_id: str) -> EvidenceRow:
-        """Return only fields needed for local response-byte verification."""
+        """Select exact inbound request or outbound response integrity fields."""
         with closing(self._connect()) as connection:
             row = connection.execute(
-                "SELECT evidence_id, source_id, observed_at, purpose, "
+                "SELECT evidence_id, source_id, observed_at, purpose, origin, "
+                "request_method, request_body_sha256, request_body_path, "
+                "request_body_bytes, response_url, response_status, "
                 "response_body_sha256, response_body_path, response_body_bytes "
                 "FROM raw_http_evidence WHERE evidence_id = ? LIMIT 1",
                 (evidence_id,),
             ).fetchone()
         if row is None:
             raise SourceReferenceError("saved evidence reference is unknown")
-        return EvidenceRow(**dict(row))
+        return EvidenceRow.from_capture(row)
 
     def list_versions(
         self,
