@@ -12,7 +12,7 @@ def runtime_versions(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
     """Supply runtime metadata without installing the product dependency set."""
     versions = {
         "scrapy": "2.19.0",
-        "pytest": "8.4.2",
+        "pytest": "9.0.3",
         "pytest-cov": "7.1.0",
         "pytest-xdist": "3.8.0",
         "ruff": "0.16.10",

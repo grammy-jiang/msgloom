@@ -45,6 +45,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
         "tox-uv==1.36.0",
         "pytest-xdist==3.8.0",
         "pytest-cov==7.1.0",
+        "pytest==9.0.3",
     ):
         if requirement not in dev:
             pytest.fail(f"missing exact development pin: {requirement}")
@@ -121,6 +122,10 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
         pytest.fail("parallel test command must bound xdist at four workers")
     if commands[1][commands[1].index("-n") + 1] != "0":
         pytest.fail("exclusive-state test command must disable xdist")
+    if "--junitxml={env_dir}/junit-normal.xml" not in commands[0]:
+        pytest.fail("parallel test results must retain a dedicated JUnit file")
+    if "--junitxml={env_dir}/junit-exclusive.xml" not in commands[1]:
+        pytest.fail("exclusive test results must not overwrite the normal JUnit")
     for command in commands:
         marker_index = command.index("-m", command.index("-m") + 1)
         marker = command[marker_index + 1]
@@ -157,5 +162,7 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
             pytest.fail(f"{version} compatibility test marker is not required")
         if "--cov-branch" not in compat_command:
             pytest.fail(f"{version} compatibility coverage is not branch-aware")
+        if "--junitxml={env_dir}/junit-fastmcp.xml" not in compat_command:
+            pytest.fail(f"{version} compatibility JUnit report is missing")
         if not any("coverage.xml" in item for item in compat_command):
             pytest.fail(f"{version} compatibility coverage artifact is missing")
