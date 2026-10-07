@@ -432,48 +432,71 @@ Target:
 
 ## 7. Work breakdown
 
-Implementation is split into six checkpoints, G0 through G5. Each checkpoint
-is independently reviewable and revertible, but none is a human-approval stop.
-When a checkpoint fails, the implementation must diagnose and repair the current
-lane autonomously, rerun only the affected verification, and continue once it
-is green. The plan should run end-to-end without asking the user to make routine
-technical decisions.
+Implementation is split into six logical checkpoints, G0 through G5, but the
+execution unit is a much smaller **micro-step**. Checkpoints are quality labels,
+not barriers that force unrelated work to wait.
 
-## Checkpoint G0 — freeze ownership tests before moves
+### 7.1 Hard parallelism and 30-minute micro-step rules
 
-### Goal
+Every implementation micro-step is designed to fit inside one **less-than-30
+minute** engineering timebox, including its narrow characterization/focused
+verification. Use a target of roughly 20-25 minutes of active implementation so
+there is margin for a focused test or repair. This is a scope constraint, not a
+reason to stop and ask the user for approval.
 
-Convert the ownership contract above into tests that fail on the known leaks
-before production relocation begins. G0 itself is split by branch: generic and
-non-Teams characterization tests are committed on `master`; Teams-specific
-characterization tests are committed on `program/a1-teams-spider`.
+Rules:
 
-### Add or extend tests
+- if a proposed unit cannot reasonably fit the timebox, split it **before**
+  implementation;
+- if work reaches the timebox boundary without a coherent green result, preserve
+  the smallest coherent subset, split the residual work into the next micro-step,
+  and continue autonomously;
+- a micro-step owns an explicit, non-overlapping production-file set; tests may
+  overlap only when one coordinator owns the shared test file;
+- do not assign two concurrent writers to the same production file;
+- do not create a large "cleanup" commit spanning multiple independent
+  ownership findings;
+- characterization is **lane-local**: each lane adds or updates the test that
+  proves its own boundary, then immediately implements that lane; unrelated
+  lanes never wait for a global G0 test freeze;
+- after a micro-step has a coherent candidate commit, dispatch its focused tests
+  against that exact SHA and immediately continue with another disjoint
+  micro-step while those tests run;
+- a focused test failure blocks only that micro-step and its dependents, not the
+  other branch or unrelated lanes;
+- all repair work is itself another bounded micro-step;
+- the full tracked suite remains a single final convergence activity, never a
+  per-step requirement.
 
-On `master`:
+The plan should therefore run end-to-end without routine user decisions and
+without any single implementation step becoming a long serial critical path.
 
-1. `microsoft_graph` standalone import test remains independent of
-   `message_ingest`, `msgloom`, and SQLAlchemy.
-2. Add generic semantic-boundary guardrails that reject application-only state
-   in reusable framework code where practical.
-3. Add tests pinning Outlook/Contacts application projections after relocation.
-4. Add a focused test proving non-Teams application delta requests do not
-   inspect/rebuild opaque Graph cursors.
+### 7.2 Lane-local characterization instead of a global G0 barrier
 
-On `program/a1-teams-spider`:
+G0 contains only the generic architecture guardrail that is truly shared. Every
+resource lane owns its own characterization tests as part of its first
+micro-step. Mail, Contacts, OneDrive, Teams notification, Teams topology, and
+Teams profile work may all begin in parallel once their file ownership is
+assigned.
 
-1. Add direct tests proving Teams provider helpers can be instantiated/used
-   without the msgloom T1/T2 scope bundle.
-2. Add tests proving application Teams spiders still select exact T1/T2 scopes.
-3. Add tests pinning the Teams application projection/profile contract.
-4. Add Teams-specific semantic checks for `source_id`, completeness/limitation,
-   and other application state currently leaked into Teams provider models.
+## Checkpoint G0 — generic ownership guardrail
 
-### Checkpoint
+**Branch: `master`.** This checkpoint is intentionally tiny and does not block
+resource-specific lanes.
 
-- tests demonstrate the intended ownership, not just import direction;
-- no production behavior changed yet;
-- each test has one clear ownership failure message.
+One bounded micro-step (`M0-ARCH`) extends the existing framework package-layout
+architecture test to cover only generic application-state leakage that can be
+checked without Teams-specific/product-specific false positives. It preserves:
+
+- standalone `microsoft_graph` imports without `message_ingest`, `msgloom`, or
+  SQLAlchemy;
+- no generic application identities such as `run_id`/`evidence_id` in reusable
+  framework dataclasses where the rule is semantically valid;
+- clear diagnostics when the boundary fails.
+
+Mail/Contacts/OneDrive/Teams-specific characterization belongs to those lanes,
+not here. As soon as `M0-ARCH` is committed it can be tested independently while
+all other lanes continue.
 
 ## Checkpoint G1 — remove application state from Teams notification protocol/items
 
@@ -616,9 +639,9 @@ Framework retains:
 
 **Branch: `master` only.**
 
-Run disjoint provider lanes in parallel after the relevant master-side G2 work
-unless a shared helper is needed. No G3 implementation is committed to the
-Teams branch.
+Run these disjoint provider lanes immediately in parallel with G2. They do not
+depend on Mail/Contacts profile relocation. No G3 implementation is committed
+to the Teams branch.
 
 ### Lane G3-ONEDRIVE
 
@@ -651,6 +674,50 @@ Teams branch.
 - OneDrive provider response mechanics are reusable;
 - application callbacks still own traversal and semantic decisions.
 
+### 7.3 Bounded micro-step matrix
+
+The detailed ownership rules in G1-G3 are executed using the following units.
+Each row is independently assignable; dependencies are the only reason to wait.
+
+| ID | Branch | Depends on | Exclusive production ownership / outcome | Focused verification |
+| --- | --- | --- | --- | --- |
+| `I1` | infra | none | Add `master` LAN sync channel and clean Pi 2 master test checkout/lock | SHA sync/status smoke |
+| `I2` | infra | none | Add clean branch-specific test worktrees on Pi 1 plus exact-SHA test wrapper support | wrapper/lock smoke |
+| `M0-ARCH` | master | none | generic package/semantic ownership guardrail only | package-layout test |
+| `M1-MAIL-PROFILE` | master | none | move Mail discovery/full/folder selected fields from provider to application Mail base/profile; provider keeps path mechanics | Outlook provider + discovery/full profile tests |
+| `M2-CONTACTS-PROFILE` | master | none | move Contacts selected/privacy fields to application profile; provider keeps caller-selected paths | Contacts provider + crawl tests |
+| `M3-ONEDRIVE-410` | master | none | extract pure safe 410 Location validation to an existing OneDrive provider module or a directly imported narrow module; do not claim a shared package export during the parallel wave | OneDrive resync/reset tests |
+| `M4-MAIL-MSG-CURSOR` | master | none | message delta: explicit opaque provenance + existing `compose_prefer()` | mail delta tests |
+| `M5-MAIL-FOLDER-CURSOR` | master | none | folder delta: explicit opaque provenance + existing preference composition | folder-delta tests |
+| `M6-TOMBSTONE-CORE` | master | none | add smallest pure Graph `@removed` validator/value primitive in a dedicated delta/protocol module; consumers may import it directly so no shared package export is required during the parallel wave | Graph protocol tests |
+| `M7-TOMBSTONE-MSG` | master | `M4`,`M6` | consume tombstone primitive in message delta only | mail delta removal tests |
+| `M8-TOMBSTONE-FOLDER` | master | `M5`,`M6` | consume tombstone primitive in folder delta only | folder removal tests |
+| `M9-TOMBSTONE-CALENDAR` | master | `M6` | consume tombstone primitive in Calendar delta only | calendar delta tests |
+| `T1-NOTIFY-SOURCE` | Teams | none | remove `source_id` from provider trusted subscription; preserve app input/source binding | notification protocol/intake tests |
+| `T2-NOTIFY-GAP` | Teams | `T1` | provider returns lifecycle fact; app maps lifecycle to coverage `gap_kind` | notification reconciliation/reader tests |
+| `T3-TOPOLOGY-COMPLETENESS` | Teams | none | move `detail_complete/detail_limitation` to application subclasses while preserving stored/public shape | channel provider + topology catalog/reader tests |
+| `T4-CHAT-PROFILE` | Teams | none | move exact Chat T1 scope/profile terminology and selected chat page defaults to application ownership | chat provider/composition tests |
+| `T5-CHANNEL-SCOPES` | Teams | none | move exact complete-T2 scope bundle to application ownership | channel provider/composition scope tests |
+| `T6-CHANNEL-QUERY-PROFILE` | Teams | `T5` | make provider channel select/page helpers caller-driven; move selected projection/defaults to app | channel paths/provider/crawl tests |
+| `M10A-MASTER-AUDIT` | master | `M0-M9` | read-only ownership scan; emit concrete findings only | static ownership scan |
+| `M10B-MASTER-CLOSE` | master | `M10A` | bounded docs/guardrail/repair for M10A findings, focused static checks, freeze candidate; split multiple findings into `M10B-<n>` | changed-path tests + narrow static checks |
+| `T7A-TEAMS-AUDIT` | Teams | `T1-T6` | read-only Teams ownership scan; emit concrete findings only | Teams ownership scan |
+| `T7B-TEAMS-CLOSE` | Teams | `T7A` | bounded docs/guardrail/repair for T7A findings; split independent findings into `T7B-<n>` | Teams focused tests + narrow static checks |
+| `R1A-REBASE-START` | Teams | `M10B`,`T7B` | fetch/freeze exact master SHA, verify clean Teams worktree, start rebase | branch/SHA checks |
+| `R1-C<n>` | Teams | previous rebase step | resolve exactly one conflicting replayed commit or one tightly coupled conflict cluster, then continue rebase | conflict-affected tests/static parse only when useful |
+| `R1B-REBASE-VERIFY` | Teams | rebase complete | verify merge-base, no merge commit, and Teams-only delta | merge-base + changed-path checks |
+| `R2-POST-REBASE` | Teams | `R1B` | bounded Teams adaptation only where master generic contracts changed; split unrelated adaptations | conflict-affected tests only |
+| `F1-FINAL` | integrated | `R2` | validation-only final full convergence on rebased Teams SHA | two-Pi full shard + static checks |
+
+`M1` through `M6` can all run concurrently. After `M6` lands, `M9` can start
+immediately; `M7` waits only for `M4`, and `M8` waits only for `M5`. On Teams,
+`T1`, `T3`, `T4`, and `T5` can all start concurrently; `T2` waits only for
+`T1`, and `T6` waits only for `T5`.
+
+A unit may be subdivided further if source inspection reveals more than one
+independent responsibility. It must never be enlarged merely to reduce commit
+count.
+
 ## Checkpoint G4 — branch convergence and architecture audit
 
 G4 freezes `master` first, then rebases the Teams branch onto that exact SHA.
@@ -659,10 +726,12 @@ Teams branch.
 
 ### G4-M — finalize `master`
 
-Complete all `master` lanes (G0-master, G2-MAIL, G2-CONTACTS, and G3), then run
-a fresh master-side ownership audit.
+Complete master micro-steps `M0` through `M9`, then run a fresh read-only
+master-side ownership audit in `M10A`; apply any bounded findings in `M10B-<n>`
+and freeze in `M10B`.
 
-Required checks on `master`:
+Required checks on `master` (audit first, repair in separately bounded
+micro-steps):
 
 1. zero imports from `microsoft_graph` to `message_ingest`, `msgloom`, or
    SQLAlchemy;
@@ -681,14 +750,20 @@ Once these checks pass:
 - treat that SHA as frozen for the rebase unless a later test proves a genuine
   non-Teams defect.
 
-### G4-R — mandatory final rebase
+### G4-R — mandatory final rebase sequence
 
-Rebase `program/a1-teams-spider` onto the recorded final `master` SHA:
+Rebase `program/a1-teams-spider` onto the recorded final `master` SHA. The
+rebase is an orchestration sequence, not one large implementation step:
 
 ```text
 git fetch origin
 git rebase <final-master-sha>
 ```
+
+`R1A` starts the rebase. If Git reports conflicts, each replayed conflicting
+commit or tightly coupled conflict cluster becomes its own `R1-C<n>` micro-step
+under the same less-than-30-minute rule. `R1B` performs final ancestry/delta
+verification after rebase completion.
 
 Conflict handling is semantic:
 
@@ -808,127 +883,185 @@ confirmation.
 
 ## 8. Parallel execution model
 
-Branch separation is the outer execution boundary. Parallel work is allowed only
-when both file ownership and branch ownership are unambiguous.
+### 8.0 Critical-path review
+
+The final review removes four avoidable serialization points from the previous
+plan:
+
+1. no global G0 wait; characterization is lane-local;
+2. master and Teams implementation proceed concurrently on separate worktrees;
+3. focused verification is pipelined behind exact candidate SHAs instead of
+   blocking the next disjoint implementation unit;
+4. generic tombstone implementation is split into one provider primitive plus
+   three parallel consumers instead of one multi-resource edit.
+
+The remaining serialization is intentional and small: notification source
+separation precedes notification gap mapping; channel scope separation precedes
+channel query-profile cleanup; tombstone consumers wait for the tiny core
+primitive; final rebase waits for frozen master.
+
+### 8.0.1 Maximum-parallel execution waves
 
 ```text
-                 +---------------- MASTER ----------------+
-                 |                                         |
-G0-master --> G2-MAIL ----+                                |
-                 |         +--> G3-MAIL-DELTA --+          |
-                 +--> G2-CONTACTS               |          |
-                 |         +--> G3-ONEDRIVE -----+--> G4-M |
-                 |         +--> G3-GRAPH-DELTA --+          |
-                 +-----------------------------------------+
-                                                           |
-                                                           v
-                                                   freeze/push master
-                                                           |
-                                                           v
-                 +---------------- TEAMS ------------------+
-G0-teams --> G1-A notifications ----+                      |
-            G1-B Teams items -------+--> G2-TEAMS ---------+
-                 +-----------------------------------------+
-                                                           |
-                                                           v
-                                              G4-R final rebase
-                                                           |
-                                                           v
-                                              G4-T Teams audit
-                                                           |
-                                                           v
-                                               G5 full converge
+WAVE 0 — start immediately
+  infra:   I1 master sync      || I2 clean test worktrees / exact-SHA wrapper
+  master:  M0-ARCH || M1-MAIL || M2-CONTACTS || M3-ONEDRIVE
+           || M4-MSG-CURSOR || M5-FOLDER-CURSOR || M6-TOMBSTONE-CORE
+  teams:   T1-NOTIFY-SOURCE || T3-TOPOLOGY || T4-CHAT || T5-CHANNEL-SCOPES
+
+WAVE 1 — dependency-triggered, no global barrier
+  master:  M9-CALENDAR-TOMBSTONE as soon as M6 is green
+           M7-MSG-TOMBSTONE when M4+M6 are green
+           M8-FOLDER-TOMBSTONE when M5+M6 are green
+  teams:   T2-NOTIFY-GAP when T1 is green
+           T6-CHANNEL-QUERY when T5 is green
+
+WAVE 2 — branch closeout in parallel
+  master:  M10A read-only audit -> M10B bounded repairs/freeze
+  teams:   T7A read-only audit  -> T7B bounded repairs
+
+WAVE 3 — integration critical path
+  push/freeze master -> R1A rebase start -> zero or more R1-C<n> conflict units
+  -> R1B rebase verification -> R2 bounded post-rebase adaptation
+
+WAVE 4 — one final convergence
+  two-Pi full pytest shards || cheap static checks
+  -> pyright/scrapy check
+  -> independent final ownership review
 ```
 
-The master and Teams lanes may progress concurrently while they touch disjoint
-contracts. Any Teams task that requires a not-yet-frozen generic master change
-waits for G4-R rather than copying that master implementation into the Teams
-branch.
+A wave is not a barrier: every downstream unit starts as soon as its listed
+predecessors are green, even if unrelated units in the same wave are still
+running.
 
-Shared `__init__.py`, settings, common protocol exports, and architecture tests
-remain coordinator-owned. A worker must not edit a shared file unless ownership
-is explicitly transferred for that round. For every shared-file edit, the
-coordinator also records whether the semantic owner is `master` or Teams before
-committing it.
+### 8.0.2 Immutable file ownership while parallel writers run
 
-## 8.1 Automatic two-Pi candidate synchronization
+Before dispatching a unit, record its exact production files. The coordinator
+owns shared `__init__.py`, common exports, and architecture docs/tests when two
+lanes would otherwise collide. Shared-export edits are deferred until the
+producer lane is green and are performed as a separate bounded integration
+micro-step on the semantically correct branch.
 
-Distributed testing uses commits as atomic source snapshots. Do not mirror an
+Important known non-overlap decisions from the source review:
+
+- `M1-MAIL-PROFILE` should place selected Mail fields on the application Mail
+  base/profile, so it does not need to edit `delta.py` or `folder_delta.py` and
+  can run concurrently with `M4`/`M5`;
+- `M4` and `M5` own different delta modules and can run concurrently;
+- `M6` owns a dedicated pure Graph delta/protocol helper module and avoids a
+  shared `protocol/__init__.py` edit during the parallel wave; `M7`/`M8`/`M9`
+  own separate application consumers;
+- Teams notification, topology item, chat-profile, and channel-profile tracks
+  use distinct primary production files and can run concurrently;
+- `T5` and `T6` intentionally stay in one channel-profile writer track because
+  they share channel provider/path files.
+
+### 8.0.3 Verification pipeline does not block implementation
+
+Each coherent micro-step produces a candidate SHA and a focused test manifest.
+The test scheduler may run that manifest on either Pi while the implementation
+coordinator continues with a disjoint unit.
+
+Every test job is identified by:
+
+```text
+branch + exact candidate SHA + shard/test selection
+```
+
+A later commit does not invalidate a passing result for an earlier candidate
+unless the later commit touches the tested boundary or one of its dependencies.
+Do not rerun an already-green independent shard merely because the branch head
+advanced.
+
+If a test fails, classify the failure to the owning micro-step, create a small
+repair commit, and rerun only that failed/affected shard. Unrelated workers keep
+running.
+
+## 8.1 Automatic two-Pi candidate synchronization and test isolation
+
+Distributed testing uses commits as immutable source snapshots. Do not mirror an
 actively edited/uncommitted working tree between Pis.
 
-Because this round has two development branches, the synchronization
-infrastructure must expose **two independent channels** before implementation
-starts:
+Before implementation, complete `I1` and `I2` so the test topology is:
+
+```text
+Pi 1
+  development: master worktree (may contain unrelated untracked research data)
+  development: program/a1-teams-spider worktree
+  test: clean master candidate worktree       [branch-specific lock]
+  test: clean Teams candidate worktree        [branch-specific lock]
+
+Pi 2
+  test: clean master candidate clone/worktree [branch-specific lock]
+  test: clean Teams candidate clone/worktree  [branch-specific lock]
+```
+
+The development worktrees are never used as mutable targets for background test
+synchronization. This lets coding continue while tests execute against a stable
+snapshot on the same Pi.
+
+The LAN synchronization channels remain independent:
 
 ```text
 master
   -> refs/heads/__pi_sync/master
-  -> dedicated clean master test worktree/clone on Pi 2
-  -> independent master test lock
 
 program/a1-teams-spider
   -> refs/heads/__pi_sync/a1-teams-spider
-  -> ~/Projects/msgloom-a1-teams-test on Pi 2
-  -> independent Teams test lock
 ```
 
-Do not point both branch watchers at the same checked-out Pi 2 worktree: an
-update from one branch must never reset files underneath tests for the other
-branch.
+Each channel follows the existing rules: asynchronous LAN Git publication,
+coalesced ref changes, branch-specific `flock`, and dependency synchronization
+only when `pyproject.toml` or `uv.lock` changes.
 
-The existing Teams synchronization channel remains valid. Add the equivalent
-master channel before the first distributed master test. Each channel follows
-the same rules:
+### Exact-SHA test pinning
 
-- a local branch-ref watcher asynchronously publishes the latest candidate SHA
-  over LAN SSH, avoiding GitHub fetch latency on the test critical path;
-- rapid ref changes are coalesced until the sync ref equals the newest branch
-  SHA;
-- Pi 2 applies the candidate under a branch-specific `flock`;
-- tests acquire that same branch-specific lock, preventing worktree mutation
-  while pytest is running;
-- dependency synchronization occurs only when `pyproject.toml` or `uv.lock`
-  changes;
-- test readiness is a lightweight SHA/clean-tree check, not a normal fetch/reset
-  operation.
+The current "always test latest sync ref" behavior is not sufficient for a
+pipelined implementation. Both Pi test wrappers must accept an **explicit
+candidate SHA** in addition to branch/shard arguments.
 
-Use branch-specific status/test wrappers (or a single wrapper with an explicit
-`master|teams` selector). `SYNCED <sha>` must mean local branch SHA, Pi 2 sync
-ref, and Pi 2 test HEAD all match for the requested branch.
+A pinned test wrapper must:
 
-After G4-R, final distributed testing switches exclusively to the rebased Teams
-candidate, because that candidate contains both the accepted master baseline and
-the Teams-only delta.
+1. acquire the branch-specific test lock;
+2. verify the requested commit object is available and belongs to the intended
+   candidate history;
+3. reset only the dedicated clean test checkout to that exact SHA;
+4. perform frozen dependency sync only when required by that candidate;
+5. print/log the exact branch + SHA before running the test command;
+6. execute the requested focused shard;
+7. on exit, restore/converge the test checkout to the latest sync ref so it is
+   pre-warmed for the next job.
+
+This closes the race where commit B arrives after commit A is queued but before
+A's test process acquires the lock. A still tests A; B can continue developing
+and syncing independently.
+
+For a test distributed across both Pis, both workers must receive the **same
+explicit SHA**. For independent focused tests, the two Pis may test different
+SHAs/branches concurrently as long as every result is bound to its own manifest.
+
+The lightweight status check continues to answer whether a branch's *latest*
+candidate is pre-warmed. It is an optimization/readiness signal, not the source
+of truth for a pinned test job.
+
+After G4/R1B, final distributed testing switches exclusively to the final rebased
+Teams candidate, because that SHA contains the frozen master baseline plus the
+Teams-only delta.
 
 ## 9. Commit/rollback strategy
 
-Use small ownership commits rather than one large refactor.
+Use one coherent commit per bounded micro-step from Section 7.3 whenever that
+step can be left green independently. If a unit must be split to stay under the
+30-minute constraint, use multiple small commits rather than extending the unit.
 
-Recommended commit boundaries are branch-specific.
+Commit order is allowed to interleave across independent lanes on the same
+branch. The order does not create a dependency unless Section 7.3 declares one.
+Repair commits name the owning unit (for example `M4` or `T2`) and never absorb
+unrelated cleanup.
 
-On `master`:
-
-1. generic/non-Teams ownership characterization tests;
-2. Mail profile relocation;
-3. Contacts profile relocation;
-4. OneDrive provider helper extraction;
-5. Mail delta opaque-request cleanup / existing `Prefer` reuse;
-6. Graph tombstone primitive + non-Teams consumers;
-7. generic architecture guardrails/docs;
-8. focused repair commits if master-side checks expose a real regression.
-
-On `program/a1-teams-spider`:
-
-1. Teams ownership characterization tests;
-2. Teams notification boundary;
-3. Teams item completeness boundary;
-4. Teams scope/query/profile relocation;
-5. Teams-specific architecture guardrails/docs;
-6. post-rebase conflict/adaptation repair commits if required.
-
-After the master list is complete and pushed, perform the mandatory final rebase
-before G5. Do not merge the branches as part of this plan unless separately
-requested.
+After all master micro-steps and `M10A/M10B` are complete and pushed, perform
+the mandatory final rebase sequence before G5/F1. Do not merge the branches as part of this
+plan unless separately requested.
 
 Each commit must preserve a buildable/testable state. Avoid compatibility
 aliases unless an external/public import actually requires one; do not keep
@@ -970,8 +1103,10 @@ This cleanup is complete only when all statements below are true:
 - the final Teams branch is rebased onto the final accepted master SHA with no
   merge commit;
 - no new write permission or transport exists;
-- exactly one normal final two-Pi full tracked-suite convergence run is green
-  (plus only targeted reruns if that final run exposes defects);
+- exactly one normal final full tracked-suite convergence is green, sharded
+  across the two Pis; if historical runtime suggests one shard could approach
+  30 minutes, split it further before launch; only targeted reruns follow any
+  final-run defect;
 - final static/framework checks are green;
 - fresh independent ownership review is PASS after any autonomous repair loop;
 - the final accepted master SHA and final rebased Teams SHA are both recorded;
@@ -1002,9 +1137,12 @@ Use these recovery rules:
   smallest explicit seam or argument rather than inventing a new framework;
 - if a security/privacy contract regresses, restore the stricter current
   behavior first, then continue the refactor;
-- if tests fail, first classify the defect by branch ownership: a non-Teams or
-  generic defect is fixed on `master`; a Teams-only defect is fixed on the Teams
-  branch; rerun only affected shards and continue automatically;
+- if a micro-step grows beyond the 30-minute scope, split the remaining
+  responsibility into a new dependency-labelled micro-step and continue; never
+  turn the timebox into a request for user direction;
+- if tests fail, first classify the defect by branch ownership and micro-step: a
+  non-Teams or generic defect is fixed on `master`; a Teams-only defect is fixed
+  on the Teams branch; rerun only affected shards and continue automatically;
 - any fix committed to `master` after a Teams rebase invalidates that rebase;
   push the new master SHA and rebase the Teams branch again before final
   convergence;
