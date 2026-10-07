@@ -49,6 +49,7 @@ pythonpath = ["."]
 markers = [
     "exclusive_state: tests that must run serially outside xdist",
     "fastmcp_compat: tests requiring the opt-in FastMCP compatibility group",
+    "linux_cgroup_v2: real Linux delegated cgroup-v2 security and process tests",
 ]
 
 [tool.pyright]
@@ -103,12 +104,12 @@ dependency_groups = ["dev"]
 uv_sync_locked = true
 commands = [
     ["python", "-m", "pytest", "-q", "-n", "4",
-     "-m", "not exclusive_state and not fastmcp_compat",
+     "-m", "not exclusive_state and not fastmcp_compat and not linux_cgroup_v2",
      "--cov=msgloom", "--cov=message_ingest", "--cov=microsoft_graph",
      "--cov-branch", "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],
     ["python", "-m", "pytest", "-q", "-n", "0",
-     "-m", "exclusive_state and not fastmcp_compat", "--cov=msgloom", "--cov=message_ingest",
+     "-m", "exclusive_state and not fastmcp_compat and not linux_cgroup_v2", "--cov=msgloom", "--cov=message_ingest",
      "--cov=microsoft_graph", "--cov-branch", "--cov-append",
      "--cov-report=term-missing",
      "--cov-report=xml:{env_dir}/coverage.xml"],

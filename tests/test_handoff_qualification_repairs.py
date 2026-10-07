@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import os
-import shutil
 import signal
 import sqlite3
 import stat
@@ -67,27 +67,10 @@ def _alive(pid: int) -> bool:
 
 
 def _precommit_python() -> str:
-    """Resolve the installed pre-commit interpreter without provisioning."""
-    executable = shutil.which("pre-commit")
-    if not executable:
-        pytest.fail("the pinned pre-commit executable is unavailable")
-    first = Path(executable).read_text().splitlines()[0]
-    if not first.startswith("#!/") or " " in first:
-        pytest.fail("pre-commit does not expose a simple interpreter shebang")
-    python = first[2:]
-    version = subprocess.run(
-        [
-            python,
-            "-c",
-            "import importlib.metadata as m; print(m.version('pre-commit'))",
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=15,
-    ).stdout.strip()
+    """Use the current locked environment, not an executable shebang."""
+    version = importlib.metadata.version("pre-commit")
     _equal(version, "4.6.2")
-    return python
+    return sys.executable
 
 
 def _tree_state(root: Path) -> dict[str, tuple]:
@@ -108,6 +91,7 @@ def _tree_state(root: Path) -> dict[str, tuple]:
     return state
 
 
+@pytest.mark.linux_cgroup_v2
 def test_generated_pytest_gate_creates_coverage_parent_and_appends(
     tmp_path: Path,
 ) -> None:
@@ -187,6 +171,7 @@ def test_generated_pytest_gate_creates_coverage_parent_and_appends(
         pytest.fail("exclusive coverage did not append to normal coverage")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_parent_exit_with_descendant_hard_stops_and_cleans_group(
     tmp_path: Path,
 ) -> None:
@@ -395,6 +380,7 @@ def test_spider_gate_declares_retained_coverage_map(tmp_path: Path) -> None:
         pytest.fail("coverage map snapshot is absent from gate artifact requirements")
 
 
+@pytest.mark.linux_cgroup_v2
 def test_required_artifact_is_hashed_in_gate_record(tmp_path: Path) -> None:
     """A declared retained artifact gets size and digest evidence."""
     root = tmp_path / "repository"

@@ -27,5 +27,9 @@
   contract or express a useful domain operation.
 - Preserve evidence-before-semantics ordering, awaited writes, checkpoint gates,
   and Scrapy JOBDIR callback serialization. See `docs/component-layout.md`.
+- Write portable unit and business-contract tests that do not assume a host OS,
+  absolute interpreter path, Python patch release, or external service. Label
+  unavoidable OS security integration tests with linux_cgroup_v2 and keep
+  their dedicated CI gate required; never silently skip their verification.
 - Validate behavior with pytest, Scrapy contracts, and live LSP diagnostics for
   both `message_ingest/` and `tests/`. Use local Graph fixtures for integration tests.

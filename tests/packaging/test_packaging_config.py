@@ -126,6 +126,8 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
         marker = command[marker_index + 1]
         if "not fastmcp_compat" not in marker:
             pytest.fail("normal tox command must exclude FastMCP compatibility")
+        if "not linux_cgroup_v2" not in marker:
+            pytest.fail("portable tox command must exclude cgroup-only tests")
     for version in ("py312", "py313", "py314"):
         environments = _table(tox["env"], "tox environments")
         compat = _table(

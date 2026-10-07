@@ -7,6 +7,7 @@ import importlib
 import os
 import sys
 from importlib.metadata import version
+from types import SimpleNamespace
 
 import pytest
 
@@ -44,10 +45,16 @@ def test_fastmcp4_import_and_shared_async_contract() -> None:
         pytest.fail("shared async evidence boundary changed under FastMCP 4")
 
 
-def test_runtime_probe_accepts_qualified_fastmcp() -> None:
+def test_runtime_probe_accepts_qualified_fastmcp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Accept the real locked environment used by compatibility tests."""
-    python_version = ".".join(str(part) for part in sys.version_info[:2])
-    result = audit.runtime(python_version, True)
+    monkeypatch.setattr(
+        audit,
+        "sys",
+        SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
+    )
+    result = audit.runtime("3.13", True)
     if result["packages"]["fastmcp"] != "4.0.11":
         pytest.fail("runtime probe did not report the qualified FastMCP release")
 
@@ -62,6 +69,10 @@ def test_runtime_probe_rejects_other_fastmcp_releases(
         return unqualified if name == "fastmcp" else version(name)
 
     monkeypatch.setattr(audit.importlib.metadata, "version", installed_version)
-    python_version = ".".join(str(part) for part in sys.version_info[:2])
+    monkeypatch.setattr(
+        audit,
+        "sys",
+        SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
+    )
     with pytest.raises(ValueError, match="FastMCP"):
-        audit.runtime(python_version, True)
+        audit.runtime("3.13", True)

@@ -14,6 +14,8 @@ import pytest
 
 from scripts.handoff_qualification import execution, process_boundary
 
+pytestmark = pytest.mark.linux_cgroup_v2
+
 
 @pytest.mark.parametrize("save_error", [None, OSError, FileNotFoundError])
 def test_command_waits_for_atomic_linkage(
