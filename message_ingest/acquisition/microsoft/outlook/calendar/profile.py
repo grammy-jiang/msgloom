@@ -9,6 +9,19 @@ from microsoft_graph.protocol.attachments import attachment_type_name
 
 FULL_V1 = "outlook-calendar-full-v1"
 
+# Full-v1 captures these master fields beside expanded recurrence topology.
+SERIES_MASTER_FIELDS = (
+    "id",
+    "changeKey",
+    "type",
+    "subject",
+    "start",
+    "end",
+    "occurrenceId",
+    "exceptionOccurrences",
+    "cancelledOccurrences",
+)
+
 TERMINAL_SURFACE_STATUSES = frozenset(
     {
         "acquired",
@@ -55,6 +68,7 @@ def attachment_required_surfaces(
 
 __all__ = [
     "FULL_V1",
+    "SERIES_MASTER_FIELDS",
     "TERMINAL_SURFACE_STATUSES",
     "attachment_required_surfaces",
     "attachment_type_name",

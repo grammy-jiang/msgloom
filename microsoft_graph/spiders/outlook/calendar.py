@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import ClassVar
 from urllib.parse import quote, urlencode
 
@@ -61,18 +62,21 @@ class OutlookCalendarSpider(OutlookMailboxSpider):
         )
         return f"{self._mailbox_path()}/calendarView/delta?{query}"
 
-    def series_master_path(self, event_id: str, *, calendar_id: str = "") -> str:
-        """Select recurrence topology and expand exceptions for one master."""
-        query = urlencode(
-            {
-                "$select": (
-                    "id,changeKey,type,subject,start,end,occurrenceId,"
-                    "exceptionOccurrences,cancelledOccurrences"
-                ),
-                "$expand": "exceptionOccurrences",
-            }
+    def series_master_path(
+        self,
+        event_id: str,
+        *,
+        calendar_id: str = "",
+        fields: Sequence[str] = (),
+    ) -> str:
+        """Expand series exceptions with an optional caller-selected projection."""
+        query = {}
+        if fields:
+            query["$select"] = ",".join(fields)
+        query["$expand"] = "exceptionOccurrences"
+        return (
+            f"{self.event_path(event_id, calendar_id=calendar_id)}?{urlencode(query)}"
         )
-        return f"{self.event_path(event_id, calendar_id=calendar_id)}?{query}"
 
 
 __all__ = ["OutlookCalendarSpider"]

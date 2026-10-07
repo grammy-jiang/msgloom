@@ -314,6 +314,13 @@ def test_recurring_event_detail_requests_expanded_series_master_topology() -> No
     )
     if urlsplit(topology.url).path != "/v1.0/me/events/series-1":
         pytest.fail(f"Unexpected series-master path: {topology.url!r}")
+    if topology.url != (
+        "https://graph.microsoft.com/v1.0/me/events/series-1?"
+        "%24select=id%2CchangeKey%2Ctype%2Csubject%2Cstart%2Cend%2C"
+        "occurrenceId%2CexceptionOccurrences%2CcancelledOccurrences&"
+        "%24expand=exceptionOccurrences"
+    ):
+        pytest.fail("Full-v1 series selection or query order changed")
     query = parse_qs(urlsplit(topology.url).query)
     if query.get("$expand") != ["exceptionOccurrences"]:
         pytest.fail("Expected expanded exceptionOccurrences")

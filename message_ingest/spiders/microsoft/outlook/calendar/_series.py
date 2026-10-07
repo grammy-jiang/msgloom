@@ -8,6 +8,9 @@ from typing import Any
 import scrapy
 from scrapy.http import TextResponse
 
+from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
+    SERIES_MASTER_FIELDS,
+)
 from message_ingest.items.microsoft.outlook.calendar import (
     OutlookCalendarSeriesTopologyItem,
 )
@@ -44,7 +47,11 @@ class OutlookCalendarSeriesTraversal(OutlookCalendarAttachmentTraversal):
 
     def _series_master_request(self, series_master_id: str) -> scrapy.Request:
         return self._request(
-            self.series_master_path(series_master_id, calendar_id=self.calendar_id),
+            self.series_master_path(
+                series_master_id,
+                calendar_id=self.calendar_id,
+                fields=SERIES_MASTER_FIELDS,
+            ),
             callback=self.parse_series_master,
             purpose="calendar-series-master",
             cb_kwargs={"series_master_id": series_master_id},

@@ -98,12 +98,14 @@ def test_calendar_paths_preserve_default_named_and_delta_grammar(
         pytest.fail("Primary Calendar delta endpoint changed")
     query = urlencode(
         {
-            "$select": "id,changeKey,type,subject,start,end,occurrenceId,exceptionOccurrences,cancelledOccurrences",
+            "$select": "id,subject",
             "$expand": "exceptionOccurrences",
         }
     )
     if (
-        calendar.series_master_path("e/+=", calendar_id=calendar_id)
+        calendar.series_master_path(
+            "e/+=", calendar_id=calendar_id, fields=("id", "subject")
+        )
         != f"{event}?{query}"
     ):
         pytest.fail("Series detail query changed")
@@ -175,3 +177,11 @@ def test_series_parser_retains_object_and_checks_inflight_identity():
         pytest.fail("Absent occurrence lists must remain valid")
     with pytest.raises(ValueError, match="ID changed in flight"):
         calendar_series_master(payload, expected_id="different")
+
+
+def test_calendar_series_path_has_no_implicit_projection():
+    calendar = spider(OutlookCalendarSpider)
+    if calendar.series_master_path("master") != (
+        "/me/events/master?%24expand=exceptionOccurrences"
+    ):
+        pytest.fail("Provider series paths must not select an application profile")
