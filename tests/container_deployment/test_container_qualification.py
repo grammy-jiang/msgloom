@@ -220,9 +220,12 @@ def test_seccomp_profile_must_be_confining_regular_json(tmp_path: Path) -> None:
         validate_seccomp_profile(good)
 
 
-def test_docker_invocation_has_finite_least_privilege_limits(tmp_path: Path) -> None:
-    profile = tmp_path / "seccomp.json"
-    profile.write_text("{}", encoding="utf-8")
+@pytest.mark.parametrize(
+    "profile", [None, Path("/tmp/seccomp.json"), Path("/home/qualifier/seccomp.json")]
+)
+def test_docker_invocation_has_finite_least_privilege_limits(
+    profile: Path | None,
+) -> None:
     command = docker_run_argv(
         "synthetic-image",
         "owned-container",
@@ -245,8 +248,17 @@ def test_docker_invocation_has_finite_least_privilege_limits(tmp_path: Path) -> 
     for fragment in required:
         if fragment not in joined:
             pytest.fail(f"container boundary missing: {fragment}")
+    if profile is not None and f"--security-opt seccomp={profile}" not in joined:
+        pytest.fail("custom seccomp profile missing")
+    # The seccomp file is a host-side policy input, not a container mount.
+    surfaces = " ".join(
+        argument
+        for index, argument in enumerate(command)
+        if command[index - 1 : index] != ["--security-opt"]
+        or argument != f"seccomp={profile}"
+    )
     for fragment in ("--privileged", "/var/run/docker.sock", "/home/", "--userns=host"):
-        if fragment in joined:
+        if fragment in surfaces:
             pytest.fail(f"forbidden container surface present: {fragment}")
 
 
