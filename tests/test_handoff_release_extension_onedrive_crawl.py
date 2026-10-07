@@ -64,7 +64,7 @@ def server():
         thread.join(timeout=5)
 
 
-def run(tmp_path, root, mode, *, direct=False, setup="", failure=False):
+def run(tmp_path, root, mode, *, direct=False, failure: bool | str = False):
     settings = {
         "MS_GRAPH_SERVICE_ROOT": root,
         "MS_GRAPH_AUTH_METHOD": "none",
@@ -87,6 +87,16 @@ def run(tmp_path, root, mode, *, direct=False, setup="", failure=False):
         command += ["-a", 'item_ids=["one","two"]'] if direct else ["one", "two"]
     for key, value in settings.items():
         command += ["-s", f"{key}={value}"]
+    event_path = tmp_path / f"onedrive-{mode}-injections.jsonl"
+    event_path.unlink(missing_ok=True)
+    setup = ""
+    if isinstance(failure, str):
+        setup = (
+            "\nimport sys\n"
+            f"sys.path.insert(0, {str(ROOT / 'tests')!r})\n"
+            "from onedrive_handoff_failure_helpers import install_failure\n"
+            f"install_failure({mode!r}, {failure!r}, {str(event_path)!r})\n"
+        )
     code = (
         ENABLE
         + setup
@@ -144,7 +154,29 @@ def run(tmp_path, root, mode, *, direct=False, setup="", failure=False):
     if not failure and (result.returncode or "ERROR" in result.stderr):
         pytest.fail(result.stderr)
     if isinstance(failure, str):
-        if failure not in result.stderr:
+        events = (
+            [json.loads(line) for line in event_path.read_text().splitlines()]
+            if event_path.exists()
+            else []
+        )
+        targets = (
+            {"two"}
+            if mode == "content"
+            else (
+                {"root"} if failure == "injected callback failure" else {"one", "two"}
+            )
+        )
+        if not any(
+            event
+            == {
+                "mode": mode,
+                "failure": failure,
+                "target": target,
+                "exception_type": "InjectedFailure",
+            }
+            for event in events
+            for target in targets
+        ):
             pytest.fail(f"Missing injected failure {failure!r}: {result.stderr}")
     elif failure and not any(
         marker in result.stderr
@@ -218,31 +250,10 @@ def test_native_inventory_and_independent_content(tmp_path, server, direct, part
 
 @pytest.mark.parametrize("failure", ["callback", "item"])
 def test_native_inventory_failure_blocks_release(tmp_path, server, failure):
-    if failure == "callback":
-        setup = """
-from message_ingest.spiders.microsoft.onedrive.discover import MicrosoftOneDriveDiscoverSpider as Spider
-original = Spider.parse_children
-def failed(self, response, **kwargs):
-    yield from original(self, response, **kwargs)
-    raise ValueError("injected callback failure")
-Spider.parse_children = failed
-"""
-    else:
-        setup = """
-from message_ingest.pipelines.microsoft.onedrive import OneDrivePipeline
-from message_ingest.items.microsoft.onedrive import OneDriveItem
-original = OneDrivePipeline.process_item
-async def failed(self, item):
-    if isinstance(item, OneDriveItem):
-        raise ValueError("injected item failure")
-    return await original(self, item)
-OneDrivePipeline.process_item = failed
-"""
     run(
         tmp_path,
         server[0],
         "discover",
-        setup=setup,
         failure=f"injected {failure} failure",
     )
     if read(tmp_path)[0]:
@@ -252,32 +263,10 @@ OneDrivePipeline.process_item = failed
 @pytest.mark.parametrize("failure", ["callback", "item"])
 def test_native_content_failure_preserves_independent_target(tmp_path, server, failure):
     run(tmp_path, server[0], "discover")
-    if failure == "callback":
-        setup = """
-from message_ingest.spiders.microsoft.onedrive.content import MicrosoftOneDriveContentSpider as Spider
-original = Spider.parse_content
-def failed(self, response, **kwargs):
-    yield from original(self, response, **kwargs)
-    if kwargs["item_id"] == "two":
-        raise ValueError("injected callback failure")
-Spider.parse_content = failed
-"""
-    else:
-        setup = """
-from message_ingest.pipelines.microsoft.onedrive import OneDrivePipeline
-from message_ingest.items.microsoft.onedrive import OneDriveContentItem
-original = OneDrivePipeline.process_item
-async def failed(self, item):
-    if isinstance(item, OneDriveContentItem) and item.item_id == "two":
-        raise ValueError("injected item failure")
-    return await original(self, item)
-OneDrivePipeline.process_item = failed
-"""
     run(
         tmp_path,
         server[0],
         "content",
-        setup=setup,
         failure=f"injected {failure} failure",
     )
     groups, _ = read(tmp_path)
