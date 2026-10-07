@@ -21,9 +21,14 @@ from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from microsoft_graph.protocol import GraphCollectionPage
 from microsoft_graph.spiders.contacts import MicrosoftContactsSpider
 
+from .profile import CONTACT_SELECT_FIELDS, FOLDER_SELECT_FIELDS
+
 
 class ContactsSnapshotSpider(MicrosoftContactsSpider, MicrosoftGraphSpider):
     """Traverse default contacts plus every custom folder recursively."""
+
+    contact_select_fields = CONTACT_SELECT_FIELDS
+    folder_select_fields = FOLDER_SELECT_FIELDS
 
     failure_context_keys: ClassVar[tuple[str, ...]] = ("folder_id",)
     authoritative_snapshot: ClassVar[bool] = False

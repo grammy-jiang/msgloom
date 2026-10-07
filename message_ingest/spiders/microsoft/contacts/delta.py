@@ -19,11 +19,15 @@ from message_ingest.sync.microsoft.contacts import require_custom_folder_scope
 from microsoft_graph.protocol import GraphDeltaPage
 from microsoft_graph.spiders.contacts import MicrosoftContactsSpider
 
+from .profile import CONTACT_SELECT_FIELDS
+
 
 class MicrosoftContactsDeltaSpider(MicrosoftContactsSpider, MicrosoftGraphSpider):
     """Track one validated custom folder; default Contacts delta is unsupported."""
 
     name = "microsoft_contacts_delta"
+    contact_select_fields = CONTACT_SELECT_FIELDS
+
     failure_context_keys = ("folder_id",)
 
     def __init__(self, *args, folder_id: str, **kwargs) -> None:

@@ -41,13 +41,17 @@ def test_contacts_paths_encode_raw_ids_once_and_use_read_scope_only():
         pytest.fail("Contacts must never request Contacts.ReadWrite")
 
 
-def test_contacts_projection_excludes_personal_notes_and_preserves_falsey_values():
+def test_contacts_provider_accepts_caller_selected_privacy_fields():
     spider = MicrosoftContactsSpider(name="provider")
-    path = spider.default_contacts_path(
-        page_size=25, select=spider.contact_select_fields
-    )
-    if "personalNotes" in path or "personalNotes" in spider.contact_select_fields:
-        pytest.fail("Selected Contacts projection must exclude personalNotes")
+    for name in ("contact_select_fields", "folder_select_fields"):
+        if hasattr(spider, name):
+            pytest.fail(f"Provider must not own the selected profile: {name}")
+    path = spider.default_contacts_path(page_size=25, select=("id", "personalNotes"))
+    if path != "/me/contacts?%24select=id%2CpersonalNotes&%24top=25":
+        pytest.fail("Provider must accept consumer-selected Contacts fields")
+
+
+def test_contacts_projection_preserves_falsey_values():
     raw = {
         "id": "contact",
         "displayName": "",
@@ -133,3 +137,41 @@ ContactItem.from_graph({"id": "contact"}, folder_id="folder", is_default_scope=F
     )
     if result.returncode:
         pytest.fail(result.stderr)
+
+
+def test_contacts_application_retains_selected_privacy_profile():
+    from message_ingest.spiders.microsoft.contacts.delta import (
+        MicrosoftContactsDeltaSpider,
+    )
+    from message_ingest.spiders.microsoft.contacts.snapshot import (
+        ContactsSnapshotSpider,
+    )
+
+    expected = (
+        "id",
+        "displayName",
+        "givenName",
+        "surname",
+        "initials",
+        "nickName",
+        "title",
+        "companyName",
+        "department",
+        "jobTitle",
+        "emailAddresses",
+        "businessPhones",
+        "homePhones",
+        "mobilePhone",
+        "birthday",
+        "parentFolderId",
+        "lastModifiedDateTime",
+    )
+    for spider in (ContactsSnapshotSpider, MicrosoftContactsDeltaSpider):
+        if spider.contact_select_fields != expected:
+            pytest.fail("Contacts acquisition fields or privacy policy changed")
+    if ContactsSnapshotSpider.folder_select_fields != (
+        "id",
+        "displayName",
+        "parentFolderId",
+    ):
+        pytest.fail("Contacts acquisition folder projection changed")

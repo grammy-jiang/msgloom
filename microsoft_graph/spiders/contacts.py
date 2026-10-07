@@ -11,31 +11,6 @@ class MicrosoftContactsSpider(MicrosoftGraphSpider):
     """Supply read-only Contacts paths; consumers own traversal and storage."""
 
     graph_permissions: ClassVar[tuple[str, ...]] = ("Contacts.Read",)
-    folder_select_fields: ClassVar[tuple[str, ...]] = (
-        "id",
-        "displayName",
-        "parentFolderId",
-    )
-    # personalNotes is intentionally absent pending explicit privacy acceptance.
-    contact_select_fields: ClassVar[tuple[str, ...]] = (
-        "id",
-        "displayName",
-        "givenName",
-        "surname",
-        "initials",
-        "nickName",
-        "title",
-        "companyName",
-        "department",
-        "jobTitle",
-        "emailAddresses",
-        "businessPhones",
-        "homePhones",
-        "mobilePhone",
-        "birthday",
-        "parentFolderId",
-        "lastModifiedDateTime",
-    )
 
     @staticmethod
     def _folder_id(folder_id: str) -> str:
