@@ -10,6 +10,9 @@ from uuid import uuid4
 import scrapy
 from scrapy.http import Response, TextResponse
 
+from message_ingest.acquisition.microsoft.outlook.attachments import (
+    ATTACHMENT_METADATA_FIELDS,
+)
 from message_ingest.acquisition.microsoft.outlook.email.profile import (
     FULL_V1,
     attachment_required_surfaces,
@@ -309,7 +312,10 @@ class OutlookAttachmentTraversal(OutlookMailSpider):
         acquired.
         """
         if url is None:
-            url = f"{self.graph_root}{attachment_list_path(self.message_path(message_id))}"
+            path = attachment_list_path(
+                self.message_path(message_id), fields=ATTACHMENT_METADATA_FIELDS
+            )
+            url = f"{self.graph_root}{path}"
         return self._request(
             url,
             callback=self.parse_attachments,

@@ -8,6 +8,9 @@ from typing import Any
 import scrapy
 from scrapy.http import Response, TextResponse
 
+from message_ingest.acquisition.microsoft.outlook.attachments import (
+    ATTACHMENT_METADATA_FIELDS,
+)
 from message_ingest.acquisition.microsoft.outlook.calendar.profile import (
     FULL_V1,
     attachment_required_surfaces,
@@ -273,6 +276,7 @@ class OutlookCalendarAttachmentTraversal(OutlookCalendarSpider):
         path = attachment_list_path(
             self.event_path(event_id, calendar_id=self.calendar_id),
             page_size=self.page_size,
+            fields=ATTACHMENT_METADATA_FIELDS,
         )
         return self._request(
             f"{self.graph_root}{path}",

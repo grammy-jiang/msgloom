@@ -40,13 +40,13 @@ def test_attachment_requests_preserve_provider_paths_and_callback_context():
     spider = AttachmentSpider()
     parent = "/users/shared%40example.test/messages/message%2Fone"
     request = spider.graph_request(
-        attachment_list_path(parent, page_size=10),
+        attachment_list_path(parent, page_size=10, fields=("id", "contentBytes")),
         callback=spider.parse,
         cb_kwargs={"id": "message/one"},
     )
     query = parse_qs(urlsplit(request.url).query)
-    if query.get("$top") != ["10"] or "contentBytes" in query["$select"][0]:
-        pytest.fail("Inventory must select metadata and honor page size")
+    if query != {"$top": ["10"], "$select": ["id,contentBytes"]}:
+        pytest.fail("Provider must honor caller-selected fields and page size")
     raw = spider.graph_request(
         attachment_raw_path(parent, "attachment/one"),
         callback=spider.parse,
@@ -74,3 +74,12 @@ def test_attachment_pagination_preserves_opaque_url():
     request = spider.continuation_request(url, callback=spider.parse)
     if request.url != url or not request.meta.get("verbatim_url"):
         pytest.fail("Attachment next links must remain opaque")
+
+
+@pytest.mark.parametrize(
+    "page_size,expected",
+    [(None, "/me/events/e/attachments"), (10, "/me/events/e/attachments?%24top=10")],
+)
+def test_attachment_list_has_no_implicit_projection(page_size, expected):
+    if attachment_list_path("/me/events/e", page_size=page_size) != expected:
+        pytest.fail("Provider attachment paths must not select an application profile")

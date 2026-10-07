@@ -12,7 +12,6 @@ from message_ingest.spiders.microsoft.outlook.calendar.full import (
 )
 from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
 from microsoft_graph.protocol.attachments import (
-    attachment_list_path,
     attachment_raw_path,
     item_attachment_path,
 )
@@ -49,7 +48,10 @@ def test_path_primitives_preserve_application_request_and_evidence_contract(
     cases = [
         (
             spider._attachments_request(resource_id, page_number=1),
-            attachment_list_path(parent, page_size=25 if calendar else None),
+            f"{parent}/attachments?"
+            + ("%24top=25&" if calendar else "")
+            + "%24select=id%2Cname%2CcontentType%2Csize%2CisInline%2C"
+            "lastModifiedDateTime",
             b"application/json",
         ),
         (

@@ -6,9 +6,8 @@ request factory so callbacks, errbacks, representation headers, and traversal
 context keep their normal ownership and Scrapy serialization behavior.
 """
 
+from collections.abc import Sequence
 from urllib.parse import quote, urlencode
-
-ATTACHMENT_METADATA_FIELDS = "id,name,contentType,size,isInline,lastModifiedDateTime"
 
 
 def attachment_type_name(attachment_type: str | None) -> str:
@@ -20,13 +19,20 @@ def attachment_type_name(attachment_type: str | None) -> str:
     )
 
 
-def attachment_list_path(parent_path: str, *, page_size: int | None = None) -> str:
-    """Select attachment metadata under an already encoded parent path."""
+def attachment_list_path(
+    parent_path: str,
+    *,
+    page_size: int | None = None,
+    fields: Sequence[str] = (),
+) -> str:
+    """List attachments with optional caller-selected fields and page size."""
     query: dict[str, str | int] = {}
     if page_size is not None:
         query["$top"] = page_size
-    query["$select"] = ATTACHMENT_METADATA_FIELDS
-    return f"{parent_path}/attachments?{urlencode(query)}"
+    if fields:
+        query["$select"] = ",".join(fields)
+    path = f"{parent_path}/attachments"
+    return f"{path}?{urlencode(query)}" if query else path
 
 
 def attachment_path(parent_path: str, attachment_id: str) -> str:
