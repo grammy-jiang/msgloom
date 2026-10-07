@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import importlib
 import os
+import sys
 from importlib.metadata import version
+from types import SimpleNamespace
 
 import pytest
 
@@ -47,7 +49,11 @@ def test_runtime_probe_accepts_qualified_fastmcp(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Accept the real locked environment used by compatibility tests."""
-    monkeypatch.setattr(audit.sys, "version_info", (3, 13, 5))
+    monkeypatch.setattr(
+        audit,
+        "sys",
+        SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
+    )
     result = audit.runtime("3.13", True)
     if result["packages"]["fastmcp"] != "4.0.11":
         pytest.fail("runtime probe did not report the qualified FastMCP release")
@@ -63,6 +69,10 @@ def test_runtime_probe_rejects_other_fastmcp_releases(
         return unqualified if name == "fastmcp" else version(name)
 
     monkeypatch.setattr(audit.importlib.metadata, "version", installed_version)
-    monkeypatch.setattr(audit.sys, "version_info", (3, 13, 5))
+    monkeypatch.setattr(
+        audit,
+        "sys",
+        SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
+    )
     with pytest.raises(ValueError, match="FastMCP"):
         audit.runtime("3.13", True)

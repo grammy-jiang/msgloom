@@ -215,12 +215,13 @@ jobs:
           python-version: "3.13"
           enable-cache: true
           cache-suffix: ${{ matrix.os }}
-      # Install only pytest and Scrapy: unrelated product dependencies may
-      # be OS-specific and must not gate the portable-contract smoke suite.
+      # Install only dependencies used by these portable contracts; unrelated
+      # product dependencies must not gate the cross-platform smoke suite.
       - name: Run portable business and framework contracts
         run: >-
           uv run --no-project --python 3.13 --with pytest==8.4.2
-          --with scrapy==2.19.0 python -m pytest -q --strict-markers
+          --with scrapy==2.19.0 --with sqlalchemy==2.0.54
+          python -m pytest -q --strict-markers
           tests/test_graph_protocol.py
           tests/test_graph_framework_spider.py
           tests/packaging/test_packaging_config.py
