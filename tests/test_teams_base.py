@@ -6,9 +6,10 @@ from scrapy.settings import Settings
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.teams._base import MicrosoftTeamsBaseSpider
-from microsoft_graph.spiders.teams.channel_composition import (
-    MicrosoftTeamsChannelCompositionSpider,
+from message_ingest.spiders.microsoft.teams.channel import (
+    MicrosoftTeamsChannelDiscoverSpider,
 )
+from message_ingest.spiders.microsoft.teams.chat import MicrosoftTeamsChatDiscoverSpider
 from microsoft_graph.spiders.teams.chat_composition import (
     MicrosoftTeamsChatCompositionSpider,
 )
@@ -21,15 +22,6 @@ class ChatProbe(MicrosoftTeamsChatCompositionSpider, MicrosoftTeamsBaseSpider):
         yield self.graph_request("/me/chats", callback=self.parse, errback=self.errback)
 
 
-class ChannelProbe(MicrosoftTeamsChannelCompositionSpider, MicrosoftTeamsBaseSpider):
-    name = "teams-base-channel-probe"
-
-    async def start(self):
-        yield self.graph_request(
-            "/me/joinedTeams", callback=self.parse, errback=self.errback
-        )
-
-
 def _settings():
     settings = Settings()
     settings.setmodule("message_ingest.settings")
@@ -39,9 +31,9 @@ def _settings():
 @pytest.mark.parametrize(
     "spider_type,scopes",
     [
-        (ChatProbe, {"Chat.Read"}),
+        (MicrosoftTeamsChatDiscoverSpider, {"Chat.Read"}),
         (
-            ChannelProbe,
+            MicrosoftTeamsChannelDiscoverSpider,
             {
                 "Team.ReadBasic.All",
                 "Channel.ReadBasic.All",
@@ -62,7 +54,7 @@ def test_teams_base_selects_native_integrity_and_storage(
     if spider.source_id != "microsoft-teams-default":
         pytest.fail("Both Teams lanes must share the delegated logical source")
     if set(crawler.settings.getlist("MS_GRAPH_SCOPES")) != scopes:
-        pytest.fail("Teams MRO lost its provider permission declaration")
+        pytest.fail("Teams application lost its selected permission profile")
     expected = {
         "message_ingest.pipelines.evidence.RawEvidencePipeline": 200,
         "message_ingest.acquisition.evidence_link.EvidenceLinkPipeline": 250,

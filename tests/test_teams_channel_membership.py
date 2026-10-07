@@ -15,9 +15,19 @@ from microsoft_graph.spiders.teams.channel import MicrosoftTeamsChannelSpider
 def test_team_and_channel_membership_paths_keep_endpoint_specific_queries():
     spider = MicrosoftTeamsChannelSpider(name="provider")
     cases = {
-        spider.team_members_path("team"): "/teams/team/members?%24top=999",
+        spider.team_members_path("team"): "/teams/team/members",
         spider.channel_members_path("team", "channel"): (
+            "/teams/team/channels/channel/members"
+        ),
+        spider.team_members_path("team", page_size=999): (
+            "/teams/team/members?%24top=999"
+        ),
+        spider.channel_members_path("team", "channel", page_size=999): (
             "/teams/team/channels/channel/members?%24top=999"
+        ),
+        spider.team_members_path("team", page_size=2): "/teams/team/members?%24top=2",
+        spider.channel_members_path("team", "channel", page_size=2): (
+            "/teams/team/channels/channel/members?%24top=2"
         ),
         spider.all_channel_members_path("team", "channel"): (
             "/teams/team/channels/channel/allMembers"
