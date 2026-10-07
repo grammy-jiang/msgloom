@@ -8,6 +8,7 @@ from scrapy import Request
 from scrapy.crawler import Crawler
 from scrapy.http import TextResponse
 from scrapy.settings import Settings
+from scrapy.utils.misc import build_from_crawler, load_object
 
 from message_ingest.spiders.microsoft._graph import MicrosoftGraphSpider
 from message_ingest.spiders.microsoft.teams._base import MicrosoftTeamsBaseSpider
@@ -92,6 +93,9 @@ def test_chat_spider_rejects_jobdir_before_network() -> None:
 
 def test_chat_discovery_selects_message_page_size_in_application() -> None:
     crawler = Crawler(MicrosoftTeamsChatDiscoverSpider, _settings())
+    crawler.request_fingerprinter = build_from_crawler(
+        load_object(crawler.settings["REQUEST_FINGERPRINTER_CLASS"]), crawler
+    )
     spider = MicrosoftTeamsChatDiscoverSpider.from_crawler(crawler)
     request = asyncio.run(_first_start_request(spider))
     response = TextResponse(
