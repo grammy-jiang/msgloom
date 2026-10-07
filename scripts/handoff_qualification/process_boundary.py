@@ -107,9 +107,9 @@ def create(name: str) -> Path:
 
 
 def wrapped_command(
-    boundary: Path, command: tuple[str, ...], ready_fd: int
+    boundary: Path, command: tuple[str, ...], ready_fd: int, release_fd: int
 ) -> tuple[str, ...]:
-    """Wrap a gate so it enters the cgroup before executing user code."""
+    """Admit a gate to its cgroup, then await durable-evidence release."""
     return (
         sys.executable,
         str(Path(__file__).resolve()),
@@ -117,13 +117,15 @@ def wrapped_command(
         str(boundary),
         "--ready-fd",
         str(ready_fd),
+        "--release-fd",
+        str(release_fd),
         "--",
         *command,
     )
 
 
 def wait_ready(read_fd: int, process: subprocess.Popen, timeout: float = 5) -> None:
-    """Require cgroup admission before the gate command can execute."""
+    """Require cgroup admission while the wrapper still awaits release."""
     readable, _, _ = select.select([read_fd], [], [], timeout)
     if not readable:
         raise OSError("gate cgroup admission timed out")
@@ -300,12 +302,23 @@ def child_subreaper() -> Iterator[None]:
         libc.prctl(_PR_SET_CHILD_SUBREAPER, previous.value, 0, 0, 0)
 
 
-def _enter(boundary: Path, ready_fd: int, command: list[str]) -> int:
-    """Move this wrapper into the gate cgroup, acknowledge, then exec."""
+def _enter(boundary: Path, ready_fd: int, release_fd: int, command: list[str]) -> int:
+    """
+    Admit, acknowledge, and exec only after the recorder releases us.
+
+    The recorder owns the sole release writer. EOF without the exact release
+    token fails closed, including recorder death and manifest save failure.
+    Neither handshake descriptor reaches user code.
+    """
     try:
         (boundary / "cgroup.procs").write_text("0")
         os.write(ready_fd, b"1")
         os.close(ready_fd)
+        try:
+            if os.read(release_fd, 1) != b"1" or os.read(release_fd, 1):
+                raise OSError("gate execution release missing or invalid")
+        finally:
+            os.close(release_fd)
         os.execvpe(command[0], command, os.environ)
     except FileNotFoundError as exc:
         print(f"unavailable executable: {exc}", file=sys.stderr)
@@ -321,6 +334,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--enter", type=Path, required=True)
     parser.add_argument("--ready-fd", type=int, required=True)
+    parser.add_argument("--release-fd", type=int, required=True)
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command
@@ -328,7 +342,7 @@ def main() -> int:
         command = command[1:]
     if not command:
         parser.error("a command is required")
-    return _enter(args.enter, args.ready_fd, command)
+    return _enter(args.enter, args.ready_fd, args.release_fd, command)
 
 
 if __name__ == "__main__":

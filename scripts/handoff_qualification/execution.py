@@ -144,9 +144,11 @@ def _execute(
                 "path": str(boundary),
             }
             ready_read, ready_write = os.pipe()
+            release_read = release_write = -1
             try:
+                release_read, release_write = os.pipe()
                 command = process_boundary.wrapped_command(
-                    boundary, gate.command, ready_write
+                    boundary, gate.command, ready_write, release_read
                 )
                 process = subprocess.Popen(
                     command,
@@ -155,17 +157,23 @@ def _execute(
                     stdout=out,
                     stderr=err,
                     start_new_session=True,
-                    pass_fds=(ready_write,),
+                    pass_fds=(ready_write, release_read),
                 )
                 os.close(ready_write)
                 ready_write = -1
+                os.close(release_read)
+                release_read = -1
                 process_boundary.wait_ready(ready_read, process)
+                record["pid"] = process.pid
+                save_manifest(output, manifest)
+                # Only published linkage permits user code. Closing the pipe
+                # on any failure (or recorder death) denies admission.
+                os.write(release_write, b"1")
             finally:
                 os.close(ready_read)
-                if ready_write >= 0:
-                    os.close(ready_write)
-            record["pid"] = process.pid
-            save_manifest(output, manifest)
+                for descriptor in (ready_write, release_read, release_write):
+                    if descriptor >= 0:
+                        os.close(descriptor)
             record["exit_code"] = process_boundary.wait(boundary, process, gate.timeout)
             record["status"] = (
                 "passed"
@@ -186,6 +194,12 @@ def _execute(
                 record.update(status="failed", hard_stop=True, reason=reason)
     except FileNotFoundError as exc:
         record.update(status="unavailable", reason=str(exc))
+        if process is not None and boundary is not None:
+            cleanup = process_boundary.cleanup(boundary, process)
+            record["exit_code"] = process.returncode
+            if cleanup.remaining:
+                record["hard_stop"] = True
+                record["cleanup_remaining"] = cleanup.remaining_json()
     except subprocess.TimeoutExpired:
         record.update(status="timed_out", reason="gate timeout; no retry")
         if process is not None and boundary is not None:

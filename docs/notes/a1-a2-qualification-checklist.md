@@ -204,7 +204,10 @@ Smaller command ceilings are visible in the listing. A timeout is incomplete
 evidence, never permission to weaken a test.
 
 Before a gate command executes, a wrapper moves itself into a fresh delegated
-cgroup-v2 child and acknowledges admission to the runner. Descendants inherit
+cgroup-v2 child and acknowledges admission to the runner. The wrapper then
+waits until the runner atomically saves the PID, cgroup path and log links and
+explicitly releases execution. Recorder death, save failure or invalid release
+closes admission without running the user command. Descendants inherit
 that boundary even when they call `setsid()` or start a new process group. The
 runner also acts as a child subreaper so orphaned owned descendants can be
 reaped. Normal parent exit with any remaining owned process is non-passing and
