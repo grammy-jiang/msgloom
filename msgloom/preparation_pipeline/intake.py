@@ -353,6 +353,7 @@ def _transition(entry, value):
         ],
     ] = {
         "snapshot_present": "presence",
+        "inventory_present": "presence",
         "present": "presence",
         "observed_present": "presence",
         "reconciliation_seen": "presence",
@@ -370,9 +371,13 @@ def _transition(entry, value):
     if value.stream == "outlook_calendar":
         try:
             reason = json.loads(value.reason)
-            calendar: dict[str, Literal["presence", "membership_removal"]] = {
+            calendar: dict[
+                str, Literal["presence", "absence", "membership_removal"]
+            ] = {
                 "present": "presence",
                 "removed": "membership_removal",
+                # A reset proves absence only in this exact calendar window.
+                "rebaseline_absence": "absence",
             }
             provider_kind = reason.get("kind")
             kind = (

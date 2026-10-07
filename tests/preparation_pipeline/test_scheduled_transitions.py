@@ -92,21 +92,46 @@ def test_scheduled_exact_scoped_transitions_finish(
 
 
 @pytest.mark.parametrize(
-    "stream,resource,scope_kind,reason",
+    "stream,resource,scope_kind,scope_identity,reason,want",
     [
-        ("outlook_mail", "message", "mail_folder", "folder_delta_removed"),
+        (
+            "outlook_mail",
+            "message",
+            "mail_folder",
+            "exact-scope",
+            "folder_delta_removed",
+            "membership_removal",
+        ),
+        (
+            "outlook_mail",
+            "mail_folder",
+            "mail_folder",
+            "resource",
+            "inventory_present",
+            "presence",
+        ),
         (
             "outlook_calendar",
             "calendar_event",
             "calendar_window",
+            "exact-scope",
             '{"kind":"removed","removed_reason":"deleted"}',
+            "membership_removal",
+        ),
+        (
+            "outlook_calendar",
+            "calendar_event",
+            "calendar_window",
+            '["default","2026-01-01T00:00:00Z","2026-02-01T00:00:00Z"]',
+            '{"attempt":1,"kind":"rebaseline_absence","removed_reason":null}',
+            "absence",
         ),
     ],
 )
-def test_real_removed_release_is_prepared_in_original_scope(
-    saved_catalog, tmp_path, stream, resource, scope_kind, reason
+def test_real_release_is_prepared_in_original_scope(
+    saved_catalog, tmp_path, stream, resource, scope_kind, scope_identity, reason, want
 ):
-    """The real release adapter and scheduler retain exact scoped removal."""
+    """The adapter and scheduler retain exact producer transition semantics."""
     from message_ingest.acquisition.handoff import AcquisitionFactKind
     from msgloom.preparation_pipeline.intake_models import (
         IntakeScope,
@@ -122,7 +147,7 @@ def test_real_removed_release_is_prepared_in_original_scope(
             "resource",
             "unused",
             scope_kind=scope_kind,
-            scope_identity="exact-scope",
+            scope_identity=scope_identity,
         ),
         fact_kind=AcquisitionFactKind.SCOPED_STATE_TRANSITION,
         source_version_locator=None,
@@ -183,6 +208,8 @@ def test_real_removed_release_is_prepared_in_original_scope(
             workset = await persistence.load_semantic_data(saved.semantic_data_ref)
             if not isinstance(workset, PreparationIntakeWorkset):
                 pytest.fail("Frozen workset schema changed")
+            if workset.held or len(workset.transitions) != 1:
+                pytest.fail("Legitimate producer transition became held work")
             result = await persistence.get_result(outcome.result_refs[0].result_id)
             if result is None or result.semantic_data_ref is None:
                 pytest.fail("Accepted scoped output is missing")
@@ -197,8 +224,8 @@ def test_real_removed_release_is_prepared_in_original_scope(
                 transition.entry != entry.reference
                 or transition.fact_id != facts[0].fact_id
                 or transition.scope_kind != scope_kind
-                or transition.scope_identity != "exact-scope"
-                or transition.transition_kind != "membership_removal"
+                or transition.scope_identity != scope_identity
+                or transition.transition_kind != want
             ):
                 pytest.fail("Scoped Mail/Calendar removal became a global deletion")
         finally:

@@ -234,6 +234,7 @@ def test_control_context_never_becomes_primary_selection(saved_catalog, tmp_path
     "stream,resource,scope_kind,reason,want",
     [
         ("outlook_mail", "message", "mailbox", "reconciliation_seen", "presence"),
+        ("outlook_mail", "mail_folder", "mail_folder", "inventory_present", "presence"),
         (
             "outlook_mail",
             "message",
@@ -299,6 +300,13 @@ def test_control_context_never_becomes_primary_selection(saved_catalog, tmp_path
             "calendar_window",
             '{"kind":"removed","removed_reason":"deleted"}',
             "membership_removal",
+        ),
+        (
+            "outlook_calendar",
+            "calendar_event",
+            "calendar_window",
+            '{"attempt":1,"kind":"rebaseline_absence","removed_reason":null}',
+            "absence",
         ),
         (
             "outlook_calendar",
