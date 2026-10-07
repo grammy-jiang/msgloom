@@ -388,7 +388,7 @@ def test_slow_render_drains_deadline_and_keeps_event_loop_responsive(
     """Synchronous rendering runs off-loop and cannot publish after its deadline."""
 
     async def exercise() -> None:
-        from time import sleep
+        import threading
 
         import msgloom.reporting.handler as handler_module
 
@@ -397,8 +397,19 @@ def test_slow_render_drains_deadline_and_keeps_event_loop_responsive(
         selection = plan(triage_ref)
         original = handler_module.render_report
 
+        loop = asyncio.get_running_loop()
+        now = loop.time()
+        entered = asyncio.Event()
+        release = threading.Event()
+        # Advance the real timeout clock only after the render barrier. This
+        # keeps the original deadline active without relying on host speed.
+        monkeypatch.setattr(loop, "time", lambda: now)
+        monkeypatch.setattr(handler_module, "monotonic", lambda: now)
+
         def slow_render(*args: object, **kwargs: object) -> object:
-            sleep(0.30)
+            loop.call_soon_threadsafe(entered.set)
+            if not release.wait(5):
+                raise RuntimeError("render barrier timed out")
             return original(*args, **kwargs)  # type: ignore[arg-type]
 
         monkeypatch.setattr(handler_module, "render_report", slow_render)
@@ -416,23 +427,25 @@ def test_slow_render_drains_deadline_and_keeps_event_loop_responsive(
             ),
             config=config,
         )
-        ticks = 0
-        running = True
-
-        async def ticker() -> None:
-            nonlocal ticks
-            while running:
-                ticks += 1
-                await asyncio.sleep(0.01)
-
-        tick_task = asyncio.create_task(ticker())
-        outcome = await handler.run(_request(selection, "slow-execution"))
-        running = False
-        await tick_task
+        task = asyncio.create_task(handler.run(_request(selection, "slow-execution")))
+        try:
+            await entered.wait()
+            now += 0.21
+            # Two loop turns deliver the existing timeout and its cancellation
+            # while the render worker remains blocked on its release barrier.
+            for _ in range(2):
+                turn = loop.create_future()
+                loop.call_soon(turn.set_result, None)
+                await turn
+            if task.cancelling() == 0:
+                pytest.fail("active deadline did not cancel the render owner")
+            if task.done():
+                pytest.fail("deadline returned before rendering drained")
+        finally:
+            release.set()
+        outcome = await task
         if outcome.status is not TerminalStatus.FAILED:
             pytest.fail("expired slow render published an acceptable report")
-        if ticks < 3:
-            pytest.fail("synchronous rendering blocked the event loop")
         if await store.get_result("slow-report") is not None:
             pytest.fail("expired render persisted an acceptable report")
         if await store.get_result("selection-slow-report") is None:

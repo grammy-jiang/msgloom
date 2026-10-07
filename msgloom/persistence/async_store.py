@@ -19,6 +19,7 @@ from msgloom.contracts import (
     StageResult,
     TerminalStatus,
 )
+from msgloom.persistence.errors import StaleClaimError
 from msgloom.persistence.reconciliation import (
     ClaimInspection,
     ReconciliationRequest,
@@ -158,7 +159,13 @@ class Phase1Persistence:
         required_inputs: tuple[ResultRef, ...] = (),
         lease_seconds: float = 300.0,
     ) -> ClaimToken:
-        """Atomically acquire a durable claim after validating saved inputs."""
+        """
+        Acquire a claim or finish it before propagating cancellation.
+
+        Until this method returns, the facade owns the token. A cancelled
+        acquisition drains its commit and terminal write inside one active
+        call, so close cannot dispose the store between those writes.
+        """
         return await self._call(
             self._store.acquire_claim,
             claim_key,
@@ -167,7 +174,18 @@ class Phase1Persistence:
             attempt,
             required_inputs,
             lease_seconds,
+            on_cancel=self._finish_unreturned_claim,
         )
+
+    def _finish_unreturned_claim(self, token: ClaimToken) -> None:
+        """Release only this token; expiry or reclaim retains its own fences."""
+        try:
+            self._store.finish_claim(
+                token, TerminalStatus.CANCELLED, ExternalEffectState.NOT_STARTED
+            )
+        except StaleClaimError:
+            # Ownership already ended. Never finish a replacement's attempt.
+            return
 
     async def mark_external_effect(
         self, token: ClaimToken, effect: ExternalEffectState
@@ -355,7 +373,12 @@ class Phase1Persistence:
         if cancelled:
             raise asyncio.CancelledError
 
-    async def _call[T](self, operation: Callable[..., T], *args: object) -> T:
+    async def _call[T](
+        self,
+        operation: Callable[..., T],
+        *args: object,
+        on_cancel: Callable[[T], None] | None = None,
+    ) -> T:
         if self._closing or self._closed:
             raise RuntimeError("Phase 1 persistence is closing or closed")
 
@@ -363,7 +386,7 @@ class Phase1Persistence:
         self._idle.clear()
         try:
             async with self._slots:
-                return await _drain_thread(operation, *args)
+                return await _drain_thread(operation, *args, on_cancel=on_cancel)
         finally:
             self._active_calls -= 1
             if self._active_calls == 0:
@@ -395,16 +418,25 @@ async def _await_task_uninterrupted[T](
     return task.result(), cancelled
 
 
-async def _drain_thread[T](operation: Callable[..., T], *args: object) -> T:
+async def _drain_thread[T](
+    operation: Callable[..., T],
+    *args: object,
+    on_cancel: Callable[[T], None] | None = None,
+) -> T:
     """
     Await a thread call to physical completion even after caller cancellation.
 
     A running to_thread SQLite transaction cannot be force-stopped. Delaying
     cancellation until it drains prevents later claim release or close from
-    racing a write that can still commit.
+    racing a write that can still commit. If cancellation hides a successful
+    result, ``on_cancel`` drains its ownership cleanup before returning. Worker
+    or cleanup failures propagate; failed acquisition has no result to clean.
     """
     task = asyncio.create_task(asyncio.to_thread(partial(operation, *args)))
     result, cancelled = await _await_task_uninterrupted(task)
     if cancelled:
+        if on_cancel is not None:
+            cleanup = asyncio.create_task(asyncio.to_thread(on_cancel, result))
+            await _await_task_uninterrupted(cleanup)
         raise asyncio.CancelledError
     return result
