@@ -19,6 +19,7 @@ from msgloom.persistence import Phase1Persistence
 from msgloom.preparation_pipeline.intake import PreparationIntakeService
 from msgloom.preparation_pipeline.intake_models import IntakeScope
 from msgloom.preparation_pipeline.scheduled import ScheduledPreparationHandler
+from msgloom.sources.handoff_catalog import HandoffCatalog
 from msgloom.sources.release_reader import ReleaseSourceReader
 from tests.application_cli.test_scheduled_prepare import configuration
 from tests.preparation_intake_helpers import release, run
@@ -216,16 +217,39 @@ def test_intake_deadline_cancels_and_drains(saved_catalog, tmp_path, monkeypatch
     release(saved_catalog)
 
     async def check():
-        persistence, _scope, handler, request = await context(saved_catalog, tmp_path)
+        persistence, scope, handler, request = await context(
+            saved_catalog, tmp_path, entries=0
+        )
         handler._operation = replace(handler._operation, execution_timeout_seconds=0.02)
+        started = asyncio.Event()
         cancelled = asyncio.Event()
+        drained = asyncio.Event()
+
+        async def catalog_identity(self):
+            return scope.catalog
+
+        async def empty_pending(scope, *, limit):
+            return ()
 
         async def stalled(*args, **kwargs):
+            started.set()
             try:
                 await asyncio.Event().wait()
-            finally:
+            except asyncio.CancelledError:
                 cancelled.set()
+                raise
+            finally:
+                # Cleanup must finish before the handler returns, even when
+                # cancellation cleanup itself yields to the event loop.
+                await asyncio.sleep(0)
+                drained.set()
 
+        # Admission and pending selection must not spend this intake budget
+        # on store I/O. Adjacent tests retain real-store replay coverage.
+        monkeypatch.setattr(HandoffCatalog, "catalog_identity", catalog_identity)
+        monkeypatch.setattr(
+            persistence, "select_preparation_intake_worksets", empty_pending
+        )
         monkeypatch.setattr(PreparationIntakeService, "run", stalled)
         try:
             # The outer watchdog fails the old unbounded code rather than
@@ -235,11 +259,14 @@ def test_intake_deadline_cancels_and_drains(saved_catalog, tmp_path, monkeypatch
                     outcome = await handler.run(request)
             except TimeoutError:
                 pytest.fail("scheduled intake exceeded finite invocation budget")
-            if (
-                not cancelled.is_set()
-                or outcome.status is not TerminalStatus.INCOMPLETE
-            ):
-                pytest.fail("intake timeout did not drain and report incomplete")
+            if not started.is_set():
+                pytest.fail("deadline fixture did not reach intake")
+            if not cancelled.is_set():
+                pytest.fail("intake timeout did not cancel awaited work")
+            if not drained.is_set():
+                pytest.fail("intake timeout returned before cancellation drained")
+            if outcome.status is not TerminalStatus.INCOMPLETE:
+                pytest.fail("intake timeout did not report incomplete")
         finally:
             await persistence.close()
 
