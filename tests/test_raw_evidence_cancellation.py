@@ -435,3 +435,56 @@ def test_success_cache_and_passthrough_publish_only_after_evidence(
         await manager.close_spider_async()
 
     asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("cancel_write", [False, True])
+def test_native_raw_pipeline_close_waits_for_active_write(
+    tmp_path, monkeypatch, cancel_write
+):
+    """Scrapy close cannot dispose the catalog before an accepted raw worker drains."""
+    manager, raw, _observer, _stats = _setup(tmp_path)
+    service = raw.service
+    started, release = threading.Event(), threading.Event()
+    original = raw._persist_sync
+
+    def blocked(value):
+        started.set()
+        if not release.wait(5):
+            raise RuntimeError("Raw close test did not release worker")
+        return original(value)
+
+    monkeypatch.setattr(raw, "_persist_sync", blocked)
+
+    async def exercise():
+        task = asyncio.create_task(manager.process_item_async(_item("close-race")))
+        close_task = None
+        try:
+            if not await asyncio.to_thread(started.wait, 5):
+                pytest.fail("Raw close worker did not start")
+            if cancel_write:
+                task.cancel("close-race")
+                await _checkpoint()
+            close_task = asyncio.create_task(manager.close_spider_async())
+            await _checkpoint()
+            if service._closed or close_task.done():
+                pytest.fail("Native close disposed catalog before raw write drained")
+            release.set()
+            if cancel_write:
+                with pytest.raises(asyncio.CancelledError):
+                    await task
+            else:
+                await task
+            await close_task
+            if not service._closed:
+                pytest.fail("Native close did not dispose catalog after drain")
+        finally:
+            release.set()
+            await asyncio.gather(task, return_exceptions=True)
+            if close_task is not None:
+                await asyncio.gather(close_task, return_exceptions=True)
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        release.set()
+        service.close()

@@ -62,11 +62,10 @@ class RawEvidencePipeline:
             stats=crawler.stats,
         )
 
-    def close_spider(self) -> None:
-        """
-        Close the crawler-shared catalog before terminal lifecycle signals.
-        """
-        self.service.close()
+    async def close_spider(self) -> None:
+        """Close only after any accepted raw write has drained."""
+        async with self._write_lock:
+            self.service.close()
 
     async def process_item(self, item):
         """

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
+from typing import Any
 
 from scrapy.exceptions import NotConfigured
 
@@ -42,6 +44,63 @@ class CatalogService:
         service = cls(crawler)
         setattr(crawler, _SERVICE_ATTR, service)
         return service
+
+    async def write[T](
+        self,
+        operation: Callable[..., T],
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
+        """
+        Serialize a thread write and drain it before propagating cancellation.
+
+        Cancellation cannot stop a running thread. Keep catalog ownership until
+        its file/SQL work finishes, including repeated cancellation requests.
+        Restore each request after drain and chain a concurrent write failure.
+        The caller publishes success state only when this method returns.
+        """
+        await self.write_lock.acquire()
+        worker = asyncio.create_task(asyncio.to_thread(operation, *args, **kwargs))
+        cancellation: asyncio.CancelledError | None = None
+        consumed_cancellations = 0
+        current = asyncio.current_task()
+        try:
+            while True:
+                try:
+                    outcome = await asyncio.shield(worker)
+                    break
+                except asyncio.CancelledError as exc:
+                    if current is None or current.cancelling() == 0:
+                        raise
+                    if cancellation is None:
+                        cancellation = exc
+                    pending = current.cancelling()
+                    for _unused in range(pending):
+                        current.uncancel()
+                        consumed_cancellations += 1
+                except BaseException as write_error:
+                    if cancellation is None:
+                        raise
+                    self._restore_cancellation(current, consumed_cancellations)
+                    raise cancellation from write_error
+
+            if cancellation is not None:
+                self._restore_cancellation(current, consumed_cancellations)
+                raise cancellation
+            return outcome
+        finally:
+            self.write_lock.release()
+
+    @staticmethod
+    def _restore_cancellation(
+        current: asyncio.Task[Any] | None,
+        count: int,
+    ) -> None:
+        """Restore every consumed cancellation request after worker drain."""
+        if current is None:
+            return
+        for _unused in range(count):
+            current.cancel()
 
     def register_evidence_alias(
         self, provisional_id: str, canonical_id: str, observed_at: str
