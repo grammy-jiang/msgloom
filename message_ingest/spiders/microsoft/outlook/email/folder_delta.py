@@ -219,12 +219,9 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 "reset_count": reset_count,
             },
             dont_cache=True,
-            verbatim_url=(
-                page_number > 1
-                or from_checkpoint
-                or "$deltatoken=" in url
-                or "$skiptoken=" in url
-            ),
+            # Initial/reset paths are local; later pages and saved cursors
+            # come from Graph. Their query bytes carry no application meaning.
+            verbatim_url=page_number > 1 or from_checkpoint,
             prefer=f"odata.maxpagesize={self.page_size}",
         )
 

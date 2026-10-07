@@ -263,3 +263,33 @@ def test_folder_delta_second_410_fails_instead_of_looping(tmp_path: Path) -> Non
         pytest.fail("Second folder delta 410 must fail the logical run")
     if not any(isinstance(value, AcquisitionFailureItem) for value in output):
         pytest.fail("Expected terminal acquisition failure after second 410")
+
+
+@pytest.mark.parametrize(
+    ("url", "page_number", "from_checkpoint", "opaque"),
+    [
+        ("https://graph.microsoft.com/v1.0/local?$skiptoken=literal", 1, False, False),
+        ("https://graph.microsoft.com/v1.0/cursor?state=A%2fb+z", 1, True, True),
+        ("https://graph.microsoft.com/v1.0/cursor?state=A%2fb+z", 2, False, True),
+    ],
+)
+def test_folder_delta_provenance_controls_opaque_urls(
+    tmp_path: Path,
+    url: str,
+    page_number: int,
+    from_checkpoint: bool,
+    opaque: bool,
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._delta_request(
+        url,
+        page_number=page_number,
+        from_checkpoint=from_checkpoint,
+        reset_count=0,
+    )
+    if bool(request.meta.get("verbatim_url")) != opaque:
+        pytest.fail("Folder cursor handling must follow provenance, not URL text")
+    if opaque and request.url != url:
+        pytest.fail("Provider cursor bytes changed")
+    if request.headers.get("Prefer") != b"odata.maxpagesize=50":
+        pytest.fail("Folder delta representation preference changed")
