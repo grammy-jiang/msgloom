@@ -20,6 +20,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookFolderDeltaCheckpointStore,
 )
 from microsoft_graph.protocol import GraphDeltaPage
+from microsoft_graph.protocol.delta import graph_tombstone
 
 from ._base import OutlookMailSpider
 
@@ -115,8 +116,8 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
             folder_id = folder.get("id")
             if not isinstance(folder_id, str) or not folder_id:
                 raise ValueError("mailFolder delta entry must contain a non-empty id")
-            removed = folder.get("@removed")
-            if isinstance(removed, dict):
+            removed = graph_tombstone(folder, strict=False)
+            if removed is not None:
                 yield OutlookMailFolderRemovalItem(
                     folder_id=folder_id,
                     removed_reason=removed.get("reason"),

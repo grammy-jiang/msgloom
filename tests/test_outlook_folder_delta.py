@@ -293,3 +293,29 @@ def test_folder_delta_provenance_controls_opaque_urls(
         pytest.fail("Provider cursor bytes changed")
     if request.headers.get("Prefer") != b"odata.maxpagesize=50":
         pytest.fail("Folder delta representation preference changed")
+
+
+@pytest.mark.parametrize("marker", [{}, {"reason": 42}, [], None])
+def test_folder_tombstone_shape_preserves_application_removal_semantics(
+    tmp_path: Path, marker: object
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._initial_request(reset_count=0)
+    output = list(
+        spider.parse_folder_delta(
+            _response(
+                request,
+                {
+                    "value": [{"id": "folder", "@removed": marker}],
+                    "@odata.deltaLink": "https://graph.microsoft.com/v1.0/cursor",
+                },
+            ),
+            **request.cb_kwargs,
+        )
+    )
+    removals = [row for row in output if isinstance(row, OutlookMailFolderRemovalItem)]
+    if isinstance(marker, dict):
+        if len(removals) != 1 or removals[0].removed_reason != marker.get("reason"):
+            pytest.fail("Folder tombstones must retain the provider reason unchanged")
+    elif removals or not any(isinstance(row, OutlookMailFolderItem) for row in output):
+        pytest.fail("Legacy non-object markers must remain folder upserts")
