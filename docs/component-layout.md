@@ -174,7 +174,7 @@ still suppresses the header. The user provider supplies only `User.Read` and
 | `microsoft_graph/fingerprints.py` | Hash Accept/Prefer representations with Scrapy's native fingerprint helper. |
 | `microsoft_graph/request.py` | Read the configured Graph host and request operation metadata. |
 | `microsoft_graph/stats.py` | Resolve the consumer-selected Graph statistics prefix. |
-| `microsoft_graph/spiders/outlook/` | Own mailbox/resource paths, own/shared scopes, provider field selections, and representation preferences. |
+| `microsoft_graph/spiders/outlook/` | Own mailbox/resource paths, own/shared scopes, caller-selected queries, and representation preferences. |
 | `microsoft_graph/addon.py` | Supply overridable safe retry, transport diagnostics, representation identity, and Graph formatter defaults. |
 | `microsoft_graph/logformatter.py` | Format Graph requests and item types without URLs, payloads, or arbitrary exception text. |
 | `microsoft_graph/extensions/privacy.py` | Install crawler-scoped Scrapy core log sanitization without changing application state or stats. |
@@ -542,14 +542,19 @@ Outlook resource bases expose path helpers without callback, purpose, cache,
 profile, or checkpoint policy. Mail provides `messages_path`, `message_path`,
 `message_mime_path`, `mail_folders_path`, `message_delta_path`, and
 `mail_folder_delta_path`. Folder arguments select folder messages or child
-folders. Discovery, full-detail, and folder field selections are provider
-defaults; consumers choose when to use them.
+folders. The application Mail profile selects discovery, full-detail, and folder
+fields. The application Contacts profile selects fields and excludes
+``personalNotes``. Provider helpers accept caller-selected projections.
 
 Calendar provides `calendars_path`, `event_path`, `calendar_view_path`,
 `calendar_view_delta_path`, and `series_master_path`. Event and view paths
 support default and named calendars; delta retains the current primary-calendar
 endpoint. IDs are encoded once, and new query strings preserve field order and
 boundary text. Continuation URLs remain opaque and never enter these builders.
+`protocol/delta.py` validates tombstone shape without interpreting removal
+semantics. `protocol/onedrive.py` validates exact same-origin reset locations;
+the application retains retry limits, evidence redaction, and checkpoint policy.
+Mail cursor handling follows request provenance, never token text.
 `protocol/calendar.py` validates timezone-aware increasing window bounds,
 derives series-master relations, and validates cancelled/exception occurrence
 lists. It does not decide topology freshness, persistence, or acquisition scope.
