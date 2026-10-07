@@ -30,9 +30,69 @@ from message_ingest.spiders.microsoft.outlook.calendar.delta import (
 from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
     CalendarDeltaCheckpointStore,
 )
+from microsoft_graph.protocol import GraphProtocolError
 
 START = "2026-09-27T00:00:00+10:00"
 END = "2026-10-04T00:00:00+10:00"
+
+
+@pytest.mark.parametrize("marker", [False, 0, "deleted", []])
+def test_invalid_tombstone_preserves_evidence_before_protocol_failure(
+    tmp_path: Path, marker: object
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._initial_delta_request(reset_count=0)
+    output = spider.parse_delta(
+        _response(request, {"value": [{"id": "event-1", "@removed": marker}]}),
+        **request.cb_kwargs,
+    )
+    if not isinstance(next(output), RawHttpEvidenceItem):
+        pytest.fail("Raw evidence must precede invalid tombstone failure")
+    with pytest.raises(
+        GraphProtocolError, match="^Calendar @removed value must be an object$"
+    ):
+        list(output)
+
+
+@pytest.mark.parametrize(
+    ("marker", "kind", "reason"),
+    [
+        (None, "upsert", None),
+        ({}, "removed", None),
+        ({"reason": "deleted"}, "removed", "deleted"),
+        ({"reason": "changed"}, "removed", "changed"),
+        ({"reason": 42}, "removed", None),
+    ],
+)
+def test_tombstone_reason_remains_calendar_policy(
+    tmp_path: Path, marker: object, kind: str, reason: str | None
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._initial_delta_request(reset_count=0)
+    output = list(
+        spider.parse_delta(
+            _response(
+                request,
+                {
+                    "value": [{"id": "event-1", "@removed": marker}],
+                    "@odata.deltaLink": "https://graph.microsoft.com/v1.0/state",
+                },
+            ),
+            **request.cb_kwargs,
+        )
+    )
+    observation = next(
+        value
+        for value in output
+        if isinstance(value, OutlookCalendarDeltaObservationItem)
+    )
+    if (observation.kind, observation.removed_reason) != (kind, reason):
+        pytest.fail("Calendar must retain its removal and reason interpretation")
+    projected = [
+        value for value in output if isinstance(value, OutlookCalendarEventItem)
+    ]
+    if bool(projected) != (kind == "upsert"):
+        pytest.fail("Only Calendar upserts may update the source-wide event")
 
 
 def _crawler(tmp_path: Path):

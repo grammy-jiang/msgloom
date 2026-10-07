@@ -22,6 +22,7 @@ from message_ingest.sync.microsoft.outlook.calendar.checkpoints import (
 )
 from microsoft_graph.protocol import GraphDeltaPage
 from microsoft_graph.protocol.calendar import calendar_window
+from microsoft_graph.protocol.delta import graph_tombstone
 
 from ._base import OutlookCalendarSpider
 from ._delta_state import CalendarDeltaExecutionState, execution_payload
@@ -201,12 +202,10 @@ class OutlookCalendarDeltaSpider(OutlookCalendarSpider):
             if not isinstance(event_id, str) or not event_id:
                 raise ValueError("Calendar delta event must contain a non-empty id")
 
-            removed = event.get("@removed")
-            if removed is not None and not isinstance(removed, dict):
-                raise ValueError("Calendar @removed value must be an object")
-            kind = "removed" if isinstance(removed, dict) else "upsert"
+            removed = graph_tombstone(event, context="Calendar")
+            kind = "removed" if removed is not None else "upsert"
             removed_reason = None
-            if isinstance(removed, dict):
+            if removed is not None:
                 reason = removed.get("reason")
                 removed_reason = reason if isinstance(reason, str) else None
                 self.crawler.stats.inc_value(
