@@ -3,7 +3,6 @@
 import asyncio
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
-from urllib.parse import urlsplit
 
 from scrapy.http import TextResponse
 from scrapy.settings import BaseSettings
@@ -19,6 +18,7 @@ from message_ingest.items.microsoft.onedrive import (
     OneDriveItem,
 )
 from microsoft_graph.protocol import GraphDeltaPage
+from microsoft_graph.protocol.onedrive import onedrive_resync_location
 
 from ._base import OneDriveSpider
 
@@ -148,7 +148,10 @@ class MicrosoftOneDriveDeltaSpider(OneDriveSpider):
             and isinstance(failure.value, HttpError)
             and evidence.response_status == 410
         ):
-            location = self._resync_location(failure.value.response)
+            location = onedrive_resync_location(
+                failure.value.response.headers.getlist("Location"),
+                graph_root=self.graph_root,
+            )
             self._redact_resync_evidence(evidence)
             yield evidence
             if (
@@ -204,37 +207,6 @@ class MicrosoftOneDriveDeltaSpider(OneDriveSpider):
             verbatim_url=verbatim,
             dont_cache=True,
         )
-
-    def _resync_location(self, response) -> str | None:
-        """Return one exact same-origin Graph Location without normalizing it."""
-        raw_values = response.headers.getlist("Location")
-        if len(raw_values) != 1:
-            return None
-        try:
-            location = raw_values[0].decode("latin-1")
-        except AttributeError:
-            location = str(raw_values[0])
-        if not location or location != location.strip():
-            return None
-        try:
-            candidate = urlsplit(location)
-            root = urlsplit(self.graph_root)
-            candidate_port = candidate.port or (
-                443 if candidate.scheme == "https" else 80
-            )
-            root_port = root.port or (443 if root.scheme == "https" else 80)
-        except ValueError:
-            return None
-        if (
-            candidate.scheme.lower() != root.scheme.lower()
-            or candidate.hostname != root.hostname
-            or candidate_port != root_port
-            or candidate.username is not None
-            or candidate.password is not None
-            or candidate.fragment
-        ):
-            return None
-        return location
 
     @staticmethod
     def _redact_resync_evidence(evidence) -> None:

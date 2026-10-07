@@ -432,3 +432,44 @@ def test_content_freshness_requires_exact_version_equivalence_and_keeps_history(
                 pytest.fail("Old content/version associations must remain append-only")
     finally:
         catalog.close()
+
+
+@pytest.mark.parametrize(
+    "locations,expected",
+    [
+        (
+            ["https://graph.microsoft.com/v1.0/delta?t=%2b+&x=%2F"],
+            "https://graph.microsoft.com/v1.0/delta?t=%2b+&x=%2F",
+        ),
+        (
+            ["https://GRAPH.microsoft.com:443/v1.0/delta"],
+            "https://GRAPH.microsoft.com:443/v1.0/delta",
+        ),
+        ([], None),
+        (["https://graph.microsoft.com/a", "https://graph.microsoft.com/b"], None),
+        (["/v1.0/delta"], None),
+        ([" https://graph.microsoft.com/v1.0/delta"], None),
+        (["https://offhost.invalid/v1.0/delta"], None),
+        (["https://graph.microsoft.com:444/v1.0/delta"], None),
+        (["http://graph.microsoft.com/v1.0/delta"], None),
+        (["https://user@graph.microsoft.com/v1.0/delta"], None),
+        (["https://graph.microsoft.com/v1.0/delta#secret"], None),
+        (["https://graph.microsoft.com:invalid/v1.0/delta"], None),
+    ],
+)
+def test_provider_owns_exact_safe_onedrive_reset_location(locations, expected):
+    from scrapy.http import Response
+
+    from message_ingest.spiders.microsoft.onedrive.delta import (
+        MicrosoftOneDriveDeltaSpider,
+    )
+
+    if hasattr(MicrosoftOneDriveDeltaSpider, "_resync_location"):
+        pytest.fail("Reusable reset Location validation remains application-owned")
+    from microsoft_graph.protocol.onedrive import onedrive_resync_location
+
+    root = "https://graph.microsoft.com/v1.0"
+    response = Response(root, status=410, headers={"Location": locations})
+    for values in (locations, response.headers.getlist("Location")):
+        if onedrive_resync_location(values, graph_root=root) != expected:
+            pytest.fail("Reset Location safety or exact accepted bytes changed")
