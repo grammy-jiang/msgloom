@@ -30,7 +30,7 @@ msgloom = "msgloom.cli:main"
 
 [dependency-groups]
 dev = [
-    "pytest>=8,<9",
+    "pytest==9.0.3",
     "pytest-cov==7.1.0",
     "pytest-xdist==3.8.0",
     "pre-commit==4.6.2",
@@ -111,12 +111,14 @@ commands = [
      "-m", "not exclusive_state and not fastmcp_compat and not linux_cgroup_v2",
      "--cov=msgloom", "--cov=message_ingest", "--cov=microsoft_graph",
      "--cov-branch", "--cov-report=term-missing",
-     "--cov-report=xml:{env_dir}/coverage.xml"],
+     "--cov-report=xml:{env_dir}/coverage.xml",
+     "--junitxml={env_dir}/junit-normal.xml"],
     ["python", "-m", "pytest", "-q", "-n", "0",
      "-m", "exclusive_state and not fastmcp_compat and not linux_cgroup_v2", "--cov=msgloom", "--cov=message_ingest",
      "--cov=microsoft_graph", "--cov-branch", "--cov-append",
      "--cov-report=term-missing",
-     "--cov-report=xml:{env_dir}/coverage.xml"],
+     "--cov-report=xml:{env_dir}/coverage.xml",
+     "--junitxml={env_dir}/junit-exclusive.xml"],
 ]
 
 [tool.tox.env.py312-fastmcp4]
@@ -126,7 +128,8 @@ commands = [
     ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
-     "--cov-report=xml:{env_dir}/coverage.xml"],
+     "--cov-report=xml:{env_dir}/coverage.xml",
+     "--junitxml={env_dir}/junit-fastmcp.xml"],
 ]
 
 [tool.tox.env.py313-fastmcp4]
@@ -136,7 +139,8 @@ commands = [
     ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
-     "--cov-report=xml:{env_dir}/coverage.xml"],
+     "--cov-report=xml:{env_dir}/coverage.xml",
+     "--junitxml={env_dir}/junit-fastmcp.xml"],
 ]
 
 [tool.tox.env.py314-fastmcp4]
@@ -146,5 +150,6 @@ commands = [
     ["python", "-m", "pytest", "-q", "-m", "fastmcp_compat",
      "tests/packaging/test_fastmcp_compatibility.py",
      "--cov=msgloom", "--cov-branch", "--cov-report=term-missing",
-     "--cov-report=xml:{env_dir}/coverage.xml"],
+     "--cov-report=xml:{env_dir}/coverage.xml",
+     "--junitxml={env_dir}/junit-fastmcp.xml"],
 ]

@@ -49,6 +49,16 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: precommit-v1-${{ runner.os }}-${{ runner.arch }}-py313-node24-${{ hashFiles('.pre-commit-config.yaml') }}
+      # OSV audits the lock's runtime, dev and compatibility groups.
+      # PYSEC-2017-83 has no upstream fix. Surface it once one becomes available.
+      - name: Audit locked Python dependencies
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        run: |
+          for version in 3.12 3.13 3.14; do
+            uv audit --locked --no-progress --preview-features audit-command \
+              --python-version "$version" \
+              --ignore-until-fixed PYSEC-2017-83
+          done
       - name: Install locked development dependencies
         if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: uv sync --locked --group dev
@@ -174,6 +184,20 @@ jobs:
         env:
           TOX_ENVIRONMENT: ${{ matrix.tox-env }}
         run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+      # Read the test XML after tox; never rerun tests just to publish a report.
+      - name: Summarize JUnit test outcomes
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        env:
+          TOX_ENVIRONMENT: ${{ matrix.tox-env }}
+        run: |
+          directory=".tox/$TOX_ENVIRONMENT"
+          if [[ "$TOX_ENVIRONMENT" == *-fastmcp4 ]]; then
+            uv run --no-sync python scripts/quality/junit_report.py \
+              "$directory/junit-fastmcp.xml"
+          else
+            uv run --no-sync python scripts/quality/junit_report.py \
+              "$directory/junit-normal.xml" "$directory/junit-exclusive.xml"
+          fi
       # Evaluate coverage after both tox phases. The first pytest invocation
       # cannot be gated independently because its coverage is incomplete.
       - name: Enforce line and branch coverage budgets
@@ -203,6 +227,7 @@ jobs:
           name: evidence-${{ matrix.tox-env }}
           path: |
             .tox/${{ matrix.tox-env }}/coverage.xml
+            .tox/${{ matrix.tox-env }}/junit-*.xml
             .tox/${{ matrix.tox-env }}/log/
             ${{ runner.temp }}/wheel-qualification/qualification.json
           include-hidden-files: true
@@ -319,7 +344,7 @@ jobs:
       - name: Run portable business and framework contracts
         if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: >-
-          uv run --no-project --python 3.13 --with pytest==8.4.2
+          uv run --no-project --python 3.13 --with pytest==9.0.3
           --with scrapy==2.19.0 --with sqlalchemy==2.0.54
           python -m pytest -q --strict-markers
           tests/test_graph_protocol.py

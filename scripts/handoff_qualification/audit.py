@@ -62,8 +62,8 @@ def runtime(expected: str, fastmcp: bool) -> dict:
     ):
         if versions[name] != required:
             raise ValueError(f"{name} must remain {required}")
-    if not versions["pytest"].startswith("8."):
-        raise ValueError("pytest must satisfy the committed >=8,<9 constraint")
+    if versions["pytest"] != "9.0.3":
+        raise ValueError("pytest must remain exactly 9.0.3")
     if fastmcp:
         versions["fastmcp"] = importlib.metadata.version("fastmcp")
         if versions["fastmcp"] != "4.0.11":
