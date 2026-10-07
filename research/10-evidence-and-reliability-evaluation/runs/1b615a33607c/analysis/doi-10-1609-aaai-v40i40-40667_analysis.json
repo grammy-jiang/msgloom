@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-1609-aaai-v40i40-40667",
+ "title": "COIN: Uncertainty-Guarding Selective Question Answering for Foundation Models with Provable Risk Guarantees",
+ "research_question": "Can a foundation-model question-answering system calibrate an uncertainty threshold that gives a high-probability bound on conditional answer failure while retaining substantially more correct answers than existing conformal-alignment selection methods?",
+ "methodology": "COIN first evaluates answer failures and uncertainty scores on a held-out calibration set, computes an upper confidence bound on the conditional failure rate for candidate uncertainty thresholds, and selects the largest threshold satisfying a user-specified risk requirement. The default variant uses a one-sided Clopper-Pearson bound, while another variant uses a Hoeffding bound. The threshold is fixed before deployment so test-time selection only compares each answer's uncertainty with the calibrated threshold. Experiments cover CommonsenseQA, TriviaQA, and the multimodal MMVet benchmark across multiple language and vision-language models and several uncertainty estimators.",
+ "key_findings": [
+  {
+   "finding": "Across the reported repeated trials, both the Clopper-Pearson and Hoeffding COIN variants kept mean empirical conditional failure rates below the user-specified target risk levels for the evaluated foundation models.",
+   "evidence_type": "supported",
+   "section": "Empirical evaluations"
+  },
+  {
+   "finding": "COIN retained substantially more admissible answers than conformal alignment in several settings; for Qwen2.5-14B on CommonsenseQA, the Clopper-Pearson variant reached power 0.85 at target risk 0.15, reported as 0.36 higher than conformal alignment.",
+   "evidence_type": "supported",
+   "section": "Empirical evaluations: CommonsenseQA"
+  },
+  {
+   "finding": "On TriviaQA, the reported power advantage over conformal alignment reached about 0.4 in some evaluated risk settings.",
+   "evidence_type": "supported",
+   "section": "Empirical evaluations: TriviaQA"
+  },
+  {
+   "finding": "The method continued to satisfy the evaluated risk targets when only one tenth of the available examples were allocated to calibration in the reported limited-calibration experiment.",
+   "evidence_type": "supported",
+   "section": "Calibration-data ablation"
+  },
+  {
+   "finding": "Because the threshold is pre-calibrated, COIN's deployment-time decision is a threshold comparison rather than a test-time comparison against every calibration example as required by the conformal-alignment baseline.",
+   "evidence_type": "supported",
+   "section": "Method and computational comparison"
+  },
+  {
+   "finding": "Alternative uncertainty estimators can be substituted into the framework, and some produced greater selection power while maintaining the empirical risk constraint.",
+   "evidence_type": "supported",
+   "section": "Uncertainty-estimator ablations"
+  }
+ ],
+ "limitations": [
+  "The statistical guarantee assumes calibration and future examples are independently and identically distributed from the same underlying distribution, so it does not directly guarantee control under non-stationary temporal drift.",
+  "The calibrated threshold is static rather than continually updated online as the stream distribution evolves.",
+  "For open-ended answers, correctness is converted into a binary admission decision by a chosen evaluator such as semantic similarity, entailment, or an LLM judge, so the guarantee is relative to that evaluator rather than to factual truth in an unrestricted sense.",
+  "The experiments cover three QA benchmarks and a finite collection of models rather than arbitrary long-form multi-source generation.",
+  "The controlled quantity is an aggregate conditional failure rate for retained answers, not evidence completeness within compound claims or attribution of individual subclaims to source evidence.",
+  "The method does not model longitudinal omission of due, resolved, or superseded work-item states.",
+  "No public code release was identified in the paper text that was read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "risk_control": 0.98,
+  "power_advantage": 0.98,
+  "limited_calibration_result": 0.96,
+  "deployment_efficiency": 0.96,
+  "uncertainty_modularity": 0.95
+ },
+ "raw_claims": [
+  "COIN selects answers whose uncertainty is no greater than a calibration-derived threshold.",
+  "The target quantity is the conditional failure rate among answers that the system chooses to retain.",
+  "The method constructs a high-probability upper bound on this conditional failure rate during calibration.",
+  "The default implementation uses an exact one-sided Clopper-Pearson bound.",
+  "A Hoeffding-based version is also evaluated.",
+  "Experiments include CommonsenseQA, TriviaQA, and MMVet.",
+  "Power is defined as the proportion of admissible answers that the selection procedure retains.",
+  "The method is evaluated over repeated calibration and test trials.",
+  "The formal risk argument assumes independent and identically distributed samples."
+ ],
+ "source_url": "https://arxiv.org/html/2506.20178",
+ "access": "full_text"
+}

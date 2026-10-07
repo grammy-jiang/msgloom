@@ -1,0 +1,88 @@
+{
+ "paper_id": "2107.14691",
+ "title": "EmailSum: Abstractive Email Thread Summarization",
+ "research_question": "How well do extractive, abstractive, transfer, semi-supervised, and hierarchical models summarize multi-message email threads, and what dataset and evaluation challenges distinguish email-thread summarization from conventional document summarization?",
+ "methodology": "The authors construct EmailSum from Avocado and W3C email collections by reconstructing threads, filtering and anonymizing them, manually checking thread quality, and collecting short and long abstractive summaries with Amazon Mechanical Turk. The resulting dataset contains 2,549 threads, with 1,800 training, 249 development, and 500 test examples in the reported split. They compare extractive heuristics, TextRank, BertSumExt, Fast Abs RL, T5 variants, cross-domain transfer, semi-supervised learning, and a hierarchical T5 model using ROUGE and BERTScore. A human evaluation on 100 examples with three ratings per example measures salience, faithfulness, pairwise preference, and correlation between automatic metrics and human judgments.",
+ "key_findings": [
+  {
+   "finding": "EmailSum provides 2,549 email threads with both short and long human-written abstractive summaries, supplying a substantially larger benchmark than the earlier 40-thread BC3 email summarization corpus discussed by the authors.",
+   "evidence_type": "supported",
+   "section": "2 EmailSum Dataset"
+  },
+  {
+   "finding": "Treating an entire email thread as one document and fine-tuning T5 provides a strong baseline; transferring from existing news or dialogue summarization datasets yields little benefit, and the proposed hierarchical T5 provides only marginal gains.",
+   "evidence_type": "supported",
+   "section": "4.2 Results; 6 Conclusion"
+  },
+  {
+   "finding": "Semi-supervised training on unlabeled email threads improves several automatic ROUGE results, but those improvements do not translate into superior human preference over the base T5 model.",
+   "evidence_type": "supported",
+   "section": "4.2 Results; 5.2 Generated Summary's Quality Analysis"
+  },
+  {
+   "finding": "Current models frequently fail on discourse-critical information such as the sender's main intention and the correct roles or attribution of senders and receivers, creating both salience and faithfulness errors.",
+   "evidence_type": "supported",
+   "section": "5.2 Generated Summary's Quality Analysis; 6 Conclusion"
+  },
+  {
+   "finding": "Model performance decreases as the number of emails in a thread increases, indicating that longer conversational context remains harder to summarize.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "ROUGE and BERTScore correlate poorly with human judgments in this task; the best reported correlation for the examined rankings is only 0.14 and is not statistically significant, while long-summary correlations are little or negative.",
+   "evidence_type": "supported",
+   "section": "5.3 Correlation with Human Judgement"
+  },
+  {
+   "finding": "Although model-generated summaries receive relatively high average salience and faithfulness ratings, inter-rater agreement is low on the original five-point scale, showing substantial subjectivity in judging email summaries.",
+   "evidence_type": "supported",
+   "section": "5.1 Human Rating Collection; 5.2 Generated Summary's Quality Analysis"
+  }
+ ],
+ "limitations": [
+  "Threads are restricted to 3-10 emails, individual emails to 5-200 words, total thread length to 30-1000 words, and English-language content, limiting applicability to long or multilingual workplace threads.",
+  "The dataset is built primarily from Avocado and W3C collections rather than contemporary live enterprise communication environments.",
+  "Avocado's original email content is license-restricted by the Linguistic Data Consortium, so the authors can release collected summaries and reconstruction scripts but not freely redistribute all underlying source emails.",
+  "The reported paper results use one human reference per test example even though a second reference was subsequently collected for the released test set.",
+  "Human salience and faithfulness ratings show only slight-to-fair agreement on the original five-point scale, indicating substantial annotator subjectivity.",
+  "Thread reconstruction relies partly on normalized subjects, timestamps, and participant continuity rather than native reply-graph metadata, although the authors perform manual quality checking.",
+  "The summarization setup produces a summary of a completed thread and does not model incremental updates, state transitions, resolved versus still-open tasks, or suppression of superseded facts across successive briefings.",
+  "The models are not personalized to an individual recipient's role, priorities, prior knowledge, or information needs.",
+  "Automatic metrics used in the experiments are themselves shown to be weak proxies for human-perceived summary quality."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "emailsum_dataset_contribution": 0.99,
+  "t5_strong_baseline": 0.99,
+  "limited_transfer_and_hierarchical_gain": 0.98,
+  "semisupervised_metric_human_mismatch": 0.99,
+  "sender_intent_and_role_errors": 0.99,
+  "performance_declines_with_thread_length": 0.98,
+  "automatic_metrics_weakly_correlate_with_humans": 0.99,
+  "human_rating_subjectivity": 0.98
+ },
+ "raw_claims": [
+  "EmailSum contains 2,549 email threads with a short and a long human-written summary for each thread.",
+  "The reported split contains 1,800 training threads, 249 development threads, and 500 test threads.",
+  "The authors reconstruct threads from Avocado and W3C email collections and manually inspect the resulting threads for quality and anonymization.",
+  "Summary annotations were collected with Amazon Mechanical Turk using explicit worker-quality controls.",
+  "The authors evaluate both extractive and abstractive summarization systems.",
+  "Fine-tuned T5 is a strong baseline for both short and long email-thread summaries.",
+  "Cross-domain transfer from existing summarization datasets provides little improvement.",
+  "Hierarchical T5 only marginally improves long-summary performance over the ordinary T5 baseline.",
+  "Semi-supervised learning improves several ROUGE measurements but does not consistently improve human preference.",
+  "Generated summaries become harder to produce accurately as the number of emails in a thread increases.",
+  "The human evaluation identifies failures to capture sender intent and failures to attribute statements to the correct sender or receiver.",
+  "Human evaluators generally rate generated summaries more highly for faithfulness than for salience.",
+  "Inter-rater agreement is low on the original five-point human rating scales.",
+  "ROUGE and BERTScore are poorly correlated with human judgments on EmailSum.",
+  "The authors release their code and summary data, while access to underlying Avocado emails remains subject to licensing restrictions."
+ ],
+ "source_url": "https://arxiv.org/html/2107.14691",
+ "access": "full_text"
+}

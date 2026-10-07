@@ -1,0 +1,78 @@
+{
+ "paper_id": "doi-10-18653-v1-2026-acl-long-1562",
+ "title": "RAG-on-a-Diet: A Reinforcement Learning-Based Dynamic Resource Optimization Framework for RAG",
+ "research_question": "Can a lightweight reinforcement-learning controller dynamically choose the least expensive adequate language model at each multi-hop RAG step while preserving answer quality and terminating unnecessary reasoning early?",
+ "methodology": "RAG-on-a-Diet formulates each multi-hop RAG step as a model-routing decision among Qwen3-4B, Qwen3-30B, and DeepSeek-R1-671B using entity-aware, relation-aware, and confidence-related state features. Training proceeds from rule-based expert demonstrations to behavior cloning and then PPO with a reward combining final-answer quality, cumulative reasoning quality, step-level retrieval progress, model cost, and quality-per-compute balance. Reasoning uses a two-tier stopping mechanism consisting of a five-hop hard cap and a validation-tuned confidence threshold of 0.3. Experiments cover HotpotQA, MuSiQue, 2WikiMultiHopQA, CRAG subsets, and Bamboogle, with ablations for rewards, features, and stopping behavior.",
+ "key_findings": [
+  {
+   "finding": "On HotpotQA, the proposed controller obtained F1 0.7387 at reported cost 17.35, reducing cost by 60.07% relative to the DeepSeek-R1 IRCoT configuration while accepting a 3.70% F1 decrease.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Relative to Adaptive-RAG, the method reports both a small F1 improvement and a 37.30% cost reduction on HotpotQA.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Adding step-wise, cumulative, cost, and balance components to the reward progressively improves the quality-cost tradeoff; the full reward reaches F1 0.7387, cost 17.35, and 3.2 average hops versus F1 0.6985, cost 23.72, and 4.1 hops for terminal-only reward.",
+   "evidence_type": "supported",
+   "section": "Reward Ablation"
+  },
+  {
+   "finding": "The dual stopping mechanism outperforms both a ten-hop no-termination configuration and a five-hop hard-cap-only configuration, producing F1 0.7387 with 3.2 average hops and cost 17.35.",
+   "evidence_type": "supported",
+   "section": "Explicit Heuristic Termination Mechanism"
+  },
+  {
+   "finding": "The routing agent is reported to contain about 150,000 parameters and to add roughly 9.05 milliseconds of decision latency per hop, corresponding to about 0.11% of the DeepSeek-R1 inference latency used for comparison.",
+   "evidence_type": "supported",
+   "section": "Efficiency and Agent Overhead"
+  },
+  {
+   "finding": "On the Bamboogle zero-shot challenge set, RAG-on-a-Diet reports F1 0.6589 at cost 17.34; higher raw F1 is obtained by GlobalRAG, but at substantially greater reported cost.",
+   "evidence_type": "supported",
+   "section": "Out-of-Distribution Evaluation"
+  },
+  {
+   "finding": "The stopping rule is a heuristic confidence gate tuned on validation data plus a hard hop limit rather than a statistically calibrated risk-control guarantee.",
+   "evidence_type": "supported",
+   "section": "Explicit Heuristic Termination Mechanism"
+  }
+ ],
+ "limitations": [
+  "The evaluation is limited to static multi-hop question answering and does not establish behavior in dynamic conversational or multimodal retrieval environments.",
+  "The authors note that generated answers may still hallucinate and therefore require external validation in safety-critical applications.",
+  "The cost model assumes an idealized single-user setting and does not account for high-concurrency scheduling, batching effects, or hardware power consumption.",
+  "The confidence stopping threshold is fixed at 0.3 after validation tuning and is not accompanied by a conformal or other statistical risk guarantee.",
+  "The tested routing action space contains three particular model scales, so transfer to different providers or rapidly changing model portfolios is not directly established.",
+  "The paper does not provide a public implementation link in the examined full text."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "hotpotqa_cost_quality_tradeoff": 0.99,
+  "reward_ablation": 0.99,
+  "dual_termination_benefit": 0.99,
+  "router_overhead": 0.97,
+  "out_of_distribution_results": 0.96,
+  "stopping_not_risk_calibrated": 0.99
+ },
+ "raw_claims": [
+  "The routing controller selects among three language models independently at each reasoning hop.",
+  "Behavior cloning is used before PPO optimization.",
+  "The reward contains final, cumulative, step-wise, cost, and balance components.",
+  "The system has a five-hop hard reasoning limit.",
+  "A confidence threshold of 0.3 can terminate the process before the hard limit.",
+  "The full reward configuration averages 3.2 reasoning hops on the reported HotpotQA experiment.",
+  "Removing explicit termination and allowing up to ten hops substantially increases average cost and reduces F1.",
+  "The controller uses entity, relation, retrieval-quality, and confidence information as routing features.",
+  "The paper evaluates generalization on CRAG subsets and Bamboogle in addition to its principal multi-hop QA benchmarks.",
+  "The authors characterize the stopping mechanism as heuristic rather than as a formal statistical calibration procedure."
+ ],
+ "source_url": "https://aclanthology.org/2026.acl-long.1562.pdf",
+ "access": "full_text"
+}

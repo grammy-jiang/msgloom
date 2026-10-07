@@ -1,0 +1,377 @@
+{
+ "topic": "evaluation of calibrated abstention, evidence completeness, and omission for free-form multi-source generation under temporal and distributional change",
+ "paper_count": 37,
+ "executive_summary": "Across 37 supplied analyses, the literature converges on a decomposed view of reliability: factual correctness, attribution correctness, evidence completeness, temporal validity, omission, calibration, and abstention behave as separable evaluation dimensions. Fine-grained claims, rationales, content units, and temporal evidence checks improve diagnosis, while retrieval quality strongly constrains downstream generation without eliminating omission or misuse even under oracle evidence. Selective-generation and claim-level calibration work now directly address free-form outputs, resolving the prior gap on whether such methods exist, but their guarantees remain task- and shift-dependent. Report-level omission is now measured more explicitly by DEER, ARGUE, GAMUT, and multi-source RAG benchmarks, yet no study covers evolving workplace communication end to end. Human and LLM judging evidence also shows that agreement, abstention handling, directional bias, and evaluator optimization materially affect conclusions. The combined cross-dimensional evaluation scheme remains unvalidated.",
+ "themes": [
+  "Reliability dimensions are empirically separable: factual correctness, attribution support, evidence completeness, temporal validity, omission, calibration, and abstention expose different failure modes.",
+  "Fine-grained evaluation at sentence, claim, rationale, evidence-group, or content-unit level provides more diagnostic information than a single response-level score in several evaluated tasks.",
+  "Retrieval and evidence coverage constrain generation quality, but stronger or oracle evidence does not eliminate evidence misuse or omission.",
+  "Free-form selective generation now has direct evidence through entailment-based selection, claim-level calibration, selective commitment, and conformal risk-control approaches.",
+  "Calibration under temporal or distributional change is method-dependent; long-run guarantees, cross-domain transfer, and local selective-risk guarantees are distinct properties.",
+  "Omission is a major failure mode in multi-source synthesis and report generation, including when relevant evidence is available.",
+  "Temporal validity and chronological reasoning form a separate correctness dimension from ordinary answer correctness or citation relevance.",
+  "LLM judges can reduce evaluation cost, but their agreement, directional bias, abstention treatment, and susceptibility to evaluator optimization require separate validation."
+ ],
+ "findings": [
+  {
+   "statement": "Across evaluated QA, citation-grounded generation, temporal QA, and report-generation settings, answer correctness, attribution support, evidence completeness, temporal evidence validity, and omission produced materially different scores or failure patterns rather than behaving as one interchangeable quality measure.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.08037"
+    },
+    {
+     "paper_id": "2305.14627"
+    },
+    {
+     "paper_id": "doi-10-1109-access-2026-3679691"
+    },
+    {
+     "paper_id": "2509.26184"
+    },
+    {
+     "paper_id": "2512.17776"
+    },
+    {
+     "paper_id": "2607.19322"
+    }
+   ]
+  },
+  {
+   "statement": "In summarization, attribution, and factual-generation evaluations, finer-grained decomposition into sentences, claims, rationales, or content units improved diagnostic resolution or calibration relative to coarser document- or response-level treatment in the reported experiments.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1910.12840"
+    },
+    {
+     "paper_id": "2004.14974"
+    },
+    {
+     "paper_id": "2111.09525"
+    },
+    {
+     "paper_id": "2608.22483"
+    },
+    {
+     "paper_id": "doi-10-1017-s1351324909005051"
+    }
+   ]
+  },
+  {
+   "statement": "In scientific claim verification, citation-grounded generation, temporal QA, and multi-source RAG, retrieval or candidate-evidence coverage accounted for a substantial share of end-to-end error, while oracle or stronger evidence access still left generation, evidence-use, or omission errors.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2004.14974"
+    },
+    {
+     "paper_id": "2305.14627"
+    },
+    {
+     "paper_id": "2508.20867"
+    },
+    {
+     "paper_id": "doi-10-1109-access-2026-3679691"
+    }
+   ]
+  },
+  {
+   "statement": "Multi-source and expert-report benchmarks found substantial omission even when relevant evidence was available, including missing major or minor details under oracle retrieval and missing structured rubric elements in long-form outputs.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2508.20867"
+    },
+    {
+     "paper_id": "2512.17776"
+    },
+    {
+     "paper_id": "2607.19322"
+    }
+   ]
+  },
+  {
+   "statement": "Raw generative likelihood or uncalibrated confidence was unreliable on several free-form or QA tasks, whereas task-specific self-evaluation, verbalized-confidence training, claim-level calibration, and selective generation improved confidence-quality ranking or risk-coverage behavior in their reported settings.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2012.14983"
+    },
+    {
+     "paper_id": "2312.09300"
+    },
+    {
+     "paper_id": "2404.00474"
+    },
+    {
+     "paper_id": "2505.23912"
+    },
+    {
+     "paper_id": "2604.12046"
+    },
+    {
+     "paper_id": "2605.01749"
+    },
+    {
+     "paper_id": "doi-10-1162-tacl-a-00407"
+    }
+   ]
+  },
+  {
+   "statement": "Free-form selective generation is now directly studied: entailment-based selection, claim-level thresholding, selective commitment, and structured-output risk control each expose explicit accuracy- or risk-versus-coverage trade-offs, with guarantees depending on the stated assumptions and calibration regime.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2307.09254"
+    },
+    {
+     "paper_id": "2604.12046"
+    },
+    {
+     "paper_id": "2605.01749"
+    },
+    {
+     "paper_id": "2606.29054"
+    }
+   ]
+  },
+  {
+   "statement": "Calibration under shift is not uniform across methods: adaptive conformal inference gives a long-run average coverage guarantee in sequential prediction, linguistic calibration retains gains on several held-out tasks, post-hoc QA calibration transfers imperfectly, and structured-generation conformal risk control can fail under cross-dataset shift when the requested risk level is infeasible.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2106.00170"
+    },
+    {
+     "paper_id": "2404.00474"
+    },
+    {
+     "paper_id": "2606.29054"
+    },
+    {
+     "paper_id": "doi-10-1162-tacl-a-00407"
+    }
+   ]
+  },
+  {
+   "statement": "Evidence insufficiency involving internal contradiction was harder than simple evidence absence in the reported RAG benchmark: all seven evaluated models substantially over-answered on conflicting evidence, and passage order significantly affected six of seven models.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-32604-cmc-2026-086343"
+    }
+   ]
+  },
+  {
+   "statement": "Temporal evaluation can separate answer correctness from whether supporting evidence is valid at the relevant time, and explicit chronology or out-of-order-aware semantics improved or enabled verification in the evaluated temporal QA, temporal fact-verification, and runtime-monitoring settings.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1707.05555"
+    },
+    {
+     "paper_id": "2410.14964"
+    },
+    {
+     "paper_id": "doi-10-1109-access-2026-3679691"
+    }
+   ]
+  },
+  {
+   "statement": "Automatic and human-augmented judges are informative but sensitive to validation design: system-level correlation can exceed instance-level agreement, abstention handling changes the estimand, similarly scored judges can have different directional error profiles, and targeted human sampling can reduce review cost while retaining inference on human ratings.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2212.08037"
+    },
+    {
+     "paper_id": "2406.07967"
+    },
+    {
+     "paper_id": "2605.16354"
+    },
+    {
+     "paper_id": "2606.00093"
+    },
+    {
+     "paper_id": "2607.08700"
+    }
+   ]
+  },
+  {
+   "statement": "Automatic evaluation proxies can become unreliable under optimization or changed operating regimes: attribution reranking against AutoAIS produced automatic-human outliers, while increased deep-research search depth reduced factual-support accuracy even though link validity and topical relevance stayed comparatively stable.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "2212.08037"
+    },
+    {
+     "paper_id": "2605.06635"
+    }
+   ]
+  }
+ ],
+ "contradictions": [],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "No admitted study validates one end-to-end evaluation scheme that jointly measures claim correctness, evidence attribution correctness, citation or evidence completeness, temporal or current-state correctness, omission, calibrated uncertainty, and abstention while preserving separate denominators for those dimensions. The corpus validates individual components and smaller combinations.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"evaluation framework\" factuality attribution citation completeness temporal correctness omission uncertainty abstention free-form generation"
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus contains no direct evaluation on private workplace email or Teams-style communication with realistic revisions, quoted history, conflicting updates, delayed or out-of-order arrival, versioned attachments, and permission-constrained evidence. Target-domain fixtures and gold data remain an engineering validation gap.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not establish a general evidence-completeness method that jointly handles compound claims, partially supportive evidence, multiple complementary sources, and temporally versioned evidence. Separate studies cover subsets of these conditions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"evidence completeness\" compound claims partial support multi-source temporal versioned evidence attribution evaluation"
+  },
+  {
+   "id": "gap-5",
+   "description": "Report-level omission now has stronger benchmark coverage, but the corpus still does not establish omission detection for evolving workplace work items, due information, superseded facts, or decision-relevant state across time.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"report completeness\" omission evolving information decision-relevant temporal summarization workplace"
+  },
+  {
+   "id": "gap-6",
+   "description": "A target-domain human-review protocol remains an engineering gap: representative or risk-stratified sampling, minimum human-review volume, multi-rater adjudication, confusion matrices, abstention treatment, coverage reporting, and validation of any LLM-assisted judge against independent human judgments remain project-specific choices.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-7",
+   "description": "The corpus demonstrates evaluator optimization effects and directional judge bias but does not provide a project-specific procedure for preventing acceptance criteria from being overfit to the same automatic evaluator used during development. Independent holdouts, evaluator separation, and regression checks remain an engineering validation problem.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "gap-8",
+   "description": "Calibration under continuing temporal or distributional change remains open for non-stationary free-form communication streams. The corpus supplies long-run adaptive coverage results, cross-domain calibration studies, benchmark-aging evidence, and structured-generation risk-control results, but not one validated selective-prediction method for continuously changing workplace communication.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"selective prediction\" non-stationary stream free-form generation temporal distribution shift calibration abstention"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: maintain separate evaluation denominators for claim correctness, source-attribution correctness, evidence completeness or omission, temporal validity, uncertainty calibration, and abstention or coverage rather than collapsing them into one reliability score.",
+  "Synthesis-derived recommendation: evaluate both claim-level units and report-level coverage; use fine-grained units for support and confidence diagnostics while retaining a separate report-wide mechanism for detecting omitted decision-relevant content.",
+  "Synthesis-derived recommendation: separate retrieval failure from generation failure through paired end-to-end and oracle-evidence evaluations so missing evidence is distinguishable from failure to use available evidence.",
+  "Synthesis-derived recommendation: report selective behavior with risk-coverage curves, covered error, total coverage, false-answer and false-abstention counts, and explicit treatment of abstained cases.",
+  "Synthesis-derived recommendation: construct temporal evaluation examples around observation cutoffs and versioned evidence so evidence that became available later cannot leak into earlier predictions.",
+  "Synthesis-derived recommendation: validate any LLM judge against an independent human-reviewed sample and retain directional false-positive and false-negative analysis rather than relying only on aggregate correlation or F1.",
+  "Synthesis-derived recommendation: keep development-time evaluators separate from acceptance-time holdouts and include regression cases specifically targeting evaluator gaming or proxy optimization.",
+  "Synthesis-derived recommendation: include contradictory, partially supportive, multi-source, stale, and missing-evidence cases in abstention evaluation rather than testing only complete evidence and complete absence.",
+  "Synthesis-derived recommendation: evaluate calibration repeatedly across chronological replay windows or other controlled distribution shifts so calibration drift and local coverage failures remain visible."
+ ],
+ "confidence_summary": "Confidence is high that the corpus supports decomposed reliability evaluation, fine-grained claim or evidence units, explicit omission measurement, and risk-versus-coverage analysis as well-supported evaluation principles. Confidence is also high that free-form selective generation now has direct methodological evidence, although no single method dominates across tasks or shifts. Evidence for temporal validity and distribution-shift behavior is substantial but heterogeneous, spanning runtime monitoring, QA, conformal prediction, long-form generation, and benchmark-aging studies rather than one common production setting. Confidence is medium for transfer to continuously changing workplace communication because no admitted paper evaluates the full target domain. The corpus does not validate the combined end-to-end scheme formed by joining these individually supported components.",
+ "limitations": [
+  "The supplied material consists of reduced per-paper analyses containing research questions and selected top findings rather than full papers; this synthesis therefore depends on the fidelity and completeness of those analyses.",
+  "No admitted study directly evaluates the complete private workplace-email or Teams-style setting described by the project; findings from QA, summarization, deep research, RAG, temporal verification, and runtime monitoring are transfer evidence rather than production-domain validation.",
+  "Papers validating different components do not jointly validate their combination. In particular, evidence for claim calibration, omission scoring, temporal validity, attribution verification, and human-review sampling comes from different experimental settings.",
+  "No direct contradictions were identified under the requirement that both papers answer the same question under comparable conditions. Apparent tensions, such as successful linguistic-calibration transfer versus imperfect temperature-scaling transfer, adaptive conformal coverage versus structured-generation risk-control failures, and stronger retrieval versus degradation with greater search depth, involve different methods, objectives, or operating conditions and are treated as scope qualifications rather than contradictions.",
+  "The inherited handoffs from earlier project Topics are treated only as contextual starting conditions and do not support any finding or gap-status decision in this synthesis.",
+  "The corpus includes several newly proposed 2026 benchmarks and methods whose independent replication breadth is not established in the supplied analyses.",
+  "Human- and LLM-judge validation studies cover different rating scales, abstention conventions, sampling schemes, and domains, limiting direct numerical comparison across them."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "New studies add report-level omission, factual completeness, temporal-evidence validity, selective generation, and judge-validation components, but no admitted paper evaluates all required dimensions together while preserving their separate denominators.",
+   "evidence": [
+    "2509.26184",
+    "2512.17776",
+    "2607.19322",
+    "2608.22483",
+    "doi-10-1109-access-2026-3679691"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "The added corpus contains adjacent-domain evidence for out-of-order streams, temporal evidence, multi-source synthesis, and deep-research attribution, but no direct private workplace email or Teams-style evaluation with the specified operational conditions.",
+   "evidence": [
+    "1707.05555",
+    "2508.20867",
+    "2605.06635",
+    "doi-10-1109-access-2026-3679691"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "resolved",
+   "note": "The corpus now directly studies selective prediction and calibrated abstention for free-form or structured generation. Entailment-based selective generation provides PAC-style FDR control under stated assumptions; long-form claim-level methods expose factuality-recall trade-offs; selective commitment operates within free-form generation; and conformal risk-control work characterizes certification feasibility and failure under shift. These papers answer the prior question of whether direct free-form selective-generation methods exist, although broader non-stationary transfer remains covered separately by gap-8.",
+   "evidence": [
+    "2307.09254",
+    "2604.12046",
+    "2605.01749",
+    "2606.29054"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "Minimal evidence groups, complex attribution benchmarks, multi-source RAG, and temporal-evidence metrics each cover part of the problem, but no admitted study jointly evaluates compound claims, partial support, complementary multi-source support, and temporally versioned evidence completeness.",
+   "evidence": [
+    "2404.15588",
+    "2508.20867",
+    "doi-10-1109-access-2026-3679691",
+    "doi-10-18653-v1-2025-acl-long-837"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "DEER, Auto-ARGUE, GAMUT, and MSRS materially strengthen report-level omission and coverage evidence, but none evaluates evolving workplace work items, due-state preservation, supersession, or decision-relevant temporal omission.",
+   "evidence": [
+    "2508.20867",
+    "2509.26184",
+    "2512.17776",
+    "2607.19322"
+   ]
+  },
+  {
+   "id": "gap-6",
+   "status": "open",
+   "note": "The corpus provides methods for active human sampling, human-LLM agreement measurement, rating indeterminacy, and reproduction analysis, but selection of a concrete target-domain review protocol remains an engineering decision and validation task.",
+   "evidence": [
+    "2406.07967",
+    "2605.16354",
+    "2606.00093",
+    "manual-32d5793dca",
+    "manual-f5ce52cae2",
+    "doi-10-18653-v1-w19-8642"
+   ]
+  },
+  {
+   "id": "gap-7",
+   "status": "open",
+   "note": "The literature demonstrates automatic-evaluator optimization effects and directional judge bias, but it does not supply a project-specific development-versus-acceptance evaluator-separation and regression procedure.",
+   "evidence": [
+    "2212.08037",
+    "2607.08700"
+   ]
+  },
+  {
+   "id": "gap-8",
+   "status": "open",
+   "note": "Adaptive conformal inference supplies long-run sequential coverage guarantees, linguistic calibration shows some out-of-domain transfer, benchmark-aging work demonstrates changing factual targets, and structured-generation risk-control work exposes failures under genuine cross-dataset shift. No admitted paper validates calibrated selective prediction on a continuing non-stationary workplace communication stream.",
+   "evidence": [
+    "2106.00170",
+    "2404.00474",
+    "2510.07238",
+    "2606.29054",
+    "doi-10-1162-tacl-a-00407"
+   ]
+  }
+ ]
+}

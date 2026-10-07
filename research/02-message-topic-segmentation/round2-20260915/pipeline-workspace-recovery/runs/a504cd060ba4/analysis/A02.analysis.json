@@ -1,0 +1,689 @@
+{
+  "paper_id": "A02",
+  "study_id": "A02",
+  "title": "T²-NER: A Two-Stage Span-Based Framework for Unified Named Entity Recognition with Templates",
+  "evidence_role": "TRANSFER_METHOD",
+  "target_stream": "R2-A / G1-A+G2-A",
+  "task_boundary": "Overlapping and discontinuous named-entity span representation and prediction. This is transfer-method evidence, explicitly not evidence of business-email Topic segmentation or assignment accuracy.",
+  "summary": "T²-NER extracts typed contiguous spans, then predicts span-pair relations to assemble discontinuous entity mentions. Experiments support overlapping and discontinuous NER prediction on existing benchmarks. The described categorical span classifier does not establish simultaneous multiple labels for identical span boundaries. Aggregate benchmark scores mix mention structures. The paper also reports discontinuous-only evaluation, but its numerical figure values are absent from the supplied conversion. Conflicting descriptions of decoding and second-stage filtering limit precise architectural transfer.",
+  "research_question": "Can a two-stage span-based model use templates, span-pair relations, and syntax information to recognize flat, overlapping, and discontinuous named entities?",
+  "methodology": "{\"design\": \"Supervised model development and benchmark comparison across eight NER datasets, with ablations, a joint-training comparison, inference-speed measurements, and qualitative examples.\", \"experimental_scope\": \"Use domain-specific BERT variants for biomedical and clinical datasets. Set the context window to 256 tokens and maximum candidate span length to 16 for OntoNotes5.0 and GENIA, and 8 for other datasets. Report scores averaged across five runs.\", \"span_extraction\": \"Enumerate contiguous spans up to a maximum length. Pack spans with the same start token into grouped marker templates. Use BERT representations, span-width features, and an MLP softmax over predefined entity types plus none.\", \"span_pair_classification\": \"Pair recognized spans and use typed marker templates, a second BERT module, and an MLP softmax over Next-Fragment, Overlapped, and OTHER. Add reverse-direction representations.\", \"syntax\": \"Use Stanford CoreNLP syntax information and an attention-guided graph convolutional network to enhance representations.\", \"training_and_decoding\": \"Jointly train the two stages with gold span and pair labels. Decode entity mentions from predicted spans and Next-Fragment relations. Exact graph enumeration and the inference role of the other relations are not consistently specified.\"}",
+  "dataset_and_gold": {
+    "units": "Sentence-level dataset instances containing entity mentions. A mention has an entity type and one contiguous span or multiple separated fragments. Context expansion does not establish cross-sentence output spans.",
+    "labels": "Predefined NER types. CoNLL2003 has four types. GENIA subtypes are collapsed into five types. The paper does not enumerate all type inventories for the other datasets.",
+    "flat_datasets": [
+      "CoNLL2003",
+      "OntoNotes5.0"
+    ],
+    "overlapping_datasets": [
+      "ACE2004",
+      "ACE2005",
+      "GENIA"
+    ],
+    "discontinuous_datasets": [
+      "CADEC",
+      "ShARe13",
+      "ShARe14"
+    ],
+    "domains": "ACE includes newswire and online forums. All three discontinuous datasets are biomedical or clinical. No business-email Topic benchmark is reported.",
+    "overlap": "Gold statistics count overlapping mentions. The overlapping datasets are discussed as nested NER benchmarks. These annotations establish overlapping mention boundaries, not simultaneous multiple types for an identical span.",
+    "discontinuity": "Gold mentions in CADEC, ShARe13, and ShARe14 can contain separated fragments. These datasets also contain flat and overlapping mentions.",
+    "table_1_mention_counts": [
+      {
+        "dataset": "CoNLL2003",
+        "all": 35089,
+        "overlapping": null,
+        "discontinuous": null
+      },
+      {
+        "dataset": "OntoNotes5.0",
+        "all": 104151,
+        "overlapping": null,
+        "discontinuous": null
+      },
+      {
+        "dataset": "ACE2004",
+        "all": 27604,
+        "overlapping": 12626,
+        "discontinuous": null
+      },
+      {
+        "dataset": "ACE2005",
+        "all": 30711,
+        "overlapping": 12404,
+        "discontinuous": null
+      },
+      {
+        "dataset": "GENIA",
+        "all": 56015,
+        "overlapping": 10263,
+        "discontinuous": null
+      },
+      {
+        "dataset": "CADEC",
+        "all": 6316,
+        "overlapping": 920,
+        "discontinuous": 679
+      },
+      {
+        "dataset": "ShARe13",
+        "all": 11148,
+        "overlapping": 663,
+        "discontinuous": 1088
+      },
+      {
+        "dataset": "ShARe14",
+        "all": 19070,
+        "overlapping": 1058,
+        "discontinuous": 1656
+      }
+    ],
+    "count_limitations": "Null preserves a dash in Table 1. Table 1 does not clearly identify the split population for its mention counts. Overlapping and discontinuous counts must not be treated as disjoint categories.",
+    "actually_annotated": "Entity mention boundaries, fragment membership, and entity types. The training formulation also uses gold span-pair relation labels, but the paper does not fully document their construction or describe a separate human relation-annotation study.",
+    "not_established": "Identical-boundary multi-type annotation prevalence, simultaneous multi-label output, concrete work-matter Topics, or annotations of complete decision-relevant content."
+  },
+  "key_findings": [
+    {
+      "finding_id": "A02-F01",
+      "finding": "The representation explicitly permits separated spans to belong to one entity mention. Stage two predicts Next-Fragment relations between spans extracted in stage one.",
+      "evidence_type": "supported",
+      "section": "3 Preliminaries, Definition 1; 4.2 Span Pair Classification",
+      "quote": "_•_ Next-Fragment, indicating that two entity spans belong to a single entity mention",
+      "source_line_start": 341,
+      "source_line_end": 341,
+      "interpretation_boundary": "This supports discontinuous entity-mention representation and a prediction mechanism. It does not establish that separated passages concern the same concrete work matter."
+    },
+    {
+      "finding_id": "A02-F02",
+      "finding": "The model predicts overlapping entity mentions. Table 3 reports F1 scores of 89.40 on ACE2004, 90.34 on ACE2005, and 84.45 on GENIA.",
+      "evidence_type": "supported",
+      "section": "6.2 Results for Overlapped NER, Table 3",
+      "quote": "_T_ [2] _-NER_ 90.88 87.97 89.40 [⋆] 90.53 90.15 90.34 [⋆] 85.09 83.82 84.45 [⋆]",
+      "source_line_start": 1095,
+      "source_line_end": 1095,
+      "interpretation_boundary": "These are aggregate scores on overlapping NER datasets, not an overlapping-only breakdown or evidence of multiple labels for identical boundaries. They do not measure email Topic accuracy."
+    },
+    {
+      "finding_id": "A02-F03",
+      "finding": "The described span classifier produces a categorical distribution over entity types plus none. The paper does not specify a mechanism that emits multiple simultaneous entity types for one identical candidate span.",
+      "evidence_type": "supported",
+      "section": "4.1 Span Extraction with Grouped Templates, Equation 2",
+      "quote": "**p** 1 ( _e_ _|_ _s_ ( _a,b_ ) ) = Softmax(MLP 1 ( **h** ( _s_ ( _a,b_ ) )) _,_ (2)",
+      "source_line_start": 498,
+      "source_line_end": 498,
+      "interpretation_boundary": "The single-type task formulation and categorical classifier limit the described output interface. Softmax alone is not a proof that every conceivable modified decoder could never emit multiple labels. No such decoder or evaluation is supplied."
+    },
+    {
+      "finding_id": "A02-F04",
+      "finding": "Evaluation requires predicted entity boundaries and types to match gold entities. Discontinuous mentions require fragment matches. This measures annotated entity recovery, not complete preservation of decision-relevant content.",
+      "evidence_type": "supported",
+      "section": "5.1 Datasets and Evaluations",
+      "quote": "its span and type match those of a gold entity.",
+      "source_line_start": 900,
+      "source_line_end": 900,
+      "interpretation_boundary": "Entity recall can reveal omitted gold entities. It does not measure whether conditions, exceptions, deadlines, evidence, approval constraints, and qualifiers survive unless those items are explicitly annotated and evaluated. The exact discontinuous set-matching implementation is not provided."
+    },
+    {
+      "finding_id": "A02-F05",
+      "finding": "Discontinuous gold mentions are a minority of the three discontinuous benchmarks. Table 1 lists 679 of 6,316 mentions in CADEC, 1,088 of 11,148 in ShARe13, and 1,656 of 19,070 in ShARe14.",
+      "evidence_type": "supported",
+      "section": "5.1 Table 1; 6.3 Results for Discontinuous NER",
+      "quote": "CADEC 5340 1097 1160 16.18 6316 920 679 2.72",
+      "source_line_start": 838,
+      "source_line_end": 838,
+      "interpretation_boundary": "These are annotation counts in the reported NER data, not model success rates or estimates of discontinuous work-matter prevalence in email. They also explain why pooled benchmark F1 cannot isolate discontinuous prediction."
+    },
+    {
+      "finding_id": "A02-F06",
+      "finding": "Table 4 reports F1 scores of 75.69 on CADEC, 83.80 on ShARe13, and 82.12 on ShARe14. These scores pool flat, overlapping, and discontinuous mentions.",
+      "evidence_type": "supported",
+      "section": "6.3 Results for Discontinuous NER, Table 4",
+      "quote": "_T_ [2] _-NER_ 78.33 73.22 75.69 [⋆] 87.41 80.48 83.80 [⋆] 80.53 83.77 82.12 [⋆]",
+      "source_line_start": 1122,
+      "source_line_end": 1122,
+      "interpretation_boundary": "The dataset category does not make these discontinuous-only scores. The reported improvements over W²NER are 2.48, 1.28, and 0.37 F1 percentage points. None measures Topic assignment or content coverage."
+    },
+    {
+      "finding_id": "A02-F07",
+      "finding": "The paper separately evaluates sentences containing at least one discontinuous mention and an evaluation restricted to discontinuous mentions. The supplied conversion contains the Figure 4 caption but no numerical plot values.",
+      "evidence_type": "supported",
+      "section": "6.3 Results for Discontinuous NER, Figure 4",
+      "quote": "discontinuous entity mention. (b) The _F1 score_ only considering discontinuous entity mentions.",
+      "source_line_start": 1200,
+      "source_line_end": 1200,
+      "interpretation_boundary": "The first subset can still contain flat and overlapping mentions. The second is the relevant structural prediction evaluation. Its exact scores and gain sizes cannot be recovered from this text."
+    },
+    {
+      "finding_id": "A02-F08",
+      "finding": "The strongest transfer limitation is task and domain mismatch: the paper studies NER, and all discontinuous benchmarks are biomedical or clinical. It supplies no direct evidence for concrete work-matter Topic segmentation, simultaneous Topic assignment, or business-email content coverage.",
+      "evidence_type": "supported",
+      "section": "5.1 Datasets and Evaluations; paper-wide experimental scope",
+      "quote": "(Mowery et al., 2014), all of which are collected from biomedical or clinical domain.",
+      "source_line_start": 886,
+      "source_line_end": 886,
+      "interpretation_boundary": "The architecture is a transfer candidate. The benchmark results cannot be converted into expected msgloom Topic accuracy or completeness."
+    },
+    {
+      "finding_id": "A02-F09",
+      "finding": "Joint training improves CADEC first-stage span-extraction F1 from 88.66 to 89.05, an increase of 0.39 percentage points.",
+      "evidence_type": "supported",
+      "section": "6.5 Analysis of Joint Training, Table 6",
+      "quote": "_Span Extraction_ (+ _Span Pair Classification_ ) 91.10 87.09 89.05",
+      "source_line_start": 1279,
+      "source_line_end": 1279,
+      "interpretation_boundary": "This is a first-stage span-extraction result. It is not the full discontinuous entity result of 75.69 F1, evidence of inference-time filtering, or a measure of Topic coverage."
+    },
+    {
+      "finding_id": "A02-F10",
+      "finding": "The text defines Next-Fragment between successive fragments and claims support for mentions containing more than two spans, but its graph wording does not determine a unique decoding procedure. It also asserts second-stage double-checking and filtering without specifying how Overlapped or OTHER alter final predictions alongside Next-Fragment decoding.",
+      "evidence_type": "supported",
+      "section": "3 Definition 1; 4.4 Joint Training and Decoding; 6.1, 6.2, and 6.4 analyses",
+      "quote": "Next-Fragment relation for decoding.",
+      "source_line_start": 757,
+      "source_line_end": 757,
+      "interpretation_boundary": "This is an internal specification conflict, not evidence that the reported experiments failed. It prevents a confident reconstruction of general multi-fragment decoding and second-stage filtering from the embedded text alone."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Strict micro-averaged precision, recall, and F1 on flat NER datasets",
+      "target": "Typed entity-mention recognition",
+      "denominator_or_population": "Full benchmark test sets. Precision uses predicted mentions; recall uses gold mentions; true positives require matching boundaries and types.",
+      "reported_result": {
+        "unit": "percent",
+        "CoNLL2003": {
+          "precision": 93.78,
+          "recall": 94.48,
+          "f1": 94.13
+        },
+        "OntoNotes5.0": {
+          "precision": 91.83,
+          "recall": 92.13,
+          "f1": 91.98
+        }
+      },
+      "limitations": "Table 2 measures flat NER. It does not evaluate either discontinuity or simultaneous multi-label Topic assignment."
+    },
+    {
+      "name": "Strict micro-averaged precision, recall, and F1 on overlapping NER datasets",
+      "target": "Typed entity recognition on datasets with overlapping mentions",
+      "denominator_or_population": "Full test-set predicted and gold entity populations, without a separate overlapping-only denominator.",
+      "reported_result": {
+        "unit": "percent",
+        "ACE2004": {
+          "precision": 90.88,
+          "recall": 87.97,
+          "f1": 89.4
+        },
+        "ACE2005": {
+          "precision": 90.53,
+          "recall": 90.15,
+          "f1": 90.34
+        },
+        "GENIA": {
+          "precision": 85.09,
+          "recall": 83.82,
+          "f1": 84.45
+        }
+      },
+      "limitations": "Table 3 does not isolate overlapping cases, identical-boundary multiple types, or email Topics."
+    },
+    {
+      "name": "Strict micro-averaged precision, recall, and F1 on discontinuous NER datasets",
+      "target": "Typed entity recognition across mixed mention structures",
+      "denominator_or_population": "Full CADEC, ShARe13, and ShARe14 test sets, including flat, overlapping, and discontinuous mentions.",
+      "reported_result": {
+        "unit": "percent",
+        "CADEC": {
+          "precision": 78.33,
+          "recall": 73.22,
+          "f1": 75.69
+        },
+        "ShARe13": {
+          "precision": 87.41,
+          "recall": 80.48,
+          "f1": 83.8
+        },
+        "ShARe14": {
+          "precision": 80.53,
+          "recall": 83.77,
+          "f1": 82.12
+        }
+      },
+      "limitations": "Table 4 is not discontinuous-only. Its F1 values cannot quantify discontinuous performance alone or msgloom Topic performance."
+    },
+    {
+      "name": "F1 on sentences containing discontinuous mentions",
+      "target": "Entity recognition in discontinuity-containing sentences",
+      "denominator_or_population": "Test sentences with at least one discontinuous gold mention; flat and overlapping mentions may also contribute.",
+      "reported_result": "Figure 4(a) is described, and the authors report outperforming baselines. Numerical plot values are absent from the embedded conversion.",
+      "limitations": "Sentence filtering does not isolate discontinuous mention prediction. Exact gain sizes are unavailable."
+    },
+    {
+      "name": "Discontinuous-only F1",
+      "target": "Discontinuous entity-mention prediction",
+      "denominator_or_population": "The evaluation considers only discontinuous entity mentions in the described test evaluation. Detailed prediction filtering and denominator counts are not supplied.",
+      "reported_result": "Figure 4(b) is described, and the authors report outperforming baselines. Numerical plot values are absent from the embedded conversion.",
+      "limitations": "This is structurally relevant prediction evidence, but it supplies no recoverable numerical effect size here and no Topic evidence."
+    },
+    {
+      "name": "Ablation F1",
+      "target": "Contribution of model components to complete NER output",
+      "denominator_or_population": "Full CoNLL2003, ACE2005, and CADEC test sets.",
+      "reported_result": {
+        "dataset_order": [
+          "CoNLL2003",
+          "ACE2005",
+          "CADEC"
+        ],
+        "full_model_f1": [
+          94.13,
+          90.34,
+          75.69
+        ],
+        "without_adjacent_packing_f1": [
+          94.11,
+          89.82,
+          74.75
+        ],
+        "without_latter_packing_f1": [
+          94.12,
+          88.36,
+          74.28
+        ],
+        "without_reverse_setting_f1": [
+          94.08,
+          90.17,
+          75.37
+        ],
+        "without_syntax_information_f1": [
+          94.0,
+          89.84,
+          75.65
+        ],
+        "untyped_span_pair_marker_f1": [
+          94.13,
+          90.14,
+          75.36
+        ]
+      },
+      "limitations": "Aggregate F1 changes do not directly measure boundary discrimination, representation quality, individual relation accuracy, or omission coverage. No uncertainty estimates are given for these small differences."
+    },
+    {
+      "name": "First-stage span-extraction precision, recall, and F1",
+      "target": "CADEC span extraction before and after joint training",
+      "denominator_or_population": "First-stage predicted and gold entity spans, including fragments; not the final assembled entity population.",
+      "reported_result": {
+        "unit": "percent",
+        "span_extraction_alone": {
+          "precision": 90.85,
+          "recall": 86.57,
+          "f1": 88.66
+        },
+        "joint_training": {
+          "precision": 91.1,
+          "recall": 87.09,
+          "f1": 89.05
+        }
+      },
+      "limitations": "Table 6 measures an intermediate task. It cannot substitute for complete discontinuous entity accuracy or content coverage."
+    },
+    {
+      "name": "Inference throughput",
+      "target": "NER inference speed",
+      "denominator_or_population": "Sentences per second in the CADEC comparison using PyTorch on an NVIDIA RTX 3090.",
+      "reported_result": {
+        "unit": "sentences_per_second",
+        "T2_NER": 190.3,
+        "W2_NER": 365.7,
+        "Transition": 66.5,
+        "BART_Large": 19.2,
+        "MAC": 109.7
+      },
+      "limitations": "This hardware-specific comparison does not establish long-email scaling, Raspberry Pi throughput, or a formal complexity bound. The text says three baselines, while Table 7 lists four."
+    }
+  ],
+  "limitations": [
+    "No business-email Topic segmentation or assignment experiment is reported.",
+    "Overlapping spans are distinct from multiple simultaneous types for identical span boundaries. The latter is neither established in the gold annotations nor implemented explicitly in the output description.",
+    "Discontinuous-only numerical results and the contents of graphical decoding examples are unavailable in the supplied conversion.",
+    "Candidate span length limits exclude longer contiguous candidates by construction. The paper does not quantify gold coverage under these limits.",
+    "Stage two operates on recognized spans. A gold fragment omitted by stage one is unavailable to the described pair-classification step.",
+    "The 256-token context window and sentence-centered enumeration do not establish cross-message or unrestricted cross-sentence entity assembly.",
+    "Strict entity recall measures missing annotated entities, not comprehensive preservation of business conditions or decision qualifiers.",
+    "The decoder specification contains material ambiguities about graph structure and use of non-Next-Fragment relations."
+  ],
+  "source_conflicts": [
+    {
+      "issue": "Next-Fragment is defined between successive fragments, but decoding is described as finding subgraphs where each span connects with any other span through that relation.",
+      "locations": [
+        "L00341-L00342",
+        "L00759-L00767"
+      ],
+      "impact": "A literal all-pairs reading differs from a successive-fragment chain for mentions with three or more fragments. The paper claims support for more than two spans but does not resolve the graph enumeration rule in the available text."
+    },
+    {
+      "issue": "Section 4.4 selects Next-Fragment for decoding, while other sections describe Overlapped and OTHER relations as inference-time double-checks or filters.",
+      "locations": [
+        "L00372-L00379",
+        "L00752-L00757",
+        "L01029-L01032",
+        "L01048-L01053",
+        "L01258-L01263",
+        "L01306-L01312"
+      ],
+      "impact": "The text does not establish whether these relations only provide training supervision or also change final output. Joint-training improvement does not resolve this inference-time ambiguity."
+    },
+    {
+      "issue": "Section 6.2 describes relatively lower recall than other unified NER models, but Table 3 reports higher T²-NER recall than both listed unified baselines on all three datasets.",
+      "locations": [
+        "L01048-L01050",
+        "L01088",
+        "L01091",
+        "L01095"
+      ],
+      "impact": "The claimed precision-recall pattern does not support the proposed filtering explanation. Preserve the numerical table results and do not repeat the general lower-recall claim."
+    },
+    {
+      "issue": "The introductory example decomposes aching in shoulders into aching in and shoulders, while the Figure 3 caption describes the same mention as made of three spans.",
+      "locations": [
+        "L00112-L00116",
+        "L00687-L00689"
+      ],
+      "impact": "The examples may use different granularities, but the conversion does not expose the figure needed to verify this. Do not assume a unique fragment decomposition or use the caption alone as empirical proof of three-fragment decoding."
+    },
+    {
+      "issue": "The speed-comparison prose names three baselines, but Table 7 contains four baseline rows.",
+      "locations": [
+        "L01338-L01344",
+        "L01359-L01360"
+      ],
+      "impact": "This is a minor reporting inconsistency. It does not change the listed throughput values."
+    }
+  ],
+  "unsafe_assumptions": [
+    "An NER entity type is equivalent to a msgloom Topic, which represents a concrete work matter.",
+    "Recognizing nested or overlapping mentions proves that one identical span can receive simultaneous multiple Topics.",
+    "Gold overlapping-mention counts measure identical-span multi-label prevalence.",
+    "Table 4 F1 scores measure only discontinuous mentions.",
+    "The missing Figure 4 numerical values can be reconstructed from aggregate tables.",
+    "The Next-Fragment graph supports every possible shared-fragment, crossing, or multi-fragment structure without ambiguity.",
+    "A 256-token context window establishes cross-message or unrestricted cross-sentence Topic assembly.",
+    "High entity recall guarantees preservation of conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers.",
+    "The first-stage F1 of 89.05 is the full CADEC entity-recognition score.",
+    "Joint-training gains prove inference-time filtering by Overlapped or OTHER.",
+    "The paper's claim of no contamination establishes that all pretrained model data are disjoint from evaluation data; its argument specifically concerns parser training data.",
+    "RTX 3090 throughput predicts Raspberry Pi or long-email throughput.",
+    "The paper provides released code or unrestricted access to all processed datasets.",
+    "The word 'connects' uniquely specifies direct all-pairs edges, directed paths, or connected-component decoding.",
+    "Selecting Next-Fragment for decoding proves that Overlapped and OTHER are unused elsewhere during inference.",
+    "The authors' double-checking assertions supply an operational filtering rule or demonstrate its causal contribution to final predictions.",
+    "The unspecified phrase 'relatively lower Recall' can be assigned a comparison target that reconciles the prose with Table 3.",
+    "The two-fragment example and three-span caption establish one verified fragment decomposition."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "strengthened",
+      "reason": "The explicit successive-fragment relation and two-stage assembly description strengthen transfer-method evidence for linking separated NER fragments. Exact multi-fragment decoding remains unresolved. This does not establish business-email Topic accuracy."
+    },
+    "G2_A": {
+      "status": "unchanged",
+      "reason": "Neither the graph description nor the filtering claims establish simultaneous multiple labels for identical boundaries. Overlapping NER remains adjacent evidence."
+    },
+    "G3_A": {
+      "status": "unchanged",
+      "reason": "This identifier is not independently defined in the input. Under the high analysis's content-coverage interpretation, resolving or bounding these architectural issues adds no completeness measure."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "This identifier is not independently defined in the input. Under the high analysis's direct business-email Topic interpretation, these architectural passages add no task-matched evaluation."
+    }
+  },
+  "raw_claims": [
+    "_•_ Next-Fragment, indicating that two entity spans belong to a single entity mention",
+    "_T_ [2] _-NER_ 90.88 87.97 89.40 [⋆] 90.53 90.15 90.34 [⋆] 85.09 83.82 84.45 [⋆]",
+    "**p** 1 ( _e_ _|_ _s_ ( _a,b_ ) ) = Softmax(MLP 1 ( **h** ( _s_ ( _a,b_ ) )) _,_ (2)",
+    "its span and type match those of a gold entity.",
+    "CADEC 5340 1097 1160 16.18 6316 920 679 2.72",
+    "_T_ [2] _-NER_ 78.33 73.22 75.69 [⋆] 87.41 80.48 83.80 [⋆] 80.53 83.77 82.12 [⋆]",
+    "(b) The _F1 score_ only considering discontinuous entity mentions.",
+    "all of which are collected from biomedical or clinical domain.",
+    "_Span Extraction_ (+ _Span Pair Classification_ ) 91.10 87.09 89.05",
+    "Next-Fragment relation for decoding."
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 341,
+      "text": "_•_ Next-Fragment, indicating that two entity spans belong to a single entity mention"
+    },
+    {
+      "line_number": 1095,
+      "text": "_T_ [2] _-NER_ 90.88 87.97 89.40 [⋆] 90.53 90.15 90.34 [⋆] 85.09 83.82 84.45 [⋆]"
+    },
+    {
+      "line_number": 498,
+      "text": "**p** 1 ( _e_ _|_ _s_ ( _a,b_ ) ) = Softmax(MLP 1 ( **h** ( _s_ ( _a,b_ ) )) _,_ (2)"
+    },
+    {
+      "line_number": 900,
+      "text": "its span and type match those of a gold entity."
+    },
+    {
+      "line_number": 838,
+      "text": "CADEC 5340 1097 1160 16.18 6316 920 679 2.72"
+    },
+    {
+      "line_number": 1122,
+      "text": "_T_ [2] _-NER_ 78.33 73.22 75.69 [⋆] 87.41 80.48 83.80 [⋆] 80.53 83.77 82.12 [⋆]"
+    },
+    {
+      "line_number": 1200,
+      "text": "(b) The _F1 score_ only considering discontinuous entity mentions."
+    },
+    {
+      "line_number": 886,
+      "text": "all of which are collected from biomedical or clinical domain."
+    },
+    {
+      "line_number": 1279,
+      "text": "_Span Extraction_ (+ _Span Pair Classification_ ) 91.10 87.09 89.05"
+    },
+    {
+      "line_number": 757,
+      "text": "Next-Fragment relation for decoding."
+    }
+  ],
+  "confidence_scores": {
+    "A02-F01": 0.99,
+    "A02-F02": 0.99,
+    "A02-F03": 0.97,
+    "A02-F04": 0.99,
+    "A02-F05": 0.99,
+    "A02-F06": 0.99,
+    "A02-F07": 0.99,
+    "A02-F08": 0.99,
+    "A02-F09": 0.99,
+    "A02-F10": 0.93
+  },
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "details": "No code-release statement or repository link appears in the supplied paper. Existing benchmark datasets are identified and cited, and ACE catalog links are provided. Dataset availability here means identifiable source datasets, not verified unrestricted access or release of the exact processed splits. The paper reports implementation settings, five-run averages, and a significance-test procedure. Numerical Figure 4 results and graphical decoding examples are absent from the conversion."
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [
+    "The successive-fragment definition and literal all-pairs subgraph decoding description differ materially for mentions with three or more fragments. This affects the structural capability that R2-A can safely transfer.",
+    "The inference-time roles of Overlapped and OTHER conflict across sections. Resolving whether these relations alter final predictions is necessary before transferring the claimed two-stage filtering behavior."
+  ],
+  "xhigh_adjudication": {
+    "paper_id": "A02",
+    "adjudications": [
+      {
+        "issue": "Successive-fragment relations versus the graph-decoding description",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00341-L00342 Next-Fragment links successive spans belonging to one entity mention.",
+          "L00759-L00767 Decoding uses span subgraphs and expressly claims coverage of mentions containing more than two spans, but does not specify graph enumeration.",
+          "L00112-L00116 The introductory example names two fragments.",
+          "L00687-L00689 The Figure 3 caption describes the same mention as three spans."
+        ],
+        "correction_or_qualification": "The graph wording is ambiguous, rather than necessarily contradictory. A direct all-pairs requirement would conflict with the successive-fragment definition for three ordered fragments. A path-based reading need not conflict. The text does not select either reading or specify how competing subgraphs become distinct mentions. The differing example decompositions do not resolve this.",
+        "synthesis_rule": "Retain explicit successive-fragment linking and the authors' claim of multi-fragment support as transfer-method evidence. Do not present a clique, path, or connected-component decoder as established. Do not treat the caption as verified evidence of a particular three-fragment decoding procedure."
+      },
+      {
+        "issue": "Inference-time roles of Overlapped and OTHER",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00372-L00379 The problem formulation attributes double-checking of flat and overlapping mentions to Overlapped and OTHER.",
+          "L00752-L00757 All three relations are required during training; the inference description assigns flat and overlapping recognition to stage one and selects Next-Fragment for decoding.",
+          "L01029-L01032 The flat-NER analysis attributes improvements to second-stage double-checking.",
+          "L01048-L01053 The overlapping-NER analysis asserts span filtering through Overlapped but says stage two does not conduct particular classification of flat entities.",
+          "L01258-L01263 The ablation discussion attributes a flat-NER change to OTHER double-checking.",
+          "L01299-L01312 The joint-training analysis measures first-stage improvement and suggests a double-checking benefit."
+        ],
+        "correction_or_qualification": "The source asserts double-checking and filtering, but does not specify how these operations change final output or fit into the stated decoder. Selecting Next-Fragment for decoding does not logically exclude a separate filtering step. Conversely, the later filtering assertions do not establish an implementable filtering rule. Joint-training improvement cannot distinguish a training benefit from an inference-time operation.",
+        "synthesis_rule": "Describe three-relation training and Next-Fragment assembly as specified components. Attribute double-checking and filtering claims to the authors and retain their operational status as unresolved. Do not conclude either that Overlapped and OTHER are training-only or that their direct output-filtering effect has been established."
+      },
+      {
+        "issue": "Whether the recall narrative substantiates second-stage filtering",
+        "verdict": "qualified",
+        "source_basis": [
+          "L01048-L01050 The prose links relatively lower recall to Overlapped-based filtering.",
+          "L01077-L01080 Table 3 identifies the datasets and precision, recall, and F1 columns.",
+          "L01088 BART-Large recall is 86.41, 86.38, and 79.60.",
+          "L01091 W²NER recall is 87.71, 88.62, and 79.76.",
+          "L01095 T²-NER recall is 87.97, 90.15, and 83.82."
+        ],
+        "correction_or_qualification": "T²-NER recall exceeds both listed unified baselines on all three datasets. Thus, a claim of lower recall than those baselines is contradicted by Table 3. The intended reference for 'relatively lower' remains unspecified. The table cannot establish the causal effect of filtering.",
+        "synthesis_rule": "Preserve the numerical results. Do not repeat a general lower-recall-than-unified-baselines claim or use the precision-recall pattern to resolve the filtering ambiguity."
+      }
+    ],
+    "finding_repairs": [
+      {
+        "finding_id": "A02-F10",
+        "action": "replace",
+        "replacement_finding": "The text defines Next-Fragment between successive fragments and claims support for mentions containing more than two spans, but its graph wording does not determine a unique decoding procedure. It also asserts second-stage double-checking and filtering without specifying how Overlapped or OTHER alter final predictions alongside Next-Fragment decoding.",
+        "replacement_evidence_type": "supported",
+        "reason": "L00341-L00342 and L00759-L00767 support an underspecified decoder, not an unavoidable all-pairs contradiction. L00372-L00379, L00752-L00757, and L01048-L01053 support an unresolved inference account. This finding describes source limitations; it does not contradict the reported experimental results."
+      }
+    ],
+    "metric_repairs": [
+      {
+        "metric_name_or_issue": "Strict micro-averaged precision, recall, and F1 on overlapping NER datasets",
+        "action": "keep",
+        "qualification": "Retain Table 3 values. T²-NER recall exceeds both listed unified baselines on all three datasets (L01088, L01091, L01095). These aggregate results do not isolate an inference-time filtering effect or measure email Topic accuracy."
+      },
+      {
+        "metric_name_or_issue": "Ablation F1 as evidence of relation-based output filtering",
+        "action": "qualify",
+        "qualification": "The OTHER double-checking explanation in L01258-L01263 is an author attribution. An aggregate ablation change does not distinguish direct output filtering from effects on jointly learned representations."
+      },
+      {
+        "metric_name_or_issue": "First-stage span-extraction improvement under joint training",
+        "action": "keep",
+        "qualification": "L01299-L01312 identifies a first-stage comparison and reports a 0.39-point F1 improvement. Retain its intermediate-task interpretation. It does not resolve whether Overlapped or OTHER filter final predictions during inference."
+      }
+    ],
+    "conflict_repairs": [
+      {
+        "issue": "Successive-fragment definition versus all-pairs subgraph decoding",
+        "action": "rephrase",
+        "replacement_issue": "Next-Fragment is defined between successive fragments, while the decoder's phrase 'connects with any other span' leaves direct adjacency versus path connectivity and subgraph selection unspecified.",
+        "replacement_impact": "Keep the exact decoding procedure unresolved. A direct all-pairs reading conflicts with succession, but that reading is not compelled by the text. Multi-fragment support is claimed; a general implementation cannot be reconstructed from these windows."
+      },
+      {
+        "issue": "Next-Fragment decoding versus Overlapped and OTHER double-checking or filtering",
+        "action": "rephrase",
+        "replacement_issue": "The formal inference account selects Next-Fragment for decoding, while other passages assert double-checking or filtering through Overlapped and OTHER without specifying how those operations affect final output.",
+        "replacement_impact": "Keep the inference role unresolved. Separate filtering could coexist with Next-Fragment assembly, but the source does not document that reconciliation. Neither training-only use nor a verified output-filtering procedure is established."
+      },
+      {
+        "issue": "Lower-recall narrative versus Table 3",
+        "action": "rephrase",
+        "replacement_issue": "The reference for 'relatively lower Recall' is unspecified. If it refers to the listed unified baselines, Table 3 contradicts the claim because T²-NER has higher recall than both on every listed dataset.",
+        "replacement_impact": "Use the numerical table for baseline comparisons. Preserve uncertainty about the prose's intended comparison and exclude this narrative as causal evidence for filtering."
+      },
+      {
+        "issue": "Two-fragment introductory example versus three-span Figure 3 caption",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "The embedded text does not establish the reason for the different decompositions. Neither example resolves the general graph-decoding rule."
+      }
+    ],
+    "final_gap_updates": {
+      "G1_A": {
+        "status": "strengthened",
+        "reason": "The explicit successive-fragment relation and two-stage assembly description strengthen transfer-method evidence for linking separated NER fragments. Exact multi-fragment decoding remains unresolved. This does not establish business-email Topic accuracy."
+      },
+      "G2_A": {
+        "status": "unchanged",
+        "reason": "Neither the graph description nor the filtering claims establish simultaneous multiple labels for identical boundaries. Overlapping NER remains adjacent evidence."
+      },
+      "G3_A": {
+        "status": "unchanged",
+        "reason": "This identifier is not independently defined in the input. Under the high analysis's content-coverage interpretation, resolving or bounding these architectural issues adds no completeness measure."
+      },
+      "G4_A": {
+        "status": "unchanged",
+        "reason": "This identifier is not independently defined in the input. Under the high analysis's direct business-email Topic interpretation, these architectural passages add no task-matched evaluation."
+      }
+    },
+    "final_unsafe_assumptions": [
+      "The word 'connects' uniquely specifies direct all-pairs edges, directed paths, or connected-component decoding.",
+      "Selecting Next-Fragment for decoding proves that Overlapped and OTHER are unused elsewhere during inference.",
+      "The authors' double-checking assertions supply an operational filtering rule or demonstrate its causal contribution to final predictions.",
+      "The unspecified phrase 'relatively lower Recall' can be assigned a comparison target that reconciles the prose with Table 3.",
+      "The two-fragment example and three-span caption establish one verified fragment decomposition."
+    ],
+    "needs_max_review": false,
+    "max_review_reason": "The unresolved details do not prevent a bounded synthesis: successive-fragment linking is specified as an NER transfer method, while general graph decoding and non-Next-Fragment output filtering remain unresolved.",
+    "confidence": 0.97
+  },
+  "xhigh_review_sha256": "773c29a85a6296b64318c1f40d22267738695cd49c1b4026127b6d6f6eee39a4",
+  "xhigh_effort": "xhigh",
+  "needs_max_review": false,
+  "xhigh_metric_repairs": [
+    {
+      "metric_name_or_issue": "Strict micro-averaged precision, recall, and F1 on overlapping NER datasets",
+      "action": "keep",
+      "qualification": "Retain Table 3 values. T²-NER recall exceeds both listed unified baselines on all three datasets (L01088, L01091, L01095). These aggregate results do not isolate an inference-time filtering effect or measure email Topic accuracy."
+    },
+    {
+      "metric_name_or_issue": "Ablation F1 as evidence of relation-based output filtering",
+      "action": "qualify",
+      "qualification": "The OTHER double-checking explanation in L01258-L01263 is an author attribution. An aggregate ablation change does not distinguish direct output filtering from effects on jointly learned representations."
+    },
+    {
+      "metric_name_or_issue": "First-stage span-extraction improvement under joint training",
+      "action": "keep",
+      "qualification": "L01299-L01312 identifies a first-stage comparison and reports a 0.39-point F1 improvement. Retain its intermediate-task interpretation. It does not resolve whether Overlapped or OTHER filter final predictions during inference."
+    }
+  ],
+  "xhigh_conflict_repairs": [
+    {
+      "issue": "Successive-fragment definition versus all-pairs subgraph decoding",
+      "action": "rephrase",
+      "replacement_issue": "Next-Fragment is defined between successive fragments, while the decoder's phrase 'connects with any other span' leaves direct adjacency versus path connectivity and subgraph selection unspecified.",
+      "replacement_impact": "Keep the exact decoding procedure unresolved. A direct all-pairs reading conflicts with succession, but that reading is not compelled by the text. Multi-fragment support is claimed; a general implementation cannot be reconstructed from these windows."
+    },
+    {
+      "issue": "Next-Fragment decoding versus Overlapped and OTHER double-checking or filtering",
+      "action": "rephrase",
+      "replacement_issue": "The formal inference account selects Next-Fragment for decoding, while other passages assert double-checking or filtering through Overlapped and OTHER without specifying how those operations affect final output.",
+      "replacement_impact": "Keep the inference role unresolved. Separate filtering could coexist with Next-Fragment assembly, but the source does not document that reconciliation. Neither training-only use nor a verified output-filtering procedure is established."
+    },
+    {
+      "issue": "Lower-recall narrative versus Table 3",
+      "action": "rephrase",
+      "replacement_issue": "The reference for 'relatively lower Recall' is unspecified. If it refers to the listed unified baselines, Table 3 contradicts the claim because T²-NER has higher recall than both on every listed dataset.",
+      "replacement_impact": "Use the numerical table for baseline comparisons. Preserve uncertainty about the prose's intended comparison and exclude this narrative as causal evidence for filtering."
+    },
+    {
+      "issue": "Two-fragment introductory example versus three-span Figure 3 caption",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "The embedded text does not establish the reason for the different decompositions. Neither example resolves the general graph-decoding rule."
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+ "paper_id": "manual-1d6b22c7ad",
+ "title": "Corpus-Based Problem Selection for EHR Note Summarization",
+ "research_question": "Can corpus-derived lexical, frequency, persistence, and temporal features identify which clinical problems from longitudinal notes should be retained in a concise patient summary?",
+ "methodology": "The authors formulate problem selection as binary classification after using MedLEE and UMLS/SNOMED resources to identify candidate clinical problems in notes. They train primarily on a renal outpatient corpus of 1,618 patients averaging 14.3 notes per patient, using the final past-medical-history section as a scalable surrogate for summary-relevant problems, and separately evaluate against nephrologist-authored summaries for four patients. Naive Bayes and C4.5 classifiers, multiple feature-selection schemes, section restrictions, concept grouping, and negation filtering are evaluated with precision, recall, F-measure, F2, error rates, and confidence intervals.",
+ "key_findings": [
+  {
+   "finding": "The best reported relevance-classification accuracy reached 82%, with an F-measure of 0.62.",
+   "evidence_type": "supported",
+   "section": "Conclusions"
+  },
+  {
+   "finding": "Restricting candidate evidence to particular note sections significantly reduced F-measure rather than improving selection.",
+   "evidence_type": "supported",
+   "section": "Input Section Analysis"
+  },
+  {
+   "finding": "A simple filter for problems that were predominantly or finally negated improved both precision and recall in the reported experiments.",
+   "evidence_type": "supported",
+   "section": "Filtering Negated Findings"
+  },
+  {
+   "finding": "When precision and recall were weighted equally, best-first feature selection helped remove extraneous problems from the proposed summary.",
+   "evidence_type": "supported",
+   "section": "Overall Evaluation"
+  },
+  {
+   "finding": "When recall was weighted more heavily through F2, omitting feature selection produced better results, showing that the preferred selector depends on the cost assigned to omissions.",
+   "evidence_type": "supported",
+   "section": "Overall Evaluation"
+  },
+  {
+   "finding": "Features describing note-level usage patterns were more useful than temporal-duration features in this corpus, although the authors caution that the renal corpus covered a relatively short period.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  },
+  {
+   "finding": "Fine-grained and inconsistent concept coding complicated matching between source notes, classifier concepts, and expert-summary references.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  }
+ ],
+ "limitations": [
+  "The large training corpus uses the final past-medical-history section as a surrogate gold standard rather than a purpose-written longitudinal summary.",
+  "Direct expert-summary evaluation involved only four renal patients.",
+  "The principal corpus comes from one outpatient renal service at NewYork-Presbyterian, limiting demonstrated specialty and institutional generalizability.",
+  "The renal corpus covers a relatively short period, which may disadvantage temporal-duration features.",
+  "UMLS/SNOMED coding granularity can split semantically similar problems into different identifiers and confound both classification and evaluation.",
+  "Experiments for grouping related concepts were inconclusive.",
+  "Problems present in expert summaries but absent from source notes were excluded from evaluation, narrowing the assessed task.",
+  "The study selects problems for a summary rather than generating and evaluating a complete coherent longitudinal narrative."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "peak_accuracy_and_fmeasure": 0.99,
+  "section_restriction_hurts": 0.99,
+  "negation_filter_improves": 0.99,
+  "best_first_precision_recall_tradeoff": 0.98,
+  "f2_prefers_no_feature_selection": 0.98,
+  "note_features_outperform_temporal": 0.97,
+  "coding_granularity_problem": 0.99
+ },
+ "raw_claims": [
+  "The task is formulated as deciding, for every clinical problem mentioned in a patient's notes, whether it belongs in a summary.",
+  "MedLEE is used to identify clinical concepts and information about negation.",
+  "The main renal corpus contains 1,618 patients with an average of 14.3 notes per patient.",
+  "The final past-medical-history section is used as a scalable surrogate for summary relevance during training.",
+  "Nephrologists independently authored summaries for four patients for expert-based evaluation.",
+  "Precision, recall, F-measure, F2, and error-based measures are used to assess problem selection.",
+  "Restricting extraction to individual note sections reduced F-measure.",
+  "Filtering problems that were generally negated improved precision and recall.",
+  "Best-first feature selection was useful when precision and recall were valued equally.",
+  "When missing a relevant problem was given greater cost, using all features produced better F2 results.",
+  "Note-frequency and usage features were stronger than temporal-duration features in the studied corpus.",
+  "Concept-coding granularity created matching and evaluation errors.",
+  "The best reported relevance classification accuracy was 82%.",
+  "The reported best F-measure was 0.62."
+ ],
+ "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3041431/",
+ "access": "full_text"
+}

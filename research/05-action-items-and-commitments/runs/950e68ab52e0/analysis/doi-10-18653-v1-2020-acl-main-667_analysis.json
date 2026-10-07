@@ -1,0 +1,84 @@
+{
+ "paper_id": "doi-10-18653-v1-2020-acl-main-667",
+ "title": "A Two-Step Approach for Implicit Event Argument Detection",
+ "research_question": "Can document-level implicit event argument detection be made more tractable and accurate by first detecting argument head words and then expanding those heads to full evidence spans?",
+ "methodology": "The model encodes an event trigger and its five-sentence RAMS context with BERT, detects one head-word candidate for each event role using a biaffine scorer, and then expands each selected head to left and right boundaries with learned classifiers. This decomposition reduces argument-candidate growth from quadratic span enumeration to linear token-level head detection, with a bounded head-to-span expansion stage. Experiments on RAMS compare the method with a BERT-based sequence-labeling baseline, report span- and head-level F1 over five runs, include type-constrained decoding experiments using gold event types, and provide ablations plus manual error analysis.",
+ "key_findings": [
+  {
+   "finding": "When gold argument spans are supplied as candidates, head-word representations produce performance comparable to the earlier span-based RAMS model, supporting the hypothesis that contextualized argument heads can represent much of the useful span information.",
+   "evidence_type": "supported",
+   "section": "3.1 Argument Linking with Gold Spans"
+  },
+  {
+   "finding": "For full argument detection with gold event-type constrained decoding, the head-based model reaches 41.8 Span-F1 and 49.7 Head-F1 on the test set, significantly exceeding the corresponding sequence-labeling results of 40.5 and 48.0.",
+   "evidence_type": "supported",
+   "section": "3.2 Full Argument Detection"
+  },
+  {
+   "finding": "Without type-constrained decoding, the head-based model is also slightly better on average than the sequence-labeling baseline, although the reported significance claim is attached to the type-constrained comparison.",
+   "evidence_type": "supported",
+   "section": "3.2 Full Argument Detection"
+  },
+  {
+   "finding": "Fine-tuned BERT and explicit indicators marking the trigger/center-sentence context materially improve performance over frozen BERT or an LSTM encoder.",
+   "evidence_type": "supported",
+   "section": "3.2 Full Argument Detection / Ablation"
+  },
+  {
+   "finding": "Non-local arguments are much harder than same-sentence arguments; only about 18% of RAMS arguments are non-local, creating a substantial data imbalance in addition to weaker syntactic signals.",
+   "evidence_type": "supported",
+   "section": "3.2 On Sentence Distances"
+  },
+  {
+   "finding": "Core roles such as communicator, employee, and victim obtain much higher F1 than non-core roles such as instrument, origin, and destination, whose reported F1 values are roughly in the 20-30 range.",
+   "evidence_type": "supported",
+   "section": "3.2 On Argument Roles"
+  },
+  {
+   "finding": "Manual analysis identifies exact-span mismatch and coreference as recurring error sources, showing that strict span evaluation can penalize predictions that recover the relevant entity or head but choose a different surface mention or boundary.",
+   "evidence_type": "supported",
+   "section": "3.3 Manual Analysis"
+  },
+  {
+   "finding": "The two-step architecture reduces the candidate-space problem while preserving support for overlapping mentions and different role assignments more flexibly than ordinary BIO sequence labeling.",
+   "evidence_type": "supported",
+   "section": "2 Model and 3.2 Full Argument Detection"
+  }
+ ],
+ "limitations": [
+  "Experiments use RAMS, whose event contexts are not workplace email or enterprise chat, so domain transfer is untested.",
+  "Gold event triggers are supplied, and the strongest type-constrained setting also uses gold event types, so results are not for fully end-to-end event and argument extraction.",
+  "At inference time the head detector selects the maximum-scoring candidate for each role, which does not directly represent multiple independent fillers for the same role.",
+  "Gold head words are not annotated in RAMS and are derived heuristically from predicted dependency trees, introducing noise and failing for some conjunctions or multi-word expressions.",
+  "Head-to-span expansion is bounded to a fixed number of tokens on either side of the head.",
+  "The five-sentence RAMS context constrains how far implicit arguments can be recovered.",
+  "Non-local and non-core arguments remain substantially harder than local core roles.",
+  "The model extracts event arguments but does not represent deadline-to-action attachment, condition/negation/modality scope, organizational group-assignee semantics, or decision-vs-proposal status."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "two_step_test_gain": 0.99,
+  "non_local_difficulty": 0.99,
+  "non_core_role_difficulty": 0.98,
+  "head_representation_viability": 0.96,
+  "span_and_coreference_errors": 0.97
+ },
+ "raw_claims": [
+  "The model decomposes implicit event argument extraction into head-word detection and head-to-span expansion.",
+  "Using token heads reduces the main detection candidate space from quadratic spans to a linear number of tokens.",
+  "BERT encodes the trigger together with a five-sentence event context.",
+  "A biaffine scorer selects argument heads for event roles.",
+  "Separate classifiers expand each predicted head to its left and right span boundaries.",
+  "The head-based system outperforms the tested sequence-labeling baseline in the type-constrained full-detection setting.",
+  "Arguments outside the trigger sentence are considerably harder to detect than local arguments.",
+  "Roles that occur locally more often tend to receive higher extraction F1.",
+  "Manual inspection finds boundary mismatch and coreference among recurring sources of evaluation error.",
+  "The implementation is publicly released by the authors."
+ ],
+ "source_url": "https://aclanthology.org/2020.acl-main.667.pdf",
+ "access": "full_text"
+}

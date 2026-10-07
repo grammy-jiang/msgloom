@@ -1,0 +1,226 @@
+{
+ "round": 3,
+ "streams": [
+  {
+   "id": "T02",
+   "description": "Sequential update summarization: successive outputs select relevant new information relative to what the user has already received or read."
+  },
+  {
+   "id": "T03",
+   "description": "Temporal, timeline, and evolutionary summarization over evolving events, dates, and document streams."
+  },
+  {
+   "id": "T04",
+   "description": "Query-focused and task-focused multi-document summarization balancing explicit information needs, coverage, relevance, and redundancy."
+  },
+  {
+   "id": "T05",
+   "description": "Workplace email task management and triage, including outstanding requests, future actions, deadlines, reminders, and prioritization."
+  },
+  {
+   "id": "T06",
+   "description": "Personalized email importance and priority ranking using per-user behavior and adaptive user-specific models."
+  },
+  {
+   "id": "T07",
+   "description": "Constraint-aware and multi-objective content selection separating hard feasibility or coverage requirements from soft ranking or utility objectives."
+  },
+  {
+   "id": "T08",
+   "description": "Longitudinal user modeling and adaptation to changing short-term and long-term interests, behavioral feedback, and preference drift."
+  },
+  {
+   "id": "T09",
+   "description": "Prospective memory, reminder effectiveness, intention offloading, and signals associated with the risk or cost of forgetting future actions."
+  },
+  {
+   "id": "T13",
+   "description": "Presentation and decision effects of uncertainty, stale, conflicting, provisional, or incomplete information."
+  },
+  {
+   "id": "T14",
+   "description": "Longitudinal evaluation under non-stationarity using time-respecting splits, streaming evaluation, and concept-drift methodology."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-24963-ijcai-2019-532",
+   "decision": "REJECT",
+   "reason": "The abstract shows adaptive multi-objective personalized ranking, but all objectives enter a learned utility function; it does not establish the gap-2 distinction between non-negotiable response obligations or explicit user rules and softer preferences. The verified constrained-ranking candidate 2202.07088 is materially closer to the required hard-versus-soft separation, so this UNCHECKED paper does not justify an additional reading slot.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1016-0167-9236-86-90003-5",
+   "decision": "REJECT",
+   "reason": "The abstract concerns integration of conflicting information inside a decision-support mechanism. Gap-7 requires evidence about how stale, uncertain, disputed, or incomplete state is presented to users and how presentation affects decisions. This paper's described capability stops before that presentation question, and the uncertainty-visualization candidate addresses it experimentally.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-1145-2998181-2998251",
+   "decision": "ADMIT",
+   "stream_id": "T05",
+   "role": "DIRECT",
+   "reason": "The abstract directly studies workplace requests scattered across communication channels and identifies aggregation, prioritization, contextual, deadline, and accountability problems in maintaining actionable requests. This materially strengthens the direct evidence base for persistent outstanding work across sources and is unusually close to gaps 1 and 6 even though it does not itself evaluate cycle-based new/open/resolved/superseded briefing. Identity is UNCHECKED, so the identifier should be verified during acquisition.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1149",
+   "decision": "ADMIT",
+   "stream_id": "T03",
+   "role": "TRANSFER",
+   "reason": "The abstract describes chronological report generation over evolving document streams with explicit mechanisms for coverage, diversity, redundancy reduction, duplicate adjudication, and adaptive control. That materially strengthens transfer evidence for repeated reporting over changing inputs and for the omission-versus-repetition side of gap-4, although it lacks workplace work-item states. Identity is UNCHECKED and should be verified before full reading.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-20b8cd2fdd",
+   "decision": "REJECT",
+   "reason": "The paper is relevant to obligation extraction because it catalogs ambiguity in requests and commitments, but this round has a more decision-relevant direct candidate on reliable annotation of requests-for-action and commitments-to-act. Reading both would largely duplicate the obligation-identification subproblem without addressing the missing interaction between obligations and personalized soft priority in gap-2. Identity is also UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "manual-50ed5dc808",
+   "decision": "ADMIT",
+   "stream_id": "T06",
+   "role": "DIRECT",
+   "reason": "The abstract describes a deployed email-priority system with per-user models updated frequently from behavioral feedback. This is direct evidence for adaptive personalized email ranking and materially strengthens gap-3's missing longitudinal adaptation component, while preserving the important limitation that its behavioral targets are not independently labeled response obligations. Identity is UNCHECKED, so canonical verification is warranted.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1016-j-knosys-2013-02-015",
+   "decision": "ADMIT",
+   "stream_id": "T04",
+   "role": "TRANSFER",
+   "reason": "The abstract explicitly combines query relevance, content coverage, and novelty in multi-document summarization. Those objectives map directly to the briefing requirement to cover decision-relevant content while suppressing redundant repetition and therefore provide useful mechanism-level transfer evidence for gap-4. The setting is static, so it does not close the longitudinal part of that gap. Identity is UNCHECKED.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-d19b0f6f1e",
+   "decision": "REJECT",
+   "reason": "Precise definitions of requests and commitments are relevant, but the abstract primarily contributes the label definitions themselves. For the current gap, the 2007 candidate on whether these obligation-bearing acts can be identified reliably supplies stronger empirical evidence that obligation is a distinct annotation target. Reading both would spend a slot on substantially overlapping evidence without testing obligation-versus-preference prioritization. Identity is UNCHECKED.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "manual-0839b98ee7",
+   "decision": "ADMIT",
+   "stream_id": "T05",
+   "role": "DIRECT",
+   "reason": "The abstract experimentally asks whether requests-for-action and commitments-to-act can be identified reliably in workplace email. This materially strengthens gap-2 by supporting response obligation as an independently annotatable construct rather than a proxy derived from response probability or generic importance. It does not establish how that hard signal should be combined with soft personalization, which remains open. Identity is UNCHECKED and should be verified.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2005.06282",
+   "decision": "REJECT",
+   "reason": "The paper converts commitment-bearing emails into concise to-do items, but the target research problem begins after such work items have been identified: it needs longitudinal selection, persistence, state transitions, and priority across cycles and sources. The abstract does not show those capabilities, so the paper is adjacent rather than a material strengthening of the authorized streams for this round.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-24963-ijcai-2019-585",
+   "decision": "REJECT",
+   "reason": "Long/short-term preference combination is relevant to adaptive personalization, but the abstract does not explicitly evaluate preference drift or adaptation after a user's interests change. The drift-detection recommender candidate addresses the open gap more directly, so this UNCHECKED paper is not admitted merely for general temporal personalization vocabulary.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2202.07088",
+   "decision": "ADMIT",
+   "stream_id": "T07",
+   "role": "TRANSFER",
+   "reason": "The abstract explicitly studies ranking under constraints and separates constraint satisfaction from learned prediction used to approximate constrained optimization. This materially strengthens the architectural side of gap-2 because it supplies a concrete transferable mechanism for enforcing mandatory briefing requirements separately from utility-oriented ranking. Its VERIFIED identity also makes it preferable to weaker unchecked multi-objective candidates.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-ipm-2007-01-023",
+   "decision": "REJECT",
+   "reason": "The abstract supports task-focused multi-document summarization, but it lacks longitudinal accepted-view state, novelty relative to previous briefings, persistent open items, or state transitions. The relevance/coverage/novelty candidate provides a closer transfer mechanism for the current omission-and-repetition problem, so this foundational but static paper would not materially strengthen the round.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "manual-ada30055e0",
+   "decision": "REJECT",
+   "reason": "Trans-temporal timeline generation is relevant to evolutionary summarization, but the abstract does not model persistent actionable state or the new-versus-unchanged-open distinction. The Agent Newsroom candidate covers evolving chronological reporting while also explicitly addressing coverage, diversity, and redundancy, making this UNCHECKED paper comparatively redundant for the present gaps.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-1016-j-cag-2014-02-006",
+   "decision": "ADMIT",
+   "stream_id": "T13",
+   "role": "TRANSFER",
+   "reason": "The abstract experimentally varies explicit uncertainty visualization and measures resulting decision, prioritization, and behavioral effects under time pressure. This directly supplies the kind of presentation-to-decision evidence missing in gap-7, even though the domain is not workplace briefing. Identity is UNCHECKED, but the contribution is distinctive enough to justify verification and reading.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2104.05938",
+   "decision": "REJECT",
+   "reason": "QMSum is strong evidence for query-based long-meeting summarization and retrieval of decision/task-relevant spans, but the current high-priority gaps concern repeated-cycle state, cross-thread work-item identity, adaptive priority, and omission/repetition over time. The abstract does not address those missing capabilities, so its VERIFIED identity does not by itself justify a reading slot in this targeted round.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-1145-2523813",
+   "decision": "ADMIT",
+   "stream_id": "T14",
+   "role": "TRANSFER",
+   "reason": "The survey covers concept-drift adaptation strategies together with evaluation methodology for changing data streams. This materially strengthens both the design of longitudinally adaptive priority models and the non-stationary evaluation methodology needed for gap-3 and the chronological benchmark in gap-8. It is transfer rather than workplace evidence, and the identity is UNCHECKED.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1155-2016-1340973",
+   "decision": "ADMIT",
+   "stream_id": "T02",
+   "role": "TRANSFER",
+   "reason": "The abstract directly concerns sequential update summarization where successive outputs are evaluated for relevance, novelty, timeliness, concision, gain, latency, and comprehensiveness. This is strong transfer evidence for repeated-cycle content selection and gives omission-sensitive evaluation signals relevant to gaps 1 and 4. It still does not preserve unchanged-but-open workplace work items, so that direct gap remains open. Identity is UNCHECKED.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1109-fuzz-ieee-2016-7737835",
+   "decision": "ADMIT",
+   "stream_id": "T08",
+   "role": "TRANSFER",
+   "reason": "The abstract explicitly detects user-interest drift and adapts recommendations after interests change, rather than merely maintaining a static or mixed-timescale profile. That directly strengthens the transfer evidence needed for gap-3 on changing user priorities over time. It does not establish workplace-email validity. Identity is UNCHECKED and should be verified during acquisition.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1177-17470218231199977",
+   "decision": "REJECT",
+   "reason": "The study concerns the physical effort cost of setting reminders and strategic offloading. That is legitimate prospective-memory evidence, but it is peripheral to gap-5's needed signals for selecting briefing content based on forgetting risk, importance, urgency, recency, and personalized priority. Other reminder candidates address forgetting confidence, delay, and cue visibility more directly.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-1145-3705328-3748164",
+   "decision": "ADMIT",
+   "stream_id": "T14",
+   "role": "TRANSFER",
+   "reason": "The abstract compares offline data-splitting strategies for sequential systems and shows that split choice changes measured performance and model ordering, with explicit attention to temporal leakage and future-period evaluation. This materially strengthens the chronological-holdout design required by gap-8. It is a recent transfer-methodology contribution; identity is UNCHECKED and should be verified.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1186-s41235-019-0195-y",
+   "decision": "ADMIT",
+   "stream_id": "T09",
+   "role": "TRANSFER",
+   "reason": "The abstract shows that subjective confidence about unaided memory predicts spontaneous use of external reminders even after accounting for objective memory ability, and that offloading improves performance. This provides a distinct empirical forgetting-risk signal relevant to gap-5's question of whether reminder value should influence briefing selection. It does not test combination with workplace importance or urgency. Identity is UNCHECKED.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1145-634067-634150",
+   "decision": "ADMIT",
+   "stream_id": "T05",
+   "role": "DIRECT",
+   "reason": "The abstract directly studies email as a repository for prospective information about future actions and events and derives prospective-memory requirements from observed email-management behavior. This materially strengthens the direct workplace evidence for carrying forward still-actionable future work rather than treating email only as a stream of new messages. It is particularly relevant to gap-5 and the unchanged-but-open side of gap-1. Identity is UNCHECKED.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-3758-s13421-025-01708-x",
+   "decision": "ADMIT",
+   "stream_id": "T09",
+   "role": "TRANSFER",
+   "reason": "The abstract experimentally varies metacognitive beliefs, delay length, and cue visibility for time-based intentions and observes corresponding reminder-setting behavior. These variables supply concrete candidate signals for forgetting risk and temporal difficulty, materially strengthening gap-5 beyond generic reminder effectiveness. The study remains transfer evidence rather than workplace briefing evidence. Identity is UNCHECKED.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1007-s10601-009-9069-0",
+   "decision": "REJECT",
+   "reason": "The formal separation of feasibility constraints and lexicographically ordered preferences is conceptually compatible with obligation-before-preference rules, but the abstract is a generic constraint-satisfaction formalism rather than evidence about content selection, ranking, workplace obligations, or briefing outcomes. The VERIFIED constrained-ranking paper provides a substantially closer mechanism for T07, so this UNCHECKED candidate would be redundant and overly indirect.",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "Admission is intentionally strict. No candidate directly closes gap-1 or gap-6: none evaluates a cycle-based cross-thread workplace briefing with stable work-item identity and explicit new/open/resolved/superseded transitions. Gap-2 gains separate evidence for annotatable obligations and for constrained ranking, but no candidate experimentally tests obligations or explicit triage rules jointly with personalized soft importance. Gap-3 gains direct adaptive-email evidence plus transfer evidence on drift. Gap-4 gains sequential-update and relevance/coverage/novelty mechanisms, but no admitted paper jointly evaluates omission, redundant repetition, false alerts, and preservation of unresolved state across workplace cycles. Gap-5 gains workplace prospective-information evidence and transfer evidence on forgetting-risk signals, but no candidate combines forgetting risk with workplace importance, urgency, recency, and personalized priority in one selection model. Gap-7 is materially strengthened by the uncertainty-visualization experiment, although workplace-specific presentation remains untested. Gap-8 remains an engineering benchmark requirement; the temporal-splitting and concept-drift papers strengthen its methodology but do not instantiate the required benchmark."
+}

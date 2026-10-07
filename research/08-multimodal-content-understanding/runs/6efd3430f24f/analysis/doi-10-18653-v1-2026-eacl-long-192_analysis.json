@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-18653-v1-2026-eacl-long-192",
+ "title": "Rethinking Reading Order: Toward Generalizable Document Understanding with LLM-based Relation Modeling",
+ "research_question": "Can LLM-inferred global reading-order relations provide a scalable structural prior that improves document understanding more broadly than conventional locally annotated reading-order supervision?",
+ "methodology": "The authors prompt text-only and multimodal LLMs to infer directed reading-order relations among indexed document layout elements using their text, bounding boxes, and, for multimodal models, page imagery. For lightweight layout models, the inferred local and global relations are injected into attention through relation masks with learnable weighting, while generative QA models receive serialized reading-order relations in their prompts. Evaluation covers reading-order prediction, semantic entity recognition, entity linking, and document question answering on ROOR, EC-FUNSD, CORD, DocVQA, and InfoVQA, using LayoutLMv3, GeoLayoutLM, GPT-4o, and several other LLMs. Reported metrics include F1, ANLS, and exact match, together with ablations and computational-cost measurements.",
+ "key_findings": [
+  {
+   "finding": "LLM-generated reading-order relations align much less closely with adjacency-oriented human labels than a supervised LayoutLMv3 reading-order predictor, yet they can provide more useful global structure for downstream tasks.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Results on Information Extraction"
+  },
+  {
+   "finding": "On segment-level reading-order prediction, LayoutLMv3-large reports F1 80.49 whereas GPT-4o text-only reports 30.25, illustrating that the LLM-derived relations differ substantially from the benchmark's human-annotated relation convention.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Table 1"
+  },
+  {
+   "finding": "Adding GPT-inferred reading order improves the reported EC-FUNSD SER and entity-linking scores for both LayoutLMv3-large and GeoLayoutLM compared with their respective baselines.",
+   "evidence_type": "supported",
+   "section": "Section 5.1, Table 3"
+  },
+  {
+   "finding": "For GPT-4o document QA, adding inferred reading order raises DocVQA ANLS to 92.77 and InfoVQA ANLS to 77.15, with corresponding gains in exact match in the detailed ablation.",
+   "evidence_type": "supported",
+   "section": "Section 5.2, Document QA"
+  },
+  {
+   "finding": "The authors report that generating reading-order relations for 6,000 pages requires 0.7 GPU-hours versus an estimated 25 hours of human annotation, and cached relation integration adds less than 0.5 ms per instance with under 1% parameter overhead.",
+   "evidence_type": "supported",
+   "section": "Introduction and efficiency analysis"
+  },
+  {
+   "finding": "Reading-order augmentation is not uniformly beneficial under every model, annotation source, and attention configuration; some ablation configurations exhibit small regressions.",
+   "evidence_type": "supported",
+   "section": "Section 5 and appendix ablations"
+  },
+  {
+   "finding": "The method models structural relations inside a document instance but does not provide cross-version region identity, revised-attachment lineage, or provenance links from an answer back through document versions.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the proposed framework"
+  }
+ ],
+ "limitations": [
+  "Text-only LLM relation inference is sensitive to OCR errors.",
+  "Long-range and multi-page reasoning is limited by available computational resources and context length.",
+  "The generated relations depend on proprietary or large LLM behavior and prompting.",
+  "The paper states that code and derived data will be released only after corporate review rather than providing them with the paper.",
+  "The approach represents reading-order relations, not stable element identities across revised versions.",
+  "It does not address message-to-attachment reference resolution or explicit answer-to-source provenance chains.",
+  "Reading order is only one class of document relation and does not by itself establish semantic equivalence of elements across document revisions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "llm_relations_differ_from_adjacency_labels": 0.99,
+  "segment_rop_gap": 0.99,
+  "information_extraction_improvements": 0.99,
+  "qa_improvements": 0.99,
+  "annotation_efficiency": 0.99,
+  "ablation_not_uniformly_positive": 0.91,
+  "no_cross_version_lineage": 0.97
+ },
+ "raw_claims": [
+  "Conventional reading-order annotations are largely local and adjacency-oriented.",
+  "The proposed approach asks LLMs to infer broader relations among layout elements without supervised reading-order labels.",
+  "LLM-produced relations can disagree strongly with annotated reading-order links while still helping downstream document understanding.",
+  "Reading-order signals are injected into lightweight document models through relation-aware attention masks.",
+  "For generative question answering, inferred relations are serialized into textual relation descriptions.",
+  "The evaluation spans semantic entity recognition, entity linking, and document question answering.",
+  "GPT-inferred relations improve several LayoutLMv3 and GeoLayoutLM results on EC-FUNSD and CORD.",
+  "Adding reading-order information produces modest improvements on the reported DocVQA and InfoVQA results.",
+  "The authors report substantially lower relation-generation labor than manual annotation for a 6,000-page workload.",
+  "The paper promises future public release of code and derived data after corporate review.",
+  "The framework does not attempt to track the same layout element across successive revisions of a document."
+ ],
+ "source_url": "https://aclanthology.org/2026.eacl-long.192.pdf",
+ "access": "full_text",
+ "source_citation": "citeturn398672view5turn398672view6turn598373view7turn598373view8"
+}

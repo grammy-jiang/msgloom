@@ -1,0 +1,81 @@
+{
+ "paper_id": "2512.17776",
+ "title": "DEER: A Benchmark for Evaluating Deep Research Agents on Expert Report Generation",
+ "research_question": "Can expert-derived omission-sensitive rubrics and report-wide evidence verification provide a reliable, diagnostic evaluation of the completeness, analytical quality, and grounding of deep-research reports?",
+ "methodology": "DEER derives expert-level research tasks and constructs a hierarchical evaluation taxonomy spanning request fulfillment, analytical soundness, structural coherence, format and style, ethics and compliance, information sufficiency, and information integrity. The framework operationalizes the taxonomy with 101 fine-grained rubric items, separating coverage from quality, and augments them with task-specific Expert Evaluation Guidance. It also extracts report claims, classifies their citation requirements, recovers implicit evidence relationships, and verifies cited and uncited verifiable claims against external sources. The authors benchmark multiple fast, reasoning, search-assisted, and deep-research systems and validate the LLM-based judging framework against independent domain-expert ratings.",
+ "key_findings": [
+  {
+   "finding": "DEER separates omission from execution quality through 101 rubric items comprising 66 Coverage items and 35 Quality items; Coverage explicitly checks whether required content is present without omission.",
+   "evidence_type": "supported",
+   "section": "Appendix D.3 Coverage and Quality"
+  },
+  {
+   "finding": "Baseline systems generally scored better on structural coherence, formatting, ethics, and information-use dimensions than on request fulfillment and analytical soundness, exposing a gap between plausible report form and expert-level task completion.",
+   "evidence_type": "supported",
+   "section": "6.1 Main Results"
+  },
+  {
+   "finding": "Search and deep-research modes can improve information-related dimensions without guaranteeing better overall report reasoning or request fulfillment, so evidence acquisition alone is not sufficient for expert-quality synthesis.",
+   "evidence_type": "supported",
+   "section": "6.1 Main Results and 6.2 Fine-grained Analysis"
+  },
+  {
+   "finding": "Adding task-specific Expert Evaluation Guidance produced the strongest agreement with human experts among the evaluated judging configurations, with average Pearson correlation 0.73, Spearman correlation 0.71, and pairwise agreement 0.84.",
+   "evidence_type": "supported",
+   "section": "6.3 Correlation with Human Evaluation"
+  },
+  {
+   "finding": "Expert Guidance also increased agreement among different LLM judges to Krippendorff's alpha 0.55, ICC(2,1) 0.56, and ICC(2,k) 0.87.",
+   "evidence_type": "supported",
+   "section": "6.4 Inter-evaluator Reliability"
+  },
+  {
+   "finding": "The information-verification pipeline attempts report-wide grounding rather than checking only explicit citations, by classifying claims and recovering evidence for verifiable uncited claims before support verification.",
+   "evidence_type": "supported",
+   "section": "4.4 Information Verification"
+  },
+  {
+   "finding": "The selected automated claim-extraction configuration is imperfect, with 90.66 recall, 67.52 classification F1, and 79.0 binary F1, so evidence-completeness measurements inherit nonzero extraction and classification error.",
+   "evidence_type": "supported",
+   "section": "Information Verification Module Performance"
+  }
+ ],
+ "limitations": [
+  "The main report-quality evaluation relies on LLM judges, which may exhibit systematic biases relative to human experts.",
+  "Human-correlation results are strong but remain below inter-human agreement on several measures.",
+  "The benchmark currently evaluates text-based reports rather than multimodal research outputs.",
+  "Automated claim extraction and classification are imperfect, so some claims or citation requirements may be missed or misclassified.",
+  "Automated claim verification is itself an estimated component rather than an error-free source of ground truth.",
+  "The benchmark focuses on expert-report generation and does not directly test calibrated abstention policies.",
+  "Temporal staleness and distribution-shift robustness are not the central experimental variables of the benchmark."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "coverage_omission_separation": 1.0,
+  "expert_requirement_gap": 0.98,
+  "search_not_sufficient": 0.96,
+  "human_correlation_gain": 1.0,
+  "inter_evaluator_reliability": 1.0,
+  "report_wide_evidence_verification": 0.99,
+  "verification_pipeline_error": 0.99
+ },
+ "raw_claims": [
+  "DEER evaluates deep-research reports with a hierarchical taxonomy rather than a single aggregate quality criterion.",
+  "Its rubric design explicitly distinguishes whether required content is present from how well present content is written.",
+  "Coverage scoring is designed to expose omitted requirements distributed across a long report.",
+  "Information sufficiency and information integrity are evaluated separately from prose structure and style.",
+  "The framework attempts to trace verifiable report claims back to supporting external information.",
+  "Uncited claims are not automatically ignored by the evidence-verification stage.",
+  "Current deep-research systems can produce polished and evidence-rich reports while still missing expert-level requirements.",
+  "Task-specific expert guidance makes automated report judging align more closely with domain-expert assessments.",
+  "The chosen automated claim-extraction pipeline does not recover or classify every claim correctly.",
+  "The current benchmark is limited to text reports.",
+  "Code and data are linked from the paper."
+ ],
+ "source_url": "https://arxiv.org/html/2512.17776",
+ "access": "full_text"
+}

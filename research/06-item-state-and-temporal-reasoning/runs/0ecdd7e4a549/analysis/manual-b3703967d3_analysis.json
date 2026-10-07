@@ -1,0 +1,65 @@
+{
+ "paper_id": "manual-b3703967d3",
+ "title": "Joint Inference for Event Timeline Construction",
+ "research_question": "Can an interval-based globally constrained model that jointly reasons over event-time associations, event-event temporal relations, and event coreference construct more accurate and coherent event timelines than independent local classifiers?",
+ "methodology": "The paper represents each document as a partially ordered timeline of absolute time intervals and predicts event-time associations plus before, after, overlap, or no-relation links between event mentions. Two local averaged-perceptron classifiers are coupled through an Integer Linear Programming formulation that imposes global temporal-consistency constraints, and event coreference is optionally used to group mentions before inference. The main evaluation uses 20 ACE 2005 newswire articles published in March 2003, annotated by one expert and logically saturated; experiments use five-fold cross-validation with precision, recall, and F1. citeturn591258view0turn420993view0",
+ "key_findings": [
+  {
+   "finding": "Global inference achieved overall F1 46.01 versus 42.13 for the local classifiers, a 9.2% relative improvement that was significant at p<0.01.",
+   "evidence_type": "supported",
+   "section": "5.3 Our Systems citeturn991644view1turn420993view1"
+  },
+  {
+   "finding": "Using gold event coreference with global inference raised overall F1 to 52.47, about 14% relatively above global inference without coreference and significantly above the compared systems.",
+   "evidence_type": "supported",
+   "section": "5.3 Our Systems citeturn420993view1"
+  },
+  {
+   "finding": "Automatically learned event coreference produced overall F1 46.42, but its improvement over global inference without coreference was not statistically significant, showing that the benefit depends strongly on coreference quality.",
+   "evidence_type": "supported",
+   "section": "5.3 Our Systems citeturn420993view1"
+  },
+  {
+   "finding": "The interval-based ILP averaged about 21 seconds per article, whereas the corresponding time-point formulation did not finish within five hours before being terminated.",
+   "evidence_type": "supported",
+   "section": "5.4 Discussion of Other Results citeturn991644view2"
+  },
+  {
+   "finding": "The evaluation corpus contains 232 intervals and 324 event mentions; after logical saturation it contains 324 event-time associations and 5,940 annotated or inferred event-event temporal relations.",
+   "evidence_type": "supported",
+   "section": "5.1 Data and Setup citeturn420993view0"
+  }
+ ],
+ "limitations": [
+  "The principal evaluation is small and domain-specific: only 20 ACE 2005 newswire articles from one month in 2003 were used. citeturn420993view0",
+  "Temporal annotations were produced by a single expert annotator, and unannotated relations were subsequently expanded by reflexivity/transitivity saturation rather than independently annotated. citeturn420993view0",
+  "The large improvement from gold coreference did not transfer to a statistically significant gain with learned coreference, limiting the practical benefit of that component. citeturn420993view1",
+  "The relation inventory concerns temporal ordering and association; it does not directly encode semantic revision relations such as correction, supersession, supplementation, contradiction, reopening, or completion status. citeturn591258view0",
+  "The paper does not report a public release of its paper-specific temporal annotations or an implementation of the complete system."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "global_inference_improvement": 0.99,
+  "gold_coreference_gain": 0.99,
+  "learned_coreference_dependency": 0.98,
+  "interval_inference_efficiency": 0.99,
+  "evaluation_corpus_statistics": 0.99
+ },
+ "raw_claims": [
+  "The task maps events mentioned in a document onto a common temporal timeline.",
+  "Events are associated with absolute time intervals rather than only pairwise relative positions.",
+  "Local event-time and event-event classifiers are reconciled with global ILP constraints.",
+  "Coreferent event mentions can share evidence about their temporal placement.",
+  "The main experimental set consists of 20 ACE 2005 newswire documents.",
+  "Global inference performs better than independent local predictions.",
+  "Gold event coreference substantially improves timeline accuracy.",
+  "Automatically predicted coreference provides much less benefit than gold coreference.",
+  "The interval representation makes exact global inference substantially more computationally tractable than the tested point-based formulation."
+ ],
+ "source_url": "https://aclanthology.org/D12-1062.pdf",
+ "access": "full_text"
+}

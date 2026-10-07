@@ -1,0 +1,2496 @@
+{
+  "paper_id": "R05",
+  "title": "Detection of imperative and declarative question–answer pairs in email conversations",
+  "authors": [
+    "Helen Kwong",
+    "Neil Yorke-Smith"
+  ],
+  "year": 2012,
+  "doi": "10.3233/AIC-2012-0516",
+  "research_question": "Can sentence-level methods detect interrogative, imperative, and declarative questions and pair them with answers in email threads with better precision and recall than earlier methods?",
+  "methodology": "Assume preassembled email threads; compare Naïve question-mark detection, a transferred POS/Ripper S&M detector, and Regex using about 50 handcrafted patterns. Compare eight listed Q–A methods: three paragraph-based SMQA variants, Naïve type matching, Random candidate selection, and sentence-based hand-weighted Heuristic, Ripper Heuristic-C, and linear-regression Heuristic-LR. Features combine lexical similarity, WordNet similarity, named entities/expected answer types, candidate order, addressee and thread position. Test question detection on a balanced Enron/CSpace sentence sample and pairing on separately annotated thread datasets using SM/LCS matching. See topic02 for exact populations, constraints and discrepancies.",
+  "methodology_sources": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 279,
+      "line_end": 342,
+      "pdf_pages": [
+        4
+      ],
+      "section": "§3.1"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 425,
+      "line_end": 545,
+      "pdf_pages": [
+        5,
+        6
+      ],
+      "section": "§3.2"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 608,
+      "line_end": 640,
+      "pdf_pages": [
+        7
+      ],
+      "section": "§4.2"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 774,
+      "line_end": 847,
+      "pdf_pages": [
+        8
+      ],
+      "section": "§4.3"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 869,
+      "line_end": 876,
+      "pdf_pages": [
+        9
+      ],
+      "section": "§4.3"
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "R05-F01",
+      "finding": "In the mixed Enron/CSpace question-detection sample, about 80% of 350 annotated questions were interrogative, 11% imperative, 5% declarative, and 4% other; these are sampled question-form proportions, not mailbox prevalence.",
+      "evidence_type": "supported",
+      "section": "PDF page 7, §4.2 Data and metrics",
+      "quote": "350 questions, about 80% were marked as interrogative, 11% as imperative, 5% as declarative and 4% as other.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 608,
+        "line_end": 615,
+        "pdf_pages": [
+          7
+        ],
+        "section": "§4.2 Data and metrics"
+      }
+    },
+    {
+      "finding_id": "R05-F02",
+      "finding": "On the balanced 700-sentence Enron/CSpace test set (350 questions of all forms and 350 non-questions), non-learning Regex reports precision 0.959, recall 0.860, F1 0.907, and mean 0.227 ms/sentence; non-learning Naïve reports 0.958/0.786/0.863. All 700 sentences were test data. Timing used Java 1.6 on an Intel Core 2 Quad 2.33 GHz with 3.25 GB RAM and Windows XP. This measures sentence question detection, not pairing or Topic assignment.",
+      "evidence_type": "supported",
+      "section": "PDF page 7, §4.2 Table 2",
+      "quote": "Regex **0.959** **0.860** **0.907** 0.227",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 689,
+        "line_end": 689,
+        "pdf_pages": [
+          7
+        ],
+        "section": "§4.2 Table 2"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 618,
+          "line_end": 640,
+          "pdf_pages": [
+            7
+          ],
+          "section": "§4.2 test construction"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 679,
+          "line_end": 689,
+          "pdf_pages": [
+            7
+          ],
+          "section": "Table 2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 554,
+          "line_end": 556,
+          "pdf_pages": [
+            6
+          ],
+          "section": "§4 implementation and hardware"
+        }
+      ]
+    },
+    {
+      "finding_id": "R05-F03",
+      "finding": "The paper specifies zero or one selected answer sentence per detected question for the Heuristic variants: choose the highest-scoring/most probable eligible candidate only above a threshold (default 0.5), and cap reuse of an answer at two questions by default. Candidates must be content sentences in a later message, from a different sender, in that individual’s first reply to the question email, and not detected questions. Content excludes quoted text, greetings, and signatures. These are stated prediction constraints; they do not establish gold link cardinality, realized reuse frequencies, or comparative semantic adequacy.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 5, §3.2 Heuristic Q–A",
+      "quote": "We attribute the highest-scoring or most probable candidate (appropriately) as the answer to a given question, assuming that the score or probability is above a minimum threshold (default 0.5). Finally, we limit the number of questions to which an answer can be assigned; for the experiments reported, we use a default value of two.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 450,
+        "line_end": 453,
+        "pdf_pages": [
+          5
+        ],
+        "section": "§3.2 Heuristic Q–A: assignment and defaults"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 434,
+          "line_end": 453,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2 candidate generation and assignment"
+        }
+      ],
+      "additional_evidence": [
+        {
+          "quote": "We examine each content sentence for questions, i.e., each original sentence that is not classified as a greeting or signature line.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 435,
+            "line_end": 437,
+            "pdf_pages": [
+              5
+            ],
+            "section": "§3.2 content sentences"
+          }
+        },
+        {
+          "quote": "A candidate answer is a content sentence in a subsequent message in the thread that is: (1) not from the sender of the question email, and (2) an individual’s first reply to the question email, [3] and (3) not one of the detected question sentences.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 440,
+            "line_end": 442,
+            "pdf_pages": [
+              5
+            ],
+            "section": "§3.2 candidate eligibility"
+          }
+        },
+        {
+          "quote": "Given an email thread, the algorithm iterates through each original (i.e., unquoted) sentence [2]",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 368,
+            "line_end": 370,
+            "pdf_pages": [
+              4
+            ],
+            "section": "§3.2 original/unquoted terminology"
+          }
+        }
+      ],
+      "evidence_scope": "Source-described methodology, explicitly present in the paper. The contract label unsupported means that comparative empirical proof of the constraints’ semantic adequacy is absent; it does not mean the algorithm description is missing."
+    },
+    {
+      "finding_id": "R05-F04",
+      "finding": "For Annotator 1, Heuristic-LR reports LCS pair P/R/F1 0.5150/0.4857/0.4982 and SM pair P/R/F1 0.6211/0.5882/0.6021. For Annotator 2, corresponding scores are 0.6236/0.5240/0.5670 and 0.5725/0.3908/0.4597. Each annotator supplied about 90 Enron/CSpace threads containing Q–A pairs. The stated protocol is five-fold cross-validation separately per annotator and 50 experiment replications; explicit fold allocation unit, pair counts, and aggregation weights are not supplied. These are separate Q–A matching results, not Topic performance.",
+      "evidence_type": "supported",
+      "section": "PDF page 9, §4.3 Tables 5–6",
+      "quote": "Heuristic-LR **0.5150** **0.4857** **0.4982** **0.6211** **0.5882** **0.6021**",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 941,
+        "line_end": 941,
+        "pdf_pages": [
+          9
+        ],
+        "section": "§4.3 Tables 5–6"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 869,
+          "line_end": 876,
+          "pdf_pages": [
+            9
+          ],
+          "section": "§4.3 evaluation protocol"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 977,
+          "line_end": 977,
+          "pdf_pages": [
+            9
+          ],
+          "section": "Table 6"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 774,
+          "line_end": 783,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3 pairing sample and annotation"
+        }
+      ]
+    },
+    {
+      "finding_id": "R05-F05",
+      "finding": "Gold segment extent varies by annotator: Annotator 1 favored short single-sentence Q/A segments; Annotator 2 favored longer segments. The proposed algorithms extract only individual sentences. This observes annotation-unit mismatch but does not compare sentence, clause, EDU, and arbitrary-span methods under controlled conditions.",
+      "evidence_type": "supported",
+      "section": "PDF page 10, §4.3 Results",
+      "quote": "notator 2 tended to mark longer segments (our algorithms extract only sentences as questions and answers, not longer pieces of text).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 1054,
+        "line_end": 1055,
+        "pdf_pages": [
+          10
+        ],
+        "section": "§4.3 Results"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 906,
+          "line_end": 906,
+          "pdf_pages": [
+            9
+          ],
+          "section": "§4.3 annotator comparison"
+        }
+      ]
+    },
+    {
+      "finding_id": "R05-F06",
+      "finding": "R05 describes SM as paragraph-based Q–A evaluation inherited from S&M; its related §3.2 training description marks a paragraph by containment of at least one annotated question/answer sentence. R05 does not restate a complete SM matching/counting rule. LCS instead explicitly matches word substrings: the longest common substring must exceed half the shorter segment, separately for both Q and A. This is tolerant pair matching, not exact-span F1, token IoU, or preservation of all decision-bearing text; the claim that it is more stringent is the authors’ characterization, not proof of a universal ordering between SM and LCS scores.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 8, §4.3 Data and metrics",
+      "quote": "Two text segments are considered the same under LCS if the length of their longest common substring is greater than half the length of the shorter segment.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 837,
+        "line_end": 839,
+        "pdf_pages": [
+          8
+        ],
+        "section": "§4.3 Data and metrics"
+      },
+      "additional_evidence": [
+        {
+          "quote": "The first metric we employed is the paragraph-based metric used by Shrestha and McKeown [34], which we will call SM.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 830,
+            "line_end": 832,
+            "pdf_pages": [
+              8
+            ],
+            "section": "§4.3 SM definition by reference"
+          }
+        },
+        {
+          "quote": "For training purposes, a paragraph is considered a question segment if it contains a sentence marked by the human annotator as a question, and a paragraph is considered an answer segment to a question paragraph if it contains at least one sentence marked by the human annotator as an answer to the question.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 407,
+            "line_end": 410,
+            "pdf_pages": [
+              5
+            ],
+            "section": "§3.2 S&M training paragraph labels"
+          }
+        },
+        {
+          "quote": "We consider two Q–A pairs to be the same if their question segments are the same by LCS and their answer segments are also the same by LCS.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 837,
+            "line_end": 839,
+            "pdf_pages": [
+              8
+            ],
+            "section": "§4.3 LCS pair match"
+          }
+        }
+      ],
+      "evidence_scope": "Source-described metric specification. Definitions are present; comparative empirical proof of semantic completeness or universally stricter scoring is absent."
+    },
+    {
+      "finding_id": "R05-F07",
+      "finding": "In qualitative sensitivity reports on their Enron/CSpace Q–A dataset, the authors say allowing later replies helps in some cases at higher runtime, a cap of three questions per answer is best overall, and a 0.8 threshold improves Heuristic-LR over the 0.5 default. This paragraph does not identify the exact subset, sample counts, fold-specific tuning protocol, or numerical deltas. These reports do not measure gold cardinality or work-text preservation.",
+      "evidence_type": "supported",
+      "section": "PDF page 10, §4.3 heuristic permutations",
+      "quote": "Varying the heuristic on the number of questions to which an answer may pertain can modestly increase _F_ 1 -score; the best overall setting on our dataset is 3.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 1062,
+        "line_end": 1063,
+        "pdf_pages": [
+          10
+        ],
+        "section": "§4.3 heuristic permutations"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1059,
+          "line_end": 1067,
+          "pdf_pages": [
+            10
+          ],
+          "section": "§4.3 full sensitivity report"
+        }
+      ],
+      "evidence_scope": "Author-reported qualitative experiment; no quantified comparative effect or fully specified tuning/evaluation protocol."
+    },
+    {
+      "finding_id": "R05-F08",
+      "finding": "For Heuristic-C and Heuristic-LR on the Enron/CSpace Q–A data, the authors report convergence around 30 training threads under SM and LCS (Figures 1–2). The general individual-annotator experiment uses about 90 threads per Annotator 1/2, five-fold CV, and 50 replications; the curve paragraph does not specify which annotator data, exact held-out sample, or resampling procedure generated these plots. Curves vary and have standard-deviation bars. This qualitative source report does not establish a sufficient training-data size for a new domain or for Topic assignment.",
+      "evidence_type": "supported",
+      "section": "PDF page 11, §4.3 Learning and features; Figures 1–2",
+      "quote": "learning converges for both variants with a training set of approximately 30 threads.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 1128,
+        "line_end": 1130,
+        "pdf_pages": [
+          11
+        ],
+        "section": "§4.3 Learning and features; Figures 1–2"
+      },
+      "additional_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 774,
+          "line_end": 783,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3 sample"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 869,
+          "line_end": 876,
+          "pdf_pages": [
+            9
+          ],
+          "section": "§4.3 general evaluation protocol"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1114,
+          "line_end": 1130,
+          "pdf_pages": [
+            10,
+            11
+          ],
+          "section": "§4.3 learning curves"
+        }
+      ],
+      "evidence_scope": "Author interpretation of plotted Q–A learning curves; exact curve protocol and a formal convergence criterion are not reported."
+    }
+  ],
+  "limitations": [
+    "No Topic segmentation, overlap/discontinuity assignment or work-text preservation evaluation (topic02.not_evaluated_for_msgloom).",
+    "Sentence-only Q–A predictions can differ from longer human-selected gold segments (R05-F05).",
+    "Candidate pruning and answer-link cardinality caps are heuristics; qualitative sensitivity results have no reported deltas (R05-F03/F07).",
+    "Balanced detection data, small pairing samples, annotator variation and unreported fold/duplicate controls limit generalization (topic02 split and annotation fields).",
+    "No separate pairing scores by interrogative, imperative or declarative question form (§4.3); combined improvements do not establish non-interrogative-specific pair gains.",
+    "Confirmed source discrepancies and assumption-dependent numerical inconsistencies are recorded in R05-I01–I06. R05-I07 is incomplete gold construction, and R05-I08 is a qualified filter-risk statement, not a demonstrated source contradiction.",
+    "Feature effects and convergence are incompletely quantified; no statistical test or p-value accompanies significance wording."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability": "Not reported: Java implementation described, but no code release stated. Current availability was not checked.",
+    "dataset_availability": "Paper reports existing Enron and CSpace corpora, but release/access for its new question/Q–A annotations is not reported. Current availability was not checked. S&M ACM data/annotations are paper-reported unavailable for privacy.",
+    "boolean_policy": "code_available and dataset_available omitted because the optional booleans cannot express unknown or base-corpus-versus-new-annotation status.",
+    "implementation": "Java 1.6; Ripper classifiers; linear regression; WordNet relations; no implementation versions, random seeds, full regex database or exact feature weights supplied.",
+    "sources": [
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+        "line_start": 550,
+        "line_end": 596,
+        "pdf_pages": [
+          6
+        ],
+        "section": "§4/§4.1"
+      }
+    ]
+  },
+  "confidence_scores": {
+    "R05-F01": 0.98,
+    "R05-F02": 0.99,
+    "R05-F03": 0.99,
+    "R05-F04": 0.98,
+    "R05-F05": 0.98,
+    "R05-F06": 0.99,
+    "R05-F07": 0.85,
+    "R05-F08": 0.8
+  },
+  "confidence_definition": "Confidence in faithful extraction and stated evidence scope, not probability of deployment correctness. The contract uses supported for experimental backing. F03/F06 retain unsupported for lack of comparative empirical proof of semantic adequacy; their methodological statements are explicitly present and directly quoted. F07/F08 are source-reported qualitative empirical observations with incomplete protocols, not quantified guarantees.",
+  "raw_claims": [
+    "Our hand-crafted database contains approximately 50 patterns.",
+    "Experiments were replicated 50 times.",
+    "The Heuristic algorithms for Q–A pairing extract sentences as questions and answers."
+  ],
+  "raw_claim_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 341,
+      "line_end": 342,
+      "pdf_pages": [
+        4
+      ],
+      "section": "§3.1"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 871,
+      "line_end": 872,
+      "pdf_pages": [
+        9
+      ],
+      "section": "§4.3"
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "line_start": 1192,
+      "line_end": 1193,
+      "pdf_pages": [
+        12
+      ],
+      "section": "§5"
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "evaluated": [
+        "Binary sentence question detection, including imperative and declarative forms",
+        "Extraction and linking of question–answer segments across messages in preassembled email threads; answer detection is embedded in pairing"
+      ],
+      "relation_to_ten_tasks": "Supports the action/question/reply-scope extraction family only through question detection and Q–A links; complete reply scope and action scope are not evaluated. No Topic segmentation, labeling, classification, or span-assignment experiment.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 65,
+          "line_end": 73,
+          "pdf_pages": [
+            1
+          ],
+          "section": "§1"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 830,
+          "line_end": 840,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3"
+        }
+      ]
+    },
+    "annotation_unit": {
+      "statement": "Question detection: sentence with question/non-question label and question-form category. Pairing: human-selected Q/A segments of varying length; paragraph-level agreement and paragraph conversion for S&M. Annotator 1 favors single sentences; Annotator 2 longer segments. No supplied offset-level guideline establishes arbitrary spans, EDUs, or discontinuous gold units.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 608,
+          "line_end": 640,
+          "pdf_pages": [
+            7
+          ],
+          "section": "§4.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 406,
+          "line_end": 416,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 906,
+          "line_end": 906,
+          "pdf_pages": [
+            9
+          ],
+          "section": "§4.3"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1054,
+          "line_end": 1057,
+          "pdf_pages": [
+            10
+          ],
+          "section": "§4.3"
+        }
+      ]
+    },
+    "prediction_unit": {
+      "statement": "Regex/Naïve/S&M question detection classifies sentences. Proposed Heuristic variants return individual question and answer sentences; SMQA variants pair paragraphs. Comma-delimited phrase matching is a detection feature, not a predicted clause boundary or Topic span.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 279,
+          "line_end": 342,
+          "pdf_pages": [
+            4
+          ],
+          "section": "§3.1"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 425,
+          "line_end": 453,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2"
+        }
+      ]
+    },
+    "contiguity": {
+      "statement": "Each proposed Q or A endpoint is a contiguous sentence. Pair edges can connect nonadjacent messages in an already assembled thread. No global contiguous Topic partition, interleaved Topic clustering, or cross-thread Topic identity model is evaluated.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 434,
+          "line_end": 453,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2"
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Binary question/non-question per detection sentence; question form separately marked as interrogative/declarative/imperative/other. Q–A gold link cardinality, many-to-many allowance and frequency are not specified; no Topic labels. Variable-length Q/A annotation does not imply any particular number of links per question or answer.",
+      "prediction": "One binary question decision per sentence; Heuristic gives zero or one selected answer per detected question, and at most two questions per answer by default. A cap of three is reported best overall in a qualitative sensitivity experiment. SMQA accepts candidate paragraphs over 0.5; SMQA-highest selects the most probable one. Naïve pairs an answer sentence to at most one question. These are configured limits, not measured realized degrees. Tie-breaking and conflict resolution when a reuse cap is reached are not specified.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 391,
+          "line_end": 397,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2 Naïve"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 440,
+          "line_end": 453,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2 Heuristic"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 843,
+          "line_end": 847,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3 Methods"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1057,
+          "line_end": 1067,
+          "pdf_pages": [
+            10
+          ],
+          "section": "§4.3 permutations"
+        }
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not reported for one Q, A, or Topic; longer annotated segments do not establish discontinuous spans.",
+        "thread_level": "Questions and corresponding answers are annotated across thread messages; nonadjacency frequencies and formal gold discontinuity rules not reported."
+      },
+      "prediction": {
+        "within_one_message": "Unsupported for a single multi-span Q, A, or Topic; each Heuristic endpoint is one sentence.",
+        "thread_level": "A Q–A relation can connect a question to an eligible later message, with intervening messages allowed. This is nonadjacent relational linkage, not representation of one discontinuous Topic."
+      },
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 440,
+          "line_end": 479,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1192,
+          "line_end": 1204,
+          "pdf_pages": [
+            12
+          ],
+          "section": "§5"
+        }
+      ]
+    },
+    "overlap": {
+      "gold": "Not reported: no gold many-to-many counts or overlapping Topic spans.",
+      "predicted": "The specified Heuristic reuse cap permits the same answer sentence to be an endpoint in up to two Q–A relations by default. This is an algorithmic allowance, not a reported frequency of realized reuse or an overlap-specific empirical result. It does not establish multiple Topic memberships.",
+      "scope": "Answer endpoint reuse across Q–A relations only.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 451,
+          "line_end": 453,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1057,
+          "line_end": 1067,
+          "pdf_pages": [
+            10
+          ],
+          "section": "§4.3"
+        }
+      ]
+    },
+    "dataset_domain": {
+      "statement": "English email from Enron senior management and CSpace MBA simulated companies. Paper describes cleaned Enron as about 30,000 threads/~150 users; CSpace as 2,739 threads/~275 users collected over a 14-week course. Those are corpus counts, not experimental sample counts. BC3 is discussed but not used for the reported tests. Business-email relevance is direct for Enron and qualified for simulated student companies.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 571,
+          "line_end": 596,
+          "pdf_pages": [
+            6
+          ],
+          "section": "§4.1"
+        }
+      ]
+    },
+    "annotation_process": {
+      "question_detection": "One human examines a random pool of 10,000 Enron/CSpace sentences until 350 questions are marked; 350 passed-over non-questions are randomly added. Exact number examined, per-corpus allocation and annotator instructions are absent. Question-form proportions are in R05-F01.",
+      "pairing": "Four humans mark questions and corresponding answers if any. Annotators 1 and 2 each annotate about 90 threads with Q–A pairs; other annotators annotate significantly fewer. Shared-thread counts: all four 23; Annotators 1 and 2 61. Pair counts, adjudication and annotation release are not reported. Pairing annotators do not distinguish question forms. The 23 and 61 figures count jointly annotated threads, not agreed Q–A pairs.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 608,
+          "line_end": 640,
+          "pdf_pages": [
+            7
+          ],
+          "section": "§4.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 774,
+          "line_end": 817,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3"
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "results": [
+        {
+          "metric": "Fleiss kappa explicitly named for question-paragraph identification; paragraph-linking value called kappa without separately repeating the subtype",
+          "population": "Four annotators; reported alongside the 23 Q–A threads annotated by all four. The paragraph/item counts used in each kappa calculation are not reported.",
+          "question_paragraph_identification": 0.69,
+          "question_answer_paragraph_linking": 0.77
+        },
+        {
+          "metric": "kappa (subtype not separately restated)",
+          "population": "Annotators 1 and 2; reported alongside their 61 jointly annotated Q–A threads. Item counts are not reported.",
+          "question_detection": 0.74,
+          "question_answer_pairing": 0.83
+        }
+      ],
+      "limits": "The explicitly named four-annotator tasks are question-paragraph identification and paragraph linkage. The two-annotator results are described as question detection and Q–A pairing without a new unit definition. No contingency tables, item counts, or confidence intervals are given. Do not reinterpret these kappa values as exact-span, Topic, overlap, discontinuity, or preservation agreement. The separate sentence/question-form detection set uses one annotator and has no IAA.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 774,
+          "line_end": 785,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3 Data"
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "question_detection": "All 700 sentences used for testing. Regex/Naïve need no training. S&M keeps prior telephone-speech training; not retrained on email. Pattern-development separation from test collection is not documented.",
+      "pairing": "Five-fold CV separately per Annotator 1/2 dataset, experiments replicated 50 times. Thread datasets are described, but explicit fold allocation unit, per-fold sizes, seeds, class counts and averaging method are not reported. Figures use number of training threads. Do not assert independent pair or thread fold assignments. The 23/61 shared-thread counts are annotation overlap, not train/test fold counts. Tables 7–8 and the curve/sensitivity analyses do not restate enough protocol to transfer the individual-annotator CV details to those results unconditionally.",
+      "duplicate_controls": "Not reported: author/thread overlap handling across folds, quoted/near-duplicate train–test controls, temporal holdout, corpus holdout, or separation of hand-tuning from evaluation. Excluding quoted text from candidate answers is preprocessing, not evidence of leakage control.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 630,
+          "line_end": 640,
+          "pdf_pages": [
+            7
+          ],
+          "section": "§4.2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 869,
+          "line_end": 876,
+          "pdf_pages": [
+            9
+          ],
+          "section": "§4.3"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1128,
+          "line_end": 1138,
+          "pdf_pages": [
+            11
+          ],
+          "section": "§4.3"
+        }
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "question_detection": "Reported precision, recall and F1 at sentence level. Standard interpretation: precision denominator is predicted questions; recall denominator is annotated questions. TP/FP/FN are absent. The source misnames F1 as geometric mean (R05-I01). Standard F1 is the harmonic mean 2PR/(P+R). R05 explicitly prints geometric mean; arithmetic checks do not establish its unreported implementation or aggregation for every table.",
+        "LCS_pair_matching": "Longest common substring of words, not subsequence. Match iff its length is strictly greater than half the shorter segment; both Q and A must match. Pair precision/recall refer to predicted/reference pairs. Counts, handling of multiple matches and macro/micro aggregation are absent. The authors call LCS more stringent, but different units, denominators, matching rules, or realized predictions prevent a universal score-order claim. SM and LCS values must remain separate.",
+        "SM_pair_matching": "R05 §4.3 identifies SM as the paragraph-based Q–A metric of Shrestha and McKeown [34], most suited to paragraph-segmented messages. Related §3.2 text defines S&M training labels by containment: a paragraph is a question segment if it contains an annotated question sentence; an answer paragraph contains at least one sentence annotated as an answer to the question. This training rule establishes paragraph granularity but is not a complete SM scoring specification. Exact projection of predicted sentences, pair matching, duplicate handling, and counting/aggregation are not restated in R05; do not infer exact sentence/span matching or substitute LCS for SM.",
+        "timing": "Means per sentence for question detection; per thread for pairing. Java 1.6 on Intel Core 2 Quad 2.33 GHz, 3.25 GB RAM, Windows XP; no ARM or msgloom measurement. Table 9 internal inconsistencies prevent dependable latency inference.",
+        "non_equivalence": "No Pk, WindowDiff, Topic pair/cluster score, exact span F1/IoU, whole-message multi-label score, or preservation metric."
+      },
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 283,
+          "line_end": 286,
+          "pdf_pages": [
+            4
+          ],
+          "section": "§3.1"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 406,
+          "line_end": 416,
+          "pdf_pages": [
+            5
+          ],
+          "section": "§3.2 S&M Q–A"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 554,
+          "line_end": 556,
+          "pdf_pages": [
+            6
+          ],
+          "section": "§4 implementation and hardware"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 830,
+          "line_end": 840,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3 metrics"
+        }
+      ],
+      "tables": [
+        {
+          "table": 1,
+          "task": "sentence question detection",
+          "setting": "Interrogative-only subset of the 700-sentence test collection, retaining 350 non-questions; exact retained question count not reported",
+          "results": [
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "precision": 0.956,
+                "recall": 0.918,
+                "F1": 0.936,
+                "mean_ms_per_sentence": 0.0254
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 623,
+                "line_end": 623,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 1"
+              }
+            },
+            {
+              "algorithm": "S&M",
+              "values": {
+                "precision": 0.623,
+                "recall": 0.865,
+                "F1": 0.724,
+                "mean_ms_per_sentence": 48.3
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 624,
+                "line_end": 624,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 1"
+              }
+            },
+            {
+              "algorithm": "Regex",
+              "values": {
+                "precision": 0.954,
+                "recall": 0.964,
+                "F1": 0.959,
+                "mean_ms_per_sentence": 0.243
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 625,
+                "line_end": 625,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 1"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 623,
+              "line_end": 625,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 Table 1"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol": "Enron/CSpace sentences; no training for Naïve/Regex, transferred telephone-speech training for S&M; all selected sentences used for testing. No per-test replication count or uncertainty is stated. Hardware/timing definition is in metrics.definitions.timing.",
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 608,
+              "line_end": 640,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 sampling/test protocol"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 704,
+              "line_end": 711,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 timing"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 554,
+              "line_end": 556,
+              "pdf_pages": [
+                6
+              ],
+              "section": "§4 hardware"
+            }
+          ]
+        },
+        {
+          "table": 2,
+          "task": "sentence question detection",
+          "setting": "All 700 test sentences: 350 questions and 350 non-questions",
+          "results": [
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "precision": 0.958,
+                "recall": 0.786,
+                "F1": 0.863,
+                "mean_ms_per_sentence": 0.0286
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 629,
+                "line_end": 629,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 2"
+              }
+            },
+            {
+              "algorithm": "S&M",
+              "values": {
+                "precision": 0.662,
+                "recall": 0.823,
+                "F1": 0.734,
+                "mean_ms_per_sentence": 45.9
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 630,
+                "line_end": 630,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 2"
+              }
+            },
+            {
+              "algorithm": "Regex",
+              "values": {
+                "precision": 0.959,
+                "recall": 0.86,
+                "F1": 0.907,
+                "mean_ms_per_sentence": 0.227
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 631,
+                "line_end": 631,
+                "pdf_pages": [
+                  7
+                ],
+                "section": "Table 2"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 629,
+              "line_end": 631,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 Table 2"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol": "Enron/CSpace sentences; no training for Naïve/Regex, transferred telephone-speech training for S&M; all selected sentences used for testing. No per-test replication count or uncertainty is stated. Hardware/timing definition is in metrics.definitions.timing.",
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 608,
+              "line_end": 640,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 sampling/test protocol"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 704,
+              "line_end": 711,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 timing"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 554,
+              "line_end": 556,
+              "pdf_pages": [
+                6
+              ],
+              "section": "§4 hardware"
+            }
+          ]
+        },
+        {
+          "table": 3,
+          "task": "sentence question detection; external comparison",
+          "setting": "External online-forum results reproduced from Cong et al. [7]; dataset/split denominators not specified here; not R05 email experiments",
+          "results": [
+            {
+              "algorithm": "5W-1H",
+              "values": {
+                "precision": 0.69,
+                "recall": 0.151,
+                "F1": 0.248
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 673,
+                "line_end": 673,
+                "pdf_pages": [
+                  8
+                ],
+                "section": "Table 3"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "precision": 0.978,
+                "recall": 0.78,
+                "F1": 0.868
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 674,
+                "line_end": 674,
+                "pdf_pages": [
+                  8
+                ],
+                "section": "Table 3"
+              }
+            },
+            {
+              "algorithm": "S&M",
+              "values": {
+                "precision": 0.873,
+                "recall": 0.873,
+                "F1": 0.871
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 675,
+                "line_end": 675,
+                "pdf_pages": [
+                  8
+                ],
+                "section": "Table 3"
+              }
+            },
+            {
+              "algorithm": "CWLSS",
+              "values": {
+                "precision": 0.971,
+                "recall": 0.978,
+                "F1": 0.975
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 676,
+                "line_end": 676,
+                "pdf_pages": [
+                  8
+                ],
+                "section": "Table 3"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 673,
+              "line_end": 676,
+              "pdf_pages": [
+                8
+              ],
+              "section": "§4.2 Table 3"
+            }
+          ],
+          "pdf_visual_verified": true
+        },
+        {
+          "table": 5,
+          "task": "Q–A pairing",
+          "setting": "Annotator 1 Enron/CSpace Q–A threads; approximately 90 threads; five-fold CV, 50 replications",
+          "results": [
+            {
+              "algorithm": "SMQA",
+              "values": {
+                "LCS_precision": 0.1014,
+                "LCS_recall": 0.4703,
+                "LCS_F1": 0.1653,
+                "SM_precision": 0.0995,
+                "SM_recall": 0.5125,
+                "SM_F1": 0.1654
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 818,
+                "line_end": 818,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "SMQA-regex",
+              "values": {
+                "LCS_precision": 0.5016,
+                "LCS_recall": 0.4746,
+                "LCS_F1": 0.483,
+                "SM_precision": 0.4926,
+                "SM_recall": 0.5208,
+                "SM_F1": 0.5015
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 819,
+                "line_end": 819,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "SMQA-highest",
+              "values": {
+                "LCS_precision": 0.4656,
+                "LCS_recall": 0.4606,
+                "LCS_F1": 0.4616,
+                "SM_precision": 0.5062,
+                "SM_recall": 0.5047,
+                "SM_F1": 0.5034
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 820,
+                "line_end": 820,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "LCS_precision": 0.4733,
+                "LCS_recall": 0.1047,
+                "LCS_F1": 0.1694,
+                "SM_precision": 0.5378,
+                "SM_recall": 0.1332,
+                "SM_F1": 0.2105
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 821,
+                "line_end": 821,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "Random",
+              "values": {
+                "LCS_precision": 0.3209,
+                "LCS_recall": 0.313,
+                "LCS_F1": 0.3157,
+                "SM_precision": 0.4862,
+                "SM_recall": 0.4956,
+                "SM_F1": 0.4899
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 822,
+                "line_end": 822,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "Heuristic",
+              "values": {
+                "LCS_precision": 0.5123,
+                "LCS_recall": 0.4816,
+                "LCS_F1": 0.4951,
+                "SM_precision": 0.61,
+                "SM_recall": 0.5789,
+                "SM_F1": 0.5922
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 823,
+                "line_end": 823,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "Heuristic-C",
+              "values": {
+                "LCS_precision": 0.492,
+                "LCS_recall": 0.4643,
+                "LCS_F1": 0.476,
+                "SM_precision": 0.6089,
+                "SM_recall": 0.5801,
+                "SM_F1": 0.592
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 824,
+                "line_end": 824,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            },
+            {
+              "algorithm": "Heuristic-LR",
+              "values": {
+                "LCS_precision": 0.515,
+                "LCS_recall": 0.4857,
+                "LCS_F1": 0.4982,
+                "SM_precision": 0.6211,
+                "SM_recall": 0.5882,
+                "SM_F1": 0.6021
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 825,
+                "line_end": 825,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 5"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 818,
+              "line_end": 825,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 Table 5"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 774,
+              "line_end": 783,
+              "pdf_pages": [
+                8
+              ],
+              "section": "§4.3 sample"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 869,
+              "line_end": 876,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 CV and replications"
+            }
+          ],
+          "protocol_limits": "Explicit split unit, fold sizes, seeds, TP/FP/FN, per-run values, and weights for P/R/F1 aggregation are not reported."
+        },
+        {
+          "table": 6,
+          "task": "Q–A pairing",
+          "setting": "Annotator 2 Enron/CSpace Q–A threads; approximately 90 threads; five-fold CV, 50 replications",
+          "results": [
+            {
+              "algorithm": "SMQA",
+              "values": {
+                "LCS_precision": 0.1222,
+                "LCS_recall": 0.5465,
+                "LCS_F1": 0.1972,
+                "SM_precision": 0.1018,
+                "SM_recall": 0.4134,
+                "SM_F1": 0.1607
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 830,
+                "line_end": 830,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "SMQA-regex",
+              "values": {
+                "LCS_precision": 0.4818,
+                "LCS_recall": 0.4546,
+                "LCS_F1": 0.4587,
+                "SM_precision": 0.4272,
+                "SM_recall": 0.3651,
+                "SM_F1": 0.3852
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 831,
+                "line_end": 831,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "SMQA-highest",
+              "values": {
+                "LCS_precision": 0.5273,
+                "LCS_recall": 0.4597,
+                "LCS_F1": 0.489,
+                "SM_precision": 0.4815,
+                "SM_recall": 0.345,
+                "SM_F1": 0.3985
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 832,
+                "line_end": 832,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "LCS_precision": 0.5375,
+                "LCS_recall": 0.105,
+                "LCS_F1": 0.1728,
+                "SM_precision": 0.4874,
+                "SM_recall": 0.0865,
+                "SM_F1": 0.1445
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 833,
+                "line_end": 833,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "Random",
+              "values": {
+                "LCS_precision": 0.466,
+                "LCS_recall": 0.4084,
+                "LCS_F1": 0.433,
+                "SM_precision": 0.4477,
+                "SM_recall": 0.3274,
+                "SM_F1": 0.3752
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 834,
+                "line_end": 834,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "Heuristic",
+              "values": {
+                "LCS_precision": 0.6072,
+                "LCS_recall": 0.5039,
+                "LCS_F1": 0.5483,
+                "SM_precision": 0.5567,
+                "SM_recall": 0.3768,
+                "SM_F1": 0.4459
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 835,
+                "line_end": 835,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "Heuristic-C",
+              "values": {
+                "LCS_precision": 0.5595,
+                "LCS_recall": 0.5018,
+                "LCS_F1": 0.5439,
+                "SM_precision": 0.5547,
+                "SM_recall": 0.3784,
+                "SM_F1": 0.4463
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 836,
+                "line_end": 836,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            },
+            {
+              "algorithm": "Heuristic-LR",
+              "values": {
+                "LCS_precision": 0.6236,
+                "LCS_recall": 0.524,
+                "LCS_F1": 0.567,
+                "SM_precision": 0.5725,
+                "SM_recall": 0.3908,
+                "SM_F1": 0.4597
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 837,
+                "line_end": 837,
+                "pdf_pages": [
+                  9
+                ],
+                "section": "Table 6"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 830,
+              "line_end": 837,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 Table 6"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 774,
+              "line_end": 783,
+              "pdf_pages": [
+                8
+              ],
+              "section": "§4.3 sample"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 869,
+              "line_end": 876,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 CV and replications"
+            }
+          ],
+          "protocol_limits": "Explicit split unit, fold sizes, seeds, TP/FP/FN, per-run values, and weights for P/R/F1 aggregation are not reported."
+        },
+        {
+          "table": 7,
+          "task": "Q–A pairing",
+          "setting": "Enron/CSpace intersection set; exact scoring population construction and CV details not restated",
+          "results": [
+            {
+              "algorithm": "SMQA",
+              "values": {
+                "LCS_precision": 0.082,
+                "LCS_recall": 0.5514,
+                "LCS_F1": 0.1403,
+                "SM_precision": 0.0804,
+                "SM_recall": 0.5404,
+                "SM_F1": 0.1375
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 843,
+                "line_end": 843,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "SMQA-regex",
+              "values": {
+                "LCS_precision": 0.3804,
+                "LCS_recall": 0.5597,
+                "LCS_F1": 0.442,
+                "SM_precision": 0.3803,
+                "SM_recall": 0.5595,
+                "SM_F1": 0.4419
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 844,
+                "line_end": 844,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "SMQA-highest",
+              "values": {
+                "LCS_precision": 0.4514,
+                "LCS_recall": 0.649,
+                "LCS_F1": 0.5286,
+                "SM_precision": 0.4364,
+                "SM_recall": 0.5597,
+                "SM_F1": 0.4867
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 845,
+                "line_end": 845,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "LCS_precision": 0.4896,
+                "LCS_recall": 0.1807,
+                "LCS_F1": 0.2583,
+                "SM_precision": 0.4896,
+                "SM_recall": 0.1807,
+                "SM_F1": 0.2583
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 846,
+                "line_end": 846,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "Random",
+              "values": {
+                "LCS_precision": 0.3958,
+                "LCS_recall": 0.5603,
+                "LCS_F1": 0.4603,
+                "SM_precision": 0.3906,
+                "SM_recall": 0.5177,
+                "SM_F1": 0.4417
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 847,
+                "line_end": 847,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "Heuristic",
+              "values": {
+                "LCS_precision": 0.5293,
+                "LCS_recall": 0.7149,
+                "LCS_F1": 0.6043,
+                "SM_precision": 0.5118,
+                "SM_recall": 0.6222,
+                "SM_F1": 0.5575
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 848,
+                "line_end": 848,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "Heuristic-C",
+              "values": {
+                "LCS_precision": 0.5283,
+                "LCS_recall": 0.7118,
+                "LCS_F1": 0.6021,
+                "SM_precision": 0.5104,
+                "SM_recall": 0.6175,
+                "SM_F1": 0.5546
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 849,
+                "line_end": 849,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            },
+            {
+              "algorithm": "Heuristic-LR",
+              "values": {
+                "LCS_precision": 0.53,
+                "LCS_recall": 0.7138,
+                "LCS_F1": 0.6041,
+                "SM_precision": 0.5131,
+                "SM_recall": 0.6204,
+                "SM_F1": 0.5571
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 850,
+                "line_end": 850,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 7"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 843,
+              "line_end": 850,
+              "pdf_pages": [
+                10
+              ],
+              "section": "§4.3 Table 7"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 774,
+              "line_end": 783,
+              "pdf_pages": [
+                8
+              ],
+              "section": "§4.3 annotation overlap"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 897,
+              "line_end": 904,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 intersection/union results"
+            }
+          ],
+          "protocol_limits": "Results refer to intersection/union sets described in [34]. R05 does not specify operational gold-pair construction, pair counts, participating annotators for each result, or a separate split/replication procedure. Do not replace these with the 23/61 shared-thread counts or assume fixed identical predictions across the two tables."
+        },
+        {
+          "table": 8,
+          "task": "Q–A pairing",
+          "setting": "Enron/CSpace union set; exact size, scoring construction and CV details not restated",
+          "results": [
+            {
+              "algorithm": "SMQA",
+              "values": {
+                "LCS_precision": 0.1128,
+                "LCS_recall": 0.4815,
+                "LCS_F1": 0.1812,
+                "SM_precision": 0.1104,
+                "SM_recall": 0.4682,
+                "SM_F1": 0.1772
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 855,
+                "line_end": 855,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "SMQA-regex",
+              "values": {
+                "LCS_precision": 0.5324,
+                "LCS_recall": 0.4402,
+                "LCS_F1": 0.4471,
+                "SM_precision": 0.532,
+                "SM_recall": 0.4398,
+                "SM_F1": 0.4767
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 856,
+                "line_end": 856,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "SMQA-highest",
+              "values": {
+                "LCS_precision": 0.5976,
+                "LCS_recall": 0.4505,
+                "LCS_F1": 0.5108,
+                "SM_precision": 0.5928,
+                "SM_recall": 0.3995,
+                "SM_F1": 0.4746
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 857,
+                "line_end": 857,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "LCS_precision": 0.561,
+                "LCS_recall": 0.0907,
+                "LCS_F1": 0.1544,
+                "SM_precision": 0.561,
+                "SM_recall": 0.0907,
+                "SM_F1": 0.1544
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 858,
+                "line_end": 858,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "Random",
+              "values": {
+                "LCS_precision": 0.5584,
+                "LCS_recall": 0.4212,
+                "LCS_F1": 0.4777,
+                "SM_precision": 0.5572,
+                "SM_recall": 0.3874,
+                "SM_F1": 0.4546
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 859,
+                "line_end": 859,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "Heuristic",
+              "values": {
+                "LCS_precision": 0.7016,
+                "LCS_recall": 0.5055,
+                "LCS_F1": 0.5845,
+                "SM_precision": 0.6961,
+                "SM_recall": 0.4467,
+                "SM_F1": 0.5414
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 860,
+                "line_end": 860,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "Heuristic-C",
+              "values": {
+                "LCS_precision": 0.7053,
+                "LCS_recall": 0.4963,
+                "LCS_F1": 0.5795,
+                "SM_precision": 0.6983,
+                "SM_recall": 0.4383,
+                "SM_F1": 0.5358
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 861,
+                "line_end": 861,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            },
+            {
+              "algorithm": "Heuristic-LR",
+              "values": {
+                "LCS_precision": 0.7126,
+                "LCS_recall": 0.5125,
+                "LCS_F1": 0.5935,
+                "SM_precision": 0.7074,
+                "SM_recall": 0.4542,
+                "SM_F1": 0.5506
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 862,
+                "line_end": 862,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 8"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 855,
+              "line_end": 862,
+              "pdf_pages": [
+                10
+              ],
+              "section": "§4.3 Table 8"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 774,
+              "line_end": 783,
+              "pdf_pages": [
+                8
+              ],
+              "section": "§4.3 annotation overlap"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 897,
+              "line_end": 904,
+              "pdf_pages": [
+                9
+              ],
+              "section": "§4.3 intersection/union results"
+            }
+          ],
+          "protocol_limits": "Results refer to intersection/union sets described in [34]. R05 does not specify operational gold-pair construction, pair counts, participating annotators for each result, or a separate split/replication procedure. Do not replace these with the 23/61 shared-thread counts or assume fixed identical predictions across the two tables."
+        },
+        {
+          "table": 9,
+          "task": "Q–A pairing runtime",
+          "setting": "Enron/CSpace thread processing; mean 5.2 messages/thread and 13.9 sentences/message; exact timing sample size not reported",
+          "results": [
+            {
+              "algorithm": "SMQA",
+              "values": {
+                "mean_ms_per_thread": 1800.0,
+                "variance_printed_unit_ms": 5480.0,
+                "median_ms_per_thread": 2590.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 890,
+                "line_end": 890,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "SMQA-regex",
+              "values": {
+                "mean_ms_per_thread": 37.4,
+                "variance_printed_unit_ms": 9.7,
+                "median_ms_per_thread": 305.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 891,
+                "line_end": 891,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "SMQA-highest",
+              "values": {
+                "mean_ms_per_thread": 33.8,
+                "variance_printed_unit_ms": 7.5,
+                "median_ms_per_thread": 86.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 892,
+                "line_end": 892,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "Naïve",
+              "values": {
+                "mean_ms_per_thread": 1.1,
+                "variance_printed_unit_ms": 0.0,
+                "median_ms_per_thread": 0.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 893,
+                "line_end": 893,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "Random",
+              "values": {
+                "mean_ms_per_thread": 1.7,
+                "variance_printed_unit_ms": 0.0,
+                "median_ms_per_thread": 0.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 894,
+                "line_end": 894,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "Heuristic",
+              "values": {
+                "mean_ms_per_thread": 241.0,
+                "variance_printed_unit_ms": 341.0,
+                "median_ms_per_thread": 945.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 895,
+                "line_end": 895,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "Heuristic-C",
+              "values": {
+                "mean_ms_per_thread": 320.0,
+                "variance_printed_unit_ms": 508.0,
+                "median_ms_per_thread": 1340.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 896,
+                "line_end": 896,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            },
+            {
+              "algorithm": "Heuristic-LR",
+              "values": {
+                "mean_ms_per_thread": 316.0,
+                "variance_printed_unit_ms": 488.0,
+                "median_ms_per_thread": 1320.0
+              },
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+                "line_start": 897,
+                "line_end": 897,
+                "pdf_pages": [
+                  10
+                ],
+                "section": "Table 9"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+              "line_start": 890,
+              "line_end": 897,
+              "pdf_pages": [
+                10
+              ],
+              "section": "§4.3 Table 9"
+            }
+          ],
+          "pdf_visual_verified": true,
+          "protocol": "Java 1.6, Intel Core 2 Quad 2.33 GHz, 3.25 GB RAM, Windows XP. Statistics are described as per-thread milliseconds on Enron/CSpace Q–A experiments; timing sample size, training-time inclusion, and aggregation across replications are not stated.",
+          "protocol_sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 554,
+              "line_end": 556,
+              "pdf_pages": [
+                6
+              ],
+              "section": "§4 hardware"
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 1069,
+              "line_end": 1111,
+              "pdf_pages": [
+                10
+              ],
+              "section": "§4.3 timing"
+            }
+          ],
+          "reliability": "Preserved as printed; use only with the same-population and unit qualifications in R05-I03. No dependable ARM or msgloom latency inference."
+        }
+      ],
+      "additional_reported_results": [
+        {
+          "statement": "Greeting/signature culling improves performance by as much as 25%; task is Q–A processing, but metric, denominator, variant, split and absolute-versus-relative change are unspecified. Treat as an underspecified author report.",
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 434,
+              "line_end": 437,
+              "pdf_pages": [
+                5
+              ],
+              "section": "§3.2"
+            }
+          ]
+        },
+        {
+          "statement": "Question-detection full-set runtime prose reports medians essentially zero for Regex/Naïve and 18.5 ms for S&M; printed variances Regex 8.61, Naïve 0.185, S&M 1750 ms. Exact timing population per statistic and variance units are unclear.",
+          "sources": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+              "line_start": 704,
+              "line_end": 711,
+              "pdf_pages": [
+                7
+              ],
+              "section": "§4.2 timing"
+            }
+          ]
+        },
+        "R05-F07",
+        "R05-F08"
+      ]
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation",
+      "direct_evidence": "No measurement of retained/lost conditions, evidence, exceptions, approval scope, action scope, or complete reply scope.",
+      "related_extraction_evidence": "Question P/R and Q–A pair P/R expose missed or wrong extraction/linkage. Annotation-length mismatch (R05-F05) and LCS tolerance (R05-F06) matter to evaluation, but are not measured scope-loss rates. System user benefits are attributed to other work in §5; not an R05 preservation experiment.",
+      "sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 830,
+          "line_end": 840,
+          "pdf_pages": [
+            8
+          ],
+          "section": "§4.3"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+          "line_start": 1155,
+          "line_end": 1157,
+          "pdf_pages": [
+            11
+          ],
+          "section": "§5"
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Topic-boundary detection",
+      "Contiguous Topic segmentation",
+      "Segment Topic labeling",
+      "Whole-message multi-label Topic classification",
+      "Exact Topic span assignment",
+      "Overlapping Topic span assignment",
+      "Non-contiguous spans assigned to one Topic",
+      "Discourse/EDU segmentation",
+      "Complete action, approval and reply-scope extraction",
+      "Preservation of decision-bearing conditions, evidence and scope",
+      "Attachments, inline images, cross-source/cross-thread Topic continuity, incremental updates, or uncertainty calibration"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "R05-I01",
+        "type": "paper definition versus numerical results",
+        "detail": "PDF page 4 §3.1 explicitly calls F1 the geometric mean; no harmonic-mean definition is supplied there. For the Table 1 S&M interrogative-only Enron/CSpace detection test (350 non-questions plus the interrogative subset of the 350 questions; transferred telephone-speech training), printed P=0.623, R=0.865, F1=0.724. Applying the usual formulas to that one P/R pair gives harmonic mean about 0.7243 and geometric mean about 0.7341. The row is consistent with ordinary harmonic F1, not geometric averaging of that printed pair. This confirms a definition/ordinary-numerical-use mismatch; it does not prove the aggregation used for every table or license corrected values.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 283,
+            "line_end": 285,
+            "pdf_pages": [
+              4
+            ],
+            "section": "§3.1"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+            "line_start": 623,
+            "line_end": 625,
+            "pdf_pages": [
+              7
+            ],
+            "section": "Table 1"
+          }
+        ],
+        "disposition": "Confirmed printed wording; ordinary F1 mismatch retained with scope. No guessed correction."
+      },
+      {
+        "id": "R05-I02",
+        "type": "method count",
+        "detail": "§4.3 says nine algorithms. Table 4 lists eight: SMQA, SMQA-regex, SMQA-highest, Naïve, Random, Heuristic, Heuristic-C, Heuristic-LR. Tables 5–9 likewise contain eight rows. No missing ninth method is inferred.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 843,
+            "line_end": 844,
+            "pdf_pages": [
+              8
+            ],
+            "section": "§4.3 Methods"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+            "line_start": 717,
+            "line_end": 727,
+            "pdf_pages": [
+              8
+            ],
+            "section": "Table 4"
+          }
+        ],
+        "disposition": "Confirmed printed count mismatch; retain eight named methods and the source’s nine wording. No ninth method inferred."
+      },
+      {
+        "id": "R05-I03",
+        "type": "conditional runtime arithmetic inconsistency and unit ambiguity",
+        "detail": "PDF page 10 Table 9 prints mean/variance/median under a computation-times (ms) caption. Means/medians are SMQA 1800/2590, SMQA-regex 37.4/305, SMQA-highest 33.8/86.0, Naïve 1.10/0, Random 1.70/0, Heuristic 241/945, Heuristic-C 320/1340, and Heuristic-LR 316/1320. Assume each row describes the same population of nonnegative per-thread times, in the same units, with the arithmetic mean and ordinary median and the same observation weights (or one common empirical distribution), allowing ordinary printed rounding. Then median <= 2*mean; five rows (SMQA-regex/highest and all three Heuristic variants) violate this bound by much more than rounding. A single row’s means and medians computed on different samples or differently weighted aggregates need not obey that comparison, but such a construction is not described. If variance is conventional variance of those same times in ms^2, the median/mean separation also requires variance >= (median-mean)^2; even SMQA would require at least 624100 ms^2, not 5480. The caption does not supply correct squared units. Printed zero variances for Naïve/Random with positive means and zero medians are suspicious under literal same-population interpretation, but rounded zero alone does not establish exact zero variance. Preserve every printed value; units, aggregation, and intended corrections are unknown. The prose’s extremely-low-median description has no numerical threshold and is not independently a mathematical contradiction.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+            "line_start": 882,
+            "line_end": 907,
+            "pdf_pages": [
+              10
+            ],
+            "section": "§4.3 Table 9 and timing prose"
+          }
+        ],
+        "disposition": "Conditional inconsistency confirmed under ordinary same-population statistics; unknown source intent retained. No column swap, unit conversion, or decimal repair."
+      },
+      {
+        "id": "R05-I04",
+        "type": "F1 arithmetic/aggregation ambiguity",
+        "detail": "PDF page 9 Table 6, Annotator 2 Enron/CSpace Q–A data (about 90 threads, five-fold CV separately per annotator, 50 replications), prints Heuristic-C LCS P=0.5595, R=0.5018, F1=0.5439. Harmonic F1 of those P/R values is about 0.5291; their arithmetic mean is 0.53065. For each unit i, harmonic F1_i <= (P_i+R_i)/2; averaging all three metrics over the same units with the same nonnegative normalized weights preserves that bound. Printed 0.5439 exceeds it beyond four-decimal rounding. The row is therefore inconsistent with a single pooled P/R/F1 triplet or ordinary same-weight averaging of per-unit harmonic F1. Different weights, separately sampled runs, or mixed aggregation levels would invalidate that test; weights and per-run counts are not reported. Preserve the printed values rather than replacing F1 with 0.5291. Table 8 union-set SMQA-regex LCS P/R/F1=0.5324/0.4402/0.4471 and SM=0.5320/0.4398/0.4767 are also retained. Those cross-metric differences alone are not a proven error: averaged F1 need not equal F1 of averaged P/R, and matching populations or per-run distributions can differ.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+            "line_start": 836,
+            "line_end": 836,
+            "pdf_pages": [
+              9
+            ],
+            "section": "Table 6"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+            "line_start": 856,
+            "line_end": 856,
+            "pdf_pages": [
+              10
+            ],
+            "section": "Table 8"
+          }
+        ],
+        "disposition": "Table 6 conditional arithmetic inconsistency retained; Table 8 anomaly not promoted to contradiction. No inferred aggregation or numeric correction."
+      },
+      {
+        "id": "R05-I05",
+        "type": "table emphasis",
+        "detail": "Table 7 bolds Heuristic SM precision 0.5118, although Heuristic-LR SM precision is higher at 0.5131. Values take precedence over bold emphasis; F1 ranking is unaffected.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 1009,
+            "line_end": 1015,
+            "pdf_pages": [
+              10
+            ],
+            "section": "Table 7 Heuristic and Heuristic-LR rows"
+          }
+        ],
+        "disposition": "Printed emphasis mismatch retained; source range extended to include the higher value. No performance result changed."
+      },
+      {
+        "id": "R05-I06",
+        "type": "frozen metadata discrepancy",
+        "detail": "The frozen papers/MANIFEST.json R05 entry and current frozen-corpus shortlist both name Chee Wei Kwong; the original local PDF page 1 author line names Helen Kwong and Neil Yorke-Smith. The manifest PDF hash matches the original PDF. Canonical analysis retains the PDF author line and records the metadata discrepancy. No external identity lookup, author-identity explanation, or manifest/shortlist edit is made.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 10,
+            "line_end": 10,
+            "pdf_pages": [
+              1
+            ],
+            "section": "author line"
+          }
+        ],
+        "metadata_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+        "metadata_sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/MANIFEST.json",
+            "line_start": 272,
+            "line_end": 284
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+            "line_start": 457,
+            "line_end": 463
+          }
+        ],
+        "disposition": "Confirmed local metadata/PDF mismatch; PDF author names retained. Identity cause not known."
+      },
+      {
+        "id": "R05-I07",
+        "type": "unreported operational gold construction; not a demonstrated contradiction",
+        "detail": "PDF page 8 states that all four annotators annotated 23 Q–A threads and calls these the intersection set; Annotators 1 and 2 shared 61 Q–A threads. These are shared-thread counts, not counts of agreed pairs. Page 9 refers to intersection and union sets described in [34]; page 10 Tables 7–8 use those labels without specifying how gold Q/A endpoints or pair agreements were merged, which annotators supplied each set, how disagreement was matched, or the pair denominators. R05 alone therefore does not establish all-annotator-agreed pairs versus any-annotator pairs as the exact scoring gold. Reference [34] was not consulted in this R05-only review. No precision/recall reversal or construction contradiction follows without fixed predictions, fixed counting rules, and the same evaluation population. Different datasets, denominators, training, or stochastic realized outputs can change the comparison.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 774,
+            "line_end": 789,
+            "pdf_pages": [
+              8
+            ],
+            "section": "§4.3 Data"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 897,
+            "line_end": 904,
+            "pdf_pages": [
+              9
+            ],
+            "section": "§4.3 Results"
+          }
+        ],
+        "disposition": "Retain as a source-detail gap. Do not infer gold set construction from the words union/intersection or from the 23/61 thread counts."
+      },
+      {
+        "id": "R05-I08",
+        "type": "source-described precision risk plus plausible recall/scope risk; not a contradiction",
+        "detail": "PDF page 5 footnote 3 explicitly says excluding an individual’s later reply can cost potentially reduced precision. That is logically plausible for this pipeline: pruning can remove a correct high-ranked candidate, change candidate-order/count features, change the selected answer, or interact with thresholds and reuse caps; downstream precision as well as recall can change. Removing true candidates can also cause recall or reply-scope loss, but that is an analysis risk inference, not a measured preservation result. Page 10 qualitatively reports improvement in some cases when this filter is removed, with greater runtime, but gives no metric-specific deltas, exact subset, or tuning protocol. Do not replace the source’s precision wording with an asserted recall correction.",
+        "sources": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 483,
+            "line_end": 486,
+            "pdf_pages": [
+              5
+            ],
+            "section": "footnote 3"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+            "line_start": 1059,
+            "line_end": 1064,
+            "pdf_pages": [
+              10
+            ],
+            "section": "§4.3 permutations"
+          }
+        ],
+        "disposition": "Prior terminology-defect implication removed. Preserve source wording and qualify plausible losses; no contradiction established."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "R05-F05: direct sentence-versus-longer-gold mismatch, no controlled choice of optimal unit.",
+      "RQ2": "R05-F03: structural features and later-message candidate links; thread assembly assumed, no Topic clustering.",
+      "RQ3": "R05-F03/R05-F07: multiple Q–A memberships for one predicted answer; gold cardinality and Topic memberships absent.",
+      "RQ4": "Endpoint reuse and nonadjacent thread links only; no within-message overlapping/discontinuous Topic representation.",
+      "RQ5": "No preservation evaluation; filters and coarse endpoints identify plausible risks only.",
+      "RQ6": "R05-F02/R05-F04/R05-F06 plus full tables and R05-I01–I05; task and metric distinctions required.",
+      "RQ7": "Small mixed email datasets, paragraph-level kappa, separate annotator CV and unreported leakage controls.",
+      "RQ8": "Untested experiments below; no architecture approval."
+    },
+    "interpretation": [
+      {
+        "id": "R05-INT01",
+        "claim": "A Q–A edge can help identify reply scope, but cannot establish that its endpoints are a complete work matter or that the whole thread has one Topic.",
+        "basis": [
+          "R05-F03",
+          "R05-F05"
+        ]
+      },
+      {
+        "id": "R05-INT02",
+        "claim": "Sentence-only answers and the shorter-segment LCS denominator can accept a partial answer even if an omitted adjacent condition changes the decision. This is a plausible failure mode, not a measured result.",
+        "basis": [
+          "R05-F05",
+          "R05-F06"
+        ]
+      },
+      {
+        "id": "R05-INT03",
+        "claim": "First-reply, author, and question-sentence exclusions can plausibly omit self-answers, clarifications, and later corrections. Candidate filtering can also change downstream answer ranking/selection and precision; it is not a recall-only operation. These are risk inferences, not measured work-scope loss or proof of an erroneous precision claim.",
+        "basis": [
+          "R05-F03",
+          "R05-F07"
+        ]
+      },
+      {
+        "id": "R05-INT04",
+        "claim": "Binary question detection at a balanced prevalence and pair scores from one annotator cannot establish mailbox-scale Topic recall or safe approval coverage.",
+        "basis": [
+          "R05-F01",
+          "R05-F02",
+          "R05-F04"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "R05-EXP01",
+        "status": "untested proposal",
+        "design": "On user-reviewed synthetic or authorized representative work email, compare sentence, clause, arbitrary span and multi-span answer units with shared inputs and model conditions. Annotate necessary conditions, evidence and reply scope separately. Evaluate exact span/IoU, Q–A links and scope preservation as distinct outcomes.",
+        "basis": [
+          "R05-F05",
+          "R05-F06"
+        ]
+      },
+      {
+        "id": "R05-EXP02",
+        "status": "untested proposal",
+        "design": "Annotate shared-answer cardinality and within-message discontinuity explicitly. Compare unrestricted candidate links against first-reply, same-author and question-sentence filters. Include forked replies, self-corrections and questions answering questions; score gold and predicted memberships separately.",
+        "basis": [
+          "R05-F03",
+          "R05-F07"
+        ]
+      },
+      {
+        "id": "R05-EXP03",
+        "status": "untested proposal",
+        "design": "Use thread-grouped, near-duplicate-controlled held-out tests at natural question prevalence; report question-form detection, pair matching, complete scope recall and false scope expansion separately. Test runtime locally on ARM only after correctness is established.",
+        "basis": [
+          "R05-F01",
+          "R05-F02",
+          "R05-I03"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/reused-topic01/2012_kwong_yorke_smith_imperative_declarative_question_answer_pairs_email.pdf",
+      "pdf_sha256": "ad30ed07c2be01b7fd455aaa756d693dd770581f5bd67639f76da11e5a7b3824",
+      "expected_pdf_sha256": "ad30ed07c2be01b7fd455aaa756d693dd770581f5bd67639f76da11e5a7b3824",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R05.md",
+      "converted_text_sha256": "153088d4de66a235016b2920310e96c0e349db35f36033a8bdac212cf66b4012",
+      "conversion": "convert_rough; convert_fine/R05.md absent",
+      "read_scope": "Fresh xhigh review read the full R05 rough conversion including references, archived high-effort analysis/Markdown/receipt, installed contract/schema, and WORKER_REQUIREMENTS. Original PDF pages 1, 4, 5, and 7–11 were freshly rendered and visually checked; local raw/layout/page-indexed extracts supplied relevant cross-checks. Frozen manifest and shortlist R05 entries checked. No external lookup or Topic01 conclusion reuse.",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.raw.txt",
+          "sha256": "6946adb9484fe672e6e36cc8b55759e0003c172e87e9be9cdfd8a82a3a2add78"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.layout.txt",
+          "sha256": "3b42fabf97020c17ffa2a043083510d4e7d1a5e5a3cbd7ef9e9120077e28568d"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R05.pages.md",
+          "sha256": "6db0d9be6da3bc6c4dff46bfa9135d3ea3bda3316a66d1da5afbfed4d7870a02"
+        }
+      ],
+      "pdf_visual_inspection": {
+        "pages": [
+          1,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-01.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-04.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-05.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-07.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-08.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-09.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-10.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R05/xhigh-pdf-page-11.png"
+        ],
+        "findings": "Fresh renders from the original hashed PDF confirm author line, geometric-mean wording, candidate/assignment constraints, Tables 1–9, paragraph/IAA descriptions, CV wording, union/intersection reference, sensitivity paragraph, and learning curves. Printed journal pages equal PDF page + 270. No visual transcription was needed.",
+        "escalation_required": false
+      },
+      "metadata_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/MANIFEST.json",
+          "sha256": "f95f5e7c76cdb2f901c07839e80d413caf6b46d0e68e93744df49a62d9c2c8de",
+          "read_scope": "R05 entry, lines 272–294; hash matches corpus freeze"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "R05 entry"
+        }
+      ]
+    }
+  },
+  "runtime_provenance": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "actual_model": "gpt-6-astra",
+    "actual_effort": "xhigh",
+    "role": "focused R05 paper-analyzer escalation",
+    "provenance_basis": "Actual runtime specified by the current focused escalation invocation; parent independently verifies turn/process receipts. No inference from stale high-effort environment variables or prior attempt.",
+    "parent_verification": "Pending parent verification; no runner submission or acceptance performed here."
+  }
+}

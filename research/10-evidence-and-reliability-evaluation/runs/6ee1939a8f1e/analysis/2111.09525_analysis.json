@@ -1,0 +1,74 @@
+{
+ "paper_id": "2111.09525",
+ "title": "SummaC: Re-Visiting NLI-based Models for Inconsistency Detection in Summarization",
+ "research_question": "Can natural-language-inference models reliably detect factual inconsistency in summaries if the granularity mismatch between sentence-level NLI training and document-level summarization evaluation is explicitly addressed?",
+ "methodology": "The authors split source documents and summaries into smaller text blocks and run an NLI model over every source-summary block pair to form an NLI pair matrix. SummaC-ZS aggregates maximum entailment evidence per summary sentence without training, while SummaC-Conv bins the score distributions and learns a small convolutional aggregation layer on a subset of synthetic FactCC training data. Evaluation uses the SummaC Benchmark, which standardizes six existing factual-consistency datasets into binary classification tasks, with balanced accuracy as the primary metric, ROC-AUC as a secondary metric, and bootstrap significance tests against prior systems.",
+ "key_findings": [
+  {
+   "finding": "Using sentence-level or similarly fine-grained NLI comparisons substantially improves inconsistency detection compared with applying NLI directly to full documents and summaries.",
+   "evidence_type": "supported",
+   "section": "5.3.3 Choice of Granularity"
+  },
+  {
+   "finding": "SummaC-Conv achieved 74.4 percent average balanced accuracy on the six-dataset SummaC Benchmark, approximately five absolute points above the strongest reported non-NLI baseline.",
+   "evidence_type": "supported",
+   "section": "5.2 SummaC Benchmark Results"
+  },
+  {
+   "finding": "Overall improvements of both SummaC variants over prior work were statistically significant under the paper's bootstrap testing procedure, with the stronger significance level reported for SummaC-Conv.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Statistical Testing"
+  },
+  {
+   "finding": "Using the full distribution of sentence-level entailment scores in SummaC-Conv is more robust than relying only on each summary sentence's single maximum entailment score.",
+   "evidence_type": "supported",
+   "section": "5.2 SummaC Benchmark Results"
+  },
+  {
+   "finding": "NLI architecture and training data materially affect factual-consistency performance, with Transformer-based models and domain-relevant NLI data outperforming the older decomposable-attention setup used in earlier negative results.",
+   "evidence_type": "supported",
+   "section": "5.3.1 Choice of NLI Model"
+  },
+  {
+   "finding": "The benchmark standardization exposes substantial variation in annotation regimes, class balance and source summarization datasets, rather than assuming that all factuality datasets measure an identical distribution.",
+   "evidence_type": "supported",
+   "section": "4 SummaC Benchmark"
+  }
+ ],
+ "limitations": [
+  "All six benchmark datasets are from news summarization, so performance outside that domain was not established.",
+  "Benchmark datasets differ in annotation quality, annotator expertise, labeling schemes and class balance.",
+  "Some datasets lacked existing validation/test splits, requiring the authors to construct deterministic splits.",
+  "Some benchmark datasets have only one annotator per example, preventing inter-annotator reliability estimates for those datasets.",
+  "Sentence-level decomposition can miss evidence requiring cross-sentence or multi-hop reasoning.",
+  "The system detects inconsistency but does not itself solve factual correction or guarantee factual summaries.",
+  "Performance remains far below perfect consistency detection despite outperforming the compared baselines."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "granularity_effect": 0.99,
+  "summac_conv_performance": 0.99,
+  "statistical_improvement": 0.97,
+  "nli_training_choice": 0.98,
+  "cross_domain_generalization": 0.7
+ },
+ "raw_claims": [
+  "Earlier NLI-based factuality approaches suffered from a mismatch between sentence-level NLI training and document-level summarization inputs.",
+  "SummaC represents support using pairwise NLI scores between source and summary text blocks.",
+  "SummaC-ZS uses the strongest source-sentence support for each summary sentence and then aggregates across the summary.",
+  "SummaC-Conv learns from the distribution of NLI scores rather than depending only on extrema.",
+  "The SummaC Benchmark combines six factual-consistency datasets into a common binary classification setup.",
+  "Balanced accuracy is used because the component datasets have strongly different class distributions.",
+  "SummaC-Conv obtained the highest overall balanced accuracy among the compared methods.",
+  "Fine textual granularity generally outperformed full-document NLI evaluation.",
+  "The source and quality of NLI training data materially affected downstream consistency detection.",
+  "The authors publicly released the SummaC models and standardized benchmark data.",
+  "The benchmark is concentrated on news and does not establish performance in other document domains."
+ ],
+ "source_url": "https://arxiv.org/html/2111.09525",
+ "access": "full_text"
+}

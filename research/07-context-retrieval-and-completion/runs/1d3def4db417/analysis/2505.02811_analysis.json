@@ -1,0 +1,89 @@
+{
+ "paper_id": "2505.02811",
+ "title": "Knowing You Don't Know: Learning When to Continue Search in Multi-round RAG through Self-Practicing",
+ "research_question": "Can a separately trained information-sufficiency critic learn when a multi-round RAG system has enough evidence to answer and when it should continue searching, without requiring manually annotated stopping decisions?",
+ "methodology": "The paper introduces SIM-RAG, which self-practices multi-round retrieval over existing question-answer pairs to create synthetic supervision for a lightweight information-sufficiency Critic. At each simulated round, the Reasoner produces an answer and rationale, the trajectory is labeled Accept when the answer matches the gold answer and Reject otherwise, and unsuccessful rounds generate a new search query and retrieve additional context up to a configured maximum turn count. At inference time, the Critic examines the question, retrieved documents, proposed answer, and rationale and either accepts the answer or rejects it and triggers another retrieval round; experiments use TriviaQA, HotpotQA, and 2WikiMultiHopQA with Llama3-8B and GPT-4 variants.",
+ "key_findings": [
+  {
+   "finding": "SIM-RAG learns an explicit binary information-sufficiency decision that determines whether to return the current answer or perform another retrieval round.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "Self-practice generates Critic supervision automatically from multi-round trajectories by labeling rounds according to whether the current generated answer matches the known answer.",
+   "evidence_type": "supported",
+   "section": "Self-Practicing"
+  },
+  {
+   "finding": "The external Critic is separated from the Reasoner to reduce reliance on the same model's self-critique, and its Accept/Reject decision controls subsequent retrieval behavior.",
+   "evidence_type": "supported",
+   "section": "Critic Training and Inference"
+  },
+  {
+   "finding": "The reported GPT-4 configuration with the full Critic achieved F1 scores of 82.7 on TriviaQA, 52.2 on HotpotQA, and 54.6 on 2WikiMultiHopQA.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Increasing the maximum self-practice/retrieval turn count improved HotpotQA results in the reported turn-count study, while the paper also observes that false rejection can cause harmful over-retrieval.",
+   "evidence_type": "supported",
+   "section": "Turn Ablation and Discussion"
+  },
+  {
+   "finding": "The maximum number of rounds is an explicit hard retrieval bound, but the paper describes it as an arbitrary hyperparameter rather than a calibrated risk budget.",
+   "evidence_type": "supported",
+   "section": "Turn Ablation"
+  },
+  {
+   "finding": "The Critic is system- and domain-sensitive: the authors state that substantial changes to the Reasoner or Retriever may require retraining and that domain-specific terminology can reduce effectiveness.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  },
+  {
+   "finding": "No conformal stopping guarantee, temporal/version-aware provenance representation, or permission-aware evidence-access mechanism is described.",
+   "evidence_type": "unsupported",
+   "section": "Method and Discussion"
+  }
+ ],
+ "limitations": [
+  "The Critic's sufficiency labels are derived from answer correctness rather than from an explicit structured checklist of all required evidence propositions.",
+  "The Critic is tied to the behavior of the Reasoner and Retriever used to generate its training trajectories and may need retraining when those components change substantially.",
+  "Domain-specific jargon and terminology can reduce Critic reliability without adaptation.",
+  "False rejection can trigger unnecessary retrieval and can introduce evidence that harms the answer.",
+  "Even an oracle stopping decision cannot fix failures caused by an incapable Reasoner, poor query formulation, or retrieval failure.",
+  "Generating self-practice trajectories requires multiple large-model inference calls per training example plus supervised Critic training.",
+  "The maximum turn count is a manually set resource bound rather than an uncertainty-calibrated or conformal stopping threshold.",
+  "Evaluation does not establish statistical control under non-stationary distribution shift.",
+  "No temporal validity, evidence-version lineage, or permission-aware retrieval policy is represented."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "learned_information_sufficiency_stop": 0.99,
+  "self_practice_supervision": 0.99,
+  "reported_answer_quality": 0.98,
+  "hard_turn_budget": 0.99,
+  "component_shift_requires_retraining": 0.98,
+  "no_conformal_risk_control": 0.98,
+  "no_temporal_version_permission_provenance": 0.97
+ },
+ "raw_claims": [
+  "SIM-RAG trains a separate Critic to judge whether the currently retrieved information is sufficient for answering.",
+  "Training examples for the Critic are synthesized through multi-round self-practice rather than manually labeling stopping points.",
+  "The Reasoner produces both an answer and a rationale from the question and accumulated context.",
+  "A practice round is labeled Accept when its answer matches the known answer and Reject otherwise.",
+  "A rejected round generates a new retrieval query and adds newly retrieved evidence to the context.",
+  "At inference time, an accepted state returns the answer while a rejected state continues retrieval.",
+  "The experiments use TriviaQA, HotpotQA, and 2WikiMultiHopQA.",
+  "The paper evaluates both a smaller and a larger Critic configuration.",
+  "The maximum number of retrieval rounds is a configurable hyperparameter.",
+  "The authors report that the Critic may require retraining after major Reasoner or Retriever changes.",
+  "The authors identify false rejection as a cause of unnecessary or harmful over-retrieval.",
+  "The paper provides a public code and data repository."
+ ],
+ "source_url": "https://arxiv.org/html/2505.02811",
+ "access": "full_text"
+}

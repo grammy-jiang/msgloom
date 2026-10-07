@@ -1,0 +1,369 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1038-s41598-026-40637-w",
+   "title": "Conformal selective prediction with cost aware deferral for safe clinical triage under distribution shift",
+   "research_question": "Can calibrated probabilities, conformal prediction, and cost-aware deferral be combined to make clinical triage safer while maintaining useful coverage under temporal distribution shift?",
+   "methodology": "The study uses the PhysioNet 2019 early-sepsis dataset with a temporally separated out-of-distribution test set and trains an MLP to predict sepsis six hours ahead. Probabilities are temperature-calibrated, and the authors compare vanilla split conformal prediction, gender-Mondrian conformal prediction, and importance-weighted conformal prediction. A single confidence-based deferral threshold is chosen on a held-out calibration set by minimizing an expected cost that weights false negatives, false positives, and deferrals differently, and the same threshold is then used on both in-distribution and temporally shifted data.",
+   "key_findings": [
+    {
+     "finding": "At 80% retained coverage, selective prediction reduced retained-case error by 49.6% on the in-distribution test set and 46.7% on the temporally shifted test set relative to predicting on every case.",
+     "evidence_type": "supported",
+     "section": "Results: Selective prediction and deferral"
+    },
+    {
+     "finding": "The calibration-set cost optimization selected a deferral threshold of 0.8, yielding expected cost 0.5640 in distribution and 0.7053 under temporal shift, a 25.1% relative increase under shift.",
+     "evidence_type": "supported",
+     "section": "Results: Cost-aware deferral"
+    },
+    {
+     "finding": "Importance-weighted conformal prediction preserved target coverage better under temporal shift than the vanilla and gender-Mondrian variants, attaining 88.2% empirical coverage against a 90% target.",
+     "evidence_type": "supported",
+     "section": "Results: Conformal prediction under distribution shift"
+    },
+    {
+     "finding": "Temperature scaling produced low expected calibration error on both evaluations, with ECE 0.016 in distribution and 0.030 on the shifted test set.",
+     "evidence_type": "supported",
+     "section": "Results: Probability calibration"
+    },
+    {
+     "finding": "Gender-Mondrian conformal prediction produced similar in-distribution coverage for female and male groups, with a reported coverage gap of 1.4 percentage points.",
+     "evidence_type": "supported",
+     "section": "Results: Group-conditional coverage"
+    },
+    {
+     "finding": "The clinical benefit of deferral depended materially on the assumed false-negative, false-positive, and deferral costs, and the originally optimized operating point was not uniformly superior to a trivial baseline under every evaluation condition.",
+     "evidence_type": "supported",
+     "section": "Sensitivity analysis: Cost assumptions"
+    }
+   ],
+   "limitations": [
+    "The conformal guarantees rely on exchangeability, while the temporal out-of-distribution evaluation deliberately violates that assumption; empirical coverage consequently falls below the nominal level.",
+    "Importance-weighted conformal prediction requires access to representative unlabeled target covariates and depends on the quality of the estimated density ratio.",
+    "The study uses a single public sepsis dataset and therefore does not establish external validity across hospitals, clinical populations, modalities, or deployment workflows.",
+    "The deferral policy uses one offline calibration-selected threshold rather than an online mechanism that continually recalibrates under non-stationary streams.",
+    "Operational deferral can create clinician workload or treatment delay if escalation capacity is insufficient.",
+    "Cost-optimal conclusions are sensitive to the chosen cost vector, so the numerical operating point is not universally optimal.",
+    "The work evaluates patient-level predictive uncertainty rather than evidence completeness, compound claims, or longitudinal work-item state transitions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retained_error_reduction": 0.99,
+    "cost_aware_threshold": 0.99,
+    "weighted_conformal_robustness": 0.98,
+    "probability_calibration": 0.99,
+    "group_conditional_coverage": 0.97,
+    "cost_sensitivity": 0.96
+   },
+   "raw_claims": [
+    "The study formulates six-hour-ahead sepsis prediction as a selective clinical-triage problem.",
+    "The analytic cohort contains 2,155 patients with a reported sepsis prevalence of 7.0%.",
+    "A later-admission cohort is reserved as a temporal out-of-distribution test set.",
+    "The target conformal coverage is 90%.",
+    "The cost model assigns substantially greater cost to false negatives than to false positives.",
+    "The calibration procedure selects a confidence threshold of 0.8 for deferral.",
+    "Importance weighting gives the closest out-of-distribution coverage to the nominal conformal target among the evaluated conformal variants.",
+    "The same deferral threshold is applied without re-optimization to the in-distribution and temporally shifted test sets.",
+    "The authors make the implementation code public and use the publicly accessible PhysioNet 2019 challenge data."
+   ],
+   "source_url": "https://www.nature.com/articles/s41598-026-40637-w",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2006.09462",
+   "title": "Selective Question Answering under Domain Shift",
+   "research_question": "Can selective question answering remain reliable under an unknown domain shift by learning a confidence calibrator from source-domain examples and examples from a different known out-of-domain dataset?",
+   "methodology": "A BERT-base question-answering model is trained on SQuAD, while a separate random-forest calibrator predicts whether the QA model's answer will be correct. The calibrator uses passage length, predicted-answer length, and the top five answer probabilities, and is trained on a mixture of source-domain examples and labeled examples from one known out-of-domain dataset. Evaluation mixes SQuAD with a different, previously unseen out-of-domain dataset and averages results across ordered choices drawn from five QA datasets; baselines include maximum softmax probability, a source-only calibrator, QA retraining with known out-of-domain data, test-time dropout, and an outlier detector.",
+   "key_findings": [
+    {
+     "finding": "Training the calibrator with source and known out-of-domain data raised average coverage at 80% target accuracy to about 56.1%, compared with 48.2% for maximum softmax probability.",
+     "evidence_type": "supported",
+     "section": "Main experiments"
+    },
+    {
+     "finding": "Using known out-of-domain data to train the confidence calibrator was more effective for selective QA than merely retraining the QA model with that data, reaching about 56.1% versus 51.8% coverage at 80% target accuracy.",
+     "evidence_type": "supported",
+     "section": "Main experiments"
+    },
+    {
+     "finding": "A calibrator trained on both source and known out-of-domain examples also outperformed a source-only calibrator at the same target accuracy, demonstrating transfer of calibration information across domains.",
+     "evidence_type": "supported",
+     "section": "Main experiments"
+    },
+    {
+     "finding": "Adding test-time dropout-derived features improved the calibrator further, reaching about 60.0% coverage at 80% target accuracy, but required repeated inference passes.",
+     "evidence_type": "supported",
+     "section": "Test-time dropout"
+    },
+    {
+     "finding": "Maximum softmax probability is systematically overconfident on shifted domains, whereas the learned calibrator narrows the confidence-quality gap between source and out-of-domain examples.",
+     "evidence_type": "supported",
+     "section": "Analysis of calibration under domain shift"
+    },
+    {
+     "finding": "A generic outlier detector was substantially weaker for selective QA than directly learning to predict answer correctness.",
+     "evidence_type": "supported",
+     "section": "Outlier detection baseline"
+    }
+   ],
+   "limitations": [
+    "The approach assumes access to labeled examples from a known out-of-domain distribution, which may not exist or may not resemble the future unknown domain.",
+    "Experiments center on extractive question answering with a SQuAD-trained BERT-base model and do not establish behavior for free-form long-form generation.",
+    "The evaluation uses an offline mixture of source and shifted datasets rather than a temporally evolving online stream.",
+    "The learned feature relationships may themselves be domain dependent; simple properties such as question or passage length can behave differently across datasets.",
+    "Test-time dropout improves selective performance but incurs substantial inference overhead because many stochastic forward passes are required.",
+    "The method provides empirical risk-coverage performance rather than a finite-sample statistical guarantee that a specified risk constraint will hold.",
+    "The study does not evaluate evidence completeness, partial support within compound claims, superseded work-item states, or longitudinal omission."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "known_ood_calibrator_gain": 0.99,
+    "calibrator_vs_retraining": 0.98,
+    "cross_domain_calibration_transfer": 0.97,
+    "dropout_gain_and_cost": 0.99,
+    "maxprob_overconfidence": 0.98,
+    "outlier_detector_weakness": 0.97
+   },
+   "raw_claims": [
+    "The QA model is trained on SQuAD and evaluated under mixtures containing a previously unseen question-answering domain.",
+    "The calibrator estimates the probability that the underlying QA model's answer is correct.",
+    "Its features include passage length, predicted-answer length, and the five largest answer probabilities.",
+    "The experiments rotate among TriviaQA, HotpotQA, NewsQA, Natural Questions, and SearchQA as shifted domains.",
+    "The source-plus-known-domain calibrator achieves higher selective coverage than maximum answer probability at fixed target accuracy.",
+    "Known out-of-domain data remains useful even when it comes from a different domain than the unknown test shift.",
+    "Test-time dropout improves the reported risk-coverage results but requires repeated model evaluations.",
+    "An outlier detector that focuses on domain membership performs worse than a calibrator trained to predict answer correctness.",
+    "The authors release code, data, and experiment artifacts through CodaLab."
+   ],
+   "source_url": "https://arxiv.org/html/2006.09462",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-acl-long-84",
+   "title": "The Art of Abstention: Selective Prediction and Error Regularization for Natural Language Processing",
+   "research_question": "How well do common confidence estimators support abstention in NLP classification, and can training-time error regularization improve the ordering of examples by confidence without materially reducing task accuracy?",
+   "methodology": "The paper evaluates selective classification with LSTM, BERT-base, BERT-large, and ALBERT-base models on MRPC, QNLI, MNLI, and additional abstention experiments involving SST-5. It compares softmax response and Monte Carlo dropout as confidence estimators using risk-coverage AUC and reversed pair proportion in addition to conventional task metrics. The authors introduce pairwise error regularization that penalizes confidence orderings inconsistent with either current prediction error or a historical estimate of example difficulty, and they also test selective confidence in a two-model classifier cascade.",
+   "key_findings": [
+    {
+     "finding": "More capable Transformer classifiers generally achieved both better task accuracy and better selective-prediction quality than the LSTM baseline.",
+     "evidence_type": "supported",
+     "section": "Model and confidence-estimator comparison"
+    },
+    {
+     "finding": "Softmax response was a strong confidence baseline and generally compared favorably with Monte Carlo dropout; the latter required roughly 20 stochastic repetitions before becoming competitive in the reported setting.",
+     "evidence_type": "supported",
+     "section": "Confidence estimation"
+    },
+    {
+     "finding": "Pairwise error regularization improved confidence ranking while leaving task accuracy largely unchanged, with the best configurations reducing risk-coverage AUC by roughly 10% on average relative to unregularized training.",
+     "evidence_type": "supported",
+     "section": "Effect of Error Regularization"
+    },
+    {
+     "finding": "Neither current-error regularization nor history-based regularization consistently dominated the other across tasks and models.",
+     "evidence_type": "supported",
+     "section": "Effect of Error Regularization"
+    },
+    {
+     "finding": "In classifier cascades, confidence produced by an error-regularized first-stage model enabled a better accuracy-computation tradeoff than random routing and improved over the corresponding unregularized confidence strategy.",
+     "evidence_type": "supported",
+     "section": "Classifier cascading"
+    }
+   ],
+   "limitations": [
+    "The empirical study focuses predominantly on classification benchmarks rather than generative question answering or multi-source generation.",
+    "GLUE development sets are used for evaluation because public test labels are unavailable, limiting strict separation between model development and final evaluation.",
+    "Monte Carlo dropout has significant inference cost because it requires many stochastic forward passes.",
+    "The pairwise regularizer is approximated with mini-batch pairs, and the history-based variant requires additional per-example state tracking during training.",
+    "The experiments do not identify a consistently superior definition of training error for regularization.",
+    "The method offers no finite-sample risk guarantee and no mechanism for continuous recalibration under domain or temporal drift.",
+    "The paper does not address evidence completeness, partially supported compound claims, or longitudinal new, resolved, and superseded work-item states."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "transformer_selective_advantage": 0.98,
+    "softmax_vs_mc_dropout": 0.97,
+    "error_regularization_gain": 0.98,
+    "no_regularizer_variant_dominates": 0.95,
+    "cascade_tradeoff": 0.96
+   },
+   "raw_claims": [
+    "Selective prediction combines an ordinary classifier with a confidence score used to decide whether to abstain.",
+    "The paper evaluates LSTM and several Transformer models on standard NLP classification datasets.",
+    "Risk-coverage AUC and reversed pair proportion are used to measure selective behavior.",
+    "The proposed regularizer penalizes pairs whose confidence ordering conflicts with their relative prediction errors.",
+    "One regularizer uses current errors while another uses historical errors accumulated during training.",
+    "Error regularization usually improves selective metrics without materially changing classification accuracy.",
+    "Monte Carlo dropout requires repeated stochastic inference and is computationally more expensive than a single softmax-response evaluation.",
+    "The classifier-cascade experiment routes low-confidence examples from a cheaper model to a stronger model.",
+    "The authors provide public source code for the experiments."
+   ],
+   "source_url": "https://aclanthology.org/2021.acl-long.84.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1609-aaai-v40i40-40667",
+   "title": "COIN: Uncertainty-Guarding Selective Question Answering for Foundation Models with Provable Risk Guarantees",
+   "research_question": "Can a foundation-model question-answering system calibrate an uncertainty threshold that gives a high-probability bound on conditional answer failure while retaining substantially more correct answers than existing conformal-alignment selection methods?",
+   "methodology": "COIN first evaluates answer failures and uncertainty scores on a held-out calibration set, computes an upper confidence bound on the conditional failure rate for candidate uncertainty thresholds, and selects the largest threshold satisfying a user-specified risk requirement. The default variant uses a one-sided Clopper-Pearson bound, while another variant uses a Hoeffding bound. The threshold is fixed before deployment so test-time selection only compares each answer's uncertainty with the calibrated threshold. Experiments cover CommonsenseQA, TriviaQA, and the multimodal MMVet benchmark across multiple language and vision-language models and several uncertainty estimators.",
+   "key_findings": [
+    {
+     "finding": "Across the reported repeated trials, both the Clopper-Pearson and Hoeffding COIN variants kept mean empirical conditional failure rates below the user-specified target risk levels for the evaluated foundation models.",
+     "evidence_type": "supported",
+     "section": "Empirical evaluations"
+    },
+    {
+     "finding": "COIN retained substantially more admissible answers than conformal alignment in several settings; for Qwen2.5-14B on CommonsenseQA, the Clopper-Pearson variant reached power 0.85 at target risk 0.15, reported as 0.36 higher than conformal alignment.",
+     "evidence_type": "supported",
+     "section": "Empirical evaluations: CommonsenseQA"
+    },
+    {
+     "finding": "On TriviaQA, the reported power advantage over conformal alignment reached about 0.4 in some evaluated risk settings.",
+     "evidence_type": "supported",
+     "section": "Empirical evaluations: TriviaQA"
+    },
+    {
+     "finding": "The method continued to satisfy the evaluated risk targets when only one tenth of the available examples were allocated to calibration in the reported limited-calibration experiment.",
+     "evidence_type": "supported",
+     "section": "Calibration-data ablation"
+    },
+    {
+     "finding": "Because the threshold is pre-calibrated, COIN's deployment-time decision is a threshold comparison rather than a test-time comparison against every calibration example as required by the conformal-alignment baseline.",
+     "evidence_type": "supported",
+     "section": "Method and computational comparison"
+    },
+    {
+     "finding": "Alternative uncertainty estimators can be substituted into the framework, and some produced greater selection power while maintaining the empirical risk constraint.",
+     "evidence_type": "supported",
+     "section": "Uncertainty-estimator ablations"
+    }
+   ],
+   "limitations": [
+    "The statistical guarantee assumes calibration and future examples are independently and identically distributed from the same underlying distribution, so it does not directly guarantee control under non-stationary temporal drift.",
+    "The calibrated threshold is static rather than continually updated online as the stream distribution evolves.",
+    "For open-ended answers, correctness is converted into a binary admission decision by a chosen evaluator such as semantic similarity, entailment, or an LLM judge, so the guarantee is relative to that evaluator rather than to factual truth in an unrestricted sense.",
+    "The experiments cover three QA benchmarks and a finite collection of models rather than arbitrary long-form multi-source generation.",
+    "The controlled quantity is an aggregate conditional failure rate for retained answers, not evidence completeness within compound claims or attribution of individual subclaims to source evidence.",
+    "The method does not model longitudinal omission of due, resolved, or superseded work-item states.",
+    "No public code release was identified in the paper text that was read."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "risk_control": 0.98,
+    "power_advantage": 0.98,
+    "limited_calibration_result": 0.96,
+    "deployment_efficiency": 0.96,
+    "uncertainty_modularity": 0.95
+   },
+   "raw_claims": [
+    "COIN selects answers whose uncertainty is no greater than a calibration-derived threshold.",
+    "The target quantity is the conditional failure rate among answers that the system chooses to retain.",
+    "The method constructs a high-probability upper bound on this conditional failure rate during calibration.",
+    "The default implementation uses an exact one-sided Clopper-Pearson bound.",
+    "A Hoeffding-based version is also evaluated.",
+    "Experiments include CommonsenseQA, TriviaQA, and MMVet.",
+    "Power is defined as the proportion of admissible answers that the selection procedure retains.",
+    "The method is evaluated over repeated calibration and test trials.",
+    "The formal risk argument assumes independent and identically distributed samples."
+   ],
+   "source_url": "https://arxiv.org/html/2506.20178",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-2be3626f9e",
+   "title": "Optimal Strategies for Reject Option Classifiers",
+   "research_question": "Do the principal cost-based, risk-constrained, and coverage-constrained formulations of classification with a reject option share a common optimal decision strategy, and can the uncertainty ordering required by that strategy be learned for arbitrary black-box predictors?",
+   "methodology": "The paper develops a decision-theoretic analysis of cost-based rejection, bounded-improvement selection, and bounded-coverage selection and derives their Bayes-optimal prediction and selection rules. It defines proper uncertainty scores that preserve the ordering induced by conditional expected risk and proposes two ways to learn such scores for an already trained predictor: regression on observed loss and the SELE objective, a tractable surrogate related to area under the risk-coverage curve. Fisher-consistency results are established for the learning objectives. Empirical experiments use classification, ordinal-regression, and structured-output datasets, comparing learned uncertainty scores with task-specific confidence baselines using risk-coverage performance.",
+   "key_findings": [
+    {
+     "finding": "The cost-based, bounded-improvement, and bounded-coverage formulations have the same structural form of Bayes-optimal strategy: a Bayes predictor paired with a selection rule based on thresholding conditional expected risk, with possible randomization on the decision boundary.",
+     "evidence_type": "supported",
+     "section": "Optimal strategies"
+    },
+    {
+     "finding": "The paper establishes explicit relationships between the rejection threshold and boundary randomization parameters across the three formulations, linking cost, target selective risk, and target coverage.",
+     "evidence_type": "supported",
+     "section": "Relations between reject-option models"
+    },
+    {
+     "finding": "A proper uncertainty score only needs to preserve the ordering induced by conditional expected risk, allowing selective decisions to be constructed even when the exact conditional risk is unavailable.",
+     "evidence_type": "supported",
+     "section": "Learning uncertainty scores"
+    },
+    {
+     "finding": "Both regression-on-loss and the SELE objective are shown to be Fisher-consistent approaches for learning an uncertainty score for a fixed black-box predictor.",
+     "evidence_type": "supported",
+     "section": "Consistency of uncertainty-score learning"
+    },
+    {
+     "finding": "In the classification experiments, SELE significantly outperformed several conventional confidence or regression baselines in some model settings, although the statistical tests did not distinguish every pair of methods.",
+     "evidence_type": "supported",
+     "section": "Experiments: Classification"
+    },
+    {
+     "finding": "For ordinal regression, both learned uncertainty approaches significantly outperformed the margin baseline, while the experiment did not establish a significant difference between SELE and regression.",
+     "evidence_type": "supported",
+     "section": "Experiments: Ordinal regression"
+    },
+    {
+     "finding": "On the 300-W structured-output face-landmark task, the learned uncertainty scores outperformed the detector's native uncertainty baseline, demonstrating that the framework extends beyond ordinary multiclass classification.",
+     "evidence_type": "supported",
+     "section": "Experiments: Structured output"
+    }
+   ],
+   "limitations": [
+    "The theoretical and learning framework assumes a two-stage procedure in which the predictor and its uncertainty score are trained separately; joint end-to-end training is left open.",
+    "The paper does not provide a general finite-sample analysis of the generalization error introduced when empirical data are used to set rejection thresholds and boundary acceptance probabilities.",
+    "The reported uncertainty-score models are linear in their learned parameters; richer nonlinear or neural score models are left for future investigation.",
+    "The analysis concerns stationary supervised-learning distributions rather than continuous online recalibration under non-stationary streams.",
+    "The experiments concern prediction loss and selective coverage, not source-grounded generative claims, evidence completeness, or partial support within compound statements.",
+    "The framework contains no explicit representation of longitudinal work-item transitions such as new, open, resolved, due, or superseded states.",
+    "No public implementation link was identified in the paper text that was read."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "shared_optimal_strategy": 0.99,
+    "model_relationships": 0.98,
+    "proper_uncertainty_ordering": 0.99,
+    "fisher_consistency": 0.99,
+    "classification_results": 0.96,
+    "ordinal_results": 0.97,
+    "structured_output_results": 0.96
+   },
+   "raw_claims": [
+    "The paper studies cost-based rejection, bounded-improvement selection, and bounded-coverage selection in a common framework.",
+    "All three formulations yield an optimal rule based on the predictor's conditional expected risk.",
+    "Randomization can be required for examples lying exactly on the rejection boundary.",
+    "A proper uncertainty score preserves the ranking generated by conditional expected risk.",
+    "The REG method learns uncertainty by regressing observed predictor losses.",
+    "The SELE method directly optimizes a surrogate related to selective risk-coverage performance.",
+    "The paper proves Fisher consistency for the proposed uncertainty-learning approaches.",
+    "Experiments cover ordinary classification, ordinal regression, and structured face-landmark prediction.",
+    "Area under the risk-coverage curve is a principal empirical evaluation metric."
+   ],
+   "source_url": "https://arxiv.org/html/2101.12523",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

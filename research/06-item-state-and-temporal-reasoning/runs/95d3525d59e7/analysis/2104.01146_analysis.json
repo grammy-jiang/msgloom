@@ -1,0 +1,75 @@
+{
+ "paper_id": "2104.01146",
+ "title": "An Empirical Characterization of Event Sourced Systems and Their Schema Evolution - Lessons from Industry",
+ "research_question": "How are event-sourced systems used and defined in industry, how do practitioners evolve their event data structures, and what recurring engineering challenges arise?",
+ "methodology": "The study applies constructivist grounded theory to industrial event sourcing. The authors conducted 22 interviews involving 25 engineers and discuss 19 event-sourced systems, recruiting participants through practitioner communities, direct invitations, and interview snowballing. Interview material was iteratively coded into concepts and categories, while related literature and the authors' earlier event-sourcing research were incorporated during the grounded-theory process. The resulting characterization combines practitioners' reported motivations, system properties, challenges, and schema-evolution practices.",
+ "key_findings": [
+  {
+   "finding": "Practitioners reported five major challenges: evolving event systems, a steep learning curve, insufficient technology support, rebuilding projections, and data privacy.",
+   "evidence_type": "supported",
+   "section": "6 Challenges Faced in Applying Event Sourcing"
+  },
+  {
+   "finding": "The study identifies five event-schema evolution techniques used in practice: versioned events, weak schema, upcasting, in-place transformation, and copy-and-transform.",
+   "evidence_type": "supported",
+   "section": "7 Schema Evolution in Event Sourced Systems"
+  },
+  {
+   "finding": "No single schema-evolution technique is appropriate in every context; versioned events and weak schema are presented as comparatively simple starting points, upcasting as a way to retain event-store immutability, and copy-and-transform as an option when performance or maintainability motivates a more expensive transformation.",
+   "evidence_type": "supported",
+   "section": "7 Schema Evolution in Event Sourced Systems"
+  },
+  {
+   "finding": "Copy-and-transform preserves the original source events while creating new transformed event streams, allowing historical source events to remain immutable.",
+   "evidence_type": "supported",
+   "section": "7 Schema Evolution in Event Sourced Systems"
+  },
+  {
+   "finding": "Immutability was not universal in the 19 studied systems: eight never changed events, three permitted controlled cut-off changes backed by retained backups, and eight allowed event changes without indefinitely retained backups; the last group therefore did not preserve a complete audit trail.",
+   "evidence_type": "supported",
+   "section": "4.2 Characteristics of Event Sourced Systems"
+  },
+  {
+   "finding": "Retention of state changes was an important audit rationale for adopting event sourcing, while other reported rationales included architectural flexibility, handling business complexity, and following an industry trend.",
+   "evidence_type": "supported",
+   "section": "4.1 Rationale for ESSs"
+  }
+ ],
+ "limitations": [
+  "The authors explicitly state that the number of interviews does not support broad statistical generalization or hard recommendations.",
+  "Participants volunteered after recruitment through event-sourcing communities and referrals, creating possible self-selection bias.",
+  "The study did not reach grounded-theory saturation, so relevant concepts or practices may have been missed.",
+  "Sixteen of the 25 engineers had three years or less of event-sourcing experience.",
+  "Many studied systems were closed-source commercial systems, limiting validation through source code or documentation.",
+  "The encountered systems were concentrated in enterprise applications; the study did not encounter event-sourced IoT or other stream-processing systems."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "five_challenges": 0.99,
+  "five_evolution_techniques": 0.99,
+  "no_universal_evolution_strategy": 0.98,
+  "copy_transform_preserves_source": 0.99,
+  "immutability_varies_in_practice": 0.99,
+  "historical_retention_as_rationale": 0.98
+ },
+ "raw_claims": [
+  "The empirical study covers 19 event-sourced systems through interviews with 25 engineers.",
+  "The authors conducted 22 distinct interviews because several interviews included two engineers working on the same system.",
+  "Event-system evolution was one of the central engineering difficulties reported by practitioners.",
+  "The study identifies versioned events, weak schema, upcasting, in-place transformation, and copy-and-transform as schema-evolution techniques.",
+  "Practitioners frequently combine more than one evolution technique rather than selecting one universal strategy.",
+  "Copy-and-transform creates transformed streams without modifying the source events.",
+  "Upcasting is presented as an evolution mechanism that retains event-store immutability.",
+  "Some production event-sourced systems permit modification of stored events and therefore do not maintain a complete immutable audit trail.",
+  "Preserving historical state changes is one reason practitioners adopt event sourcing.",
+  "The sample was recruited pragmatically from practitioner communities and through snowball referrals.",
+  "The authors do not claim that grounded-theory saturation was achieved.",
+  "The qualitative sample is not sufficient to infer that the most commonly observed technique is universally preferable."
+ ],
+ "source_url": "https://arxiv.org/html/2104.01146",
+ "access": "full_text"
+}

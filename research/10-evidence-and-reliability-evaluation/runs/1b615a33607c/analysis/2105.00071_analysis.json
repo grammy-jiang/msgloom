@@ -1,0 +1,75 @@
+{
+ "paper_id": "2105.00071",
+ "title": "Evaluating Attribution in Dialogue Systems: The BEGIN Benchmark",
+ "research_question": "How reliably do existing automatic metrics identify whether knowledge-grounded dialogue responses are actually attributable to the supplied evidence, including under challenging forms of distribution shift?",
+ "methodology": "The authors build BEGIN from roughly 12,000 dialogue turns produced by neural dialogue systems trained on three knowledge-grounded dialogue corpora and obtain human labels using a three-way taxonomy of attributable, unattributable, and generic responses. They meta-evaluate eight families of automatic attribution metrics, including lexical-overlap, semantic-similarity, QA-based, and NLI-based approaches, and create an 8,000-example adversarially augmented silver training set for attribution classifiers. Robustness analyses stratify examples by extractivity and compare performance across corpora with substantially different knowledge-source lengths.",
+ "key_findings": [
+  {
+   "finding": "Existing automatic metrics do not reliably separate attributable abstractive responses from unattributable responses.",
+   "evidence_type": "supported",
+   "section": "4.4 Are Metrics Measuring Attribution or Extractivity?"
+  },
+  {
+   "finding": "All evaluated metric families exhibit a strong dependence on lexical overlap or extractivity rather than a robust semantic understanding of attribution.",
+   "evidence_type": "supported",
+   "section": "4.4 Are Metrics Measuring Attribution or Extractivity?"
+  },
+  {
+   "finding": "Unattributable but highly extractive responses can receive higher scores than attributable responses expressed through abstraction or paraphrase.",
+   "evidence_type": "supported",
+   "section": "4.4 Are Metrics Measuring Attribution or Extractivity?"
+  },
+  {
+   "finding": "Metrics perform substantially worse when the grounding knowledge source is longer, demonstrating a concrete distribution-shift and robustness failure.",
+   "evidence_type": "supported",
+   "section": "4.5 Robustness Across Datasets / 6 Conclusion"
+  },
+  {
+   "finding": "Training on the paper's adversarial attribution data provides stronger supervision than the tested NLI-style datasets for the BEGIN taxonomy, but classifier performance remains far below human annotation quality.",
+   "evidence_type": "supported",
+   "section": "4.3 Classifier-based Metrics"
+  },
+  {
+   "finding": "None of the tested classifier configurations exceeds 46% macro F1 on the benchmark, while human annotations compared with majority vote exceed 95% precision.",
+   "evidence_type": "supported",
+   "section": "4.3 Classifier-based Metrics"
+  }
+ ],
+ "limitations": [
+  "BEGIN covers three knowledge-grounded dialogue corpora and therefore does not establish robustness across all dialogue domains or other free-form generation tasks.",
+  "Its three-way taxonomy tests attribution to provided knowledge but does not directly measure whether important source information was omitted from a response.",
+  "The examined distribution shifts emphasize extractivity and knowledge-source length rather than temporal drift, changing document versions, or source recency.",
+  "Generic responses are modeled as a distinct category, but the benchmark does not provide calibrated risk or utility thresholds for deciding when a system should abstain.",
+  "The benchmark focuses on grounding against a supplied knowledge source and does not integrate multi-source temporal provenance."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "metrics_rely_on_spurious_overlap": 0.99,
+  "abstractive_attribution_is_hard": 0.99,
+  "long_context_shift_degrades_metrics": 0.99,
+  "adversarial_training_improves_supervision": 0.97,
+  "automatic_classifiers_far_below_humans": 0.99
+ },
+ "raw_claims": [
+  "BEGIN contains about twelve thousand generated knowledge-grounded dialogue turns.",
+  "Responses are human-labeled as attributable, unattributable, or generic.",
+  "The benchmark draws from three knowledge-grounded dialogue datasets.",
+  "The study evaluates eight automatic attribution metrics.",
+  "A separate adversarially generated training set contains about eight thousand examples.",
+  "Current metrics systematically benefit responses that copy wording from their evidence.",
+  "Attributable paraphrases are harder for existing metrics to recognize than highly extractive responses.",
+  "High lexical overlap can cause unattributable responses to be scored as attributable.",
+  "Metric performance declines as grounding documents become longer.",
+  "The benchmark therefore exposes robustness failures that ordinary aggregate correlation can hide.",
+  "NLI-oriented training does not fully capture the broader category of unverifiable information.",
+  "The authors argue that acknowledgment of ignorance should not be treated like a misleading unsupported assertion.",
+  "Current classifier metrics remain substantially below human attribution judgments.",
+  "BEGIN is publicly released as a benchmark resource."
+ ],
+ "source_url": "https://arxiv.org/html/2105.00071",
+ "access": "full_text"
+}

@@ -1,0 +1,413 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1145-181550-181560",
+   "title": "A Consensus Glossary of Temporal Database Concepts",
+   "research_question": "Can the temporal-database community establish precise, broadly accepted definitions and names for the core concepts needed to describe temporal data, histories, and multiple dimensions of time?",
+   "methodology": "The paper reports a community consensus process rather than an empirical experiment. Candidate concepts were collected and revised through an open discussion process, including a June 1993 workshop involving 44 temporal-database researchers, followed by editorial revision. Concepts had to satisfy four relevance criteria, while names were assessed against nine naming criteria, and the resulting digest organizes the accepted concepts into general, temporal-database-specific, and specialized categories.",
+   "key_findings": [
+    {
+     "finding": "The glossary separates valid time, meaning when a fact is true in the modeled reality, from transaction time, meaning when that fact is current and retrievable in the database.",
+     "evidence_type": "supported",
+     "section": "Sections 3.1-3.2"
+    },
+    {
+     "finding": "Transaction time is system-maintained, ordered consistently with database transactions, and does not permit rewriting past transaction-time values.",
+     "evidence_type": "supported",
+     "section": "Section 3.2"
+    },
+    {
+     "finding": "A bitemporal relation combines one system-supported valid-time dimension with one system-supported transaction-time dimension, providing distinct representations of real-world validity and database-record history.",
+     "evidence_type": "supported",
+     "section": "Section 3.8"
+    },
+    {
+     "finding": "The glossary defines history broadly enough to represent the temporal evolution of attributes, entities, relationships, schemas, transactions, and other database objects.",
+     "evidence_type": "supported",
+     "section": "Section 4.14"
+    },
+    {
+     "finding": "Snapshot equivalence provides a way to regard differently represented temporal relations as equivalent when they yield the same state at every instant.",
+     "evidence_type": "supported",
+     "section": "Sections 4.9-4.11"
+    },
+    {
+     "finding": "The consensus process deliberately excluded concepts that were insufficiently defined, insufficiently understood, too general, or not widely used, favoring terminological stability over speculative terminology.",
+     "evidence_type": "supported",
+     "section": "Section 2.1"
+    }
+   ],
+   "limitations": [
+    "The paper is a terminology and consensus artifact rather than an empirical evaluation of temporal database implementations.",
+    "It is explicitly a digest of a larger glossary, so some naming discussions and supporting material are omitted from this version.",
+    "The consensus reflects the temporal-database community and state of research in the early 1990s rather than subsequent standards or implementation practice.",
+    "The definitions establish semantics but do not prescribe concrete provenance schemas, version-control mechanisms, or retrieval algorithms."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "valid_vs_transaction_time": 0.99,
+    "transaction_time_immutability": 0.99,
+    "bitemporal_relation_definition": 0.99,
+    "history_representation": 0.97,
+    "snapshot_equivalence": 0.97,
+    "consensus_selection_criteria": 0.99
+   },
+   "raw_claims": [
+    "Valid time records when a database fact is true in the modeled world.",
+    "Transaction time records when a database fact is current and retrievable in the database.",
+    "Past transaction-time values are not intended to be altered.",
+    "A conventional relation with neither valid-time nor transaction-time timestamps is a snapshot relation.",
+    "A bitemporal relation carries both a valid-time dimension and a transaction-time dimension.",
+    "A history represents the temporal evolution of an object in the real world or database.",
+    "Histories can apply to attributes, entities, relationships, schemas, and transactions.",
+    "Snapshot equivalence compares temporal objects by their states at every instant.",
+    "The glossary only admits concepts judged temporal-specific, well-defined, well-understood, and widely used.",
+    "The consensus glossary was revised after discussion by a substantial group of temporal-database researchers."
+   ],
+   "source_url": "https://www2.cs.arizona.edu/~rts/pubs/SIGMODRecordMarch94p52.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2208.02814",
+   "title": "Conformal Risk Control",
+   "research_question": "Can conformal prediction be generalized from binary miscoverage control to finite-sample control of the expected value of arbitrary bounded monotone loss functions?",
+   "methodology": "The authors formulate post-processing of a pretrained model as selecting a conservativeness parameter using calibration data and prove finite-sample expected-risk guarantees under exchangeability and monotonicity conditions. They derive extensions for distribution shift, quantile risk, multiple risks, adversarial risks, and U-statistic risks. The method is evaluated on four computer-vision and NLP tasks using 1,000 random data splits per task, with public datasets and released reproduction code.",
+   "key_findings": [
+    {
+     "finding": "For bounded losses that are non-increasing with a conservativeness parameter, the proposed calibration rule guarantees expected test loss at or below the user-specified risk level under the stated exchangeability assumptions.",
+     "evidence_type": "supported",
+     "section": "Sections 1.1 and 2.1"
+    },
+    {
+     "finding": "The expected-risk guarantee generalizes ordinary conformal miscoverage control rather than merely reproducing prediction-set coverage.",
+     "evidence_type": "supported",
+     "section": "Sections 1 and 2.3"
+    },
+    {
+     "finding": "Under additional i.i.d. continuity conditions, the method is shown to be tight up to an order-1/n term rather than becoming arbitrarily conservative.",
+     "evidence_type": "supported",
+     "section": "Sections 1.1 and 2.2"
+    },
+    {
+     "finding": "Empirical experiments on segmentation, multilabel classification, hierarchical classification, and open-domain QA produced mean risks close to but below their specified targets across repeated random splits.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "On Natural Questions, the F1-loss experiment with a target risk of 0.3 reported mean risk 0.2996 with standard deviation 0.0150 over 1,000 trials.",
+     "evidence_type": "supported",
+     "section": "Section 3.4"
+    },
+    {
+     "finding": "The framework can incorporate covariate shift through importance weighting and thereby extends weighted conformal prediction from miscoverage to general monotone risks.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "Non-monotone losses cannot in general be passed directly to the basic conformal-risk rule, although the paper gives a monotone-envelope construction and an asymptotic alternative.",
+     "evidence_type": "supported",
+     "section": "Section 2.4 and Appendix A"
+    }
+   ],
+   "limitations": [
+    "The primary finite-sample guarantee requires bounded losses and an appropriate monotonic relationship between the calibration parameter and loss.",
+    "The central guarantee is on expected risk rather than a per-instance, conditional, or high-probability guarantee over every calibration sample.",
+    "The main theorem relies on exchangeability; distribution-shift extensions require additional weighting information or assumptions.",
+    "Monotonizing a genuinely non-monotone loss can introduce conservativeness, while the alternative treatment is only asymptotically guaranteed and is most useful for near-monotone risks.",
+    "The authors leave more general unconditional control of some quantile-based risks, such as broader CVaR-type cases, unresolved.",
+    "The application studies demonstrate calibration behavior but do not establish that every operational loss relevant to deployment has the required mathematical structure."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "finite_sample_expected_risk_control": 0.99,
+    "generalizes_conformal_prediction": 0.99,
+    "near_tightness": 0.98,
+    "four_task_empirical_validation": 0.98,
+    "natural_questions_risk_result": 0.99,
+    "covariate_shift_extension": 0.98,
+    "nonmonotone_loss_constraint": 0.99
+   },
+   "raw_claims": [
+    "Conformal risk control selects a model-output threshold using a calibration sample and a user-specified risk target.",
+    "The principal theorem controls the expected value of a bounded monotone loss on a new observation.",
+    "Ordinary conformal miscoverage is recovered as a special case of the framework.",
+    "The finite-sample correction approaches the requested risk level at order 1/n under additional regularity conditions.",
+    "The segmentation experiment used multiple open-source polyp-segmentation datasets and controlled false-negative rate.",
+    "The multilabel experiment used MS COCO and controlled false-negative rate.",
+    "The hierarchical ImageNet experiment controlled a graph-distance loss.",
+    "The Natural Questions experiment controlled a token-level F1-derived loss.",
+    "All four application examples were evaluated over 1,000 random splits.",
+    "A covariate-shift extension reweights calibration losses using the relationship between training and test distributions.",
+    "Direct application of the basic procedure to an arbitrary non-monotone loss does not provide the same guarantee.",
+    "The authors released code for reproducing the empirical examples."
+   ],
+   "source_url": "https://arxiv.org/html/2208.02814",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1904.06019",
+   "title": "Conformal Prediction Under Covariate Shift",
+   "research_question": "Can conformal prediction retain distribution-free marginal coverage when training and test covariate distributions differ while the conditional outcome distribution given covariates remains unchanged?",
+   "methodology": "The paper develops weighted conformal prediction by replacing ordinary empirical quantiles of nonconformity scores with importance-weighted quantiles derived from the likelihood ratio between test and training covariate distributions. It formalizes a broader notion of weighted exchangeability and proves coverage guarantees, then derives a computationally simple split-conformal specialization for covariate shift. An empirical study uses the UCI Airfoil dataset over 5,000 random trials, comparing unweighted, oracle-weighted, and estimated-weight procedures; reproduction code is provided.",
+   "key_findings": [
+    {
+     "finding": "When the covariate likelihood ratio is known, weighted conformal prediction restores finite-sample marginal coverage under covariate shift while ordinary conformal prediction need not retain its nominal coverage.",
+     "evidence_type": "supported",
+     "section": "Sections 2.1-2.2"
+    },
+    {
+     "finding": "The method is derived from a more general weighted-exchangeability framework that includes ordinary exchangeability and certain independent non-identically distributed settings as special cases.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "In the Airfoil experiment at 90% nominal coverage, ordinary split conformal averaged 90.2% without shift but only 82.2% on the shifted test distribution.",
+     "evidence_type": "supported",
+     "section": "Section 2.3"
+    },
+    {
+     "finding": "Using the oracle covariate-shift weights raised average coverage on the shifted Airfoil test distribution to 90.8%.",
+     "evidence_type": "supported",
+     "section": "Section 2.3"
+    },
+    {
+     "finding": "Importance weighting increases coverage variability because highly uneven weights reduce the effective calibration sample size.",
+     "evidence_type": "supported",
+     "section": "Section 2.3"
+    },
+    {
+     "finding": "The needed density ratio can be estimated from unlabeled test covariates by training a classifier to distinguish training from test inputs, although correctness then depends on estimation quality rather than the exact oracle-weight theorem.",
+     "evidence_type": "supported",
+     "section": "Section 2.3"
+    },
+    {
+     "finding": "General weighted conformal quantiles can be combinatorially difficult, but the covariate-shift structure yields a computationally tractable specialization comparable in complexity to ordinary conformal prediction.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    }
+   ],
+   "limitations": [
+    "The covariate-shift result assumes that the conditional distribution of the response given covariates remains unchanged between training and test populations.",
+    "Exact finite-sample validity in the principal covariate-shift result relies on knowing the likelihood ratio between test and training covariate distributions.",
+    "When the likelihood ratio is estimated, practical validity depends on the accuracy and stability of density-ratio estimation.",
+    "Highly variable importance weights reduce effective sample size and make intervals and empirical coverage more variable.",
+    "The main empirical demonstration uses one relatively small, five-dimensional Airfoil dataset with synthetically induced exponential tilting.",
+    "The paper provides marginal rather than exact pointwise conditional coverage; exact distribution-free conditional coverage is discussed as generally unattainable without uninformative intervals.",
+    "The fully general weighted-exchangeability construction can be computationally difficult."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "weighted_coverage_under_shift": 0.99,
+    "weighted_exchangeability_generalization": 0.98,
+    "unweighted_airfoil_undercoverage": 0.99,
+    "oracle_weight_airfoil_coverage": 0.99,
+    "effective_sample_size_penalty": 0.97,
+    "estimated_density_ratio": 0.97,
+    "computational_specialization": 0.98
+   },
+   "raw_claims": [
+    "Ordinary conformal validity follows from exchangeability and can fail when the test covariate distribution changes.",
+    "The weighted method assigns calibration observations influence according to their relevance to the test covariate distribution.",
+    "Covariate-shift weights are proportional to the density ratio between test and training covariate distributions.",
+    "The covariate-shift setting keeps the conditional response distribution given the covariates fixed.",
+    "Weighted conformal prediction achieves the required marginal coverage when the shift weights are known.",
+    "The Airfoil experiment used 5,000 random trials and a nominal coverage target of 90%.",
+    "Ordinary split conformal substantially undercovered the synthetically shifted Airfoil population.",
+    "Oracle weighting brought the shifted-population coverage back close to the target.",
+    "Uneven importance weights effectively reduce the usable calibration sample size.",
+    "A probabilistic classifier can estimate the training-to-test density ratio using unlabeled test covariates.",
+    "The authors released R code for the Airfoil simulations.",
+    "Weighted conformal prediction extends beyond covariate shift to other weighted-exchangeable settings."
+   ],
+   "source_url": "https://arxiv.org/html/1904.06019",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-3786625",
+   "title": "HONEYBEE: Efficient Role-based Access Control for Vector Databases via Dynamic Partitioning",
+   "research_question": "Can the structure of role-based access-control policies be exploited to partition and selectively replicate vector indexes so that permission-safe search achieves a better latency-memory-recall trade-off than either post-filtering or dedicated per-role indexes?",
+   "methodology": "HONEYBEE models users, roles, permissions, vector partitions, memory consumption, query cost, and recall, and casts partition design as a constrained optimization problem. Because exact optimization is expensive, the system uses a greedy partitioning procedure and maintains user-to-partition routing so that queries search only partitions authorized for the requester. The authors evaluate the design on Wikipedia and SIFT vector datasets with multiple RBAC workload generators and baselines including PostgreSQL row-level security, role partitioning, and hybrid-search methods, reporting latency, normalized memory footprint, and Recall@k.",
+   "key_findings": [
+    {
+     "finding": "Overlapping RBAC-aware partitions allow HONEYBEE to interpolate between one shared filtered index and highly redundant per-role indexes instead of being restricted to either extreme.",
+     "evidence_type": "supported",
+     "section": "Sections 3-5"
+    },
+    {
+     "finding": "With pgvector HNSW, HONEYBEE achieved up to a 13.5-fold query speedup over PostgreSQL row-level-security post-filtering while using 1.24 times the single-index memory footprint in the reported high-top-k setting.",
+     "evidence_type": "supported",
+     "section": "Sections 7.1 and 7.5"
+    },
+    {
+     "finding": "At comparable query performance to dedicated role partitioning, the reported high-top-k configuration reduced additional memory consumption by 90.4%.",
+     "evidence_type": "supported",
+     "section": "Sections 7.1 and 7.5"
+    },
+    {
+     "finding": "The system explicitly optimizes a three-way trade-off among query latency, memory overhead, and retrieval recall rather than treating permission filtering as an independent post-processing step.",
+     "evidence_type": "supported",
+     "section": "Sections 4-7"
+    },
+    {
+     "finding": "Physical partitioning was experimentally faster than logical partitioning under equal memory budgets because logical traversal incurred additional cache-miss costs, although logical partitioning can be useful when replication is unusually expensive.",
+     "evidence_type": "supported",
+     "section": "Section 7.4"
+    },
+    {
+     "finding": "Incremental maintenance handles several user, role, and document changes without necessarily rebuilding all partitions, and the paper experimentally studies role insertions and deletions.",
+     "evidence_type": "supported",
+     "section": "Sections 5.3 and 7.6"
+    },
+    {
+     "finding": "The authors do not provide a complete online policy for deciding when cumulative workload changes justify repartitioning; adaptive repartitioning is left as future work.",
+     "evidence_type": "supported",
+     "section": "Section 5.3"
+    }
+   ],
+   "limitations": [
+    "The design is specialized around Role-Based Access Control and does not by itself solve arbitrary attribute-based or policy-language access control.",
+    "The experimental vector corpora are real or standard benchmarks, but important permission structures are generated through benchmark workload models rather than being exclusively drawn from production enterprise authorization graphs.",
+    "The partition optimizer is greedy and has a stated worst-case complexity of O(|R|^3|D|), although the authors argue practical workloads are substantially cheaper.",
+    "Replication improves latency at the cost of memory, so extremely high-dimensional vectors or very large role counts can alter the preferred partitioning strategy.",
+    "The paper handles incremental changes but leaves the higher-level decision of when to perform expensive repartitioning under evolving workloads as future research.",
+    "The evaluation demonstrates authorization-aware retrieval efficiency rather than a complete end-to-end RAG security analysis including generation-time leakage or downstream model behavior."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "rbac_overlapping_partition_tradeoff": 0.98,
+    "13_5x_latency_result": 0.99,
+    "90_4_percent_memory_reduction": 0.99,
+    "latency_memory_recall_optimization": 0.99,
+    "physical_vs_logical_partitioning": 0.97,
+    "incremental_permission_updates": 0.96,
+    "adaptive_repartitioning_open_problem": 0.99
+   },
+   "raw_claims": [
+    "HONEYBEE uses RBAC roles as the structural basis for deciding how vector data should be partitioned.",
+    "Its partitions may overlap, allowing selected vectors to be replicated when replication improves query performance.",
+    "Authorized users are routed only to partitions that correspond to data they are allowed to access.",
+    "The partitioning objective balances storage overhead, query cost, and recall.",
+    "Evaluation uses Wikipedia-derived vectors together with SIFT1M and SIFT10M benchmarks.",
+    "The evaluation reports query latency, normalized index memory, and Recall@k.",
+    "Post-filtering through row-level security uses little index redundancy but can incur substantially higher query cost.",
+    "Dedicated role indexes improve search speed but may duplicate large amounts of vector data.",
+    "HONEYBEE occupied an experimentally useful operating region between those two baselines.",
+    "The reported top-k=100 experiment reached approximately 13.5 times the RLS query speed with 1.24 times its memory.",
+    "Incremental updates can adjust routing and affected partitions for several permission changes.",
+    "The source code is publicly linked from the paper.",
+    "A policy for deciding when workload evolution warrants full repartitioning remains an open problem."
+   ],
+   "source_url": "https://arxiv.org/html/2505.01538",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2601.19827",
+   "title": "When Iterative RAG Beats Ideal Evidence: A Diagnostic Study in Scientific Multi-hop Question Answering",
+   "research_question": "When and why can an iterative retrieve-reason-retrieve controller outperform a static condition in which all oracle evidence is supplied at once, and which retrieval, synthesis, and stopping failures determine the outcome?",
+   "methodology": "The authors compare eleven LLMs on 1,186 ChemKGMultiHopQA questions under No Context, Gold Context, and a training-free Iterative RAG controller. The controller has a maximum budget of five retrieval actions, retrieves ten passages per step, maintains a partial-answer state, lets the planner either issue a targeted follow-up retrieval or finalize, and limits accumulated context through selective retention of earlier passages. Evaluation includes answer accuracy plus diagnostics for hop coverage, evidence sufficiency, confidence/stopping behavior, distractor latch, composition failure, procedural compliance, token usage, and retrieval dynamics, with GPT-5-mini used as an answer verifier.",
+   "key_findings": [
+    {
+     "finding": "Across the eleven evaluated models, average accuracy increased from 37.16% with No Context to 69.14% with Gold Context and 80.89% with Iterative RAG.",
+     "evidence_type": "supported",
+     "section": "Section 4"
+    },
+    {
+     "finding": "Every evaluated model improved from Gold Context to Iterative RAG in aggregate accuracy, although individual questions could regress when retrieval introduced noise or misleading evidence.",
+     "evidence_type": "supported",
+     "section": "Sections 4.1-4.3"
+    },
+    {
+     "finding": "The largest reported Gold-to-Iterative gain was 25.64 percentage points for GPT-4o, while gains were generally larger for the paper's non-reasoning model group than for reasoning models.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "Missing at least one required retrieval hop was a major failure mode, and accuracy was substantially worse when retrieval coverage gaps occurred.",
+     "evidence_type": "supported",
+     "section": "Section 5.2.1"
+    },
+    {
+     "finding": "High retrieval coverage could partly compensate for low measured evidence sufficiency, whereas simultaneously low coverage and low sufficiency produced the weakest observed accuracy region.",
+     "evidence_type": "supported",
+     "section": "Section 5.2.2"
+    },
+    {
+     "finding": "Stopping behavior was frequently miscalibrated: some models finalized before enough evidence was obtained, while others continued retrieving after sufficient evidence had already been accumulated.",
+     "evidence_type": "supported",
+     "section": "Section 5.2.3"
+    },
+    {
+     "finding": "Longer iterative chains can accumulate semantically plausible distractors; the diagnosed distractor-latch cases were associated with a large accuracy reduction.",
+     "evidence_type": "supported",
+     "section": "Section 5.2.5"
+    },
+    {
+     "finding": "The controller's stopping rule is an LLM planning decision under a fixed step budget rather than a statistically calibrated bounded-risk stopping guarantee.",
+     "evidence_type": "supported",
+     "section": "Sections 3.2.2 and 5.2.3"
+    }
+   ],
+   "limitations": [
+    "The principal experiments use a single chemistry benchmark, ChemKGMultiHopQA, which the authors explicitly identify as a generalization limitation.",
+    "The benchmark's 1-4-hop short-answer structure and chemistry corpus may not represent enterprise retrieval, long-form synthesis, or other scientific domains.",
+    "Correctness is assessed using an LLM-as-a-judge protocol, introducing dependence on the verifier despite attempts to normalize chemical aliases and nomenclature.",
+    "The controller uses fixed design choices including top-10 retrieval, 220-word chunks with 50-word overlap, selective history retention, and a maximum of five retrieval steps.",
+    "The Gold Context condition supplies oracle evidence statically but is not an oracle reasoning process, so outperforming Gold Context does not mean outperforming a perfect evidence-using reasoner.",
+    "Stopping calibration is evaluated post hoc using thresholds on hop coverage and evidence sufficiency rather than being guaranteed by a formal risk-control procedure.",
+    "Model APIs, model versions, pricing, and proprietary behaviors can change, limiting exact longitudinal reproducibility of the eleven-model comparison.",
+    "The study analyzes permission-free scientific retrieval and does not evaluate authorization-aware evidence acquisition, temporal validity, or versioned provenance."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "aggregate_iterative_rag_gain": 0.99,
+    "all_models_gold_to_iterative_improvement": 0.99,
+    "gpt4o_25_64pp_gain": 0.99,
+    "coverage_gap_failure": 0.98,
+    "coverage_sufficiency_interaction": 0.96,
+    "stopping_miscalibration": 0.98,
+    "distractor_latch": 0.98,
+    "stopping_not_formally_risk_calibrated": 0.98
+   },
+   "raw_claims": [
+    "The study evaluates eleven language models under No Context, Gold Context, and Iterative RAG conditions.",
+    "ChemKGMultiHopQA contains 1,186 questions spanning one to four reasoning hops.",
+    "The iterative controller performs at most five retrieval actions.",
+    "Each retrieval action returns ten passages before the planner decides how to proceed.",
+    "The planner can either formulate a new query for an unresolved knowledge gap or finalize the answer.",
+    "A partial-answer state carries confirmed or hypothesized information between retrieval steps.",
+    "The controller retains only a limited subset of earlier passages to reduce context dilution.",
+    "Mean accuracy across models was higher with Iterative RAG than with static Gold Context.",
+    "Some Gold-Context successes became failures after iterative retrieval, showing that iteration can also cause regressions.",
+    "Failure to retrieve every required hop strongly reduces the probability of a correct final answer.",
+    "Premature stopping can occur even when measured evidence coverage or sufficiency remains low.",
+    "Other runs continue retrieving after adequate evidence is already available.",
+    "Distractor latch describes repeated pursuit of a semantically similar but incorrect entity or relation.",
+    "The authors released code and evaluation results.",
+    "The authors explicitly identify reliance on a single benchmark as a central limitation."
+   ],
+   "source_url": "https://arxiv.org/html/2601.19827",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

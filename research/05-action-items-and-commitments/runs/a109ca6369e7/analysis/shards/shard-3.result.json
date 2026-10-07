@@ -1,0 +1,386 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-d19b0f6f1e",
+   "title": "The nature of requests and commitments in email messages",
+   "research_question": "How can requests and commitments in workplace email be defined at the utterance level robustly enough to support consistent annotation and subsequent automated detection?",
+   "methodology": "The authors developed definitions grounded in Speech Act Theory and refined them through two manual annotation experiments on message-body text from a processed Enron email corpus containing just over 250,000 messages. In the first experiment, three expert annotators, who were the authors, annotated 350 sentences from 54 emails; after analyzing disagreements, the guidelines were revised to make conditionality and implicit versus explicit realization more explicit, and the same annotators labeled 750 sentences from 350 emails. Inter-annotator agreement was measured with pairwise and three-way Cohen's kappa, and disagreement cases were used to derive the final request and commitment definitions.",
+   "key_findings": [
+    {
+     "finding": "More explicit annotation guidance substantially improved agreement for commitments: three-way kappa rose from 0.54 in the first experiment to 0.74 in the second, while request agreement rose from 0.78 to 0.80.",
+     "evidence_type": "supported",
+     "section": "Manual Annotation Experiments"
+    },
+    {
+     "finding": "Conditional commitments and implicit requests were major sources of disagreement in the initial annotation experiment, and better treatment of conditional commitments accounted for much of the later agreement improvement.",
+     "evidence_type": "supported",
+     "section": "Manual Annotation Experiments"
+    },
+    {
+     "finding": "The final representation separates the underlying act from its linguistic realization: a request is represented by an action, requestor, requestee, and optional condition, while a commitment contains an action, committor, committee, and optional condition.",
+     "evidence_type": "supported",
+     "section": "Defining Requests and Commitments: Basic Concepts"
+    },
+    {
+     "finding": "Requests are treated broadly as actionable obligations for the recipient, including requests for physical action as well as questions that require an informational response.",
+     "evidence_type": "supported",
+     "section": "Defining Requests and Commitments: Requests"
+    },
+    {
+     "finding": "Conditionality is modeled explicitly because execution or scheduling of an action may depend on a stated condition that can occur in the same utterance or elsewhere in the email.",
+     "evidence_type": "supported",
+     "section": "Conditionality"
+    },
+    {
+     "finding": "A deadline or date by which an action must occur is identified as an obvious possible extension to the formal representation but is deliberately left for future work.",
+     "evidence_type": "supported",
+     "section": "Defining Requests and Commitments: footnote 2"
+    }
+   ],
+   "limitations": [
+    "All three expert annotators were also authors of the paper, so agreement does not establish how well the guidelines transfer to independent annotators.",
+    "The empirical work used one workplace corpus, Enron, and only message bodies; attachments were absent from the public corpus.",
+    "The study restricts its treatment to cases where the locus of a request or commitment can reasonably be assigned to an individual sentence, although some acts span less obvious textual regions.",
+    "The formal representation does not separately decompose an action into predicate, object, or other semantic arguments.",
+    "Deadlines are explicitly deferred rather than represented as a first-class element.",
+    "No automatic request or commitment extraction system is evaluated in this paper.",
+    "The underlying Enron corpus is publicly available, but the paper does not state that the exact sampled sentences and their study annotations were released."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "guidelines_improve_agreement": 0.99,
+    "conditional_and_implicit_edge_cases": 0.99,
+    "act_argument_tuples": 0.99,
+    "broad_actionable_request_definition": 0.98,
+    "conditionality_explicitly_modeled": 0.99,
+    "deadline_deferred": 0.99
+   },
+   "raw_claims": [
+    "The study treats requests and commitments as task-oriented speech acts that assign responsibility for future action.",
+    "The first annotation experiment covered 350 sentences from 54 Enron emails.",
+    "The second experiment covered 750 sentences from 350 emails.",
+    "Conditional commitments and implicit requests caused prominent disagreements in the first experiment.",
+    "Revised instructions distinguished conditional from unconditional acts and implicit from explicit acts.",
+    "A request assigns an action obligation from a requestor to a requestee.",
+    "A commitment assigns responsibility for an action to a committor, potentially subject to a condition.",
+    "Questions seeking information are included as requests because answering is an action expected from the recipient.",
+    "Conditions can be expressed outside the same sentence as the request or commitment they govern.",
+    "The paper notes that a date by which an action must occur could be added to the representation but does not develop that element."
+   ],
+   "source_url": "https://www.researchgate.net/publication/228627908_The_nature_of_requests_and_commitments_in_email_messages",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1109-hicss-2006-528",
+   "title": "Using Speech Acts to Categorize Email and Identify Email Genres",
+   "research_question": "Can email-specific speech-act and genre categories be reliably annotated and automatically identified from verb-class and email-specific features?",
+   "methodology": "The authors constructed an email-act taxonomy and prepared approximately 280 randomly selected, redacted messages from their personal email collections, using the first 160 to refine annotation guidelines and 100 to measure inter-annotator agreement. Sparse categories were then merged or removed and deficient categories were supplemented by hand-selected messages, yielding 50 to 56 examples in each of five experimental classes: Transmissive, Information-request/Directive, Assertion, Response, and Response-with-forward-function. Random Forests with 100 trees and SVM-light with a radial-basis-function kernel were evaluated using ten-fold cross-validation on email-specific features and two verb-class lexicons, with and without part-of-speech filtering.",
+   "key_findings": [
+    {
+     "finding": "The 30-subcategory annotation scheme achieved Cohen's kappa of 0.89 on 100 emails, indicating high agreement between the two annotators.",
+     "evidence_type": "supported",
+     "section": "3. Corpus"
+    },
+    {
+     "finding": "The taxonomy explicitly distinguishes information requests, directives that ask another person to act, and commitments or offers to perform an action, but the experimental data merged information requests with directives and did not retain commitments as a standalone classifier class.",
+     "evidence_type": "supported",
+     "section": "Table 2 and 3. Corpus"
+    },
+    {
+     "finding": "Email-specific features alone produced 0.57 precision with Random Forests, outperforming either verb lexicon alone in the overall five-class task.",
+     "evidence_type": "supported",
+     "section": "6. Experiments, Table 4"
+    },
+    {
+     "finding": "Combining the 24-class Ballmer-Brennenstuhl verb representation with the email-specific feature set gave the best reported Random Forest result, with precision of 0.63.",
+     "evidence_type": "supported",
+     "section": "6. Experiments, Table 4"
+    },
+    {
+     "finding": "Part-of-speech filtering did not improve the best combination: BB plus email features fell from 0.63 without TnT tagging to 0.52 with it.",
+     "evidence_type": "supported",
+     "section": "6. Experiments, Table 4"
+    },
+    {
+     "finding": "Verb features were comparatively useful for the merged directive/information-request class and for assertions, whereas email-specific structural features were substantially stronger for several response and transmissive classes.",
+     "evidence_type": "supported",
+     "section": "6. Experiments, Tables 6-9"
+    }
+   ],
+   "limitations": [
+    "The initial corpus contains only about 280 redacted emails drawn from the authors' personal collections.",
+    "The experimental class distribution was partly constructed by hand-selecting examples to supplement deficient categories, so it does not preserve the natural class distribution.",
+    "Several theoretically distinct speech acts were collapsed because of data sparsity; directives and information requests were merged, and commitments were observed only in response categories.",
+    "The task predicts a primary communicative intent for a whole email rather than locating multiple utterance-level acts within a message.",
+    "The representation does not extract the owner, action object, deadline, or condition of an action item.",
+    "The LCS-based approach did not use grammatical parsing even though the lexical resource was designed around syntactic-semantic alternations.",
+    "Only sender-written material was modeled after removing signatures and quoted text, so conversational context from quoted history was not exploited.",
+    "The paper does not state that the redacted personal-email corpus or exact experiment annotations were released."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "annotation_kappa_high": 0.99,
+    "taxonomy_contains_request_directive_commit": 0.99,
+    "email_features_outperform_verb_only": 0.98,
+    "bb_plus_email_features_best": 0.99,
+    "pos_filtering_not_helpful": 0.98,
+    "message_level_not_argument_extraction": 0.97
+   },
+   "raw_claims": [
+    "The taxonomy includes separate concepts for information requests, directives, and commitments.",
+    "Approximately 280 redacted personal emails were initially collected.",
+    "One hundred emails were used to measure annotation agreement, yielding kappa 0.89 for the 30 subcategories.",
+    "Rare categories were collapsed or removed before classifier evaluation.",
+    "Commitments in this dataset occurred only within response categories.",
+    "Directives and information requests were merged into a single experimental class.",
+    "The email-specific feature set contains cues for questions, politeness, action requests, commitments, replies, attachments, and other structural characteristics.",
+    "Random Forest experiments used 100 trees and ten-fold cross-validation.",
+    "The best Random Forest feature combination reported precision of 0.63.",
+    "The experiments classify the primary intent of an email rather than extracting structured action-item arguments."
+   ],
+   "source_url": "https://www.researchgate.net/publication/259703374_Using_Speech_Acts_to_Categorize_Email_and_Identify_Email_Genres",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-1e8332286e",
+   "title": "TimeML: Robust Specification of Event and Temporal Expressions in Text",
+   "research_question": "How can a general markup language represent events, temporal expressions, temporal ordering, modality, and underspecified temporal information in natural-language text?",
+   "methodology": "The paper presents TimeML, a specification language developed through the TERQAS workshop in the AQUAINT program rather than an evaluated extraction algorithm. It defines EVENT, TIMEX3, SIGNAL, and LINK structures and demonstrates their use on constructed textual examples involving temporal anchoring, ordering, subordination, aspect, and causation. The authors also report completion of a 300-article gold-standard TimeBank corpus annotated according to the specification, but the paper does not report predictive-system accuracy or annotation-agreement results.",
+   "key_findings": [
+    {
+     "finding": "TimeML separates event and temporal mentions from the relations among them through four principal structures: EVENT, TIMEX3, SIGNAL, and LINK.",
+     "evidence_type": "supported",
+     "section": "2. Introduction to TimeML"
+    },
+    {
+     "finding": "TIMEX3 represents explicit dates, times, durations, and underspecified expressions and supports delayed computation of normalized time values through temporal functions.",
+     "evidence_type": "supported",
+     "section": "2. Introduction to TimeML"
+    },
+    {
+     "finding": "TLINK encodes temporal relationships between events or between an event and a time, including before, after, inclusion, simultaneity, beginnings, and endings, making it suitable as a temporal layer for actions associated with dates or deadline-like constraints.",
+     "evidence_type": "supported",
+     "section": "3.1 TLINK"
+    },
+    {
+     "finding": "SLINK represents subordination relations such as modality, factuality, counterfactuality, evidentiality, and negation, allowing a temporal-event representation to distinguish asserted events from possible or subordinated ones.",
+     "evidence_type": "supported",
+     "section": "3.2 SLINK"
+    },
+    {
+     "finding": "The EVENT taxonomy contains an I_ACTION class whose examples include promise and offer, so commitment-related predicates can be represented as event mentions even though TimeML does not itself define workplace commitment speech acts.",
+     "evidence_type": "supported",
+     "section": "2. Introduction to TimeML"
+    },
+    {
+     "finding": "The authors report that a 300-article TimeBank gold-standard corpus had been completed and was intended for general release.",
+     "evidence_type": "supported",
+     "section": "5. Conclusion and Future Developments"
+    }
+   ],
+   "limitations": [
+    "The paper specifies an annotation language rather than evaluating an automatic event or temporal extraction system.",
+    "It does not model workplace speech-act roles such as requestor, requestee, committor, or action owner.",
+    "Event participants and action objects are not represented as a complete task-oriented argument structure in the presented schema.",
+    "TimeML can relate an event to time but does not define a dedicated task-deadline field or the deontic interpretation that makes a date a deadline.",
+    "The treatment is general natural-language text rather than workplace email or chat.",
+    "The paper states that most details of its treatment of underspecified temporal expressions are not fully discussed.",
+    "Causation receives only an initial treatment.",
+    "No quantitative extraction or annotation-quality benchmark is reported in this paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "four_core_structures": 0.99,
+    "timex3_supports_under_specification": 0.99,
+    "tlink_temporal_relations": 0.99,
+    "slink_modality": 0.99,
+    "i_action_includes_promise_offer": 0.99,
+    "timebank_300_articles": 0.99
+   },
+   "raw_claims": [
+    "TimeML is designed to annotate events and their temporal relations in text.",
+    "Its four major structures are EVENT, TIMEX3, SIGNAL, and LINK.",
+    "TIMEX3 covers fully specified temporal expressions, underspecified temporal expressions, and durations.",
+    "SIGNAL can mark temporal connectives and subordinators as well as polarity and temporal-quantity indicators.",
+    "TLINK relates events to events or events to times.",
+    "SLINK represents modal, factual, counterfactual, evidential, and negative subordination relations.",
+    "The I_ACTION event class includes predicates such as attempts, promises, and offers.",
+    "TimeML can defer normalization of context-dependent expressions such as relative dates until an anchor is known.",
+    "The paper reports a completed TimeBank corpus containing 300 annotated articles.",
+    "The paper does not present a quantitative benchmark for an automatic TimeML extraction system."
+   ],
+   "source_url": "https://staffwww.dcs.shef.ac.uk/people/R.Gaizauskas/research/papers/iwcs03.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-01c535c108",
+   "title": "Dialogue Act Modeling for Automatic Tagging and Recognition of Conversational Speech",
+   "research_question": "Can dialogue acts in spontaneous conversation be automatically recognized by probabilistically combining lexical, prosodic, and dialogue-sequence evidence, while also using dialogue-act information to improve speech recognition?",
+   "methodology": "The study uses 1,155 hand-labeled Switchboard telephone conversations and a reduced 42-class SWBD-DAMSL dialogue-act inventory; eight linguistics graduate students performed the labeling, with reported agreement of 84% and kappa 0.80. The statistical framework models dialogue-act sequences with an HMM-style formulation and dialogue-act n-grams, combines these priors with dialogue-act-specific word models and prosodic classifiers based on decision trees or neural networks, and integrates the model with speech recognition. The main training partition contains 1,115 conversations and about 198,000 utterances, while a 19-conversation test set contains about 4,000 utterances, with additional conversations held aside.",
+   "key_findings": [
+    {
+     "finding": "Using transcribed words, dialogue-act classification reached 71.0% accuracy with a trigram discourse grammar, compared with a 35% chance baseline and approximately 84% human labeling agreement.",
+     "evidence_type": "supported",
+     "section": "5.1.3 Results"
+    },
+    {
+     "finding": "Dialogue-sequence context was highly informative: with true words, accuracy rose from 54.3% without a discourse grammar to 71.0% with a trigram model, and with recognized words it rose from 42.8% to 64.8%.",
+     "evidence_type": "supported",
+     "section": "5.1.3 Results, Table 6"
+    },
+    {
+     "finding": "Combining recognized-word evidence with prosody and a bigram discourse grammar yielded 65.0% dialogue-act accuracy, slightly above the 64.3% recognizer-only result.",
+     "evidence_type": "supported",
+     "section": "5.3.1 Results, Table 9"
+    },
+    {
+     "finding": "In balanced focused classifications, adding prosody consistently improved word-only classification for question-versus-statement and agreement-versus-backchannel distinctions, with larger relative value when words came from speech recognition.",
+     "evidence_type": "supported",
+     "section": "5.3.2 Focused Classifications"
+    },
+    {
+     "finding": "The 42-class inventory contains an Action-directive category and an Offers, Options & Commits category, but they account for only about 0.4% and 0.1% of utterances respectively.",
+     "evidence_type": "supported",
+     "section": "2.2 Tag Set, Table 2"
+    },
+    {
+     "finding": "The experiments assume gold utterance segmentation rather than solving segmentation and dialogue-act classification jointly.",
+     "evidence_type": "supported",
+     "section": "2.1 Utterance Segmentation"
+    }
+   ],
+   "limitations": [
+    "Switchboard consists of informal telephone conversations between strangers rather than workplace email, workplace chat, or task-oriented organizational dialogue.",
+    "The action-directive and offers/options/commits categories are extremely rare, so the overall accuracy results do not establish strong performance specifically for requests or commitments.",
+    "Each segmented utterance receives one primary dialogue-act label, apart from special handling for rare mixed cases, which is restrictive for multi-act workplace utterances.",
+    "Utterance segmentation is manually supplied and treated as given.",
+    "The taxonomy classifies illocutionary function but does not extract an action predicate, owner, object, deadline, or condition.",
+    "The corpus has a highly skewed dialogue-act distribution.",
+    "Results based on recognized words remain affected by substantial speech-recognition errors."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "transcript_accuracy_71": 0.99,
+    "discourse_context_large_gain": 0.99,
+    "prosody_adds_information": 0.98,
+    "request_commit_categories_rare": 0.99,
+    "gold_segmentation_assumed": 0.99
+   },
+   "raw_claims": [
+    "The experiments use 1,155 labeled conversations from the Switchboard corpus.",
+    "The reduced dialogue-act inventory contains 42 mutually exclusive utterance types.",
+    "Human interlabeler agreement for the 42-label inventory was 84%, corresponding to kappa 0.80.",
+    "The statistical model combines dialogue-act sequence priors with lexical and prosodic evidence.",
+    "A trigram discourse model with true words reached 71.0% dialogue-act accuracy.",
+    "With recognized words, a trigram discourse model reached 64.8% accuracy.",
+    "Recognized words plus prosody with a bigram discourse grammar reached 65.0% accuracy.",
+    "Prosody was especially useful where word sequences alone were ambiguous or recognition was imperfect.",
+    "Action-directives make up about 0.4% of the corpus utterances.",
+    "Offers, options, and commitments make up about 0.1% of the corpus utterances.",
+    "The reported dialogue-act experiments take utterance boundaries as given."
+   ],
+   "source_url": "https://arxiv.org/html/cs/0006023",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-1076034-1076094",
+   "title": "On the collective classification of email \"speech acts\"",
+   "research_question": "Does exploiting the sequential relationship among messages in an email thread improve classification of email acts such as requests and commitments beyond content-only classifiers?",
+   "methodology": "The authors use the CSpace corpus of approximately 15,000 task-oriented emails produced by 277 MBA students working in roughly 50 simulated-company teams, with experiments focused on threaded messages from several individual teams. Each message can receive multiple email-act labels, including Request, Commit, Propose, Deliver, broader Directive and Commissive categories, Meeting, and deliveredData. Local maximum-entropy classifiers use body and subject words together with relational features representing predicted acts in a message's parent and first child, and an iterative dependency-network-style procedure repeatedly updates labels across a thread. Performance is compared with bag-of-words baselines using F1 and kappa in cross-team tests, including four leave-one-team-out experiments and a prospectively collected fourth-team test set.",
+   "key_findings": [
+    {
+     "finding": "Email acts show exploitable sequential regularities: requests are often followed by delivery-related acts, while commitments are particularly associated with proposals or preceding commitments.",
+     "evidence_type": "supported",
+     "section": "4.1 Pairwise correlation of adjacent acts"
+    },
+    {
+     "finding": "In the preliminary 3F2-to-1F3 experiment, iterative collective classification improved Commit from F1 36.66 and kappa 23.16 to F1 44.06 and kappa 32.42.",
+     "evidence_type": "supported",
+     "section": "5.3 Leave-one-team-out Experiments, Table 3"
+    },
+    {
+     "finding": "The broader Commissive class improved in the same preliminary experiment from F1 77.47 and kappa 35.19 to F1 82.96 and kappa 47.83.",
+     "evidence_type": "supported",
+     "section": "5.3 Leave-one-team-out Experiments, Table 3"
+    },
+    {
+     "finding": "Thread context was not universally beneficial: Deliver degraded in the preliminary experiment from F1 77.08 and kappa 47.47 to F1 71.27 and kappa 35.78.",
+     "evidence_type": "supported",
+     "section": "5.3 Leave-one-team-out Experiments, Table 3"
+    },
+    {
+     "finding": "Across the four test teams, average kappa improvement was statistically significant for the non-delivery-related email acts at p=0.01, but the improvement across all eight acts was not significant at p=0.18.",
+     "evidence_type": "supported",
+     "section": "5.3 Leave-one-team-out Experiments"
+    },
+    {
+     "finding": "At the individual-act level across four team tests, improvement was significant for Commissive with a two-tailed p=0.01 test and for Meeting with a one-tailed p=0.04 test, while Commit did not reach conventional significance with one-tailed p=0.06.",
+     "evidence_type": "supported",
+     "section": "5.3 Leave-one-team-out Experiments"
+    },
+    {
+     "finding": "The model is multi-label at the message level: a single email may contain several email acts, but it does not locate their textual spans or extract structured action arguments such as owner, object, deadline, or condition.",
+     "evidence_type": "supported",
+     "section": "1. Introduction and 2. Email-Acts Taxonomy and Applications"
+    }
+   ],
+   "limitations": [
+    "The corpus comes from MBA students operating simulated companies rather than a naturally occurring production workplace.",
+    "Only messages belonging to explicitly identified email threads were used in the relational experiments.",
+    "Most threads contain only two or three messages and most messages have at most one child, providing relatively sparse relational structure.",
+    "Different teams exhibit different negotiation styles, making cross-team generalization harder and introducing domain variation.",
+    "The relational representation uses only parent and first-child email-act predictions rather than richer thread, participant, or organizational relationships.",
+    "Collective classification improves some acts but degrades others, particularly Deliver and deliveredData.",
+    "The classifiers assign message-level email-act labels rather than extracting the action span, owner, object, deadline, or condition.",
+    "The CSpace dataset is described as research-accessible under participant agreements, but the paper does not state that the experimental corpus or labels were publicly released.",
+    "The exact experiment code is not released in the paper, although the maximum-entropy implementation is based on the external Minorthird toolkit."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "thread_acts_are_correlated": 0.99,
+    "commit_improves_preliminary": 0.99,
+    "commissive_improves": 0.99,
+    "deliver_degrades": 0.99,
+    "non_delivery_gain_significant": 0.99,
+    "act_specific_significance_mixed": 0.99,
+    "message_level_multi_label": 0.99
+   },
+   "raw_claims": [
+    "The CSpace corpus contains approximately 15,000 emails from a simulated management-course environment.",
+    "The course involved 277 MBA students organized into roughly 50 teams.",
+    "The experiments use only threaded subsets of selected team datasets.",
+    "A Request asks the recipient to perform an activity, while a Commit binds the sender to a future course of action.",
+    "A Propose combines a request for joint activity with a commitment by the sender.",
+    "An email can carry more than one email-act label.",
+    "Parent and child email-act predictions are used as relational features.",
+    "The collective method iteratively updates message labels using maximum-entropy local classifiers.",
+    "Commit and Commissive classifications benefited strongly from collective context in the preliminary experiment.",
+    "Deliver classification could become worse when thread context was added.",
+    "Across four team tests, the overall benefit was stronger and statistically supported for non-delivery-related acts than for the complete set of email acts."
+   ],
+   "source_url": "https://www.cs.cmu.edu/~vitor/papers/sigir05.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,1621 @@
+{
+  "paper_id": "R02",
+  "title": "Applying the Annotation View on Messages for Discussion Search",
+  "research_question": "Can treating email replies as annotations and using quotations as context or highlights improve retrieval of topically relevant email messages?",
+  "methodology": "Query-based W3C email retrieval in HySpirit probabilistic Datalog; compare whole-message and new-text-only baselines with context quotation, highlight quotation, and combined virtual-document weighting. Parse quotation prefixes/depth, merge blocks by kind, stem/remove stopwords, and score bags of words using term-frequency and IDF weights. Evaluate corrected runs with trec_eval against TREC qrels.",
+  "methodology_evidence": [
+    {
+      "section": "§3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 91,
+        "line_end": 97,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "section": "§4–5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 388,
+        "line_end": 448,
+        "pdf_pages": [
+          8,
+          9
+        ]
+      }
+    },
+    {
+      "section": "§6.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 454,
+        "line_end": 463,
+        "pdf_pages": [
+          9
+        ]
+      }
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "R02-F01",
+      "finding": "The evaluated task is query-based retrieval of messages whose new text is topically relevant; full relevance involving pros and cons is explicitly outside the goal.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 3, §3 Discussion Search Approaches",
+      "quote": "approaches is to retrieve partially relevant messages of the test collection; a message is partially relevant if their new part is topically relevant; we make no eﬀorts to identify whether these mes- sages are fully relevant (i.e. contain pros and cons). All our retrieval functions are modelled",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 91,
+        "line_end": 97,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "legacy_finding_id": "PAPER-F01"
+    },
+    {
+      "finding_id": "R02-F02",
+      "finding": "The implementation merges all quotations and all new parts into separate documents, explicitly losing which quotation belongs to which comment; passage-level links are not retained.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 8, §4 Creating Documents from Emails",
+      "quote": "In this way, we lose the information about which quotation belongs to which comment; nevertheless, the basic components we are looking at are the merged new parts of emails, and not passages, so we did not consider such a ﬁner granularity in the link structure.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 390,
+        "line_end": 396,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "legacy_finding_id": "PAPER-F02"
+    },
+    {
+      "finding_id": "R02-F03",
+      "finding": "Quotation depth links highlight evidence to earlier messages, including indirect predecessors; repeated quotations can produce several virtual documents for the same source passage. These are retrieval links, not Topic span assignments.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 8, §4 Creating Documents from Emails",
+      "quote": "the quotations of a message w.r.t. their quotation depth. Virtual documents made of quotations of depth 1 were assigned to the predecessor of the email, while virtual documents made of quotations of depth 2 were assigned to the predecessor of the predecessor, etc. In the example in Fig. 1,",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 397,
+        "line_end": 404,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "additional_evidence": [
+        {
+          "section": "§3.4 Highlight Quotations",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 294,
+            "line_end": 303,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "legacy_finding_id": "PAPER-F03"
+    },
+    {
+      "finding_id": "R02-F04",
+      "finding": "On W3C email topical-relevance retrieval, Table 2 reports MAP 0.3094 for du05qaltstrg and 0.2889 for du05qaltweak, compared with 0.2565 for the whole-message baseline and 0.2599 for new text alone; significance and query count are not reported.",
+      "evidence_type": "supported",
+      "section": "PDF p. 11, §6.2, Table 2",
+      "quote": "Run MAP du05baseline 0.2565 du05noquot 0.2599 du05qaltweak 0.2889 du05qaltstrg 0.3094 du05haltweak 0.2726 du05haltstrg 0.2615",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 589,
+        "line_end": 595,
+        "pdf_pages": [
+          11
+        ]
+      },
+      "additional_evidence": [
+        {
+          "section": "§6.1 evaluation setup",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 454,
+            "line_end": 463,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "§3.3 alternative query weighting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 246,
+            "line_end": 261,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        }
+      ],
+      "legacy_finding_id": "PAPER-F04"
+    },
+    {
+      "finding_id": "R02-F05",
+      "finding": "On the same corrected W3C retrieval evaluation, strong highlight-only weighting raises P@5 to 0.5186 from baseline 0.4678 but lowers MAP to 0.2460 from 0.2565; early-rank precision and overall ranking quality must be kept separate.",
+      "evidence_type": "supported",
+      "section": "PDF p. 11, §6.1, Table 1",
+      "quote": "Mean Avg. Precision 0.2565 0.2599 0.2565 0.2816 0.2691 0.2460 Prec. 5 docs retr. 0.4678 0.4441 0.4610 0.5085 0.4814 0.5186",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 566,
+        "line_end": 570,
+        "pdf_pages": [
+          11
+        ]
+      },
+      "additional_evidence": [
+        {
+          "section": "§6.1 interpretation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 468,
+            "line_end": 472,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "§3.4 highlight strengths",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 301,
+            "line_end": 303,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "legacy_finding_id": "PAPER-F05"
+    },
+    {
+      "finding_id": "R02-F06",
+      "finding": "The best listed combined run is du05highquotweakstrg, MAP 0.3174, using weak highlight and strong context links; improvement from combining evidence depends on the setting, as du05highquotstrgweak yields 0.2816 versus context-only du05qaltweak at 0.2889.",
+      "evidence_type": "supported",
+      "section": "PDF p. 12, §6.3, Table 3",
+      "quote": "Run MAP du05highquotstrgstrg 0.3165 du05highquotstrgweak 0.2816 du05highquotweakweak 0.2992 du05highquotweakstrg 0.3174",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 651,
+        "line_end": 655,
+        "pdf_pages": [
+          12
+        ]
+      },
+      "additional_evidence": [
+        {
+          "section": "§3.5 run settings",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 384,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "§6.2 Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 589,
+            "line_end": 595,
+            "pdf_pages": [
+              11
+            ]
+          }
+        }
+      ],
+      "legacy_finding_id": "PAPER-F06"
+    },
+    {
+      "finding_id": "R02-F07",
+      "finding": "The author cautions that a passage not quoted by others can still be important; the suggestion that silence can reflect agreement is explanatory prose, not an evaluated annotation or action-preservation result.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 6, §3.4 Highlight Quotations",
+      "quote": "Possibly everyone agrees with this part, but does not state this agreement explicitly, which is a common observation in email discussions.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 275,
+        "line_end": 278,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "legacy_finding_id": "PAPER-F07"
+    },
+    {
+      "finding_id": "R02-F08",
+      "finding": "When an entire previous message is quoted, or no quotation is present, the method infers that the new text relates to the entire previous message; correctness of that scope inference is not evaluated.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 4, §3.3 footnote 4",
+      "quote": "If the whole message is quoted or there is no quotation at all, we infer that the unquoted part of the email belongs to the whole previous message.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 191,
+        "line_end": 192,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "legacy_finding_id": "PAPER-F08"
+    },
+    {
+      "finding_id": "R02-F09",
+      "finding": "The author reports fixing an inflated document-count bug in IDF after TREC submission and rerunning the experiments; the paper presents corrected results, not the original submitted scores.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 9, §6.1 Official Runs",
+      "quote": "We ﬁxed the bug and repeated the experiments.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 458,
+        "line_end": 461,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "legacy_finding_id": "PAPER-F09"
+    },
+    {
+      "finding_id": "R02-F10",
+      "finding": "Example 2 prints a retrieval status value of 0.1445 for its hypothetical query and document, but its displayed expression evaluates to 0.154496 (0.1545 rounded); this is an arithmetic contradiction in an illustration, not a benchmark metric discrepancy.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 5, §3.3 Example 2",
+      "quote": "P(retrieve(\"lists-1\")) = 0.4 · 0.3 + 0.1 · 0.392 −0.4 · 0.3 · 0.1 · 0.392 = 0.1445.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 241,
+        "line_end": 244,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "legacy_finding_id": "PAPER-F10"
+    }
+  ],
+  "limitations": [
+    "No Topic segmentation, overlapping/discontinuous Topic gold or prediction evaluation (R02-F01–R02-F03).",
+    "Merging destroys local quote-comment links (R02-F02); whole-parent fallback has unmeasured scope correctness (R02-F08).",
+    "Quotation-prefix exceptions are acknowledged; extraction/source-assignment accuracy is not measured (PDF p. 2, §2, lines 61–80).",
+    "Single named W3C retrieval benchmark; corpus/query counts, assessor/IAA details, tuning split, duplicate controls, significance tests, and operational costs are not reported. See topic02 dataset, split, and metrics fields.",
+    "Highlight weighting has an early-precision/MAP tradeoff; repeated quotations can emphasize heavily replied-to messages (R02-F03/R02-F05).",
+    "Original submission results and corrected published results must be distinguished (R02-F09); retained inconsistencies are listed in topic02.material_inconsistencies."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_semantics": "Frozen paper-reported evidence only. code_available=false means no paper-specific implementation release is reported, not that code did not exist or is unavailable today. dataset_available=true refers to the paper stating that TREC provided the W3C corpus, not a present-day accessibility check.",
+    "code_status": "HySpirit is named with a historical URL; paper-specific scripts, parser release, version and runnable configuration are not reported.",
+    "dataset_status": "W3C corpus provided by TREC and qrels used; no current access claim.",
+    "tools_reported": "HySpirit; trec_eval, with historical trec_eval.7.3.tar.gz URL and evaluation command.",
+    "source_locators": [
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 95,
+        "line_end": 97,
+        "pdf_pages": [
+          3
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 138,
+        "line_end": 138,
+        "pdf_pages": [
+          3
+        ]
+      },
+      {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 458,
+        "line_end": 474,
+        "pdf_pages": [
+          9
+        ]
+      }
+    ]
+  },
+  "confidence_scores": {
+    "R02-F01": 0.98,
+    "R02-F02": 0.99,
+    "R02-F03": 0.98,
+    "R02-F04": 0.99,
+    "R02-F05": 0.99,
+    "R02-F06": 0.99,
+    "R02-F07": 0.98,
+    "R02-F08": 0.98,
+    "R02-F09": 0.98,
+    "R02-F10": 0.98
+  },
+  "confidence_interpretation": "Confidence in accurate extraction and narrow characterization of this paper, not empirical generalization to msgloom. Per installed contract, unsupported means not experimentally established; descriptive methods and scope statements remain directly documented.",
+  "raw_claims": [
+    "These passages are determined by the corresponding quotations.",
+    "In our baseline experiment we make no distinction between quotations and new parts, so the whole email message is regarded as one single document.",
+    "This information can be derived from the annotation target."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+      "line_start": 70,
+      "line_end": 73,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+      "line_start": 101,
+      "line_end": 102,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+      "line_start": 182,
+      "line_end": 189,
+      "pdf_pages": [
+        4
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "task": "TREC 2005 Enterprise Track discussion search: query-based email ranking for partial/topical relevance of new text.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 91,
+        "line_end": 97,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "topic02_task_separation": {
+        "topic_boundary_detection": "not evaluated",
+        "contiguous_topic_segmentation": "not evaluated",
+        "segment_topic_labeling": "not evaluated",
+        "whole_message_multi_label_classification": "not evaluated",
+        "exact_span_assignment": "not evaluated",
+        "overlapping_span_assignment": "not evaluated",
+        "non_contiguous_assignment_to_one_Topic": "not evaluated",
+        "discourse_EDU_segmentation": "not evaluated",
+        "action_question_reply_scope_extraction": "not evaluated",
+        "preservation_of_decision_bearing_conditions_evidence_scope": "not evaluated"
+      }
+    },
+    "annotation_unit": {
+      "gold": "Message relevance to a search query, judged with respect to new text; no Topic-span gold standard described.",
+      "methodological_use_of_annotation": "Annotation means a reply comment on quoted text; it does not mean a human Topic-labeling protocol.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 70,
+          "line_end": 73,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 91,
+          "line_end": 97,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 163,
+          "line_end": 169,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    "prediction_unit": {
+      "value": "A ranked email document per query. New text and quotation virtual documents are bags of words; virtual documents support ranking and are not retrieved. No predicted Topic boundary or span.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 200,
+          "line_end": 224,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 388,
+          "line_end": 414,
+          "pdf_pages": [
+            8
+          ]
+        }
+      ]
+    },
+    "contiguity": {
+      "within_message": "Alternating quote/comment blocks are merged by kind, so the representation aggregates potentially non-contiguous input text but discards local alignment.",
+      "thread_level": "Depth-based quote links can reach indirect predecessors; no contiguous-topic partition or non-sequential Topic clustering is evaluated.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 388,
+          "line_end": 404,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 268,
+          "line_end": 284,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Topic label cardinality per message or span not reported; query-message relevance judgments are not a reported multi-label Topic corpus.",
+      "prediction": "No Topic labels produced. Multiple terms or highlight documents are not multiple Topic memberships. Independent query scores impose no described single-Topic rule, but do not establish a multi-label assignment result.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 214,
+          "line_end": 224,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 294,
+          "line_end": 298,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 454,
+          "line_end": 463,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "No annotated discontinuous Topic object reported.",
+        "thread_level": "No gold discontinuous Topic cluster reported."
+      },
+      "prediction": {
+        "within_one_message": "New-text and quote aggregates can join separated blocks, but do not identify separated spans of one semantic Topic.",
+        "thread_level": "Highlight links connect earlier messages to quoting successors, including indirect ones; no semantic Topic-cluster output."
+      },
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 388,
+          "line_end": 404,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 268,
+          "line_end": 284,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "overlap": {
+      "gold": "No gold overlapping Topic spans or multiple span memberships reported.",
+      "prediction": "Unsupported for semantic Topic overlap. Repeated copies of a source quotation can create several highlight virtual documents; overlap/repetition of source evidence is not overlapping Topic prediction.",
+      "scope": "Distinguish copied passage evidence across messages from one within-message span assigned to several Topics.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 398,
+        "line_end": 404,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "dataset_domain": {
+      "value": "W3C email corpus provided by TREC; asynchronous discussion-list email.",
+      "transfer_limit": "Direct email evidence, but representative performance on personal Outlook/Teams business matters is not established.",
+      "collection_size": "not reported",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+        "line_start": 454,
+        "line_end": 463,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "annotation_process": {
+      "value": "TREC qrels are used; assessor counts, instructions, adjudication, pooling details, and a Topic-span annotation protocol are not reported. Quote extraction relies on line prefixes and depth, with acknowledged exceptions.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 61,
+          "line_end": 80,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 462,
+          "line_end": 464,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported",
+      "metric": null,
+      "population": null,
+      "audit_scope": "Full paper; §6 reports retrieval results without an IAA study.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 454,
+          "line_end": 472,
+          "pdf_pages": [
+            9
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 566,
+          "line_end": 605,
+          "pdf_pages": [
+            11
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 651,
+          "line_end": 658,
+          "pdf_pages": [
+            12
+          ]
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "not reported",
+      "train_dev_test_counts": "No training/development split or held-out tuning protocol reported; the named W3C collection is the test collection.",
+      "query_count": "not reported; not inferred from rounded precision values",
+      "duplicate_controls": "not reported; repeated quotations intentionally contribute separate highlight evidence.",
+      "temporal_controls": "No evaluation using only messages available at a fixed arrival time reported.",
+      "interpretation": "Highlight evidence from later replies requires a separate future-information control in any incremental msgloom experiment; the paper does not establish a leakage finding.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 398,
+          "line_end": 404,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 454,
+          "line_end": 463,
+          "pdf_pages": [
+            9
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 368,
+          "line_end": 384,
+          "pdf_pages": [
+            8
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "setting": {
+        "dataset": "TREC W3C email corpus",
+        "task": "message retrieval for topical/partial relevance of new text",
+        "split": "named test collection; counts and split protocol not reported",
+        "judgments": "TREC qrels; grade mapping and query population details not reported",
+        "evaluation_command": "trec_eval -a -M1000 <qrels> <resultfile>",
+        "result_version": "paper-reported reruns after IDF bug fix",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 454,
+          "line_end": 463,
+          "pdf_pages": [
+            9
+          ]
+        }
+      },
+      "definitions": {
+        "MAP": "Mean per-query average precision. Conventional interpretation: sum precision at relevant ranks divided by relevant qrels count for the query, then average over evaluated queries; paper names metric/trec_eval but does not give formula, query count, or zero-relevance-query handling.",
+        "P@k": "Precision among first k retrieved ranks, averaged over queries; denominator k per query. Query count not stated.",
+        "relevant_documents": "Table 1 labels 3445 as Relevant Documents. Conventional trec_eval interpretation is an aggregate relevant query-document count, but this paper does not explicitly state the counting convention or per-query counts. Do not treat 3445 as unique corpus messages or infer the corpus size.",
+        "returned_relevant": "Table 1 labels these values Returned Relevant. Conventional interpretation is an aggregate of relevant returned results under the reported evaluation command; the paper does not explicitly state the counting convention. No query count or denominator is reconstructed from rounded P@k values.",
+        "interpolated_recall_precision": "Figures 2–4 show averaged interpolated precision-recall curves. §6.1 names recall points 0.1 through 1 in 0.1 increments; plots also show the zero-recall endpoint. Exact point values are not tabulated and are not digitized here."
+      },
+      "definition_status": "Metric names and command are paper-reported; conventional definitions are analyst explanation, not verbatim definitions from the paper.",
+      "run_settings": {
+        "du05baseline": {
+          "document": "whole email",
+          "idf_document_scope": "whole email",
+          "context_link": null,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 101,
+            "line_end": 127,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        "du05noquot": {
+          "document": "merged new text",
+          "idf_document_scope": "new text",
+          "context_link": null,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 163,
+            "line_end": 178,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        "du05quotweak": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "whole email",
+          "context_link": 0.3,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 200,
+            "line_end": 229,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        "du05quotstrg": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "whole email",
+          "context_link": 0.9,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 200,
+            "line_end": 229,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        "du05highweak": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "whole email",
+          "context_link": null,
+          "highlight_link": 0.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 294,
+            "line_end": 303,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        "du05highstrg": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "whole email",
+          "context_link": null,
+          "highlight_link": 0.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 294,
+            "line_end": 303,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        "du05qaltweak": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.3,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 246,
+            "line_end": 261,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        },
+        "du05qaltstrg": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.9,
+          "highlight_link": null,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 246,
+            "line_end": 261,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        },
+        "du05haltweak": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": null,
+          "highlight_link": 0.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 335,
+            "line_end": 342,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        "du05haltstrg": {
+          "document": "merged new text with quotation virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": null,
+          "highlight_link": 0.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 335,
+            "line_end": 342,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        "du05highquotstrgstrg": {
+          "document": "merged new text with context and highlight virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.9,
+          "highlight_link": 0.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 384,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "du05highquotstrgweak": {
+          "document": "merged new text with context and highlight virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.3,
+          "highlight_link": 0.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 384,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "du05highquotweakstrg": {
+          "document": "merged new text with context and highlight virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.9,
+          "highlight_link": 0.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 384,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "du05highquotweakweak": {
+          "document": "merged new text with context and highlight virtual documents",
+          "idf_document_scope": "new text",
+          "context_link": 0.3,
+          "highlight_link": 0.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 384,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      },
+      "table_1": [
+        {
+          "metric": "relevant_documents",
+          "values": {
+            "du05baseline": 3445,
+            "du05noquot": 3445,
+            "du05quotweak": 3445,
+            "du05quotstrg": 3445,
+            "du05highweak": 3445,
+            "du05highstrg": 3445
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 567,
+            "line_end": 567,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "returned_relevant",
+          "values": {
+            "du05baseline": 2315,
+            "du05noquot": 2338,
+            "du05quotweak": 2397,
+            "du05quotstrg": 2463,
+            "du05highweak": 2367,
+            "du05highstrg": 2319
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 568,
+            "line_end": 568,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "MAP",
+          "values": {
+            "du05baseline": 0.2565,
+            "du05noquot": 0.2599,
+            "du05quotweak": 0.2565,
+            "du05quotstrg": 0.2816,
+            "du05highweak": 0.2691,
+            "du05highstrg": 0.246
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 569,
+            "line_end": 569,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@5",
+          "values": {
+            "du05baseline": 0.4678,
+            "du05noquot": 0.4441,
+            "du05quotweak": 0.461,
+            "du05quotstrg": 0.5085,
+            "du05highweak": 0.4814,
+            "du05highstrg": 0.5186
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 570,
+            "line_end": 570,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@10",
+          "values": {
+            "du05baseline": 0.3966,
+            "du05noquot": 0.4102,
+            "du05quotweak": 0.4186,
+            "du05quotstrg": 0.439,
+            "du05highweak": 0.4237,
+            "du05highstrg": 0.4288
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 571,
+            "line_end": 571,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@15",
+          "values": {
+            "du05baseline": 0.3729,
+            "du05noquot": 0.3955,
+            "du05quotweak": 0.3887,
+            "du05quotstrg": 0.4,
+            "du05highweak": 0.4,
+            "du05highstrg": 0.3706
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 572,
+            "line_end": 572,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@20",
+          "values": {
+            "du05baseline": 0.3458,
+            "du05noquot": 0.3695,
+            "du05quotweak": 0.3653,
+            "du05quotstrg": 0.3602,
+            "du05highweak": 0.3619,
+            "du05highstrg": 0.3381
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 573,
+            "line_end": 573,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@30",
+          "values": {
+            "du05baseline": 0.3068,
+            "du05noquot": 0.322,
+            "du05quotweak": 0.3215,
+            "du05quotstrg": 0.3198,
+            "du05highweak": 0.3181,
+            "du05highstrg": 0.3017
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 574,
+            "line_end": 574,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@100",
+          "values": {
+            "du05baseline": 0.1844,
+            "du05noquot": 0.1988,
+            "du05quotweak": 0.1937,
+            "du05quotstrg": 0.1993,
+            "du05highweak": 0.1912,
+            "du05highstrg": 0.1808
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 575,
+            "line_end": 575,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@200",
+          "values": {
+            "du05baseline": 0.1251,
+            "du05noquot": 0.1303,
+            "du05quotweak": 0.1312,
+            "du05quotstrg": 0.1338,
+            "du05highweak": 0.1293,
+            "du05highstrg": 0.1267
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 576,
+            "line_end": 576,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@500",
+          "values": {
+            "du05baseline": 0.0673,
+            "du05noquot": 0.0683,
+            "du05quotweak": 0.0704,
+            "du05quotstrg": 0.0723,
+            "du05highweak": 0.0694,
+            "du05highstrg": 0.0668
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 577,
+            "line_end": 577,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "metric": "P@1000",
+          "values": {
+            "du05baseline": 0.0392,
+            "du05noquot": 0.0396,
+            "du05quotweak": 0.0406,
+            "du05quotstrg": 0.0417,
+            "du05highweak": 0.0401,
+            "du05highstrg": 0.0393
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 578,
+            "line_end": 578,
+            "pdf_pages": [
+              11
+            ]
+          }
+        }
+      ],
+      "table_2_and_3": [
+        {
+          "run": "du05baseline",
+          "metric": "MAP",
+          "value": 0.2565,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 590,
+            "line_end": 590,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05noquot",
+          "metric": "MAP",
+          "value": 0.2599,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 591,
+            "line_end": 591,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05qaltweak",
+          "metric": "MAP",
+          "value": 0.2889,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 592,
+            "line_end": 592,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05qaltstrg",
+          "metric": "MAP",
+          "value": 0.3094,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 593,
+            "line_end": 593,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05haltweak",
+          "metric": "MAP",
+          "value": 0.2726,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 594,
+            "line_end": 594,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05haltstrg",
+          "metric": "MAP",
+          "value": 0.2615,
+          "table": 2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 595,
+            "line_end": 595,
+            "pdf_pages": [
+              11
+            ]
+          }
+        },
+        {
+          "run": "du05highquotstrgstrg",
+          "metric": "MAP",
+          "value": 0.3165,
+          "table": 3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 652,
+            "line_end": 652,
+            "pdf_pages": [
+              12
+            ]
+          }
+        },
+        {
+          "run": "du05highquotstrgweak",
+          "metric": "MAP",
+          "value": 0.2816,
+          "table": 3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 653,
+            "line_end": 653,
+            "pdf_pages": [
+              12
+            ]
+          }
+        },
+        {
+          "run": "du05highquotweakweak",
+          "metric": "MAP",
+          "value": 0.2992,
+          "table": 3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 654,
+            "line_end": 654,
+            "pdf_pages": [
+              12
+            ]
+          }
+        },
+        {
+          "run": "du05highquotweakstrg",
+          "metric": "MAP",
+          "value": 0.3174,
+          "table": 3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 655,
+            "line_end": 655,
+            "pdf_pages": [
+              12
+            ]
+          }
+        }
+      ],
+      "figures": {
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 462,
+            "line_end": 464,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 515,
+            "line_end": 515,
+            "pdf_pages": [
+              10
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 551,
+            "line_end": 551,
+            "pdf_pages": [
+              10
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 648,
+            "line_end": 648,
+            "pdf_pages": [
+              12
+            ]
+          }
+        ],
+        "visual_paths": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/page-10.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/page-12.png"
+        ]
+      },
+      "not_reported": [
+        "confidence intervals",
+        "significance tests",
+        "Pk",
+        "WindowDiff",
+        "pair/cluster metrics",
+        "span F1/IoU",
+        "multi-label metrics",
+        "scope-preservation metrics",
+        "quote-extraction accuracy",
+        "runtime/latency/memory benchmarks"
+      ]
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_evidence": "R02-F02 is an explicit admission of structural information loss, not a measured rate of condition, evidence, action, approval, or reply-scope loss. R02-F01 excludes even full pros/cons relevance from the retrieval goal.",
+      "related_extraction_errors": "Quotation-prefix exceptions are acknowledged without an error taxonomy or counts.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 390,
+          "line_end": 396,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 91,
+          "line_end": 97,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+          "line_start": 61,
+          "line_end": 80,
+          "pdf_pages": [
+            2
+          ]
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Comparative sentence/clause/arbitrary-span/EDU/hybrid annotation units",
+      "Concrete work-matter identity across threads or Sources",
+      "Gold or predicted multiple Topic memberships, overlapping spans, or discontinuous Topic spans",
+      "Condition/evidence/exception/approval/action/reply-scope preservation",
+      "Branch-aware uncertainty and missing-history handling",
+      "Business-email transfer, incremental arrival-time retrieval, and resource costs"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "R02-I01",
+        "kind": "source notation inconsistency",
+        "description": "Example 3 supplies 0.3 link(\"highlight\") but its displayed probability expression and footnote use link(\"quotation\"). The PDF confirms both labels. The intended identifier and implementation behavior are not established by the frozen paper; both labels are retained. This is a worked example, not a dataset result.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 314,
+            "line_end": 329,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 359,
+            "line_end": 359,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ],
+        "visual_evidence": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/page-07.png",
+        "resolution": "Original PDF confirms the mismatch. Example 3 arithmetic matches its printed precision (0.303, 0.5121, and 0.2088); the final displayed expression evaluates to 0.20881580. Footnote 5 explicitly states extensional semantics and counts the link twice. No unpublished implementation or alternative semantics is reconstructed."
+      },
+      {
+        "id": "R02-I02",
+        "kind": "prose generalization requires qualification",
+        "description": "§6.3 says combined quotations slightly enhance retrieval effectiveness. Table 3 gives 0.2816 for strong-highlight/weak-context, below the matched weak-context-only 0.2889 in Table 2. In contrast, weak-highlight/strong-context is 0.3174 versus strong-context-only 0.3094. All are MAP for the same corrected W3C topical-relevance retrieval evaluation. No numerical table conflict; the prose must not be read as universal improvement.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 603,
+            "line_end": 605,
+            "pdf_pages": [
+              11
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 592,
+            "line_end": 593,
+            "pdf_pages": [
+              11
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 651,
+            "line_end": 655,
+            "pdf_pages": [
+              12
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 368,
+            "line_end": 376,
+            "pdf_pages": [
+              8
+            ]
+          }
+        ],
+        "resolution": "Retain setting-specific values; no statistical significance claim."
+      },
+      {
+        "id": "R02-I03",
+        "kind": "reporting-label ambiguity",
+        "description": "Table 1 and Figure 2 are labeled official runs, but du05noquot is explicitly described as not submitted. In addition, §6.1 states that published results are reruns after the IDF bug fix. Do not call every table entry an original official submission score.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 177,
+            "line_end": 178,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 458,
+            "line_end": 461,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 566,
+            "line_end": 581,
+            "pdf_pages": [
+              11
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 515,
+            "line_end": 515,
+            "pdf_pages": [
+              10
+            ]
+          }
+        ],
+        "resolution": "Record corrected paper-reported runs; original submitted values are not reported."
+      },
+      {
+        "id": "R02-I04",
+        "kind": "paper-reported IDF design change, separate from implementation bug",
+        "description": "The original quotation runs combine new-part term weights with whole-email IDF. The author calls this inconsistent and evaluates alternative runs with new-part IDF. This is separate from the inflated-numdoc implementation bug.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 246,
+            "line_end": 261,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 458,
+            "line_end": 461,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ],
+        "resolution": "Both run families retained with their weighting scope."
+      },
+      {
+        "id": "R02-I05",
+        "kind": "minor identifier mismatch",
+        "description": "§3.4 refers to retrieve and qlink as above, whereas the displayed rule uses link(\"highlight\"); qlink is not defined in the preceding displayed rules.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 285,
+            "line_end": 291,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 214,
+            "line_end": 224,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ],
+        "resolution": "Retain displayed link rule; do not infer an additional qlink implementation."
+      },
+      {
+        "id": "R02-I06",
+        "kind": "worked-example arithmetic contradiction",
+        "description": "Example 2, hypothetical query web deal and document lists-1, prints P(retrieve) = 0.4*0.3 + 0.1*0.392 - 0.4*0.3*0.1*0.392 = 0.1445. Independent arithmetic gives 0.154496, rounding to 0.1545. Both the expression and 0.1445 are confirmed in the original PDF. No benchmark/table correction is inferred.",
+        "paper_reported_value": 0.1445,
+        "analyst_recomputed_value": 0.154496,
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+            "line_start": 231,
+            "line_end": 244,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ],
+        "visual_evidence": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/page-05.png",
+        "resolution": "Preserve both values and label the recomputation; author correction is unavailable in the frozen paper."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Limited: R02-F02 exposes lost quote-comment alignment; no unit comparison.",
+      "RQ2": "Direct support from R02-F03 for quotation-linked asynchronous evidence, not Topic clustering.",
+      "RQ3": "R02-F02/R02-F03 aggregate multiple blocks and repeated evidence, not multi-Topic gold or predictions.",
+      "RQ4": "Direct email quotation representation only; semantic overlap/discontinuity unsupported.",
+      "RQ5": "R02-F02 explicitly reports loss of quotation-to-comment correspondence when blocks are merged. This is structural information loss, not a measured semantic condition, evidence, action, approval, or reply-scope loss rate. R02-F08 is an unvalidated whole-previous-message scope assumption.",
+      "RQ6": "R02-F04–R02-F06 give retrieval MAP and rank precision only; keep distinct from segmentation/span metrics.",
+      "RQ7": "Named W3C benchmark and qrels; annotation/IAA/split/duplicate-control details missing.",
+      "RQ8": "Supports testing local quote-comment alignment and cautious context inference, not approving an architecture."
+    },
+    "interpretation": [
+      {
+        "id": "R02-A01",
+        "claim": "Retrieval gains do not demonstrate that the chosen merged unit preserves a concrete work matter. A term-based topicality score can improve while local reply scope remains unavailable.",
+        "based_on": [
+          "R02-F01",
+          "R02-F02",
+          "R02-F04"
+        ]
+      },
+      {
+        "id": "R02-A02",
+        "claim": "Linking merged new text to merged quoted context, especially whole-parent fallback, can plausibly broaden reply or approval scope in multi-matter email. This is an unmeasured risk, not an observed business-email error rate.",
+        "based_on": [
+          "R02-F02",
+          "R02-F08"
+        ]
+      },
+      {
+        "id": "R02-A03",
+        "claim": "Quotation evidence is useful candidate context, but quotedness alone is insufficient to decide whether unquoted work evidence can be dropped. Quotation frequency does not establish approval, and the paper does not validate silence as agreement.",
+        "based_on": [
+          "R02-F05",
+          "R02-F07"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "R02-E01",
+        "status": "untested proposal; no architecture approval",
+        "proposal": "Compare merged quote/new-text documents against preserved local quote-comment links on synthetic or user-reviewed business email with interleaved matters. Include sentence, clause, span, EDU, and hybrid candidate units without selecting a winner in advance.",
+        "gold": "Annotate concrete Topics independently of thread membership; permit several Topics per span and non-contiguous spans per Topic. Retain uncertainty and exact source offsets.",
+        "evaluation": "Report quote-comment link accuracy, exact/overlap span scores, multi-label assignment scores, and condition/evidence/action/approval/reply-scope preservation separately; keep retrieval MAP as a separate task.",
+        "based_on": [
+          "R02-F02",
+          "R02-F04"
+        ]
+      },
+      {
+        "id": "R02-E02",
+        "status": "untested proposal",
+        "proposal": "Contrast whole-parent fallback with explicit uncertain context links in no-quote and full-quote replies that answer only selected requests.",
+        "evaluation": "Measure omitted and broadened scope against reviewed gold; audit exceptions and approval conditions separately.",
+        "based_on": [
+          "R02-F08"
+        ]
+      },
+      {
+        "id": "R02-E03",
+        "status": "untested proposal",
+        "proposal": "Compare context-only and highlight-assisted retrieval with preserved source evidence, grouping near-duplicate/thread families for evaluation and restricting context to information available at each arrival time.",
+        "evaluation": "Separate MAP/P@k from work-evidence preservation; stratify by quote repetition and branching. Report annotation agreement and tuning/test separation.",
+        "based_on": [
+          "R02-F03",
+          "R02-F05",
+          "R02-F06",
+          "R02-F07"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/reused-topic01/2005_frommholz_annotation_view_messages_discussion_search.pdf",
+      "pdf_sha256": "385a0d032fed01058f3a3da2b7693cc044d251b581df6555b454fc7f9d269a28",
+      "expected_pdf_sha256": "385a0d032fed01058f3a3da2b7693cc044d251b581df6555b454fc7f9d269a28",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R02.md",
+      "converted_text_sha256": "03084c63faedf54d3d86137ac465dea2ea1b46e38f86414c3d81722a725f75d7",
+      "fine_conversion": "not present at supplied convert_fine/R02.md path",
+      "locator_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.pages.md",
+      "locator_text_sha256": "867b3542d0b1db582171c5578d4317cb5864ec5105cacb9e2fb3cc193e7274dd",
+      "independent_texts": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.raw.txt",
+          "sha256": "b777cdf491e4b17f53724c29a637393d9fce6692c2a8c2808ba095475a175cf4"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R02.layout.txt",
+          "sha256": "efdb6f5022ce168550132b9334745c62a7f087257413eb36d118889335e451eb"
+        }
+      ],
+      "line_numbering": "1-based Unix LF split; whitespace normalization only; line-break hyphens and ligatures retained in quotes",
+      "read_scope": "Xhigh: full rough and page-indexed converted text; relevant independent raw/layout excerpts; original frozen PDF pages 3, 4, 5, 6, 7, 8, 9, 11, 12 freshly rendered and visually inspected. Earlier high-attempt reading remains recorded separately. No Topic01 conclusions used.",
+      "visual_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/visual-review.md",
+      "prior_high_read_scope": "Full primary conversion, full page-indexed conversion, full independent raw and layout text; original PDF rendered and inspected at pages 2, 4, 5, 7, 8, 9, 10, 11, 12. References read only as part of R02. No Topic01 conclusions used.",
+      "xhigh_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/xhigh-review.json",
+      "xhigh_visual_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R02/xhigh-source-review.md"
+    }
+  },
+  "finding_id_alias_map": {
+    "PAPER-F01": "R02-F01",
+    "PAPER-F02": "R02-F02",
+    "PAPER-F03": "R02-F03",
+    "PAPER-F04": "R02-F04",
+    "PAPER-F05": "R02-F05",
+    "PAPER-F06": "R02-F06",
+    "PAPER-F07": "R02-F07",
+    "PAPER-F08": "R02-F08",
+    "PAPER-F09": "R02-F09",
+    "PAPER-F10": "R02-F10"
+  },
+  "finding_id_alias_policy": "Canonical references use R02-Fnn. Prior PAPER-Fnn identifiers remain in this alias map, each finding legacy_finding_id, and the unchanged attempt-01-high archive."
+}

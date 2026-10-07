@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-18653-v1-2025-findings-naacl-295",
+ "title": "Where is this coming from? Making groundedness count in the evaluation of Document VQA models",
+ "research_question": "Can Document VQA evaluation better reflect semantic correctness, spatial grounding, calibration, and robustness by scoring where an answer comes from in the document rather than relying mainly on surface-string similarity?",
+ "methodology": "The paper proposes SMuDGE, a configurable composite evaluation metric combining multimodal groundedness with type-aware answer similarity. Groundedness is estimated from the spatial relationship between answer evidence in OCR-derived document regions, while textual, numeric, and hybrid answers receive different surface-matching treatments; an alpha parameter controls the trade-off between grounding and answer similarity. The authors re-score outputs on DocVQA, MP-DocVQA, InfographicVQA, and DUDE, then analyze leaderboard changes, calibration through Expected Calibration Error, ranking robustness, and pairwise human preferences.",
+ "key_findings": [
+  {
+   "finding": "Adding groundedness and answer-type awareness changes Document VQA leaderboard orderings, with numeric and hybrid answers causing larger ranking changes than purely textual answers.",
+   "evidence_type": "supported",
+   "section": "5.1 Leaderboard analysis"
+  },
+  {
+   "finding": "When SMuDGE gives relatively greater weight to groundedness, higher evaluation scores are associated with lower Expected Calibration Error; the paper selects approximately alpha=0.25 as a useful operating point from the DUDE calibration analysis.",
+   "evidence_type": "supported",
+   "section": "5.3 Association with calibration"
+  },
+  {
+   "finding": "SMuDGE scores show a stronger relationship between score stability and ranking stability than ANLS, with reported regression coefficients of 0.58 for SMuDGE and 0.33 for ANLS.",
+   "evidence_type": "supported",
+   "section": "5.4 Association with robustness"
+  },
+  {
+   "finding": "In the human preference experiment, annotators preferred SMuDGE's pairwise ordering in the majority of disagreement cases across DocVQA, MP-DocVQA, and InfographicVQA.",
+   "evidence_type": "supported",
+   "section": "5.5 Human evaluation"
+  },
+  {
+   "finding": "The human study achieved mean Cohen's kappa of 0.82, indicating high annotator agreement before majority-agreement filtering.",
+   "evidence_type": "supported",
+   "section": "5.5 Human evaluation"
+  },
+  {
+   "finding": "The proposed score is intentionally parameterized so downstream users can alter the relative importance of grounding and surface similarity.",
+   "evidence_type": "supported",
+   "section": "3 Proposed methodology"
+  }
+ ],
+ "limitations": [
+  "The experiments are restricted to single-span extractive answers.",
+  "Handling multi-span answers would require a grounding matcher capable of dealing with an arbitrary number of answer partitions unless the benchmark supplies span-level annotations.",
+  "Grounding abstractive answers is outside the scope of the study.",
+  "The semantic-type treatment is limited mainly to textual, numeric, and hybrid answers and does not explicitly model categories such as currencies, dates, or timestamps.",
+  "Alpha is tuned using DUDE, while the remaining major analyses rely on three related benchmarks, creating a potential benchmark-family bias.",
+  "The primary grounding procedure depends on OCR reading order, which can be noisy or misleading; the more general beta-skeleton alternative is slower."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "leaderboard_changes": 0.99,
+  "calibration_association": 0.98,
+  "robustness_association": 0.98,
+  "human_alignment": 0.99,
+  "configurable_grounding_weight": 0.99
+ },
+ "raw_claims": [
+  "SMuDGE combines spatial groundedness with answer-type-aware surface similarity.",
+  "The evaluation framework exposes a tunable parameter controlling the weighting of groundedness versus answer similarity.",
+  "The authors re-evaluate models on four Document VQA benchmarks.",
+  "Numeric and hybrid answers produce larger leaderboard changes than textual answers.",
+  "Greater emphasis on groundedness is associated with lower model calibration error in the DUDE analysis.",
+  "SMuDGE has a stronger reported relationship between score volatility and rank volatility than ANLS.",
+  "Three researchers performed the human pairwise preference study.",
+  "Mean Cohen's kappa in the human annotations is reported as 0.82.",
+  "Human annotators agree with SMuDGE in the majority of evaluated ANLS-versus-SMuDGE disagreement cases.",
+  "The grounding experiments exclude abstractive and general multi-span answers."
+ ],
+ "source_url": "https://arxiv.org/html/2503.19120",
+ "access": "full_text"
+}

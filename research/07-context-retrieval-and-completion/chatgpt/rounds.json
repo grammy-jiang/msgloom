@@ -1,0 +1,575 @@
+[
+ {
+  "round": 1,
+  "run_id": "9af0d6417416",
+  "topic": "evidence-gap-driven context retrieval and completion for workplace communication: turning an explicit evidence gap into bounded retrieval, deciding what to fetch next, and knowing when to stop, while preserving permissions, versions, temporal validity, cost and uncertainty",
+  "new_papers": 17,
+  "paper_ids": [
+   "2105.04166",
+   "2112.08558",
+   "2210.03350",
+   "2212.10509",
+   "2305.06983",
+   "2403.10081",
+   "2406.19215",
+   "2411.06037",
+   "2604.23783",
+   "2604.25676",
+   "2606.29090",
+   "2606.29959",
+   "2608.13237",
+   "doi-10-1109-access-2025-3628960",
+   "doi-10-1145-1247715-1247720",
+   "doi-10-1145-1571941-1572085",
+   "doi-10-18653-v1-2026-findings-acl-2090"
+  ],
+  "gaps_addressed": "initial shortlist",
+  "remaining": "4 academic, 4 engineering",
+  "open_gaps": [
+   {
+    "id": "gap-1",
+    "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; S2G-RAG explicitly identifies these as limitations of its current schema.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "suggested_search_query": "\"structured evidence gap\" temporal constraints multi-entity compositional retrieval iterative RAG"
+   },
+   {
+    "id": "gap-2",
+    "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "suggested_search_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness sufficiency"
+   },
+   {
+    "id": "gap-3",
+    "description": "Stopping reliability under domain shift remains open: sufficiency and confidence signals can guide stopping, but conservative over-retrieval, calibration drift, and unsafe early stops are all observed, and no admitted study provides a general bounded-risk stopping guarantee.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "suggested_search_query": "\"adaptive retrieval\" calibrated stopping domain shift selective prediction RAG risk"
+   },
+   {
+    "id": "gap-4",
+    "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "resolution_notes": "Implement a prototype controller against one or more enterprise-style IAM or ACL interfaces. Instrument each retrieval round to record candidate generation, authorization filtering, surviving evidence, sufficiency reassessment, retry decisions, and termination. Test cases should include partial authorization, complete denial, permission changes between rounds, and situations where sufficient authorized evidence becomes available only after reformulation. This can be resolved through system implementation, IAM documentation, and controlled benchmarks without requiring a new research paper."
+   },
+   {
+    "id": "gap-5",
+    "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "resolution_notes": "Define an explicit retrieval-outcome taxonomy and controller state machine with separate machine-readable states for no matches, authorization failure, source unavailability, extraction failure or unsupported content, budget exhaustion, and evidence supporting a genuine negative conclusion. Specify retryability and terminal behavior for each state, then validate the transitions with fault-injection and end-to-end tests."
+   },
+   {
+    "id": "gap-6",
+    "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency is still missing from the admitted corpus.",
+    "classification": "ENGINEERING",
+    "priority": "MEDIUM",
+    "resolution_notes": "Create an instrumentation and benchmark harness that measures per-query retrieval calls, passages and tokens retrieved, planner or judge model calls and tokens, reranking cost, authorization-check count and latency, network or storage latency, and end-to-end wall-clock time. Run representative workloads across different evidence-gap complexity and retrieval budgets and report both component-level and aggregate cost distributions."
+   },
+   {
+    "id": "gap-7",
+    "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "resolution_notes": "Construct a benchmark or evaluation suite using synthetic, permission-safe, or suitably licensed workplace-style email, chat, attachment, and document collections. Annotate explicit evidence gaps, dependency chains, access-control visibility, document versions and effective times, conflicts, and gold sufficiency or abstention outcomes. Evaluate bounded retrieval controllers on evidence completeness, unsupported claims, stale-evidence use, permission violations, retrieval rounds, cost, and latency. Creating and running this benchmark is an engineering and empirical-evaluation task rather than a prerequisite literature gap."
+   },
+   {
+    "id": "gap-8",
+    "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the component results therefore do not establish correctness of such a combined scheme.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "suggested_search_query": "\"enterprise RAG\" permission-aware provenance temporal adaptive retrieval calibrated stopping abstention"
+   }
+  ],
+  "resolved_gaps": [],
+  "gap_rounds": {
+   "gap-1": [
+    1
+   ],
+   "gap-2": [
+    1
+   ],
+   "gap-3": [
+    1
+   ],
+   "gap-8": [
+    1
+   ]
+  },
+  "report": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/msgloom-topic-07-context-retrieval-and-completion-research-report.md",
+  "stop_reason": null,
+  "completed_at": "2026-09-16T22:10:26+00:00"
+ },
+ {
+  "round": 2,
+  "run_id": "162dd36d17eb",
+  "topic": "Integrated adaptive retrieval controllers with structured evidence gaps, temporal and version-aware provenance, permission-aware access, and calibrated bounded-risk stopping",
+  "new_papers": 17,
+  "paper_ids": [
+   "1904.06019",
+   "2010.11915",
+   "2105.04166",
+   "2112.08558",
+   "2208.02814",
+   "2210.03350",
+   "2212.10509",
+   "2305.06983",
+   "2310.11511",
+   "2403.10081",
+   "2406.10490",
+   "2406.19215",
+   "2411.06037",
+   "2412.15540",
+   "2508.01084",
+   "2510.08109",
+   "2510.14337",
+   "2601.19827",
+   "2604.23783",
+   "2604.25676",
+   "2605.03534",
+   "2606.13814",
+   "2606.29090",
+   "2606.29959",
+   "2607.24010",
+   "2608.13237",
+   "2609.16301",
+   "doi-10-1038-s41598-026-71936-x",
+   "doi-10-1109-access-2025-3628960",
+   "doi-10-1145-1247715-1247720",
+   "doi-10-1145-1571941-1572085",
+   "doi-10-1145-181550-181560",
+   "doi-10-1145-3786625",
+   "doi-10-18653-v1-2026-findings-acl-2090"
+  ],
+  "gaps_addressed": "0 resolved",
+  "remaining": "4 academic, 4 engineering",
+  "open_gaps": [
+   {
+    "id": "gap-1",
+    "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; S2G-RAG explicitly identifies these as limitations of its current schema.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"structured evidence gap\" temporal constraints multi-entity joins compositional retrieval iterative RAG",
+    "resolution_notes": "Still open after round 2. S2G-RAG validates typed evidence gaps for iterative multi-hop retrieval but explicitly leaves temporal constraints, multi-entity joins, and more complex compositional requirements insufficiently validated. The other admitted planning and retrieval papers do not close this schema-validation gap."
+   },
+   {
+    "id": "gap-2",
+    "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness effective-time sufficiency",
+    "resolution_notes": "Still open after round 2. VersionRAG provides evidence for version-aware retrieval, MRAG provides evidence for temporal retrieval, and S2G-RAG provides structured sufficiency-driven iteration, but the admitted corpus does not validate these properties jointly within one iterative provenance-preserving controller."
+   },
+   {
+    "id": "gap-3",
+    "description": "Stopping reliability under domain shift remains open: sufficiency and confidence signals can guide stopping, but conservative over-retrieval, calibration drift, and unsafe early stops are all observed, and no admitted study provides a general bounded-risk stopping guarantee for iterative RAG under distribution shift.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"iterative RAG\" calibrated stopping domain shift conformal risk control selective prediction adaptive retrieval",
+    "resolution_notes": "Still open after round 2. The admitted stopping literature documents early-stop failures and calibration-transfer problems, while adjacent conformal and selective-prediction work supplies statistical risk-control tools. No admitted study establishes a general bounded-risk stopping guarantee for iterative RAG under distribution shift."
+   },
+   {
+    "id": "gap-4",
+    "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve through an implementation and benchmark rather than additional literature search. Build a controller that retrieves candidate evidence, applies the target platform's native IAM or authorization check before content exposure, records denied candidates without leaking their content, recomputes structured evidence sufficiency over the authorized subset, issues a permission-constrained replenishment query when required fields remain missing, and stops at a configured iteration, latency, or cost bound. Benchmark authorization correctness, evidence completion rate, number of replenishment rounds, leakage rate, latency, and cost under synthetic and real permission matrices."
+   },
+   {
+    "id": "gap-5",
+    "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by specifying an explicit controller outcome and error-state model and validating it with fault-injection tests. Define separate machine-readable states for no candidates returned, candidates present but access denied, source unavailable or timed out, source retrieved but required evidence not extractable, retrieval or inference budget exhausted, and affirmative evidence that the queried fact is absent or false. Give each state explicit retry, alternate-source, abstain, or terminate semantics, then test every transition and ambiguous combination."
+   },
+   {
+    "id": "gap-6",
+    "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency is still missing from the admitted corpus.",
+    "classification": "ENGINEERING",
+    "priority": "MEDIUM",
+    "status": "open",
+    "resolution_notes": "Resolve with instrumentation and controlled benchmarks. Emit per-request telemetry for retrieval-query count, retriever latency, candidate and accepted passage counts, retrieved tokens, planner and sufficiency-judge model calls and tokens, reranker calls and latency, IAM checks and latency, retries, cache effects, total monetary cost where applicable, and end-to-end wall-clock latency. Evaluate these quantities against answer quality and evidence-completeness metrics at different stopping and retrieval budgets."
+   },
+   {
+    "id": "gap-7",
+    "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by constructing a workplace-communication benchmark or evaluation suite rather than relying on another component paper. The suite should combine email or chat threads, attachments and structured documents, explicit evidence-gap annotations, cross-message and cross-document dependencies, source and item-level permissions, document revisions and effective times, stale or contradictory evidence, unavailable sources, and fixed retrieval or cost budgets. Measure evidence-gap completion, provenance correctness, temporal/version correctness, permission compliance, abstention quality, omission and unsupported-claim rates, retrieval cost, and latency."
+   },
+   {
+    "id": "gap-8",
+    "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; component-level successes therefore do not establish correctness of the combined scheme.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"adaptive RAG controller\" permission-aware provenance temporal version calibrated stopping abstention budget",
+    "resolution_notes": "Still open after round 2. The admitted literature separately validates structured gap-driven retrieval, authorization-aware retrieval, version-aware retrieval, temporal retrieval, selective abstention or risk control, and budget-sensitive adaptive retrieval, but no admitted study evaluates all of these properties jointly in one controller. Additional academic search is required before treating the absence as established."
+   }
+  ],
+  "resolved_gaps": [],
+  "gap_rounds": {
+   "gap-1": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-2": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-3": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-8": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "report": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/msgloom-topic-07-context-retrieval-and-completion-research-report.md",
+  "stop_reason": null,
+  "completed_at": "2026-09-17T00:44:40+00:00"
+ },
+ {
+  "round": 3,
+  "run_id": "1f23ec07113d",
+  "topic": "Joint adaptive RAG controllers for structured evidence-gap completion with temporal and version-aware provenance and calibrated risk-controlled stopping under distribution shift",
+  "new_papers": 11,
+  "paper_ids": [
+   "1904.06019",
+   "2010.11915",
+   "2105.04166",
+   "2112.08558",
+   "2208.02814",
+   "2210.03350",
+   "2212.10509",
+   "2305.06983",
+   "2310.11511",
+   "2403.10081",
+   "2406.10490",
+   "2406.19215",
+   "2411.06037",
+   "2412.15540",
+   "2508.01084",
+   "2510.08109",
+   "2510.13590",
+   "2510.14337",
+   "2601.19827",
+   "2603.28444",
+   "2604.01413",
+   "2604.23783",
+   "2604.25676",
+   "2605.03534",
+   "2606.05658",
+   "2606.13814",
+   "2606.15964",
+   "2606.29054",
+   "2606.29090",
+   "2606.29959",
+   "2607.24010",
+   "2607.27726",
+   "2608.13237",
+   "2609.11572",
+   "2609.16301",
+   "doi-10-1038-s41598-026-71936-x",
+   "doi-10-1109-access-2025-3628960",
+   "doi-10-1145-1247715-1247720",
+   "doi-10-1145-1571941-1572085",
+   "doi-10-1145-181550-181560",
+   "doi-10-1145-3786625",
+   "doi-10-1609-aaai-v39i14-33670",
+   "doi-10-18653-v1-2026-acl-long-1562",
+   "doi-10-18653-v1-2026-findings-acl-2090",
+   "doi-10-32604-cmc-2026-086343"
+  ],
+  "gaps_addressed": "0 resolved",
+  "remaining": "4 academic, 4 engineering",
+  "open_gaps": [
+   {
+    "id": "gap-1",
+    "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; the corpus contains structured-gap, temporal-retrieval, and query-planning methods, but no admitted study evaluates these capabilities together.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"structured evidence gap\" temporal constraints multi-entity joins compositional retrieval iterative RAG",
+    "resolution_notes": "Still open after rounds 1-3. S2G-RAG provides a structured target/slot/description representation, while temporal retrieval and compositional planning are addressed separately, but the admitted evidence does not validate one structured-gap representation across temporal constraints, multi-entity joins, and complex compositional evidence requirements."
+   },
+   {
+    "id": "gap-2",
+    "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness effective-time sufficiency",
+    "resolution_notes": "Still open after rounds 1-3. VersionRAG, Temporal GraphRAG, TimelyRAG, and S2G-RAG cover relevant version, temporal, or sufficiency functions in separate systems, but no admitted study evaluates one iterative loop that maintains lineage and effective-time validity while repeatedly deciding structured evidence sufficiency."
+   },
+   {
+    "id": "gap-3",
+    "description": "Stopping reliability under domain shift remains open: sufficiency, confidence, conformal, and stability signals guide stopping in separate studies, but no admitted study provides a general bounded-risk iterative-RAG stopping guarantee under distribution shift.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"iterative RAG\" calibrated stopping domain shift conformal risk control selective prediction adaptive retrieval",
+    "resolution_notes": "Still open after rounds 1-3. The synthesis found calibrated adaptive stopping, conformal or risk-control methods under shift, and empirical iterative-RAG stopping studies, but no admitted work combines an iterative-RAG stopping rule with a bounded-risk guarantee that remains valid under distribution shift."
+   },
+   {
+    "id": "gap-4",
+    "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by implementing a bounded controller around a real IAM-aware retrieval layer: retrieve candidates, apply native authorization checks before evidence exposure, reassess structured sufficiency using only authorized evidence, issue a follow-up permission-constrained query when gaps remain, and terminate on sufficiency or explicit budget bounds. Validate with integration tests covering mixed authorization, revoked access, partial evidence, and repeated replenishment."
+   },
+   {
+    "id": "gap-5",
+    "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by defining an explicit controller outcome/state taxonomy and implementing typed result codes for empty retrieval, authorization denial, source unavailable, extraction unsupported, budget exhausted, and verified negative evidence. Specify retry versus terminal transitions for each state and test them with deterministic fault injection, mocked access-control failures, unreachable sources, unsupported formats, exhausted budgets, and known-negative fixtures."
+   },
+   {
+    "id": "gap-6",
+    "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency remains absent from the admitted corpus.",
+    "classification": "ENGINEERING",
+    "priority": "MEDIUM",
+    "status": "open",
+    "resolution_notes": "Resolve with an instrumented benchmark harness that records per-request retrieval-call count, passages and tokens retrieved, planner and judge model tokens or monetary cost, reranker invocations and latency, authorization-check count and latency, retries, cache effects, and end-to-end wall-clock latency. Report component-level and aggregate distributions over representative workloads and compare fixed-budget and adaptive controllers."
+   },
+   {
+    "id": "gap-7",
+    "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by constructing or curating a workplace-communication benchmark containing email or chat threads, attachments and structured documents, explicit answerable evidence gaps, multi-hop dependencies, ACL or IAM metadata, historical and superseded versions, stale and conflicting evidence, and defined retrieval budgets. Create gold evidence sets and state transitions, then evaluate completeness, provenance correctness, authorization compliance, temporal/version correctness, stopping behavior, abstention, and cost."
+   },
+   {
+    "id": "gap-8",
+    "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the reported successes remain component-level or cover smaller subsets of these functions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"adaptive RAG controller\" permission-aware provenance temporal version calibrated stopping abstention budget",
+    "resolution_notes": "Still open after rounds 1-3. The admitted literature supplies component-level evidence for structured-gap retrieval, temporal or version-aware retrieval, permission filtering, calibrated stopping, abstention, and budget control, but no admitted paper evaluates all of these functions jointly in one controller."
+   }
+  ],
+  "resolved_gaps": [],
+  "gap_rounds": {
+   "gap-1": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-2": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-3": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-8": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "report": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/msgloom-topic-07-context-retrieval-and-completion-research-report.md",
+  "stop_reason": null,
+  "completed_at": "2026-09-17T02:39:03+00:00"
+ },
+ {
+  "round": 4,
+  "run_id": "1d3def4db417",
+  "topic": "Unified iterative RAG stopping and provenance control under distribution shift: search specifically for controllers that combine structured evidence sufficiency with temporal/version-aware provenance and calibrated or conformal risk-controlled stopping, including any systems that additionally integrate permission-aware access or bounded retrieval budgets.",
+  "new_papers": 16,
+  "paper_ids": [
+   "1904.06019",
+   "2006.09462",
+   "2010.11915",
+   "2105.04166",
+   "2112.08558",
+   "2208.02814",
+   "2208.08401",
+   "2210.03350",
+   "2212.10509",
+   "2305.06983",
+   "2307.04642",
+   "2310.11511",
+   "2402.03181",
+   "2403.10081",
+   "2406.10490",
+   "2406.19215",
+   "2411.06037",
+   "2412.15540",
+   "2505.02811",
+   "2506.05167",
+   "2506.20978",
+   "2508.01084",
+   "2510.08109",
+   "2510.13590",
+   "2510.14337",
+   "2510.22344",
+   "2601.19827",
+   "2603.28444",
+   "2604.01413",
+   "2604.19899",
+   "2604.23783",
+   "2604.25676",
+   "2605.03534",
+   "2605.05245",
+   "2606.05658",
+   "2606.13814",
+   "2606.15964",
+   "2606.29054",
+   "2606.29090",
+   "2606.29959",
+   "2607.06507",
+   "2607.24010",
+   "2607.27726",
+   "2608.02195",
+   "2608.08512",
+   "2608.13237",
+   "2609.08364",
+   "2609.11572",
+   "2609.16301",
+   "doi-10-1016-0306-4379-96-00017-8",
+   "doi-10-1038-s41598-026-71936-x",
+   "doi-10-1109-access-2025-3628960",
+   "doi-10-1145-1247715-1247720",
+   "doi-10-1145-1571941-1572085",
+   "doi-10-1145-181550-181560",
+   "doi-10-1145-3786625",
+   "doi-10-1609-aaai-v39i14-33670",
+   "doi-10-18653-v1-2026-acl-long-1562",
+   "doi-10-18653-v1-2026-findings-acl-2090",
+   "doi-10-32604-cmc-2026-086343",
+   "manual-2bb76a9136"
+  ],
+  "gaps_addressed": "0 resolved",
+  "remaining": "4 academic, 4 engineering",
+  "open_gaps": [
+   {
+    "id": "gap-1",
+    "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; the corpus contains structured-gap, temporal-retrieval, and query-planning methods, but no admitted study evaluates these capabilities together.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"structured evidence gap\" temporal constraints multi-entity joins compositional retrieval iterative RAG",
+    "resolution_notes": "Still open after rounds 1-4. The admitted literature separately supports structured missing-evidence representations, temporal retrieval, and compositional/query-planning methods, but does not jointly evaluate structured gaps with temporal constraints, multi-entity joins, and complex compositional evidence requirements."
+   },
+   {
+    "id": "gap-2",
+    "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness effective-time sufficiency",
+    "resolution_notes": "Still open after rounds 1-4. VersionRAG, temporal retrieval, Temporal GraphRAG, SentryLine, S2G-RAG, and FAIR-RAG cover relevant subsets, but the admitted corpus does not validate their required combination in one iterative evidence-gap loop."
+   },
+   {
+    "id": "gap-3",
+    "description": "Stopping reliability under domain shift remains open: sufficiency, confidence, conformal, stability, and drift-adaptive calibration signals are evaluated in separate studies, but no admitted study provides a general bounded-risk iterative-RAG stopping guarantee under distribution shift.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"iterative RAG\" calibrated stopping domain shift conformal risk control selective prediction adaptive retrieval",
+    "resolution_notes": "Still open after rounds 1-4. MiCP and the admitted conformal-calibration literature address multi-turn stopping or several forms of distribution shift, but no admitted study establishes a general bounded-risk iterative-RAG stopping guarantee that remains controlled under shift."
+   },
+   {
+    "id": "gap-4",
+    "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by implementing a reference controller against one or more native IAM/RBAC-capable retrieval backends. Instrument each iteration as retrieve -> authorize/filter -> reassess structured sufficiency -> formulate permission-constrained replenishment query -> stop on sufficiency or budget. Benchmark correctness, leakage prevention, number of replenishment rounds, recall over authorized evidence, and latency under controlled permission scenarios."
+   },
+   {
+    "id": "gap-5",
+    "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by defining an explicit retrieval outcome/error taxonomy and controller state machine with distinct machine-readable statuses for empty retrieval, access denial, source unavailability, extraction failure, budget exhaustion, and verified negative evidence. Add deterministic fault-injection and benchmark cases for every status, verify retry versus terminal behavior, and test that user-facing abstention or explanation preserves the underlying cause."
+   },
+   {
+    "id": "gap-6",
+    "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency remains absent from the admitted corpus.",
+    "classification": "ENGINEERING",
+    "priority": "MEDIUM",
+    "status": "open",
+    "resolution_notes": "Resolve with end-to-end instrumentation and benchmarking. Record per-query retrieval calls, documents/passages/tokens fetched, planner and sufficiency-judge invocations and tokens, reranker work, authorization-check count and latency, generation cost, total wall-clock latency, and stopping iteration. Evaluate these metrics across fixed workloads and retrieval budgets so accuracy-risk-cost trade-offs can be compared reproducibly."
+   },
+   {
+    "id": "gap-7",
+    "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+    "classification": "ENGINEERING",
+    "priority": "HIGH",
+    "status": "open",
+    "resolution_notes": "Resolve by constructing a workplace-communication benchmark or controlled testbed containing email/chat/document/attachment evidence, explicit evidence-gap annotations, multi-hop dependencies, ACL/IAM restrictions, versioned and stale records, deliberate conflicts, and retrieval budgets. Define expected evidence sets and stopping outcomes, then evaluate completeness, unsupported conclusions, permission leakage, temporal/version correctness, abstention behavior, retrieval cost, and latency."
+   },
+   {
+    "id": "gap-8",
+    "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the reported successes remain component-level or cover smaller subsets of these functions.",
+    "classification": "ACADEMIC",
+    "priority": "HIGH",
+    "status": "open",
+    "suggested_search_query": "\"adaptive RAG controller\" permission-aware provenance temporal version calibrated stopping abstention budget",
+    "resolution_notes": "Still open after rounds 1-4. DynaKRAG and related controllers cover adaptive retrieval, sufficiency, stopping, or budgets, while other admitted studies separately cover permissions, temporal/version provenance, and conformal or calibrated risk control. No admitted study evaluates the complete controller specified by this gap."
+   }
+  ],
+  "resolved_gaps": [],
+  "gap_rounds": {
+   "gap-1": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-2": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-3": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "gap-8": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "report": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/msgloom-topic-07-context-retrieval-and-completion-research-report.md",
+  "stop_reason": "round_cap_reached",
+  "completed_at": "2026-09-17T04:43:49+00:00"
+ }
+]

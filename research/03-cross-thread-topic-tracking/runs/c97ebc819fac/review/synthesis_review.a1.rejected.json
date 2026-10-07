@@ -1,0 +1,46 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/03-cross-thread-topic-tracking/runs/c97ebc819fac/analysis/synthesis.json",
+ "status": "rejected",
+ "issues": [
+  "The actionable insight requiring msgloom to explicitly assign a higher cost to false merges than false splits is not supported by any supplied analysis. G03-2 itself correctly states that the corpus does not establish a decision rule under such asymmetric costs, so the synthesis simultaneously leaves this question open and then adopts one side of it as an engineering prescription.",
+  "The executive summary and finding on historical-state preservation generalize the FAMER result to later 'merge or split correction'. doi-10-1007-978-3-030-49461-2-23 supports retaining intra-cluster links for its n-depth reclustering repair algorithm, but the supplied analysis does not establish a general requirement for split correction or show that arbitrary merge/split repair becomes impossible after state compression.",
+  "The evaluation finding claims that false-merge versus false-split behavior should be measured separately. manual-5c20fb0229 supports separate TDT tasks, 1705.08500 supports risk/coverage evaluation, and doi-10-1145-354756-354843 supports first-story-detection evaluation, but none of the cited analyses establishes a false-merge/false-split evaluation decomposition.",
+  "Several actionable insights introduce msgloom-specific identity signals and decision policies that are absent from the supplied analyses, including subject lines, customer/project names, conversation ancestry, commitments, state compatibility, and referenced artifacts as specific matcher features.",
+  "The actionable statement that argument or temporal conflicts should be able to veto a superficially similar match exceeds the evidence. 2011.12249 shows that time and other features matter differently across corpora, and doi-10-18653-v1-2022-emnlp-main-58 identifies argument-inconsistency errors, but neither analysis establishes a hard veto policy.",
+  "The stable-ID/versioned-history recommendations are reasonable engineering proposals but are presented as conclusions without being distinguished from literature-supported findings. The supplied analyses do not directly establish immutable Topic IDs, versioned identity assessments, supersession links, or the rule that generated titles, subjects, conversation IDs, and thread IDs must never serve as stable identifiers.",
+  "The claim that conversation, topic, or document preclustering 'must not be treated as identity' is stronger than the cited evidence. manual-e988e24127 shows that topic preclustering materially improves ECB+ performance, while 2011.12249 and 2104.05022 show corpus-specific structure and transfer degradation. These results justify caution and independent validation, but they do not directly prove that structural partitions can never define identity in the target domain.",
+  "The explicit UNCERTAIN recommendation is directionally supported by selective classification and open-world rejection, but its HIGH confidence overstates transfer evidence. 1412.5687 and 1705.08500 are image-classification studies and establish rejection/abstention mechanisms, not a three-way CONTINUE/NEW/UNCERTAIN policy for longitudinal work-matter identity.",
+  "The executive summary's wording that the literature 'strongly supports treating longitudinal work-matter identity as an open-world, incremental identity-resolution problem' blurs mechanism transfer with direct-domain evidence. The limitations correctly acknowledge that no supplied paper evaluates enterprise email/Teams work-matter identity, so this should be framed as an architecture hypothesis supported by adjacent domains rather than as a strongly established characterization of the target problem."
+ ],
+ "unsupported_claims": [
+  "Explicitly assign a higher cost to false merges than false splits for msgloom's reporting objective.",
+  "Argument or temporal conflicts should be able to veto a superficially similar identity match.",
+  "Evaluation should separately measure false-merge versus false-split behavior as a literature-supported requirement.",
+  "Historical-link preservation is established as necessary for general merge and split correction, rather than specifically for repair algorithms such as FAMER n-depth reclustering that depend on retained links.",
+  "Subject, customer/project names, conversation ancestry, referenced artifacts, commitments, and state compatibility are literature-established identity signals for the target problem.",
+  "Stable Topic IDs must be independent of generated titles, subjects, conversation IDs, and source-specific thread IDs.",
+  "Versioned identity assessments, supersession links, and immutable-source-evidence history are established by the reviewed papers rather than being proposed engineering design choices.",
+  "Document/topic/conversation partitions must not define identity in the target domain.",
+  "The reviewed literature directly supports a msgloom-specific CONTINUE/NEW/UNCERTAIN decision contract rather than only the more general mechanisms of rejection, abstention, novelty detection, and incremental resolution."
+ ],
+ "required_fixes": [
+  "Separate literature-supported conclusions from msgloom-specific engineering hypotheses. Label the latter explicitly as proposed design choices requiring validation rather than findings established by the corpus.",
+  "Remove the assertion that false merges should explicitly receive higher cost than false splits, or restate it as an unresolved design hypothesis under G03-2 to be determined from application requirements and empirical evaluation.",
+  "Narrow the historical-state finding to what doi-10-1007-978-3-030-49461-2-23 actually supports: retaining intra-cluster linkage enables its bounded n-depth reclustering repair, while fused representations that discard those links prevent that particular repair procedure. Do not generalize this to arbitrary merge/split repair unless additional evidence is added.",
+  "Remove false-merge versus false-split decomposition from the literature-backed evaluation finding, or identify it explicitly as an engineering metric proposed for msgloom rather than something established by the cited papers.",
+  "Change the hard-veto recommendation for argument or temporal conflicts to a testable hypothesis such as assigning negative evidence substantial weight and evaluating whether hard vetoes are beneficial.",
+  "Reframe preclustering conclusions as a transfer-risk warning: topic/document/conversation structure can be useful for candidate restriction, but the reviewed evidence does not establish whether such structure should or should not define Topic identity in enterprise communication.",
+  "Lower or qualify confidence for the target-domain UNCERTAIN policy. State that open-world and selective-classification papers support the general mechanism of rejection/abstention, while the exact CONTINUE/NEW/UNCERTAIN semantics and calibration remain unvalidated for workplace communication.",
+  "Reword the executive summary so that open-world, incremental, repair-capable identity resolution is described as the best-supported architectural hypothesis from adjacent-domain evidence, not as an empirically established characterization of longitudinal work-matter identity.",
+  "Keep G03-1, G03-2, G03-3, and the production-domain limitation explicitly open; ensure no actionable insight silently resolves those gaps without new evidence."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.76,
+  "coherence": 0.94,
+  "gap_completeness": 0.91,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_ids are drawn from the allowed identifier set, and the synthesis handles the main cross-paper tensions explicitly rather than averaging them away. The direct-domain gap is also clearly acknowledged. The rejection is driven by overreach between those appropriately stated gaps and the actionable/architectural prescriptions: several target-specific policies are presented with stronger evidentiary status than the supplied analyses warrant, and one of them—the assumed higher cost of false merges—effectively decides a question that G03-2 correctly identifies as unresolved."
+}

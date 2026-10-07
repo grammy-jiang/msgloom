@@ -1,0 +1,376 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1109-icpm57379-2022-9980684",
+   "title": "Improving Accuracy and Explainability in Event-Case Correlation via Rule Mining",
+   "research_question": "Can event-case correlation be made more accurate and explainable when reliable prior domain rules are unavailable by iteratively learning association rules during the correlation process?",
+   "methodology": "The authors introduce EC-SA-RM, which combines simulated-annealing-based event-case correlation with iterative association-rule mining over control-flow and data attributes. Starting from a timestamped event sequence and a process model, candidate correlated logs are generated, rules are mined and ranked using support, confidence, and lift, and the learned rules guide subsequent candidate generation. The method is evaluated on four real-world BPI Challenge-derived event logs whose original case identifiers are removed, with comparisons against earlier simulated-annealing correlation approaches under no-prior-rule and partial-prior-rule settings.",
+   "key_findings": [
+    {
+     "finding": "When no prior data rules were supplied, EC-SA-RM produced more accurate event-case correlations than the baseline simulated-annealing method across the evaluated logs.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Experiment 1"
+    },
+    {
+     "finding": "In the no-prior-rule experiment, average structural similarity improved by about 14% for the 2-gram measure and about 20% for the case-similarity measure.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Experiment 1"
+    },
+    {
+     "finding": "In the same experiment, elapsed-time and cycle-time deviations decreased by about 13% and 19%, respectively.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Experiment 1"
+    },
+    {
+     "finding": "When partial prior rules were available, iterative rule mining still improved structural and temporal correlation quality over the comparison method using only the supplied rules.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Experiment 2"
+    },
+    {
+     "finding": "The mined association rules provide human-readable conditions that can be used to explain why events are assigned to particular cases.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    },
+    {
+     "finding": "Iterative rule discovery increases computation time, especially on the larger event logs.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Runtime"
+    }
+   ],
+   "limitations": [
+    "The method requires an input process model and is sensitive to the accuracy of that model.",
+    "The quality of initial prior rules, when supplied, can affect the resulting correlation.",
+    "Rule discovery adds substantial runtime compared with correlation methods that do not repeatedly mine rules.",
+    "The evaluation removes known case identifiers from already correlated BPI Challenge logs, so it does not fully reproduce the messiness of independently generated enterprise systems whose identifiers were never aligned.",
+    "The paper does not directly evaluate email or chat conversation linking.",
+    "The explainability contribution is primarily the availability of interpretable rules; the paper identifies direct quantitative evaluation of rule explanations as future work."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "correlation_accuracy_gain": 0.98,
+    "structural_similarity_gain": 0.98,
+    "temporal_deviation_reduction": 0.97,
+    "benefit_with_partial_prior_rules": 0.96,
+    "rule_based_explainability": 0.91,
+    "runtime_cost": 0.98
+   },
+   "raw_claims": [
+    "Event-case correlation is needed when events from disparate systems lack a common case identifier.",
+    "EC-SA-RM learns association rules while repeatedly searching for better event-to-case assignments.",
+    "The approach requires a timestamped event sequence and a process model.",
+    "Association rules are mined from control-flow and data perspectives and ranked using standard rule-quality measures.",
+    "The evaluation uses four real-world BPI Challenge-derived event logs with their case identifiers removed for the experiment.",
+    "Learned rules improve correlation quality even when no domain rules are given beforehand.",
+    "The method also improves results when only partial prior knowledge is initially available.",
+    "Structural similarity and temporal-deviation measures are both used to evaluate reconstructed logs.",
+    "Rule mining makes the method slower than the comparison methods.",
+    "The learned rules can expose conditions underlying event-to-case assignments."
+   ],
+   "source_url": "https://icpmconference.org/2022/wp-content/uploads/sites/7/2022/10/paper_40.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1109-access-2023-3284053",
+   "title": "Step-by-Step Case ID Identification Based on Activity Connection for Cross-Organizational Process Mining",
+   "research_question": "Can corresponding case identifiers across independently identified organizational event logs be recovered accurately by iteratively discovering temporal connections between activities, including in cyclic business processes?",
+   "methodology": "The proposed method begins with activity pairs that occur consecutively within a short time interval and uses those connections to identify probable mappings between local case identifiers in different organizations. Newly identified cases are then used to discover additional activity connections, so case-ID mapping and connection discovery proceed iteratively while candidate mappings are narrowed and unreliable alternatives are removed. Multiple time thresholds are explored automatically, and an extension reduces bias caused by the order in which more than two organizational logs are integrated. Evaluation uses BPI Challenge 2012 and 2017 logs split into organizational sections, retaining the original whole-process identifiers only as ground truth.",
+   "key_findings": [
+    {
+     "finding": "The step-by-step procedure can recover cross-organizational case relationships without using a globally shared case identifier during mining.",
+     "evidence_type": "supported",
+     "section": "Proposed Method"
+    },
+    {
+     "finding": "Iteratively using already identified case mappings to discover new activity connections expands the set of cases that can subsequently be matched.",
+     "evidence_type": "supported",
+     "section": "Proposed Method"
+    },
+    {
+     "finding": "On the two evaluated datasets, the resulting integrated process models achieved precision above 98.4% and recall above 94.2% in the reported headline evaluation.",
+     "evidence_type": "supported",
+     "section": "Evaluation"
+    },
+    {
+     "finding": "The proposed approach outperformed the compared previous method for reconstructing process models in the evaluated settings.",
+     "evidence_type": "supported",
+     "section": "Evaluation - BPI Challenge 2012 and 2017"
+    },
+    {
+     "finding": "Removing integration-order bias produces a more robust three-organization process model on the BPI Challenge 2017 experiment.",
+     "evidence_type": "supported",
+     "section": "Evaluation - BPI Challenge 2017"
+    },
+    {
+     "finding": "High process-model accuracy does not imply that every individual cross-organizational case identifier is recovered; some three-organization orders showed substantially lower case-ID recall.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Case ID Identification Results"
+    }
+   ],
+   "limitations": [
+    "The method assumes event logs are complete and free of errors.",
+    "It relies on the assumption that activities belonging to the same case tend to occur closer together in time than activities belonging to different cases.",
+    "The experiments simulate independent organizations by partitioning logs that originally came from a common process, rather than collecting truly independently administered cross-organizational systems.",
+    "Individual case-ID recall can fall substantially for some three-organization integration orders even when the reconstructed process model remains accurate.",
+    "The study focuses on horizontal cross-organizational process integration and does not establish performance for all organizational structures.",
+    "The paper does not evaluate email or chat threads directly."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "iterative_case_matching": 0.99,
+    "process_model_precision_recall": 0.99,
+    "outperformance_over_prior_method": 0.97,
+    "integration_order_effect": 0.98,
+    "case_id_recall_limitation": 0.99
+   },
+   "raw_claims": [
+    "Different organizations may use independent identifiers for portions of the same end-to-end process.",
+    "The method infers cross-organizational case relationships from activity connections and timestamps.",
+    "Short temporal separation between connected activities is used as evidence for correspondence.",
+    "Case mappings discovered in one step enable additional activity connections to be extracted in later steps.",
+    "The procedure continues until additional reliable case mappings can no longer be identified.",
+    "The method considers multiple time thresholds rather than relying on a single manually chosen threshold.",
+    "The evaluation uses BPI Challenge 2012 and 2017 event logs.",
+    "Original global case identifiers are retained only for evaluating the inferred mappings.",
+    "The generated process models obtain high precision and recall on both evaluated datasets.",
+    "Some individual case-ID mappings remain unrecovered in the more difficult three-organization settings."
+   ],
+   "source_url": "https://www.researchgate.net/publication/371440370_Step-by-Step_Case_ID_Identification_based_on_Activity_Connection_for_Cross-Organizational_Process_Mining",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-1111449-1111473",
+   "title": "A hybrid learning system for recognizing user tasks from desktop activities and email messages",
+   "research_question": "Can machine-learning models automatically infer a user's current task from desktop activity or an incoming email with sufficiently high precision to reduce the need for manual task selection?",
+   "methodology": "The paper presents TaskPredictor as a component of TaskTracer, with separate predictors for desktop window/document sequences and incoming email messages. Email classification uses features derived from sender, recipients, and subject words, while desktop classification uses words associated with applications and accessed resources; mutual-information feature selection reduces the feature space. The authors compare Naive Bayes, support vector machines, and a hybrid in which Naive Bayes supplies a confidence estimate and an SVM chooses the class, with confidence thresholds allowing the system to abstain. Evaluation uses TaskTracer data from nine users, although desktop-sequence evaluation is limited to two faculty users and email evaluation uses manually task-sorted messages from the remaining participants.",
+   "key_findings": [
+    {
+     "finding": "Incoming email can be classified into a user's predefined work tasks using sender, recipient, and subject information with high precision at useful but incomplete coverage.",
+     "evidence_type": "supported",
+     "section": "Experimental Results - Email"
+    },
+    {
+     "finding": "The email predictor reached about 92% precision at roughly 66% coverage with the hybrid classifier in the reported evaluation.",
+     "evidence_type": "supported",
+     "section": "Experimental Results - Confidence Threshold"
+    },
+    {
+     "finding": "The hybrid Naive-Bayes/SVM design generally matched or exceeded the best individual classifier's precision at comparable coverage.",
+     "evidence_type": "supported",
+     "section": "Experimental Results - Hybrid Classifier"
+    },
+    {
+     "finding": "Using approximately 200 mutual-information-selected features was sufficient for the evaluated email and desktop predictors and avoided unnecessary feature growth.",
+     "evidence_type": "supported",
+     "section": "Feature Selection"
+    },
+    {
+     "finding": "Words from the email body did not provide additional predictive benefit in the authors' experiments beyond sender, recipient, and subject features.",
+     "evidence_type": "supported",
+     "section": "Email Task Predictor"
+    },
+    {
+     "finding": "Prediction errors increase when a user begins a new task for which the classifier has little training data.",
+     "evidence_type": "supported",
+     "section": "Online Performance and Discussion"
+    }
+   ],
+   "limitations": [
+    "The participant pool is small and largely drawn from one academic environment, limiting external validity for broader enterprises.",
+    "Desktop-sequence evaluation uses data from only two users because of privacy and data-quality constraints.",
+    "Email ground truth was created by participants manually sorting sampled messages into folders corresponding to TaskTracer tasks rather than by observing naturally evolving business-event identities.",
+    "The study classifies individual messages into predefined user tasks; it does not directly link separate email or chat threads into a common evolving business matter.",
+    "The models largely treat classification examples independently even though task switching is inherently sequential; the authors identify temporal models as future work.",
+    "Performance degrades for newly created tasks that have few training examples and may reuse resources associated with older tasks.",
+    "The private user data and email corpus are not released as a reproducible public dataset."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "email_task_prediction": 0.99,
+    "hybrid_precision_coverage": 0.99,
+    "hybrid_classifier_advantage": 0.96,
+    "feature_selection_result": 0.96,
+    "email_body_result": 0.94,
+    "new_task_failure_mode": 0.97
+   },
+   "raw_claims": [
+    "TaskTracer associates computer resources such as files, email messages, contacts, and web pages with user-defined activities.",
+    "Users can forget to change the declared task when they switch work contexts.",
+    "TaskPredictor attempts to infer the current task automatically.",
+    "The email predictor uses sender, recipient, and subject-word features.",
+    "The authors found no useful additional predictive value from email-body words in their experiments.",
+    "Mutual-information ranking is used to select a compact subset of features.",
+    "The hybrid classifier uses Naive Bayes to estimate confidence and an SVM to choose the predicted task.",
+    "A confidence threshold permits the predictor to abstain when its prediction is uncertain.",
+    "Email evaluation uses a chronological split between training and test messages.",
+    "The hybrid email predictor achieved high precision while making predictions for only part of the messages.",
+    "Newly introduced tasks are particularly difficult because little task-specific training data exists.",
+    "The paper notes that sequential or temporal modeling could improve future versions of the system."
+   ],
+   "source_url": "https://web.engr.oregonstate.edu/~tgd/publications/IUI06-TaskPredictor.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-03d6dfa532",
+   "title": "Post-Hoc Uncertainty Calibration for Domain Drift Scenarios",
+   "research_question": "Can post-hoc confidence calibration remain reliable under domain drift by fitting calibrators to deliberately perturbed validation data rather than only to in-domain validation examples?",
+   "methodology": "The authors create perturbed validation sets by applying controlled image perturbations of varying severity and then fit standard post-hoc calibration methods on those shifted samples. They evaluate temperature scaling, ensemble temperature scaling, isotonic-regression variants, and combinations of these methods, comparing ordinary calibration with perturbation-aware counterparts. Experiments cover CIFAR-10 and ImageNet models across multiple neural architectures, numerous synthetic image perturbations, and the naturally shifted ObjectNet dataset. Calibration is primarily evaluated with expected calibration error while predictive entropy and confidence are also examined for out-of-distribution data.",
+   "key_findings": [
+    {
+     "finding": "Post-hoc calibrators fitted only on in-domain validation data become increasingly overconfident as domain shift grows.",
+     "evidence_type": "supported",
+     "section": "Results - Calibration under Domain Drift"
+    },
+    {
+     "finding": "Fitting calibrators on perturbed validation samples reduces overall calibration error across the evaluated drift scenarios and architectures.",
+     "evidence_type": "supported",
+     "section": "Results - Perturbed Validation Calibration"
+    },
+    {
+     "finding": "The benefit of perturbation-aware calibration also appears on ObjectNet, providing evidence beyond the synthetic perturbation experiments.",
+     "evidence_type": "supported",
+     "section": "Results - ObjectNet"
+    },
+    {
+     "finding": "Perturbation-aware temperature-scaling variants can trade better shifted-domain calibration for worse calibration on unshifted or mildly shifted data.",
+     "evidence_type": "supported",
+     "section": "Results and Discussion"
+    },
+    {
+     "finding": "Perturbation-aware isotonic regression provides a comparatively favorable balance, improving shifted-domain calibration without the same pronounced in-domain deterioration observed for some temperature-scaling variants.",
+     "evidence_type": "supported",
+     "section": "Results and Discussion"
+    },
+    {
+     "finding": "Perturbation-aware calibrators reduce overconfidence on out-of-distribution ObjectNet examples.",
+     "evidence_type": "supported",
+     "section": "Out-of-Distribution Detection"
+    }
+   ],
+   "limitations": [
+    "The empirical study is entirely based on image-classification tasks, so it supplies no direct evidence about enterprise email, chat, workflow, or event-identity data.",
+    "Artificial Gaussian and image-corruption perturbations may not represent semantic, organizational, or temporal drift in work communications.",
+    "Several perturbation-aware temperature-scaling methods improve robustness to drift at the cost of worse calibration on in-domain data.",
+    "Isotonic regression can change prediction ordering and therefore potentially affect classification accuracy, although the observed changes in the reported ImageNet experiments are small.",
+    "The method assumes access to labeled validation data from which perturbed calibration examples can be constructed.",
+    "The paper does not study cross-thread identity, event coreference, or incremental matter linking; its relevance to those problems is methodological rather than direct evidence."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "overconfidence_under_drift": 0.99,
+    "perturbed_validation_improvement": 0.99,
+    "objectnet_generalization": 0.97,
+    "in_domain_tradeoff": 0.98,
+    "isotonic_balance": 0.94,
+    "ood_confidence_improvement": 0.96
+   },
+   "raw_claims": [
+    "Standard post-hoc calibration can work well in-domain while becoming overconfident under dataset shift.",
+    "The proposed strategy perturbs validation examples before fitting the calibration model.",
+    "Perturbation severities are chosen to cover progressively stronger performance degradation.",
+    "The experiments evaluate several established post-hoc calibration techniques rather than introducing a new prediction architecture.",
+    "CIFAR-10 and ImageNet models are tested under multiple perturbation types and strengths.",
+    "ObjectNet is used as a naturally shifted evaluation dataset.",
+    "Expected calibration error is a primary metric in the experiments.",
+    "Across the evaluated architectures, perturbation-aware calibration lowers calibration error under drift.",
+    "Some temperature-scaling variants sacrifice in-domain calibration to improve robustness under shift.",
+    "Isotonic-regression-based calibration is more flexible than simple temperature scaling in the reported drift experiments.",
+    "Perturbation-aware calibration also reduces confidence on out-of-distribution inputs."
+   ],
+   "source_url": "https://arxiv.org/html/2012.10988",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "1707.07344",
+   "title": "Event Coreference Resolution by Iteratively Unfolding Inter-dependencies among Events",
+   "research_question": "Can event coreference resolution be improved by iteratively exploiting dependencies among event mentions and their accumulating arguments, while treating within-document and cross-document coreference differently?",
+   "methodology": "The system uses separate neural pairwise classifiers for within-document and cross-document event coreference and repeatedly alternates between the two types of merging. Whenever clusters are merged, their arguments are pooled so that information recovered from one mention can support later decisions involving another mention with sparse local context. A second stage adds higher-order evidence from relations between event clusters and sentence-context similarity. The approach is evaluated on the ECB+ corpus with standard MUC, B3, CEAF_e, and CoNLL F1 metrics against prior systems and ablated variants.",
+   "key_findings": [
+    {
+     "finding": "Iteratively propagating arguments across merged event clusters improves event coreference decisions because later comparisons can use information that was absent from an individual mention's local sentence.",
+     "evidence_type": "supported",
+     "section": "Model and Analysis"
+    },
+    {
+     "finding": "Using distinct classifiers for within-document and cross-document coreference is beneficial because the two settings depend on different evidence.",
+     "evidence_type": "supported",
+     "section": "Event Coreference Classifiers and Evaluation"
+    },
+    {
+     "finding": "The complete system achieves a cross-document CoNLL F1 of 63.6 on ECB+, compared with 58.7 for the reported HDDCRP baseline and 54.8 for the lemma baseline.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Cross-document Coreference"
+    },
+    {
+     "finding": "For within-document coreference, the complete system reaches a CoNLL F1 of 68.9, exceeding the reported HDDCRP and lemma baselines.",
+     "evidence_type": "supported",
+     "section": "Evaluation - Within-document Coreference"
+    },
+    {
+     "finding": "Second-order relations between event clusters resolve additional difficult links after the first iterative stage.",
+     "evidence_type": "supported",
+     "section": "Second-order Event Relations and Analysis"
+    },
+    {
+     "finding": "Sparse or missing event arguments can prevent valid merges, while same-lemma reporting and light verbs are recurring sources of erroneous merges.",
+     "evidence_type": "supported",
+     "section": "Error Analysis"
+    }
+   ],
+   "limitations": [
+    "Evaluation is confined to the ECB+ news-event benchmark, not organizational email, enterprise chat, or workflow records.",
+    "The method depends on upstream event mentions, semantic-role arguments, and parsing features, so errors in those components can reduce coreference quality.",
+    "Mentions with few or no local arguments can leave the iterative process unable to establish otherwise valid links.",
+    "Lexically similar reporting events and light-verb events can be incorrectly merged even when they refer to different real-world events.",
+    "High merge thresholds are used to reduce error propagation, which can also leave genuine coreference links unresolved.",
+    "Document clustering is unusually easy on ECB+ because documents are organized by topics, so robustness to noisy topic or thread grouping is not strongly tested.",
+    "The paper models real-world event identity in news text rather than the progressive and partially observed identity of business matters across enterprise communication channels."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "iterative_argument_propagation": 0.99,
+    "separate_wd_cd_models": 0.98,
+    "cross_document_f1": 0.99,
+    "within_document_f1": 0.99,
+    "second_order_benefit": 0.96,
+    "error_modes": 0.99
+   },
+   "raw_claims": [
+    "Event coreference groups textual event mentions that refer to the same real-world event.",
+    "Within-document and cross-document event coreference present different evidence patterns.",
+    "The proposed system uses separate pairwise classifiers for the two settings.",
+    "Within-document and cross-document clustering are applied iteratively rather than as independent one-pass stages.",
+    "Arguments from event mentions are combined when their clusters are merged.",
+    "Accumulated arguments can reveal relationships that were not visible from the original local contexts.",
+    "A second stage considers higher-order relations between event clusters.",
+    "The system is evaluated on the ECB+ event coreference corpus.",
+    "The complete model outperforms the reported lemma and HDDCRP baselines on CoNLL F1.",
+    "Several iterations are useful because later merges can exploit information accumulated in earlier ones.",
+    "Missing arguments cause some true coreference relationships to remain unresolved.",
+    "Same-lemma reporting and light-verb events account for a notable class of false merges."
+   ],
+   "source_url": "https://arxiv.org/html/1707.07344",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

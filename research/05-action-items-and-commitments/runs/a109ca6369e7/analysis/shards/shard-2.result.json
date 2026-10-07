@@ -1,0 +1,420 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-3115-1564535-1564540",
+   "title": "Shallow Discourse Structure for Action Item Detection",
+   "research_question": "Can action items in multi-party meeting transcripts be detected more effectively, while also exposing their task, owner, timeframe, and agreement information, by modeling shallow discourse structure instead of treating all action-item-related utterances as one flat class?",
+   "methodology": "The authors first reproduce a flat action-item utterance classifier on 12 meetings: five short three-participant CALO meetings plus six ICSI and one ISL meeting, using SVMlight with word-unigram features and five-fold evaluation over the CALO meetings. They then introduce a hierarchical annotation scheme with four potentially overlapping utterance classes: task description, timeframe, owner, and agreement. Separate classifiers are trained for these subclasses, after which their outputs are combined with a manually weighted five-utterance window to hypothesize complete action items and identify representative property-bearing utterances.",
+   "key_findings": [
+    {
+     "finding": "Flat binary action-item classification was weak: the five CALO meetings produced F1 scores between 0.30 and 0.38, and neither higher-order n-grams nor alternative discriminative classifiers improved the reported baseline.",
+     "evidence_type": "supported",
+     "section": "3 Baseline Experiments"
+    },
+    {
+     "finding": "The proposed discourse representation decomposes an action item into task description, timeframe, owner, and agreement, while allowing one utterance to realize multiple components and multiple utterances to realize the same component.",
+     "evidence_type": "supported",
+     "section": "4 Hierarchical Annotations"
+    },
+    {
+     "finding": "Initial annotation reliability on one relatively complex ISL meeting was substantially higher than the earlier flat action-item agreement cited by the paper, with kappa 0.86 for timeframe, about 0.77 for owner, and 0.73 for agreement and task description.",
+     "evidence_type": "supported",
+     "section": "4 Hierarchical Annotations"
+    },
+    {
+     "finding": "Subclass detection performance varied greatly: agreement was the strongest subclass at F1 0.40, while owner was weakest at F1 0.17; description and timeframe reached F1 0.29 and 0.26 respectively.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    },
+    {
+     "finding": "The authors attribute some owner-class difficulty to overlap with other component classes, because owner utterances were especially likely to receive multiple labels.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    },
+    {
+     "finding": "A preliminary weighted combination of the four subclassifiers could detect some complete action items and provide candidate property-bearing utterances, but results were highly variable across meetings, including F1 values of 0.67, 0.40, 0.50, 1.00, and 0.00.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    }
+   ],
+   "limitations": [
+    "The experiments use only 12 meetings, with evaluation focused on five short CALO meetings.",
+    "The CALO meetings were scenario-driven simulations rather than unconstrained workplace meetings.",
+    "Interannotator reliability for the hierarchical scheme was reported from only one ISL meeting and two annotators.",
+    "Each subclass has little training data, producing especially weak owner and timeframe classifiers.",
+    "The final subclass-combination weights and five-utterance window were manually chosen rather than learned.",
+    "Combined-system accuracy was evaluated for detecting an action item in a window, not for correct extraction of every component value.",
+    "Experiments used human transcripts; robustness to ASR errors was left for future work.",
+    "The study detects utterances containing properties but does not yet demonstrate reliable normalization of owners, deadlines, or task objects into structured records."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "flat_baseline_is_weak": 0.99,
+    "four_component_structure": 0.99,
+    "hierarchical_annotation_reliability": 0.97,
+    "agreement_best_owner_worst": 0.99,
+    "owner_label_overlap": 0.94,
+    "combined_detector_preliminary": 0.99
+   },
+   "raw_claims": [
+    "The paper treats action items as assignments of concrete tasks together with properties such as responsible party and timeframe.",
+    "The flat unigram baseline produced F1 scores no higher than 0.38 on the five evaluated CALO meetings.",
+    "The hierarchical annotation scheme separates task description, timeframe, owner, and agreement information.",
+    "An utterance may carry more than one action-item component label.",
+    "Timeframe annotation achieved the highest reported initial agreement, with kappa 0.86.",
+    "Agreement utterances were the easiest of the four subclasses to classify in the reported experiments.",
+    "Owner utterances were the hardest subclass, with F1 0.17.",
+    "The preliminary combined detector used a five-utterance window and manually weighted subclass decisions.",
+    "The combined detector failed on one meeting in which explicit agreement was absent and the chosen weights emphasized agreement.",
+    "The authors propose later work on ASR hypotheses, learned classifier combination, semantic parsing, and extraction into calendars or to-do lists."
+   ],
+   "source_url": "https://aclanthology.org/W06-3405.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-3115-1708376-1708410",
+   "title": "Extracting Decisions from Multi-Party Dialogue Using Directed Graphical Models and Semantic Similarity",
+   "research_question": "Can directed graphical models improve structured detection of decision-making dialogue, and can semantic similarity improve extraction of concise issue-and-resolution summaries from both manual and ASR meeting transcripts?",
+   "methodology": "The study uses 17 approximately 30-minute, four-participant scenario-driven meetings from the freely available AMI Meeting Corpus, annotated with decision dialogue acts for Issue, Resolution Proposal, Resolution Restatement, and Agreement. Directed graphical models use non-lexical utterance, manually annotated dialogue-act, and prosodic features and are evaluated with 17-fold cross-validation on both manual and ASR transcripts, using per-utterance and lenient 40-second matching metrics; simple rules then form decision-discussion regions. For summarization, Gemini parses Issue and Resolution word-confusion networks into candidate phrases, SVMlight regression ranks the candidates, and a WordNet normalized-path-length semantic-similarity feature is evaluated with 10-fold cross-validation.",
+   "key_findings": [
+    {
+     "finding": "The best directed graphical models outperformed the earlier hierarchical SVM for all four decision-dialogue-act classes on both evaluation metrics, with class-level F1 gains reported between 0.04 and 0.19 and p < 0.005.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Using DGM outputs plus simple structural rules improved decision-discussion-region F1 from 0.50 for the hierarchical SVM system to 0.55, with precision 0.39 and recall 0.93 for the DGM-based system.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Explicitly adding dependencies among the DDA classes did not improve Issue, Resolution Proposal, or Resolution Restatement detection; Agreement gained 0.03 under the 40-second metric, but that gain was not statistically significant.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Removing manually annotated dialogue-act features reduced the strongest Issue, Resolution Proposal, and Agreement F1 scores by roughly 0.07 to 0.09, indicating that dialogue-act information was materially useful.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "The DGM approach remained usable on one-best ASR output; for some Issue and Resolution Proposal configurations the reported ASR F1 was even higher than on manual transcripts, although the authors partly attribute this to different sparsity caused by segmentation.",
+     "evidence_type": "supported",
+     "section": "4.2 Results"
+    },
+    {
+     "finding": "Adding semantic similarity between candidate Issue phrases and Resolution utterances, and vice versa, improved phrase-selection F1 for both manual and ASR transcripts; Resolution improvements were reported as statistically significant at p < 0.005.",
+     "evidence_type": "supported",
+     "section": "5.3 Experiments"
+    },
+    {
+     "finding": "The best automatic phrase-selection results remained well below their oracle counterparts, particularly with ASR, leaving substantial headroom in decision-summary extraction.",
+     "evidence_type": "supported",
+     "section": "5.3 Experiments"
+    }
+   ],
+   "limitations": [
+    "The evaluation contains only 17 scenario-driven AMI meetings from a constrained product-design setting.",
+    "Dialogue-act annotations used as important detector features are manually supplied and are available only for manual transcripts.",
+    "Model thresholds and Gaussian-mixture component counts were hand-tuned.",
+    "Decision-discussion regions were still assembled with explicit rules rather than detected end-to-end by a graphical model.",
+    "The detection experiments did not yet integrate lexical features into the DGMs.",
+    "The summarization similarity feature considers nouns through WordNet path similarity and therefore captures only a restricted form of semantics.",
+    "Gold summary-worthy phrases were manually annotated, and automatic phrase selection remained substantially below oracle performance.",
+    "The decision representation captures issue, resolution, and agreement structure but does not directly extract workplace action owners, deadlines, or conditions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "dgm_beats_hierarchical_svm": 0.99,
+    "decision_region_gain": 0.99,
+    "explicit_dependency_gain_limited": 0.98,
+    "dialogue_act_features_help": 0.97,
+    "asr_robustness": 0.96,
+    "semantic_similarity_improves_summaries": 0.99,
+    "oracle_gap_remains": 0.98
+   },
+   "raw_claims": [
+    "A decision discussion is modeled around an Issue, a Resolution, and Agreement, with Resolution split into proposal and restatement subclasses.",
+    "The experiments use 17 meetings from the AMI Meeting Corpus.",
+    "Interannotator kappa for the four decision-dialogue-act classes ranged from 0.63 to 0.73.",
+    "The DGM classifiers use utterance, dialogue-act, and prosodic evidence rather than lexical features.",
+    "The best DGM outperformed the hierarchical SVM for every decision-dialogue-act class in the reported comparison.",
+    "The rule-based DGM decision-region detector obtained F1 0.55 compared with 0.50 for the SVM super-classifier.",
+    "The DGM experiments were run on both manual transcripts and ASR one-best transcripts.",
+    "Decision summaries are formed by selecting phrases from Issue and Resolution utterances.",
+    "The semantic-similarity feature uses WordNet normalized path length over nouns.",
+    "Semantic similarity improved Issue and Resolution phrase selection on both manual and ASR transcripts.",
+    "The gap between automatic and oracle phrase selection was especially large on ASR input."
+   ],
+   "source_url": "https://aclanthology.org/W09-3934.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2303.16763",
+   "title": "Meeting Action Item Detection with Regularized Context Modeling",
+   "research_question": "Can regularized modeling of both nearby and non-contiguous meeting context, together with lightweight reuse of different pretrained models, improve sentence-level action-item detection across Chinese and English meetings?",
+   "methodology": "The authors formulate action-item detection as binary sentence classification and release AMC-A, a manually annotated Chinese corpus containing 424 meetings, 306,846 utterances, and 1,506 action items, alongside experiments on 101 action-item-labeled AMI meetings. AMC-A candidate sentences are preselected using temporal expressions and action-related verbs, independently annotated by three annotators with contextual information, and adjudicated by an expert when labels disagree. Context-Drop supplies local context from adjacent sentences and global context retrieved by n-gram cosine similarity, randomly or deterministically drops context during training, and adds a bidirectional KL-divergence consistency loss; experiments report positive-class F1 over five runs. A lightweight model ensemble is also tested by combining the encoder layers of one pretrained model with the pooler of another without increasing inference-time model size.",
+   "key_findings": [
+    {
+     "finding": "AMC-A substantially expands publicly described action-item resources in the study, containing 424 meetings, 306,846 utterances, and 1,506 labeled actions, with train/dev/test splits of 295, 65, and 64 meetings.",
+     "evidence_type": "supported",
+     "section": "2.2 Building A Large-scale Chinese Meeting Corpus"
+    },
+    {
+     "finding": "Action-item annotation remained subjective despite detailed guidelines: average pairwise kappa among AMC-A annotators was 0.47, followed by expert review of disagreements.",
+     "evidence_type": "supported",
+     "section": "2.2 Building A Large-scale Chinese Meeting Corpus"
+    },
+    {
+     "finding": "Adding ordinary local and global context already improved AMC-A StructBERT positive F1 from 67.84 for the focus sentence alone to 69.09 for local plus global context.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Analysis"
+    },
+    {
+     "finding": "On AMC-A, dynamic Context-Drop with local and global context achieved 70.82 positive F1, an absolute gain of 2.98 over the sentence-only baseline and 2.10 over the corresponding R-Drop configuration.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Analysis"
+    },
+    {
+     "finding": "On AMI, the strongest reported Context-Drop configuration was fixed Context-Drop with local context at F1 43.12, compared with 38.67 for sentence-only StructBERT and 42.72 for local-context R-Drop; the configuration that was best on AMC-A was therefore not universally best.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Analysis"
+    },
+    {
+     "finding": "Removing the KL-divergence regularization term degraded Context-Drop configurations on both corpora, supporting the claim that the gain is not explained solely by context-dropping data augmentation.",
+     "evidence_type": "supported",
+     "section": "4.2 Results and Analysis"
+    },
+    {
+     "finding": "The lightweight hybridization experiment provided modest gains without an additional inference model: a StructBERT encoder with a RoBERTa pooler reached 68.36 F1 versus 67.84 for StructBERT alone, while the reverse hybrid improved RoBERTa from 66.87 to 67.25.",
+     "evidence_type": "supported",
+     "section": "3.2 Lightweight Model Ensemble and Table 4"
+    }
+   ],
+   "limitations": [
+    "AMC-A annotation candidates are prefiltered using temporal expressions and action-related verbs, which can bias the labeled set toward explicit action formulations and potentially miss implicit actions.",
+    "Average pairwise kappa of 0.47 indicates substantial annotation subjectivity even after guideline development.",
+    "AMI labels are indirect: dialogue acts linked to action-related abstractive summaries are treated as positive rather than being directly annotated as action items.",
+    "AMC-A is Chinese and biased toward work meetings, while much of AMI is scenario-based, so cross-domain and cross-language generalization remains only partially tested.",
+    "Global context is retrieved with relatively simple n-gram cosine similarity rather than learned discourse or semantic retrieval.",
+    "The task is binary sentence detection and does not directly output normalized action object, owner, deadline, condition, commitment/request type, or supporting evidence spans.",
+    "The lightweight ensemble gains are small and were evaluated separately from the strongest Context-Drop setup.",
+    "The study evaluates manual transcripts rather than presenting an end-to-end ASR-to-action extraction evaluation."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "amca_resource_scale": 0.99,
+    "annotation_subjectivity": 0.99,
+    "context_improves_baseline": 0.99,
+    "dynamic_context_drop_amca_gain": 0.99,
+    "ami_best_configuration_differs": 0.99,
+    "kl_regularization_matters": 0.98,
+    "lightweight_ensemble_gain": 0.99
+   },
+   "raw_claims": [
+    "The paper releases the Chinese AliMeeting-Action Corpus with manual action-item annotations.",
+    "AMC-A contains 424 meetings and 306,846 utterances.",
+    "The corpus contains 1,506 labeled actions.",
+    "AMC-A sentences containing action-item information such as task description, timeframe, or owner are positive examples.",
+    "Three annotators independently label candidate sentences while viewing their context.",
+    "Average pairwise kappa on AMC-A is 0.47.",
+    "The AMI benchmark is derived indirectly from dialogue acts linked to action-related abstractive summaries.",
+    "Local context is adjacent to the focus sentence, whereas global context is relevant but non-contiguous.",
+    "Dynamic Context-Drop reached positive F1 70.82 on AMC-A with local and global context.",
+    "Fixed Context-Drop with local context reached F1 43.12 on AMI.",
+    "Removing the KL consistency loss reduced Context-Drop performance.",
+    "The paper provides links to both the released corpus and action-item-detection code."
+   ],
+   "source_url": "https://arxiv.org/html/2303.16763",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-0839b98ee7",
+   "title": "Can Requests-for-Action and Commitments-to-Act be Reliably Identified in Email Messages?",
+   "research_question": "Can human annotators reliably and repeatedly identify the presence and strength of requests for action and commitments to act in workplace email at sentence level well enough to support later automated classification?",
+   "methodology": "The exploratory study manually selected 54 messages containing 310 sentences from a random subset of the Enron Email Corpus, deliberately seeking varied explicit and implicit requests, commitments, and task addressivity while restricting messages to fewer than 12 sentences. Three coders, who were also the paper's authors, independently annotated each sentence for the presence and Strong, Medium, Weak, or None strength of Requests-for-Action and Commitments-to-Act, with audience type and processing-error flags also recorded. Agreement was measured with pairwise and three-way generalized kappa, and disagreement cases were qualitatively analyzed to identify recurring sources of ambiguity.",
+   "key_findings": [
+    {
+     "finding": "Annotators agreed relatively well on whether a sentence contained a Request-for-Action, with three-way kappa 0.78, but agreement on request strength was lower at 0.60.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Commitments-to-Act were substantially harder to annotate: presence achieved three-way kappa 0.54 and strength only 0.37.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Agreement varied with audience type and was highest for single-recipient messages and lowest for closed-group messages, with the effect particularly pronounced for commitments.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "finding": "Conditional offers were a major systematic ambiguity: sentences containing offers accounted for almost 40% of disagreements about whether a Commitment-to-Act was present.",
+     "evidence_type": "supported",
+     "section": "6.1 Conditional Offers"
+    },
+    {
+     "finding": "Implicit requests, especially meeting-related statements, produced recurring disagreement because identifying the obligation can require information from other parts of the message.",
+     "evidence_type": "supported",
+     "section": "6.2 Implicit Requests"
+    },
+    {
+     "finding": "Missing organizational relationship information created ambiguity in judging request and commitment strength, with coders noting that the same wording could differ depending on whether the sender was a manager or a peer.",
+     "evidence_type": "supported",
+     "section": "6.3 Relationship Context"
+    },
+    {
+     "finding": "Coder error flags suggested at least a 10% sentence-segmentation error rate on the pilot email data, illustrating that generic NLP preprocessing can itself materially affect downstream annotation.",
+     "evidence_type": "supported",
+     "section": "5 Results and Discussion"
+    }
+   ],
+   "limitations": [
+    "The pilot contains only 54 messages and 310 sentences.",
+    "Messages were deliberately selected for varied request and commitment phenomena rather than forming a representative random sample of workplace email.",
+    "Messages longer than 11 sentences were excluded.",
+    "All three annotators were the paper's authors, limiting independence from guideline design.",
+    "The task omitted organizational hierarchy and sender-recipient relationship information that coders themselves identified as relevant.",
+    "The annotations did not provide complete conversation-thread context or quoted-message adjacency information.",
+    "Strength categories showed low agreement, especially for commitments, and the authors planned to replace or supplement strength with conditionality and explicitness.",
+    "Email preprocessing and sentence segmentation contained non-trivial errors.",
+    "The study measures human annotation reliability and does not evaluate an automatic request or commitment classifier."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "request_presence_reliable": 0.99,
+    "commitment_presence_less_reliable": 0.99,
+    "strength_labels_less_reliable": 0.99,
+    "audience_type_affects_agreement": 0.97,
+    "conditional_offers_major_error_source": 0.99,
+    "implicit_requests_need_context": 0.97,
+    "relationship_context_matters": 0.97,
+    "email_segmentation_error": 0.98
+   },
+   "raw_claims": [
+    "The pilot corpus contains 54 Enron messages and 310 sentences.",
+    "Three coders independently annotated the presence and strength of requests and commitments.",
+    "Request presence obtained three-way kappa 0.78.",
+    "Request strength obtained three-way kappa 0.60.",
+    "Commitment presence obtained three-way kappa 0.54.",
+    "Commitment strength obtained three-way kappa 0.37.",
+    "Agreement was highest for single-recipient messages and lowest for closed-group messages.",
+    "Conditional offers caused a large share of commitment-presence disagreements.",
+    "Implicit meeting requests were a recurring source of coder disagreement.",
+    "Organizational relationships can change how strongly a request is interpreted.",
+    "Coder flags indicated a sentence-segmentation error rate of at least 10% in the pilot data.",
+    "The authors planned to refine the scheme toward conditionality and explicitness rather than relying only on strength."
+   ],
+   "source_url": "https://www.researchgate.net/publication/228649541_Can_requests-for-action_and_commitments-to-act_be_reliably_identified_in_email_messages",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-20b8cd2fdd",
+   "title": "Requests and Commitments in Email are More Complex Than You Think: Eight Reasons to be Cautious",
+   "research_question": "Which recurring phenomena make requests and commitments in real workplace email difficult to annotate or extract reliably, and what annotation principles are needed to handle those phenomena consistently?",
+   "methodology": "The paper synthesizes observations from a series of three-annotator experiments on randomly sampled messages from the processed Enron corpus, including sentence-level experiments with 54 messages and 310 sentences and later 350 messages and 750 sentences, plus a 100-message message-level experiment. The authors compare interannotator agreement across these experiments and perform qualitative analysis of recurrent ambiguous cases. They organize the resulting problems into eight edge-case categories and specify operational annotation principles designed for a high-recall email application that highlights potentially useful requests and commitments.",
+   "key_findings": [
+    {
+     "finding": "More explicit guidance for conditional and indirect phenomena coincided with a large improvement in commitment agreement: three-way commitment kappa increased from 0.54 in the first sentence experiment to 0.74 in the second, while request kappa changed from 0.78 to 0.80.",
+     "evidence_type": "supported",
+     "section": "3 The Data and Annotation Experiments"
+    },
+    {
+     "finding": "Message-level annotation yielded still higher agreement, with kappa 0.84 for requests and 0.78 for commitments; the paper links part of this gain to avoiding sentence-level locus ambiguity.",
+     "evidence_type": "supported",
+     "section": "3 The Data and Annotation Experiments and 4.1 Locus Ambiguity"
+    },
+    {
+     "finding": "The authors identify eight systematic edge-case categories: locus ambiguity, meetings, pleasantries, requests for inaction, process instructions, attachment-review requests, reported requests and commitments, and third-party commitments that also function as requests.",
+     "evidence_type": "supported",
+     "section": "4 Edge Case Phenomena in Email and 5 Conclusions"
+    },
+    {
+     "finding": "Several categories cannot be classified reliably from surface wording alone and instead require message context, intended recipient information, or knowledge about whether an obligation is actually imposed.",
+     "evidence_type": "supported",
+     "section": "4 Edge Case Phenomena in Email and 5 Conclusions"
+    },
+    {
+     "finding": "The same underlying obligation may have multiple direct or indirect sentence realizations, so the authors' high-recall scheme marks every sentence that realizes a request or commitment rather than forcing a single textual locus.",
+     "evidence_type": "supported",
+     "section": "4.1 Locus Ambiguity"
+    },
+    {
+     "finding": "A commitment can simultaneously be a request when it places an obligation on an email recipient; the paper therefore rejects mutually exclusive speech-act labeling for such cases.",
+     "evidence_type": "supported",
+     "section": "4.8 Third-Party Commitments as Requests"
+    },
+    {
+     "finding": "The intended downstream application affects what should count as relevant: highlighting obligations in-place, extracting a task list, and producing an action-oriented thread summary can legitimately require different annotation decisions.",
+     "evidence_type": "supported",
+     "section": "2.3 Considering the End Goal"
+    },
+    {
+     "finding": "The authors argue that evaluation against a single objective gold standard is problematic when human interpretation itself is ambiguous, and propose real-user mailbox and task contexts as more meaningful but less repeatable evaluation settings.",
+     "evidence_type": "supported",
+     "section": "5 Conclusions"
+    }
+   ],
+   "limitations": [
+    "The empirical observations come primarily from the Enron corpus, so organizational culture, period, and email style may limit generalization.",
+    "The eight-category taxonomy is grounded in the authors' annotation experience but is not demonstrated to be exhaustive.",
+    "Several recommended labels intentionally depend on the chosen high-recall application and therefore are conventions rather than universally valid speech-act definitions.",
+    "Some categories, including process instructions and reported requests or commitments, remain explicitly dependent on annotator judgment.",
+    "The processed Enron dump used for experiments contains message bodies without attachments even though attachment-related requests are discussed as an important workplace-email phenomenon.",
+    "The paper reports annotation agreement rather than performance of an implemented automatic extraction system.",
+    "Reliable classification may require private user, relationship, task, or organizational context that is unavailable in standard corpora.",
+    "The authors acknowledge that user-context evaluation raises privacy, data-access, and repeatability problems."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "guidelines_raise_commitment_agreement": 0.99,
+    "message_level_agreement_higher": 0.99,
+    "eight_edge_case_taxonomy": 0.99,
+    "context_required": 0.99,
+    "multiple_realisations": 0.98,
+    "speech_act_labels_can_overlap": 0.99,
+    "application_changes_annotation": 0.98,
+    "objective_gold_standard_problematic": 0.98
+   },
+   "raw_claims": [
+    "The paper bases its analysis on several manual annotation experiments over randomly sampled Enron email.",
+    "The first sentence experiment reported request kappa 0.78 and commitment kappa 0.54.",
+    "A later sentence experiment reported request kappa 0.80 and commitment kappa 0.74 after more explicit annotation guidance.",
+    "Message-level annotation reported request kappa 0.84 and commitment kappa 0.78.",
+    "Locus ambiguity occurs when the same request or commitment is realized in more than one sentence or has no obvious single sentence locus.",
+    "The annotation scheme treats meeting announcements as implicit requests to attend.",
+    "Pleasantries are excluded when they do not create a meaningful obligation.",
+    "Requests for inaction are still treated as requests because they impose an obligation not to act.",
+    "Process instructions and reported obligations may require local context and annotator judgment.",
+    "An attachment counts as a request only when accompanying message text can be interpreted as requesting something about it.",
+    "A third-party commitment can also be labeled a request when the committed party is a recipient and therefore receives an obligation.",
+    "The authors conclude that many request and commitment phenomena require contextual rather than purely surface-form modeling.",
+    "The paper states that an email collection independently labeled by five annotators according to its guidelines was available for download."
+   ],
+   "source_url": "https://aclanthology.org/U08-1009.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

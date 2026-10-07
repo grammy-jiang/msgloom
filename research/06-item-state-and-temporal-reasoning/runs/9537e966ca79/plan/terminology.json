@@ -1,0 +1,721 @@
+{
+ "topic": "Longitudinal event and work-item state transitions in dialogue and operational communication, with emphasis on supersession, correction, contradiction, reopening, source-relative factuality, evidential confirmation, and preservation of historical state.",
+ "seed_audit": [
+  {
+   "seed": "event factuality prediction",
+   "academic_meaning": "NLP prediction of the factual status of an event mention, typically estimating whether a source presents the event as having happened, not happened, or having uncertain factual status.",
+   "fit": "STRONG",
+   "main_risk": "Most work predicts a static factuality assessment for one mention or document. It does not by itself model later correction, revocation, supersession, historical assessments, or independent verification.",
+   "false_positive_literature": "Generic fact checking, sentence truthfulness, hallucination detection, and author-only factuality models with no source holder or longitudinal update."
+  },
+  {
+   "seed": "factuality profiling",
+   "academic_meaning": "Compositional analysis of linguistic information such as polarity, modality and source attribution to derive the factuality status of eventualities.",
+   "fit": "STRONG",
+   "main_risk": "The term is associated especially with early factuality work and may not retrieve newer work described instead as event factuality prediction or source-relative factuality.",
+   "false_positive_literature": "Generic factuality or credibility profiling not tied to event mentions and their sources."
+  },
+  {
+   "seed": "event modality",
+   "academic_meaning": "Classification or semantic analysis of modal status associated with an event, such as possible, necessary, intended, desired, hypothetical or otherwise non-actual.",
+   "fit": "MODERATE",
+   "main_risk": "Modal taxonomies do not map cleanly onto product lifecycle states such as approved, completed, revoked or superseded.",
+   "false_positive_literature": "General modal logic, modality detection without event attachment, and modality studies unrelated to factual state."
+  },
+  {
+   "seed": "event certainty",
+   "academic_meaning": "Analysis or prediction of the degree of epistemic certainty expressed about an event or proposition.",
+   "fit": "MODERATE",
+   "main_risk": "Epistemic certainty may be confused with model confidence, and a certainty scale cannot represent correction, supersession or lifecycle transitions.",
+   "false_positive_literature": "Classifier calibration, confidence estimation, uncertainty quantification, and document-level certainty unrelated to event semantics."
+  },
+  {
+   "seed": "event veridicality",
+   "academic_meaning": "Semantic inference about whether linguistic constructions, especially embedding predicates, support or entail the actuality of an embedded event.",
+   "fit": "MODERATE",
+   "main_risk": "Veridicality often studies local lexical or compositional inference rather than discourse history, source-relative commitment or later evidence.",
+   "false_positive_literature": "Pure formal-semantic studies of factive and implicative predicates with no event-state tracking."
+  },
+  {
+   "seed": "negation detection",
+   "academic_meaning": "Identification of negation cues, their scope and the entities or events whose polarity they reverse or deny.",
+   "fit": "MODERATE",
+   "main_risk": "Negation is only one component of factuality and cannot distinguish cancellation, correction, contradiction and supersession by itself.",
+   "false_positive_literature": "Sentiment negation, lexical negation, biomedical negation unrelated to longitudinal event state, and cue detection without scope."
+  },
+  {
+   "seed": "speculation detection",
+   "academic_meaning": "Identification of linguistic expressions and scope indicating uncertainty, possibility, conjecture or hypothetical status.",
+   "fit": "MODERATE",
+   "main_risk": "Much of the literature is biomedical or scientific and treats speculation as a local sentence-level property.",
+   "false_positive_literature": "Scientific-writing uncertainty classification without event attachment or longitudinal state."
+  },
+  {
+   "seed": "hedging detection",
+   "academic_meaning": "Detection of words or constructions that weaken, qualify or limit a speaker's commitment to a proposition.",
+   "fit": "WEAK",
+   "main_risk": "Hedging can be rhetorical or stylistic and is neither necessary nor sufficient for the factual or lifecycle status required here.",
+   "false_positive_literature": "Academic-writing style analysis, politeness, rhetorical stance and generic uncertainty detection."
+  },
+  {
+   "seed": "temporal information extraction",
+   "academic_meaning": "Extraction and normalization of events, temporal expressions and temporal relations from text.",
+   "fit": "STRONG",
+   "main_risk": "A large part of the literature stops at dates or pairwise relations and does not maintain a revisable event state across messages.",
+   "false_positive_literature": "Pure date extraction, temporal expression normalization and calendar extraction without event relations."
+  },
+  {
+   "seed": "temporal relation extraction",
+   "academic_meaning": "Identification of temporal relations such as before, after, overlap or inclusion between events and times.",
+   "fit": "STRONG",
+   "main_risk": "Pairwise temporal links do not by themselves capture correction, source commitment, deadlines or state revision.",
+   "false_positive_literature": "Relation extraction where temporal means merely timestamp co-occurrence or recency."
+  },
+  {
+   "seed": "event temporal ordering",
+   "academic_meaning": "Determination of relative chronological order among events, often at document or cross-document level.",
+   "fit": "STRONG",
+   "main_risk": "Chronological order is not equivalent to discourse update order, message order or supersession order.",
+   "false_positive_literature": "Narrative sequencing without explicit temporal semantics or state revision."
+  },
+  {
+   "seed": "temporal relation classification",
+   "academic_meaning": "Classification of candidate event-event or event-time pairs into an inventory of temporal relations.",
+   "fit": "STRONG",
+   "main_risk": "Candidate-pair classification may ignore global consistency and the distinction among message time, event time, deadline and observation time.",
+   "false_positive_literature": "Generic relation classifiers with a timestamp feature but no temporal semantics."
+  },
+  {
+   "seed": "TimeML",
+   "academic_meaning": "A temporal annotation specification for events, temporal expressions and links among events and times.",
+   "fit": "STRONG",
+   "main_risk": "TimeML supplies temporal representation but does not define the required lifecycle, evidential or supersession semantics.",
+   "false_positive_literature": "TimeML conversion or annotation tooling with no reasoning or state-transition evaluation."
+  },
+  {
+   "seed": "temporal graphs",
+   "academic_meaning": "Graph representations in which events or facts are nodes and temporal relationships are edges, sometimes supporting global temporal reasoning.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is extremely broad and frequently denotes dynamic graph machine learning rather than text-derived event chronology.",
+   "false_positive_literature": "Temporal graph neural networks, dynamic social networks, network forecasting and graph streams unrelated to textual events."
+  },
+  {
+   "seed": "temporal constraint reasoning",
+   "academic_meaning": "Reasoning over temporal relations as constraints, including consistency checking, transitive inference, interval relations and constraint propagation.",
+   "fit": "STRONG",
+   "main_risk": "Much of the foundational literature assumes already-correct symbolic constraints and does not solve language interpretation or source disagreement.",
+   "false_positive_literature": "Scheduling, planning and operations-research constraint satisfaction without textual evidence."
+  },
+  {
+   "seed": "event status tracking",
+   "academic_meaning": "A non-uniform phrase used for tracking whether events or processes occupy particular statuses, usually in domain-specific systems.",
+   "fit": "WEAK",
+   "main_risk": "It is not a stable, well-defined NLP task name and can create misleading confidence that a unified academic benchmark exists.",
+   "false_positive_literature": "Incident dashboards, process monitoring, medical event status and event-processing systems with structured inputs."
+  },
+  {
+   "seed": "state tracking",
+   "academic_meaning": "Generic maintenance of a changing latent or explicit state over a sequence of observations.",
+   "fit": "WEAK",
+   "main_risk": "The term is far too broad to retrieve the intended semantics without strong qualifiers.",
+   "false_positive_literature": "Robotics, control theory, object tracking, reinforcement learning, dialogue slot filling and process monitoring."
+  },
+  {
+   "seed": "dialogue state tracking",
+   "academic_meaning": "In task-oriented dialogue systems, maintenance of the dialogue state, conventionally the user's goal and accumulated slot-value constraints across turns.",
+   "fit": "MODERATE",
+   "main_risk": "The standard task's state is usually a task-oriented slot structure, not evidence-backed truth or lifecycle state of a work item.",
+   "false_positive_literature": "MultiWOZ-style slot filling, intent tracking and dialogue belief-state benchmarks without correction lineage or historical assessments."
+  },
+  {
+   "seed": "event evolution",
+   "academic_meaning": "Usually analysis of how a news event, topic, storyline or event cluster develops over time.",
+   "fit": "WEAK",
+   "main_risk": "Evolution frequently means changes in story content or topic clusters rather than state transitions of one persistent work item.",
+   "false_positive_literature": "Topic evolution, social-media event evolution, storyline generation and event-cluster evolution."
+  },
+  {
+   "seed": "event update",
+   "academic_meaning": "An ambiguous phrase for incorporating new event information into a representation, stream, database or knowledge graph.",
+   "fit": "WEAK",
+   "main_risk": "There is no single standard NLP task behind the phrase, and search results mix event detection, streaming and knowledge-graph updates.",
+   "false_positive_literature": "Event-stream processing, event forecasting, news updates and knowledge-graph insertion without revision semantics."
+  },
+  {
+   "seed": "timeline extraction",
+   "academic_meaning": "Construction of a temporally anchored or ordered sequence of salient events, frequently for an entity or topic and sometimes across documents.",
+   "fit": "MODERATE",
+   "main_risk": "A timeline normally records what happened and when, not competing assessments, correction lineage or current versus historical acceptance.",
+   "false_positive_literature": "Timeline summarization, chronology visualization and news-story generation without explicit event-state reasoning."
+  },
+  {
+   "seed": "contradiction detection",
+   "academic_meaning": "Detection or classification of semantic incompatibility between statements, propositions or text spans.",
+   "fit": "STRONG",
+   "main_risk": "Contradiction is only one relation. Treating every contradiction as correction or supersession would violate the product semantics.",
+   "false_positive_literature": "Pairwise contradiction benchmarks lacking entity identity, temporal context, source attribution or longitudinal update."
+  },
+  {
+   "seed": "natural language inference",
+   "academic_meaning": "Prediction of inferential relations, conventionally entailment, contradiction or neutral, between a premise and a hypothesis.",
+   "fit": "MODERATE",
+   "main_risk": "Standard NLI is pairwise and stateless; it does not model what a later communication does to an earlier assessment.",
+   "false_positive_literature": "Generic SNLI/MNLI-style benchmark work with no temporal, provenance or state-maintenance component."
+  },
+  {
+   "seed": "belief revision",
+   "academic_meaning": "Formal study of rationally modifying a belief set or knowledge state when new information is received, commonly using consistency and minimal-change principles.",
+   "fit": "STRONG",
+   "main_risk": "Classical belief revision assumes symbolic propositions and a revision operator; it does not determine the linguistic relation between two workplace messages.",
+   "false_positive_literature": "Pure AGM theory with no sequential evidence, dialogue or computational realization relevant to extracted propositions."
+  },
+  {
+   "seed": "truth maintenance systems",
+   "academic_meaning": "Reason-maintenance systems that record dependencies or justifications for beliefs and revise accepted beliefs when assumptions or derived conclusions become inconsistent.",
+   "fit": "STRONG",
+   "main_risk": "TMS work generally begins after propositions and dependencies have already been symbolically identified.",
+   "false_positive_literature": "Expert-system implementation details that do not preserve source evidence or address natural-language interpretation."
+  },
+  {
+   "seed": "assumption-based truth maintenance",
+   "academic_meaning": "Truth-maintenance approach representing alternative consistent environments in terms of sets of assumptions, allowing incompatible alternatives to coexist without destructive overwrite.",
+   "fit": "STRONG",
+   "main_risk": "ATMS labels explain logical environments, not conversational relations such as supplementation, correction or source authority.",
+   "false_positive_literature": "Constraint-solving uses of ATMS with no evidence lineage or communication semantics."
+  },
+  {
+   "seed": "knowledge-base revision",
+   "academic_meaning": "Modification of a logical or structured knowledge base after additions, deletions or inconsistencies, often under minimal-change criteria.",
+   "fit": "MODERATE",
+   "main_risk": "The literature often focuses on formal complexity and update operators rather than interpreting uncertain natural-language evidence.",
+   "false_positive_literature": "Database patching, ontology maintenance and propositional complexity results without longitudinal communication."
+  },
+  {
+   "seed": "temporal knowledge graphs",
+   "academic_meaning": "Knowledge graphs whose facts or relations are associated with timestamps or validity intervals, supporting temporal reasoning and prediction.",
+   "fit": "MODERATE",
+   "main_risk": "A large modern literature is about link prediction or event forecasting, not correction, revocation, contradictory evidence or provenance-preserving state revision.",
+   "false_positive_literature": "Temporal KG completion, future link prediction and event forecasting without explicit revision of previously accepted facts."
+  },
+  {
+   "seed": "document supersession",
+   "academic_meaning": "The notion that one document or authoritative record replaces an earlier document for some purpose; it is not a standardized NLP task name.",
+   "fit": "WEAK",
+   "main_risk": "Document-level authority replacement is much coarser than proposition-level semantic supersession and may depend on administrative metadata rather than language.",
+   "false_positive_literature": "Records management, legal document control, standards lifecycle and content-management systems."
+  },
+  {
+   "seed": "version supersession",
+   "academic_meaning": "Replacement of one version of an artifact by a later version in versioned information systems.",
+   "fit": "WEAK",
+   "main_risk": "Version order does not prove that every statement in the later version semantically supersedes every statement in the earlier one.",
+   "false_positive_literature": "Software versioning, package management, standards lifecycle and document management."
+  },
+  {
+   "seed": "revision tracking",
+   "academic_meaning": "Tracking changes between versions of text or other artifacts, often including alignment and classification of edits.",
+   "fit": "WEAK",
+   "main_risk": "Textual revision is normally about what the author edited, not what real-world work-item state should currently be accepted.",
+   "false_positive_literature": "Writing assistance, grammatical revision, educational writing analytics, sentence alignment and version diffs."
+  },
+  {
+   "seed": "change detection",
+   "academic_meaning": "Generic identification of differences between observations at different times.",
+   "fit": "REJECT",
+   "main_risk": "As a standalone query it is overwhelmingly non-specific and does not identify the required semantic capability.",
+   "false_positive_literature": "Remote sensing, computer vision, anomaly detection, code diffs, sensor monitoring and generic time-series change-point detection."
+  },
+  {
+   "seed": "provenance-aware state",
+   "academic_meaning": "A design concept in which a represented state retains information about the source observations or derivations supporting it; the exact phrase is not a canonical academic task name.",
+   "fit": "MODERATE",
+   "main_risk": "Searching the exact phrase can miss the mature data-provenance, lineage and temporal-provenance literatures.",
+   "false_positive_literature": "Security provenance, workflow provenance or generic metadata lineage without state revision."
+  },
+  {
+   "seed": "event sourcing",
+   "academic_meaning": "Software architecture pattern in which state-changing events are stored as an append-only history and current state is reconstructed or projected from that history.",
+   "fit": "STRONG",
+   "main_risk": "Event sourcing solves storage and reconstruction, not the language-semantic problem of deciding whether a message corrects, supplements, contradicts or supersedes earlier evidence.",
+   "false_positive_literature": "Microservice architecture discussions concerned only with scalability, CQRS or implementation mechanics."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "F01",
+   "name": "Source-relative event factuality and factuality profiling",
+   "description": "Determine the factual status of an event mention relative to the author or another explicitly represented source or holder.",
+   "role": "DIRECT",
+   "why_it_matters": "Directly supports the distinction between mentioned, asserted, negated, uncertain and source-relative events. It is essential for gaps 3 and 5, but source commitment must not be mistaken for independent confirmation.",
+   "seed_papers": [
+    "A Factuality Profiler for Eventualities in Text (Sauri, 2008)",
+    "FactBank: a corpus annotated with event factuality (Sauri and Pustejovsky, 2009)",
+    "Neural Models of Factuality (Rudinger et al., 2018)",
+    "Towards Generative Event Factuality Prediction (Murzaku et al., 2023)"
+   ]
+  },
+  {
+   "id": "F02",
+   "name": "Event modality, polarity, speculation and conditionality",
+   "description": "Identify modal, negated, speculative, hypothetical and conditional status and attach the relevant scope to the correct event.",
+   "role": "DIRECT",
+   "why_it_matters": "Necessary to prevent plans, possibilities and conditional commitments from being interpreted as completed factual events.",
+   "seed_papers": [
+    "The BioScope corpus: biomedical texts annotated for uncertainty, negation and their scopes (Vincze et al., 2008)"
+   ]
+  },
+  {
+   "id": "F03",
+   "name": "Temporal information extraction, temporal relations and constraint reasoning",
+   "description": "Extract events and times, classify their temporal relations and use temporal constraints or global reasoning to obtain a consistent temporal structure.",
+   "role": "DIRECT",
+   "why_it_matters": "Provides event/effective-time ordering and the machinery needed to avoid equating message order with event order.",
+   "seed_papers": [
+    "Maintaining Knowledge about Temporal Intervals (Allen, 1983)",
+    "TimeML: Robust Specification of Event and Temporal Expressions in Text (Pustejovsky et al., 2003)",
+    "The TimeBank Corpus (2003)",
+    "SemEval-2007 Task 15: TempEval Temporal Relation Identification",
+    "SemEval-2013 Task 1: TempEval-3",
+    "CATENA: CAusal and TEmporal relation extraction from NAtural language texts (2016)"
+   ]
+  },
+  {
+   "id": "F04",
+   "name": "Cross-document event ordering and timeline extraction",
+   "description": "Construct chronologically anchored event histories from multiple documents or mentions.",
+   "role": "DIRECT",
+   "why_it_matters": "Supplies evaluated mechanisms for longitudinal accumulation and ordering, although typical news timelines do not preserve competing assessments or work-item lifecycle state.",
+   "seed_papers": [
+    "SemEval-2015 Task 4: TimeLine: Cross-Document Event Ordering"
+   ]
+  },
+  {
+   "id": "F05",
+   "name": "Dialogue commitment, correction, retraction, grounding and dispute semantics",
+   "description": "Model what interlocutors are publicly committed to across turns, how corrections and acknowledgements alter those commitments, and how disagreement or unresolved dispute is represented.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest established terminology for gap 2: correction and retraction need semantics distinct from mere contradiction, and prior commitments may partly survive a correction.",
+   "seed_papers": [
+    "Commitment in Dialogue: Basic Concepts of Interpersonal Reasoning (Walton and Krabbe, 1995)",
+    "The Problem of Retraction in Critical Discussion (Krabbe, 2001)",
+    "Agreement, Disputes and Commitment in Dialogue (Lascarides and Asher, 2009)",
+    "Grounding and Correcting Commitments in Dialogue (Lascarides and Asher, 2009)",
+    "OK or not OK? Commitments in acknowledgments and corrections (Venant and Asher, 2016)"
+   ]
+  },
+  {
+   "id": "F06",
+   "name": "Social commitment lifecycle and message semantics",
+   "description": "Represent commitments created through communicative acts and transitions such as adoption, acceptance, fulfilment, violation, cancellation or rejection.",
+   "role": "TRANSFER",
+   "why_it_matters": "Offers explicit lifecycle-state machinery resembling requested, accepted, fulfilled and cancelled work, but much of the literature uses formal multi-agent protocols rather than natural workplace language.",
+   "seed_papers": [
+    "Layered Message Semantics Using Social Commitments (2005)"
+   ]
+  },
+  {
+   "id": "F07",
+   "name": "Contradiction detection, NLI and correction-sensitive discourse relations",
+   "description": "Detect semantic incompatibility and distinguish contradiction or entailment relations between propositions or discourse units.",
+   "role": "TRANSFER",
+   "why_it_matters": "Contradiction recognition is required before a system can decide whether incompatible observations remain unresolved or participate in a correction or supersession relation.",
+   "seed_papers": [
+    "Finding Contradictions in Text (de Marneffe, Rafferty and Manning, 2008)",
+    "A large annotated corpus for learning natural language inference (SNLI, Bowman et al., 2015)"
+   ]
+  },
+  {
+   "id": "F08",
+   "name": "Belief revision, truth maintenance and argument revision",
+   "description": "Maintain a logically coherent set of accepted beliefs or commitments as new and potentially inconsistent information arrives, while recording dependencies or alternative assumption environments.",
+   "role": "TRANSFER",
+   "why_it_matters": "Provides formal machinery for minimal change, retraction, unresolved alternatives and justification-preserving revision after semantic relations have been identified.",
+   "seed_papers": [
+    "A Truth Maintenance System (Doyle, 1979)",
+    "On the Logic of Theory Change: Partial Meet Contraction and Revision Functions (Alchourron, Gardenfors and Makinson, 1985)",
+    "An Assumption-Based TMS (de Kleer, 1986)",
+    "Argument Revision (2017)",
+    "Belief-R: Evaluating Belief Revision in Language Models (2024)"
+   ]
+  },
+  {
+   "id": "F09",
+   "name": "Evidentiality, source attribution, corroboration and evidence-based claim verification",
+   "description": "Represent how information was acquired or attributed and determine whether a claim is supported, refuted or insufficiently supported by evidence.",
+   "role": "TRANSFER",
+   "why_it_matters": "Targets gap 5 by separating a speaker's assertion from corroboration or independent evidence, a distinction not supplied by ordinary event factuality labels.",
+   "seed_papers": [
+    "FEVER: a Large-scale Dataset for Fact Extraction and VERification (Thorne et al., 2018)"
+   ]
+  },
+  {
+   "id": "F10",
+   "name": "Temporal knowledge graphs and evolving fact representations",
+   "description": "Represent facts with temporal qualifiers and reason over changing or time-indexed knowledge.",
+   "role": "TRANSFER",
+   "why_it_matters": "Potential representation layer for validity intervals and evolving facts, provided discovery excludes work limited to link prediction or forecasting.",
+   "seed_papers": []
+  },
+  {
+   "id": "F11",
+   "name": "Temporal and bitemporal database semantics",
+   "description": "Represent multiple notions of time, especially when a fact is valid in the modeled world versus when it is recorded or known by the information system.",
+   "role": "TRANSFER",
+   "why_it_matters": "Directly informs gap 7: event/effective time and observation/version time should not be collapsed into one timestamp. Deadline and message time can then be represented as additional typed temporal attributes.",
+   "seed_papers": [
+    "A Taxonomy of Time in Databases (Snodgrass and Ahn, 1985)"
+   ]
+  },
+  {
+   "id": "F12",
+   "name": "Data provenance, lineage and temporal provenance",
+   "description": "Track where stored or derived information came from and which source records contributed to a derived result.",
+   "role": "TRANSFER",
+   "why_it_matters": "Provides terminology and formal mechanisms for preserving the sources behind historical and current assessments instead of destructively overwriting evidence.",
+   "seed_papers": [
+    "Why and Where: A Characterization of Data Provenance (Buneman, Khanna and Tan, 2001)"
+   ]
+  },
+  {
+   "id": "F13",
+   "name": "Event sourcing and immutable state history",
+   "description": "Persist an append-only sequence of state-changing events and compute present views as projections over that immutable history.",
+   "role": "TRANSFER",
+   "why_it_matters": "Strong engineering analogue for gap 8: immutable observations and separate derived current-state views. It does not determine semantic state transitions.",
+   "seed_papers": []
+  },
+  {
+   "id": "F14",
+   "name": "Text revision, edit intention and document-version change",
+   "description": "Align text versions and classify why text was added, deleted or modified, including some forms of factual or semantic correction.",
+   "role": "TRANSFER",
+   "why_it_matters": "Can contribute signals and taxonomies for correction versus supplementation, but textual revision must not be equated with real-world state supersession.",
+   "seed_papers": [
+    "ArXivEdits: Understanding the Human Revision Process in Scientific Writing (2022)",
+    "IteraTeR: Understanding Iterative Revision from Human-Written Text (2022)"
+   ]
+  },
+  {
+   "id": "F15",
+   "name": "Workplace and operational communication work-item lifecycle tracking",
+   "description": "The target-domain task: evaluate the same action, commitment, decision or work item across successive email, chat, meeting or operational messages and distinguish proposed, planned, approved, completed, cancelled, revoked, superseded, disputed, conditional and unresolved states while retaining history.",
+   "role": "DIRECT",
+   "why_it_matters": "This family is required to close gaps 1 and 4. A paper only qualifies as direct target-domain evidence if it actually evaluates longitudinal work-item state rather than merely extracting actions or summarizing threads.",
+   "seed_papers": []
+  },
+  {
+   "id": "F16",
+   "name": "Dialogue issue management and Questions Under Discussion",
+   "description": "Track issues or questions that are opened, remain unresolved, become resolved, or return to the conversational agenda.",
+   "role": "TRANSFER",
+   "why_it_matters": "Provides useful semantics for unresolved and potentially reopened issues, but a conversational issue is not automatically the same object as an operational work item.",
+   "seed_papers": [
+    "Discourse Integration Guided by the Question under Discussion (Clifton and Frazier, 2012)"
+   ]
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "F01",
+   "role": "DIRECT",
+   "queries": [
+    "\"event factuality\" source attribution commitment holder",
+    "\"event factuality prediction\" source target holder",
+    "\"factuality profiling\" event source commitment",
+    "\"source-relative\" event factuality NLP",
+    "\"event factuality\" temporal update contradiction",
+    "\"event factuality\" cross-document longitudinal"
+   ]
+  },
+  {
+   "family_id": "F02",
+   "role": "DIRECT",
+   "queries": [
+    "event modality negation conditionality factuality NLP",
+    "speculation negation scope event factuality",
+    "\"conditional commitment\" modality dialogue",
+    "planned completed event modality status text",
+    "event actuality hypothetical intended completed NLP"
+   ]
+  },
+  {
+   "family_id": "F03",
+   "role": "DIRECT",
+   "queries": [
+    "\"temporal relation extraction\" event ordering global consistency",
+    "TimeML temporal relation event time",
+    "\"temporal constraint reasoning\" events intervals",
+    "\"temporal closure\" temporal relation extraction",
+    "\"Allen interval algebra\" event temporal reasoning",
+    "\"event time\" \"document creation time\" temporal relation NLP"
+   ]
+  },
+  {
+   "family_id": "F04",
+   "role": "DIRECT",
+   "queries": [
+    "\"cross-document\" event ordering timeline extraction",
+    "\"cross-document timeline\" event correction contradiction",
+    "\"timeline extraction\" event factuality",
+    "\"cross-document event ordering\" temporal",
+    "longitudinal event timeline update correction text"
+   ]
+  },
+  {
+   "family_id": "F05",
+   "role": "DIRECT",
+   "queries": [
+    "\"grounding\" \"correcting commitments\" dialogue",
+    "\"commitment\" correction retraction dialogue semantics",
+    "\"public commitments\" dispute correction dialogue",
+    "\"commitment store\" retraction dialogue",
+    "\"discourse relation\" Correction dialogue",
+    "dialogue retraction unresolved dispute commitment",
+    "\"agreement disputes commitment\" dialogue",
+    "\"correction\" acknowledgement commitment dialogue"
+   ]
+  },
+  {
+   "family_id": "F06",
+   "role": "TRANSFER",
+   "queries": [
+    "\"social commitment\" lifecycle fulfilled cancelled violated",
+    "\"commitment state\" fulfilled cancelled agent communication",
+    "commitment discharge cancellation multiagent communication",
+    "\"message semantics\" \"social commitments\"",
+    "\"commitment lifecycle\" communication protocol",
+    "\"social commitment\" adoption fulfilment cancellation"
+   ]
+  },
+  {
+   "family_id": "F07",
+   "role": "TRANSFER",
+   "queries": [
+    "\"contradiction detection\" temporal context dialogue",
+    "\"natural language inference\" contradiction temporal context",
+    "\"contradiction\" correction discourse relation",
+    "NLI revision update longitudinal dialogue",
+    "\"temporal contradiction\" natural language inference",
+    "\"correction relation\" contradiction discourse"
+   ]
+  },
+  {
+   "family_id": "F08",
+   "role": "TRANSFER",
+   "queries": [
+    "\"belief revision\" iterated revision new evidence",
+    "\"truth maintenance system\" justification contradiction retraction",
+    "\"assumption-based truth maintenance\" inconsistent evidence",
+    "\"argument revision\" commitment retraction dialogue",
+    "\"non-monotonic reasoning\" provenance belief revision",
+    "\"belief revision\" natural language dialogue evidence",
+    "\"iterated belief revision\" conflicting information"
+   ]
+  },
+  {
+   "family_id": "F09",
+   "role": "TRANSFER",
+   "queries": [
+    "\"event factuality\" evidentiality source attribution",
+    "evidentiality information source reported inferred witnessed NLP",
+    "\"claim verification\" evidence retrieval source provenance",
+    "\"fact verification\" temporal claims evidence",
+    "\"multi-source\" claim verification corroboration",
+    "corroboration independent evidence claim verification NLP",
+    "\"source attribution\" factuality evidence NLP"
+   ]
+  },
+  {
+   "family_id": "F10",
+   "role": "TRANSFER",
+   "queries": [
+    "\"temporal knowledge graph\" fact update contradiction",
+    "\"temporal knowledge graph\" revision provenance",
+    "\"temporal knowledge graph\" evolving facts validity",
+    "\"knowledge graph\" temporal fact revision",
+    "\"knowledge graph\" conflicting temporal facts provenance"
+   ]
+  },
+  {
+   "family_id": "F11",
+   "role": "TRANSFER",
+   "queries": [
+    "\"valid time\" \"transaction time\" temporal database",
+    "bitemporal database valid time transaction time",
+    "bitemporal data provenance version history",
+    "\"event time\" \"processing time\" stream processing",
+    "\"temporal database\" retroactive correction history",
+    "\"application time\" \"system time\" temporal database"
+   ]
+  },
+  {
+   "family_id": "F12",
+   "role": "TRANSFER",
+   "queries": [
+    "\"data provenance\" lineage derivation historical state",
+    "\"temporal provenance\" database updates",
+    "provenance conflicting evidence knowledge base",
+    "\"why provenance\" \"where provenance\"",
+    "\"data lineage\" historical state revision",
+    "provenance belief revision evidence"
+   ]
+  },
+  {
+   "family_id": "F13",
+   "role": "TRANSFER",
+   "queries": [
+    "\"event sourcing\" immutable history state reconstruction",
+    "\"event sourcing\" temporal state evolution",
+    "\"event sourcing\" audit trail correction",
+    "\"event sourcing\" historical state projection",
+    "\"event sourcing\" schema evolution"
+   ]
+  },
+  {
+   "family_id": "F14",
+   "role": "TRANSFER",
+   "queries": [
+    "\"revision intent\" correction supplementation text",
+    "\"edit intention\" factual correction revision",
+    "\"document revision\" semantic change correction",
+    "\"sentence alignment\" document revisions correction",
+    "\"version history\" factual correction NLP",
+    "\"text revision\" factual correction supplementation"
+   ]
+  },
+  {
+   "family_id": "F15",
+   "role": "DIRECT",
+   "queries": [
+    "\"business email\" action status completion cancellation NLP",
+    "\"workplace email\" commitment state tracking",
+    "\"email thread\" task status change deadline correction",
+    "\"operational communication\" action item lifecycle NLP",
+    "\"enterprise dialogue\" task status completion revocation",
+    "\"workplace communication\" contradiction correction task status",
+    "\"email\" commitment cancellation completion longitudinal",
+    "\"meeting dialogue\" action item status change"
+   ]
+  },
+  {
+   "family_id": "F16",
+   "role": "TRANSFER",
+   "queries": [
+    "\"questions under discussion\" unresolved dialogue",
+    "\"issue management\" dialogue open resolved",
+    "dialogue issue reopening resolved question",
+    "\"unresolved issue\" dialogue state",
+    "\"conversational scoreboard\" to-do list task",
+    "\"question under discussion\" resolution non-resolution"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "source-relative event factuality",
+  "factuality holder",
+  "factuality source",
+  "source commitment",
+  "speaker commitment",
+  "public commitment",
+  "commitment store",
+  "commitment lifecycle",
+  "social commitment",
+  "commitment retraction",
+  "commitment cancellation",
+  "commitment fulfilment",
+  "grounding and correction in dialogue",
+  "agreement and dispute semantics",
+  "Correction discourse relation",
+  "retraction in dialogue",
+  "iterated belief revision",
+  "argument revision",
+  "non-monotonic reasoning",
+  "justification-based truth maintenance",
+  "temporal closure",
+  "global temporal consistency",
+  "Allen interval algebra",
+  "cross-document event ordering",
+  "cross-document timeline extraction",
+  "evidentiality",
+  "information source",
+  "source attribution",
+  "corroboration",
+  "multi-source claim verification",
+  "evidence-based claim verification",
+  "temporal database",
+  "bitemporal database",
+  "valid time",
+  "transaction time",
+  "event time",
+  "processing time",
+  "application time",
+  "system time",
+  "data provenance",
+  "data lineage",
+  "temporal provenance",
+  "why-provenance",
+  "where-provenance",
+  "immutable event history",
+  "state projection",
+  "revision intent",
+  "edit intention",
+  "Questions Under Discussion",
+  "issue resolution",
+  "unresolved dispute"
+ ],
+ "demoted_terms": [
+  "state tracking",
+  "event status tracking",
+  "dialogue state tracking when unqualified",
+  "event evolution",
+  "event update",
+  "timeline extraction when used alone",
+  "natural language inference when used alone",
+  "hedging detection when used alone",
+  "temporal graphs when used alone",
+  "document supersession",
+  "version supersession",
+  "revision tracking when used alone",
+  "change detection",
+  "provenance-aware state as an exact phrase",
+  "temporal knowledge graphs when the search is dominated by link prediction"
+ ],
+ "downgrade_rules": [
+  "Downgrade dialogue-state-tracking papers that only maintain intents, slots or user goals and do not represent evidence-backed work-item truth, correction, retraction or historical state.",
+  "Downgrade generic NLI or contradiction papers that classify isolated premise-hypothesis pairs without sequential update, temporal context, source attribution or preserved history.",
+  "Treat static event-factuality papers as component evidence only when they do not model source holders or sequential changes; they cannot by themselves close gaps 1, 2, 3 or 5.",
+  "Do not treat a source's high factuality or confident assertion as independent confirmation. Gap 5 requires evidence, corroboration or verification semantics beyond source commitment.",
+  "Downgrade temporal-information-extraction papers that only recognize or normalize dates and times without event relations.",
+  "Treat pairwise temporal-relation classification as component evidence unless the system also handles global consistency or an explicit longitudinal structure.",
+  "Downgrade timeline extraction that merely orders events and does not represent competing assessments, correction lineage, contradiction or current-versus-historical acceptance.",
+  "Reject event-evolution work whose evolving object is a topic, story cluster or social-media trend rather than the same persistent event or work item.",
+  "Downgrade temporal-knowledge-graph work dominated by link prediction, completion or forecasting when facts are never retracted, corrected or provenance-linked.",
+  "Reject document or version supersession work that assumes later version equals authoritative replacement without proposition-level semantics.",
+  "Downgrade revision-tracking and edit-intention papers concerned only with grammar, style, fluency or writing quality. They are relevant to gap 2 only when they explicitly distinguish semantic correction, factual change or supplementation.",
+  "Reject standalone change-detection results from computer vision, remote sensing, source-code differencing, sensor streams or generic time-series analysis.",
+  "Treat social-commitment and formal dialogue-protocol papers as TRANSFER when their inputs are symbolic agent messages rather than naturally occurring workplace communication.",
+  "Treat belief-revision, TMS and ATMS work as TRANSFER unless it evaluates natural-language interpretation. Formal revision machinery does not establish that the correct relation between messages has been recognized.",
+  "Treat claim-verification and fact-checking work as TRANSFER if it validates claims against external evidence but does not represent speaker-relative commitment or longitudinal work-item state.",
+  "Treat grammatical evidentiality alone as insufficient for independent confirmation; source-of-information marking is not the same as verification.",
+  "Treat event sourcing, temporal databases and provenance systems as engineering or representation evidence. They cannot close the language-semantic gaps merely because they preserve history.",
+  "Reject workflow-engine or process-state-machine papers as direct evidence when states are supplied as structured inputs and there is no uncertain natural-language interpretation.",
+  "Reject latest-message-wins, newest-version-wins or timestamp-only state resolution as evidence for supersession. Recency is not a semantic supersession relation.",
+  "Reject update summarization as a substitute for state semantics; summarization consumes a resolved state and belongs to Topic 09.",
+  "Reject action-item extraction alone as evidence for longitudinal state tracking; utterance-time action semantics remain Topic 05's responsibility.",
+  "Do not let event-coreference or topic-identity papers silently absorb Topic 03. Identity can be a prerequisite for Topic 06 experiments but is not evidence that state transitions are solved.",
+  "Reject generic email-thread classification, reply prediction, importance ranking or summarization unless the evaluation explicitly follows the same work item through state-changing messages.",
+  "Treat process mining over structured logs as TRANSFER only. It may inform lifecycle representation but does not establish state resolution from language and evidence.",
+  "Distinguish expressed epistemic certainty from model calibration or classifier confidence; papers only about predictive confidence do not satisfy event-certainty needs.",
+  "For gap 4, label evidence DIRECT only if naturally occurring workplace email, enterprise chat, meeting dialogue or comparable operational communication is evaluated longitudinally. News, biomedical text, formal agent protocols and synthetic sequences remain transfer evidence.",
+  "For gap 1, require multiple successive observations concerning the same work item and evaluation of at least one genuine state change; one-shot status classification is insufficient.",
+  "For gap 2, require an explicit semantic or evaluated distinction among at least two update relations such as correction, supplementation, contradiction, retraction, supersession, reopening or unresolved conflict; generic change detection is insufficient.",
+  "For gap 3, do not claim closure from separate papers that independently solve factuality, time, contradiction and provenance. Closure requires a paper or evaluated system that combines the relevant dimensions in one longitudinal model.",
+  "For gap 6, engineering evidence must contain adversarial sequential fixtures rather than isolated examples.",
+  "For gap 7, a representation that has only one timestamp must not be treated as evidence for the required message, effective, deadline/constraint and observed/version time distinctions.",
+  "For gap 8, a system that overwrites prior observations or assessments cannot qualify as provenance-preserving even if its final state is correct."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1979,
+  "rationale": "Bulk discovery must reach at least 1979 because Doyle's Truth Maintenance System is foundational to dependency-preserving belief maintenance. Closely related foundations then appear in Allen's temporal interval reasoning (1983), AGM belief revision and Snodgrass-Ahn temporal database semantics (1985), de Kleer's ATMS (1986), dialogue commitment and retraction work in the 1990s, database provenance in 2001, and TimeML in 2003. A modern-only recency window would therefore erase several of the conceptual mechanisms needed for gaps 2, 7 and 8. Searches should use 1979 as the global floor, while prioritizing newer empirical NLP within each family; backward citation chasing may include earlier work when a foundational paper identifies a directly relevant precursor."
+ }
+}

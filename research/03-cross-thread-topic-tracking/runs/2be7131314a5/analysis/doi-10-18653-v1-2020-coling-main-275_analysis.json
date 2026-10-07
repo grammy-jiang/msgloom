@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-18653-v1-2020-coling-main-275",
+ "title": "Event Coreference Resolution with their Paraphrases and Argument-aware Embeddings",
+ "research_question": "Can event-coreference resolution be improved by jointly modeling event-centered paraphrase evidence and argument-aware semantic representations instead of relying mainly on lexical matching or fixed argument slots?",
+ "methodology": "The paper proposes EPASE, which combines event-specific paraphrase representations with argument-aware semantic embeddings for pairwise event-coreference decisions. Event-specific paraphrase representations use marked target events so that sentence-pair encoding emphasizes whether the contexts paraphrase the same event, while argument-aware representations incorporate semantic-role information into token-level contextual embeddings without forcing arguments into fixed slots. Candidate documents are first grouped using TF-IDF-based document clustering, and mention pairs within clusters are scored by the learned model. The system is evaluated on the ECB+ benchmark for both within-document and combined within- plus cross-document event coreference using MUC, B-CUBED, CEAF_e, and CoNLL F1, with ablation experiments measuring component contributions.",
+ "key_findings": [
+  {
+   "finding": "EPASE reaches a reported CoNLL F1 of 84.3 on the combined within-document and cross-document ECB+ evaluation.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  },
+  {
+   "finding": "The paper reports a 4.3-point CoNLL F1 improvement over the compared Joint+Chirps system on the combined evaluation.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  },
+  {
+   "finding": "For within-document coreference, EPASE reports a CoNLL F1 of 88.3, 4.2 points above the compared Joint model result reported in the paper.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  },
+  {
+   "finding": "Ablation of the argument-aware semantic component lowers combined CoNLL F1 from 84.3 to 82.1, indicating that the semantic representation supplies substantial predictive value.",
+   "evidence_type": "supported",
+   "section": "5 Analysis"
+  },
+  {
+   "finding": "Ablation of the event-specific paraphrase component lowers combined CoNLL F1 from 84.3 to 82.7, supporting the usefulness of paraphrase information beyond the other model components.",
+   "evidence_type": "supported",
+   "section": "5 Analysis"
+  },
+  {
+   "finding": "Removing the handcrafted binary features produces only a small reduction, from 84.3 to 84.1 CoNLL F1, suggesting that most of the reported gain comes from learned paraphrase and semantic representations.",
+   "evidence_type": "supported",
+   "section": "5 Analysis"
+  },
+  {
+   "finding": "The authors identify incomplete semantic-role coverage as a remaining weakness because the SRL system handles verbal predicates more effectively than nominal, pronominal, or adjectival event mentions.",
+   "evidence_type": "supported",
+   "section": "5 Analysis; 6 Conclusion"
+  }
+ ],
+ "limitations": [
+  "Evaluation is confined to ECB+, a news-oriented event-coreference benchmark rather than enterprise email or chat.",
+  "The method assumes event mentions are already supplied and is therefore not an end-to-end event detection and coreference system.",
+  "Candidate generation depends on document clustering, so coreferential events placed in different clusters cannot subsequently be linked by the pairwise resolver.",
+  "The semantic-role labeling component covers only about 60% of event mentions according to the paper's analysis, leaving many non-verbal events without useful argument-role information.",
+  "The study does not model partial or evolving event identity explicitly; ECB+ evaluation primarily targets conventional full coreference.",
+  "No public implementation was identified in the paper text inspected for this analysis."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "combined_conll_result": 0.99,
+  "improvement_over_joint_chirps": 0.98,
+  "within_document_result": 0.98,
+  "semantic_ablation": 0.99,
+  "paraphrase_ablation": 0.99,
+  "binary_feature_ablation": 0.99,
+  "srl_coverage_limitation": 0.98
+ },
+ "raw_claims": [
+  "EPASE combines event-specific paraphrase evidence with argument-aware semantic representations.",
+  "Target event mentions are specially marked when constructing paraphrase-oriented sentence-pair representations.",
+  "The argument-aware component injects semantic-role information without assigning arguments to a fixed set of event slots.",
+  "Documents are clustered before event-pair scoring so that candidate comparisons are restricted to related documents.",
+  "The experiments use the ECB+ event-coreference benchmark.",
+  "The evaluated ECB+ split contains 43 topics divided into training, development, and test topics.",
+  "Performance is measured with MUC, B-CUBED, CEAF_e, and their CoNLL average.",
+  "The full EPASE model reports a combined CoNLL F1 of 84.3.",
+  "Both learned semantic representations and event-specific paraphrase representations contribute materially according to ablation results.",
+  "Handcrafted binary features contribute much less than either of the two learned representation components in the reported ablation.",
+  "The semantic-role system leaves many non-verbal event mentions without argument-role information.",
+  "The authors identify stronger semantic-role handling and end-to-end event processing as directions for further work."
+ ],
+ "source_url": "https://aclanthology.org/2020.coling-main.275.pdf",
+ "access": "full_text"
+}

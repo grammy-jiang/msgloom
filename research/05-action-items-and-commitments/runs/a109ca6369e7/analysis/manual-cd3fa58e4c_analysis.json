@@ -1,0 +1,68 @@
+{
+ "paper_id": "manual-cd3fa58e4c",
+ "title": "Detecting Emails Containing Requests for Action",
+ "research_question": "Can emails containing requests for action be detected accurately at message level, and does removing quoted and other non-author message zones improve classification?",
+ "methodology": "The authors annotate a random sample from the Enron email corpus for whether each message contains a request that places an obligation on a recipient to act, refrain from acting, schedule something, or respond. After retaining 505 messages on which all three annotators agreed, they train binary SVM classifiers in Weka using lexical, structural, orthographic, and message-level features. They compare classification over whole messages with classification after Zebra-based message zoning removes quoted text, forwarded material, signatures, advertising, disclaimers, and similar non-author content, using stratified ten-fold cross-validation.",
+ "key_findings": [
+  {
+   "finding": "Message zoning substantially improves request detection, raising accuracy from 72.28% without zoning to 83.76% with zoning.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "With zoning, request-class F1 reaches 0.843 and weighted overall F1 reaches 0.838.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "The improvement from zoning is statistically significant across the reported classification metrics and corresponds to more than a 41% reduction in classification error.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Lexical n-gram features provide most of the predictive power, while zoning makes even small lexical feature sets substantially more effective.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Important remaining errors include implicit requests, request-like spam or marketing text, requests embedded in ignored zones, zoning mistakes, pleasantries, and requests associated with attachments.",
+   "evidence_type": "supported",
+   "section": "6 Error Analysis"
+  }
+ ],
+ "limitations": [
+  "The task predicts whether an entire email contains a request and does not identify the exact request span.",
+  "The approach does not extract structured fields such as action owner, requested object, deadline, conditions, or commitment status.",
+  "The final classifier experiments use only 505 unanimously annotated messages.",
+  "Messages on which annotators disagreed were removed rather than retained as difficult examples, which makes the evaluation set cleaner than the original sample.",
+  "Experiments use one corporate email collection, so transfer to other organizations or chat platforms is not demonstrated.",
+  "Attachments are unavailable in the Enron data and requests referring to attached material remain difficult.",
+  "The paper does not report release of the exact labeled sample and task-specific annotations used in the experiments."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "zoning_accuracy_gain": 0.99,
+  "zoned_request_f1": 0.99,
+  "error_reduction": 0.99,
+  "ngram_importance": 0.98,
+  "remaining_error_types": 0.97
+ },
+ "raw_claims": [
+  "A request is defined broadly enough to include requests for actions, inaction, scheduling, or a responsive speech act.",
+  "Questions that require the recipient to provide information are treated as requests.",
+  "Three annotators labeled 664 sampled Enron messages and achieved kappa of 0.681.",
+  "The classifier experiments use 505 messages for which all three annotators agreed.",
+  "Approximately 52% of the final messages contain requests.",
+  "The unzoned classifier obtains 72.28% accuracy and weighted F1 of 0.723.",
+  "The zoned classifier obtains 83.76% accuracy and weighted F1 of 0.838.",
+  "Removing lexical n-grams causes a large performance decrease in both zoned and unzoned settings.",
+  "Only a small part of the analyzed residual error is attributed directly to incorrect zoning.",
+  "Implicit and context-dependent requests remain an important source of error."
+ ],
+ "source_url": "https://aclanthology.org/N10-1142.pdf",
+ "access": "full_text"
+}

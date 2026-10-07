@@ -1,0 +1,1967 @@
+{
+  "paper_id": "D01",
+  "title": "Exploiting Conversation Structure in Unsupervised Topic Segmentation for Emails",
+  "research_question": "Can quotation-based conversation structure improve unsupervised grouping of email-thread sentences into coherent, potentially non-sequential topical clusters?",
+  "methodology": "The authors add sentence-level topic annotations to BC3 email threads and measure human cluster agreement. They compare LDA, temporal LCSeg, and FQG extensions against simple baselines. LDA+FQG uses a Dirichlet Tree prior with must-links between words in the same or adjacent quotation fragments. LCSeg+FQG segments each FQG path and consolidates sentences by normalized-cut graph partitioning approximated with spectral clustering. Systems receive human-derived per-thread Topic counts. Evidence: PDF pp. 3–5, 7–10; detailed locators in topic02.",
+  "key_findings": [
+    {
+      "id": "F01",
+      "finding": "The gold annotation protocol permits all relevant Topic labels for one sentence, ranked by relevance; it does not report the frequency of such sentences or how ranked memberships enter the evaluation.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 3; 3.1 Topic Annotation",
+      "quote": "if a sentence covers more than one topic, they were asked to label it with all the relevant topics according to their order of relevance.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 245,
+        "line_end": 249,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "claim_layer": "paper_reported"
+    },
+    {
+      "id": "F02",
+      "finding": "The evaluated output is sentence clustering within an email thread. LDA decodes one Topic by argmax, and LCSeg+FQG consolidates path segments by graph partitioning; intermediate multiple path membership is not demonstrated final predicted overlap.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 8; 4.6 LCSeg with FQG",
+      "quote": "The con- solidation problem can be formulated as a N-mincut graph partitioning problem where we try to optimize the Normalized Cut criterion:",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 715,
+        "line_end": 728,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_layer": "method_description_and_analyst_interpretation",
+      "supporting_evidence": [
+        {
+          "section": "4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 420,
+            "line_end": 431,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "2 Related Work",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 119,
+            "line_end": 123,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 443,
+            "line_end": 456,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "finding": "The corpus example supports Topic recurrence across an email thread and more than one Topic within an email. In Figure 1, E6 also shows separated green Topic text within one displayed message when quotations are included: green quoted text precedes hidden quotation m and green new text follows it. The topic membership of m is ambiguous. This does not establish recurrence among newly authored text alone. No separate within-message prevalence or accuracy is reported.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 5; 4 Topic Segmentation Models",
+      "quote": "In the example, we see that topic 1 (i.e., ‘telecon cancellation’) is revisited after some gaps.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 367,
+        "line_end": 372,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "claim_layer": "paper_observation_with_scoped_interpretation",
+      "supporting_evidence": [
+        {
+          "section": "Figure 1, visual transcription",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/visual-transcription.md",
+            "line_start": 7,
+            "line_end": 11,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "4, footnote 8",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 362,
+            "line_end": 365,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "PDF page 6, Figure 1, E6; xhigh visual review",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/xhigh-visual-review.md",
+            "line_start": 7,
+            "line_end": 17,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 6, Figure 1 caption",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 504,
+            "line_end": 506,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 7, Section 4.4, hidden fragment m",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 591,
+            "line_end": 598,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "finding": "On the annotated BC3/W3C email-thread sentence-clustering evaluation, LCSeg+FQG has mean 1-to-1 0.68 versus LCSeg 0.62, but mean loc3 0.71 versus 0.72. The reported global gain is significant (p=0.0014); the local decrease is reported nonsignificant. Human-derived Topic counts are supplied.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 10; 5 Experiments, Table 4",
+      "quote": "Mean 1-to-1 0.52 0.38 0.57 0.62 0.62 0.68 0.80",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 835,
+        "line_end": 843,
+        "pdf_pages": [
+          10
+        ]
+      },
+      "claim_layer": "paper_reported",
+      "supporting_evidence": [
+        {
+          "section": "5, footnote 11",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 786,
+            "line_end": 790,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "5, footnote 13",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 827,
+            "line_end": 833,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "5 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 844,
+            "line_end": 849,
+            "pdf_pages": [
+              10
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "finding": "On that same BC3/W3C sentence-clustering evaluation, LDA+FQG improves mean 1-to-1 from 0.57 to 0.62 and mean loc3 from 0.54 to 0.61; reported paired-test p-values are 0.0002 and 9.8e-07, respectively. This does not measure reply-scope accuracy.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 9; 5 Experiments",
+      "quote": "we get a significant (p=0.0002 (1-to-1), p=9.8e-07 (loc3)) improvement in both of the measures 13.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 811,
+        "line_end": 818,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "claim_layer": "paper_reported",
+      "supporting_evidence": [
+        {
+          "section": "5, Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          }
+        },
+        {
+          "section": "5, footnote 11",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 786,
+            "line_end": 790,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "5, footnote 13",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 832,
+            "line_end": 833,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "finding": "For the three annotators on 39 BC3 email threads, Table 2 reports mean 1-to-1 0.804, local agreement 0.831, and fine-to-coarse m-to-1 0.949, after excluding INTRO/END. These are cluster agreement scores, not span or multi-label F1.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 4; 3.2 Evaluation Metrics, Table 2",
+      "quote": "1-to-1 0.804 1 0.31 lock 0.831 1 0.43 m-to-1 0.949 1 0.61",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 289,
+        "line_end": 293,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "claim_layer": "paper_reported",
+      "supporting_evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 225,
+            "line_end": 229,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.1, footnotes 4–5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 263,
+            "line_end": 272,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.2, footnote 5 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 313,
+            "line_end": 327,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "3.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 335,
+            "line_end": 346,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "finding": "FQG extraction treats new fragments as potential replies to neighboring quotations and links quote-free emails to fragments of their reply parent. These are structural assumptions; the paper does not independently evaluate the accuracy of action, question, approval, or reply scope.",
+      "evidence_type": "unsupported",
+      "section": "PDF page(s) 7; 4.4 Extracting Conversation Structure",
+      "quote": "For simplicity we assume that any new frag- ment is a potential reply to its neighboring quoted fragments.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 574,
+        "line_end": 586,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "claim_layer": "method_assumption_without_direct_scope_evaluation"
+    },
+    {
+      "id": "F08",
+      "finding": "The paper reports 40 source threads and 3222 source sentences, but the topic study uses 39 threads and Table 1 reports only 26.3 sentences per thread. One manual-example thread and INTRO/END exclusion are documented; the exact sentence-count reconciliation and quote-count policy are not.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 3; 3 Corpus and Evaluation Metrics",
+      "quote": "search. The corpus contains 40 email threads from the W3C corpus2. It has 3222 sentences and an av- erage of 5 emails per thread.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 182,
+        "line_end": 184,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "claim_layer": "paper_reported",
+      "supporting_evidence": [
+        {
+          "section": "3.1 footnote 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 266,
+            "line_end": 270,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.1, Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 274,
+            "line_end": 288,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "footnote 5 continuation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 313,
+            "line_end": 315,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "finding": "Footnote 11 reports the same human-derived Topic-count setting per thread for the four systems. Table 3 reports different mean numbers of topics in their annotations: LDA 2.10, LDA+FQG 1.90, LCSeg 2.2, and LCSeg+FQG 2.41. These facts do not establish a logical contradiction: a configured Topic count need not equal the number of occupied output clusters. The paper does not define that output-count convention or explain how the shared setting produces the reported annotation counts.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 9; 5 Experiments, footnote 11 versus Table 3",
+      "quote": "For a fair comparison of the systems we set the same topic number per thread for all of them.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 786,
+        "line_end": 790,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "claim_layer": "paper_reported_setting_and_table_with_qualified_analyst_interpretation",
+      "supporting_evidence": [
+        {
+          "section": "5, Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 747,
+            "line_end": 752,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "PDF page 5, Section 4.1, sentence argmax",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 420,
+            "line_end": 431,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "PDF page 8, Section 4.6, consolidation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 705,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "finding": "The claim that FQG-connected sentences usually share a Topic is supported indirectly by clustering gains, but no direct edge-label accuracy or preservation measurement is reported.",
+      "evidence_type": "unsupported",
+      "section": "PDF page(s) 9; 5 Experiments",
+      "quote": "This supports our claim that sentences connected by ref- erential relations in the FQG usually refer to the same topic.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 814,
+        "line_end": 818,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "claim_layer": "paper_interpretation_not_direct_edge_evaluation",
+      "supporting_evidence": [
+        {
+          "section": "4.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 574,
+            "line_end": 586,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "4.5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 696,
+            "line_end": 704,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Small technical-discussion email corpus; private business-email transfer not evaluated (PDF p. 3, Section 3; raw lines 182–184).",
+    "No held-out split, duplicate controls, parameter-selection validation, repeated random seeds, or runtime measurements reported (PDF pp. 9–10, Section 5; raw lines 754–849).",
+    "Human-derived Topic counts limit claims about automatic Topic discovery; differing annotation counts leave an implementation/output-count gap, not a proved contradiction (PDF p. 9, footnote 11/Table 3; raw lines 747–752, 786–790; C02).",
+    "Gold permits multiple labels, but no frequency, overlap metric, or gold-to-evaluation membership rule is provided (PDF pp. 3–4, Sections 3.1–3.2; raw lines 245–253, 295–346).",
+    "Sentence-based clustering does not compare evidence units or evaluate exact scope preservation (PDF pp. 5, 8, 10; Sections 4.1, 4.6, Table 4; raw lines 420–431, 705–742, 835–843).",
+    "Referential adjacency is assumed; direct FQG edge or reply-scope accuracy is not measured (PDF p. 7, Section 4.4; raw lines 574–586).",
+    "The source corpus sentence count and filtered-study statistics are not fully reconciled (see C01)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "availability_semantics": "Booleans mean an actual release is affirmatively established by this frozen paper; false does not mean proven unavailable.",
+    "code_status": "No release location for the authors’ implementations is reported; a reimplementation of the Dirichlet Forest model is described (PDF p. 7, Section 4.5, raw lines 628–636).",
+    "dataset_status": "Existing BC3 corpus is paper-described as public. New topic annotations are promised for future public release, not established released by the paper (PDF p. 3, footnote 1, raw lines 213–216).",
+    "paper_reported_dataset_location": "http://www.cs.ubc.ca/labs/lci/bc3.html",
+    "current_availability": "Not checked; no network requests.",
+    "implementation_gaps": "Exact annotation-to-evaluation multi-membership conversion, sentence preprocessing reconciliation, full hyperparameters, random seeds, convergence settings, and held-out tuning protocol are not reported.",
+    "evidence": [
+      {
+        "section": "footnote 1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+          "line_start": 213,
+          "line_end": 216,
+          "pdf_pages": [
+            3
+          ]
+        }
+      },
+      {
+        "section": "4.5",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+          "line_start": 628,
+          "line_end": 636,
+          "pdf_pages": [
+            7
+          ]
+        }
+      },
+      {
+        "section": "footnote 11",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+          "line_start": 786,
+          "line_end": 790,
+          "pdf_pages": [
+            9
+          ]
+        }
+      }
+    ]
+  },
+  "confidence_scores": {
+    "F01": 0.98,
+    "F02": 0.93,
+    "F03": 0.93,
+    "F04": 0.98,
+    "F05": 0.98,
+    "F06": 0.98,
+    "F07": 0.93,
+    "F08": 0.98,
+    "F09": 0.98,
+    "F10": 0.93
+  },
+  "raw_claims": [
+    "However, if a sentence covers more than one topic, they were asked to label it with all the relevant topics according to their order of relevance.",
+    "How- ever, one thread on which the pilot annotators agree fully, was used as an example in the instruction manual.",
+    "In the example, we see that topic 1 (i.e., ‘telecon cancellation’) is revisited after some gaps.",
+    "For a fair comparison of the systems we set the same topic number per thread for all of them.",
+    "Tests of significance were done by paired t-test with df=116"
+  ],
+  "raw_claims_evidence": [
+    {
+      "claim": "However, if a sentence covers more than one topic, they were asked to label it with all the relevant topics according to their order of relevance.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 245,
+        "line_end": 249,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim": "How- ever, one thread on which the pilot annotators agree fully, was used as an example in the instruction manual.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 266,
+        "line_end": 270,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim": "In the example, we see that topic 1 (i.e., ‘telecon cancellation’) is revisited after some gaps.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 367,
+        "line_end": 372,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "claim": "For a fair comparison of the systems we set the same topic number per thread for all of them.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 786,
+        "line_end": 790,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    {
+      "claim": "Tests of significance were done by paired t-test with df=116",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+        "line_start": 832,
+        "line_end": 833,
+        "pdf_pages": [
+          9
+        ]
+      }
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL",
+    "evaluated_tasks": {
+      "evaluated": [
+        "Sentence-to-topical-cluster assignment within email threads; non-sequential cluster evaluation",
+        "Human agreement on sentence topic annotations"
+      ],
+      "method_component_only": [
+        "Topic-boundary detection and contiguous topic segmentation within temporal sequences/FQG paths; no separate boundary score"
+      ],
+      "not_evaluated": [
+        "Segment topic labeling (explicitly excluded)",
+        "Whole-message multi-label classification",
+        "Exact arbitrary span assignment",
+        "Overlapping span assignment as final model output",
+        "Within-one-message discontinuous-span assignment as a distinct scored task",
+        "Discourse/EDU segmentation",
+        "Action/question/reply-scope extraction",
+        "Preservation of decision-bearing conditions/evidence/scope"
+      ],
+      "evidence": [
+        {
+          "section": "1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 37,
+            "line_end": 44,
+            "pdf_pages": [
+              1
+            ]
+          }
+        },
+        {
+          "section": "footnote 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 221,
+            "line_end": 222,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 443,
+            "line_end": 456,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 705,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          }
+        }
+      ]
+    },
+    "annotation_unit": {
+      "unit": "Sentence",
+      "notes": "Labels and number of Topics invented per thread; all relevant sentence memberships ranked. No clause, EDU, or arbitrary character-span comparison.",
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 230,
+            "line_end": 262,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    "prediction_unit": {
+      "unit": "Sentence assigned to a cluster",
+      "internal_units": "LDA words and email documents; quotation fragments and FQG paths; final LCSeg+FQG sentence graph. Fragments are not an empirically selected semantic evidence unit.",
+      "evidence": [
+        {
+          "section": "4.1–4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 420,
+            "line_end": 456,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 561,
+            "line_end": 586,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "4.5–4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 696,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "contiguity": {
+      "gold": "Non-sequential within-thread topic clusters; topics can recur after gaps.",
+      "prediction": "LDA/LDA+FQG sentence argmax has no chronological contiguity restriction. Basic LCSeg partitions time-ordered email text contiguously. LCSeg+FQG segments paths then consolidates by sentence graph partitioning without a linearity constraint.",
+      "evidence": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 119,
+            "line_end": 123,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 367,
+            "line_end": 372,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.1–4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 430,
+            "line_end": 456,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 705,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "allowed": "One or multiple relevant Topic labels per sentence, ranked; OFF-TOPIC available; INTRO/END removed from computation.",
+        "observed_frequency": "Not reported. The protocol alone establishes permission, not frequency.",
+        "evaluation_conversion": "Not reported: do not assume first-label-only reduction or retention of every membership."
+      },
+      "prediction": {
+        "final": "One Topic per sentence under LDA argmax and graph/sequence partitions (method interpretation).",
+        "intermediate": "An FQG fragment can occur on multiple paths and its sentences in multiple path segments before consolidation.",
+        "uncertainty": "No final multi-label decoder or overlap-specific metric reported."
+      },
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 245,
+            "line_end": 262,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "footnote 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 313,
+            "line_end": 315,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 420,
+            "line_end": 431,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 715,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "discontinuity": {
+      "semantic_object": "A topical cluster may contain separated sentences. This is different from overlapping memberships.",
+      "gold": {
+        "thread_level": "Supported by recurrence example and unrestricted sentence assignment.",
+        "within_one_message": "Permitted by sentence-to-Topic representation; E6 in Figure 1 visually shows separated green Topic text when quotations are included. Its intervening hidden quotation m has ambiguous Topic membership. Newly authored text alone and separate prevalence/accuracy are not established.",
+        "quoted_inclusive": "Displayed E6 contains green quoted text, hidden quotation m, and green newly authored text in that order; supported as spatially separated same-Topic occurrences, with the interruption label unresolved.",
+        "newly_authored_only": "No clear within-message A-B-A example or separate evaluation is supplied after quotations are excluded."
+      },
+      "prediction": {
+        "thread_level": "Representable by non-sequential LDA and consolidated LCSeg+FQG clusters; overall cluster metrics are reported.",
+        "within_one_message": "Structurally representable by non-sequential sentence clusters; not separately demonstrated/scored as a within-message discontinuous span task.",
+        "subsentence": "Not represented or evaluated."
+      },
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 245,
+            "line_end": 253,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 367,
+            "line_end": 372,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 420,
+            "line_end": 431,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 705,
+            "line_end": 742,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "Figure 1 visual inspection",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/visual-transcription.md",
+            "line_start": 7,
+            "line_end": 11,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 6, Figure 1, E6; xhigh visual review",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/xhigh-visual-review.md",
+            "line_start": 7,
+            "line_end": 17,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 6, Figure 1 caption",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 504,
+            "line_end": 506,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 7, Section 4.4, hidden fragment m",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 591,
+            "line_end": 598,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ]
+    },
+    "overlap": {
+      "gold": "Gold-only permission for more than one Topic membership on the same complete sentence; incidence and evaluation handling not reported.",
+      "predicted": "No demonstrated final overlapping sentence or arbitrary-span assignment.",
+      "scope": "Topic memberships, not quotations sharing words and not multiple graph paths.",
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 245,
+            "line_end": 253,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "4.6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 715,
+            "line_end": 728,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "dataset_domain": {
+      "domain": "BC3 email threads from W3C; technical standards discussion illustrated by RDF/TAG/I18N in Figure 1.",
+      "source_population": {
+        "threads": 40,
+        "sentences": 3222,
+        "mean_emails_per_thread": 5
+      },
+      "topic_study": {
+        "threads": 39,
+        "annotators": 3,
+        "mean_sentences_per_thread": 26.3,
+        "sentence_min": 13,
+        "sentence_max": 55,
+        "mean_topics": 2.5,
+        "topic_min": 1,
+        "topic_max": 7,
+        "mean_topic_length_sentences": 12.6,
+        "mean_active_topics": 1.4,
+        "mean_entropy": 0.94
+      },
+      "caveat": "Statistics have different stated populations; see C01. No private business-mailbox evaluation, cross-Source identity, or high-volume processing evaluation.",
+      "evidence": [
+        {
+          "section": "3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 182,
+            "line_end": 184,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 225,
+            "line_end": 229,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 274,
+            "line_end": 288,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "Figure 1 inspection",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/visual-transcription.md",
+            "line_start": 7,
+            "line_end": 11,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "annotation_process": {
+      "process": "Two-phase pilot on five randomly selected threads: five graduate students, revised manual, then one postdoc. Three different computer science graduates, native English speakers, annotate 39 threads on paper. One pilot thread becomes the manual example and is excluded. Annotators read a human-written summary and thread, list topics with short descriptions, then assign ranked sentence labels. They see indented reply relations and colored participant names.",
+      "time": "Reported average seven hours to annotate the whole dataset per annotator.",
+      "potential_bias": "Analyst interpretation: supplied summaries and thread displays can influence the reference structure; this is not a measured bias effect.",
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 203,
+            "line_end": 244,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.1 and footnotes",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 245,
+            "line_end": 272,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "population": "Three topic annotations on each of 39 threads; INTRO/END excluded from topic computations. Pair aggregation details and multi-label handling not explicit.",
+      "scores": {
+        "1-to-1": {
+          "mean": 0.804,
+          "max": 1,
+          "min": 0.31
+        },
+        "loc_k_table_label_loc3_defined_in_text": {
+          "mean": 0.831,
+          "max": 1,
+          "min": 0.43
+        },
+        "m-to-1_fine_to_coarse": {
+          "mean": 0.949,
+          "max": 1,
+          "min": 0.61
+        }
+      },
+      "special_labels": "100% agreement reported for INTRO and END; not a 100% topic-assignment agreement.",
+      "evidence": [
+        {
+          "section": "3.1/Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 263,
+            "line_end": 292,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "section": "3.2 and footnote 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 313,
+            "line_end": 346,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "dataset": "BC3 email threads drawn from W3C",
+      "task": "Sentence assignment to within-thread topical clusters, potentially non-sequential",
+      "evaluation_population": "39 topic-annotated email threads; three human annotations per thread; INTRO/END excluded",
+      "split": "No held-out train/dev/test partition reported. Systems run on the annotated dataset.",
+      "oracle_information": "Per-thread Topic number from agreement of at least two annotators; otherwise floor of their average. Lambda=20 for LDA+FQG.",
+      "aggregation_caveat": "Paper reports mean/min/max and paired t-tests with df=116. This is consistent with 117 thread-by-annotator comparisons, but that aggregation and independence are not explicitly documented; do not treat 117 as independent threads. Ranked gold membership handling and boundary handling in loc3 are not reported.",
+      "evidence": [
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 225,
+            "line_end": 229,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "3.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 263,
+            "line_end": 272,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "footnote 5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 313,
+            "line_end": 315,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 754,
+            "line_end": 765,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "footnote 11",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 786,
+            "line_end": 790,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "section": "footnote 13",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 832,
+            "line_end": 833,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ],
+      "split_unit": "No held-out partition reported; experimental unit is an email thread.",
+      "train_dev_test_counts": "Not reported; 39 annotated threads used for evaluation.",
+      "duplicate_controls": "No split leakage audit, cross-thread duplicate/near-duplicate control, or separate quote-duplicate evaluation policy reported. FQG fragment matching is a structural operation, not documented leakage control.",
+      "parameter_selection": "Lambda fixed at 20; tuning procedure, seed schedule, and held-out selection not reported."
+    },
+    "metrics": {
+      "evaluation_setting": {
+        "dataset": "BC3 email threads drawn from W3C",
+        "task": "Sentence assignment to within-thread topical clusters, potentially non-sequential",
+        "evaluation_population": "39 topic-annotated email threads; three human annotations per thread; INTRO/END excluded",
+        "split": "No held-out train/dev/test partition reported. Systems run on the annotated dataset.",
+        "oracle_information": "Per-thread Topic number from agreement of at least two annotators; otherwise floor of their average. Lambda=20 for LDA+FQG.",
+        "aggregation_caveat": "Paper reports mean/min/max and paired t-tests with df=116. This is consistent with 117 thread-by-annotator comparisons, but that aggregation and independence are not explicitly documented; do not treat 117 as independent threads. Ranked gold membership handling and boundary handling in loc3 are not reported.",
+        "evidence": [
+          {
+            "section": "3.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 225,
+              "line_end": 229,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "3.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 263,
+              "line_end": 272,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "footnote 5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 313,
+              "line_end": 315,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "section": "5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 754,
+              "line_end": 765,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "footnote 11",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 786,
+              "line_end": 790,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "footnote 13",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 832,
+              "line_end": 833,
+              "pdf_pages": [
+                9
+              ]
+            }
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "1-to-1",
+          "definition": "One-to-one matching of clusters maximizes total sentence overlap; score is percentage overlap on evaluated sentences.",
+          "denominator_limit": "No separate explicit formula for overlapping gold normalization.",
+          "evidence": {
+            "section": "3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 307,
+              "line_end": 312,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        },
+        {
+          "name": "loc3",
+          "definition": "For each sentence, compare same/different-topic judgments against the previous three sentences between annotations; average local agreement over sentences.",
+          "denominator_limit": "Early-sentence handling and ranked multi-membership rule not reported.",
+          "evidence": {
+            "section": "3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 316,
+              "line_end": 327,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        },
+        {
+          "name": "m-to-1",
+          "definition": "Each source cluster maps to target cluster with greatest overlap; report total percentage overlap. Directional, used fine-to-coarse for annotator granularity, not to optimize or compare systems.",
+          "denominator_limit": "No explicit overlapping-gold normalization rule.",
+          "evidence": {
+            "section": "3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 335,
+              "line_end": 346,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        },
+        {
+          "name": "Pk and WindowDiff",
+          "definition": "Not reported as evaluation scores; authors say sequential metrics are inappropriate for their non-sequential task.",
+          "evidence": {
+            "section": "3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 295,
+              "line_end": 307,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        }
+      ],
+      "table_4_results": [
+        {
+          "model": "Speaker",
+          "1-to-1": {
+            "mean": 0.52,
+            "max": 0.94,
+            "min": 0.23
+          },
+          "loc3": {
+            "mean": 0.64,
+            "max": 0.97,
+            "min": 0.27
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "Block 5",
+          "1-to-1": {
+            "mean": 0.38,
+            "max": 0.77,
+            "min": 0.14
+          },
+          "loc3": {
+            "mean": 0.57,
+            "max": 0.73,
+            "min": 0.42
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "LDA",
+          "1-to-1": {
+            "mean": 0.57,
+            "max": 1,
+            "min": 0.24
+          },
+          "loc3": {
+            "mean": 0.54,
+            "max": 1,
+            "min": 0.38
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "LDA+FQG",
+          "1-to-1": {
+            "mean": 0.62,
+            "max": 1,
+            "min": 0.24
+          },
+          "loc3": {
+            "mean": 0.61,
+            "max": 1,
+            "min": 0.38
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "LCSeg",
+          "1-to-1": {
+            "mean": 0.62,
+            "max": 1,
+            "min": 0.33
+          },
+          "loc3": {
+            "mean": 0.72,
+            "max": 1,
+            "min": 0.4
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "LCSeg+FQG",
+          "1-to-1": {
+            "mean": 0.68,
+            "max": 1,
+            "min": 0.33
+          },
+          "loc3": {
+            "mean": 0.71,
+            "max": 1,
+            "min": 0.4
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        },
+        {
+          "model": "Human",
+          "1-to-1": {
+            "mean": 0.8,
+            "max": 1,
+            "min": 0.31
+          },
+          "loc3": {
+            "mean": 0.83,
+            "max": 1,
+            "min": 0.43
+          },
+          "setting_ref": "topic02.metrics.evaluation_setting",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          },
+          "section": "PDF page 10, Table 4"
+        }
+      ],
+      "significance": {
+        "test": "Paired t-test",
+        "df": 116,
+        "comparisons": [
+          {
+            "comparison": "LDA+FQG versus LDA",
+            "p_1_to_1": 0.0002,
+            "p_loc3": 9.8e-07,
+            "evidence": {
+              "section": "5",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+                "line_start": 811,
+                "line_end": 818,
+                "pdf_pages": [
+                  9
+                ]
+              }
+            }
+          },
+          {
+            "comparison": "LCSeg versus LDA",
+            "p_1_to_1": 0.00017,
+            "p_loc3": "<2.2e-16",
+            "evidence": {
+              "section": "5",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+                "line_start": 819,
+                "line_end": 826,
+                "pdf_pages": [
+                  9
+                ]
+              }
+            }
+          },
+          {
+            "comparison": "LCSeg+FQG versus LCSeg",
+            "p_1_to_1": 0.0014,
+            "p_loc3": "Not significant; exact p not reported",
+            "evidence": [
+              {
+                "section": "5",
+                "source_locator": {
+                  "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+                  "line_start": 827,
+                  "line_end": 833,
+                  "pdf_pages": [
+                    9
+                  ]
+                }
+              },
+              {
+                "section": "5",
+                "source_locator": {
+                  "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+                  "line_start": 844,
+                  "line_end": 849,
+                  "pdf_pages": [
+                    10
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "comparison": "LCSeg+FQG versus LDA+FQG",
+            "p_1_to_1": 2.14e-05,
+            "p_loc3": 1.3e-09,
+            "evidence": {
+              "section": "5",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+                "line_start": 844,
+                "line_end": 849,
+                "pdf_pages": [
+                  10
+                ]
+              }
+            }
+          }
+        ],
+        "caveat": "Reported significance is not independently reproduced. Correlation among evaluations of the same thread is not discussed.",
+        "evidence": {
+          "section": "footnote 13",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 832,
+            "line_end": 833,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "No such evaluation",
+      "detail": "No direct measurement of lost/broadened conditions, exceptions, supporting evidence, action scope, approval scope, or reply scope. Figure 1 contains conditional and reply text; Section 5 measures sentence clustering, not preservation. Referent-edge accuracy is not separately measured.",
+      "evidence": [
+        {
+          "section": "Figure 1 transcription",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/visual-transcription.md",
+            "line_start": 7,
+            "line_end": 11,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "Figure 1 readable fragments",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 470,
+            "line_end": 503,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "4.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 574,
+            "line_end": 586,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+            "line_start": 835,
+            "line_end": 843,
+            "pdf_pages": [
+              10
+            ]
+          }
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Optimal unit among sentence/clause/arbitrary span/EDU/hybrid",
+      "Final overlapping memberships or their confidence calibration",
+      "Exact character offsets, partial-sentence Topic evidence, and within-message discontinuity metrics",
+      "Concrete work-matter identity across different threads and Sources",
+      "Preservation of conditions, evidence, exceptions, approval/action/reply scope",
+      "Automatic Topic-count estimation without human counts",
+      "Incremental updates, delayed arrivals, near-duplicate leakage controls, throughput, latency, and memory on the target host",
+      "Transfer to private business email, Teams, attachments, or multilingual email"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "C01",
+        "issue": "Source sentence count versus analysis sentence statistics",
+        "reported_values": {
+          "source_corpus_threads": 40,
+          "source_corpus_sentences": 3222,
+          "topic_annotation_threads": 39,
+          "mean_filtered_sentences_per_thread": 26.3,
+          "filtered_sentence_range": [
+            13,
+            55
+          ]
+        },
+        "evidence": [
+          {
+            "section": "3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 182,
+              "line_end": 184,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "3.1, footnote 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 266,
+              "line_end": 270,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "Table 1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 274,
+              "line_end": 288,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "section": "footnote 5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 313,
+              "line_end": 315,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        ],
+        "resolution": "The 40-to-39 thread reduction is resolved explicitly by footnote 4: one pilot thread became the manual example. Footnote 5 explicitly excludes INTRO/END from statistics, agreement, and system input. The PDF confirms 3222 source sentences and mean 26.3 filtered sentences per thread, but does not supply a full count reconciliation. These are different stated populations; neither a logical contradiction nor a numeric typo is established. Retain the denominator/preprocessing gap. Do not divide by annotators or attribute the difference to quotations without evidence.",
+        "disposition": "qualified as ambiguity"
+      },
+      {
+        "id": "C02",
+        "issue": "Shared configured Topic count versus unequal mean output Topic counts",
+        "reported_values": {
+          "footnote_11": "same topic number per thread for all four systems",
+          "table_3": {
+            "LDA": 2.1,
+            "LDA+FQG": 1.9,
+            "LCSeg": 2.2,
+            "LCSeg+FQG": 2.41
+          }
+        },
+        "evidence": [
+          {
+            "section": "footnote 11",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 786,
+              "line_end": 790,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 747,
+              "line_end": 752,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "PDF page 5, Section 4.1, sentence argmax",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 420,
+              "line_end": 431,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "PDF page 8, Section 4.6, consolidation",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 705,
+              "line_end": 742,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ],
+        "resolution": "F09 was incorrectly labeled contradicted. The footnote specifies a configured count; Table 3 describes statistics of system annotations. LDA sentence argmax can leave configured topics unoccupied, so equality of settings alone does not imply equality of occupied-cluster counts. This is a logical possibility, not a paper-reported explanation. The occupied-cluster convention, count aggregation, and how K is enforced by LCSeg and LCSeg+FQG are not fully specified. Retain all values as an unexplained implementation/output-count tension.",
+        "disposition": "analysis corrected"
+      },
+      {
+        "id": "C03",
+        "issue": "Overall best performer wording must be metric-qualified",
+        "reported_values": {
+          "conclusion": "LCSeg+FQG best performer",
+          "mean_loc3_LCSeg": 0.72,
+          "mean_loc3_LCSeg_FQG": 0.71,
+          "mean_1_to_1_LCSeg": 0.62,
+          "mean_1_to_1_LCSeg_FQG": 0.68
+        },
+        "evidence": [
+          {
+            "section": "Table 4 and Section 5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 835,
+              "line_end": 849,
+              "pdf_pages": [
+                10
+              ]
+            }
+          },
+          {
+            "section": "7 Conclusion",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 873,
+              "line_end": 881,
+              "pdf_pages": [
+                10
+              ]
+            }
+          }
+        ],
+        "resolution": "Section 5 explicitly acknowledges the local-score decrease and calls it nonsignificant. The overall-best wording is compatible with the largest global mean and that local tradeoff. Retain 0.68 versus 0.62 globally and 0.71 versus 0.72 locally; do not restate overall best as highest on every metric. No unresolved source contradiction remains for this comparison.",
+        "disposition": "resolved from explicit source"
+      },
+      {
+        "id": "C04",
+        "issue": "Two best baselines wording does not rank all baselines highest on each metric",
+        "reported_values": {
+          "Block_10_mean_loc3": 0.584,
+          "Block_5_mean_loc3": 0.57,
+          "Block_10_mean_1_to_1": 0.35,
+          "Block_5_mean_1_to_1": 0.38
+        },
+        "evidence": [
+          {
+            "section": "5 baseline prose",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 762,
+              "line_end": 780,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+              "line_start": 835,
+              "line_end": 843,
+              "pdf_pages": [
+                10
+              ]
+            }
+          }
+        ],
+        "resolution": "Speaker and Block 5 are the two highest baselines by the reported mean 1-to-1 scores. Block 10 exceeds Block 5 on mean loc3 (0.584 versus 0.57), while Block 5 exceeds Block 10 globally (0.38 versus 0.35). The source does not explicitly specify the selection criterion for best two. A universal per-metric ranking is unsupported; metric-dependent selection explains why these statements need not contradict one another. All printed values are retained.",
+        "disposition": "qualified as ambiguity"
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Sentence-level direct email example; no comparison that selects an optimal annotation unit.",
+      "RQ2": "Strong direct method evidence for non-sequential within-thread clusters and quotation structure.",
+      "RQ3": "Gold multi-membership permission explicit; final model overlap absent; quoted-inclusive within-message recurrence is visually supported with an ambiguous intervening label; newly authored recurrence and separate discontinuity evaluation are not established.",
+      "RQ4": "Direct email sentence-cluster representation, but no arbitrary overlapping/discontinuous span benchmark.",
+      "RQ5": "No direct preservation measurement; structural assumptions motivate tests only.",
+      "RQ6": "Keep 1-to-1, loc3, and asymmetric m-to-1 distinct; retain count discrepancies and human-supplied Topic counts.",
+      "RQ7": "Small W3C/BC3 annotation study; manual example excluded; no held-out evaluation or duplicate-control report.",
+      "RQ8": "Motivates minimal quotation-aware clustering, unit, cardinality, and preservation experiments; does not approve architecture."
+    },
+    "interpretation": [
+      {
+        "statement": "Quotation structure is a useful candidate feature for email sentence clustering, but a quotation/reply link is not proof of identical concrete work matter.",
+        "basis": [
+          "F04",
+          "F05",
+          "F07",
+          "F10"
+        ]
+      },
+      {
+        "statement": "Single-cluster decoding can suppress a valid second membership allowed by gold annotation; the paper does not quantify that loss.",
+        "basis": [
+          "F01",
+          "F02"
+        ]
+      },
+      {
+        "statement": "Sentence-cluster agreement can remain high while decision-bearing conditions or reply scope are misassigned. This is a plausible risk, not a measured D01 result.",
+        "basis": [
+          "F07",
+          "F10"
+        ]
+      },
+      {
+        "statement": "The results cannot select a sentence-only msgloom evidence model or establish cross-thread Topic identity.",
+        "basis": [
+          "F02",
+          "F03"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "status": "Untested msgloom research proposal",
+        "proposal": "Annotate representative public/synthetic work messages with sentence, clause, arbitrary-span, EDU, and hybrid alternatives; retain all relevant memberships and uncertainty. Compare exact evidence coverage and reviewed preservation of conditions and scope; do not select an architecture from D01 alone."
+      },
+      {
+        "status": "Untested msgloom research proposal",
+        "proposal": "Compare temporal LCSeg and quotation-aware non-sequential clustering under both human-supplied and estimated Topic counts. Hold out complete threads and related near-duplicate threads; report 1-to-1 and loc3 separately."
+      },
+      {
+        "status": "Untested msgloom research proposal",
+        "proposal": "Create separate strata for multiple topics in one message, overlapping membership of one span, within-message A-B-A recurrence, and recurrence across messages. Compare single-label versus multiple-membership decoding with explicit membership and discontinuity metrics."
+      },
+      {
+        "status": "Untested msgloom research proposal",
+        "proposal": "Audit FQG neighboring-quote and quote-free fallback links with gold reply scopes. Measure whether conditions, exceptions, approval scope, and action scope are lost or broadened, alongside cluster accuracy."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-email/2010_joty_et_al_exploiting_conversation_structure_topic_segmentation_emails.pdf",
+      "pdf_sha256": "9b4ff374a947f840d0cc9c50a620ef29a24f53dd4588eb48518ce9d4fef2089d",
+      "expected_pdf_sha256": "9b4ff374a947f840d0cc9c50a620ef29a24f53dd4588eb48518ce9d4fef2089d",
+      "primary_converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D01.md",
+      "primary_converted_text_sha256": "9c22fc0e9396ca967e3e88f28530c66c75256043bd5989d360d80f18908d1a64",
+      "primary_read": "Full text including references, lines 1–1199",
+      "fine_conversion": "Absent at supplied path",
+      "independent_raw_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.raw.txt",
+      "independent_raw_text_sha256": "3e318382c2e09c854519575640d470dfe39adbc16488ac6e0f8d698f9c70cedc",
+      "raw_read": "Full text including references",
+      "auxiliary_pages_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.pages.md",
+      "auxiliary_pages_sha256": "0501008b484362cfe827b1690d93426e20c746746da2672d460ab35ba4f3f45f",
+      "auxiliary_pages_read": "Lines 1–260 inspected; interleaved columns; not used for quotes",
+      "independent_layout_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D01.layout.txt",
+      "independent_layout_sha256": "c36be00031fc87f09b12acce7737b4bf9c703fce8e275eb04a9786067c4bd079",
+      "layout_read": "Lines 520–590 checked independently",
+      "visual_transcription_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/visual-transcription.md",
+      "visual_transcription_sha256": "16445b4aba5d1a61e8ad13147a93662302509ca8d2fbecc5659c5d55b6bf1a30",
+      "pdf_pages_inspected": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "source_locator_convention": "1-based PDF pages and newline-delimited text lines, inclusive; form-feed characters do not create extra line numbers. Quotes normalize whitespace only and preserve line-break hyphens.",
+      "damage_resolution": "Rough conversion damages Figure 1 colored text, FQG/DT images, equations, and column order. Original PDF inspection recovers the relevant visual evidence and confirms tables. No unrecoverable source damage remains for the reported findings.",
+      "network_used": false,
+      "xhigh_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/xhigh-review.json",
+      "xhigh_visual_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D01/xhigh-visual-review.md",
+      "xhigh_visual_review_sha256": "732ffec3a61b099b15606c80f702bd102a1fa6a4ff08b28be9f4909ed85a2dfd",
+      "xhigh_pdf_pages_inspected": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "xhigh_raw_reextraction_match": true,
+      "prior_visual_transcription_note": "Preserved unchanged for high-attempt traceability. See xhigh visual review for the qualified E6 interpretation and literal cut(B, A) second numerator on PDF page 8."
+    }
+  }
+}

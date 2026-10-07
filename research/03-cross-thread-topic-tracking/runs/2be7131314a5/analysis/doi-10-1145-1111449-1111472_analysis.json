@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-1145-1111449-1111472",
+ "title": "Linking messages and form requests",
+ "research_question": "Can an intelligent interface infer the form and field values implied by free-text email or instant-message requests and support task completion more efficiently than routing those requests through a human form expert?",
+ "methodology": "The authors built the VIO prototype, which applies information extraction and classification to free-text website-update requests, selects a corresponding form, prefills fields, and lets the requester repair inference errors through a micro-form. They evaluated extraction with five-fold cross-validation and measured form-selection accuracy during use. A controlled experiment compared the VIO workflow with a human-webmaster email workflow for nine website-update tasks, recording completion time, final-site errors, agent errors, screen activity, and additional email exchanges. The reported experiment involved undergraduate participants rather than an operational enterprise deployment.",
+ "key_findings": [
+  {
+   "finding": "The prototype operationalizes a concrete work request by mapping a free-text message to a particular form and extracted field values, while keeping the requester in the loop to repair incorrect mappings.",
+   "evidence_type": "supported",
+   "section": "Prototype Design"
+  },
+  {
+   "finding": "The form classifier had a 20.8% error rate in the experiment, so the initially selected form was correct roughly four-fifths of the time, with the interface designed to let users repair the remaining errors.",
+   "evidence_type": "supported",
+   "section": "3.2 Form Selection Performance"
+  },
+  {
+   "finding": "Average task time was 22.6 minutes in the VIO condition versus 33.0 minutes in the human-webmaster condition, but the authors explicitly state that the sample was too small for reliable statistical claims.",
+   "evidence_type": "supported",
+   "section": "5. Experimental Results"
+  },
+  {
+   "finding": "The human-webmaster condition contained 14 non-optimal interactions among 108 task transactions, including incomplete requests, ambiguity, corrections, and one case in which two concurrently outstanding tasks were confused and required multiple email exchanges to disentangle.",
+   "evidence_type": "supported",
+   "section": "5. Experimental Results"
+  },
+  {
+   "finding": "The observed inter-task confusion provides direct evidence that multiple outstanding email-mediated work requests can lose task identity across exchanges, although the paper does not propose a persistent cross-thread work-item identity model to solve that problem.",
+   "evidence_type": "supported",
+   "section": "5. Experimental Results"
+  },
+  {
+   "finding": "The study motivates organizational form-processing through email, but its empirical evaluation is a controlled website-update experiment rather than a longitudinal enterprise email or chat field study.",
+   "evidence_type": "supported",
+   "section": "4. Experimental Design and 6. Discussion"
+  }
+ ],
+ "limitations": [
+  "The controlled experiment uses undergraduate participants and website-update tasks rather than naturally occurring enterprise workflows.",
+  "The authors explicitly state that the participant sample is too small for reliable statistical conclusions.",
+  "The two experimental conditions had different workflow structures and the paper notes that incentive structure may have influenced observed error rates.",
+  "The prototype links a message to a form and its fields but does not maintain an explicit longitudinal work-item identity across separate threads or channels.",
+  "Only one inter-task confusion example is reported, so it is evidence that the phenomenon can occur rather than a robust estimate of its prevalence.",
+  "The evaluated application domain is restricted to website updates."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "message_to_form_mapping": 0.99,
+  "form_selection_error_rate": 0.99,
+  "task_time_difference": 0.99,
+  "inter_task_confusion": 0.99,
+  "cross_thread_identity_gap": 0.93,
+  "enterprise_field_evidence": 0.98
+ },
+ "raw_claims": [
+  "The system interprets free-text update requests and chooses a form representing the inferred task.",
+  "Extracted information is inserted into the selected form before it is shown to the requester.",
+  "Users can correct extraction and form-selection mistakes before approving an update.",
+  "The form classifier made errors on 20.8% of requests during the experiment.",
+  "Requesters commonly sent several task emails before receiving the reply to their first request.",
+  "The human-webmaster workflow produced more emails than its theoretical minimum.",
+  "One recorded interaction confused two distinct tasks because several requests were simultaneously outstanding.",
+  "The VIO group completed the experimental task set faster on average than the human-webmaster group.",
+  "The authors caution that the experiment is too small for dependable statistical inference.",
+  "The paper demonstrates message-to-task interpretation but not durable identity linking across independent conversation threads."
+ ],
+ "source_url": "https://www.researchgate.net/publication/221607600_Linking_messages_and_form_requests",
+ "access": "full_text"
+}

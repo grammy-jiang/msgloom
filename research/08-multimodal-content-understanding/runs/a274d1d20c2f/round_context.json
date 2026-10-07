@@ -1,0 +1,108 @@
+{
+ "round": 2,
+ "max_rounds": 4,
+ "original_topic": "email, image, table and attachment understanding in workplace communication: preserving multimodal and document structure, and grounding evidence back to precise source locations such as a cell, region, page or attachment version",
+ "topic": "version-aware multimodal evidence provenance and reference grounding across revised workplace attachments, including cross-version region lineage, email-to-attachment referring expressions, workbook-level spreadsheet structure, and hierarchical provenance from attachment version through page, element, region or cell to answer span",
+ "focus": "academic gaps of the previous round",
+ "prior_paper_ids": [
+  "1911.10683",
+  "2006.14806",
+  "2010.12537",
+  "2104.12756",
+  "2106.11539",
+  "2111.07129",
+  "2212.05935",
+  "2407.01523",
+  "2412.18424",
+  "2503.23131",
+  "doi-10-1007-s00521-022-06948-5",
+  "doi-10-18653-v1-2020-acl-main-398",
+  "manual-0661fc0cba",
+  "manual-1048d6caf2"
+ ],
+ "prior_gaps": [
+  {
+   "id": "gap-1",
+   "description": "The corpus does not establish methods for maintaining evidence provenance across successive attachment revisions, including stable attachment identity, version-relative source locations, semantic changes between versions, and lineage from an older cited region to its later counterpart.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"document version comparison\" multimodal provenance semantic change region grounding attachment revision",
+   "rounds_searched": [
+    1
+   ]
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct grounding of language such as \"this screenshot\", \"the highlighted row\", or \"numbers below\" from email or workplace-message text into an attachment, cell, or document region is not evaluated by this corpus. Scene-text referring-expression work provides adjacent-domain evidence only.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"multimodal coreference\" document attachment visual grounding referring expression email table screenshot",
+   "rounds_searched": [
+    1
+   ]
+  },
+  {
+   "id": "gap-3",
+   "description": "Spreadsheet understanding beyond isolated tables remains open in this corpus, including formulas, hidden rows or sheets, cross-sheet references, merged regions, formatting semantics, units, named ranges, and workbook-level relationships.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"spreadsheet understanding\" formulas merged cells multi-sheet semantic workbook grounding",
+   "rounds_searched": [
+    1
+   ]
+  },
+  {
+   "id": "gap-4",
+   "description": "No admitted paper validates an end-to-end provenance representation that jointly identifies attachment version, page, document element, exact region or cell, and answer span. Existing papers validate different subsets of this hierarchy separately.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"document evidence grounding\" provenance page region cell span multimodal citation localization",
+   "rounds_searched": [
+    1
+   ]
+  },
+  {
+   "id": "gap-5",
+   "description": "End-to-end behavior when extraction or grounding is unsupported, incomplete, or wrong remains insufficiently exercised. The corpus includes unanswerable-document evaluation and several upstream-error analyses, but does not provide a complete contract for distinguishing successful absence from parser, OCR, layout, or grounding failure.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Define an explicit failure and confidence contract across ingestion, OCR, parsing, layout recovery, candidate extraction, grounding, and answering. Create distinguishable statuses for valid absence, unsupported modality, extraction failure, ambiguous grounding, partial evidence, and downstream answer failure. Validate the contract with fault-injection tests that independently corrupt OCR, parsing, layout, candidate generation, and provenance resolution, then measure whether the system reports the correct failure class instead of silently producing unsupported evidence.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-6",
+   "description": "Robustness of candidate extraction and structural-preservation pipelines on heterogeneous workplace documents can be tested further with engineering benchmarks covering sparse tables, merged structures, OCR corruption, irregular reading order, embedded images, and scanned pages.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Build a controlled benchmark suite containing representative PDFs, office documents, screenshots, scans, tables, and spreadsheets with annotated expected text, element boundaries, reading order, table structure, image regions, and provenance locations. Add perturbation variants for OCR noise, skew, sparse tables, merged cells, irregular layouts, embedded images, and scan quality. Compare candidate extractors and parsers using extraction completeness, structural fidelity, localization accuracy, and failure-detection metrics.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-7",
+   "description": "Operational scaling remains open for long documents and large tables: reported methods expose quadratic table-relation inference, memory pressure with increasing page count, information loss under page compression, and input truncation or merging under model limits.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "resolution_notes": "Benchmark the intended implementation over increasing document page counts, table dimensions, attachment counts, image resolutions, and extracted-token volumes. Record latency, peak memory, model-context consumption, retrieval recall, provenance accuracy, and semantic-answer degradation. Evaluate hierarchical retrieval, page or region preselection, table-aware chunking, progressive rendering, caching, and bounded candidate generation against full-document processing to identify practical operating limits and acceptable degradation.",
+   "rounds_searched": []
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus lacks one evaluation that simultaneously scores semantic correctness, extraction completeness, exact provenance, unsupported-evidence handling, and preservation of tables, images, and reading order on workplace-style attachments. Such an evaluation can be constructed and measured without claiming production-mailbox representativeness.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Construct an end-to-end benchmark with workplace-style but non-production attachments and gold annotations for content, structure, evidence locations, and answerability. Score semantic answer correctness, extraction recall and precision, table and reading-order preservation, image retention, exact page or region or cell provenance, attachment/version identity, and correct rejection of unsupported evidence. Maintain separate component-level and end-to-end metrics so failures can be attributed to extraction, structural reconstruction, retrieval, grounding, or generation.",
+   "rounds_searched": []
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "run_id": "b251df112d0c",
+   "topic": "email, image, table and attachment understanding in workplace communication: preserving multimodal and document structure, and grounding evidence back to precise source locations such as a cell, region, page or attachment version",
+   "new_papers": 14,
+   "gaps_addressed": "initial shortlist",
+   "remaining": "4 academic, 4 engineering"
+  }
+ ],
+ "new_papers": 14
+}

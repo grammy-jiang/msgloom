@@ -1,0 +1,91 @@
+{
+ "paper_id": "doi-10-1162-tacl-a-00407",
+ "title": "How Can We Know When Language Models Know? On the Calibration of Language Models for Question Answering",
+ "research_question": "How reliably do generative language-model probabilities indicate whether answers to knowledge-based questions are correct, and which calibration techniques can improve that correspondence?",
+ "methodology": "The authors evaluate generative QA using T5 and UnifiedQA as primary models, with BART and GPT-2 in additional experiments, across multiple-choice and extractive QA benchmarks spanning factual, commonsense, science, reading-comprehension, physical, and social domains. They quantify calibration with expected calibration error (ECE) and answer quality with accuracy, and separate several datasets into calibration-training and out-of-domain evaluation groups. They test candidate-aware fine-tuning objectives, temperature scaling, gradient-boosted feature-based confidence estimation, candidate-answer paraphrasing, Wikipedia retrieval-based input augmentation, and combinations of these techniques. Ablations examine architecture, model size, number of paraphrases, and transfer from calibration-training datasets to different evaluation datasets.",
+ "key_findings": [
+  {
+   "finding": "Strong generative QA models can have high answer accuracy while remaining poorly calibrated, and their raw probabilities frequently assign excessive confidence to incorrect answers.",
+   "evidence_type": "supported",
+   "section": "5.2 Are LM-based QA Models Well Calibrated?"
+  },
+  {
+   "finding": "On the main multiple-choice evaluation datasets, candidate-aware fine-tuning and post-hoc calibration both reduced ECE with little or no corresponding loss of answer accuracy for several methods.",
+   "evidence_type": "supported",
+   "section": "5.3 Can LM-based QA Models be Calibrated?"
+  },
+  {
+   "finding": "The combined calibration approach reduced ECE on MC-test from 0.095 for the original UnifiedQA model to 0.044, although its accuracy decreased from 0.769 to 0.748.",
+   "evidence_type": "supported",
+   "section": "5.3 Can LM-based QA Models be Calibrated?"
+  },
+  {
+   "finding": "Calibration transferred imperfectly across domains: temperature scaling learned on the training domains over-corrected confidence on MC-test, and an oracle temperature fit directly on the evaluation domain was better aligned.",
+   "evidence_type": "supported",
+   "section": "5.3 Can LM-based QA Models be Calibrated?"
+  },
+  {
+   "finding": "Calibration improvements were substantially more limited for extractive QA than for multiple-choice QA, which the authors associate with the more uncertain automatically generated candidate-span sets.",
+   "evidence_type": "supported",
+   "section": "5.3 Can LM-based QA Models be Calibrated?"
+  },
+  {
+   "finding": "Temperature scaling and feature-based post-processing consistently reduced the extreme overconfidence of the tested language models across the evaluated datasets.",
+   "evidence_type": "supported",
+   "section": "5.4 Analysis of Individual Calibration Methods"
+  },
+  {
+   "finding": "Paraphrasing candidate answers and adding retrieved evidence improved calibration on multiple-choice QA, showing that confidence estimates are sensitive to both answer wording and contextual evidence.",
+   "evidence_type": "supported",
+   "section": "5.4 Analysis of Individual Calibration Methods"
+  },
+  {
+   "finding": "In the tested T5 and UnifiedQA configurations, the larger 11B models were generally more accurate and better calibrated than their smaller counterparts, while calibration methods still further reduced ECE.",
+   "evidence_type": "supported",
+   "section": "5.5 Ablation Study / Performance of LMs with Different Sizes"
+  }
+ ],
+ "limitations": [
+  "The study excludes free-form abstractive QA because determining whether unrestricted generated answers are semantically correct is difficult.",
+  "Calibration is evaluated primarily with aggregate ECE, while the authors identify finer-grained calibration across meaningful data subsets as future work.",
+  "Calibration parameters learned on one collection of domains do not transfer perfectly to different domains.",
+  "The extractive-QA calibration setup depends on an approximate candidate-span generation procedure, and calibration gains there are smaller.",
+  "Input augmentation uses a relatively simple Wikipedia retrieval procedure and does not establish whether retrieved evidence is always relevant or factually sufficient.",
+  "The study does not experimentally evaluate how calibrated confidence affects actual users or downstream decision-making; this is proposed as future work.",
+  "The evaluated setting assumes a constrained candidate set for probability normalization, which limits direct applicability to unconstrained generation."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "baseline_models_poorly_calibrated": 0.99,
+  "fine_tuning_improves_calibration": 0.98,
+  "post_hoc_methods_improve_calibration": 0.98,
+  "combined_mc_ece_reduction": 0.99,
+  "cross_domain_calibration_challenge": 0.97,
+  "extractive_qa_harder_to_calibrate": 0.95,
+  "paraphrasing_and_retrieval_help": 0.96,
+  "larger_models_better_calibrated_in_tests": 0.94
+ },
+ "raw_claims": [
+  "High QA accuracy does not imply that a language model's confidence probabilities are trustworthy.",
+  "The tested language models often place confidence values near the extremes and can be highly confident when wrong.",
+  "The experiments use expected calibration error to measure agreement between confidence and empirical correctness.",
+  "Candidate-aware softmax and margin objectives improve calibration on multiple-choice QA.",
+  "Temperature scaling can substantially reduce calibration error without changing the model's selected answers.",
+  "Feature-based confidence estimation also improves calibration by using probability and input-related signals.",
+  "Calibration learned on one set of QA domains transfers less effectively to different domains.",
+  "Automatically generated candidate spans make extractive QA harder to calibrate than curated multiple-choice candidates.",
+  "Different paraphrases of the same candidate answer can receive very different probabilities from a language model.",
+  "Aggregating probabilities over answer paraphrases can improve confidence estimation.",
+  "Adding retrieved Wikipedia context can improve calibration on multiple-choice questions.",
+  "Combining several calibration mechanisms produced the lowest reported ECE on the main multiple-choice test set.",
+  "Larger tested T5 and UnifiedQA models generally had lower calibration error as well as higher accuracy.",
+  "The paper leaves calibration of unconstrained free-form QA as future work.",
+  "The authors identify evaluation of calibrated confidence in actual user or downstream decision settings as an open problem."
+ ],
+ "source_url": "https://arxiv.org/html/2012.00955",
+ "access": "full_text"
+}

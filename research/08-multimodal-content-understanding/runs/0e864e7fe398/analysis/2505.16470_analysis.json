@@ -1,0 +1,91 @@
+{
+ "paper_id": "2505.16470",
+ "title": "Benchmarking Retrieval-Augmented Multimomal Generation for Document Question Answering",
+ "research_question": "How well do current retrievers, language models, and vision-language models perform on retrieval-augmented document question answering when correct answers require selecting and integrating noisy textual and visual evidence across long multi-page documents?",
+ "methodology": "The paper introduces MMDocRAG, a benchmark of 4,055 expert-annotated questions over 222 documents from ten domains, with evidence represented as layout-derived textual or visual quotes and with many questions requiring cross-page or cross-modal evidence. Documents originate from the MMDocIR corpus and are processed with MinerU; visual quotes retain the source image together with OCR text and VLM-generated descriptions. The study evaluates 14 retrieval configurations and 60 language or vision-language models, including several fine-tuned open models, under controlled candidate-evidence sets and end-to-end retrieval conditions. Evaluation covers retrieval recall, text/image quote-selection precision, recall and F1, lexical answer metrics, and LLM-judged fluency, citation quality, text-image coherence, reasoning, and factuality.",
+ "key_findings": [
+  {
+   "finding": "MMDocRAG contains 4,055 questions, of which 52% require evidence from multiple pages, 39.2% involve multiple images, and 61.7% require cross-modal evidence, making evidence composition a central part of the benchmark.",
+   "evidence_type": "supported",
+   "section": "Benchmark Construction and Statistics"
+  },
+  {
+   "finding": "GPT-4.1 achieved a 70.2 quote-selection F1 and 4.14 answer-quality score with the 20-quote candidate setting, while many open and smaller models showed substantially weaker evidence selection and answer quality.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Performance is lower on interpretative, multi-page, and multi-image questions than on descriptive or single-page questions, showing that evidence composition remains difficult even when candidate evidence is supplied.",
+   "evidence_type": "supported",
+   "section": "Main Results"
+  },
+  {
+   "finding": "Fine-tuning the evaluated open vision-language models on MMDocRAG development data substantially improves their quote selection and answer generation performance.",
+   "evidence_type": "supported",
+   "section": "Fine-tuning Experiments"
+  },
+  {
+   "finding": "Using detailed VLM-generated descriptions of visual evidence outperformed relying on OCR text alone in the reported aggregate comparison, indicating that visual semantics not captured by OCR are useful for retrieval and answering.",
+   "evidence_type": "supported",
+   "section": "Visual Representation Analysis"
+  },
+  {
+   "finding": "Text retrievers are stronger for textual evidence, visual retrievers are stronger for image evidence, and hybrid retrieval provides a more balanced solution for mixed-modality questions.",
+   "evidence_type": "supported",
+   "section": "Retrieval Results; Table 6"
+  },
+  {
+   "finding": "Retrieval errors propagate strongly into generation: GPT-4.1's evidence-selection and answer scores drop markedly when perfect candidate evidence is replaced by actually retrieved evidence.",
+   "evidence_type": "supported",
+   "section": "End-to-End Retrieval-Augmented Generation"
+  },
+  {
+   "finding": "Evidence appearing later in the supplied candidate context is selected less frequently, revealing a measurable position bias in evidence use.",
+   "evidence_type": "supported",
+   "section": "Quote Position Analysis"
+  }
+ ],
+ "limitations": [
+  "The benchmark is built from 222 documents derived from the MMDocIR corpus, so coverage of other document ecosystems, especially evolving workplace attachments, is not established.",
+  "The benchmark models page and quote provenance but does not represent longitudinal document versions or lineage between corresponding elements across revisions.",
+  "LLM-based answer-quality judging introduces dependence on the selected evaluator and rubric even though complementary automatic metrics are reported.",
+  "Controlled candidate-quote experiments measure evidence selection from a supplied pool and are easier than unconstrained retrieval over an entire enterprise document collection.",
+  "Comparisons span proprietary and open models with different compute, latency, context, and access characteristics, so aggregate capability differences do not isolate architecture alone.",
+  "Direct multimodal processing adds computational and latency overhead, particularly for larger vision-language models.",
+  "The observed position bias means evaluation and model behavior can depend on the ordering of otherwise identical evidence.",
+  "Retrieval remains a major source of end-to-end degradation even for a strong generator."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "benchmark_multimodal_complexity": 0.99,
+  "gpt41_quote_selection": 0.99,
+  "complex_questions_are_harder": 0.97,
+  "fine_tuning_improves_models": 0.97,
+  "visual_descriptions_help": 0.98,
+  "hybrid_retrieval_balances_modalities": 0.98,
+  "retrieval_errors_propagate": 0.99,
+  "evidence_position_bias": 0.96
+ },
+ "raw_claims": [
+  "MMDocRAG evaluates retrieval and generation jointly for long multimodal documents.",
+  "The released benchmark contains 4,055 expert-annotated question-answer pairs over 222 documents.",
+  "More than half of the questions require evidence from more than one page.",
+  "A majority of the questions require combining information across modalities.",
+  "Annotations identify evidence at the quote level in addition to page-level provenance.",
+  "Candidate evidence includes both text quotes and image quotes together with deliberately noisy alternatives.",
+  "The evaluation separately measures whether a model selects the correct textual and visual evidence.",
+  "Large proprietary models lead most reported generation comparisons, but none solves the benchmark completely.",
+  "Fine-tuned smaller vision-language models improve substantially relative to their untuned versions.",
+  "Detailed visual descriptions provide more useful evidence representations than OCR-only text in the reported comparison.",
+  "Text-only and visual retrievers have complementary strengths, motivating hybrid retrieval.",
+  "Replacing perfect candidate evidence with retrieved evidence causes a substantial downstream performance loss.",
+  "Models are less likely to select relevant evidence when it occurs later in the provided context.",
+  "The benchmark and associated code are publicly available through the project's website."
+ ],
+ "source_url": "https://arxiv.org/html/2505.16470",
+ "access": "full_text"
+}

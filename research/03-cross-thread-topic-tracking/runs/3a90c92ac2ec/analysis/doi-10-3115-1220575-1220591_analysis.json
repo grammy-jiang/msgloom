@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-3115-1220575-1220591",
+ "title": "Using Names and Topics for New Event Detection",
+ "research_question": "Can separate similarity evidence from named entities, topical terms, and full text improve automatic discrimination between stories that continue known events and stories that introduce new events?",
+ "methodology": "The authors represent each incoming story using three comparison features against its closest prior story: full-text cosine similarity, named-entity cosine similarity, and cosine similarity over non-named-entity topical terms. Support vector machines with several kernels are trained on TDT3 and TDT4 and tested on TDT2 and TDT5, using English newswire and broadcast-news material. Performance is evaluated with the official TDT minimum CDet measure, and additional experiments examine degradation from automatic speech-recognition transcripts and retraining of the named-entity recognizer for ASR-like input.",
+ "key_findings": [
+  {
+   "finding": "The central identity hypothesis is that stories about the same topic should usually overlap in both event-characterizing names and topical terms, whereas different but superficially similar events may overlap strongly in only one of those dimensions.",
+   "evidence_type": "supported",
+   "section": "Features for NED"
+  },
+  {
+   "finding": "SVM classifiers using full-text, named-entity, and topic-term similarities significantly improved NED performance over the baseline vector-space system on the tested TDT collections.",
+   "evidence_type": "supported",
+   "section": "Results"
+  },
+  {
+   "finding": "The main observed benefit was better separation of previously seen stories from genuinely new stories, especially by moving many old-story scores toward the old end of the confidence scale and thereby reducing false alarms.",
+   "evidence_type": "supported",
+   "section": "Analysis; Conclusions and Future Work"
+  },
+  {
+   "finding": "Names alone are insufficient for event identity because two distinct events may share high-IDF people, places, or organizations while differing in topical content.",
+   "evidence_type": "supported",
+   "section": "Features for NED"
+  },
+  {
+   "finding": "The method becomes unreliable for loosely connected evolving topics in which later stories share only a tenuous cue such as the disaster name or location with the original story.",
+   "evidence_type": "supported",
+   "section": "Analysis"
+  },
+  {
+   "finding": "Named-entity extraction errors on ASR transcripts substantially harmed the approach, while retraining the recognizer on ASR-like material restored statistically significant improvement for an appropriate classifier.",
+   "evidence_type": "supported",
+   "section": "Analysis; ASR experiments"
+  },
+  {
+   "finding": "The study provides evidence about cross-document event/topic continuity in news but does not evaluate enterprise email/chat continuity or workplace work-matter identity.",
+   "evidence_type": "supported",
+   "section": "Task and corpus scope"
+  }
+ ],
+ "limitations": [
+  "The evaluation is on English TDT news streams, not enterprise communication.",
+  "The model assumes that related stories generally retain both named-entity and topical-term overlap, an assumption that the paper shows fails for some loosely connected topics.",
+  "Named-entity recognition errors directly propagate into event novelty decisions.",
+  "Automatic speech-recognition noise can make a named-entity model trained on clean newswire inappropriate.",
+  "The approach compares an incoming story principally with the closest prior story rather than modeling a richer evolving event structure.",
+  "The paper treats TDT topic continuity, which can encompass related developments, rather than strict same-real-world-event coreference."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "names_and_topics_jointly_signal_identity": 0.99,
+  "svm_improves_ned": 0.99,
+  "old_story_detection_drives_gain": 0.96,
+  "shared_names_do_not_imply_same_event": 0.99,
+  "loose_topic_evolution_breaks_overlap_assumption": 0.99,
+  "asr_noise_harms_identity_features": 0.98,
+  "no_direct_workplace_evidence": 0.99
+ },
+ "raw_claims": [
+  "New-event detection classifies chronologically arriving stories as reports of new or already known events.",
+  "The model separates full-text similarity, named-entity similarity, and topical-term similarity into distinct features.",
+  "Named entities are intended to represent who, where, and when aspects of an event.",
+  "Non-named topical terms are intended to represent what happened.",
+  "Stories on the same topic are expected to share both entity and topical evidence.",
+  "Distinct but similar events can share names without sharing their substantive topical content.",
+  "SVM models improved minimum CDet over the vector-space baseline on the evaluated test collections.",
+  "The strongest practical effect was improved recognition of old stories.",
+  "Some evolving topics contain later stories connected to the original event by only a weak common cue.",
+  "Named-entity recognition errors reduce the value of entity-based continuity features.",
+  "Retraining the entity recognizer for ASR-style input improved results on noisy broadcast transcripts.",
+  "The study does not test workplace threads or enterprise messaging."
+ ],
+ "source_url": "https://aclanthology.org/H05-1016.pdf",
+ "access": "full_text"
+}

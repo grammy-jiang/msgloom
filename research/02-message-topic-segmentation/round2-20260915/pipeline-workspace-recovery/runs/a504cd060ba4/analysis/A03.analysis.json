@@ -1,0 +1,595 @@
+{
+  "paper_id": "A03",
+  "study_id": "A03",
+  "title": "Large Language Models for Propaganda Span Annotation",
+  "authors": [
+    "Maram Hasanain",
+    "Fatema Ahmad",
+    "Firoj Alam"
+  ],
+  "year": 2024,
+  "venue": "Findings of EMNLP 2024",
+  "evidence_role": "TRANSFER_METHOD_ANNOTATION",
+  "target_stream": "R2-A / G2-A",
+  "task_boundary": "Multi-label propaganda span/token annotation and specialized model training in Arabic news, with additional testing on news paragraphs and tweets. This is not evidence of business/work-email Topic segmentation or Topic assignment accuracy.",
+  "summary": "The paper supports a transferable representation and training method for simultaneous labels on individual tokens. It evaluates GPT-4 annotation with different amounts of human annotation input and trains AraBERT on the resulting labels. Human-assisted consolidation substantially outperforms annotation from instructions alone. The paper does not establish discontinuous semantic-object identity, measure overlap-specific prediction performance, or evaluate preservation of work-matter conditions and qualifiers.",
+  "research_questions": [
+    "Can GPT-4 annotate propaganda spans effectively?",
+    "Can GPT-4 serve as a general annotator or expert consolidator?",
+    "Which propaganda techniques receive the strongest annotation agreement?",
+    "Can GPT-4 annotations train effective specialized models?"
+  ],
+  "methodology": "{\"annotation_roles\": {\"annotator\": \"Receives the paragraph and technique taxonomy, then predicts labeled spans and positions.\", \"consolidator\": \"Receives human-provided candidate span annotations. The prompt and index-correction discussion describe selecting annotations; another passage describes consolidators as able to modify boundaries and labels without clearly specifying whether that statement applies to GPT-4.\", \"selector\": \"Additionally receives human-provided candidate technique labels, then selects labels and extracts spans.\"}, \"evaluation\": \"Modified micro- and macro-F1 permit partial span matches. Gamma measures agreement involving span boundaries and labels. Specialized models are tested on ArPro and ArAIEval24T1.\", \"gpt4\": \"The paper reports zero-shot GPT-4, described as 32K, version gpt-4-0314, temperature 0. Prompts were selected using development-set pilot experiments.\", \"human_annotation\": \"Three trained general annotators independently annotate each paragraph. Two expert consolidators revise and finalize the annotations. Consolidated annotations are the experimental gold standard.\", \"position_postprocessing\": \"Each predicted text span is assigned the indices of its first occurrence in the paragraph. This does not resolve which occurrence was intended when identical text appears more than once.\", \"specialized_model\": \"AraBERTv0.2-large predicts a binary vector of 23 technique labels for each token, using sigmoid outputs and binary cross-entropy loss.\", \"training_and_selection\": \"Four training-label sources are compared: human gold, GPT-4 Annotator, GPT-4 Selector, and GPT-4 Consolidator. Maximum sequence length is 256. Epoch count and prediction threshold are tuned on the ArPro development subset.\"}",
+  "dataset_and_gold": {
+    "primary_dataset": "ArPro",
+    "language_and_domain": "Arabic news paragraphs from approximately 2,800 articles, sampled from a collection containing over 600,000 articles from over 300 news media sources.",
+    "size": {
+      "paragraphs": 8000,
+      "training_paragraphs": 6002,
+      "approximate_sentences": 10000,
+      "approximate_words": 277000,
+      "paragraphs_with_at_least_one_propaganda_span": "63%"
+    },
+    "splits": {
+      "reported_proportions": {
+        "train": "75%",
+        "development": "8.5%",
+        "test": "16.5%"
+      },
+      "reported_span_level_label_totals": {
+        "train": 13212,
+        "development": 1452,
+        "test": 2857
+      },
+      "count_boundary": "These are reported technique counts at span level. They do not establish the number of distinct text intervals after merging coincident annotations."
+    },
+    "units": "Paragraph inputs with technique-labeled text spans and start/end positions; token-level multi-label targets for PLM training.",
+    "labels": "23 propaganda techniques. The 14 news topics mentioned in the dataset description are corpus subject categories, not msgloom work-matter Topics.",
+    "gold": "Expert-consolidated human span annotations are the gold standard. GPT-4-generated annotations are alternative training labels and evaluated predictions.",
+    "overlap": {
+      "task_representation": "The task explicitly permits several technique labels on the same span or token.",
+      "gold_evidence": "The annotation task is described as multi-label, but the paper does not report counts, proportions, or an overlap-specific gold subset.",
+      "model_output": "The PLM's 23 binary decisions per token explicitly permit simultaneous positive labels. GPT-4 emits lists of single-technique interval records; coincident records could express multiple labels, but their occurrence and correctness are not separately reported.",
+      "evaluation_boundary": "Aggregate span scores do not isolate simultaneous-label recovery."
+    },
+    "discontinuity": {
+      "representation": "Reported span records contain one start/end interval and one technique. No shared semantic-object identifier or list of separated component spans is specified.",
+      "gold_evidence": "No annotation or prevalence analysis of separated spans linked into one semantic object is reported.",
+      "model_output": "Separate runs of the same token label can represent repeated technique occurrences. They do not identify one discontinuous work matter."
+    },
+    "external_test": "ArAIEval24T1 contains news paragraphs and tweets annotated with the same 23-technique taxonomy. Its size is not stated in the embedded paper."
+  },
+  "key_findings": [
+    {
+      "finding_id": "A03-F01",
+      "finding": "The specialized model explicitly permits simultaneous labels on each token through a 23-element binary prediction vector. This strengthens the representability and training-method component of R2-A.",
+      "evidence_type": "supported",
+      "section": "4.3 Annotation with PLMs",
+      "quote": "multiple labels can be assigned per token,",
+      "source_line_start": 401,
+      "source_line_end": 401,
+      "interpretation_boundary": "This establishes output capacity for propaganda technique labels. It does not establish overlap prevalence, overlap-specific accuracy, or correct assignment of multiple msgloom Topics."
+    },
+    {
+      "finding_id": "A03-F02",
+      "finding": "The reported GPT-4 extraction format uses single-interval technique records. The paper supplies no explicit representation that links separated intervals into one semantic object.",
+      "evidence_type": "supported",
+      "section": "5.3 Instruction, Table 2",
+      "quote": "Use this template {“technique”:, “text”:, “start”:, “end”: }",
+      "source_line_start": 502,
+      "source_line_end": 502,
+      "interpretation_boundary": "A list may contain several spans with the same technique. Repeated category membership is not evidence of a shared discontinuous object identity. The absence of an explicit grouping mechanism does not prove that another implementation could not add one."
+    },
+    {
+      "finding_id": "A03-F03",
+      "finding": "The gold standard comes from expert consolidation after three independent general annotations. GPT-4 consolidation therefore benefits from human candidate annotations and is not annotation from raw text alone.",
+      "evidence_type": "supported",
+      "section": "3 Dataset; 5.1 Datasets",
+      "quote": "phase 2, two expert annotators revised and finalized the annotations.",
+      "source_line_start": 286,
+      "source_line_end": 286,
+      "interpretation_boundary": "Expert consolidation defines the study's reference labels. Agreement with this reference does not establish objective truth or an independent replacement for the entire human annotation process."
+    },
+    {
+      "finding_id": "A03-F04",
+      "finding": "Evaluation uses micro- and macro-F1 that credit partial span matches. These metrics evaluate propaganda span detection and labeling, not complete preservation of business conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers.",
+      "evidence_type": "supported",
+      "section": "5.5 Evaluation",
+      "quote": "we computed a modified version of the F 1 measure (macro- and microaveraged) that accounts for partial matching between the spans across the gold labels and the predictions",
+      "source_line_start": 534,
+      "source_line_end": 534,
+      "interpretation_boundary": "F1 includes a recall component for annotated propaganda spans, but it is not a semantic coverage audit. A partial match can receive credit without recovering the complete gold boundary. The paper provides no qualifier-specific coverage metric."
+    },
+    {
+      "finding_id": "A03-F05",
+      "finding": "On the 6,002 training paragraphs used for annotation analysis, Table 3 reports substantially stronger GPT-4 results with human span candidates: Consolidator micro-F1 0.671, macro-F1 0.570, and gamma 0.609, compared with Annotator 0.050, 0.045, and 0.247.",
+      "evidence_type": "supported",
+      "section": "6 Results and Discussion, Table 3",
+      "quote": "Consolidator 0.671 0.570 0.609",
+      "source_line_start": 564,
+      "source_line_end": 564,
+      "interpretation_boundary": "This compares annotation roles with different information inputs. It is not held-out email Topic accuracy. Table 3's postprocessing description must be distinguished from the explicit index-corrected results in Table 4."
+    },
+    {
+      "finding_id": "A03-F06",
+      "finding": "GPT-4 frequently returns indices that do not match its extracted text. First-occurrence index correction raises Annotator micro-F1 from 0.050 to 0.117 and Selector micro-F1 from 0.137 to 0.297.",
+      "evidence_type": "supported",
+      "section": "6 Incorrect start and end indices, Table 4",
+      "quote": "Selector 0.137 0.297",
+      "source_line_start": 598,
+      "source_line_end": 598,
+      "interpretation_boundary": "The correction improves aggregate propaganda span scores. It does not verify the intended occurrence of repeated text or establish accurate provenance for a work matter."
+    },
+    {
+      "finding_id": "A03-F07",
+      "finding": "AraBERT trained on GPT-4 Consolidator labels achieves ArPro test micro-F1 0.335, compared with 0.387 using human gold labels. The paper describes this as a 13% relative reduction.",
+      "evidence_type": "supported",
+      "section": "6 Performance of the specialized model, Table 6",
+      "quote": "AraBERT GPT-4 _Consolidator_ 25 0.15 0.335",
+      "source_line_start": 777,
+      "source_line_end": 777,
+      "interpretation_boundary": "This supports the usefulness of human-assisted GPT-4 annotations for training an Arabic propaganda tagger. It does not separately measure overlapping labels, discontinuous object recovery, or email Topic performance."
+    },
+    {
+      "finding_id": "A03-F08",
+      "finding": "On ArAIEval24T1, AraBERT trained on GPT-4 Consolidator labels scores 0.334 micro-F1, exceeding the reported shared-task baseline of 0.300. Human-gold training scores higher at 0.406.",
+      "evidence_type": "supported",
+      "section": "6 Performance of the specialized model, Table 7",
+      "quote": "AraBERT GPT-4 _Consolidator_ 0.334",
+      "source_line_start": 739,
+      "source_line_end": 739,
+      "interpretation_boundary": "This is an external Arabic propaganda test containing news and tweets. It supports transfer across these evaluation collections, not business-email Topic transfer. The GPT-4-trained model is not the best model in Table 7."
+    },
+    {
+      "finding_id": "A03-F09",
+      "finding": "The index-error discussion attributes the Consolidator's stable performance to selecting human annotations that already contain spans and indices. This makes candidate quality and candidate coverage central dependencies.",
+      "evidence_type": "supported",
+      "section": "6 Incorrect start and end indices",
+      "quote": "the model was only selecting annotations, including span and indices, from the list _S_ _C_",
+      "source_line_start": 622,
+      "source_line_end": 622,
+      "interpretation_boundary": "Under the described selection-only operation, an annotation absent from the candidate list cannot be selected. The paper does not measure candidate coverage or recovery of omitted candidates. A separate passage leaves ambiguity about whether GPT-4 could also revise annotations."
+    },
+    {
+      "finding_id": "A03-F10",
+      "finding": "The strongest transfer limitation is the task and domain mismatch: the study annotates propaganda techniques in Arabic news, with additional news/tweet testing. It provides no direct evidence for concrete work-matter Topics in business email.",
+      "evidence_type": "supported",
+      "section": "7 Conclusions; 8 Limitations",
+      "quote": "annotating them in Arabic news paragraphs.",
+      "source_line_start": 834,
+      "source_line_end": 834,
+      "interpretation_boundary": "Use this paper as annotation and model-training method evidence only. Neither its technique labels nor its reported news subject categories are msgloom Topics."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Human span annotation gamma",
+      "target": "Agreement involving span boundaries and technique labels",
+      "denominator_or_population": "ArPro span-level human annotation; the exact rater pairing and aggregation procedure are not specified in this paper",
+      "reported_result": 0.546,
+      "limitations": "This is agreement, not prediction accuracy or coverage. It is not clearly the same comparison used for the later claimed 38% agreement improvement."
+    },
+    {
+      "name": "GPT-4 partial-match micro-F1, Table 3",
+      "target": "Propaganda span detection and technique assignment",
+      "denominator_or_population": "Predictions and consolidated gold annotations across 6,002 ArPro training paragraphs; micro aggregation",
+      "reported_result": {
+        "annotator": 0.05,
+        "selector": 0.137,
+        "consolidator": 0.671
+      },
+      "limitations": "Not email Topic accuracy or overlap-specific performance. Table 4 identifies these values as results without span-index correction, although the Table 3 introduction calls the outputs post-processed."
+    },
+    {
+      "name": "GPT-4 partial-match macro-F1, Table 3",
+      "target": "Propaganda span detection and technique assignment averaged across labels",
+      "denominator_or_population": "The 23-technique task evaluated on 6,002 ArPro training paragraphs; exact averaging and absent-label conventions are not reproduced",
+      "reported_result": {
+        "annotator": 0.045,
+        "selector": 0.144,
+        "consolidator": 0.57
+      },
+      "limitations": "Does not isolate coincident labels or missing business information. Corrected macro-F1 values are not reported in Table 4."
+    },
+    {
+      "name": "GPT-4 span gamma, Table 3",
+      "target": "Agreement between GPT-4 annotations and consolidated gold",
+      "denominator_or_population": "Annotation analysis on 6,002 ArPro training paragraphs; precise aggregation is not stated",
+      "reported_result": {
+        "annotator": 0.247,
+        "selector": 0.477,
+        "consolidator": 0.609
+      },
+      "limitations": "Agreement is not an accuracy percentage. Roles receive different human annotation inputs. The correction status of these Table 3 gamma values is not explicitly resolved."
+    },
+    {
+      "name": "Micro-F1 before and after span-index correction, Table 4",
+      "target": "Effect of replacing predicted indices with the first occurrence of predicted text",
+      "denominator_or_population": "GPT-4 annotation predictions evaluated against gold on the ArPro training subset",
+      "reported_result": {
+        "annotator": {
+          "original": 0.05,
+          "corrected": 0.117
+        },
+        "selector": {
+          "original": 0.137,
+          "corrected": 0.297
+        },
+        "consolidator": {
+          "original": 0.671,
+          "corrected": 0.67
+        }
+      },
+      "limitations": "First-occurrence replacement can select the wrong repeated occurrence. Higher partial-match F1 does not prove exact grounding or complete semantic coverage."
+    },
+    {
+      "name": "Reported relative agreement improvement, Figure 3 discussion",
+      "target": "GPT-4 agreement with expert consolidators compared with initial human annotators",
+      "denominator_or_population": "Initial annotator agreement is the comparison baseline; the embedded figure does not provide readable numerical values",
+      "reported_result": "38% improved agreement for GPT-4 in the consolidator role after index correction",
+      "limitations": "The supplied conversion does not expose the baseline and comparison values needed to reconstruct this percentage. Do not calculate it using the separately reported 0.546 without evidence that the populations and comparisons match."
+    },
+    {
+      "name": "Top-five per-technique gamma after index correction, Table 5",
+      "target": "Technique-specific agreement with gold",
+      "denominator_or_population": "ArPro training annotation analysis; top five techniques selected separately for each role, with per-technique populations and aggregation unspecified",
+      "reported_result": {
+        "annotator": {
+          "Causal Oversimplification": 0.889,
+          "Consequential Oversimplification": 0.835,
+          "Doubt": 0.815,
+          "Obfuscation /Vagueness /Confusion": 0.791,
+          "Appeal to Hypocrisy": 0.746
+        },
+        "selector": {
+          "Doubt": 0.802,
+          "Flag Waving": 0.705,
+          "Appeal to Hypocrisy": 0.66,
+          "Loaded Language": 0.654,
+          "Slogans": 0.642
+        },
+        "consolidator": {
+          "False Dilemma /No Choice": 0.872,
+          "Loaded Language": 0.774,
+          "Straw Man": 0.697,
+          "Doubt": 0.695,
+          "Name Calling /Labeling": 0.68
+        }
+      },
+      "limitations": "Selected top-five agreement scores are not overall performance, overlap-specific accuracy, or label recall. Technique frequencies vary substantially."
+    },
+    {
+      "name": "ArPro test partial-match micro-F1, Table 6",
+      "target": "Held-out Arabic propaganda span detection and categorization",
+      "denominator_or_population": "ArPro test subset, with 2,857 reported span-level technique annotations",
+      "reported_result": {
+        "random": 0.01,
+        "direct_gpt4": 0.117,
+        "arabert_gpt4_annotator_labels": 0.127,
+        "arabert_gpt4_selector_labels": 0.236,
+        "arabert_gpt4_consolidator_labels": 0.335,
+        "arabert_human_gold_labels": 0.387,
+        "author_reported_relative_reduction_consolidator_vs_gold": "13%"
+      },
+      "limitations": "Span-index correction was applied to all GPT-4 predictions. This tests propaganda tagging, not work-email Topic accuracy, discontinuous object identity, or qualifier coverage. No overlap-only result or uncertainty interval is reported."
+    },
+    {
+      "name": "ArAIEval24T1 test partial-match micro-F1, Table 7",
+      "target": "External-test Arabic propaganda span detection and categorization",
+      "denominator_or_population": "ArAIEval24T1 test news paragraphs and tweets; dataset size is not stated",
+      "reported_result": {
+        "CUET_sstm": 0.3,
+        "arabert_gpt4_annotator_labels": 0.124,
+        "arabert_gpt4_selector_labels": 0.257,
+        "arabert_gpt4_consolidator_labels": 0.334,
+        "arabert_human_gold_labels": 0.406,
+        "author_reported_relative_improvement_consolidator_vs_baseline": "11%",
+        "author_reported_relative_improvement_gold_vs_baseline": "35%"
+      },
+      "limitations": "The improvements compare with the reported shared-task baseline. The human-gold model is stronger than the GPT-4-consolidator-trained model. This is not direct email Topic evidence."
+    }
+  ],
+  "limitations": [
+    "No business/work-email data or concrete work-matter Topic annotations are evaluated.",
+    "The paper does not report how often gold spans overlap or carry simultaneous labels.",
+    "No evaluation isolates simultaneous-label prediction from ordinary span labeling.",
+    "No gold schema or output mechanism explicitly links separated spans into one semantic object.",
+    "Partial-match span F1 and gamma do not measure complete retention of business conditions and decision qualifiers.",
+    "The strongest GPT-4 setup depends on annotations from three humans; candidate coverage is not measured.",
+    "First-occurrence index correction can misidentify repeated text.",
+    "The exact partial-match scoring formula and detailed gamma aggregation are delegated to cited work or left unspecified.",
+    "Training uses maximum sequence length 256, but treatment of longer paragraphs and any resulting content loss is not explained.",
+    "The paper provides no quantitative annotation-cost or time study to support claims of substantial savings.",
+    "No confidence intervals, repeated-run variation, or formal significance tests accompany the principal reported comparisons.",
+    "The main reported LLM experiments concern GPT-4 in Arabic; other model trials are mentioned without comparative results."
+  ],
+  "source_conflicts": [
+    {
+      "issue": "Consolidator action scope is ambiguous.",
+      "locations": [
+        "L00504: the GPT-4 Consolidator prompt asks for selection of matching annotations",
+        "L00575-L00580: consolidators are described as free to change span lengths and labels",
+        "L00620-L00623: GPT-4 is described as only selecting supplied spans and indices"
+      ],
+      "impact": "The modification passage may describe human consolidators, but its placement does not make the referent explicit. Synthesis must not credit GPT-4 with demonstrated boundary revision, relabeling, or recovery beyond supplied candidates. This ambiguity materially affects annotation-workflow transfer."
+    },
+    {
+      "issue": "Table 3's postprocessing description does not clearly identify whether span-index correction has occurred.",
+      "locations": [
+        "L00550-L00554: Table 3 evaluates post-processed outputs",
+        "L00560-L00564: Table 3 reports micro-F1 0.050, 0.137, and 0.671",
+        "L00595-L00603: Table 4 identifies these values as original results and separately reports corrected results"
+      ],
+      "impact": "The passages can be reconciled if Table 3 used another postprocessing step, but that step is not specified. Use Table 4 for explicit corrected micro-F1 and do not silently mark Table 3 macro-F1 or gamma as index-corrected."
+    },
+    {
+      "issue": "Statements about evaluated model scope differ.",
+      "locations": [
+        "L00859-L00865: the limitations section says only a closed LLM was evaluated",
+        "L00482-L00484: initial Claude 3.5 Sonnet experiments are mentioned",
+        "L00865-L00869: experiments with open models are mentioned"
+      ],
+      "impact": "The reported main experiments can be distinguished from preliminary trials, but the paper does not consistently make that distinction. Only GPT-4 has the principal quantitative results presented here. This does not alter the multi-label representation finding."
+    }
+  ],
+  "unsafe_assumptions": [
+    "Propaganda techniques are equivalent to msgloom Topics.",
+    "The dataset's 14 news topics are concrete work-matter annotations.",
+    "A multi-label token head proves accurate simultaneous assignment of multiple work-matter Topics.",
+    "The paper reports the prevalence of overlapping or simultaneously labeled gold spans.",
+    "Repeated spans with the same technique identify one discontinuous semantic object.",
+    "A start/end interval record directly represents separated components of one object.",
+    "Aggregate partial-match F1 measures exact span boundaries or complete semantic coverage.",
+    "Gamma agreement is an accuracy percentage or a measure of missing business information.",
+    "The strongest GPT-4 results come from raw text without human annotation input.",
+    "GPT-4 consolidation demonstrably recovers annotations missing from all human candidate lists.",
+    "First-occurrence index correction always identifies the intended text occurrence.",
+    "The Table 3 values are all demonstrably measured after span-index correction.",
+    "The GPT-4-consolidator-trained model is the highest-scoring model in Table 7.",
+    "News/tweet generalization establishes direct business-email Topic performance.",
+    "Reported agreement gains prove online learning, parameter updates, or quantified annotation-cost savings.",
+    "The permission to modify span lengths and labels can be assigned conclusively to either human consolidators or GPT-4.",
+    "A selection-oriented prompt proves mechanically enforced candidate membership or establishes an empirical candidate-coverage ceiling.",
+    "Table 4's original results received no postprocessing whatsoever, or an undocumented alternative processing step necessarily explains Table 3.",
+    "Table 3 macro-F1 and gamma can be combined with Table 4 corrected micro-F1 as one verified evaluation condition.",
+    "Figure 3's explicit index-correction status also establishes the correction status of Table 3 gamma."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "unchanged",
+      "reason": "No G1_A definition is supplied. Resolving these workflow and metric ambiguities provides no basis for an upgrade."
+    },
+    "G2_A": {
+      "status": "strengthened",
+      "reason": "Retain the high review's method-only strengthening. This adjudication bounds the consolidation procedure; it adds no evidence for revision beyond candidates, overlap-specific accuracy, discontinuous object identity, or email Topic accuracy."
+    },
+    "G3_A": {
+      "status": "unchanged",
+      "reason": "The adjudicated passages provide no evaluation of preservation of work-matter conditions or qualifiers."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "No G4_A definition is supplied. The bounded annotation-method evidence does not justify further gap closure."
+    }
+  },
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_basis": "The authors announce release of scripts and human/GPT-4 annotations and provide https://github.com/MaramHasanain/llm_prop_annot. The booleans reflect the paper's release claim, not verified repository contents.",
+    "availability_limitations": "The paper mixes present release language with future promises. Actual accessibility, completeness, licensing, and packaging were not verified.",
+    "reported_details": [
+      "Prompts for all three GPT-4 roles",
+      "GPT-4 version description and temperature",
+      "AraBERT model identifier",
+      "Training hyperparameters and tuning ranges",
+      "Dataset split proportions and span-level label counts",
+      "Index-correction rule",
+      "Aggregate and selected per-technique evaluation results"
+    ],
+    "unresolved_details": [
+      "Exact scoring formula and aggregation conventions",
+      "Precise GPT-4 consolidation edit permissions",
+      "Table 3 postprocessing provenance",
+      "Handling of repeated text beyond first-occurrence matching",
+      "Handling of inputs longer than 256 tokens",
+      "Overlap prevalence and discontinuous-object annotation conventions",
+      "Readable numerical values underlying Figure 3 in the supplied conversion"
+    ]
+  },
+  "raw_claims": [
+    "multiple labels can be assigned per token,",
+    "Use this template {“technique”:, “text”:, “start”:, “end”: }",
+    "phase 2, two expert annotators revised and finalized the annotations.",
+    "we computed a modified version of the F 1 measure (macro- and microaveraged) that accounts for partial matching between the spans across the gold labels and the predictions",
+    "Consolidator 0.671 0.570 0.609",
+    "Selector 0.137 0.297",
+    "AraBERT GPT-4 _Consolidator_ 25 0.15 0.335",
+    "AraBERT GPT-4 _Consolidator_ 0.334",
+    "the model was only selecting annotations, including span and indices, from the list _S_ _C_",
+    "annotating them in Arabic news paragraphs."
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 401,
+      "text": "multiple labels can be assigned per token,"
+    },
+    {
+      "line_number": 502,
+      "text": "Use this template {“technique”:, “text”:, “start”:, “end”: }"
+    },
+    {
+      "line_number": 286,
+      "text": "phase 2, two expert annotators revised and finalized the annotations."
+    },
+    {
+      "line_number": 534,
+      "text": "we computed a modified version of the F 1 measure (macro- and microaveraged) that accounts for partial matching between the spans across the gold labels and the predictions"
+    },
+    {
+      "line_number": 564,
+      "text": "Consolidator 0.671 0.570 0.609"
+    },
+    {
+      "line_number": 598,
+      "text": "Selector 0.137 0.297"
+    },
+    {
+      "line_number": 777,
+      "text": "AraBERT GPT-4 _Consolidator_ 25 0.15 0.335"
+    },
+    {
+      "line_number": 739,
+      "text": "AraBERT GPT-4 _Consolidator_ 0.334"
+    },
+    {
+      "line_number": 622,
+      "text": "the model was only selecting annotations, including span and indices, from the list _S_ _C_"
+    },
+    {
+      "line_number": 834,
+      "text": "annotating them in Arabic news paragraphs."
+    }
+  ],
+  "confidence_scores": {
+    "A03-F01": 0.99,
+    "A03-F02": 0.97,
+    "A03-F03": 0.99,
+    "A03-F04": 0.99,
+    "A03-F05": 0.98,
+    "A03-F06": 0.99,
+    "A03-F07": 0.99,
+    "A03-F08": 0.99,
+    "A03-F09": 0.9,
+    "A03-F10": 0.99
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [
+    "Resolve whether the boundary/label modification passage concerns human consolidators or GPT-4. This affects whether the transferable procedure is candidate selection or annotation revision.",
+    "Review the postprocessing provenance of Table 3 before combining its macro-F1 or gamma with explicitly index-corrected results. Table 4 clearly separates original and corrected micro-F1."
+  ],
+  "research_question": "Can GPT-4 annotate propaganda spans effectively?",
+  "xhigh_adjudication": {
+    "paper_id": "A03",
+    "adjudications": [
+      {
+        "issue": "Whether GPT-4 consolidation permits boundary revision and relabeling, or only candidate selection.",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00504 The Consolidator prompt requests a list of matching annotations selected from supplied annotations.",
+          "L00572-L00580 The discussion moves from GPT-4 using three annotators' span annotations to consolidators having permission to change span lengths and labels, without explicitly identifying who has that permission.",
+          "L00620-L00623 The index-error discussion explicitly describes GPT-4 as only selecting supplied annotations, including spans and indices."
+        ],
+        "correction_or_qualification": "The modification passage cannot be assigned conclusively to human consolidators or GPT-4. The prompt and operational account support candidate selection as the described GPT-4 procedure. They do not establish mechanically enforced selection or demonstrate boundary revision, relabeling, or recovery beyond supplied candidates.",
+        "synthesis_rule": "Describe GPT-4 consolidation as human-candidate-assisted annotation with a selection-oriented prompt and a selection-only operational account. Preserve the unresolved scope of editing permission. State candidate-coverage limits conditionally on selection-only operation; do not present them as measured recall limits."
+      },
+      {
+        "issue": "Whether Table 3 results include span-index correction.",
+        "verdict": "qualified",
+        "source_basis": [
+          "L00550-L00554 Table 3 is described as evaluating post-processed outputs on 6,002 training paragraphs.",
+          "L00557-L00564 Table 3 reports micro-F1, macro-F1, and gamma for each role.",
+          "L00595-L00603 Table 4 explicitly labels the matching micro-F1 values as without span-index correction and reports separate corrected values.",
+          "L00617-L00618 The correction assigns each predicted span the indices of its first occurrence.",
+          "L00626-L00632 The Figure 3 agreement comparison explicitly uses corrected indices."
+        ],
+        "correction_or_qualification": "Table 4 identifies Table 3's matching micro-F1 values as the original, uncorrected-index results: 0.050, 0.137, and 0.671. Corrected values are 0.117, 0.297, and 0.670. The generic postprocessing statement remains unexplained. Neither the correction status of Table 3 macro-F1 and gamma nor an alternative postprocessing procedure is established.",
+        "synthesis_rule": "Use Table 4 for explicitly identified correction conditions. Preserve Table 3 macro-F1 and gamma as reported with unspecified index-correction status. Do not combine them with corrected micro-F1 as one verified evaluation condition. Do not equate 'without span-index correction' with 'without any postprocessing.'"
+      }
+    ],
+    "finding_repairs": [],
+    "metric_repairs": [
+      {
+        "metric_name_or_issue": "GPT-4 partial-match micro-F1, Table 3",
+        "action": "qualify",
+        "qualification": "The values 0.050, 0.137, and 0.671 match Table 4's explicitly uncorrected-index column (L00595-L00603). Attribute that condition to Table 4 while retaining the unexplained Table 3 postprocessing description (L00550-L00554). These remain propaganda annotation results from roles with different human inputs."
+      },
+      {
+        "metric_name_or_issue": "GPT-4 partial-match macro-F1, Table 3",
+        "action": "qualify",
+        "qualification": "Retain the reported values, but mark index-correction status as unspecified. Table 4 reports only micro-F1 and supplies no corrected macro-F1 values (L00557-L00564; L00595-L00603). Do not infer correction status solely from the matching micro-F1 values."
+      },
+      {
+        "metric_name_or_issue": "GPT-4 span gamma, Table 3",
+        "action": "qualify",
+        "qualification": "Retain the reported values with unspecified index-correction status (L00557-L00564). The explicitly corrected Figure 3 comparison is a separate reported analysis (L00626-L00632). It does not establish Table 3 gamma provenance or provide the numerical baseline needed to reconstruct the claimed 38% improvement."
+      }
+    ],
+    "conflict_repairs": [
+      {
+        "issue": "Consolidator action scope is ambiguous.",
+        "action": "keep_unresolved",
+        "replacement_issue": "The source does not identify unambiguously whether permission to revise boundaries and labels applies to human consolidators or GPT-4. Its GPT-4 prompt and index-error account describe selection.",
+        "replacement_impact": "Retain human-candidate-assisted selection as the supported procedure. Do not credit demonstrated annotation revision or recovery beyond candidates. Do not claim that selection was mechanically enforced."
+      },
+      {
+        "issue": "Table 3's postprocessing description does not clearly identify whether span-index correction has occurred.",
+        "action": "rephrase",
+        "replacement_issue": "Table 4 explicitly identifies Table 3's matching micro-F1 values as without span-index correction. Table 3's generic postprocessing description and the correction status of its macro-F1 and gamma remain unspecified.",
+        "replacement_impact": "Use Table 4's original and corrected micro-F1 columns as labeled. Keep Table 3 macro-F1 and gamma separate from explicitly corrected results. Do not invent an undocumented processing step to reconcile the wording."
+      }
+    ],
+    "final_gap_updates": {
+      "G1_A": {
+        "status": "unchanged",
+        "reason": "No G1_A definition is supplied. Resolving these workflow and metric ambiguities provides no basis for an upgrade."
+      },
+      "G2_A": {
+        "status": "strengthened",
+        "reason": "Retain the high review's method-only strengthening. This adjudication bounds the consolidation procedure; it adds no evidence for revision beyond candidates, overlap-specific accuracy, discontinuous object identity, or email Topic accuracy."
+      },
+      "G3_A": {
+        "status": "unchanged",
+        "reason": "The adjudicated passages provide no evaluation of preservation of work-matter conditions or qualifiers."
+      },
+      "G4_A": {
+        "status": "unchanged",
+        "reason": "No G4_A definition is supplied. The bounded annotation-method evidence does not justify further gap closure."
+      }
+    },
+    "final_unsafe_assumptions": [
+      "The permission to modify span lengths and labels can be assigned conclusively to either human consolidators or GPT-4.",
+      "A selection-oriented prompt proves mechanically enforced candidate membership or establishes an empirical candidate-coverage ceiling.",
+      "Table 4's original results received no postprocessing whatsoever, or an undocumented alternative processing step necessarily explains Table 3.",
+      "Table 3 macro-F1 and gamma can be combined with Table 4 corrected micro-F1 as one verified evaluation condition.",
+      "Figure 3's explicit index-correction status also establishes the correction status of Table 3 gamma."
+    ],
+    "needs_max_review": false,
+    "max_review_reason": null,
+    "confidence": 0.98
+  },
+  "xhigh_review_sha256": "4e98b587fc4e79fa7b222345ea03c45d5e60783e80f62a2a9fe15e0c543c4fa5",
+  "xhigh_effort": "xhigh",
+  "needs_max_review": false,
+  "xhigh_metric_repairs": [
+    {
+      "metric_name_or_issue": "GPT-4 partial-match micro-F1, Table 3",
+      "action": "qualify",
+      "qualification": "The values 0.050, 0.137, and 0.671 match Table 4's explicitly uncorrected-index column (L00595-L00603). Attribute that condition to Table 4 while retaining the unexplained Table 3 postprocessing description (L00550-L00554). These remain propaganda annotation results from roles with different human inputs."
+    },
+    {
+      "metric_name_or_issue": "GPT-4 partial-match macro-F1, Table 3",
+      "action": "qualify",
+      "qualification": "Retain the reported values, but mark index-correction status as unspecified. Table 4 reports only micro-F1 and supplies no corrected macro-F1 values (L00557-L00564; L00595-L00603). Do not infer correction status solely from the matching micro-F1 values."
+    },
+    {
+      "metric_name_or_issue": "GPT-4 span gamma, Table 3",
+      "action": "qualify",
+      "qualification": "Retain the reported values with unspecified index-correction status (L00557-L00564). The explicitly corrected Figure 3 comparison is a separate reported analysis (L00626-L00632). It does not establish Table 3 gamma provenance or provide the numerical baseline needed to reconstruct the claimed 38% improvement."
+    }
+  ],
+  "xhigh_conflict_repairs": [
+    {
+      "issue": "Consolidator action scope is ambiguous.",
+      "action": "keep_unresolved",
+      "replacement_issue": "The source does not identify unambiguously whether permission to revise boundaries and labels applies to human consolidators or GPT-4. Its GPT-4 prompt and index-error account describe selection.",
+      "replacement_impact": "Retain human-candidate-assisted selection as the supported procedure. Do not credit demonstrated annotation revision or recovery beyond candidates. Do not claim that selection was mechanically enforced."
+    },
+    {
+      "issue": "Table 3's postprocessing description does not clearly identify whether span-index correction has occurred.",
+      "action": "rephrase",
+      "replacement_issue": "Table 4 explicitly identifies Table 3's matching micro-F1 values as without span-index correction. Table 3's generic postprocessing description and the correction status of its macro-F1 and gamma remain unspecified.",
+      "replacement_impact": "Use Table 4's original and corrected micro-F1 columns as labeled. Keep Table 3 macro-F1 and gamma separate from explicitly corrected results. Do not invent an undocumented processing step to reconcile the wording."
+    }
+  ]
+}

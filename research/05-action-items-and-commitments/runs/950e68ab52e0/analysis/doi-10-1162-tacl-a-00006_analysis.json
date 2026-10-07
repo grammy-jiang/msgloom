@@ -1,0 +1,90 @@
+{
+ "paper_id": "doi-10-1162-tacl-a-00006",
+ "title": "Event Time Extraction with a Decision Tree of Neural Classifiers",
+ "research_question": "Can a hierarchical decision tree of neural classifiers use document-wide temporal evidence to anchor events to precise single-day or multi-day time intervals more accurately than local temporal-relation systems?",
+ "methodology": "The system decomposes event-time extraction into a decision tree whose local classifiers determine event duration type, relation to document creation time, relevant temporal expressions, temporal relations, and begin or end points. Most tree nodes use convolutional neural classifiers over word embeddings, position features, and the text between an event and a temporal expression, while a narrowing stage is rule based. Unlike systems limited to nearby temporal links, all event-temporal-expression pairs in a document can be considered. The model is evaluated on the TimeBank-EventTime Corpus with strict and relaxed accuracy, repeated over 25 random seeds, and is additionally applied without retraining to SemEval-2015 Task 4 timeline generation.",
+ "key_findings": [
+  {
+   "finding": "Document-wide temporal reasoning is empirically important because the paper reports that a substantial fraction of events require temporal evidence outside the same or adjacent sentence to recover their occurrence time.",
+   "evidence_type": "supported",
+   "section": "Section 2"
+  },
+  {
+   "finding": "The full system achieves 42.0% strict overall accuracy against 56.7% inter-annotator agreement, while relaxed overall accuracy is 84.6%.",
+   "evidence_type": "supported",
+   "section": "Section 6.1"
+  },
+  {
+   "finding": "For single-day events the model reaches 74.6% exact-match accuracy, a reported 33.1 percentage-point improvement over CAEVO in the paper's conclusion.",
+   "evidence_type": "supported",
+   "section": "Sections 6.1 and 7"
+  },
+  {
+   "finding": "Multi-day anchoring remains much harder, with 24.5% strict accuracy and particularly low 28.5% strict accuracy for begin-point extraction.",
+   "evidence_type": "supported",
+   "section": "Section 6.1"
+  },
+  {
+   "finding": "Removing the text between an event and its temporal expression reduces overall strict accuracy by 9.7 percentage points, supporting explicit modeling of the linguistic relation connecting a time expression to an event.",
+   "evidence_type": "supported",
+   "section": "Section 6.3"
+  },
+  {
+   "finding": "The architecture explicitly predicts whether a relevant temporal expression is BEFORE, AFTER, or otherwise related to an event, which is methodologically applicable to deadline-to-action attachment even though deadlines and workplace actions are not the paper's target schema.",
+   "evidence_type": "supported",
+   "section": "Sections 4.2.4-4.2.5"
+  },
+  {
+   "finding": "The system cannot create dates that must be inferred but are not explicitly represented by a temporal expression in the document; such out-of-document dates affect 12.6% of test labels.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "Applied without retraining to SemEval-2015 timeline generation, the system obtains total F1 32.59 versus 28.58 for the cited previous best system, a difference of 4.01 points.",
+   "evidence_type": "supported",
+   "section": "Section 6.4"
+  }
+ ],
+ "limitations": [
+  "The corpus consists of news articles and broadcast transcripts rather than workplace email or enterprise chat.",
+  "The method anchors generic events, not task requests, decisions, assignees, commitments, or deadlines as distinct workplace concepts.",
+  "It does not model deontic modality, action negation, conditions, or group/implicit responsibility.",
+  "Temporal expressions are assumed to have already been detected and normalized by another component.",
+  "Decision-tree errors propagate from early classifiers to later temporal decisions.",
+  "The training data are small; the paper notes only 22 training documents when discussing neural-model limitations.",
+  "The system cannot synthesize required out-of-document dates, which affect 12.6% of the evaluated labels.",
+  "Multi-day event begin-point extraction remains substantially below human agreement."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "document_wide_temporal_evidence": 0.99,
+  "overall_accuracy": 0.99,
+  "single_day_gain": 0.99,
+  "multi_day_difficulty": 0.99,
+  "relation_text_ablation": 0.99,
+  "deadline_attachment_transferability": 0.9,
+  "out_of_document_date_limit": 0.99,
+  "SemEval_transfer": 0.99
+ },
+ "raw_claims": [
+  "The system decomposes event-time anchoring into a sequence of local classification decisions.",
+  "Most local classifiers are convolutional neural networks and one narrowing stage is rule based.",
+  "The model can compare an event with temporal expressions anywhere in the document.",
+  "The TimeBank-EventTime annotations distinguish single-day events from events spanning multiple days.",
+  "Multi-day events receive separate begin-point and end-point annotations.",
+  "The system reports 42.0% strict overall accuracy.",
+  "Single-day exact-match accuracy is 74.6%.",
+  "Multi-day strict accuracy is 24.5%.",
+  "Removing intervening-text features lowers strict accuracy by 9.7 percentage points.",
+  "Out-of-document dates account for 12.6% of test labels and cannot be generated by the system.",
+  "The authors evaluate 25 random-seed runs rather than reporting a single neural training run.",
+  "The implementation is publicly released."
+ ],
+ "source_url": "https://aclanthology.org/Q18-1006.pdf",
+ "access": "full_text",
+ "source_citation": "citeturn192635view2turn110040view8turn197030view0turn110040view9"
+}

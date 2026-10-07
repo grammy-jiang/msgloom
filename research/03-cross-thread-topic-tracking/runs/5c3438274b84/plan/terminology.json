@@ -1,0 +1,559 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "TerminologyAnalysis",
+ "description": "Academic terminology refinement performed before bulk discovery: each seed keyword is audited, the product problem is translated into academic task families, and query families are built with an explicit DIRECT or TRANSFER role.",
+ "type": "object",
+ "topic": "Direct enterprise communication evidence for cross-thread work-matter continuity, with emphasis on email/chat conversation linking, business-event coreference, and partial or evolving event identity in organizational workflows.",
+ "seed_audit": [
+  {
+   "seed": "cross-document event coreference",
+   "academic_meaning": "Determining which event mentions in different documents refer to the same real-world event, usually by clustering or pairwise identity decisions.",
+   "fit": "STRONG",
+   "main_risk": "Most established work uses news or other public-text corpora rather than enterprise communication, so task relevance is high but production-domain transfer is unvalidated.",
+   "false_positive_literature": "News-event clustering based mainly on lexical similarity; within-document event coreference; document retrieval without mention-level identity."
+  },
+  {
+   "seed": "cross-document event coreference resolution",
+   "academic_meaning": "The resolution task that groups event mentions across documents into identity-equivalent event clusters.",
+   "fit": "STRONG",
+   "main_risk": "The literature often assumes a static corpus and transitive equivalence classes, whereas msgloom requires online decisions, abstention, corrections, and potentially non-equivalence relations.",
+   "false_positive_literature": "Static benchmark systems with no new-cluster decision, no uncertainty state, and no workplace or longitudinal setting."
+  },
+  {
+   "seed": "event coreference resolution",
+   "academic_meaning": "Resolving multiple textual mentions that refer to the same event, within a document, across documents, or both.",
+   "fit": "STRONG",
+   "main_risk": "Unqualified searches retrieve large within-document literatures and may not address independent conversations or sources.",
+   "false_positive_literature": "Within-document event coreference, event extraction, trigger detection, semantic role labeling, and entity coreference."
+  },
+  {
+   "seed": "event identity",
+   "academic_meaning": "A broad term covering criteria under which two event descriptions or mentions denote the same event; it also appears in linguistic, philosophical, semantic-web, and knowledge-representation work.",
+   "fit": "STRONG",
+   "main_risk": "The term is semantically central but highly polysemous and can retrieve theoretical work with no operational identity decision procedure.",
+   "false_positive_literature": "Metaphysics of events, formal semantics without computational evaluation, event identifiers in databases, and event-schema matching."
+  },
+  {
+   "seed": "same-event detection",
+   "academic_meaning": "Determining whether two reports, stories, mentions, or records concern the same event; usage overlaps event coreference, story link detection, event matching, and duplicate-event detection.",
+   "fit": "MODERATE",
+   "main_risk": "Some papers use same-event to mean topically related stories rather than strict real-world event identity.",
+   "false_positive_literature": "Near-duplicate news detection, social-media burst detection, topical similarity, and multimedia event retrieval."
+  },
+  {
+   "seed": "event linking",
+   "academic_meaning": "An ambiguous term that may mean linking event mentions to canonical events or knowledge-base entries, linking arguments to events, linking events across documents, or establishing semantic relations between events.",
+   "fit": "MODERATE",
+   "main_risk": "The dominant meaning in some communities is normalization or knowledge-base linking rather than identity clustering.",
+   "false_positive_literature": "Knowledge-base event linking, event-argument linking, temporal/causal relation extraction, and hyperlink/event recommendation."
+  },
+  {
+   "seed": "cross-document event linking",
+   "academic_meaning": "Linking event information across documents, sometimes as strict identity and sometimes as broader related-event association.",
+   "fit": "MODERATE",
+   "main_risk": "Terminology is less standardized than cross-document event coreference and may include non-identity event relations.",
+   "false_positive_literature": "Storyline linking, causal or temporal event graphs, event recommendation, and cross-document relation extraction."
+  },
+  {
+   "seed": "cross-document coreference",
+   "academic_meaning": "Resolving coreferential mentions across documents; historically used heavily for entity coreference but may include events.",
+   "fit": "MODERATE",
+   "main_risk": "Unqualified use strongly attracts person, organization, and named-entity coreference rather than work-matter or event identity.",
+   "false_positive_literature": "Cross-document person/entity coreference, author-name disambiguation, and entity clustering."
+  },
+  {
+   "seed": "entity resolution",
+   "academic_meaning": "Identifying records or mentions that refer to the same underlying real-world entity despite variation, duplication, or incomplete attributes.",
+   "fit": "MODERATE",
+   "main_risk": "The entity is usually a person, organization, product, customer, or database record, where identity is more persistent and attribute-based than evolving work matters.",
+   "false_positive_literature": "Customer deduplication, bibliographic deduplication, master-data management, person matching, and product matching."
+  },
+  {
+   "seed": "entity linking",
+   "academic_meaning": "Mapping textual mentions to canonical entities in a knowledge base or inventory.",
+   "fit": "WEAK",
+   "main_risk": "This normally assumes the candidate identity inventory is externally defined and is not a cluster-continuity problem.",
+   "false_positive_literature": "Wikipedia/Wikidata entity linking, named-entity disambiguation, knowledge-base population, and entity typing."
+  },
+  {
+   "seed": "record linkage",
+   "academic_meaning": "Probabilistic or deterministic matching of records believed to represent the same underlying entity when no perfect common identifier is available.",
+   "fit": "MODERATE",
+   "main_risk": "Classical linkage is largely static and attribute-centric and generally assumes equivalence identity, not evolving work-matter state.",
+   "false_positive_literature": "Census linkage, patient linkage, administrative-data integration, person deduplication, and privacy-preserving record linkage."
+  },
+  {
+   "seed": "topic detection and tracking",
+   "academic_meaning": "The TDT research programme studies detection of new news events/topics and tracking subsequent stories associated with them in a stream.",
+   "fit": "MODERATE",
+   "main_risk": "TDT topic/event labels often correspond to news-story topical membership rather than strict mention-level event identity or workplace matter identity.",
+   "false_positive_literature": "Broadcast-news segmentation, first-story detection based on topical novelty, and broad story clustering."
+  },
+  {
+   "seed": "story link detection",
+   "academic_meaning": "A TDT task deciding whether two news stories discuss the same target event/topic.",
+   "fit": "MODERATE",
+   "main_risk": "Story-level relatedness can be broader than identity, and news stories are much more self-contained than workplace messages.",
+   "false_positive_literature": "News recommendation, document similarity, duplicate-news detection, and topical retrieval."
+  },
+  {
+   "seed": "new event detection",
+   "academic_meaning": "A TDT/streaming task identifying the first story about a previously unseen event or deciding that a new item does not belong to existing events.",
+   "fit": "STRONG",
+   "main_risk": "The operational NEW-versus-existing decision maps closely to msgloom, but standard benchmarks may define novelty using news topics rather than concrete work matters.",
+   "false_positive_literature": "Generic anomaly detection, emerging-topic detection, burst detection, and first-story detection without persistent identity tracking."
+  },
+  {
+   "seed": "novelty detection",
+   "academic_meaning": "Detecting observations sufficiently different from known data/classes, spanning machine learning, information retrieval, text streams, and anomaly detection.",
+   "fit": "MODERATE",
+   "main_risk": "Without text-stream, open-world, or cluster-assignment constraints the term becomes extremely broad and does not imply identity semantics.",
+   "false_positive_literature": "Sensor anomalies, fraud detection, image novelty, OOD detection, document novelty ranking, and change-point detection."
+  },
+  {
+   "seed": "incremental clustering",
+   "academic_meaning": "Updating clusters as new observations arrive without reclustering the entire corpus, sometimes allowing creation, merging, or restructuring of clusters.",
+   "fit": "STRONG",
+   "main_risk": "Many algorithms optimize geometric cohesion rather than semantic identity and force every observation into a cluster.",
+   "false_positive_literature": "Generic vector clustering, image clustering, customer segmentation, and algorithms without identity labels or abstention."
+  },
+  {
+   "seed": "online clustering",
+   "academic_meaning": "Assigning observations to clusters sequentially as they arrive, often under latency or memory constraints.",
+   "fit": "STRONG",
+   "main_risk": "Online clustering frequently treats cluster membership as similarity and may lack explicit NEW, UNKNOWN, merge, or split semantics.",
+   "false_positive_literature": "Streaming k-means, online topic modeling, recommender-user clustering, and forced-assignment methods."
+  },
+  {
+   "seed": "streaming clustering",
+   "academic_meaning": "Clustering data streams under bounded memory and one-pass or limited-pass processing, often with evolving cluster summaries.",
+   "fit": "MODERATE",
+   "main_risk": "The dominant literature concerns scalable geometric clustering and concept evolution rather than textual work-matter identity.",
+   "false_positive_literature": "Sensor streams, numerical data streams, micro-cluster methods, and high-throughput clustering with no identity interpretation."
+  },
+  {
+   "seed": "cluster linking",
+   "academic_meaning": "A non-standard umbrella phrase for associating, matching, or reconciling clusters across partitions, times, sources, or model runs.",
+   "fit": "WEAK",
+   "main_risk": "There is no single established academic task under this name, so precision is poor.",
+   "false_positive_literature": "Distributed clustering, cluster alignment, graph community matching, hierarchical clustering, and cross-dataset label alignment."
+  },
+  {
+   "seed": "cluster maintenance",
+   "academic_meaning": "Maintaining clustering structures as data changes, potentially including insertion, deletion, merge, split, aging, or summary updates.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is mostly algorithmic and does not guarantee stable semantic identities, lineage, correction history, or uncertainty.",
+   "false_positive_literature": "Database index maintenance, evolving numerical clusters, cache maintenance, and generic stream summarization."
+  },
+  {
+   "seed": "dynamic clustering",
+   "academic_meaning": "Clustering whose assignments or cluster structures change over time as observations or distributions evolve.",
+   "fit": "MODERATE",
+   "main_risk": "Often concerns changing geometry rather than correction of semantic identity decisions.",
+   "false_positive_literature": "Dynamic networks, temporal community detection, sensor clustering, image/video clustering, and adaptive k-means."
+  },
+  {
+   "seed": "event evolution",
+   "academic_meaning": "Modeling how events, event descriptions, stories, or event structures develop over time, including successor, subevent, temporal, or storyline relations.",
+   "fit": "STRONG",
+   "main_risk": "Evolution is usually not identity: a later event may be causally, temporally, or hierarchically related while remaining distinct.",
+   "false_positive_literature": "Topic evolution, event trend visualization, storylines, causal chains, temporal relation extraction, and social-media trend analysis."
+  },
+  {
+   "seed": "event timeline tracking",
+   "academic_meaning": "Constructing or updating timelines of events and their developments over time from text streams or document collections.",
+   "fit": "MODERATE",
+   "main_risk": "Timeline systems often assume event clusters are already available or optimize summarization rather than deciding identity.",
+   "false_positive_literature": "Timeline summarization, temporal information extraction, news chronology generation, and event ordering."
+  },
+  {
+   "seed": "business email",
+   "academic_meaning": "A domain descriptor covering organizational email corpora, communication analysis, classification, task management, search, threading, and information extraction.",
+   "fit": "MODERATE",
+   "main_risk": "It is not an academic task name and retrieves many workplace-email studies unrelated to cross-thread work-matter identity.",
+   "false_positive_literature": "Spam filtering, email classification, social-network analysis, response prediction, thread reconstruction, and email overload studies."
+  },
+  {
+   "seed": "workplace communication",
+   "academic_meaning": "A broad domain term spanning organizational communication through email, chat, meetings, documents, and collaboration systems.",
+   "fit": "MODERATE",
+   "main_risk": "The majority of literature is social-scientific or HCI-oriented rather than computational work-matter identity resolution.",
+   "false_positive_literature": "Organizational behavior, remote-work studies, communication satisfaction, collaboration practices, and workplace discourse analysis."
+  },
+  {
+   "seed": "enterprise communication",
+   "academic_meaning": "A broad descriptor for communication systems and data inside organizations, including email, enterprise social networks, chat, and unified communications.",
+   "fit": "MODERATE",
+   "main_risk": "Search results are dominated by systems, networking, security, organizational analytics, and product literature.",
+   "false_positive_literature": "Network architecture, enterprise social-media adoption, security, compliance, unified-communications infrastructure, and marketing material."
+  },
+  {
+   "seed": "work chat",
+   "academic_meaning": "An informal domain phrase for synchronous or asynchronous workplace messaging platforms such as Slack or Microsoft Teams.",
+   "fit": "WEAK",
+   "main_risk": "It is not a stable scholarly term and can miss papers using enterprise social media, computer-mediated communication, team messaging, or workplace instant messaging.",
+   "false_positive_literature": "Chatbot studies, customer-service chat, general instant messaging, social chat, and interface usability."
+  },
+  {
+   "seed": "asynchronous conversation",
+   "academic_meaning": "Communication whose contributions are separated in time, studied in email, forums, groupware, computer-mediated communication, and conversation analysis.",
+   "fit": "WEAK",
+   "main_risk": "It describes interaction timing rather than work-matter identity and heavily overlaps thread reconstruction and discourse studies.",
+   "false_positive_literature": "Forum threading, educational discussion boards, discourse analysis, asynchronous collaboration usability, and conversation structure."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "F1",
+   "name": "Cross-document event coreference and same-event identity",
+   "description": "Determine whether event mentions appearing in different documents refer to the same concrete real-world event and cluster identity-equivalent mentions.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest established NLP task to deciding whether independently expressed evidence continues the same concrete matter. It directly supplies identity-versus-similarity criteria and evidence-combination mechanisms, although domain transfer from news to workplace communication remains a separate validity question.",
+   "seed_papers": [
+    "Cross-document event coreference: Annotations, experiments, and observations — Bagga and Baldwin (1999)",
+    "Joint Entity and Event Coreference Resolution across Documents — Lee et al. (2012)",
+    "Revisiting Joint Modeling of Cross-document Entity and Event Coreference Resolution — Barhom et al. (2019)"
+   ]
+  },
+  {
+   "id": "F2",
+   "name": "Enterprise cross-thread work-matter, task, activity, and case continuity",
+   "description": "Computational work that explicitly associates workplace email, enterprise chat, documents, or communication fragments with the same task, activity, case, project episode, or concrete work item across independent conversations or channels.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the target-domain family needed to close the strongest remaining evidence gap. Admission should require actual cross-message or cross-conversation identity evidence, not merely enterprise data.",
+   "seed_papers": []
+  },
+  {
+   "id": "F3",
+   "name": "Topic Detection and Tracking, story-link detection, and first-story/new-event detection",
+   "description": "Track recurring news events/topics in a stream and determine whether a new story belongs to an existing event or introduces a new one.",
+   "role": "TRANSFER",
+   "why_it_matters": "The existing-versus-new decision is structurally close to CONTINUE versus NEW and offers mature online evaluation concepts, but TDT story membership can be broader than strict work-matter identity.",
+   "seed_papers": [
+    "A Study of Retrospective and On-Line Event Detection — Yang, Pierce, and Carbonell (1998)"
+   ]
+  },
+  {
+   "id": "F4",
+   "name": "Online, incremental, and evolving clustering with new-cluster creation and cluster revision",
+   "description": "Sequentially assign observations to existing clusters, create clusters for novel observations, and in stronger formulations revise, merge, split, age, or restructure clusters as additional evidence arrives.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family provides mechanisms and evaluation patterns for incremental continuity, NEW decisions, bounded history, late correction, and cluster maintenance, but geometric similarity must not be mistaken for semantic identity.",
+   "seed_papers": [
+    "Clustering Data Streams — Guha et al. (2000)",
+    "A Framework for Clustering Evolving Data Streams — Aggarwal et al. (2003)"
+   ]
+  },
+  {
+   "id": "F5",
+   "name": "Entity resolution, record linkage, and incremental identity matching",
+   "description": "Decide whether heterogeneous or incomplete records refer to the same underlying entity, including probabilistic evidence combination, candidate generation, blocking, and incremental matching.",
+   "role": "TRANSFER",
+   "why_it_matters": "Record linkage provides the clearest formal tradition for combining partially reliable identity evidence and reasoning about false links versus missed links. Its equivalence assumptions and persistent-entity model require explicit adaptation for evolving work matters.",
+   "seed_papers": [
+    "A Theory for Record Linkage — Fellegi and Sunter (1969)"
+   ]
+  },
+  {
+   "id": "F6",
+   "name": "Event partial identity, subevents, event hierarchy, event mereology, and evolving event relations",
+   "description": "Model relations in which two event descriptions overlap, one event is part of another, events participate in a hierarchy, or descriptions correspond to related but non-identical stages of an evolving event.",
+   "role": "DIRECT",
+   "why_it_matters": "This family addresses the non-transitive and non-equivalence relationships that msgloom must not collapse into a binary same/different decision. It is the main academic route for gap-5.",
+   "seed_papers": [
+    "MAVEN-ERE: A Unified Large-scale Dataset for Event Coreference, Temporal, Causal, and Subevent Relation Extraction"
+   ]
+  },
+  {
+   "id": "F7",
+   "name": "Business-process event correlation and case-notion discovery",
+   "description": "Infer which business-process instance or case an observed event belongs to when an explicit case identifier is missing, unreliable, or must be reconstructed from attributes and temporal/behavioral constraints.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is closer to organizational work than news NLP and directly studies identity-like correlation of business events using combinations of object, actor, temporal, and process-state evidence. It can inform continuity and rejection rules but process-log assumptions differ from natural communication.",
+   "seed_papers": [
+    "Correlation Miner: Mining Business Process Models and Event Correlations Without Case Identifiers"
+   ]
+  },
+  {
+   "id": "F8",
+   "name": "Object-centric and artifact-centric process mining",
+   "description": "Represent events as related to multiple business objects rather than forcing every event into one case trace, allowing one observation to participate in several object-centered histories.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family is highly relevant to one-message/multiple-matter membership and to avoiding false transitivity caused by a single case identifier. It offers representational alternatives for RELATED-BUT-SEPARATE and multi-membership, although it usually assumes object identities rather than inferring them from text.",
+   "seed_papers": [
+    "Object-Centric Process Mining: Dealing with Divergence and Convergence in Event Data"
+   ]
+  },
+  {
+   "id": "F9",
+   "name": "Cross-channel activity linking and task-based personal information management",
+   "description": "Associate communications, documents, application artifacts, and user interactions with ongoing activities or tasks across tools and time.",
+   "role": "DIRECT",
+   "why_it_matters": "This literature may provide the missing bridge between communication threads and persistent work activities, especially when email and other artifacts are organized around tasks rather than threads. Admission requires actual identity/association mechanisms rather than generic productivity support.",
+   "seed_papers": [
+    "TaskTracer: A Desktop Environment to Support Multi-Tasking Knowledge Workers"
+   ]
+  },
+  {
+   "id": "F10",
+   "name": "Selective prediction, reject option, abstention, and uncertainty under distribution shift",
+   "description": "Allow a classifier or matcher to abstain instead of forcing a prediction, evaluate risk as coverage changes, calibrate confidence, and study degradation under dataset or concept shift.",
+   "role": "TRANSFER",
+   "why_it_matters": "This provides formal machinery for UNCERTAIN and for controlling false-merge risk. It does not determine msgloom's application loss function and must be evaluated under non-stationary workplace data.",
+   "seed_papers": [
+    "On the Foundations of Noise-free Selective Classification — El-Yaniv and Wiener (2010)",
+    "Selective Classification for Deep Neural Networks — Geifman and El-Yaniv (2017)",
+    "On Calibration of Modern Neural Networks — Guo et al. (2017)",
+    "Can You Trust Your Model's Uncertainty? Evaluating Predictive Uncertainty Under Dataset Shift — Ovadia et al. (2019)",
+    "A Survey on Concept Drift Adaptation — Gama et al. (2014)"
+   ]
+  },
+  {
+   "id": "F11",
+   "name": "Retrieval-augmented and global-context event coreference",
+   "description": "Event-coreference methods that obtain or exploit evidence beyond a local mention pair, including document-level, cluster-level, corpus-level, or retrieved context for identity decisions.",
+   "role": "DIRECT",
+   "why_it_matters": "This family can inform Phase 2 bounded evidence seeking: what additional context improves identity decisions, how candidate evidence is retrieved, and whether global evidence can overturn locally plausible matches.",
+   "seed_papers": []
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "F1",
+   "role": "DIRECT",
+   "queries": [
+    "\"cross-document event coreference\" identity evidence",
+    "\"cross-document event coreference\" same event criteria",
+    "\"event coreference resolution\" cross-document identity clustering",
+    "\"same event\" cross-document coreference temporal participants arguments",
+    "\"cross-document event coreference\" temporal participant location argument compatibility",
+    "\"event identity\" NLP cross-document coreference",
+    "\"event coreference\" cross-document false positive false negative identity"
+   ]
+  },
+  {
+   "family_id": "F2",
+   "role": "DIRECT",
+   "queries": [
+    "(email OR \"enterprise chat\" OR \"workplace chat\" OR \"Microsoft Teams\" OR Slack) AND (\"work item\" OR \"work matter\" OR task OR case OR activity) AND (identity OR linking OR continuity OR tracking) AND (cross-thread OR \"cross conversation\" OR longitudinal)",
+    "(enterprise OR workplace OR organizational) AND email AND (\"task identity\" OR \"activity identity\" OR \"case identity\" OR \"work item identity\")",
+    "(email OR \"Microsoft Teams\" OR Slack) AND (\"cross-thread\" OR \"cross-conversation\" OR \"cross-channel\") AND (linking OR continuity OR tracking) AND (task OR activity OR case OR project)",
+    "\"business email\" AND (\"cross-thread\" OR \"cross conversation\") AND (task OR activity OR case) AND (linking OR tracking OR identity)",
+    "(\"enterprise communication\" OR \"workplace communication\") AND (\"same task\" OR \"same activity\" OR \"same case\" OR \"same work item\")",
+    "(email AND chat) AND (\"cross-channel\" OR \"cross-source\") AND (task OR activity OR case) AND (linking OR correlation)",
+    "(Outlook OR \"Microsoft Teams\") AND (task OR case OR activity) AND (tracking OR linking OR continuity) AND message"
+   ]
+  },
+  {
+   "family_id": "F3",
+   "role": "TRANSFER",
+   "queries": [
+    "\"topic detection and tracking\" \"new event detection\"",
+    "\"story link detection\" event tracking",
+    "\"first story detection\" event tracking stream",
+    "\"new event detection\" online text stream existing event",
+    "\"new event detection\" false alarm miss cost",
+    "\"topic tracking\" event stream threshold",
+    "\"new event detection\" rejection threshold clustering"
+   ]
+  },
+  {
+   "family_id": "F4",
+   "role": "TRANSFER",
+   "queries": [
+    "(\"online clustering\" OR \"incremental clustering\") AND text AND (\"new cluster\" OR novelty OR rejection)",
+    "(\"online clustering\" OR \"incremental clustering\") AND (merge OR split OR revision) AND cluster",
+    "\"incremental clustering\" cluster correction merge split",
+    "\"streaming clustering\" \"new cluster\" concept evolution",
+    "\"online event clustering\" new event detection text",
+    "\"incremental event clustering\" text stream identity",
+    "\"evolving clustering\" cluster lineage merge split"
+   ]
+  },
+  {
+   "family_id": "F5",
+   "role": "TRANSFER",
+   "queries": [
+    "(\"entity resolution\" OR \"record linkage\") AND (evidence OR features) AND identity AND uncertainty",
+    "(\"incremental entity resolution\" OR \"incremental record linkage\") AND cluster",
+    "\"entity resolution\" false match false nonmatch threshold",
+    "\"record linkage\" false links missed links decision threshold",
+    "\"entity resolution\" abstention OR rejection OR uncertain match",
+    "\"collective entity resolution\" relational evidence identity",
+    "\"entity resolution\" temporal consistency incremental"
+   ]
+  },
+  {
+   "family_id": "F6",
+   "role": "DIRECT",
+   "queries": [
+    "(\"partial event identity\" OR \"partial coreference\" OR \"partial event coreference\")",
+    "(\"subevent relation\" OR \"sub-event relation\") AND (coreference OR identity)",
+    "(\"event hierarchy\" OR \"event partonomy\" OR \"event mereology\") AND coreference",
+    "(\"event evolution\" OR \"evolving event\") AND (identity OR coreference OR subevent)",
+    "(\"event membership\" OR \"event part-of\") AND NLP AND identity",
+    "(\"non-transitive\" AND (coreference OR \"event identity\"))",
+    "(\"event coreference\" AND (subevent OR partial OR hierarchy OR overlap))",
+    "(\"same event\" AND (granularity OR subevent OR partial identity))"
+   ]
+  },
+  {
+   "family_id": "F7",
+   "role": "TRANSFER",
+   "queries": [
+    "(\"event correlation\" OR \"case correlation\") AND \"process mining\" AND \"case identifier\"",
+    "\"event-to-case correlation\" process mining",
+    "\"case notion discovery\" process mining",
+    "(\"case identification\" OR \"process instance identification\") AND \"process mining\"",
+    "\"event correlation\" business process \"case id\"",
+    "\"event correlation\" workflow process instance",
+    "\"case correlation\" business event temporal attribute",
+    "\"process mining\" missing case identifier event correlation"
+   ]
+  },
+  {
+   "family_id": "F8",
+   "role": "TRANSFER",
+   "queries": [
+    "\"object-centric process mining\" event identity object relations",
+    "\"object-centric event log\" multiple objects event",
+    "\"artifact-centric process mining\" event correlation",
+    "\"object-centric\" process mining convergence divergence",
+    "(\"object-centric process mining\" OR \"artifact-centric process mining\") AND (identity OR correlation OR case notion)",
+    "\"multiple case notions\" process mining event",
+    "\"event-to-object\" correlation process mining"
+   ]
+  },
+  {
+   "family_id": "F9",
+   "role": "DIRECT",
+   "queries": [
+    "(\"activity-based computing\" OR \"task-based computing\") AND email AND activity",
+    "(\"task-based information management\" OR \"activity-based information management\") AND email",
+    "(workplace OR enterprise) AND (email OR chat OR document) AND \"activity tracking\"",
+    "(email AND documents) AND \"task tracking\" knowledge worker",
+    "\"cross-application\" activity tracking knowledge work",
+    "(email OR chat) AND \"task association\" workplace",
+    "(email OR \"instant messaging\") AND \"activity-based\" workplace"
+   ]
+  },
+  {
+   "family_id": "F10",
+   "role": "TRANSFER",
+   "queries": [
+    "(\"selective classification\" OR \"selective prediction\" OR abstention OR \"reject option\") AND (\"distribution shift\" OR \"concept drift\")",
+    "(\"confidence calibration\" OR calibrated confidence) AND (\"distribution shift\" OR nonstationary OR streaming) AND NLP",
+    "(abstention OR \"reject option\") AND clustering AND uncertain assignment",
+    "\"risk coverage\" selective prediction distribution shift",
+    "\"selective prediction\" NLP distribution shift",
+    "\"confidence calibration\" coreference OR clustering",
+    "(\"selective classification\" OR abstention) AND streaming AND concept drift"
+   ]
+  },
+  {
+   "family_id": "F11",
+   "role": "DIRECT",
+   "queries": [
+    "\"event coreference\" retrieval context cross-document",
+    "\"cross-document event coreference\" retrieval",
+    "\"event coreference\" global context cross-document",
+    "\"event coreference\" cluster-level context",
+    "\"cross-document event coreference\" candidate retrieval",
+    "\"event coreference\" external evidence retrieval",
+    "\"event coreference\" global information evidence"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "event mention identity",
+  "same-event identity",
+  "event identity criteria",
+  "event cluster assignment",
+  "new-cluster creation",
+  "first-story detection",
+  "story link detection",
+  "selective prediction",
+  "reject option",
+  "risk-coverage",
+  "uncertain match",
+  "incremental entity resolution",
+  "collective entity resolution",
+  "case notion",
+  "case notion discovery",
+  "event-to-case correlation",
+  "case correlation",
+  "case identification",
+  "process instance identification",
+  "business-process event correlation",
+  "object-centric process mining",
+  "object-centric event log",
+  "artifact-centric process mining",
+  "event partonomy",
+  "event hierarchy",
+  "event mereology",
+  "subevent relation",
+  "partial event coreference",
+  "event granularity",
+  "activity-based computing",
+  "task-based information management",
+  "cross-application activity tracking",
+  "cross-channel activity linking",
+  "cluster lineage",
+  "cluster revision",
+  "concept drift",
+  "selective classification under distribution shift"
+ ],
+ "demoted_terms": [
+  "entity linking",
+  "cluster linking",
+  "work chat",
+  "asynchronous conversation",
+  "dynamic clustering",
+  "cluster maintenance",
+  "novelty detection",
+  "business email",
+  "workplace communication",
+  "enterprise communication",
+  "event timeline tracking",
+  "event linking"
+ ],
+ "downgrade_rules": [
+  "Downgrade document-embedding, semantic-similarity, or nearest-neighbor papers that do not evaluate identity labels or same-event/same-matter decisions.",
+  "Downgrade ordinary topic modeling where a topic is a latent word distribution rather than a concrete persistent event, case, task, or work matter.",
+  "Downgrade thread reconstruction, reply-tree inference, quotation attribution, and conversation disentanglement when the target is conversation structure rather than work-matter identity across conversations.",
+  "Downgrade within-document segmentation or within-message topic extraction; these belong to the preceding project topic unless they explicitly evaluate cross-document continuity.",
+  "Downgrade duplicate or near-duplicate detection when it only identifies repeated content and does not address continuation expressed with different content.",
+  "Downgrade entity linking to Wikipedia, Wikidata, or another fixed knowledge base unless the paper contributes a transferable reject/unknown mechanism relevant to identity assignment.",
+  "Downgrade entity-resolution papers whose only problem is persistent person, customer, product, or bibliographic identity unless they contribute explicit evidence-combination, incremental correction, or false-link control applicable to work-matter identity.",
+  "Downgrade process-mining papers that assume a correct case identifier is already supplied; they do not solve case or work-matter identity.",
+  "Downgrade object-centric process-mining papers that only change representation while assuming all object identities are already known, unless they contribute useful multi-membership or correction semantics.",
+  "Downgrade TDT papers when event/topic membership is defined only by broad topical similarity and no evidence is provided that the labels correspond to a concrete event identity.",
+  "Downgrade new-event or novelty-detection papers that detect distributional novelty but never choose between an existing identity and a new identity.",
+  "Downgrade clustering papers that force every incoming item into some cluster and cannot create a new cluster, reject a match, or preserve uncertainty.",
+  "Downgrade clustering papers evaluated only with geometric cohesion or unsupervised cluster indices when no ground-truth identity or event membership is available.",
+  "Downgrade timeline-generation and timeline-summarization papers when identity clusters are input assumptions rather than outputs being inferred.",
+  "Downgrade event-relation papers limited to temporal, causal, script, or succession relations unless they explicitly distinguish those relations from identity/coreference.",
+  "Downgrade event-evolution papers that treat related stages as one storyline without specifying whether the stages are identical, subevents, successors, or merely related.",
+  "Downgrade workplace-email studies limited to spam filtering, priority prediction, sentiment, response prediction, social-network analysis, or overload unless they explicitly link a concrete task/activity/case across messages or threads.",
+  "Downgrade Microsoft Teams, Slack, or enterprise-social-network studies that analyze adoption, participation, social structure, productivity, or communication patterns without cross-message work-matter identity.",
+  "Downgrade conversation-linking papers that merely reconstruct who replied to whom; source ancestry is evidence, not Topic identity.",
+  "Downgrade task extraction and action-item detection papers that identify tasks inside individual messages but do not determine whether tasks across independent messages are the same continuing work item.",
+  "Downgrade activity-recognition papers when activities are predefined user-behavior classes rather than persistent work instances with identity.",
+  "Downgrade event-coreference papers that report only overall F1 while omitting or obscuring error types relevant to false merges versus false splits when stronger evidence is available.",
+  "Downgrade static event-coreference systems as engineering evidence for online continuity if they assume the complete future corpus is available during inference.",
+  "Downgrade methods that revise clusters destructively without preserving prior assignments, evidence lineage, or an interpretable correction history when they are being considered for msgloom identity-state design.",
+  "Downgrade selective-classification or calibration results demonstrated only on IID calibration/test data when used as evidence for gap-7; retain them only as TRANSFER foundations unless distribution shift or drift is evaluated.",
+  "Downgrade open-set image-recognition or sensor-anomaly papers unless they provide a general rejection, calibration, or risk-coverage method that can plausibly transfer to textual identity decisions.",
+  "Downgrade retrieval-augmented methods if retrieval merely improves generic classification or generation and does not test whether retrieved historical evidence changes an identity/coreference decision correctly.",
+  "Downgrade public news, Wikipedia, healthcare, knowledge-graph, or generic database evidence from DIRECT production-domain status. Such work may be retained as TRANSFER evidence but cannot establish Outlook/Teams accuracy or representativeness.",
+  "Downgrade Enron, Avocado, or other email-corpus papers from identity evidence unless the dataset annotation and evaluation actually label cross-thread concrete work-matter continuity.",
+  "Downgrade any paper that equates same subject, same customer, same participants, same project name, or high semantic similarity with identity without an independently annotated same-matter target.",
+  "Downgrade systems in which one message can belong to only one forced cluster if the method cannot represent different spans of one message continuing different existing matters.",
+  "Downgrade papers that model identity strictly as a transitive equivalence relation when being used to justify partial, subevent, evolving, or related-but-separate semantics; retain only the portion that truly concerns equivalence coreference.",
+  "Downgrade production-accuracy claims based solely on synthetic examples, transfer corpora, or general-purpose benchmarks; they may support mechanisms or experiments but not target-domain representativeness."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1969,
+  "rationale": "The global discovery floor should be 1969 because probabilistic record linkage, a foundational identity-matching tradition relevant to evidence combination and false-link versus missed-link trade-offs, includes Fellegi and Sunter's 1969 work. The direct textual continuity lineage begins much later: Topic Detection and Tracking and online event detection were established in the late 1990s, and cross-document event coreference appears by 1999. Enterprise task/activity linking and process-event correlation largely develop in the 2000s. A recency-only window such as 2015-present would therefore silently remove foundations needed to interpret newer methods. Discovery should use 1969 as the global lower bound while prioritizing approximately 1998 onward for DIRECT event/text families and using the older period mainly for record-linkage foundations."
+ }
+}

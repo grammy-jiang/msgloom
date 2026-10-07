@@ -1,0 +1,77 @@
+{
+ "paper_id": "manual-555fa5b6e8",
+ "title": "Resolving Event Noun Phrases to Their Verbal Mentions",
+ "research_question": "Can event-denoting noun phrases be linked to their corresponding verbal event mentions across potentially long discourse distances using lexical, positional, syntactic, and pairwise-ranking information?",
+ "methodology": "The authors formulate event-noun-phrase resolution as linking an event NP to a verbal mention and build a learning-based model with lexical, syntactic, and positional features. They encode syntactic relations with convolution tree kernels, combine these with flat features through a composite kernel, and apply a twin-candidate ranking SVM that compares antecedent candidates pairwise. Experiments use OntoNotes Release 2.0 English newswire and broadcast-news data, ten-fold cross-validation, precision/recall/F-score, ablation comparisons, learning curves, and paired significance testing.",
+ "key_findings": [
+  {
+   "finding": "Event noun phrases can refer to verbal mentions across substantially longer distances than the local windows commonly used for pronoun resolution, producing a much larger candidate set.",
+   "evidence_type": "supported",
+   "section": "Experiments: Data Analysis"
+  },
+  {
+   "finding": "The flat-feature model obtained an F-score of 43.35, while combining the same features with the minimum-expansion tree kernel raised F-score to 59.01.",
+   "evidence_type": "supported",
+   "section": "Experiments: Composite Kernel"
+  },
+  {
+   "finding": "All reported composite-kernel configurations improved F-score by more than ten percentage points over the flat-feature baseline.",
+   "evidence_type": "supported",
+   "section": "Experiments: Composite Kernel"
+  },
+  {
+   "finding": "The minimum-expansion structural representation performed better than the more elaborate simple and full expansions, which the authors interpret as evidence that additional syntactic structure can introduce harmful noise.",
+   "evidence_type": "supported",
+   "section": "Experiments: Composite Kernel"
+  },
+  {
+   "finding": "Twin-candidate ranking improved the best composite model from 59.01 to 61.36 F-score, with precision of 66.41 and recall of 57.93.",
+   "evidence_type": "supported",
+   "section": "Experiments: Twin-Candidate Resolution"
+  },
+  {
+   "finding": "The twin-candidate improvement was reported as statistically significant at the 5 percent level.",
+   "evidence_type": "supported",
+   "section": "Experiments: Twin-Candidate Resolution"
+  },
+  {
+   "finding": "Learning-curve results suggested that performance was already relatively stable with a substantial subset of the available training data and that the largest training fractions were statistically indistinguishable.",
+   "evidence_type": "supported",
+   "section": "Experiments: Learning Curve"
+  }
+ ],
+ "limitations": [
+  "The number of candidate verbs becomes very large because event-NP links may span long distances, increasing computational cost, especially for pairwise twin-candidate comparisons.",
+  "Evaluation is restricted to English OntoNotes 2.0 newswire and broadcast-news genres.",
+  "The task formulation focuses specifically on links between event noun phrases and verbal mentions rather than all possible cross-form event-coreference relations.",
+  "The model relies on automatic syntactic parsing and named-entity preprocessing, so upstream errors can affect resolution.",
+  "Explicit semantic-role and verb-frame information is not incorporated; the authors identify such semantic information as future work."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "long_distance_candidate_problem": 0.96,
+  "composite_kernel_gain": 0.99,
+  "minimum_expansion_best": 0.98,
+  "twin_candidate_improves_fscore": 0.99,
+  "twin_candidate_significant": 0.97,
+  "learning_curve_saturation": 0.93
+ },
+ "raw_claims": [
+  "The paper studies resolution of event-denoting noun phrases to verbal mentions of the same event.",
+  "The OntoNotes-based data extraction produced 977 verbal-mention and event-NP links for the study.",
+  "The average sentence distance between linked mentions is reported as 2.97.",
+  "The candidate-generation setting yields roughly 30.49 verb candidates per training instance and 583.74 per test instance on average.",
+  "A most-recent-verb strategy is unsuitable because most noun phrases in the candidate space are not event anaphors and only a small fraction of verbs are referred to by event NPs.",
+  "The flat lexical, syntactic, and positional feature model reports an F-score of 43.35.",
+  "Adding a minimum-expansion tree kernel to the flat features raises F-score to 59.01.",
+  "More elaborate tree expansions perform worse than the minimum expansion in the reported experiments.",
+  "Pairwise twin-candidate ranking raises the best system's F-score to 61.36.",
+  "The authors propose richer semantic information, including semantic roles and verb frames, as a direction for improving the resolver."
+ ],
+ "source_url": "https://aclanthology.org/D10-1085.pdf",
+ "access": "full_text"
+}

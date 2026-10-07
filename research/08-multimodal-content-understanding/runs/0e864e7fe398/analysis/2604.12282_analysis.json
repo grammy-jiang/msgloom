@@ -1,0 +1,72 @@
+{
+ "paper_id": "2604.12282",
+ "title": "Towards Robust Real-World Spreadsheet Understanding with Multi-Agent Multi-Format Reasoning",
+ "research_question": "Can robust real-world spreadsheet understanding be improved by incrementally extracting and verifying a multimodal structural representation before performing query-specific reasoning?",
+ "methodology": "The authors propose SpreadsheetAgent, a two-stage multi-agent framework that first constructs an intermediate structural representation of a workbook and then reasons over that representation for the requested task. An Extraction Agent incrementally inspects spreadsheet regions using code execution, vision-based range descriptions, and LaTeX-oriented range descriptions, producing structural sketches and row or column summaries. A Verification Agent cross-checks extracted structures using multimodal and language-model descriptions and iteratively requests refinement when inconsistencies are detected. The framework is evaluated on SpreadsheetBench and RealHiTBench using accuracy, exact match, and F1 metrics, together with ablations of tools, verification, representation formats, and extractor strength.",
+ "key_findings": [
+  {
+   "finding": "SpreadsheetAgent with Qwen3-Coder-480B-A35B reached 41.67% soft accuracy on SpreadsheetBench, exceeding the previously reported ChatGPT Agent result of 35.27% cited by the authors.",
+   "evidence_type": "supported",
+   "section": "§4.2 Evaluation Results"
+  },
+  {
+   "finding": "The framework improved spreadsheet-question performance across model scales, including an improvement of more than 11 percentage points for Qwen3-Coder-480B relative to the corresponding setup without the full framework.",
+   "evidence_type": "supported",
+   "section": "§4.2 Evaluation Results"
+  },
+  {
+   "finding": "Verification contributes measurable value: in the reported ablation, the full configuration achieved 22.37% soft and 18.42% hard accuracy, while removing verification reduced performance to 20.44% and 15.69%.",
+   "evidence_type": "supported",
+   "section": "§4.3.1 Ablation Study"
+  },
+  {
+   "finding": "Explicit structural sketches in YAML or JSON improve reasoning compared with omitting the structured representation.",
+   "evidence_type": "supported",
+   "section": "§4.3.1 Ablation Study"
+  },
+  {
+   "finding": "A stronger extraction model improves downstream reasoning even when the reasoning model is held fixed, indicating that accurate workbook-structure reconstruction is an important bottleneck.",
+   "evidence_type": "supported",
+   "section": "§4.3.2 Structure Extractor Analysis"
+  },
+  {
+   "finding": "The extraction process is computationally substantial, averaging 97.49 seconds and 19.54 agent calls per spreadsheet in the reported efficiency analysis.",
+   "evidence_type": "supported",
+   "section": "§4.3.3 Efficiency Analysis"
+  }
+ ],
+ "limitations": [
+  "The framework relies on strong foundation models with multimodal-input and function-calling capabilities, while suitable open-source models remain comparatively scarce.",
+  "The paper does not study distillation of the multi-agent pipeline into smaller or cheaper models.",
+  "The limited availability of large-scale, realistic spreadsheet-understanding datasets constrains both distillation and evaluation of smaller models.",
+  "The framework is designed for understanding a workbook instance rather than tracking cell or region lineage across successive revised workbook versions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "spreadsheetbench_result": 0.99,
+  "cross_scale_gain": 0.96,
+  "verification_ablation": 0.99,
+  "structured_representation": 0.96,
+  "extractor_strength": 0.98,
+  "efficiency_cost": 0.99
+ },
+ "raw_claims": [
+  "SpreadsheetAgent separates workbook-structure extraction from task-specific reasoning.",
+  "The extraction stage reads spreadsheets incrementally rather than flattening the entire workbook into one prompt.",
+  "Its tools include code execution, visual descriptions of selected ranges, and LaTeX-oriented descriptions.",
+  "The intermediate representation contains structural sketches and summaries of spreadsheet regions.",
+  "A dedicated Verification Agent checks extracted structures and can trigger iterative refinement.",
+  "The framework is evaluated on real-world spreadsheet-question benchmarks including SpreadsheetBench and RealHiTBench.",
+  "The strongest reported SpreadsheetBench configuration reaches 41.67% soft accuracy.",
+  "Removing verification reduces both soft and hard accuracy in the reported ablation.",
+  "Stronger extraction models improve the accuracy of weaker downstream reasoners.",
+  "The extraction stage incurs nontrivial latency and repeated model calls.",
+  "The implementation and benchmark resources referenced by the paper are publicly available."
+ ],
+ "source_url": "https://arxiv.org/html/2604.12282",
+ "access": "full_text"
+}

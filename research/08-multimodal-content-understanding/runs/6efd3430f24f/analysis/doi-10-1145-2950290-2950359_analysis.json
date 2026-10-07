@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-1145-2950290-2950359",
+ "title": "Detecting Table Clones and Smells in Spreadsheets",
+ "research_question": "Can spreadsheet table clones with corresponding computational semantics, and suspicious inconsistencies among their corresponding cells, be detected automatically from inferred row and column header structure?",
+ "methodology": "TableCheck infers row and column headers for cells and uses the derived header information as fingerprints to identify rectangular table blocks whose corresponding cells are likely to have the same or similar computational semantics. It then groups corresponding cells across detected clones and applies outlier-based checks for missing formulas and inconsistent formulas, together with heuristics intended to suppress false positives. The authors evaluate the prototype on 1,617 formula-bearing, Apache-POI-processable spreadsheets from the EUSES corpus, manually validate detected clones and smells, and compare the resulting smells with several prior spreadsheet-analysis techniques.",
+ "key_findings": [
+  {
+   "finding": "Confirmed table clones occurred in 352 of the 1,617 evaluated spreadsheets, corresponding to 21.8% of the studied formula-bearing spreadsheets.",
+   "evidence_type": "supported",
+   "section": "Section 6.2.1"
+  },
+  {
+   "finding": "TableCheck detected 1,317 table-clone groups, of which 1,214 were manually confirmed, yielding 92.2% precision.",
+   "evidence_type": "supported",
+   "section": "Section 6.2.2, Table 2"
+  },
+  {
+   "finding": "Among 3,382 cells flagged as smells, 2,892 were validated as true smells, for 85.5% smell-detection precision.",
+   "evidence_type": "supported",
+   "section": "Section 6.3, Table 3"
+  },
+  {
+   "finding": "177 of the 1,214 confirmed table-clone groups contained smells, corresponding to 14.6% of the confirmed clone groups.",
+   "evidence_type": "supported",
+   "section": "Section 6.2.2, Table 2"
+  },
+  {
+   "finding": "Manual inspection found wrong values in 971 of the 2,892 validated smelly cells, or 33.6%.",
+   "evidence_type": "supported",
+   "section": "Section 6.3"
+  },
+  {
+   "finding": "The strongest compared prior technique detected 35.6% of the 2,892 validated smells found by TableCheck, while the other reported techniques covered still smaller fractions.",
+   "evidence_type": "supported",
+   "section": "Section 6.4, Table 3"
+  },
+  {
+   "finding": "The method infers clone correspondence from the present spreadsheet structure rather than recorded copy history; the authors state that detailed version information would be needed to determine how and why clone smells arose.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 7.2"
+  }
+ ],
+ "limitations": [
+  "TableCheck assumes meaningful row and column headers; missing, incomplete, or mixed headers can prevent effective clone and smell detection.",
+  "Changes to headers or insertion and deletion of rows or columns after cloning can cause clones to be missed.",
+  "The EUSES corpus may not fully represent spreadsheets used in other populations or domains.",
+  "The detected clones and smells were manually checked by the authors rather than by the spreadsheets' original users.",
+  "Recall was not measured because exhaustive ground truth for all table clones in EUSES was unavailable.",
+  "The authors could not determine how or why individual clone smells arose because the studied corpus lacked detailed version information."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "clone_prevalence": 0.99,
+  "clone_precision": 0.99,
+  "smell_precision": 0.99,
+  "smelly_clone_prevalence": 0.99,
+  "wrong_value_fraction": 0.99,
+  "prior_method_coverage": 0.99,
+  "version_history_gap": 0.99
+ },
+ "raw_claims": [
+  "A table clone is defined as rectangular cell blocks whose corresponding cells have the same or similar computational semantics.",
+  "TableCheck uses inferred row and column header information as a fingerprint for finding table clones.",
+  "Corresponding cells inside detected clone groups are cross-checked for outlying computations.",
+  "The experiments use 1,617 EUSES spreadsheets that contain formulas and can be processed by Apache POI.",
+  "The authors made their experimental subjects and results available online.",
+  "TableCheck detected 1,317 clone groups and validated 1,214 of them.",
+  "TableCheck validated 2,892 true smelly cells from 3,382 flagged cells.",
+  "A third of the validated smelly cells contained wrong values under the authors' repair-based assessment.",
+  "Some clone relationships span different worksheets, so within-sheet-only analyses can miss relevant correspondences.",
+  "The paper does not estimate recall because there is no exhaustive clone ground truth for EUSES.",
+  "The authors note that ordinary spreadsheets rarely retain metadata identifying which cells originated from copy-and-paste operations.",
+  "The lack of detailed version information prevents the study from reconstructing the causes of observed clone inconsistencies."
+ ],
+ "source_url": "https://wsdou.github.io/papers/2016-fse-tablecheck.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-18653-v1-2023-emnlp-main-294",
+ "title": "Cross-Document Event Coreference Resolution on Discourse Structure",
+ "research_question": "Does representing global discourse structure and long-distance discourse paths improve clustering of event mentions across documents that refer to the same real-world event?",
+ "methodology": "The model combines a local event-pair representation from pretrained language-model embeddings with a global representation derived from rhetorical discourse trees. For cross-document pairs, the authors construct combined discourse structures, extract lowest-common-parent information and shortest dependency paths between discourse units, encode path information with a BiLSTM, and feed local and global representations to an MLP pairwise classifier followed by best-first clustering. Experiments use the standard ECB+ train/dev/test split with gold event mentions and evaluate MUC, B3, CEAFe, and aggregate CoNLL scores against prior CD-ECR systems, with ablations isolating within-document global features, cross-document global features, discourse paths, and tree-construction strategies.",
+ "key_findings": [
+  {
+   "finding": "The task explicitly defines cross-document event identity as grouping event mentions from different documents that refer to the same real-world event.",
+   "evidence_type": "supported",
+   "section": "Introduction; Model"
+  },
+  {
+   "finding": "Adding within-document discourse lowest-common-parent information raised CoNLL from 81.1 to 82.3, adding cross-document LCP information raised it further to 83.9, and adding discourse-tree shortest-path information raised it to 85.7.",
+   "evidence_type": "supported",
+   "section": "Analysis: Impact of Global Information"
+  },
+  {
+   "finding": "The ablation results provide direct evidence that cross-document global discourse information contributes beyond local event-sentence representations when deciding event identity.",
+   "evidence_type": "supported",
+   "section": "Analysis: Impact of Global Information"
+  },
+  {
+   "finding": "With Longformer as encoder, the proposed model reached a CoNLL score of 86.4 and significantly exceeded the strongest reported comparison by 0.7 points.",
+   "evidence_type": "supported",
+   "section": "Experimental Results"
+  },
+  {
+   "finding": "The best cross-document discourse construction strategy retained the event sentences while compressing other context; using only event sentences lost useful contextual links, while concatenating full documents introduced excessive noise.",
+   "evidence_type": "supported",
+   "section": "Analysis on Construction Strategy for Cross Document Discourse Structure"
+  },
+  {
+   "finding": "A case analysis shows that discourse paths can propagate a shared participant across differing local descriptions and thereby recover coreference that direct local comparison would misclassify.",
+   "evidence_type": "supported",
+   "section": "Case Study"
+  },
+  {
+   "finding": "The study directly addresses cross-document event identity but uses news articles rather than enterprise emails or chats, so workplace continuity remains untested.",
+   "evidence_type": "supported",
+   "section": "Dataset and task scope"
+  }
+ ],
+ "limitations": [
+  "Training and evaluation use gold event mentions, so upstream event-detection errors are excluded.",
+  "The discourse-structure constructor has high inference cost.",
+  "The authors state that cross-document discourse-tree construction remains open to further optimization.",
+  "Evaluation is limited to ECB+, a news-domain benchmark.",
+  "The pipeline first clusters documents to topics and only considers mention pairs within the same document cluster, so topic-prediction errors can constrain later coreference decisions.",
+  "The work evaluates binary full coreference, not partial or evolving-event relations such as subevent identity.",
+  "No enterprise email, workplace chat, ticket, or business-process corpus is evaluated.",
+  "No code release is stated in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "same_real_world_event_across_documents": 0.99,
+  "cross_document_global_information_improves_coreference": 0.99,
+  "discourse_paths_add_substantial_gain": 0.99,
+  "longformer_model_outperforms_prior_baselines": 0.98,
+  "compressed_context_best_for_tree_construction": 0.99,
+  "shared_arguments_can_be_recovered_through_discourse": 0.96,
+  "no_direct_workplace_evaluation": 0.99
+ },
+ "raw_claims": [
+  "Cross-document event coreference clusters mentions from different documents that denote the same real-world event.",
+  "The proposed architecture combines local event representations with global discourse-tree representations.",
+  "Cross-document lowest-common-parent information improves performance beyond within-document discourse information.",
+  "Shortest paths through the discourse tree add further information about long-distance event interactions.",
+  "The RoBERTa local-only baseline has a CoNLL score of 81.1 in the reported ablation.",
+  "The complete RoBERTa discourse model reaches 85.7 CoNLL in that ablation.",
+  "The Longformer version reaches 86.4 CoNLL in the main comparison.",
+  "Event-sentence-plus-compressed-context discourse trees outperform event-sentence-only and full-document alternatives.",
+  "Full-document tree construction introduces distracting information.",
+  "The model is evaluated with annotated event mentions rather than predicted mentions.",
+  "The discourse constructor is computationally expensive.",
+  "The study uses ECB+ news documents rather than enterprise communications."
+ ],
+ "source_url": "https://aclanthology.org/2023.emnlp-main.294.pdf",
+ "access": "full_text"
+}

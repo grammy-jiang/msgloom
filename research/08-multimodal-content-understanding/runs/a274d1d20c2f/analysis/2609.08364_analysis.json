@@ -1,0 +1,78 @@
+{
+ "paper_id": "2609.08364",
+ "title": "SentryLine: Evidence-Grounded Question Answering over Evolving Documents in Oncology Care",
+ "research_question": "Can a question-answering system reliably answer from evolving clinical guidelines while preserving auditable evidence citations, detecting temporal changes, and adapting responses to clinician and patient roles?",
+ "methodology": "SentryLine uses a three-stage architecture consisting of guideline retrieval, role-conditioned answer generation, and independent verification. It performs structured entity extraction and vectorless hierarchical retrieval over guideline PDFs, retaining document and page provenance for retrieved passages and incorporating bounded conversational context. Cross-version reasoning advertises guideline years and adds temporal-drift notes only when retrieved passages explicitly document a recommendation change. The authors evaluate the system on ASCOBench, a benchmark of 405 three-turn conversations grounded in 43 breast-cancer and 14 prostate-cancer ASCO guideline PDFs, using clinician-authored gold answers and reconciled expert evaluation.",
+ "key_findings": [
+  {
+   "finding": "SentryLine represents answer evidence as structured citation items containing the source document, page, passage text, citation key, and update status, and exposes the cited PDF passage for inspection.",
+   "evidence_type": "supported",
+   "section": "§3.3 Evidence Grounding"
+  },
+  {
+   "finding": "Temporal drift is reported only when retrieved passages explicitly document a change across guideline versions, rather than being inferred from unexplained differences.",
+   "evidence_type": "supported",
+   "section": "§3 Architecture and Verification"
+  },
+  {
+   "finding": "ASCOBench contains 405 three-turn conversations covering factual, reasoning, contrasting, and role-specific questions, with 105 conversations and 315 questions in the test split.",
+   "evidence_type": "supported",
+   "section": "§4 ASCOBench"
+  },
+  {
+   "finding": "For reasoning questions, SentryLine achieved 78.1% fully correct with DeepSeek-R1 and 77.1% with Gemini 3.1 Pro, substantially above the corresponding RAG baselines reported by the authors.",
+   "evidence_type": "supported",
+   "section": "§6 Results"
+  },
+  {
+   "finding": "For role-specific questions with Gemini 3.1 Pro, SentryLine reached 65.3% fully correct compared with 43.1% for the strongest reported baseline in that comparison.",
+   "evidence_type": "supported",
+   "section": "§6 Results"
+  },
+  {
+   "finding": "SentryLine had the lowest incorrect-response rate in 11 of the 12 reported backbone-by-question-category comparisons.",
+   "evidence_type": "supported",
+   "section": "§6 Results"
+  },
+  {
+   "finding": "Removing the temporal verifier increased DeepSeek-R1's incorrect rate on role-specific questions from 5.6% to 26.4%, indicating that explicit temporal verification materially contributes to reliability.",
+   "evidence_type": "supported",
+   "section": "§6 Ablation Results"
+  }
+ ],
+ "limitations": [
+  "Answer quality still depends on the underlying generation model, and SentryLine is not uniformly best on every backbone and question category.",
+  "Temporal-drift detection only recognizes changes explicitly documented in the available passages and can miss implicit supersession or unstated changes.",
+  "Evaluation covers breast and prostate cancer guidelines from ASCO and does not establish generalization to other cancer types, professional societies, or non-oncology domains.",
+  "ASCOBench conversations are model-generated and clinician-reviewed rather than transcripts of naturally occurring clinician or patient interactions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "hierarchical_evidence_provenance": 0.99,
+  "explicit_drift_policy": 0.99,
+  "benchmark_composition": 0.99,
+  "reasoning_results": 0.98,
+  "role_specific_results": 0.98,
+  "low_incorrect_rate": 0.97,
+  "temporal_verifier_ablation": 0.99
+ },
+ "raw_claims": [
+  "SentryLine is designed for question answering over guideline collections that change over time.",
+  "Its retrieval stage navigates a hierarchical representation of guideline PDFs rather than relying solely on dense vector retrieval.",
+  "Retrieved evidence retains source-document and page provenance.",
+  "Citation records include the passage text and update status in addition to document and page identifiers.",
+  "Clinician and patient answers use the same evidence but different response templates.",
+  "The system compares guideline years when multiple versions are present in retrieved context.",
+  "Temporal-change notes require explicit evidence of a changed recommendation.",
+  "ASCOBench consists of multi-turn conversations grounded in breast- and prostate-cancer ASCO guidelines.",
+  "Independent verification modules check factual and temporal aspects of generated answers.",
+  "Removing temporal verification causes a large increase in incorrect role-specific answers in one reported ablation.",
+  "The authors release both the SentryLine implementation and the ASCOBench benchmark."
+ ],
+ "source_url": "https://arxiv.org/html/2609.08364",
+ "access": "full_text"
+}

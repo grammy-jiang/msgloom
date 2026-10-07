@@ -1,0 +1,75 @@
+{
+ "paper_id": "2411.06037",
+ "title": "Sufficient Context: A New Lens on Retrieval Augmented Generation Systems",
+ "research_question": "Can retrieval-augmented generation failures be decomposed according to whether the retrieved context is sufficient to answer the question, and can this sufficiency signal improve abstention decisions beyond model confidence alone?",
+ "methodology": "The paper defines a binary notion of sufficient context and constructs a 115-instance human-labeled evaluation set spanning several QA datasets to evaluate automatic sufficiency raters. It then applies a high-performing LLM-based autorater to retrieved contexts from FreshQA, MuSiQue, and HotpotQA and measures how answer correctness, hallucination, and abstention vary with context sufficiency across multiple language models. Finally, it combines the sufficiency prediction with model confidence in a selective-generation classifier that decides whether to answer or abstain.",
+ "key_findings": [
+  {
+   "finding": "A one-shot Gemini 1.5 Pro sufficiency autorater achieves 0.930 accuracy and 0.935 F1 on the paper's 115-instance human-labeled sufficiency set.",
+   "evidence_type": "supported",
+   "section": "Section 3.2"
+  },
+  {
+   "finding": "For the evaluated retrieval setup, increasing retained context from 6,000 to 10,000 tokens produced little or no additional sufficiency benefit, motivating the authors' use of a 6,000-token context cutoff.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Context sufficiency separates two distinct failure sources: retrieval can fail to provide enough information, while an LLM can still fail even when the retrieved context contains enough information.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Large models frequently answer rather than abstain when the provided context is insufficient, while models can also answer some insufficient-context cases correctly using parametric knowledge, guessing, or partial evidence.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Combining context sufficiency with answer confidence improves selective generation over confidence alone, with reported accuracy gains exceeding 10 percentage points for Gemma 27B in part of the HotpotQA coverage range and exceeding 5 points for Gemini 1.5 Pro around 70 percent coverage.",
+   "evidence_type": "supported",
+   "section": "Section 5.1"
+  },
+  {
+   "finding": "The paper does not implement an iterative controller that converts insufficiency into a specific next retrieval action; the authors identify iterative use of the sufficiency evaluator to retrieve more context as a direction for future work.",
+   "evidence_type": "supported",
+   "section": "Limitations and Future Work"
+  }
+ ],
+ "limitations": [
+  "The manually labeled sufficiency validation set contains only 115 instances.",
+  "The main scope is question answering rather than summarization or broader workplace communication tasks.",
+  "The paper evaluates whether context is sufficient but does not compare retrieval methods by how efficiently they achieve sufficiency.",
+  "Insufficiency is binary rather than decomposed into explicit missing evidence slots or structured gaps.",
+  "The paper does not implement a next-fetch policy or an iterative retrieve-until-sufficient loop.",
+  "Automatic sufficiency evaluation itself depends on an LLM and can therefore make classification errors.",
+  "Workplace permissions, source authorization, and access-control changes are outside the evaluation.",
+  "FreshQA introduces time-sensitive questions, but the framework does not manage document versions, freshness policies, or temporal validity as retrieval constraints.",
+  "Source authority and provenance quality are not incorporated into the binary sufficiency label."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "autorater_accuracy": 0.99,
+  "sufficiency_failure_decomposition": 0.98,
+  "selective_generation_gain": 0.98,
+  "insufficient_context_behavior": 0.97,
+  "iterative_retrieval_not_implemented": 0.99
+ },
+ "raw_claims": [
+  "The paper defines context as sufficient when it contains the information needed to produce a plausible definitive answer.",
+  "Incomplete, inconclusive, contradictory, or unresolved ambiguous context can be classified as insufficient.",
+  "The authors construct a small human-labeled benchmark to validate automatic context-sufficiency judgments.",
+  "A one-shot Gemini 1.5 Pro evaluator closely matches the human sufficiency labels on that benchmark.",
+  "Providing sufficient retrieved context does not guarantee that a language model will answer correctly.",
+  "A language model can sometimes answer correctly even when the retrieved context is insufficient.",
+  "Larger evaluated models often hallucinate an answer instead of abstaining when contextual evidence is insufficient.",
+  "Combining a sufficiency judgment with model confidence improves the answer-versus-abstain tradeoff.",
+  "The study does not use insufficiency judgments to formulate the next retrieval query.",
+  "The authors identify iterative retrieval based on sufficiency judgments as a natural extension of the framework."
+ ],
+ "source_url": "https://arxiv.org/html/2411.06037",
+ "access": "full_text"
+}

@@ -1,0 +1,2195 @@
+{
+  "paper_id": "R03",
+  "title": "Segmenting Email Message Text into Zones",
+  "authors": [
+    "Andrew Lampert",
+    "Robert Dale",
+    "Cécile Paris"
+  ],
+  "year": 2009,
+  "venue": "EMNLP 2009",
+  "research_question": "How accurately can functional zones in email message bodies be identified using SVM classification of individual lines or heuristic contiguous fragments with graphic, orthographic, and lexical features?",
+  "methodology": "Zebra uses Weka SMO SVM classification on manually annotated Enron email. It compares independent nonblank-line classification with heuristic whitespace/punctuation boundary detection followed by fragment classification. Fragment gold labels are modes of the underlying single-label lines. Features describe layout/position, orthography, word unigrams/bigrams, and header-derived names. Evaluation uses reported 10-fold cross-validation for separate two-, three-, and nine-zone schemes, majority baselines, an n-gram ablation, and nine-zone line PRF/confusion counts. Fold grouping is not specified. See topic02 for source locators and task limits.",
+  "methodology_sources": [
+    {
+      "section": "PDF p. 4, §3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 319,
+        "line_end": 337,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "section": "PDF p. 6, §§4.1.2–4.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 429,
+        "line_end": 508,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "section": "PDF pp. 6–7, §§4.3–5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 509,
+        "line_end": 619,
+        "pdf_pages": [
+          6,
+          7
+        ]
+      }
+    }
+  ],
+  "key_findings": [
+    {
+      "id": "F01",
+      "finding": "The target is functional-zone classification, with one of nine zone labels per annotated content line; it is not concrete work-matter Topic assignment.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §3 Email Zones",
+      "quote": "We consider that each line of text in the body of an email message belongs to one of nine more fine-grained email zones. We intend our nine",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 221,
+        "line_end": 223,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "claim_scope": "paper_task_definition_and_analyst_task_distinction",
+      "confidence": 0.98
+    },
+    {
+      "id": "F02",
+      "finding": "The Enron annotation uses one author as annotator. It starts with 11,881 lines from almost 400 randomly selected messages and retains 7,922 nonblank lines. Inter-annotator agreement was not measured.",
+      "evidence_type": "supported",
+      "section": "PDF p. 4, §3.4 Email Data and Annotation",
+      "quote": "The training data for our zone classifier consists of 11881 annotated lines from almost 400 email mes- sages drawn at random from the Enron email cor- pus (Klimt and Yang, 2004).5 We use the database dump of the corpus released by Andrew Fiore and Jeff Heer.6 This version of the corpus has been processed to remove duplicate messages and to normalise sender and recipient names, resulting in just over 250,000 email messages. No attachments are included. Following Estival et al. (2007), we used only a single annotator since the task revealed itself to be relatively uncontroversial. Each line in the body text of selected messages was marked by the annotator (one of the authors) as belonging to one of the nine zones. After removing blank lines, which we do not attempt to classify, we are left with 7922 annotated lines as training data for Ze- bra. The frequency of each zone within this anno- tated dataset is shown in Table 3.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 319,
+        "line_end": 337,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "claim_scope": "paper_reported_protocol_and_absence_of_IAA",
+      "confidence": 0.98
+    },
+    {
+      "id": "F03",
+      "finding": "On the annotated Enron email set, the heuristic finds nine-zone boundaries with 90.15% recall; all missed boundaries are adjoining boundaries without buffer lines. The boundary counts and matching rule are not supplied.",
+      "evidence_type": "supported",
+      "section": "PDF p. 6, §4.1.2 Hypothesising Zone Boundaries",
+      "quote": "Our efforts to apply more sophisticated machine-learning techniques to identifying zone boundaries could not match the 90.15% recall achieved by this simple heuristic. The boundaries missed by the simple heuristic are all adjoining boundaries, where two zones are not separated by any buffer lines. An example of a boundary that is not detected by our heuristic is the zone boundary between the Author and Signoff zones in Figure 1 formed by lines 10 and 11.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 439,
+        "line_end": 448,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98
+    },
+    {
+      "id": "F04",
+      "finding": "Nine-zone boundary precision is 22.5% on the annotated email set. Blank lines inside a single zone commonly create spurious boundaries; this is functional-zone boundary detection, not Topic-boundary detection.",
+      "evidence_type": "supported",
+      "section": "PDF p. 6, §4.1.2 Hypothesising Zone Boundaries",
+      "quote": "Obviously, our simple boundary heuristic de- tects actual boundaries as well as spurious boundaries that do not actually separate differ- ent email zones. Unsurprisingly, the number of spurious boundaries is large. The precision of our simple heuristic across our annotated set of email messages is 22.5%, meaning that less than 1 in 4 hypothesised zone boundaries is an actual boundary. The underlying email zones average more than 12 lines in length, including just over 8 lines of non-blank content. Due to the num- ber of spurious boundaries, fragments contain less than half this amount — approximately 3 lines of non-blank content on average. One of the most common types of spurious boundaries detected are the blank lines that frequently separate paragraphs within a single zone.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 449,
+        "line_end": 465,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98
+    },
+    {
+      "id": "F05",
+      "finding": "Keeping the same predicted boundaries but collapsing the gold taxonomy to three zones gives 96.3% boundary recall and 14.7% boundary precision on the annotated Enron set.",
+      "evidence_type": "supported",
+      "section": "PDF p. 6, §4.1.2 Hypothesising Zone Boundaries",
+      "quote": "For three-zone classification, the set of pre- dicted boundaries remains the same, but there are less actual boundaries to find, so recall increases to 96.3%. However, because many boundaries from the nine-zone classification are not boundaries for the three-zone classification, precision decreases to 14.7%.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 466,
+        "line_end": 472,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98
+    },
+    {
+      "id": "F06",
+      "finding": "When a missed boundary puts multiple gold zones inside one fragment, the fragment gold label is the mode of its line labels. This collapses minority-zone labels; the paper reports the mechanism but does not measure losses of conditions or action/reply scope.",
+      "evidence_type": "supported",
+      "section": "PDF p. 6, §4.1.3 Classifying Zone Fragments",
+      "quote": "Although our boundary detection heuristic has better than 90% recall, the small number of ac- tual boundaries that are not detected result in some zone fragments containing lines from more than one underlying email zone. In these cases, we con- sider the mode of all annotation values for lines in the fragment (i.e., the most frequent zone an- notation) to be the gold-standard zone type for the fragment. This, of course, may mean that we somewhat unfairly penalise the accuracy of our au- tomated classification when Zebra detects a zone that is indeed present in the fragment, but is not the most frequent zone.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 479,
+        "line_end": 491,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "claim_scope": "paper_reported_mechanism_and_analyst_preservation_limit",
+      "confidence": 0.98
+    },
+    {
+      "id": "F07",
+      "finding": "Under reported 10-fold cross-validation, full-feature line classification accuracy is 93.60%, 91.53%, and 87.01% for two, three, and nine functional zones. Fragment accuracy is 92.09%, 91.37%, and 86.45%, respectively. The line and fragment denominators differ; fold grouping is not reported.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §5, Table 1",
+      "quote": "2 Zones 3 Zones 9 Zones Zebra Baseline Zebra Baseline Zebra Baseline Lines 93.60% 61.14% 91.53% 58.55% 87.01% 30.94% Fragments 92.09% 62.18% 91.37% 59.44% 86.45% 30.36% Table 1: Classification accuracy compared against a majority baseline",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 623,
+        "line_end": 627,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98,
+      "supporting_sources": [
+        {
+          "section": "PDF p. 7, §5 Results and Discussion",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 612,
+            "line_end": 619,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 6, §§4.1.3–4.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 479,
+            "line_end": 508,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "finding": "Removing word n-grams gives line accuracy of 90.62%, 86.56%, and 81.05%, and fragment accuracy of 91.14%, 89.44%, and 82.55%, for two, three, and nine zones in the same reported cross-validation setting. This is an in-domain ablation, not a cross-enterprise transfer test.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §5, Table 2",
+      "quote": "2 Zones 3 Zones 9 Zones Zebra Baseline Zebra Baseline Zebra Baseline Lines 90.62% 61.14% 86.56% 58.55% 81.05% 30.94% Fragments 91.14% 62.18% 89.44% 59.44% 82.55% 30.36% Table 2: Classification accuracy, without word n-gram features, compared against a majority baseline",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 628,
+        "line_end": 632,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98,
+      "supporting_sources": [
+        {
+          "section": "PDF p. 8, §5 Results and Discussion",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 676,
+            "line_end": 698,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "finding": "For full-feature nine-zone line classification on Enron, Advertising has precision 0.588, recall 0.241, and F-measure 0.342; Signature has 0.695, 0.530, and 0.601. Zone-specific errors remain substantial despite aggregate accuracy.",
+      "evidence_type": "supported",
+      "section": "PDF p. 9, §5, Table 4",
+      "quote": "Zone Precision Recall F-Measure Author 0.868 0.910 0.889 Signature 0.695 0.530 0.601 Disclaimer 0.684 0.536 0.601 Advertising 0.588 0.241 0.342 Greeting 0.822 0.871 0.846 Signoff 0.690 0.754 0.721 Reply 0.911 0.907 0.909 Forward 0.884 0.895 0.889 Attachment 0.625 0.769 0.690 Table 4: Precision and recall for nine-zone line classification",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 751,
+        "line_end": 762,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98
+    },
+    {
+      "id": "F10",
+      "finding": "The full-feature nine-zone confusion matrix assigns 93 of 383 gold Signature lines to Author. The prose describes this as almost 25%, and reports almost 50% without n-grams but supplies no exact ablation count.",
+      "evidence_type": "supported",
+      "section": "PDF p. 9, §5, Table 3",
+      "quote": "Author 2415 2197 56 9 4 14 31 43 53 8 Signature 383 93 203 4 0 0 20 28 31 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 705,
+        "line_end": 706,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "claim_scope": "paper_reported",
+      "confidence": 0.98,
+      "supporting_sources": [
+        {
+          "section": "PDF p. 9, §5 Results and Discussion",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 734,
+            "line_end": 739,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "finding": "Greater portability of fragments across enterprise email domains is proposed from the n-gram ablation, but no held-out enterprise evaluation establishes it.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 8, §5 Results and Discussion",
+      "quote": "— an average of 2.26%. This suggests that, as we originally hypothesised, there are additional non- lexical cues in zone fragments that give informa- tion about the zone type. This makes the zone fragment approach potentially more portable for use across email data from different enterprise do- mains.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 692,
+        "line_end": 698,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_scope": "paper_hypothesis_with_no_direct_transfer_evaluation",
+      "confidence": 0.99
+    },
+    {
+      "id": "F12",
+      "finding": "Benefits for linking action-item information to earlier quoted content are motivated, not evaluated: the experiments score functional zones and their boundaries, not action-item or reply-scope extraction.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 3, §3 Email Zones",
+      "quote": "reported in Section 5. This categorisation is use- ful for problems such as finding action items in email messages: such detection tools would look in text from the sender-authored message zones for new action item information, and could also look in quoted conversation content to link new action item information (such as reported comple- tions) to previous action item content.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 230,
+        "line_end": 237,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "claim_scope": "paper_application_motivation_with_no_direct_downstream_evaluation",
+      "confidence": 0.99,
+      "supporting_sources": [
+        {
+          "section": "PDF p. 7, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 612,
+            "line_end": 619,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "PDF p. 8, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 699,
+            "line_end": 702,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "finding": "Reply and Forward each absorb embedded signatures, attachments, disclaimers, author text, and the other quotation type under the outer zone label. Reply can also contain earlier text written by the current sender.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §3.2 Quoted Conversation Zones",
+      "quote": "4. Reply: Content quoted from a previous mes- sage in the same conversation thread, includ- ing any embedded signatures, attachments, advertising, disclaimers, author content and forwarded content. Content in a reply content zone may include previously sent content au- thored by the current sender. 5. Forward: Content from an email message outside the current conversation thread that has been forwarded by the current email sender, including any embedded signatures, attachments, advertising, disclaimers, author content and reply content.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 270,
+        "line_end": 282,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "claim_scope": "paper_annotation_definition",
+      "confidence": 0.98
+    },
+    {
+      "id": "F14",
+      "finding": "The paper explicitly cautions that prior systems were not trained or tested on the same data. Its superiority claim is therefore a comparison of published results, not a controlled same-split benchmark.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §5 Results and Discussion",
+      "quote": "directly compare, since not all systems are freely available and they are not trained or tested over the same data, our three-zone classification (identify- ing sender, boilerplate and quoted reply content) is very similar to the three-zone task for which (Es- tival et al., 2007) report 88.16% accuracy for their system and 64.22% accuracy using Carvalho and Cohen’s Jangada system. Zebra outperforms both, achieving 91.53% accuracy using a line-based ap- proach. In the two-zone task, where we attempt to identify sender-authored lines, Zebra achieves 93.60% accuracy and an F-measure of 0.918, ex- ceeding the 0.907 F-measure reported for Estival et al.’s system tuned for exactly this task.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 633,
+        "line_end": 646,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_scope": "paper_reported_comparison_and_analyst_limit",
+      "confidence": 0.98
+    },
+    {
+      "id": "F15",
+      "finding": "The prose reports a mean line-accuracy drop of 4.67% without n-grams, but Tables 1–2 imply 4.6367 percentage points (about 4.64) across the two-, three-, and nine-zone tasks. The original PDF confirms a source numeric contradiction that table rounding cannot explain. The intended source correction is unknown; the analysis has verified the discrepancy.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 8, §5 and Tables 1–2",
+      "quote": "dramatically. Table 2 shows that average perfor- mance without n-grams (across two-, three- and nine-zone tasks) for line-based classification drops by 4.67%. In contrast, fragment-based classifica- tion accuracy drops by less than half this amount — an average of 2.26%. This suggests that, as we",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 687,
+        "line_end": 692,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "claim_scope": "paper_prose_claim_contradicted_by_analyst_arithmetic_on_paper_tables",
+      "confidence": 0.99,
+      "supporting_sources": [
+        {
+          "section": "PDF p. 8, Tables 1–2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 623,
+            "line_end": 632,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-08.png"
+    }
+  ],
+  "limitations": [
+    "Functional zones are not work-matter Topics; no semantic overlapping/discontinuous Topic annotations or predictions are evaluated (F01, F13).",
+    "One annotator; no inter-annotator agreement or adjudication evidence (F02).",
+    "Cross-validation grouping, per-fold counts, hyperparameters, and quote/near-duplicate controls are not reported; leakage is a plausible risk, not a demonstrated result (topic02.split_and_leakage).",
+    "Line and fragment classification use different evaluation units; mixed fragments have mode gold labels, potentially hiding minority zones (F06–F07).",
+    "No comparative sentence/clause/span/EDU scope study or direct decision-bearing preservation evaluation (F12).",
+    "Fragment portability is inferred from an in-domain feature ablation, without a cross-domain evaluation (F08, F11).",
+    "Prior-paper performance comparisons use different data and incompletely aligned taxonomies (F14).",
+    "The mean line-accuracy drop in prose conflicts with the tables; retain both (F15/I01).",
+    "Figure 1 is missing from machine-readable conversions and requires the saved visual transcription; column-interleaved page conversion is not used for exact quotes (source_provenance)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_time_scope": "Frozen paper-reported statements only; no current availability check performed.",
+    "code_available_semantics": "False means a released source-code artifact is not established by this paper. It does not mean code is absent today. The conclusion promises future Zebra system availability; footnote 7 points to a site for data/system access but gives no source-code license/version.",
+    "dataset_available_semantics": "The paper states the annotated dataset is available from zebra.thoughtlets.org in footnote 5; access was not tested.",
+    "availability_sources": [
+      {
+        "section": "PDF p. 4, §3.4 footnotes 5–6",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 345,
+          "line_end": 349,
+          "pdf_pages": [
+            4
+          ]
+        }
+      },
+      {
+        "section": "PDF p. 9, §6 and footnote 7",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 763,
+          "line_end": 783,
+          "pdf_pages": [
+            9
+          ]
+        }
+      }
+    ],
+    "implementation": "Weka SMO SVM; feature descriptions supplied; version, kernel/tuning details and released source-code artifact not specified.",
+    "implementation_sources": [
+      {
+        "section": "PDF p. 6, §4.1.3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 473,
+          "line_end": 478,
+          "pdf_pages": [
+            6
+          ]
+        }
+      },
+      {
+        "section": "PDF pp. 6–7, §4.3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 500,
+          "line_end": 611,
+          "pdf_pages": [
+            6,
+            7
+          ]
+        }
+      }
+    ]
+  },
+  "confidence_scores": {
+    "F01": 0.98,
+    "F02": 0.98,
+    "F03": 0.98,
+    "F04": 0.98,
+    "F05": 0.98,
+    "F06": 0.98,
+    "F07": 0.98,
+    "F08": 0.98,
+    "F09": 0.98,
+    "F10": 0.98,
+    "F11": 0.99,
+    "F12": 0.99,
+    "F13": 0.98,
+    "F14": 0.98,
+    "F15": 0.99
+  },
+  "confidence_interpretation": "Confidence concerns faithful source extraction and evidentiary classification, not the truth of an untested application or portability claim.",
+  "raw_claims": [
+    "We consider that each line of text in the body of an email message belongs to one of nine more fine-grained email zones.",
+    "The training data for our zone classifier consists of 11881 annotated lines from almost 400 email mes- sages drawn at random from the Enron email cor- pus (Klimt and Yang, 2004).",
+    "For three-zone classification, the set of pre- dicted boundaries remains the same, but there are less actual boundaries to find, so recall increases to 96.3%.",
+    "Instead, there is significant confusion between Signature and Author content, with almost 25% of Signature lines misclassified as Author lines.",
+    "Because we employ a non-sequential learn- ing algorithm, we encode sequence information into the feature set.",
+    "Following Estival et al. (2007), we used only a single annotator since the task revealed itself to be relatively uncontroversial."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 221,
+      "line_end": 223,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 319,
+      "line_end": 322,
+      "pdf_pages": [
+        4
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 466,
+      "line_end": 469,
+      "pdf_pages": [
+        6
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 734,
+      "line_end": 736,
+      "pdf_pages": [
+        9
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 768,
+      "line_end": 770,
+      "pdf_pages": [
+        9
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "line_start": 328,
+      "line_end": 330,
+      "pdf_pages": [
+        4
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": [
+      {
+        "statement": "Functional-zone boundary detection by whitespace/punctuation heuristic for the nine-zone and three-zone schemes; not Topic-boundary detection.",
+        "section": "PDF p. 6, §4.1.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 429,
+          "line_end": 472,
+          "pdf_pages": [
+            6
+          ]
+        }
+      },
+      {
+        "statement": "Independent SVM functional-zone labeling of nonblank lines or contiguous heuristic fragments for two-, three-, and nine-zone schemes; not segment Topic labeling.",
+        "section": "PDF p. 4, §§4–4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 352,
+          "line_end": 373,
+          "pdf_pages": [
+            4
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 7, §5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 612,
+              "line_end": 619,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "statement": "One physical body-text line, assigned one functional zone by one annotator; blank lines are removed for training/evaluation. No sentence, clause, arbitrary-span, or EDU comparison.",
+      "section": "PDF p. 4, §3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 328,
+        "line_end": 337,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "prediction_unit": {
+      "statement": "One nonblank line, or one contiguous heuristic fragment given one SVM zone label. Mixed-zone fragments receive the most frequent line label as gold; tie handling is not reported.",
+      "section": "PDF p. 6, §§4.1.3–4.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 473,
+        "line_end": 508,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "contiguity": {
+      "statement": "Fragments contain contiguous lines. Labels may recur later in a message, but no non-sequential cluster ID links those occurrences as one work matter. Non-sequential learning refers to the SVM learner, not Topic clustering.",
+      "section": "PDF p. 6, §4.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 500,
+        "line_end": 508,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "additional_sources": [
+        {
+          "section": "PDF p. 9, §6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 768,
+            "line_end": 777,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "statement": "Exactly one fine-grained zone label per retained line. Each line has one label in each alternative collapsed scheme, not simultaneous multi-label gold. Fragment gold is one mode label even when constituent lines differ.",
+        "section": "PDF p. 3, §3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 221,
+          "line_end": 248,
+          "pdf_pages": [
+            3
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 6, §4.1.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 479,
+              "line_end": 491,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        ]
+      },
+      "prediction": {
+        "statement": "One functional-zone label per line or fragment; no per-span Topic memberships or uncertainty/set-valued assignments evaluated.",
+        "section": "PDF p. 4, §§4–4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 357,
+          "line_end": 373,
+          "pdf_pages": [
+            4
+          ]
+        }
+      },
+      "nine_labels": [
+        "Author",
+        "Signature",
+        "Disclaimer",
+        "Advertising",
+        "Greeting",
+        "Signoff",
+        "Reply",
+        "Forward",
+        "Attachment"
+      ],
+      "three_class_mapping": {
+        "statement": "Sender = Author, Greeting, Signoff; Quoted conversation = Reply, Forward; Boilerplate = Signature, Advertising, Disclaimer, Attachment.",
+        "section": "PDF pp. 3–4, §§3.1–3.3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 249,
+          "line_end": 317,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        }
+      },
+      "two_class_mapping": {
+        "statement": "Sender-authored = Author, Greeting, Signoff, Signature; other-authored = Reply, Forward, Disclaimer, Advertising, Attachment. These are task labels; Reply may include earlier content by the current sender.",
+        "section": "PDF p. 3, §3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 238,
+          "line_end": 248,
+          "pdf_pages": [
+            3
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 3, §3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 270,
+              "line_end": 276,
+              "pdf_pages": [
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "discontinuity": {
+      "gold_within_message": {
+        "status": "Repeated functional class labels supported; one discontinuous semantic object not represented/evaluated",
+        "explanation": "Figure 1 prints Attachment at message lines 16 and 34–35, separated by Disclaimer content. These are recurring class labels without a shared instance or Topic identifier. Inline replying is also described as a formatting challenge.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/figure1.visual-transcription.md",
+          "line_start": 7,
+          "line_end": 9,
+          "pdf_pages": [
+            5
+          ]
+        },
+        "section": "PDF p. 5, Figure 1",
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-05.png",
+        "additional_sources": [
+          {
+            "section": "PDF pp. 1–2, §1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 93,
+              "line_end": 103,
+              "pdf_pages": [
+                1,
+                2
+              ]
+            }
+          }
+        ]
+      },
+      "prediction_within_message": {
+        "statement": "Independent line/fragment classifications permit recurring zone classes; no model output represents one discontinuous Topic instance.",
+        "section": "PDF p. 6, §§4.2–4.3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 493,
+          "line_end": 508,
+          "pdf_pages": [
+            6
+          ]
+        }
+      },
+      "gold_thread_level": {
+        "statement": "Reply/Forward definitions refer to conversation membership, but annotation does not supply links across source messages or identify one semantic work matter across a thread.",
+        "section": "PDF p. 3, §3.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 264,
+          "line_end": 282,
+          "pdf_pages": [
+            3
+          ]
+        }
+      },
+      "prediction_thread_level": "Not evaluated; no conversation disentanglement or cross-message Topic-clustering predictions are reported."
+    },
+    "overlap": {
+      "gold": {
+        "statement": "No overlapping semantic spans or multiple Topic memberships. The wording that separator boundaries retain punctuation content in one or both zones concerns boundary lines and does not demonstrate one content span with multiple semantic memberships; the explicit content-line rule remains single-label.",
+        "section": "PDF p. 5, §4.1.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 410,
+          "line_end": 418,
+          "pdf_pages": [
+            5
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 3, §3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 221,
+              "line_end": 223,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "section": "PDF p. 4, §3.4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 330,
+              "line_end": 337,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        ]
+      },
+      "prediction": {
+        "statement": "Unsupported for overlapping Topic membership: the classifier assigns a single zone to each line or fragment. Embedded quoted structure is flattened under Reply or Forward.",
+        "section": "PDF p. 4, §§4–4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 357,
+          "line_end": 373,
+          "pdf_pages": [
+            4
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 3, §3.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 270,
+              "line_end": 282,
+              "pdf_pages": [
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "dataset_domain": {
+      "statement": "Historical Enron business email; randomly selected messages from the Andrew Fiore/Jeff Heer database dump. The parent corpus is reported to have just over 250,000 messages after duplicate removal and name normalization. No attachments are included. Outlook is described as the most common client in this annotated collection; no client-stratified evaluation is reported.",
+      "section": "PDF p. 4, §3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 319,
+        "line_end": 337,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "additional_sources": [
+        {
+          "section": "PDF p. 2, §2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 172,
+            "line_end": 188,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "annotation_process": {
+      "statement": "One author annotated all body lines with one of nine functional zones. Blank lines were then excluded. The authors call the task relatively uncontroversial; this is their rationale for one annotator, not empirical agreement. A separate Quoted Text category for extended poems/lyrics is omitted because no examples occur in the sample.",
+      "section": "PDF pp. 3–4, §3.2 footnote 4 and §3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 295,
+        "line_end": 337,
+        "pdf_pages": [
+          3,
+          4
+        ]
+      }
+    },
+    "inter_annotator_agreement": {
+      "status": "not_reported_and_not_measured",
+      "metric": null,
+      "population": "Single annotator (one of the authors) for the annotated Enron sample; no multiply annotated population.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+        "line_start": 328,
+        "line_end": 337,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF p. 4, §3.4"
+    },
+    "split_and_leakage": {
+      "protocol": {
+        "statement": "10-fold cross-validation. Whether folds group lines, fragments, messages, threads, authors, or time is not reported. Per-fold counts, seeds, SVM/kernel hyperparameters, tuning protocol, and fold-specific vocabulary construction are not reported.",
+        "section": "PDF p. 7, §5",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 612,
+          "line_end": 619,
+          "pdf_pages": [
+            7
+          ]
+        }
+      },
+      "counts": {
+        "statement": "11,881 original annotated lines; 7,922 after removing blanks; almost 400 messages (exact count absent); fragment count absent. Table 3 totals reproduce 7,922 nonblank lines. These are distinct denominators, not a count contradiction.",
+        "section": "PDF p. 4, §3.4",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 319,
+          "line_end": 337,
+          "pdf_pages": [
+            4
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 9, Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 704,
+              "line_end": 714,
+              "pdf_pages": [
+                9
+              ]
+            }
+          }
+        ]
+      },
+      "duplicate_controls": {
+        "statement": "The source database reportedly removes duplicate messages. No experiment-specific near-duplicate, quoted-content, thread-overlap, or train/test contamination audit is reported. Shared template/quote leakage is an analyst risk, not a demonstrated defect.",
+        "section": "PDF p. 4, §3.4",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 323,
+          "line_end": 327,
+          "pdf_pages": [
+            4
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "accuracy_definition": "Correct functional-zone classifications divided by evaluated units, expressed as percent. Lines and heuristic fragments are different units. This denominator interpretation follows the task description and is corroborated for nine-zone lines by Table 3; no accuracy equation or cross-fold weighting rule is printed. The 7,922-line denominator identifies the nonblank data pool from §3.4; Table 3 directly confirms the pooled count for full-feature nine-zone line classification. It is not a per-fold training count. Fragment and boundary populations have no reported exact counts. See I02 and I05 for baseline and population checks.",
+      "accuracy_results": [
+        {
+          "task": "2-zone functional classification",
+          "features": "full",
+          "prediction_unit": "line",
+          "accuracy_percent": 93.6,
+          "majority_baseline_percent": 61.14,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 625,
+            "line_end": 625,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "3-zone functional classification",
+          "features": "full",
+          "prediction_unit": "line",
+          "accuracy_percent": 91.53,
+          "majority_baseline_percent": 58.55,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 625,
+            "line_end": 625,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "9-zone functional classification",
+          "features": "full",
+          "prediction_unit": "line",
+          "accuracy_percent": 87.01,
+          "majority_baseline_percent": 30.94,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 625,
+            "line_end": 625,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "2-zone functional classification",
+          "features": "full",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 92.09,
+          "majority_baseline_percent": 62.18,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 626,
+            "line_end": 626,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "3-zone functional classification",
+          "features": "full",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 91.37,
+          "majority_baseline_percent": 59.44,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 626,
+            "line_end": 626,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "9-zone functional classification",
+          "features": "full",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 86.45,
+          "majority_baseline_percent": 30.36,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 626,
+            "line_end": 626,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "2-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "line",
+          "accuracy_percent": 90.62,
+          "majority_baseline_percent": 61.14,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 630,
+            "line_end": 630,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "3-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "line",
+          "accuracy_percent": 86.56,
+          "majority_baseline_percent": 58.55,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 630,
+            "line_end": 630,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "9-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "line",
+          "accuracy_percent": 81.05,
+          "majority_baseline_percent": 30.94,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "7,922 nonblank lines",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 630,
+            "line_end": 630,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "2-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 91.14,
+          "majority_baseline_percent": 62.18,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 631,
+            "line_end": 631,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "3-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 89.44,
+          "majority_baseline_percent": 59.44,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 631,
+            "line_end": 631,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "task": "9-zone functional classification",
+          "features": "without_word_ngrams",
+          "prediction_unit": "fragment",
+          "accuracy_percent": 82.55,
+          "majority_baseline_percent": 30.36,
+          "dataset": "Annotated Enron sample, §3.4",
+          "split": "10-fold cross-validation; split grouping and fold counts not reported",
+          "denominator": "Heuristic fragments; total number not reported; gold label is mode of constituent line labels",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 631,
+            "line_end": 631,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "boundary_metrics": [
+        {
+          "scheme": "nine functional zones",
+          "precision_percent": 22.5,
+          "recall_percent": 90.15,
+          "denominator_precision": "Predicted boundaries across the annotated email set; count not reported",
+          "denominator_recall": "Gold nine-zone boundaries; count not reported",
+          "split": "Heuristic assessed across the annotated set; separate boundary train/test split not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 439,
+            "line_end": 465,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "scheme": "three functional zones",
+          "precision_percent": 14.7,
+          "recall_percent": 96.3,
+          "denominator_precision": "Same predicted boundary set as nine-zone task; count not reported",
+          "denominator_recall": "Gold three-zone boundaries; count not reported",
+          "split": "Heuristic assessed across the annotated set; separate boundary train/test split not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 466,
+            "line_end": 472,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "boundary_definition": {
+        "statement": "Boundary = collection of separating lines; blank, separator, and adjoining boundary types. Metrics are not token/span F1, Pk, or WindowDiff. The paper does not specify an exact-match or tolerance rule for matching a multi-line predicted boundary to gold.",
+        "section": "PDF pp. 4–5, §4.1.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 378,
+          "line_end": 426,
+          "pdf_pages": [
+            4,
+            5
+          ]
+        }
+      },
+      "per_zone_setting": "Table 4: full-feature nine-zone line classification on the 7,922-line Enron sample under reported 10-fold cross-validation. Precision denominator is predicted lines of that zone; recall denominator is gold lines of that zone; F-measure is consistent with harmonic-mean F1. Formula is not printed.",
+      "per_zone_results": [
+        {
+          "zone": "Author",
+          "precision": 0.868,
+          "recall": 0.91,
+          "f_measure": 0.889,
+          "gold_line_count": 2415,
+          "predicted_line_count": 2530,
+          "true_positive_line_count": 2197,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 752,
+            "line_end": 752,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Signature",
+          "precision": 0.695,
+          "recall": 0.53,
+          "f_measure": 0.601,
+          "gold_line_count": 383,
+          "predicted_line_count": 292,
+          "true_positive_line_count": 203,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 753,
+            "line_end": 753,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Disclaimer",
+          "precision": 0.684,
+          "recall": 0.536,
+          "f_measure": 0.601,
+          "gold_line_count": 97,
+          "predicted_line_count": 76,
+          "true_positive_line_count": 52,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 754,
+            "line_end": 754,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Advertising",
+          "precision": 0.588,
+          "recall": 0.241,
+          "f_measure": 0.342,
+          "gold_line_count": 83,
+          "predicted_line_count": 34,
+          "true_positive_line_count": 20,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 755,
+            "line_end": 755,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Greeting",
+          "precision": 0.822,
+          "recall": 0.871,
+          "f_measure": 0.846,
+          "gold_line_count": 85,
+          "predicted_line_count": 90,
+          "true_positive_line_count": 74,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 756,
+            "line_end": 756,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Signoff",
+          "precision": 0.69,
+          "recall": 0.754,
+          "f_measure": 0.721,
+          "gold_line_count": 195,
+          "predicted_line_count": 213,
+          "true_positive_line_count": 147,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 757,
+            "line_end": 757,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Reply",
+          "precision": 0.911,
+          "recall": 0.907,
+          "f_measure": 0.909,
+          "gold_line_count": 2451,
+          "predicted_line_count": 2439,
+          "true_positive_line_count": 2222,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 758,
+            "line_end": 758,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Forward",
+          "precision": 0.884,
+          "recall": 0.895,
+          "f_measure": 0.889,
+          "gold_line_count": 2187,
+          "predicted_line_count": 2216,
+          "true_positive_line_count": 1958,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 759,
+            "line_end": 759,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "zone": "Attachment",
+          "precision": 0.625,
+          "recall": 0.769,
+          "f_measure": 0.69,
+          "gold_line_count": 26,
+          "predicted_line_count": 32,
+          "true_positive_line_count": 20,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 760,
+            "line_end": 760,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "count_source": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ],
+      "confusion_matrix": {
+        "setting": "Table 3, full-feature nine-zone line classification; Enron; reported 10-fold cross-validation",
+        "row_semantics": "gold label",
+        "column_semantics": "predicted label",
+        "labels": [
+          "Author",
+          "Signature",
+          "Disclaimer",
+          "Advertising",
+          "Greeting",
+          "Signoff",
+          "Reply",
+          "Forward",
+          "Attachment"
+        ],
+        "gold_counts": [
+          2415,
+          383,
+          97,
+          83,
+          85,
+          195,
+          2451,
+          2187,
+          26
+        ],
+        "predicted_counts": [
+          2530,
+          292,
+          76,
+          34,
+          90,
+          213,
+          2439,
+          2216,
+          32
+        ],
+        "counts": [
+          [
+            2197,
+            56,
+            9,
+            4,
+            14,
+            31,
+            43,
+            53,
+            8
+          ],
+          [
+            93,
+            203,
+            4,
+            0,
+            0,
+            20,
+            28,
+            31,
+            4
+          ],
+          [
+            30,
+            4,
+            52,
+            0,
+            0,
+            0,
+            2,
+            9,
+            0
+          ],
+          [
+            47,
+            1,
+            1,
+            20,
+            0,
+            0,
+            7,
+            7,
+            0
+          ],
+          [
+            8,
+            0,
+            0,
+            0,
+            74,
+            2,
+            0,
+            1,
+            0
+          ],
+          [
+            30,
+            5,
+            0,
+            0,
+            0,
+            147,
+            11,
+            2,
+            0
+          ],
+          [
+            49,
+            10,
+            3,
+            2,
+            1,
+            10,
+            2222,
+            154,
+            0
+          ],
+          [
+            72,
+            13,
+            7,
+            8,
+            1,
+            3,
+            125,
+            1958,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            20
+          ]
+        ],
+        "total_lines": 7922,
+        "correct_lines": 6893,
+        "derived_accuracy_percent": 87.01085584448371,
+        "derivation": "Analyst arithmetic, not a new experiment; confirms Table 1 rounding.",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 704,
+          "line_end": 714,
+          "pdf_pages": [
+            9
+          ]
+        },
+        "visual_check": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-09.png"
+      },
+      "other_reported_results": [
+        {
+          "statement": "Two-zone sender-authored line classification: F-measure 0.918 and accuracy 93.60% under the §5 evaluation. F-measure aggregation/positive-class details and TP/FP/FN counts are not explicitly given; the prose motivates sender-authored detection.",
+          "section": "PDF p. 8, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 642,
+            "line_end": 646,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "statement": "Unigram-only ablation reports fragment accuracy 78.7% versus line accuracy 57.5%. The number of zone classes for this particular comparison is not explicitly stated; do not silently assign it to the nine-zone task. The paper-wide evaluation is Enron cross-validation, but the paragraph does not restate split details.",
+          "section": "PDF p. 8, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 656,
+            "line_end": 675,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "statement": "Signature→Author errors are described as almost 25% with full features and almost 50% without n-grams. The full-feature count is 93/383 = about 24.28% (analyst calculation); an exact no-n-gram count is not printed.",
+          "section": "PDF p. 9, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 734,
+            "line_end": 739,
+            "pdf_pages": [
+              9
+            ]
+          },
+          "additional_sources": [
+            {
+              "section": "PDF p. 9, Table 3",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+                "line_start": 705,
+                "line_end": 706,
+                "pdf_pages": [
+                  9
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "statement": "Mean accuracy reductions without n-grams are written as 4.67% for lines and 2.26% for fragments across two-, three-, and nine-zone tasks. From Tables 1–2, the line mean is (2.98 + 4.97 + 5.96)/3 = 4.6367 percentage points (about 4.64), and the fragment mean is (0.95 + 1.93 + 3.90)/3 = 2.26 percentage points. The line mean conflicts; the fragment mean agrees numerically but the paper writes percent rather than percentage points.",
+          "section": "PDF p. 8, §5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 687,
+            "line_end": 698,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "additional_sources": [
+            {
+              "section": "PDF p. 8, Tables 1–2",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+                "line_start": 623,
+                "line_end": 632,
+                "pdf_pages": [
+                  8
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "cross_paper_comparisons": {
+        "statement": "R03 quotes Estival three-zone accuracy 88.16%, Jangada accuracy 64.22%, and Estival two-zone F-measure 0.907. These are secondhand prior-paper results on different data, with no aligned split/counts here; not independently verified or comparable as same-benchmark scores.",
+        "section": "PDF p. 8, §5",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 633,
+          "line_end": 646,
+          "pdf_pages": [
+            8
+          ]
+        }
+      },
+      "legacy_heuristic_comparison": {
+        "statement": "The line-initial > heuristic is described as over 95% accurate on older Usenet data but detecting less than 10% of actual Reply/Forward lines in the annotated Enron set. The former is called accuracy; the latter is a recall-like detection fraction. Exact counts and an aligned task/split are absent; do not calculate a like-for-like accuracy drop.",
+        "section": "PDF p. 2, §2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 148,
+          "line_end": 155,
+          "pdf_pages": [
+            2
+          ]
+        }
+      },
+      "not_reported": [
+        "Pk",
+        "WindowDiff",
+        "cluster or pair scores",
+        "Topic-span F1/IoU",
+        "multi-label Topic scores",
+        "decision-bearing scope preservation metrics",
+        "confidence intervals or significance tests",
+        "latency or memory benchmarks"
+      ]
+    },
+    "measured_work_text_preservation": {
+      "status": "no_such_evaluation",
+      "direct_evidence": "No direct measurement of lost/broadened conditions, evidence, exceptions, approvals, actions, questions, or reply scope. The paper proposes downstream action-item uses, but evaluates zone boundaries and zone labels only.",
+      "related_measured_errors": {
+        "statement": "Measured boundary omissions and the zone confusion matrix concern structural/functional labeling. Fragment mode assignment discards minority labels at evaluation time; the effect on work meaning is not quantified.",
+        "section": "PDF p. 6, §4.1.3",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 479,
+          "line_end": 491,
+          "pdf_pages": [
+            6
+          ]
+        },
+        "additional_sources": [
+          {
+            "section": "PDF p. 6, §4.1.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 439,
+              "line_end": 472,
+              "pdf_pages": [
+                6
+              ]
+            }
+          },
+          {
+            "section": "PDF p. 9, Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 704,
+              "line_end": 714,
+              "pdf_pages": [
+                9
+              ]
+            }
+          },
+          {
+            "section": "PDF p. 3, §3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+              "line_start": 230,
+              "line_end": 237,
+              "pdf_pages": [
+                3
+              ]
+            }
+          }
+        ]
+      },
+      "risk_inference": "If downstream processing filters by one predicted zone, a wrongly labeled condition or relevant quotation could be omitted or attributed incorrectly. This is an analyst risk hypothesis, not a paper-measured preservation error."
+    },
+    "not_evaluated_for_msgloom": [
+      "Topic-boundary detection (functional-zone boundaries are a different task).",
+      "Contiguous Topic segmentation (zone fragments are a different task).",
+      "Segment Topic labeling (zone labels are functional roles).",
+      "Whole-message multi-label Topic classification.",
+      "Exact Topic-span assignment.",
+      "Overlapping Topic-span assignment.",
+      "Non-contiguous assignment of spans to one Topic instance.",
+      "Discourse/EDU segmentation.",
+      "Action/question/reply-scope extraction.",
+      "Preservation of decision-bearing conditions, evidence, exceptions, approval scope, and action scope."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "I01",
+        "status": "confirmed_source_numeric_contradiction",
+        "issue": "Mean line-accuracy decrease after removing n-grams",
+        "paper_prose_value": "4.67%",
+        "table_derived_value": "4.6366666667 percentage points, which rounds to 4.64",
+        "calculation": "[(93.60−90.62)+(91.53−86.56)+(87.01−81.05)]/3",
+        "section": "PDF p. 8, §5 and Tables 1–2",
+        "prose_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+          "line_start": 687,
+          "line_end": 692,
+          "pdf_pages": [
+            8
+          ]
+        },
+        "table_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 623,
+            "line_end": 627,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 628,
+            "line_end": 632,
+            "pdf_pages": [
+              8
+            ]
+          }
+        ],
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-08.png",
+        "handling": "Both printed values are retained. Tables 1–2 give a mean line decrease of 4.6367 percentage points, not the printed 4.67%. Even allowing each table percentage rounding error of 0.005 gives a mean-drop range of about 4.6267–4.6467 points, which cannot round to 4.67. The fragment mean is 2.26 points and agrees with its prose magnitude. This confirms a source arithmetic/reporting inconsistency; which printed quantity the authors intended to change is unknown. The analysis contradiction is resolved; author intent is not inferred.",
+        "disposition": "confirmed contradiction",
+        "analysis_resolution": "Source contradiction verified from the original PDF; no unresolved analytical choice.",
+        "source_author_intent": "not recoverable from the supplied paper"
+      },
+      {
+        "id": "I02",
+        "status": "qualified_reporting_ambiguity",
+        "issue": "Two-zone line majority baseline",
+        "paper_table_value": "61.14% in Tables 1 and 2",
+        "derived_value": "4,844/7,922 × 100 = 61.1461752%, conventionally rounded to 61.15%",
+        "section": "PDF p. 3, §3 binary mapping; p. 8, Tables 1–2; p. 9, Table 3",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 238,
+            "line_end": 248,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 625,
+            "line_end": 625,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 630,
+            "line_end": 630,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 249,
+            "line_end": 317,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 612,
+            "line_end": 619,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 479,
+            "line_end": 491,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "handling": "Keep the printed 61.14%. The explicit two-zone mapping gives other-authored = Reply + Forward + Disclaimer + Advertising + Attachment = 4,844 and sender-authored = 3,078, over the 7,922 nonblank-line pool. A pooled majority fraction rounds to 61.15%, a 0.0061752-point difference from the printed value. The paper specifies 10-fold cross-validation but not fold weighting or percentage-formatting rules, so this is a conditional pooled-arithmetic mismatch, not a confirmed population error. Fold averaging or truncation is not established as the explanation. For comparison, the three-zone majority is Quoted conversation (4,638/7,922 = 58.5458%, rounding to 58.55%); the nine-zone majority is Reply (2,451/7,922 = 30.9392%, rounding to 30.94%). Fragment baselines use fragment gold labels and an unreported fragment count; they cannot be reconstructed from line counts.",
+        "disposition": "qualified as ambiguity"
+      },
+      {
+        "id": "I03",
+        "status": "resolved_operational_label_mapping_with_authorship_caveat",
+        "issue": "Binary other-authored label versus Reply content",
+        "values": [
+          "The two-zone mapping places Reply in other-authored.",
+          "Reply explicitly may include earlier content authored by the current sender."
+        ],
+        "section": "PDF p. 3, §§3 and 3.2",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 238,
+            "line_end": 248,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 270,
+            "line_end": 276,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 255,
+            "line_end": 258,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 283,
+            "line_end": 293,
+            "pdf_pages": [
+              3
+            ]
+          }
+        ],
+        "handling": "Section 3 explicitly defines the experimental mapping. Signature moves from Boilerplate in the three-zone scheme to sender-authored in the two-zone scheme; Reply remains other-authored even when it quotes the current sender. Section 3.1 also excludes earlier sender text from Author. Thus the label mapping is resolved, while the literal authorship wording remains an overbroad description. Do not reinterpret this experiment as verified literal authorship, multi-label annotation, or Topic identity.",
+        "disposition": "resolved from explicit source"
+      },
+      {
+        "id": "I04",
+        "status": "resolved_boundary_definition_and_classification_population_distinction",
+        "issue": "Blank cells versus blank-line training exclusion",
+        "values": [
+          "§3.4 says blank lines are removed from classification data.",
+          "Figure 1 assigns Author/Sender to visibly blank message line 8 and abstract Sender/Boilerplate labels to some blank lines."
+        ],
+        "section": "PDF p. 4, §§3.4 and 4.1.1; p. 5, Figure 1 and §4.1.1; p. 6, §§4.1.2 and 4.2",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 330,
+            "line_end": 337,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/figure1.visual-transcription.md",
+            "line_start": 10,
+            "line_end": 14,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 378,
+            "line_end": 397,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 400,
+            "line_end": 426,
+            "pdf_pages": [
+              5
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 434,
+            "line_end": 438,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 449,
+            "line_end": 465,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 493,
+            "line_end": 499,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-boundary-transcription.md",
+            "line_start": 6,
+            "line_end": 8,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ],
+        "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-05.png",
+        "handling": "Section 4.1.1 defines buffer lines as separating different zones in a specified scheme. Figure 1 line 2 is a nine-zone boundary but is inside Sender after three-zone collapse; line 15 similarly lies inside three-zone Boilerplate. Line 8 is blank inside Author, and line 12 is a blank boundary in both schemes. These visual memberships do not establish inclusion in classification: §§3.4 and 4.2 explicitly remove blank lines. Blank lines inside a zone can still trigger spurious heuristic boundaries (§4.1.2). Do not equate all buffer lines with removed blank lines: punctuation-only separators can remain classified zone content, as line 20 belongs to Disclaimer and to the boundary at lines 17–20. There is no demonstrated evaluated-count contradiction.",
+        "disposition": "resolved from explicit source"
+      },
+      {
+        "id": "I05",
+        "status": "resolved_explicit_blank_exclusion_and_verified_evaluation_count",
+        "issue": "Original and evaluated line counts",
+        "values": [
+          "11,881 originally annotated lines",
+          "7,922 nonblank lines after exclusion",
+          "Table 3 row sum = 7,922; diagonal sum = 6,893; derived accuracy = 87.0108558%"
+        ],
+        "section": "PDF p. 4, §3.4; p. 8, Table 1; p. 9, Table 3",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 319,
+            "line_end": 337,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 625,
+            "line_end": 625,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 704,
+            "line_end": 714,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 612,
+            "line_end": 619,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+            "line_start": 479,
+            "line_end": 499,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ],
+        "handling": "Section 3.4 explicitly accounts for the transition: 11,881 original lines minus 7,922 retained nonblank lines = 3,959 removed blank lines (derived count). Table 3 has nine matching row totals summing to 7,922, and its diagonal sums to 6,893 correct predictions, yielding 87.0108558%, which rounds to Table 1’s 87.01%. Thus 7,922 is the full nine-zone evaluation population, not the number correct or a per-fold training count. The paper uses the term training data for the pool and reports 10-fold cross-validation; exact per-fold, message, fragment, and boundary counts are not supplied. Different line/fragment units and collapsed labels explain legitimate count or baseline changes. Do not substitute 11,881, almost 400, or a collapsed nine-zone prediction matrix for a separately reported task denominator/result.",
+        "disposition": "resolved from explicit source"
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Indirect support: physical line versus contiguous fragment experiment for functional zones. It cannot select sentence, clause, arbitrary span, EDU, or hybrid units for work-matter scope.",
+      "RQ2": "Describes inline quotation interleaving and distinguishes Reply from Forward; no non-sequential Topic clustering.",
+      "RQ3": "Single-label gold/predictions; mixed-zone fragments collapse to a mode. Repeated class labels do not establish one Topic instance.",
+      "RQ4": "Direct email source, but no semantic overlapping/discontinuous Topic representation.",
+      "RQ5": "Measured boundary/classification errors identify plausible upstream failure mechanisms; no measured work-text scope loss.",
+      "RQ6": "Useful boundary precision/recall, unit accuracy, and per-zone PRF; keep line/fragment and different taxonomies separate. Preserve mean-drop inconsistency.",
+      "RQ7": "Direct historical business email, one annotator, unspecified CV grouping; duplicate removal only at source database level.",
+      "RQ8": "Supports testing reversible zone annotations and propagation of boundary mistakes to meaning-preservation checks. Experiments below are untested proposals."
+    },
+    "interpretation": [
+      {
+        "status": "analyst_interpretation",
+        "statement": "Functional-zone information could annotate provenance and quotation context, but it does not identify the concrete work matter. A thread is not evidence of Topic identity.",
+        "based_on": [
+          "F01",
+          "F13"
+        ]
+      },
+      {
+        "status": "analyst_interpretation",
+        "statement": "A mode label can hide a minority zone inside a mixed fragment. Preserve source offsets and original line-level evidence when studying this risk, rather than treating one fragment label as complete semantic coverage.",
+        "based_on": [
+          "F06"
+        ]
+      },
+      {
+        "status": "analyst_interpretation",
+        "statement": "The full-feature line results do not establish the best semantic annotation unit: the line and fragment tasks use different evaluation units and gold labels, and no scope-preservation comparison was performed.",
+        "based_on": [
+          "F07",
+          "F12"
+        ]
+      },
+      {
+        "status": "analyst_interpretation",
+        "statement": "Quoted material and disclaimers cannot be treated as universally expendable for msgloom. A functional label does not establish whether a condition or exception matters to a decision.",
+        "based_on": [
+          "F09",
+          "F12",
+          "F13"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "status": "untested_proposal_not_architecture_approval",
+        "name": "Boundary-to-meaning audit",
+        "procedure": "On synthetic or user-reviewed email examples, annotate functional zones separately from work-matter spans and conditions/actions/reply scope. Compare line and heuristic-fragment boundaries on adjoining zones and inline replies.",
+        "measure": "Report zone errors separately from omitted conditions, broadened reply/action scope, and retained source evidence. Audit minority labels hidden by fragment mode."
+      },
+      {
+        "status": "untested_proposal_not_architecture_approval",
+        "name": "Independent semantic-unit comparison",
+        "procedure": "Compare sentence, clause, arbitrary span, EDU, and a defined hybrid on the same annotated work matters. Allow a span to have multiple Topic IDs and one Topic to have multiple separated spans.",
+        "measure": "Keep exact/overlapping/discontinuous Topic-span and multi-label metrics distinct; include decision-bearing evidence preservation and annotator agreement. R03 supplies no expected winning unit."
+      },
+      {
+        "status": "untested_proposal_not_architecture_approval",
+        "name": "Quote/context retention experiment",
+        "procedure": "Compare retaining original content with optional zone annotations against filtering by predicted zones on inline replies, mixed fragments, and quoted sender text.",
+        "measure": "Count lost conditions/evidence, changed attribution, and broadened action/reply scope with traceable source offsets and explicit uncertainty."
+      },
+      {
+        "status": "untested_proposal_not_architecture_approval",
+        "name": "Grouped transfer validation",
+        "procedure": "Evaluate zone models with message/thread/template grouping and held-out email domains; audit shared quoted text and near duplicates. Compare full and non-lexical feature variants.",
+        "measure": "Report per-zone support and PRF, boundary metrics, confidence intervals, and downstream preservation errors separately; do not infer enterprise portability from the in-domain ablation."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/reused-topic01/2009_lampert_dale_paris_segmenting_email_message_text_into_zones.pdf",
+      "pdf_sha256": "8421c22eae51ee1ce0b7d8d9a40a634b216d9e698d45a48f7b4d2b3248e9a6eb",
+      "expected_pdf_sha256": "8421c22eae51ee1ce0b7d8d9a40a634b216d9e698d45a48f7b4d2b3248e9a6eb",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/R03.md",
+      "converted_text_sha256": "0409e2e64c9b3b4c1333335625ef84ac8dc7a958ce0e30756dbb6f02f5232388",
+      "primary_conversion_read": "Full converted text, lines 1–1060; no fine conversion present at analysis time.",
+      "exact_quote_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.raw.txt",
+      "exact_quote_text_sha256": "c1b173baab8fecd74a73206c180937b82ba51260e6b9b1217bcf1b8df8c1e060",
+      "quote_line_convention": "1-based newline-delimited lines as shown by nl -ba; form-feed stays in its existing line and is whitespace only. Line-break hyphens are retained.",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.pages.md",
+          "sha256": "b09507177d5192ffe68102e46f7f6afe4ebcfbba7de542410a60833584fdd6bc",
+          "use": "Page-indexed conversion inspected; interleaved columns make it unsuitable for exact prose citations."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/R03.layout.txt",
+          "sha256": "c6f41e8f0da45d7cd43043572273d75a3cafb30dde7fcf0a0772205a5223734e",
+          "use": "Independent layout extraction checked for results and table alignment."
+        }
+      ],
+      "visual_checks": [
+        {
+          "pdf_page": 5,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-05.png",
+          "sha256": "13ab352da605f229c1d189901c8edbe1b04c297c8b20c13a75ab220e1f71a704"
+        },
+        {
+          "pdf_page": 8,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-08.png",
+          "sha256": "7dea9072cab450936a160615201fb03ababf7220335f619f70975ab24942cf79"
+        },
+        {
+          "pdf_page": 9,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/pdf-page-09.png",
+          "sha256": "5e4c2a7d2af73a0acdb22564a6579b8650f5106ccfb7cd1a5c8bd9cdbb50ecbb"
+        },
+        {
+          "pdf_page": 3,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-pdf-page-03.png",
+          "sha256": "060f160ad57a4310e6a29d7440d936059f72762c17b9b7e21e144adc9fdc87e8"
+        },
+        {
+          "pdf_page": 4,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-pdf-page-04.png",
+          "sha256": "133c179327b8ef53b50130cbf2ed06efe5ce4a1ad1fb86d27f83d87a61610edd"
+        },
+        {
+          "pdf_page": 6,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-pdf-page-06.png",
+          "sha256": "c6c15397222cfc49dd1a3cfdaa7fc0ef71c746820c84f6b92f42f41fd1cce2a4"
+        },
+        {
+          "pdf_page": 7,
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-pdf-page-07.png",
+          "sha256": "b63847807cbeff06c380bbe109c91d8b9892dfe5fb484685a0c1f62940ec9672"
+        }
+      ],
+      "visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/figure1.visual-transcription.md",
+        "sha256": "32a331e7a23f98df2647fbc7829abda9750b57f7ef20f88c50a4b7762f8b3f57",
+        "purpose": "Selected Figure 1 annotation cells missing from converted text"
+      },
+      "scope": "Fresh R03 source analysis only; no Topic01 conclusions, network, pipeline stages, or workflow edits.",
+      "escalation_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-review.json",
+      "supplemental_visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/R03/xhigh-boundary-transcription.md",
+        "sha256": "40e80750924b94fc5a84068cd454bf3190cd4df7c2cbd12d385e616cb3fb6a08",
+        "purpose": "Selected Figure 1 blank and punctuation separator cells for I04"
+      },
+      "escalation_read_scope": "Fresh gpt-6-astra xhigh verification: complete primary conversion, archived high analysis/Markdown/receipt, canonical analysis, original PDF pages 3–9, relevant raw/layout/page-indexed text, and installed contract/schema. Only R03 outputs changed; no acquisition, workflow submission, or other worker."
+    }
+  }
+}

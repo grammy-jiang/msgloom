@@ -1,0 +1,41 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/05-action-items-and-commitments/runs/a109ca6369e7/analysis/synthesis.json",
+ "status": "rejected",
+ "issues": [
+  "Finding 9 overstates doi-10-3115-1708376-1708410. The paper supports modeling decision dialogue with Issue, Resolution Proposal, Resolution Restatement, and Agreement, and shows gains from directed graphical models, but it does not compare this representation against a system that 'treats every future-oriented statement as a decision.' That contrast is unsupported.",
+  "Finding 5 states that 'condition' information may be distributed across multiple utterances, but its cited evidence does not establish that specific point. manual-d19b0f6f1e explicitly supports conditions occurring outside the same sentence and should be cited if that claim is retained.",
+  "The confidence_summary overreaches by calling structured argument extraction, multi-span evidence, modality handling, and uncertainty preservation 'necessary design requirements' with HIGH confidence. The corpus motivates these choices, but it does not experimentally establish their necessity for modern workplace email/chat, and some supporting evidence comes from meetings, Switchboard, news/literary negation data, and a general temporal markup specification.",
+  "The confidence_summary also says that these conclusions 'recur across independent email, meeting, dialogue-act, temporal, modality, and negation studies.' The source families support different subproblems, but the temporal, modality, and negation papers do not independently validate the complete workplace-action design requirements attributed to them.",
+  "G10 assigns later completion/cancellation/supersession/contradiction to 'Topic 06,' but doi-10-1007-11965152-18 does not establish that project-specific topic boundary. The literature supports utterance-time action-item structure, not the internal Topic 05/Topic 06 routing decision.",
+  "G11 assigns antecedent proposition resolution to 'Topic 04.' The cited decision and email-act papers support the importance of discourse relations and scope, but they do not establish the project's Topic 04/Topic 05 division.",
+  "G12 states that execution, tool invocation, and treating generated drafts as approval belong outside 'Topic 05.' manual-fde6beef40 supports classification and human review of imperfect automatic output, but it does not establish this project-specific scope boundary or discuss generated drafts/tool execution.",
+  "The actionable insight 'Keep Topic 05 outputs at utterance-time semantics. Later completion, cancellation, contradiction, and revision should be handed to Topic 06' repeats an unsupported project-scope assignment rather than a conclusion demonstrated by the supplied papers.",
+  "Several design recommendations are stronger than the evidence warrants when phrased categorically. In particular, explicit uncertainty preservation, preserving all source-zone lineage, and gating contextual evidence are reasonable engineering implications of the studies, but they should be labeled as synthesis-derived recommendations rather than empirical findings established directly by the papers."
+ ],
+ "unsupported_claims": [
+  "Decision extraction should model issue/resolution/agreement 'rather than treating every future-oriented statement as a decision.'",
+  "Conditions are distributed across multiple utterances as stated in Finding 5 without citing manual-d19b0f6f1e.",
+  "The corpus establishes with HIGH confidence that the listed representation choices are 'necessary design requirements' for msgloom.",
+  "Later completion, cancellation, supersession, contradiction, or pending-state determination belongs specifically to Topic 06.",
+  "Antecedent proposition/request resolution belongs specifically to Topic 04.",
+  "Execution, message sending, tool invocation, and generated-draft approval belong outside Topic 05 on the basis of manual-fde6beef40."
+ ],
+ "required_fixes": [
+  "Rewrite Finding 9 to state only what doi-10-3115-1708376-1708410 demonstrates: structured modeling of Issue, Resolution Proposal, Resolution Restatement, and Agreement improved decision-dialogue-act detection relative to the compared hierarchical SVM, while the representation does not extract workplace owners, deadlines, or conditions. Remove the unsupported future-oriented-statement contrast.",
+  "Add manual-d19b0f6f1e to Finding 5 for the claim that a condition can occur outside the same sentence as the governed request or commitment, or remove 'condition' from that sentence.",
+  "Soften the confidence_summary from 'necessary design requirements' to language such as 'well-supported design principles' or 'strongly motivated representation and evaluation choices,' and explicitly distinguish direct workplace-email evidence from transfer-domain evidence.",
+  "Do not imply that temporal, modality, and negation papers independently validate the complete workplace-action schema. State instead that they supply relevant component-level representations or difficulty evidence.",
+  "Remove the literature citations from the project-specific Topic 04/05/06 routing claims unless separate project-scope evidence exists. Either omit G10-G12 from the literature synthesis or clearly mark them as uncited project-scope decisions rather than evidence-derived gaps.",
+  "Apply the same correction to the actionable insight that routes lifecycle state to Topic 06.",
+  "Label engineering recommendations that go beyond direct experimental findings as synthesis-derived recommendations, particularly uncertainty-preserving output, source-lineage preservation, and context gating."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.86,
+  "coherence": 0.96,
+  "gap_completeness": 0.94,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is strong overall: all cited paper_ids are valid, the major recurring themes are well grounded, important tensions are explicitly named rather than averaged away, and the central academic gaps around complete-schema extraction, owner resolution, deadline binding, contemporary workplace chat, and scoped conditionality remain correctly open. Rejection is driven by localized but substantive overreach rather than by a failure of the overall synthesis. The most important corrections are the unsupported contrast in Finding 9, the overstatement of 'necessary' design requirements in the confidence summary, and project-specific Topic 04/05/06 scope assignments being presented with literature citations that do not establish those boundaries."
+}

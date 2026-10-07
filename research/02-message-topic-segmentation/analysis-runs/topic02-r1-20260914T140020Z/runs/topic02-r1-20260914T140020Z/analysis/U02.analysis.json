@@ -1,0 +1,1251 @@
+{
+  "paper_id": "U02",
+  "title": "Segmenting a French Meeting Corpus into Elementary Discourse Units",
+  "research_question": "Can a manually annotated French meeting corpus support reliable elementary discourse unit segmentation with a fine-tuned language model and limited annotation effort?",
+  "methodology": "The authors annotate SUMM-RE meeting transcripts speaker by speaker in Praat, using training and guideline discussions followed by manual-seed pre-segmentation and human editing (U02-S03–S06). They fine-tune xlm-roberta-large through the cited JIANT/DisCut methodology, described in the paper as sequence-to-sequence, while operationalizing the output as a binary EDU-start label per token in CoNLL/DISRPT format (U02-S07, S12). They vary the number of gold training tokens and report positive-boundary precision, recall, and F-score (U02-S11). Training hyperparameters and all exact scores are in topic02.metrics; the downstream split allocation is not reported. Prosody is not evaluated (U02-S14).",
+  "methodology_source_refs": [
+    "U02-S03",
+    "U02-S04",
+    "U02-S05",
+    "U02-S06",
+    "U02-S07",
+    "U02-S11",
+    "U02-S12",
+    "U02-S14"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "U02-F01",
+      "finding": "The annotated representation is a single layer of contiguous-token EDUs, each expressing a semantic proposition or one speech act, with preparatory disfluencies retained inside the unit.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 4, Section 5.2, definition (1)",
+      "quote": "span of contiguous tokens whose combined meaning corresponds to a semantic proposi- tion (describing an event, fact, or state of af- fairs), or a single speech act, such as asking a question, providing an answer, or offering conversational feedback. All preparatory disfluent material should be included within the unit.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 358,
+        "line_end": 365,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "source_refs": [
+        "U02-S06",
+        "U02-S10",
+        "U02-S12"
+      ]
+    },
+    {
+      "finding_id": "U02-F02",
+      "finding": "Segmentation is independent for each speaker with full conversational context available; abandoned false starts become separate units, while coherent preparatory hesitations remain with the following content.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 3, Section 3: dialogic phenomena",
+      "quote": "It is important to note that segmentation is performed independently for each participant, although annotators are allowed to see the full multilogue context.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 203,
+        "line_end": 206,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "U02-S03",
+        "U02-S04"
+      ]
+    },
+    {
+      "finding_id": "U02-F03",
+      "finding": "Section 4 reports manual correction and annotation of the original SUMM-RE dev/test portions: 73 meetings and approximately 24 hours; the abstract and conclusion instead describe 20 hours of manual data.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 3, Section 4: The Corpus",
+      "quote": "The full dev and test sets— corresponding to 73 meetings and approximately 24 hours of recordings—have been manually corrected and annotated.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 234,
+        "line_end": 238,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "U02-S01",
+        "U02-S02",
+        "U02-S09"
+      ]
+    },
+    {
+      "finding_id": "U02-F04",
+      "finding": "A small manual seed trained a rough pre-segmenter, after which annotators edited its output; the authors report sample inspection and no significant difference in agreement between from-scratch and pre-segmented files, while explicitly retaining possible bias.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 4, Section 5.1: pre-segmentation checks",
+      "quote": "Second, we performed inter-coder agreement analysis on both files annotated from scratch and those annotated with pre-segmentation, and ob- served no significant differences between the two.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 315,
+        "line_end": 318,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "source_refs": [
+        "U02-S04",
+        "U02-S05"
+      ]
+    },
+    {
+      "finding_id": "U02-F05",
+      "finding": "The prose reports semi-naive annotator mean κ of 0.85–0.89 and expert κ around 0.9, whereas Figure 1 explicitly presents human F-scores and Figure 2 labels its red reference only as the human-annotation mean; these quantities cannot be treated as a verified common metric.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 4, Section 5.1; compare Figure 1 and PDF p. 5 Figure 2",
+      "quote": "Overall, semi-naive coder reached mean κ-scores within the 0.85-0.89 range, while a few expert annotations conduced by the authors of the paper have shown higher reliability, with κ-scores around 0.9.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 323,
+        "line_end": 327,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "source_refs": [
+        "U02-S05",
+        "U02-S08",
+        "U02-S15",
+        "U02-S16"
+      ]
+    },
+    {
+      "finding_id": "U02-F06",
+      "finding": "For SUMM-RE gold-data EDU-boundary prediction, Table 1 reports precision 0.900, recall 0.831, and F-score 0.864 with 100,000 training tokens; gains flatten across the larger reported training sizes, but the exact evaluation partition and boundary counts are not supplied.",
+      "evidence_type": "supported",
+      "evidence_basis": "paper-reported annotation or experimental result",
+      "section": "PDF p. 8, Appendix, Table 1; evaluation definition in PDF pp. 4–5 Section 6",
+      "quote": "100000 0.900 0.831 0.864 Table 1: Results for Discourse Segmentation for different amount of training gold data.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 703,
+        "line_end": 704,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "source_refs": [
+        "U02-S07",
+        "U02-S08",
+        "U02-S11",
+        "U02-S17"
+      ]
+    },
+    {
+      "finding_id": "U02-F07",
+      "finding": "The authors suggest that the observed model plateau corresponds to a maximal theoretical performance level because it aligns with inter-coder agreement.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "author interpretation; no theoretical bound, common-metric validation, repeated-run uncertainty, or expert-gold ceiling experiment",
+      "section": "PDF p. 5, Section 6: plateau interpretation",
+      "quote": "Notably, this performance plateau seems to correspond to the maximal theoretical level achievable, as it aligns with the inter-coder agreement levels observed in our study.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 402,
+        "line_end": 406,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "source_refs": [
+        "U02-S05",
+        "U02-S08",
+        "U02-S11",
+        "U02-S16"
+      ]
+    },
+    {
+      "finding_id": "U02-F08",
+      "finding": "The paper describes automatically transcribed and segmented output, but leaves assessment of segmentation on ASR versions to future work; no ASR segmentation evaluation is established by the reported output volume.",
+      "evidence_type": "supported",
+      "evidence_basis": "explicit future-work statement and full-paper evaluation-scope audit; no negative ASR result implied",
+      "section": "PDF p. 5, Section 7: ASR future work",
+      "quote": "For future work, we are interested in assessing the extent to which discourse segmentation can be effectively applied to the ASR versions of the corpus.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 433,
+        "line_end": 436,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "source_refs": [
+        "U02-S01",
+        "U02-S02",
+        "U02-S07",
+        "U02-S09",
+        "U02-S11"
+      ]
+    },
+    {
+      "finding_id": "U02-F09",
+      "finding": "Appendix examples place a reason introduced by puisque and a corrective restriction introduced by mais in separate EDUs; they illustrate segmentation conventions without measuring retention of the relation to the preceding content.",
+      "evidence_type": "supported",
+      "evidence_basis": "visible annotation examples, not a scope-preservation experiment",
+      "section": "PDF p. 8, Appendix, examples (2a) and (4a)",
+      "quote": "[mais pas d’amis de notre âge d’amis de mes parents]du",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 693,
+        "line_end": 693,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "source_refs": [
+        "U02-S10",
+        "U02-S17"
+      ]
+    }
+  ],
+  "limitations": [
+    "French event-planning meeting speech provides qualified transfer to business email; no email or asynchronous Topic evaluation appears (U02-S02, S07, S11).",
+    "Contiguous EDUs and binary start labels provide no gold or predicted Topic membership, overlapping semantic assignments, or discontinuous Topic objects (U02-F01; U02-S12).",
+    "No comparative preservation evaluation selects an EDU over a sentence, clause, arbitrary span, or hybrid; conditions, evidence links, exceptions, action scope, approval scope, and reply scope are not scored (U02-S06, S07, S10, S11).",
+    "Original corpus dev/test annotation coverage does not identify downstream training, development, and evaluation membership; meeting/group/speaker isolation, duplicate controls, seeds, and repeated-run statistics are not reported (U02-S02, S04, S07, S11).",
+    "Pre-segmentation checks lack sample sizes, test identity, p-values, effect sizes, or a fully independent gold comparison; the paper itself does not exclude annotation bias (U02-F04).",
+    "Human κ prose, human F-score plots, corpus-duration statements, participant coverage, and table references require the qualifications in material_inconsistencies (U02-F03, F05).",
+    "Boundary F-score does not establish exact whole-EDU span accuracy, semantic relation preservation, or a theoretical ceiling; no detailed boundary-error taxonomy or preservation-error count is provided (U02-F06, F07, F09).",
+    "ASR applicability, expert-annotation improvement, and the discourse-prosody interface are future directions, not evaluated results here; laughter is excluded from the segmentation work (U02-F08; U02-S03, S09, S14)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_as_of": "Frozen 2025 paper only; no network verification performed.",
+    "boolean_scope": {
+      "code_available": "False means release of this study’s new model/application/task-specific code is not established in the paper, which uses future tense; it does not assert that no implementation exists.",
+      "dataset_available": "True means the paper supplies a pointer to the underlying SUMM-RE corpus; it does not verify current access or release of every new EDU annotation or automatic output."
+    },
+    "paper_reported_base_dataset_url": "https://huggingface.co/datasets/linagora/SUMM-RE",
+    "paper_cited_implementation_url": "https://github.com/phimit/jiant-discut",
+    "new_artifact_release_status": "The conclusion promises the model and its application to the full dataset alongside the code repository; release completion is not established.",
+    "guidelines": "Complete segmentation guidelines are described as Supplementary Material; only the supplied PDF and local conversions were read, not an independently supplied supplement.",
+    "missing_reproduction_details": [
+      "Exact downstream train/dev/test membership and counts",
+      "Training-subset selection and nesting",
+      "Random seeds and run count",
+      "Checkpoint selection metric beyond development performance",
+      "Boundary evaluation counts and aggregation policy",
+      "Code revision and new-artifact release version",
+      "Hardware and measured inference latency"
+    ],
+    "source_refs": [
+      "U02-S02",
+      "U02-S06",
+      "U02-S07",
+      "U02-S09",
+      "U02-S11"
+    ]
+  },
+  "confidence_scores": {
+    "U02-F01": 0.99,
+    "U02-F02": 0.98,
+    "U02-F03": 0.99,
+    "U02-F04": 0.78,
+    "U02-F05": 0.98,
+    "U02-F06": 0.96,
+    "U02-F07": 0.25,
+    "U02-F08": 0.99,
+    "U02-F09": 0.98
+  },
+  "confidence_score_semantics": "Confidence in evidential support for the stated finding, not a reproduced result; the unsupported theoretical-ceiling claim receives low confidence even though its attribution is certain.",
+  "raw_claims": [
+    "Regarding major dialogic phenomena, whenever a backchannel corresponds to a full dialogue act, it is segmented accordingly.",
+    "A unit is only labeled as an abandoned discourse unit if the introduced material is discarded before the beginning of a different discourse unit.",
+    "Our guidelines use both holistic interpretation of discourse function within the discourse flow as understood by the annotator and surface cues such as discourse markers.",
+    "The results in Figure 2 indicate that the model’s performance plateaus relatively quickly.",
+    "The model, along with its application to the full dataset, will be released alongside the code repository."
+  ],
+  "raw_claim_source_locators": [
+    {
+      "raw_claim_index": 0,
+      "section": "PDF p. 3, Section 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 201,
+        "line_end": 203,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 1,
+      "section": "PDF p. 4, Section 5.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 366,
+        "line_end": 368,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 2,
+      "section": "PDF p. 4, Section 5.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 345,
+        "line_end": 348,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 3,
+      "section": "PDF p. 5, Section 6",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 396,
+        "line_end": 397,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 4,
+      "section": "PDF p. 5, Section 7",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 417,
+        "line_end": 419,
+        "pdf_pages": [
+          5
+        ]
+      }
+    }
+  ],
+  "source_index": {
+    "U02-S01": {
+      "section": "PDF p. 1, Abstract",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 28,
+        "line_end": 37,
+        "pdf_pages": [
+          1
+        ]
+      }
+    },
+    "U02-S02": {
+      "section": "PDF p. 3, Section 4: The Corpus",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 219,
+        "line_end": 251,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "U02-S03": {
+      "section": "PDF p. 3, Section 3: dialogic phenomena",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 201,
+        "line_end": 218,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "U02-S04": {
+      "section": "PDF p. 3, Sections 5 and 5.1: annotation campaign",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 253,
+        "line_end": 298,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "U02-S05": {
+      "section": "PDF p. 4, Section 5.1 and Figure 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 302,
+        "line_end": 330,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "U02-S06": {
+      "section": "PDF p. 4, Section 5.2, definition (1)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 332,
+        "line_end": 368,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "U02-S07": {
+      "section": "PDF pp. 4–5, Section 6: model and evaluation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 370,
+        "line_end": 393,
+        "pdf_pages": [
+          4,
+          5
+        ]
+      }
+    },
+    "U02-S08": {
+      "section": "PDF p. 5, Section 6 and Figure 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 394,
+        "line_end": 412,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "U02-S09": {
+      "section": "PDF p. 5, Section 7: Conclusion",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 414,
+        "line_end": 446,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "U02-S10": {
+      "section": "PDF p. 8, Appendix, examples (2)–(4)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 657,
+        "line_end": 698,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "U02-S11": {
+      "section": "PDF p. 8, Appendix, Table 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 699,
+        "line_end": 704,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "U02-S12": {
+      "section": "PDF p. 8, Appendix, Table 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 705,
+        "line_end": 718,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "U02-S13": {
+      "section": "PDF p. 1, Section 1: participants",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 50,
+        "line_end": 52,
+        "pdf_pages": [
+          1
+        ]
+      }
+    },
+    "U02-S14": {
+      "section": "PDF p. 2, Section 3: punctuation and prosody",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+        "line_start": 180,
+        "line_end": 190,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "U02-S15": {
+      "section": "PDF p. 4, Figure 1, local visual inspection",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/visual-inspection.md",
+        "line_start": 5,
+        "line_end": 9,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-04.png",
+      "evidence_kind": "exact labels plus explicitly labeled analyst observation"
+    },
+    "U02-S16": {
+      "section": "PDF p. 5, Figure 2, local visual inspection",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/visual-inspection.md",
+        "line_start": 11,
+        "line_end": 16,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-05.png",
+      "evidence_kind": "exact labels plus explicitly labeled analyst observation"
+    },
+    "U02-S17": {
+      "section": "PDF p. 8, Appendix, local visual inspection",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/visual-inspection.md",
+        "line_start": 18,
+        "line_end": 23,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-08.png",
+      "evidence_kind": "exact captions plus verification"
+    },
+    "U02-S18": {
+      "section": "PDF p. 9, Figures 3 and 4, local visual inspection",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/visual-inspection.md",
+        "line_start": 25,
+        "line_end": 33,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-09.png",
+      "evidence_kind": "exact labels plus explicitly labeled visual estimates"
+    }
+  },
+  "topic02": {
+    "evidence_family": {
+      "classification": "DIRECT_WORK",
+      "qualification": "Meeting/dialogue transfer to email; direct EDU annotation and boundary evidence in work-like event planning, not direct email or Topic-assignment evidence."
+    },
+    "evaluated_tasks": {
+      "evaluated": [
+        "Discourse/EDU segmentation: binary prediction of token positions beginning an EDU.",
+        "Human EDU-boundary agreement and a limited pre-segmentation-bias comparison."
+      ],
+      "task_separation": {
+        "topic_boundary_detection": "not evaluated",
+        "contiguous_topic_segmentation": "not evaluated",
+        "segment_topic_labeling": "not evaluated",
+        "whole_message_multi_label_classification": "not evaluated",
+        "exact_span_assignment": "not evaluated for Topics; EDU boundaries are scored, without whole-span exact-match scoring",
+        "overlapping_span_assignment": "not evaluated",
+        "non_contiguous_assignment_to_one_topic": "not evaluated",
+        "discourse_edu_segmentation": "evaluated",
+        "action_question_reply_scope_extraction": "not evaluated; speech acts motivate EDU definitions and examples only",
+        "preservation_of_decision_bearing_conditions_evidence_scope": "not evaluated"
+      },
+      "source_refs": [
+        "U02-S06",
+        "U02-S07",
+        "U02-S10",
+        "U02-S11",
+        "U02-S12"
+      ]
+    },
+    "annotation_unit": {
+      "unit": "Contiguous tokens constituting a proposition/event/fact/state or one speech act, with preparatory disfluencies; one layer per speaker.",
+      "context": "Other speakers remain visible to the annotator; boundaries are timed in separate Praat files.",
+      "source_refs": [
+        "U02-S03",
+        "U02-S04",
+        "U02-S06"
+      ]
+    },
+    "prediction_unit": {
+      "unit": "One binary EDU-start decision per token; Table 2 illustrates BeginSeg=Yes versus underscore.",
+      "labels_are_not": "Topic identities or semantic speech-act classes.",
+      "source_refs": [
+        "U02-S07",
+        "U02-S12"
+      ]
+    },
+    "contiguity": {
+      "gold": "EDUs explicitly contain contiguous tokens in the speaker transcript.",
+      "prediction": "Binary starts induce sequential contiguous units in the input sequence; there is no non-sequential cluster output.",
+      "source_refs": [
+        "U02-S06",
+        "U02-S07",
+        "U02-S12"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "boundary": "One of two boundary states per token in the segmentation encoding; one EDU layer per speaker. The guidelines also discuss abandoned units, but no separate abandoned-unit classification results are reported.",
+        "topic": "No Topic labels or Topic-membership cardinalities are annotated or evaluated."
+      },
+      "prediction": {
+        "boundary": "One binary start/non-start state per token.",
+        "topic": "No model output for Topic membership or multi-label cardinality."
+      },
+      "source_refs": [
+        "U02-S06",
+        "U02-S07",
+        "U02-S12"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "one_semantic_object": "Each EDU is contiguous; no disconnected spans assigned to the same Topic or EDU object.",
+        "within_one_message": "Email/message-local discontinuous assignment is not represented or evaluated.",
+        "thread_level": "No Topic cluster links across messages or nonadjacent speaker contributions; no thread-level discontinuity evaluation."
+      },
+      "prediction": {
+        "one_semantic_object": "Binary starts provide no discontinuous-object identity.",
+        "within_one_message": "not evaluated",
+        "thread_level": "not evaluated"
+      },
+      "source_refs": [
+        "U02-S03",
+        "U02-S06",
+        "U02-S07",
+        "U02-S12"
+      ]
+    },
+    "overlap": {
+      "gold": {
+        "semantic_token_membership": "The single-layer segmentation does not represent overlapping semantic spans or multiple Topic memberships.",
+        "temporal_speaker_overlap": "Independent timed speaker files can coexist during simultaneous speech; this is an analyst inference about the annotation format, not semantic token overlap or a reported overlap-rate measurement."
+      },
+      "prediction": {
+        "semantic_token_membership": "Unsupported by the binary start representation; not evaluated.",
+        "temporal_speaker_overlap": "No separate overlap-detection model or metric is reported."
+      },
+      "within_message_vs_thread": "Neither within-message Topic span overlap nor thread-level multi-membership is evaluated.",
+      "source_refs": [
+        "U02-S03",
+        "U02-S04",
+        "U02-S06",
+        "U02-S07",
+        "U02-S12"
+      ]
+    },
+    "dataset_domain": {
+      "name": "SUMM-RE",
+      "language": "French",
+      "medium": "Spontaneous multiparty meeting speech transcripts, mainly face-to-face, with some Zoom recordings.",
+      "activity": "Event ideation, choosing event activities, and organizing the event including task delegation.",
+      "source_reported_counts": [
+        {
+          "setting": "Whole source corpus, Section 4",
+          "value": "approximately 100 sessions made of 3 x 20’ meeting",
+          "participants": "2 to 4",
+          "qualification": "The paper uses session/meeting terminology ambiguously; no exact total meeting count is derived.",
+          "source_refs": [
+            "U02-S02"
+          ]
+        },
+        {
+          "setting": "Original corpus dev and test portions manually corrected and annotated",
+          "meetings": 73,
+          "hours_approximate": 24,
+          "source_refs": [
+            "U02-S02"
+          ]
+        },
+        {
+          "setting": "Manual discourse-segmented corpus, abstract and conclusion",
+          "hours": 20,
+          "qualification": "Retained alongside the approximately 24-hour body claim; not reconciled.",
+          "source_refs": [
+            "U02-S01",
+            "U02-S09"
+          ]
+        },
+        {
+          "setting": "Automatically transcribed and segmented data, abstract",
+          "hours": 80,
+          "qualification": "Output quantity, not an ASR segmentation test or measured success rate.",
+          "source_refs": [
+            "U02-S01",
+            "U02-S09"
+          ]
+        },
+        {
+          "setting": "Manually annotated portion; dialogue and EDU summary in Section 4",
+          "mean_edus_per_dialogue": 534,
+          "reported_mean_length": "8 ± 6",
+          "qualification": "The prose does not explicitly name the length unit or dispersion statistic; Figure 4 labels its x-axis Value. Do not infer an exact total EDU count.",
+          "source_refs": [
+            "U02-S02",
+            "U02-S18"
+          ]
+        }
+      ],
+      "email_transfer_limit": "Meeting turn-taking, speech disfluencies, and event-planning scenarios do not establish performance on asynchronous business messages, quoted replies, or approval scope."
+    },
+    "annotation_process": {
+      "annotators": "Four initially naive undergraduate humanities students; authors also produced a few expert annotations.",
+      "training": "Three guideline/training sessions using an external corpus and some meetings from this dataset; debatable decisions discussed and potentially revised, followed by short agreement exercises.",
+      "production": "Praat annotation per speaker, using other speakers as context; a manually segmented seed trained a rough model that supplied pre-segmentations for editing.",
+      "guidelines": "Holistic discourse function plus surface markers; retain coherent preparation, split abandoned material, segment full-act backchannels; laughter excluded.",
+      "gold_resolution": "Final manual edits are described, but full multi-annotation coverage and an adjudication/consensus procedure for production gold are not specified.",
+      "bias_check": "Sample comparison plus agreement comparison with from-scratch files; no proof of absence of bias, no reported test statistic or sample denominator.",
+      "source_refs": [
+        "U02-S03",
+        "U02-S04",
+        "U02-S05",
+        "U02-S06"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "prose_results": [
+        {
+          "metric": "κ (variant and exact token/timing decision population unspecified)",
+          "population": "semi-naive human EDU annotators",
+          "reported_mean_range": [
+            0.85,
+            0.89
+          ],
+          "sample_size": "not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 323,
+            "line_end": 324,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "metric": "κ (variant unspecified)",
+          "population": "a few expert annotations by the paper authors",
+          "approximate_score": 0.9,
+          "sample_size": "not reported",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 325,
+            "line_end": 327,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ],
+      "figure_1": {
+        "metric": "F-scores, as captioned",
+        "population": "human coder pairs A-B, A-C, B-C; red dots denote files without pre-segmentation",
+        "exact_pair_means": "not printed",
+        "pair_sample_counts": "not reported",
+        "fourth_coder_coverage": "not explained",
+        "source_refs": [
+          "U02-S05",
+          "U02-S15"
+        ]
+      },
+      "figure_2_reference": {
+        "label": "mean value for human annotations",
+        "exact_value": "not printed; the visual line is near 0.87",
+        "metric_and_aggregation": "F-score plot context, but the caption does not resolve its relationship to prose κ or specify the averaging population",
+        "source_refs": [
+          "U02-S08",
+          "U02-S16"
+        ]
+      },
+      "comparability": "Do not equate prose κ, human boundary F-scores, and model boundary F-score or assert a common theoretical ceiling."
+    },
+    "split_and_leakage": {
+      "original_corpus_partition": "Section 4 names the original dev/test portions as manually corrected and annotated; it says the whole corpus was automatically transcribed. It supplies no separate original train count or ASR train performance. These names are not an explicit downstream EDU model split specification.",
+      "original_manual_coverage": {
+        "meetings": 73,
+        "hours_approximate": 24,
+        "source_refs": [
+          "U02-S02"
+        ]
+      },
+      "downstream_training_sizes_tokens": [
+        1000,
+        10000,
+        50000,
+        100000
+      ],
+      "downstream_training_partition_membership": "not reported",
+      "downstream_development": "Used for early stopping; identity, token count, meeting count, and selection metric are not specified.",
+      "downstream_evaluation": "Table 1 does not name a test or development split; evaluation token/boundary/meeting counts and split unit are not reported.",
+      "subset_sampling_and_nesting": "not reported",
+      "group_speaker_meeting_separation": "not reported; repeated sessions by a group make this worth testing, but leakage is not demonstrated.",
+      "duplicates_and_near_duplicates": "No controls or audit results reported.",
+      "presegmentation_seed_separation": "The initial manual seed and pre-segmenter relation to downstream partitions is unspecified; do not assert leakage or independence.",
+      "source_refs": [
+        "U02-S02",
+        "U02-S04",
+        "U02-S07",
+        "U02-S11"
+      ]
+    },
+    "metrics": {
+      "task": "EDU-start boundary detection on SUMM-RE manually annotated conversational French data.",
+      "paper_definition": "Precision, recall, and F-score computed exclusively for discourse boundaries, excluding true negatives.",
+      "denominator_interpretation": "For positive-boundary scoring, precision uses predicted starts and recall uses gold starts; F1 is their harmonic mean. These are standard metric interpretations, not explicit equations printed by this paper.",
+      "unknown_denominators": "Gold and predicted boundary counts, token count of evaluation data, first-token treatment, aggregation level, and error tolerance are not specified.",
+      "table_1_results": [
+        {
+          "training_gold_tokens": 1000,
+          "precision": 0.869,
+          "recall": 0.706,
+          "f_score": 0.779,
+          "dataset": "SUMM-RE, manually annotated conversational French data",
+          "task": "binary EDU-start boundary prediction",
+          "evaluation_split": "Not identified by name, unit, or count for this table; do not assume an original corpus split.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 700,
+            "line_end": 700,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "training_gold_tokens": 10000,
+          "precision": 0.88,
+          "recall": 0.826,
+          "f_score": 0.851,
+          "dataset": "SUMM-RE, manually annotated conversational French data",
+          "task": "binary EDU-start boundary prediction",
+          "evaluation_split": "Not identified by name, unit, or count for this table; do not assume an original corpus split.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 701,
+            "line_end": 701,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "training_gold_tokens": 50000,
+          "precision": 0.876,
+          "recall": 0.85,
+          "f_score": 0.863,
+          "dataset": "SUMM-RE, manually annotated conversational French data",
+          "task": "binary EDU-start boundary prediction",
+          "evaluation_split": "Not identified by name, unit, or count for this table; do not assume an original corpus split.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "training_gold_tokens": 100000,
+          "precision": 0.9,
+          "recall": 0.831,
+          "f_score": 0.864,
+          "dataset": "SUMM-RE, manually annotated conversational French data",
+          "task": "binary EDU-start boundary prediction",
+          "evaluation_split": "Not identified by name, unit, or count for this table; do not assume an original corpus split.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "training_setting": {
+        "model": "xlm-roberta-large",
+        "framework": "JIANT with the cited Metheniti/DisCut methodology",
+        "learning_rate": 1e-05,
+        "batch_size": 1,
+        "gradient_accumulation": 4,
+        "maximum_epochs": 30,
+        "patience": 10,
+        "early_stopping_basis": "development performance; exact criterion unspecified",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+          "line_start": 388,
+          "line_end": 393,
+          "pdf_pages": [
+            5
+          ]
+        }
+      },
+      "learning_curve_interpretation": "The reported F-score improves little from the larger training sizes; this is descriptive and has no repeated-run uncertainty or significance interval.",
+      "conclusion_rounding": {
+        "f_score_approximate": 0.86,
+        "scope": "EDU segmentation; not an ASR-only score or a work-scope preservation score",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+          "line_start": 433,
+          "line_end": 439,
+          "pdf_pages": [
+            5
+          ]
+        }
+      },
+      "human_agreement": "See inter_annotator_agreement; keep κ and F-score separate.",
+      "annotation_effort_estimates": {
+        "population": "Trained naive coders, time per person to segment the indicated tokens into EDUs",
+        "type": "author estimates, not a timed efficiency experiment",
+        "rows": [
+          {
+            "tokens": 1000,
+            "time": "approximately half a day"
+          },
+          {
+            "tokens": 10000,
+            "time": "about a week"
+          },
+          {
+            "tokens": 50000,
+            "time": "around a month"
+          },
+          {
+            "tokens": 100000,
+            "time": "roughly two months"
+          }
+        ],
+        "uncertainty_and_presegmentation_condition": "not specified",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+          "line_start": 398,
+          "line_end": 402,
+          "pdf_pages": [
+            5
+          ]
+        }
+      },
+      "not_reported": [
+        "Pk",
+        "WindowDiff",
+        "Topic pair/cluster scores",
+        "Exact complete-span F1 or IoU",
+        "Multi-label Topic metrics",
+        "Condition/evidence/scope preservation metrics",
+        "ASR segmentation scores"
+      ],
+      "source_refs": [
+        "U02-S07",
+        "U02-S08",
+        "U02-S09",
+        "U02-S11"
+      ]
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measurement": "No experiment counts lost or broadened conditions, evidence, exceptions, action scope, approval scope, or reply scope.",
+      "related_evidence": "U02-F01 requires retaining preparatory disfluencies; U02-F09 shows reason/correction boundaries; question/answer examples motivate speech-act units. These are conventions and illustrations, not measured preservation outcomes.",
+      "extraction_errors": "No condition/scope extraction error analysis is reported. Positive-boundary false positives and false negatives are reflected by precision/recall without a semantic-error breakdown.",
+      "source_refs": [
+        "U02-S03",
+        "U02-S06",
+        "U02-S07",
+        "U02-S10",
+        "U02-S11"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Concrete work-matter identity, topic-boundary detection, contiguous Topic segmentation, or segment Topic labeling.",
+      "Multi-topic messages, multiple Topic memberships per span, exact Topic spans, overlapping Topic spans, or non-contiguous evidence for one Topic.",
+      "Asynchronous thread interleaving, reply linking/scope, and cross-Source Topic identity.",
+      "Decision-bearing conditions, exceptions, evidence relations, action scope, approval scope, and reply-scope preservation.",
+      "Comparative annotation-unit utility on business email; abstention or calibrated Topic uncertainty.",
+      "Business-email latency, operational resource cost, and incremental-update behavior."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "U02-I01",
+        "type": "duration discrepancy",
+        "values": "20 hours manual in abstract and conclusion versus approximately 24 hours / 73 meetings in Section 4",
+        "source_refs": [
+          "U02-S01",
+          "U02-S02",
+          "U02-S09"
+        ],
+        "status": "unresolved; no reconciliation by rounding or assumed excluded subset"
+      },
+      {
+        "id": "U02-I02",
+        "type": "metric identity ambiguity",
+        "values": "Prose κ 0.85–0.89 and approximately 0.9 versus Figure 1 F-scores; Figure 2 red human mean has no exact printed value or population",
+        "source_refs": [
+          "U02-S05",
+          "U02-S08",
+          "U02-S15",
+          "U02-S16"
+        ],
+        "status": "unresolved; preserve distinct metrics and reject an established human-equivalent model ceiling"
+      },
+      {
+        "id": "U02-I03",
+        "type": "table cross-reference mismatch",
+        "values": "Section 6 refers to Table 2 for data format and again for results; Appendix Table 1 contains results and Table 2 contains a format example",
+        "source_refs": [
+          "U02-S07",
+          "U02-S11",
+          "U02-S12",
+          "U02-S17"
+        ],
+        "status": "visually verified; cite actual table labels without guessing author intent"
+      },
+      {
+        "id": "U02-I04",
+        "type": "participant and agreement-coverage discrepancy",
+        "values": "Introduction says 3–4 participants; Section 4 says 2–4. Four annotators are recruited, but Figure 1 displays only A-B, A-C, and B-C pairs.",
+        "source_refs": [
+          "U02-S13",
+          "U02-S02",
+          "U02-S04",
+          "U02-S15"
+        ],
+        "status": "scope differences not explained; neither participant range nor coder coverage silently normalized"
+      },
+      {
+        "id": "U02-I05",
+        "type": "possible plotted-population mismatch, analyst visual estimate",
+        "values": "Figure 3 visible histogram heights appear to sum to 68 dialogues; Section 4 reports 73 manually annotated meetings. The figure has no printed bar counts or exact total.",
+        "source_refs": [
+          "U02-S02",
+          "U02-S18"
+        ],
+        "status": "retain as a visual population ambiguity, not an exact replacement count or proof of omitted meetings"
+      },
+      {
+        "id": "U02-I06",
+        "type": "Table 1 arithmetic/aggregation ambiguity",
+        "setting": "SUMM-RE EDU-boundary prediction, 10,000 gold training tokens; exact evaluation partition unspecified",
+        "reported": {
+          "precision": 0.88,
+          "recall": 0.826,
+          "f_score": 0.851
+        },
+        "analyst_derived_harmonic_mean_of_printed_precision_recall": 0.8521453692848769,
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+          "line_start": 701,
+          "line_end": 701,
+          "pdf_pages": [
+            8
+          ]
+        },
+        "source_refs": [
+          "U02-S07",
+          "U02-S11",
+          "U02-S17"
+        ],
+        "status": "Under the conventional single pooled F1 interpretation, the printed precision and recall yield approximately 0.8521 rather than 0.851. Aggregation is unspecified; preserve the reported row without diagnosing or correcting author intent."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "assessment": "Useful EDU operational definition and annotation examples; no comparative evidence establishes the best unit for a work matter.",
+        "finding_ids": [
+          "U02-F01",
+          "U02-F02",
+          "U02-F09"
+        ]
+      },
+      "RQ2": {
+        "assessment": "No direct email/asynchronous clustering or interleaving evidence; speaker-local segmentation is not Topic linking.",
+        "finding_ids": [
+          "U02-F02"
+        ]
+      },
+      "RQ3": {
+        "assessment": "Makes the absence of gold/predicted multi-Topic membership clear; binary boundaries do not solve Topic cardinality.",
+        "finding_ids": [
+          "U02-F01",
+          "U02-F06"
+        ]
+      },
+      "RQ4": {
+        "assessment": "Single contiguous layer supplies no overlapping/discontinuous Topic representation; timed speaker overlap is a different property.",
+        "finding_ids": [
+          "U02-F01",
+          "U02-F02"
+        ]
+      },
+      "RQ5": {
+        "assessment": "Disfluency-retention rules and reason/correction examples suggest risks to test; no measured scope-preservation outcome.",
+        "finding_ids": [
+          "U02-F01",
+          "U02-F09"
+        ]
+      },
+      "RQ6": {
+        "assessment": "Useful positive-boundary precision/recall/F-score evidence with missing denominators and ambiguous human metric comparison.",
+        "finding_ids": [
+          "U02-F05",
+          "U02-F06",
+          "U02-F07"
+        ]
+      },
+      "RQ7": {
+        "assessment": "Relevant annotation protocol, domain limits, and bias check; unresolved size statements and missing downstream splits limit reproducibility.",
+        "finding_ids": [
+          "U02-F03",
+          "U02-F04",
+          "U02-F05",
+          "U02-F08"
+        ]
+      },
+      "RQ8": {
+        "assessment": "Motivates controlled unit, preservation, and annotation-bias experiments only; no architecture approval.",
+        "finding_ids": [
+          "U02-F01",
+          "U02-F04",
+          "U02-F09"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "U02-A01",
+        "label": "analyst interpretation",
+        "text": "An EDU can be a candidate evidence unit, but its single-proposition or speech-act definition does not establish a concrete work matter’s full scope. Grouping EDUs requires a separate evaluated Topic assignment.",
+        "based_on": [
+          "U02-F01",
+          "U02-F02"
+        ]
+      },
+      {
+        "id": "U02-A02",
+        "label": "analyst interpretation",
+        "text": "A segmentation that isolates a reason or corrective restriction can remain linguistically valid. Later selecting only one unit could omit decision-bearing context; that is a plausible downstream risk, not a measured paper error.",
+        "based_on": [
+          "U02-F09"
+        ]
+      },
+      {
+        "id": "U02-A03",
+        "label": "analyst interpretation",
+        "text": "The learning curve suggests a possible pilot annotation budget for this EDU task, but neither its asymptote nor human agreement supplies a guaranteed performance ceiling, email score, or safe preservation threshold.",
+        "based_on": [
+          "U02-F05",
+          "U02-F06",
+          "U02-F07"
+        ]
+      },
+      {
+        "id": "U02-A04",
+        "label": "analyst interpretation",
+        "text": "Separate timed speaker files permit temporal concurrency without giving one text span multiple semantic memberships; no thread-level or within-message Topic discontinuity follows.",
+        "based_on": [
+          "U02-F01",
+          "U02-F02"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "U02-P01",
+        "status": "untested msgloom research proposal; not approved architecture",
+        "proposal": "On the same user-reviewed or synthetic business messages, compare sentence, clause, EDU, arbitrary-span, and hybrid annotation units. Preserve original offsets and allow multiple Topic memberships and disconnected evidence sets in the reference annotation.",
+        "evaluation": "Score unit boundaries separately from exact/overlapping/discontinuous Topic assignment; score missed or broadened conditions, exceptions, evidence, action scope, approval scope, and reply scope separately.",
+        "motivation": [
+          "U02-F01",
+          "U02-F09"
+        ]
+      },
+      {
+        "id": "U02-P02",
+        "status": "untested msgloom research proposal; not approved architecture",
+        "proposal": "Construct paired examples where reasons, corrections, negation, approval limits, or reply constraints fall across candidate unit boundaries. Compare downstream selection with and without explicit evidence-relation retention.",
+        "evaluation": "Count lost restrictions and broadened decisions against reviewed references; do not substitute EDU-boundary F-score for these outcomes.",
+        "motivation": [
+          "U02-F09"
+        ]
+      },
+      {
+        "id": "U02-P03",
+        "status": "untested msgloom research proposal; not approved architecture",
+        "proposal": "Compare from-scratch annotation with pre-segmentation editing under blinded allocation, with independent adjudication and held-out source/group separation.",
+        "evaluation": "Report annotation time, boundary F-score, an explicitly defined κ population, and preservation disagreements; publish exact split membership and duplicate controls.",
+        "motivation": [
+          "U02-F04",
+          "U02-F05",
+          "U02-F06"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-discourse-unit/2025_prevot_bertrand_hunter_meeting_edu_segmentation.pdf",
+      "pdf_sha256": "1228e896042a3b8171c11d8aa9c9b7679b9b598588e1806a792f5d7073218265",
+      "expected_pdf_sha256": "1228e896042a3b8171c11d8aa9c9b7679b9b598588e1806a792f5d7073218265",
+      "primary_converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/U02.md",
+      "primary_converted_text_sha256": "4acb5675ae33d8d1601cde9dbf7c3548be620faee120aa349efdda673ef0bfc8",
+      "fine_conversion_status": "No U02 fine conversion exists at the specified run path.",
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.raw.txt",
+          "sha256": "a8daffdf93697fdecfc4d1c8ce031bd818398e815039e362d331e59510dec3f8"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.pages.md",
+          "sha256": "777120baba5ab65042f99b89114b8ddf3c43e4cdb86a215e01fd569e41a6fd4c"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/U02.layout.txt",
+          "sha256": "2d6e2126bc417260274f76962cf0ef4d6ec3c9dd0d7780d020cdd4a05d1d957c"
+        }
+      ],
+      "read_scope": "Full primary rough conversion including references and appendix; full independent raw and page-indexed conversions; targeted layout comparison; original PDF visual inspection of pages 4, 5, 8, and 9.",
+      "locator_convention": "1-based LF split('\\n') lines; form feeds are not extra lines; quotes normalize whitespace only and retain source line-break hyphens.",
+      "conversion_limitations": "Page-indexed and layout text interleave columns in places; rough Appendix examples duplicate text and omit plots. Raw text plus page images resolve reading order; exact model table values match the PDF. No unavailable plot statistic is invented.",
+      "visual_support_files": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/visual-inspection.md",
+          "sha256": "d66b1bfa329833eb757b04cc9d1a71bdceb4f3e2b76d2f98603cfdc67b719192"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-04.png",
+          "sha256": "3291cd96b5445d658c8b2bf53a38d8f1a252ff4cc4fd74d10acdbc287b826d18"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-05.png",
+          "sha256": "90c4a86b506a5078380e13f05d8442c27b4b1a283aa25092621aa2bcc656402b"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-08.png",
+          "sha256": "58b9604bdca8578c1abf2153c97a4a9ff6fdbf3908dc5032977d53959d282301"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/U02/pdf-page-09.png",
+          "sha256": "2fc22c549399a74aff64b92ca5b47f5a1ff871438fc89df2dd3aa00f8ac6e907"
+        }
+      ],
+      "network_used": false,
+      "source_pdf_modified": false
+    }
+  },
+  "runtime_provenance": {
+    "source": "launcher-reported environment from the actual invocation arguments; parent independently verifies turn_context and exit receipts",
+    "MSGLOOM_WORKER_ROLE": "paper-U02",
+    "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+    "MSGLOOM_WORKER_EFFORT": "xhigh",
+    "runtime_identifiers": "Not fabricated; parent owns real CLI process/turn-context/exit receipts.",
+    "escalation": {
+      "requested": false,
+      "reason": "Launcher already reports xhigh for the parent-selected agreement/evaluation ambiguity. Local PDF images resolve extraction damage. Missing partition details and inconsistent source statements remain explicit paper limitations, not unresolved reading damage."
+    }
+  }
+}

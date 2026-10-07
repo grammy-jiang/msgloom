@@ -1,0 +1,26 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/05-action-items-and-commitments/runs/950e68ab52e0/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 10 overstates what 2005.13084 establishes about domain variation. doi-10-1145-3289600-3290984 directly demonstrates cross-corpus degradation for commitment detection, but 2005.13084 shows Avocado-trained weak-supervision models transferring to Enron without the supplied findings establishing that domain variation itself measurably degrades intent classification. The two results should be stated separately.",
+  "The executive-summary wording 'Exact spans work well for explicit arguments' is broader than the evidence warrants. 2202.12109 and 1909.03546 support exact-span event-argument extraction in transfer domains, but no supplied direct workplace email/chat study validates exact argument-span extraction. The summary should explicitly retain the transfer-domain qualifier.",
+  "Gap 3's wording that owner/assignee extraction is 'weakly evidenced' is imprecise because doi-10-18653-v1-w18-6104 provides a substantial direct workplace-email owner-assignment dataset and annotation study. The genuinely open part is performance and coverage for implicit, group, recipient-external, multi-action, and organizational-context ownership, not the existence of direct owner-assignment evidence.",
+  "The actionable recommendation to separate later lifecycle states including 'completion, revocation, contradiction, or supersession' extends beyond the supplied top findings. doi-10-1109-scc-2013-62 supports commitment lifecycle modeling and specifically describes cancellation from negative evidence, but the supplied analyses do not establish empirical extraction results for completion, contradiction, and supersession.",
+  "The gap_status array stops at gap-9 even though the synthesis defines gap-10. Because gap-10 is explicitly OUT_OF_SCOPE this does not undermine the substantive synthesis, but the status table is internally incomplete and should either contain an out-of-scope status entry for gap-10 or explicitly state that OUT_OF_SCOPE gaps are omitted."
+ ],
+ "unsupported_claims": [
+  "Finding 10: 'Email-domain variation measurably affects commitment and intent classification' is only directly supported for commitment classification by doi-10-1145-3289600-3290984; 2005.13084 establishes useful cross-corpus intent transfer, not supplied evidence of measurable intent degradation caused by domain variation.",
+  "Actionable insight: empirical support in the supplied analyses is insufficient for the specific later lifecycle-state list 'completion, revocation, contradiction, or supersession'; cancellation/revocation-like handling is supported, but the other listed states are not established by the provided findings.",
+  "Executive-summary phrase 'Exact spans work well for explicit arguments' should not be read as direct workplace evidence; the supporting exact-span results come from adjacent event-extraction benchmarks."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.93,
+  "coherence": 0.97,
+  "gap_completeness": 0.96,
+  "citation_integrity": true
+ },
+ "notes": "All paper_id citations used in findings, contradictions, gap_status, and supporting evidence are members of the allowed identifier set. The central synthesis is well supported: direct workplace studies substantiate request/commitment annotation difficulty, context dependence, multi-intent messages, assignee ambiguity, proposal-versus-decision distinctions, and recipient-external ownership; meeting and adjacent event/temporal/modality/negation studies are generally identified as transfer evidence rather than workplace validation. The contradiction section preserves important context, granularity, negation, recipient-assumption, exact-span, and transfer tensions instead of averaging them away. The major target gaps—joint structured annotation, structured decision arguments, difficult ownership, deadline-to-action binding, condition/modality/negation attachment, and unified provenance for implicit arguments—remain correctly open. No production-accuracy claim is made from transfer-domain or synthetic evidence, and the synthesis explicitly states that the complete combined representation is unvalidated. The listed issues are localized wording and traceability problems rather than failures of the core synthesis."
+}

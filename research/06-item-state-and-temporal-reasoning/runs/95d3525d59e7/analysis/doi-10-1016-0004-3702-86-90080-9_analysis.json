@@ -1,0 +1,80 @@
+{
+ "paper_id": "doi-10-1016-0004-3702-86-90080-9",
+ "title": "An assumption-based TMS",
+ "research_question": "How can a truth-maintenance system represent and reason over many mutually incompatible assumption contexts simultaneously while preserving derivational support and avoiding repeated backtracking, context switching, and retraction?",
+ "methodology": "The paper develops the Assumption-based Truth Maintenance System as a formal reasoning architecture rather than conducting a controlled empirical benchmark. Each derived datum is associated with a label containing minimal consistent assumption environments under which it holds, while inconsistent assumption combinations are recorded as nogoods. The author explains the algorithms through formal definitions and worked examples, analyzes computational behavior and worst cases, and discusses implementation techniques such as bit-vector environment representations, hashing, specialized contradiction processing, caching, and garbage collection.",
+ "key_findings": [
+  {
+   "finding": "An ATMS label records minimal consistent assumption environments supporting a datum, thereby preserving explicit provenance for which combinations of assumptions make each conclusion valid.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  },
+  {
+   "finding": "Contradictory assumption combinations are stored as nogoods, and conclusions depending on those combinations are invalidated without forcing unrelated conclusions or alternative contexts to disappear.",
+   "evidence_type": "supported",
+   "section": "Sections 4 and 5"
+  },
+  {
+   "finding": "Mutually contradictory candidate solutions can coexist in separate consistent environments, allowing reasoning to continue without selecting a single global current belief state.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  },
+  {
+   "finding": "Context membership can be determined from assumption-set inclusion, making repeated context switching unnecessary for applications that need to explore multiple alternatives.",
+   "evidence_type": "supported",
+   "section": "Sections 4 and 5"
+  },
+  {
+   "finding": "Directly retracting justifications is described as correct but very inefficient because it can trigger recursive recomputation of labels and previously recorded nogoods; representing defeasibility through assumptions is preferred.",
+   "evidence_type": "supported",
+   "section": "Section 4.9"
+  },
+  {
+   "finding": "The formalism does not eliminate combinatorial worst cases: with n independent assumptions there can be 2^n possible environments, so practical efficiency depends on storing only minimal environments and aggressively pruning inconsistent supersets.",
+   "evidence_type": "supported",
+   "section": "Section 4.8"
+  },
+  {
+   "finding": "A straightforward implementation is too expensive because of repeated set-union and subset operations, motivating specialized representations and caching strategies discussed in the implementation section.",
+   "evidence_type": "supported",
+   "section": "Section 6"
+  }
+ ],
+ "limitations": [
+  "The paper is a symbolic truth-maintenance architecture, not a natural-language model, and it does not identify discourse acts such as correction, supplementation, supersession, reopening, or completion claims from text.",
+  "Its logical notion of contradiction is defined over assumptions and justifications; mapping messy workplace statements into those structures is outside the paper's scope.",
+  "The number of possible assumption environments is exponential in the worst case.",
+  "Direct justification retraction can be computationally expensive and is explicitly discouraged as a routine mechanism.",
+  "Naive implementations incur substantial set-operation overhead and require specialized data structures and caching for practical use.",
+  "The paper provides worked examples and implementation experience rather than a modern large-scale empirical benchmark with standardized predictive metrics.",
+  "The guarantees provided by labels are relative to the current justification network; adding new justifications can change the set of relevant contexts."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": false
+ },
+ "confidence_scores": {
+  "minimal_environment_provenance": 0.99,
+  "nogood_conflict_localization": 0.99,
+  "coexisting_alternatives": 0.99,
+  "context_switching": 0.97,
+  "retraction_cost": 0.99,
+  "exponential_worst_case": 0.99,
+  "implementation_optimization": 0.98
+ },
+ "raw_claims": [
+  "An ATMS associates each datum with the minimal assumption environments in which that datum is derivable.",
+  "A consistent environment together with everything derivable from it defines a context.",
+  "An inconsistent assumption environment is represented as a nogood, and any superset of that environment is also inconsistent.",
+  "Different mutually incompatible solutions can remain represented simultaneously rather than forcing one global choice.",
+  "The system can test whether a datum holds in a context by checking whether a supporting environment is contained in the context's assumptions.",
+  "Contradictions invalidate conclusions that depend on the conflicting assumptions without requiring unrelated information to be discarded.",
+  "Direct retraction of a justification can require expensive recursive label recomputation.",
+  "A defeasible justification can instead be conditioned on an assumption that is later contradicted.",
+  "With n assumptions, as many as 2^n environments are conceivable in the worst case.",
+  "Efficient implementations use compact environment encodings, uniqueness tables, nogood handling, caches, and garbage collection rather than naive set manipulation."
+ ],
+ "source_url": "https://www.researchgate.net/profile/Johan-Kleer/publication/220546361_An_assumption-based_TMS/links/5c0df74b4585157ac1b6bf72/An-assumption-based-TMS.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,92 @@
+{
+ "paper_id": "2511.01101",
+ "title": "TSVer: A Benchmark for Fact Verification Against Time-Series Evidence",
+ "research_question": "How can fact-verification systems be rigorously evaluated on real-world claims that require numerical and temporal reasoning over structured time-series evidence, including whether the correct evidence and time ranges were retrieved and whether generated justifications cover the relevant facts?",
+ "methodology": "TSVer is constructed from real-world fact-checking claims and 400 curated Our World in Data time series, with a two-phase human annotation process that selects relevant series and temporal ranges and then assigns verdicts and justifications from that evidence. The current full-text version reports 304 claims from 41 fact-checking organizations, with four verdict classes and a separate 24-claim development set; 400 synthetic claims are also generated but excluded from the main experiments. A baseline first retrieves time series from textual metadata, filters them by relevant countries and time ranges, and then asks long-context LLMs to generate verdicts and explanations. Evaluation combines verdict accuracy and macro-F1 with the Time Series Coverage Score for dataset-and-time-range retrieval and an adapted Ev2R atomic-fact precision/recall/F1 measure for justification completeness and factual alignment.",
+ "key_findings": [
+  {
+   "finding": "TSVer annotates both which time series are relevant and which temporal ranges within them matter, enabling retrieval evaluation that penalizes both omitted evidence and unnecessary over-retrieval.",
+   "evidence_type": "supported",
+   "section": "3 Annotation Process and 5.1.1 Time Series Coverage Score"
+  },
+  {
+   "finding": "The Time Series Coverage Score jointly combines dataset-level F1 with temporal Jaccard overlap, explicitly measuring whether systems select the correct evidence sources and the correct time spans.",
+   "evidence_type": "supported",
+   "section": "5.1.1 Time Series Coverage Score"
+  },
+  {
+   "finding": "The adapted Ev2R justification metric decomposes predicted and reference explanations into atomic facts and measures both precision and recall, directly exposing unsupported generated facts and omitted reference facts.",
+   "evidence_type": "supported",
+   "section": "5.1.2 Ev2R Score for Justifications"
+  },
+  {
+   "finding": "On the reported test set, Gemini-2.5-Pro achieved 63.57% verdict accuracy, TSCS 27.87, and Ev2R 47.36, showing that even a strong long-context reasoning model has substantial room for improvement on temporal evidence selection and explanation.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "GPT-5.2 achieved 62.86% verdict accuracy, TSCS 25.83, and Ev2R 46.51, with performance close to Gemini but still far from complete retrieval or justification agreement.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "Smaller models often over-retrieve time series, increasing context requirements; Llama-3.1-8B exceeded its 128k-token context limit on 42.5% of test instances.",
+   "evidence_type": "supported",
+   "section": "5.2 Results"
+  },
+  {
+   "finding": "The benchmark distinguishes a CONFLICTING EVIDENCE/CHERRY-PICKING verdict from SUPPORTS, REFUTES, and NOT ENOUGH INFO, allowing evaluation of claims whose apparent validity depends on selective temporal evidence.",
+   "evidence_type": "supported",
+   "section": "4.1 Dataset Statistics"
+  },
+  {
+   "finding": "TSVer evaluates temporally indexed evidence but does not model longitudinal work-item lifecycle states, non-stationary online streams, calibrated selective prediction, or risk-controlled abstention.",
+   "evidence_type": "unsupported",
+   "section": "Scope of benchmark and experiments"
+  }
+ ],
+ "limitations": [
+  "Claims and fact-checking articles are English-only, so the benchmark does not test multilingual temporal or numerical reasoning.",
+  "Claims inherit selection and framing biases from fact-checking organizations and from Google Fact Check Explorer coverage.",
+  "Evidence is restricted to time series from a curated Our World in Data collection rather than the full multimodal evidence environment faced by real fact-checkers.",
+  "The time-series collection is primarily restricted to annual-resolution data or data that can be meaningfully aggregated annually.",
+  "Claims that could not be pre-aligned with a semantic time-series group were excluded, introducing an additional selection effect.",
+  "Raw time-series serialization can create extremely long model inputs and context-window failures.",
+  "The experiments are static benchmark evaluations rather than online evaluations under temporal distribution shift.",
+  "The benchmark does not provide calibration-error, selective-risk, coverage-risk, or abstention metrics.",
+  "Temporal reasoning concerns evidence ranges for factual claims rather than explicit superseded/open/resolved work-item transitions."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "TSVer provides temporally localized structured evidence": 0.99,
+  "TSCS jointly measures source and temporal coverage": 0.99,
+  "Ev2R measures atomic support and omission": 0.99,
+  "strong LLMs remain challenged": 0.99,
+  "over-retrieval creates context failures": 0.99,
+  "benchmark supports conflicting-evidence evaluation": 0.98,
+  "no online selective calibration": 0.97
+ },
+ "raw_claims": [
+  "The current full-text version of TSVer contains 304 real-world claims collected from 41 fact-checking organizations.",
+  "The benchmark provides a curated database of 400 time series from Our World in Data.",
+  "Human annotators identify relevant time series and the time ranges needed to verify each claim.",
+  "A second annotation phase assigns verdicts and writes evidence-grounded justifications.",
+  "Verdict annotation reaches a free-marginal multi-rater kappa of 0.77.",
+  "The benchmark uses SUPPORTS, REFUTES, NOT ENOUGH INFO, and CONFLICTING EVIDENCE/CHERRY-PICKING verdict labels.",
+  "TSCS combines retrieval F1 with temporal Jaccard overlap.",
+  "Ev2R evaluates generated justifications by decomposing predicted and reference texts into atomic facts and measuring support in both directions.",
+  "Both missing relevant time series and retrieving unnecessary time series are treated as harmful retrieval behavior.",
+  "Gemini-2.5-Pro achieves 63.57% verdict accuracy on the reported test set.",
+  "GPT-5.2 achieves 62.86% verdict accuracy on the reported test set.",
+  "Smaller baseline models retrieve many more time series and incur more context-length failures.",
+  "Llama-3.1-8B encounters context-length failures on 42.5% of evaluated test instances.",
+  "The authors identify retrieval quality and efficient representation of long time-series evidence as major bottlenecks.",
+  "The benchmark does not evaluate online calibration or selective abstention under distribution shift."
+ ],
+ "source_url": "https://arxiv.org/html/2511.01101",
+ "access": "full_text"
+}

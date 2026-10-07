@@ -1,0 +1,191 @@
+{
+ "streams": [
+  {
+   "id": "F1_non_nominal_antecedent_anaphora",
+   "description": "Non-nominal antecedent and abstract-anaphora resolution to propositions, events, facts, situations, clauses, or discourse spans, including anaphoricity and unsupported-antecedent decisions."
+  },
+  {
+   "id": "F2_dialogue_discourse_deixis",
+   "description": "Discourse-deictic and abstract anaphora resolution in dialogue, with discourse deixis distinguished from ordinary entity coreference and with end-to-end antecedent-span identification where available."
+  },
+  {
+   "id": "F4_question_answerhood_scope",
+   "description": "Formal and computational accounts of answerhood, Questions Under Discussion, question resolution, and complete or partial resolution of questions by propositions."
+  },
+  {
+   "id": "F6_event_reference_coreference",
+   "description": "Transfer evidence from event reference and event coreference, especially antecedent selection across event mention forms and explicit event-anaphoricity or no-link determination."
+  },
+  {
+   "id": "F8_multi_antecedent_reference",
+   "description": "Transfer methods for references whose interpretation requires multiple or split antecedents rather than a single antecedent span."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-1007-978-94-011-1715-9",
+   "decision": "REJECT",
+   "reason": "Claim is out of scope for this reading round: the abstract provides a semantic ontology for propositions, facts, events, and situations, but it does not show a mechanism for identifying antecedent spans, resolving anaphoric expressions, or determining response scope. The ontology may be useful background, but the stricter gate requires a capability that materially strengthens one of the resolution streams."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+   "decision": "ADMIT",
+   "reason": "The abstract shows an end-to-end architecture that resolves both single- and split-antecedent anaphora from predicted mentions. This directly supplies transferable machinery for representing references whose interpretation depends on multiple separately introduced antecedents rather than forcing a single antecedent.",
+   "stream_id": "F8_multi_antecedent_reference",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1007-bf00351935",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly develops a compositional semantics of questions and possible answers, providing machinery for characterizing when a proposition answers or partially resolves a question. Formal answerhood semantics is explicitly authorized by F4 and materially supports reasoning about partial response scope.",
+   "stream_id": "F4_question_answerhood_scope",
+   "role": "DIRECT",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-3115-1073083-1073099",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates stronger admitted coverage of abstract-anaphora resolution. The abstract does show construction and resolution of abstract referents, but the admitted VERIFIED 2017 mention-ranking paper provides a more modern antecedent-span ranking formulation, while the admitted 2018 survey supplies broader historical coverage. Because this candidate is UNCHECKED and does not show a distinct capability needed by the project, it does not justify another reading slot."
+  },
+  {
+   "paper_id": "doi-10-5210-dad-2023-201",
+   "decision": "REJECT",
+   "reason": "Topic words match but the capability does not sufficiently strengthen the resolution stream: this paper generalizes evaluation metrics for split-antecedent structures rather than resolving references. Domain-specific evaluation could become useful later, but the present reading slot is better spent on an actual multi-antecedent resolver; general evaluation concerns also overlap Topic 10."
+  },
+  {
+   "paper_id": "manual-8b8a394daa",
+   "decision": "ADMIT",
+   "reason": "The abstract addresses abstract anaphora where several preceding propositions or eventualities jointly contribute to the referent and uses discourse and mereological structure to represent those complex abstract antecedents. That directly strengthens the project's need to avoid collapsing a response onto one overly broad proposition when its semantic target is composite or partial. Identity is UNCHECKED, so the bibliographic identity should be verified before canonical acquisition.",
+   "stream_id": "F1_non_nominal_antecedent_anaphora",
+   "role": "DIRECT",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-3765-sp-5-6",
+   "decision": "ADMIT",
+   "reason": "The abstract develops a Questions Under Discussion account in which discourse is organized by active questions and propositions are evaluated by whether they address the current question. This directly strengthens F4 because msgloom must determine which prior question a response semantically addresses rather than treating the entire preceding message as its target.",
+   "stream_id": "F4_question_answerhood_scope",
+   "role": "DIRECT",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "manual-c0f76b0f55",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates papers already admitted for dialogue discourse deixis. The abstract mainly revisits a span-based neural architecture and hyperparameter optimization across identity, bridging, and discourse-deixis tracks; the admitted end-to-end discourse-deixis paper provides the more directly relevant anaphor-plus-antecedent-span capability, and the admitted CODI-CRAC shared-task paper provides the dialogue task and dataset framing."
+  },
+  {
+   "paper_id": "manual-caeac977e7",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates the admitted F4 foundation rather than adding a clearly distinct capability. The abstract describes broad question semantics and pragmatics of answers, while the admitted question-semantics, QUD, and question-resolution papers already cover possible answers, discourse organization, and contextual question resolution. The abstract does not show a more specific treatment of partial or multi-question response scope that would justify an additional slot."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-coling-main-538",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates the admitted split-antecedent resolver. This paper provides end-to-end split-antecedent resolution, but the admitted 2021 system covers split antecedents together with ordinary single-antecedent resolution in one end-to-end architecture using predicted mentions. The abstract does not show a project-critical capability beyond that coverage."
+  },
+  {
+   "paper_id": "1706.02256",
+   "decision": "ADMIT",
+   "reason": "The abstract directly formulates abstract-anaphora resolution as ranking candidate antecedent spans for abstract anaphors. Exact candidate-span scoring is closely aligned with the project's required response-span to antecedent-span mapping. This candidate is also the only VERIFIED identity among otherwise similar abstract-anaphora candidates, which strengthens its priority for canonical reading.",
+   "stream_id": "F1_non_nominal_antecedent_anaphora",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+   "decision": "ADMIT",
+   "reason": "The abstract presents end-to-end discourse-deixis resolution in dialogue and explicitly identifies both discourse-deictic anaphors and their antecedent spans instead of assuming gold boundaries. This is a direct match for proposition- or discourse-span reference resolution in conversational context.",
+   "stream_id": "F2_dialogue_discourse_deixis",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-56eb78e530",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates admitted F2 coverage. The described system combines discourse-deixis antecedent resolution with anaphor-type prediction, but the admitted end-to-end EMNLP discourse-deixis paper already supplies the stronger core capability, while the admitted CODI-CRAC shared-task paper supplies the task definition and benchmark context. The system-description abstract does not show an additional response-scope mechanism."
+  },
+  {
+   "paper_id": "manual-5c0971730d",
+   "decision": "ADMIT",
+   "reason": "The abstract resolves event pronouns to candidate verbal event antecedents and explicitly includes cases where no suitable antecedent exists. That directly strengthens F1's event-like non-nominal antecedent selection and, importantly for msgloom, provides evidence for abstention rather than forcing an unsupported link. Identity is UNCHECKED and should be verified before acquisition.",
+   "stream_id": "F1_non_nominal_antecedent_anaphora",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-3115-v1-d14-1056",
+   "decision": "ADMIT",
+   "reason": "The abstract resolves shell nouns to clauses or other textual material that supplies their semantic content, explicitly treating the target as potentially non-nominal antecedent spans. This extends F1 beyond pronouns and is directly relevant to work expressions such as proposal-, fact-, issue-, or decision-like nominal references whose content is supplied by prior propositions.",
+   "stream_id": "F1_non_nominal_antecedent_anaphora",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1007-bf00983299",
+   "decision": "ADMIT",
+   "reason": "The abstract extends a formal theory of question resolution to discourse phenomena and makes conversational context part of determining what counts as an appropriate resolution. This materially strengthens F4 beyond a static possible-answer semantics by addressing contextual question resolution, which is relevant when deciding whether a reply fully or only partially resolves an active question.",
+   "stream_id": "F4_question_answerhood_scope",
+   "role": "DIRECT",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "manual-f019198033",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates the admitted formal answerhood foundation. Associating questions with sets of possible answers is important historically, but the admitted question-semantics and question-resolution papers already provide that machinery together with more direct relevance to partial and contextual resolution. The abstract does not show an additional capability needed for response-scope decisions."
+  },
+  {
+   "paper_id": "manual-555fa5b6e8",
+   "decision": "ADMIT",
+   "reason": "The abstract resolves event-denoting noun phrases to earlier verbal event mentions over potentially long discourse distances and specifies antecedent-selection evidence. Although the anaphor itself is nominal, the cross-form event-reference mechanism is useful transfer evidence for linking event-like content across different linguistic realizations.",
+   "stream_id": "F6_event_reference_coreference",
+   "role": "TRANSFER",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-1162-coli-a-00327",
+   "decision": "ADMIT",
+   "reason": "The abstract is directly centered on anaphora with clause-, sentence-, and discourse-segment antecedents referring to propositions, events, facts, and situations, and surveys terminology, annotation, datasets, and computational resolution methods. It provides the canonical landscape needed to preserve distinctions among non-nominal antecedent types and to identify appropriate direct datasets and methods for F1.",
+   "stream_id": "F1_non_nominal_antecedent_anaphora",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p17-1009",
+   "decision": "ADMIT",
+   "reason": "The abstract jointly models event coreference and event anaphoricity determination. The anaphoricity component is especially useful transfer evidence for the project's requirement to decide that a current event-like reference has no supported antecedent before attempting antecedent selection, rather than forcing a link.",
+   "stream_id": "F6_event_reference_coreference",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-3115-981344-981347",
+   "decision": "REJECT",
+   "reason": "Topic words match but the abstract does not show a sufficiently specific capability beyond stronger admitted event-reference evidence. It discusses event representations and their interaction with anaphora, but does not establish an explicit antecedent-ranking, span-resolution, clustering, or no-link mechanism comparable to the admitted event-reference and event-anaphoricity papers."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+   "decision": "ADMIT",
+   "reason": "The abstract defines dialogue tasks for anaphora, bridging, and discourse deixis across multiple conversational datasets and explicitly includes end-to-end identification of discourse-deictic links rather than treating them as ordinary entity coreference. This materially strengthens F2 by providing benchmark definitions, data, and the crucial separation between discourse deixis and identity coreference.",
+   "stream_id": "F2_dialogue_discourse_deixis",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1093-jos-17-1-51",
+   "decision": "REJECT",
+   "reason": "Topic words match but the abstract does not settle the project-critical capability. It links dialogue structure and anaphora and mentions antecedents that are not simple nominal entities, but it does not show that discourse-deictic or propositional links are represented separately from ordinary coreference, nor that exact antecedent spans or unsupported cases are resolved. Stronger F2 candidates already demonstrate those capabilities."
+  },
+  {
+   "paper_id": "manual-a9ab2a7f9f",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates admitted dialogue discourse-deixis coverage. This system implements the CODI-CRAC dialogue task, but the admitted shared-task paper supplies the benchmark definition and the admitted 2022 end-to-end discourse-deixis paper supplies the more directly relevant resolver. The abstract does not show a distinct response-scope capability warranting another reading slot."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-naacl-main-356",
+   "decision": "REJECT",
+   "reason": "Evidence duplicates the admitted event-coreference transfer paper. This candidate also combines event coreference with event-anaphoricity-related subtasks, but the admitted 2017 joint model already directly supplies the no-link/anaphoricity mechanism needed for transfer. The abstract does not show a distinct antecedent-scope capability that would justify another slot."
+  }
+ ],
+ "notes": "The admitted set deliberately concentrates on exact or structured non-nominal antecedent resolution, dialogue discourse deixis, question/answerhood semantics, event-anaphoricity transfer, and split-antecedent transfer. No candidate abstract in this batch materially demonstrates F3 dialogue discourse attachment/relation parsing, F5 agreement or commitment scope, F7 target-specific stance/NLI with antecedent targeting, or F9 workplace/asynchronous response grounding. Those remain genuine search gaps rather than reasons to relax admission standards. Most admitted identifiers are UNCHECKED; topical admission is based on the supplied abstracts, and bibliographic identity should be verified during canonical acquisition."
+}

@@ -1,0 +1,66 @@
+{
+ "paper_id": "manual-fde6beef40",
+ "title": "Classifying Action Items for Semantic Email",
+ "research_question": "Can action items in email be automatically classified into useful semantic categories using a computationally tractable speech-act model and linguistic rules?",
+ "methodology": "The authors define email action items using three dimensions: action, object, and subject, producing a taxonomy that distinguishes requests, assignments, suggestions, and deliveries over tasks, events, information, and resources. They implement a rule-based classifier in GATE using tokenization, sentence splitting, POS tagging, gazetteers, named-entity processing, semantic and grammatical features, and JAPE speech-act grammars. The system is evaluated by 12 people on 116 emails, with evaluators judging automatically identified items and adding missed items.",
+ "key_findings": [
+  {
+   "finding": "The proposed model represents action items through action, object, and subject dimensions and yields 22 basic action-item combinations.",
+   "evidence_type": "supported",
+   "section": "2 Background"
+  },
+  {
+   "finding": "The implemented classifier uses modality, verb category, tense, negation, and semantic-role information, with additional rules for phenomena such as conditional constructions.",
+   "evidence_type": "supported",
+   "section": "3 Classification Model"
+  },
+  {
+   "finding": "An earlier human annotation exercise over the 22-category scheme achieved inter-annotator agreement of 0.811, indicating substantial but imperfect agreement on the task.",
+   "evidence_type": "supported",
+   "section": "2 Background"
+  },
+  {
+   "finding": "In the reported evaluation, the rule-based classifier achieved precision 0.56, recall 0.60, and F1 0.58.",
+   "evidence_type": "supported",
+   "section": "4 Evaluation"
+  },
+  {
+   "finding": "The authors conclude that the classifier is not reliable enough for unattended automatic annotation and is better used to suggest candidate annotations for user review and correction.",
+   "evidence_type": "supported",
+   "section": "4 Evaluation and 5 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The linguistic model and implementation are designed for English-language email.",
+  "The evaluation contains only 116 emails and 194 automatically classified action items, so it is not a large standardized benchmark.",
+  "The reported F1 score of 0.58 leaves substantial false-positive and false-negative error.",
+  "The approach depends on manually engineered linguistic and JAPE rules and is therefore potentially brittle under new wording or domains.",
+  "The model represents actor participation and broad action semantics but does not provide a dedicated deadline field comparable to structured action-item extraction schemas.",
+  "The paper does not report release of the task-specific evaluation corpus or the complete rule set as a reusable research artifact."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "action_item_taxonomy": 0.99,
+  "linguistic_rule_pipeline": 0.99,
+  "human_agreement": 0.98,
+  "classification_f1": 0.99,
+  "human_review_recommended": 0.98
+ },
+ "raw_claims": [
+  "The action-item representation separates the type of action from its semantic object and participating subject.",
+  "The four principal action types are request, assign, suggest, and deliver.",
+  "Tasks and events are treated as activity objects, while information and resources are treated as data objects.",
+  "The classifier incorporates grammatical modality, verb semantics, tense, negation, and semantic roles.",
+  "The JAPE speech-act component alone contains 58 rules arranged in 14 phases.",
+  "The evaluation involved 12 people reviewing at least eight emails each.",
+  "Evaluators assessed 194 automatically classified action items and manually added 74 missed items.",
+  "The reported precision, recall, and F1 are 0.56, 0.60, and 0.58 respectively.",
+  "The authors propose using corrected rule-based output later as training material for machine-learning approaches."
+ ],
+ "source_url": "https://www.researchgate.net/publication/220746717_Classifying_Action_Items_for_Semantic_Email",
+ "access": "full_text"
+}

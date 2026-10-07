@@ -1,0 +1,2409 @@
+{
+  "paper_id": "T07",
+  "title": "A Joint Model for Document Segmentation and Segment Labeling",
+  "research_question": "Can joint learning of document boundaries and segment labels, with segment pooling and training-time predicted-to-gold alignment, improve contiguous document segmentation and segment labeling over separate approaches?",
+  "methodology": "Supervised Segment Pooling LSTM: concat-pooled bidirectional sentence encoder, bidirectional sentence B/I boundary predictor, and LSTM pooling over proposed contiguous segments. Joint loss is alpha times boundary loss plus (1-alpha) times aligned classification loss. Taxonomy labeling uses cross-entropy; header-word multilabeling uses binary cross-entropy. After initial teacher forcing, exploration trains labels on greedily aligned predicted segments. Evaluations use four WikiSection language/domain datasets, pooling/exploration and companion-loss ablations, and transfer to other Wikipedia datasets and Clinical Textbook. Pk and aligned label metrics assess separate outputs. Sources: T07-F01–F03 and topic02.metrics; joint equation at PDF p4 §3.5, raw lines 358–367.",
+  "methodology_sources": [
+    {
+      "section": "§3.1–3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 253,
+        "line_end": 302,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "section": "§3.4–3.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 335,
+        "line_end": 367,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "section": "§4.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 455,
+        "line_end": 475,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "section": "§4.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 661,
+        "line_end": 675,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "section": "§5.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 823,
+        "line_end": 827,
+        "pdf_pages": [
+          8
+        ]
+      }
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "T07-F01",
+      "finding": "S-LSTM predicts sentence-level B/I boundaries and pools the resulting contiguous sentence segments for labels. This is document segmentation and segment labeling, with no tested choice among sentence, clause, arbitrary span, or EDU units.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 3; §3.2–3.3",
+      "quote": "predicts an indicator variable, (B)eginning or (I)nside a segment.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 267,
+        "line_end": 269,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§3.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 277,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ],
+      "claim_scope": "Method and evaluated representation; comparative annotation-unit evidence is absent."
+    },
+    {
+      "finding_id": "T07-F02",
+      "finding": "WikiSection-topics assigns one normalized section-type label per segment; WikiSection-headings predicts a bag of header words. Multiple gold and predicted header words do not establish multiple concrete work-matter memberships for a span.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 4; §4.1",
+      "quote": "(2) predict the bag-of-words in the title of the Wikipedia section as a label.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 383,
+        "line_end": 385,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 823,
+            "line_end": 827,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "Tables 1–2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 689,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "interpretation_boundary": "The last sentence distinguishes the paper task from msgloom Topic identity."
+    },
+    {
+      "finding_id": "T07-F03",
+      "finding": "Training exploration and label evaluation use greedy many-to-many predicted-to-gold segment alignment: first each gold segment selects its maximally overlapping prediction; then each still-unmatched prediction selects its maximally overlapping gold segment. All aligned gold labels count as correct. This is cross-segmentation matching, not overlapping spans within a gold or predicted segmentation.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 5; Figure 2; §3.4",
+      "quote": "Each ground truth segment first aligns to the maximally overlapping predicted segment; each leftover predicted segment then aligns to the maximally overlapping ground truth segment.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 403,
+        "line_end": 404,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§3.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 335,
+            "line_end": 347,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 635,
+            "line_end": 645,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "not_specified": "Tie breaking and exact reduction/weighting for multiply aligned labels are not specified."
+    },
+    {
+      "finding_id": "T07-F04",
+      "finding": "Table 1 shows lower Pk for S-LSTM than every reported baseline on each WikiSection-topics dataset, and better F1/MAP than SECTOR. Against LSTM-LSTM-CRF, S-LSTM improves F1 except on en_city: 76.1 versus 77.5. These are aligned single-label segment-classification scores, not span F1.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 7; Table 1",
+      "quote": "S-LSTM 20.0 59.3 72.4 18.8 55.6 69.0 9.1 76.1 83.5 9.5 76.5 84.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 705,
+        "line_end": 705,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 689,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 816,
+            "line_end": 827,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "metric_table_id": "T07-MT1"
+    },
+    {
+      "finding_id": "T07-F05",
+      "finding": "Table 2 shows S-LSTM improves Pk, Prec@1, and MAP over SEC>H+emb on every WikiSection-headings dataset. The paper summarizes segmentation improvement as an average of over 30% for this task, but does not state the comparison baseline or averaging formula for that headline. Use the individual table settings for quantitative synthesis.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 7; Table 2; §5.1",
+      "quote": "S-LSTM 19.8 53.5 60.3 18.6 36.2 46.1 9.0 73 71.3 8.2 74.1 75.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 723,
+        "line_end": 723,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 708,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§5.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 733,
+            "line_end": 745,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 852,
+            "line_end": 861,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "metric_table_id": "T07-MT2",
+      "headline_caveat": "A relative reduction in Pk, not an absolute accuracy gain, email result, or work-text preservation score; the paper does not provide an exact aggregation recipe."
+    },
+    {
+      "finding_id": "T07-F06",
+      "finding": "Adding exploration to the LSTM-pooling model improves Pk, Prec@1, and MAP on all four WikiSection-headings datasets relative to the teacher-forcing-only ablation. The experiment measures boundary and aligned label outcomes; it does not measure preservation of conditions or reply scope.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 7; §5.2; Table 2",
+      "quote": "The results of an ablation experiment (Table 2, bot- tom) show that there is an additional classification gain by allowing the model to explore recovering from segmentation errors.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 747,
+        "line_end": 750,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 723,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§4.5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 667,
+            "line_end": 669,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "metric_table_id": "T07-MT2"
+    },
+    {
+      "finding_id": "T07-F07",
+      "finding": "The authors report failure to converge when exploration starts without initial teacher forcing. They give no scores, seeds, run count, or convergence criterion for this variant; retain it as a qualitative paper report.",
+      "evidence_type": "unsupported",
+      "section": "PDF page(s) 7; §5.2",
+      "quote": "the segmentation failed to converge and the model performed universally poorly.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 762,
+        "line_end": 764,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_note": "Unsupported means no inspectable quantitative experiment for this stated variant, not evidence that the observation is false."
+    },
+    {
+      "finding_id": "T07-F08",
+      "finding": "The claim that LSTM pooling improves both MAP and Prec@1 on all four heading datasets is contradicted by Table 2. With exploration disabled, en_disease mean pooling has Prec@1/MAP 52.3/59.5 versus LSTM pooling 52.1/59.0; de_disease MAP is 45.0 versus 44.8, although its Prec@1 rises from 34.4 to 34.7.",
+      "evidence_type": "contradicted",
+      "section": "PDF page(s) 7; §5.3",
+      "quote": "The addition of the segment pooling layer improves MAP and Prec@1 across all four datasets in the heading prediction task (Table 2)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 774,
+        "line_end": 777,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 724,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "metric_table_id": "T07-MT2",
+      "inconsistency_id": "T07-I01"
+    },
+    {
+      "finding_id": "T07-F09",
+      "finding": "The de_disease heading ablations support complementary supervision in two distinct settings: Table 4 supplies oracle labeler boundaries and adds boundary loss (Prec@1/MAP 42.3/52.1 to 43.3/53.3); Table 5 predicts boundaries and adds label loss (Pk 21.8 to 19.1, with Prec@1/MAP 34.7/44.8). Section 5.5 swaps the Table 4/5 references.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 8; Table 4 caption; Table 5; §5.5",
+      "quote": "Both are given oracle segment bounds and do not use exploration.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 802,
+        "line_end": 803,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Tables 4–5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 793,
+            "line_end": 813,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "§5.5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 837,
+            "line_end": 841,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "metric_table_ids": [
+        "T07-MT4",
+        "T07-MT5"
+      ],
+      "inconsistency_id": "T07-I02"
+    },
+    {
+      "finding_id": "T07-F10",
+      "finding": "Transfer is qualified by target and training regime. S-LSTM beats reported non-target-trained comparators on Wiki-50, Cities, and Elements. On Clinical, S-LSTM@en_disease Pk is 36.1, slightly below SECTOR 36.5 but above TextSeg 30.8; Clinical has no heading labels and no classification evaluation.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 8; Table 3",
+      "quote": "S-LSTM@en_disease – – – – 30.2 19.1 36.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 789,
+        "line_end": 789,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 781,
+            "line_end": 792,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 452,
+            "line_end": 454,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 474,
+            "line_end": 475,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 621,
+            "line_end": 622,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "metric_table_id": "T07-MT3"
+    },
+    {
+      "finding_id": "T07-F11",
+      "finding": "The paper reports a correction to earlier header-vocabulary counts: en_disease/de_disease/en_city/de_city are 179/115/603/318 words rather than 1.5k/1.0k/2.8k/1.1k. Header preprocessing removes stopwords, numbers, punctuation, and words with fewer than 20 training occurrences; subsection bags include the parent section heading. These counts are vocabulary sizes, not segment counts or memberships per segment.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 5; §4.1",
+      "quote": "When reproducing earlier results, we verified with the dataset authors that the actual sizes were: [179, 115, 603, 318].",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 428,
+        "line_end": 430,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 419,
+            "line_end": 430,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§4.1 footnote 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 447,
+            "line_end": 448,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Table 2 header",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 708,
+            "line_end": 718,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "inconsistency_id": "T07-I03"
+    },
+    {
+      "finding_id": "T07-F12",
+      "finding": "Pk compares same/different-segment judgments at the two window ends, dividing disagreements by window positions; k is half the average gold segment size. Classification uses F1/MAP for taxonomy labels and Prec@1/MAP for header words after alignment; the paper calls the metrics micro-averaged. It does not specify the full MAP aggregation or multiply aligned-label denominators.",
+      "evidence_type": "supported",
+      "section": "PDF page(s) 6; §4.3",
+      "quote": "In all cases, the metrics are micro-averaged.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 644,
+        "line_end": 645,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "§4.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 624,
+            "line_end": 645,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "Figures 2–3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 402,
+            "line_end": 418,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ],
+      "metric_definitions_ref": "topic02.metrics.definitions"
+    }
+  ],
+  "limitations": [
+    "No direct email/work-matter membership or decision-bearing evidence preservation evaluation; topic02.not_evaluated_for_msgloom lists the missing tasks.",
+    "No annotation-unit comparison; B/I predictions partition sentences into contiguous segments (F01).",
+    "Many-to-many alignment permits partial label credit for incorrect boundaries; exact span/Topic membership is not measured (F03, F12).",
+    "Pooling is not uniformly beneficial in Table 2; Table 4/5 prose references are reversed and oracle labeling must remain separate (F08–F09; I01–I02).",
+    "Transfer superiority is target/training-regime dependent; Clinical is a segmentation-only exception against TextSeg (F10).",
+    "Frozen paper omits exact split sizes/mechanism, duplicate controls, IAA, run variance/significance, detailed MAP denominators, and several training details. These are reporting gaps, not proof of flawed experiments.",
+    "The 30% headline has no explicit baseline/aggregation recipe; individual table results are the auditable evidence (F05)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper reporting only. code_available=false means no code-release link or availability statement was found; it does not establish that code did not exist or is unavailable now. dataset_available=true means the paper identifies and uses existing named datasets; no present-day download, access, completeness, or license verification was performed.",
+    "code_status": "not_reported",
+    "dataset_status": "paper_identifies_reused_corpora; current availability unverified",
+    "sources": [
+      {
+        "section": "§4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+          "line_start": 373,
+          "line_end": 386,
+          "pdf_pages": [
+            4
+          ]
+        }
+      },
+      {
+        "section": "§4.1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+          "line_start": 438,
+          "line_end": 454,
+          "pdf_pages": [
+            5
+          ]
+        }
+      },
+      {
+        "section": "§4.3–4.5",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+          "line_start": 624,
+          "line_end": 675,
+          "pdf_pages": [
+            6
+          ]
+        }
+      }
+    ],
+    "reported_model_setup": {
+      "optimizer": "Adam",
+      "learning_rate": 0.001,
+      "weight_decay_as_printed": 0.9,
+      "dropout_probability": 0.1,
+      "teacher_forcing_epochs_before_exploration": 10,
+      "initialization": "Xavier normal",
+      "LSTM_hidden_size": 200,
+      "fixed_FastText_embedding_dimensions": 300,
+      "trainable_projection_dimensions": 200,
+      "source": {
+        "section": "§4.5",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+          "line_start": 661,
+          "line_end": 675,
+          "pdf_pages": [
+            6
+          ]
+        }
+      }
+    },
+    "not_reported": [
+      "Joint-loss alpha value",
+      "Total training epochs, batch size, and model-selection rule",
+      "Random seeds and number of runs",
+      "Hardware, runtime, memory, and inference latency",
+      "Exact data partitions and duplicate checks",
+      "Detailed alignment tie breaking and classification metric reduction"
+    ]
+  },
+  "confidence_scores": {
+    "T07-F01": 0.98,
+    "T07-F02": 0.99,
+    "T07-F03": 0.99,
+    "T07-F04": 0.99,
+    "T07-F05": 0.96,
+    "T07-F06": 0.98,
+    "T07-F07": 0.75,
+    "T07-F08": 0.99,
+    "T07-F09": 0.98,
+    "T07-F10": 0.99,
+    "T07-F11": 0.99,
+    "T07-F12": 0.98
+  },
+  "confidence_scope": "Confidence in this extraction and evidence classification; not calibrated predictive probabilities or certainty that the method transfers to msgloom.",
+  "raw_claims": [
+    "The first stage is encoding sentences.",
+    "This label assignment allows segment-labeling loss to be propagated through the end-to-end model.",
+    "Subsection bags-of-words labels include the dominating section heading."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+      "line_start": 254,
+      "line_end": 254,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+      "line_start": 301,
+      "line_end": 302,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+      "line_start": 447,
+      "line_end": 448,
+      "pdf_pages": [
+        5
+      ]
+    }
+  ],
+  "raw_claims_classification": [
+    "method_definition",
+    "method_definition",
+    "dataset_label_construction"
+  ],
+  "raw_claims_note": "Exact source sentences, normalized only for whitespace. Empirical claims and their confidence are recorded once in key_findings.",
+  "paper_metadata": {
+    "authors": [
+      "Joe Barrow",
+      "Rajiv Jain",
+      "Vlad I. Morariu",
+      "Varun Manjunatha",
+      "Douglas W. Oard",
+      "Philip Resnik"
+    ],
+    "venue": "ACL 2020",
+    "printed_pages": "313–322",
+    "source": {
+      "section": "Publication header/title/authors",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "line_start": 1,
+        "line_end": 22,
+        "pdf_pages": [
+          1
+        ]
+      }
+    },
+    "selection_record": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+    "selection_key": "paper.arxiv_id=T07; T07 is a local corpus identifier, not an arXiv identifier"
+  },
+  "analysis_runtime": {
+    "provenance": "launcher-reported environment from invocation arguments; parent independently verifies turn_context and exit receipts",
+    "role": "paper-T07",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "runtime_identifier": null
+  },
+  "topic02": {
+    "evidence_family": "TRANSFER_SEGMENTATION",
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated as sentence B/I decisions through Pk; no exact boundary F1",
+        "finding_refs": [
+          "T07-F01",
+          "T07-F12"
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "evaluated on Wikipedia and Clinical Textbook",
+        "finding_refs": [
+          "T07-F04",
+          "T07-F05",
+          "T07-F10"
+        ]
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "evaluated as taxonomy labels and header words; these are not concrete work-matter identities",
+        "finding_refs": [
+          "T07-F02"
+        ]
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not evaluated; header-word prediction is per segment"
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not evaluated; no exact character/token-span assignment metric"
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not evaluated; greedy alignment is a separate operation"
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not evaluated; repeated section words do not identify one linked semantic object"
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "not evaluated"
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not evaluated"
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not evaluated"
+      }
+    ],
+    "annotation_unit": {
+      "value": "Wikipedia section segments with headings and normalized section-type labels; model supervision places boundaries at sentence positions. Clinical provides segment boundaries only. Annotation-unit alternatives were not compared.",
+      "sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 452,
+            "line_end": 454,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§3.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 262,
+            "line_end": 275,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    "prediction_unit": {
+      "value": "B/I per sentence, then one pooled representation and label distribution per contiguous sentence segment. Single-label cross-entropy changes to binary cross-entropy for header-word multi-labeling.",
+      "finding_refs": [
+        "T07-F01",
+        "T07-F02"
+      ],
+      "sources": [
+        {
+          "section": "§3.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 277,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "§5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 823,
+            "line_end": 827,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "contiguity": {
+      "gold": "Flat sequence of contiguous document sections for the evaluated segmentation task; subsection heading words may inherit a parent heading, but no nested-span evaluation is supplied.",
+      "prediction": "Disjoint contiguous segments from a single B/I boundary sequence; no non-sequential cluster output.",
+      "sources": [
+        {
+          "section": "§3.2–3.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 262,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1 footnote 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 447,
+            "line_end": 448,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§6 future hierarchical modeling",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 870,
+            "line_end": 878,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "taxonomy": "Exactly one restricted-vocabulary section-type label per segment.",
+        "header_words": "A set of retained section/subsection-header words per segment; more than one label is permitted. Actual per-segment cardinality distribution and empty-label treatment are not reported.",
+        "clinical": "No heading labels."
+      },
+      "prediction": {
+        "taxonomy": "Single-label classification.",
+        "header_words": "Multi-label word scores trained with binary cross-entropy and assessed with rank metrics; threshold/cardinality selection is not reported.",
+        "concrete_work_matter_membership": "Not modeled or evaluated."
+      },
+      "taxonomy_vocabulary_by_dataset": {
+        "en_disease": 27,
+        "de_disease": 25,
+        "en_city": 30,
+        "de_city": 27
+      },
+      "header_word_vocabulary_by_dataset": {
+        "en_disease": 179,
+        "de_disease": 115,
+        "en_city": 603,
+        "de_city": 318
+      },
+      "sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "Tables 1–2 headers",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 689,
+            "line_end": 718,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 823,
+            "line_end": 827,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "finding_refs": [
+        "T07-F02",
+        "T07-F11"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not evaluated; no email-message annotations. Document segments are contiguous; disjoint spans are not annotated as one work-matter object.",
+        "thread_level": "Not evaluated; no conversation, thread, or cross-document Topic clustering."
+      },
+      "prediction": {
+        "within_one_message": "No linked discontinuous-object output. A repeated header word on separated segments does not itself create one object.",
+        "thread_level": "No thread-level non-sequential membership prediction."
+      },
+      "sources": [
+        {
+          "section": "§3.2–3.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 262,
+            "line_end": 295,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        }
+      ],
+      "status": "Representation boundary and untested transfer, not an observed failure on email."
+    },
+    "overlap": {
+      "gold": "Multiple header-word labels for the same contiguous segment are supported; overlapping/nested Topic spans with different boundaries are not supplied or evaluated.",
+      "predicted": "Multiple header-word scores per segment are supported. One B/I sequence supplies shared segment boundaries; independently overlapping Topic spans are unsupported by this output representation.",
+      "alignment_scope": "Predicted-to-gold overlap in greedy matching is supported in training and evaluation. It is not overlap within either segmentation.",
+      "msgloom_scope": "No gold or predicted multi-membership of evidence spans in concrete work matters is evaluated.",
+      "finding_refs": [
+        "T07-F02",
+        "T07-F03"
+      ]
+    },
+    "dataset_domain": {
+      "in_domain": [
+        "WikiSection en_disease: English Wikipedia diseases",
+        "WikiSection de_disease: German Wikipedia diseases",
+        "WikiSection en_city: English Wikipedia cities",
+        "WikiSection de_city: German Wikipedia cities"
+      ],
+      "transfer": [
+        "Wiki-50: randomly sampled Wikipedia articles",
+        "Cities and Elements: additional Wikipedia datasets",
+        "Clinical Textbook: segment boundaries without headings"
+      ],
+      "direct_email_evidence": false,
+      "sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1–4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 438,
+            "line_end": 462,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    "annotation_process": {
+      "reported": "Existing datasets are reused. WikiSection uses Wikipedia section structure, retained headings, and normalized heading-type labels. Header words are filtered using training frequency, and subsection bags include the dominating section heading.",
+      "not_reported": "No fresh annotation protocol, annotator population, normalization adjudication, sentence tokenizer, or work-matter scope annotation in this paper. The annotation process for borrowed transfer boundaries is not detailed.",
+      "finding_refs": [
+        "T07-F11"
+      ],
+      "sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 419,
+            "line_end": 454,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not_reported",
+      "metric": null,
+      "population": null,
+      "scope": "No IAA statistic or annotator population in the frozen paper. This does not establish poor agreement.",
+      "sources": [
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 373,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 419,
+            "line_end": 454,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "wiki_section": "Reported WikiSection evaluation under the Arnold et al. procedure; the frozen paper does not state train/dev/test counts, proportions, split algorithm, or exact Table 1/2 held-out partition. Figure 4 explicitly names an en_cities test example. Do not import split details from another paper.",
+      "split_unit": "Documents/articles are the input and evaluation objects; the exact train/dev/test assignment unit and mechanism are not explicitly stated. Do not infer document-level split controls merely from document input.",
+      "counts": {
+        "Wiki-50": "50 randomly sampled articles, described as a test set (§4.1).",
+        "WikiSection_train_dev_test": "not_reported",
+        "Cities_Elements_Clinical_counts": "not_reported"
+      },
+      "transfer_training": "English WikiSection source models are tested on additional datasets; starred TextSeg comparisons use corresponding training portions as stated in Table 3.",
+      "leakage_controls": "Header-word vocabulary frequency filtering explicitly uses training data. Exact/near-duplicate removal, article overlap across transfer corpora, translation/topic leakage, and pretraining contamination checks are not reported.",
+      "sources": [
+        {
+          "section": "§4–4.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 369,
+            "line_end": 386,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "§4.1–4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 419,
+            "line_end": 462,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "§4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 474,
+            "line_end": 475,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "Figure 4 caption; §4.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 615,
+            "line_end": 622,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "Table 3 caption",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 790,
+            "line_end": 792,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "metrics": {
+      "definitions": [
+        {
+          "metric": "Pk",
+          "task": "Contiguous document segmentation",
+          "direction": "lower",
+          "paper_definition": "Count sliding-window positions where the predicted versus gold same/different-segment judgment for the two ends disagrees; divide by all window positions. k is half the average gold segment size.",
+          "denominator": "Total window positions; actual window counts and rounding of k are not reported.",
+          "averaging": "Paper states micro-averaging in §4.3; exact cross-document aggregation for Pk is not expanded.",
+          "source": {
+            "section": "§4.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 624,
+              "line_end": 645,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        },
+        {
+          "metric": "F1",
+          "task": "Aligned single-taxonomy-label classification on WikiSection-topics",
+          "direction": "higher",
+          "paper_definition": "Named F1; micro-averaged after segment alignment.",
+          "standard_interpretation": "Harmonic mean of precision and recall, with pooled TP/FP/FN for micro F1; this formula is metric interpretation, not an equation supplied by the paper.",
+          "denominator": "Exact aligned-event counts, TP/FP/FN handling for many-to-many matches, and decision rule are not reported. Not exact boundary/span F1.",
+          "source": {
+            "section": "§4.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 635,
+              "line_end": 645,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        },
+        {
+          "metric": "MAP",
+          "task": "Aligned taxonomy-label ranking or header-word ranking, depending on the table",
+          "direction": "higher",
+          "paper_definition": "Named Mean Average Precision and described as micro-averaged after alignment.",
+          "standard_interpretation": "Average precision rewards relevant labels high in the ranking; paper does not specify AP formula, averaging axis, or duplicate-alignment reduction.",
+          "denominator": "Relevant-label counts, aligned-instance counts, and handling of empty or out-of-vocabulary labels are not reported; do not assume a fully specified conventional macro-over-segment MAP.",
+          "source": {
+            "section": "§4.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 635,
+              "line_end": 645,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        },
+        {
+          "metric": "Prec@1 / P@1",
+          "task": "Aligned multi-label header-word prediction",
+          "direction": "higher",
+          "paper_definition": "Precision at the first rank position; micro-averaged after alignment.",
+          "denominator": "One top-ranked label per evaluated instance under standard interpretation; exact definition/count of aligned instances is not supplied. Does not measure recall of all header words or evidence spans.",
+          "source": {
+            "section": "§4.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 635,
+              "line_end": 645,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        }
+      ],
+      "tables": [
+        {
+          "table_id": "T07-MT1",
+          "pdf_table": 1,
+          "task": "Joint contiguous segmentation and one taxonomy label per segment",
+          "dataset_order": [
+            "en_disease",
+            "de_disease",
+            "en_city",
+            "de_city"
+          ],
+          "columns_per_dataset": [
+            "Pk",
+            "F1",
+            "MAP"
+          ],
+          "value_scale": "Values retained exactly on the printed table scale (e.g. Pk 19.8). Since §4.3 defines Pk on [0,1], dividing by 100 is a scale interpretation; no normalized values are silently substituted.",
+          "null_convention": {
+            "n/a": "Printed n/a: metric not available/applicable for that row, not a zero.",
+            "–": "Printed dash: no result reported, not a failed experiment."
+          },
+          "setting": "Reported WikiSection evaluation under the Arnold et al. procedure; the frozen paper does not state train/dev/test counts, proportions, split algorithm, or exact Table 1/2 held-out partition. Figure 4 explicitly names an en_cities test example. Do not import split details from another paper. Predicted boundaries; aligned label evaluation.",
+          "rows": [
+            {
+              "model": "C99",
+              "values": [
+                [
+                  37.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  42.7,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  36.8,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  38.3,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "TopicTiling",
+              "values": [
+                [
+                  43.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  45.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  30.5,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  41.3,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "TextSeg",
+              "values": [
+                [
+                  24.3,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  35.7,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  19.3,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  27.5,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "SEC>T+emb",
+              "values": [
+                [
+                  26.3,
+                  55.8,
+                  69.4
+                ],
+                [
+                  27.5,
+                  48.9,
+                  65.1
+                ],
+                [
+                  15.5,
+                  71.6,
+                  81.0
+                ],
+                [
+                  16.2,
+                  71.0,
+                  81.1
+                ]
+              ]
+            },
+            {
+              "model": "LSTM-LSTM-CRF",
+              "values": [
+                [
+                  23.9,
+                  57.2,
+                  "n/a"
+                ],
+                [
+                  23.6,
+                  51.4,
+                  "n/a"
+                ],
+                [
+                  9.7,
+                  77.5,
+                  "n/a"
+                ],
+                [
+                  10.2,
+                  74.0,
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM",
+              "values": [
+                [
+                  20.0,
+                  59.3,
+                  72.4
+                ],
+                [
+                  18.8,
+                  55.6,
+                  69.0
+                ],
+                [
+                  9.1,
+                  76.1,
+                  83.5
+                ],
+                [
+                  9.5,
+                  76.5,
+                  84.5
+                ]
+              ]
+            }
+          ],
+          "source": {
+            "section": "Table 1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 689,
+              "line_end": 707,
+              "pdf_pages": [
+                7
+              ]
+            }
+          },
+          "pdf_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-07.png"
+        },
+        {
+          "table_id": "T07-MT2",
+          "pdf_table": 2,
+          "task": "Joint contiguous segmentation and multi-label header-word prediction",
+          "dataset_order": [
+            "en_disease",
+            "de_disease",
+            "en_city",
+            "de_city"
+          ],
+          "columns_per_dataset": [
+            "Pk",
+            "Prec@1",
+            "MAP"
+          ],
+          "value_scale": "Values retained exactly on the printed table scale (e.g. Pk 19.8). Since §4.3 defines Pk on [0,1], dividing by 100 is a scale interpretation; no normalized values are silently substituted.",
+          "null_convention": {
+            "n/a": "Printed n/a: metric not available/applicable for that row, not a zero.",
+            "–": "Printed dash: no result reported, not a failed experiment."
+          },
+          "setting": "Reported WikiSection evaluation under the Arnold et al. procedure; the frozen paper does not state train/dev/test counts, proportions, split algorithm, or exact Table 1/2 held-out partition. Figure 4 explicitly names an en_cities test example. Do not import split details from another paper. Predicted boundaries; aligned labels. -expl trains only with teacher forcing; -pool substitutes mean pooling for LSTM pooling.",
+          "rows": [
+            {
+              "model": "C99",
+              "values": [
+                [
+                  37.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  42.7,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  36.8,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  38.3,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "TopicTiling",
+              "values": [
+                [
+                  43.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  45.4,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  30.5,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  41.3,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "TextSeg",
+              "values": [
+                [
+                  24.3,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  35.7,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  19.3,
+                  "n/a",
+                  "n/a"
+                ],
+                [
+                  27.5,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "SEC>H+emb",
+              "values": [
+                [
+                  30.7,
+                  50.5,
+                  57.3
+                ],
+                [
+                  32.9,
+                  26.6,
+                  36.7
+                ],
+                [
+                  17.9,
+                  72.3,
+                  71.1
+                ],
+                [
+                  19.3,
+                  68.4,
+                  70.2
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM",
+              "values": [
+                [
+                  19.8,
+                  53.5,
+                  60.3
+                ],
+                [
+                  18.6,
+                  36.2,
+                  46.1
+                ],
+                [
+                  9.0,
+                  73.0,
+                  71.3
+                ],
+                [
+                  8.2,
+                  74.1,
+                  75.1
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM, -expl",
+              "values": [
+                [
+                  20.8,
+                  52.1,
+                  59.0
+                ],
+                [
+                  19.1,
+                  34.7,
+                  44.8
+                ],
+                [
+                  9.2,
+                  72.7,
+                  70.8
+                ],
+                [
+                  8.5,
+                  73.8,
+                  74.4
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM, -expl, -pool",
+              "values": [
+                [
+                  21.2,
+                  52.3,
+                  59.5
+                ],
+                [
+                  19.8,
+                  34.4,
+                  45.0
+                ],
+                [
+                  10.4,
+                  69.7,
+                  67.2
+                ],
+                [
+                  10.2,
+                  64.1,
+                  66.7
+                ]
+              ]
+            }
+          ],
+          "source": {
+            "section": "Table 2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 708,
+              "line_end": 728,
+              "pdf_pages": [
+                7
+              ]
+            }
+          },
+          "pdf_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-07.png"
+        },
+        {
+          "table_id": "T07-MT3",
+          "pdf_table": 3,
+          "task": "Transfer segmentation and aligned header-word labeling where headings exist",
+          "dataset_order": [
+            "Wiki-50",
+            "Cities",
+            "Elements",
+            "Clinical"
+          ],
+          "columns_per_dataset": [
+            "Pk",
+            "MAP (absent entirely for Clinical)"
+          ],
+          "value_scale": "Values retained exactly on the printed table scale (e.g. Pk 19.8). Since §4.3 defines Pk on [0,1], dividing by 100 is a scale interpretation; no normalized values are silently substituted.",
+          "null_convention": {
+            "n/a": "Printed n/a: metric not available/applicable for that row, not a zero.",
+            "–": "Printed dash: no result reported, not a failed experiment."
+          },
+          "setting": "S-LSTM and SECTOR sources are specified by @en_city/@en_disease. Target evaluation subset counts are not stated except Wiki-50 has 50 articles. TextSeg Wiki-50 and Cities entries have *: paper says trained on the training portion of the corresponding dataset. Other entries are unsupervised or trained on a different dataset; exact TextSeg training corpus for Elements/Clinical is not identified here.",
+          "rows": [
+            {
+              "model": "GraphSeg",
+              "values": [
+                [
+                  63.6,
+                  "n/a"
+                ],
+                [
+                  40.0,
+                  "n/a"
+                ],
+                [
+                  49.1,
+                  "n/a"
+                ],
+                [
+                  "–"
+                ]
+              ]
+            },
+            {
+              "model": "BayesSeg",
+              "values": [
+                [
+                  49.2,
+                  "n/a"
+                ],
+                [
+                  36.2,
+                  "n/a"
+                ],
+                [
+                  35.6,
+                  "n/a"
+                ],
+                [
+                  57.8
+                ]
+              ]
+            },
+            {
+              "model": "TextSeg",
+              "values": [
+                [
+                  18.2,
+                  "n/a"
+                ],
+                [
+                  19.7,
+                  "n/a"
+                ],
+                [
+                  41.6,
+                  "n/a"
+                ],
+                [
+                  30.8
+                ]
+              ]
+            },
+            {
+              "model": "SEC>H+emb@en_disease",
+              "values": [
+                [
+                  "–",
+                  "–"
+                ],
+                [
+                  "–",
+                  "–"
+                ],
+                [
+                  43.3,
+                  9.5
+                ],
+                [
+                  36.5
+                ]
+              ]
+            },
+            {
+              "model": "SEC>H+emb@en_city",
+              "values": [
+                [
+                  40.5,
+                  13.4
+                ],
+                [
+                  33.3,
+                  53.6
+                ],
+                [
+                  41.0,
+                  7.9
+                ],
+                [
+                  "–"
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM@en_city",
+              "values": [
+                [
+                  22.7,
+                  16.6
+                ],
+                [
+                  21.2,
+                  54.2
+                ],
+                [
+                  34.5,
+                  11.0
+                ],
+                [
+                  "–"
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM@en_disease",
+              "values": [
+                [
+                  "–",
+                  "–"
+                ],
+                [
+                  "–",
+                  "–"
+                ],
+                [
+                  30.2,
+                  19.1
+                ],
+                [
+                  36.1
+                ]
+              ]
+            }
+          ],
+          "source": {
+            "section": "Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 781,
+              "line_end": 792,
+              "pdf_pages": [
+                8
+              ]
+            }
+          },
+          "pdf_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-08.png",
+          "printed_asterisks": [
+            {
+              "model": "TextSeg",
+              "dataset": "Wiki-50",
+              "metric": "Pk",
+              "value": 18.2
+            },
+            {
+              "model": "TextSeg",
+              "dataset": "Cities",
+              "metric": "Pk",
+              "value": 19.7
+            }
+          ]
+        },
+        {
+          "table_id": "T07-MT4",
+          "pdf_table": 4,
+          "task": "Header-word classification with oracle segment boundaries",
+          "dataset_order": [
+            "de_disease"
+          ],
+          "columns_per_dataset": [
+            "Pk",
+            "Prec@1",
+            "MAP"
+          ],
+          "value_scale": "Values retained exactly on the printed table scale (e.g. Pk 19.8). Since §4.3 defines Pk on [0,1], dividing by 100 is a scale interpretation; no normalized values are silently substituted.",
+          "null_convention": {
+            "n/a": "Printed n/a: metric not available/applicable for that row, not a zero.",
+            "–": "Printed dash: no result reported, not a failed experiment."
+          },
+          "setting": "Both labelers receive oracle boundaries and do not use exploration, per caption. The joint row also reports Pk=19.1; its boundary-head evaluation route is not explained. Do not interpret this as the Pk of oracle boundaries. Exact data partition and counts are not reported.",
+          "rows": [
+            {
+              "model": "S-LSTM, w/o Segment Prediction",
+              "values": [
+                [
+                  "n/a",
+                  42.3,
+                  52.1
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM, w/ Segment Prediction",
+              "values": [
+                [
+                  19.1,
+                  43.3,
+                  53.3
+                ]
+              ]
+            }
+          ],
+          "source": {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 793,
+              "line_end": 803,
+              "pdf_pages": [
+                8
+              ]
+            }
+          },
+          "pdf_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-08.png"
+        },
+        {
+          "table_id": "T07-MT5",
+          "pdf_table": 5,
+          "task": "Predicted-boundary segmentation with/without companion label supervision",
+          "dataset_order": [
+            "de_disease"
+          ],
+          "columns_per_dataset": [
+            "Pk",
+            "Prec@1",
+            "MAP"
+          ],
+          "value_scale": "Values retained exactly on the printed table scale (e.g. Pk 19.8). Since §4.3 defines Pk on [0,1], dividing by 100 is a scale interpretation; no normalized values are silently substituted.",
+          "null_convention": {
+            "n/a": "Printed n/a: metric not available/applicable for that row, not a zero.",
+            "–": "Printed dash: no result reported, not a failed experiment."
+          },
+          "setting": "Boundary-only versus joint prediction. This is the end-to-end labeling setting, distinct from Table 4 oracle classification. The joint numbers match Table 2 S-LSTM,-expl, but Table 5 does not independently restate its exploration schedule. Exact partition/counts are not reported.",
+          "rows": [
+            {
+              "model": "S-LSTM, w/o Segment Labeling",
+              "values": [
+                [
+                  21.8,
+                  "n/a",
+                  "n/a"
+                ]
+              ]
+            },
+            {
+              "model": "S-LSTM, w/ Segment Labeling",
+              "values": [
+                [
+                  19.1,
+                  34.7,
+                  44.8
+                ]
+              ]
+            }
+          ],
+          "source": {
+            "section": "Table 5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 804,
+              "line_end": 813,
+              "pdf_pages": [
+                8
+              ]
+            }
+          },
+          "pdf_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-08.png"
+        }
+      ],
+      "not_reported": [
+        "WindowDiff",
+        "exact boundary F1",
+        "span F1 or IoU",
+        "cluster or pair membership metrics",
+        "whole-message multi-label metrics",
+        "work-text preservation metrics",
+        "confidence intervals, significance tests, and across-seed variance"
+      ],
+      "headline": {
+        "reported": "Average over 30% Pk reduction across the WikiSection heading datasets in §5.1; abstract and conclusion round to 30%.",
+        "baseline_and_aggregation": "Not specified for the headline. Retain Table 2 comparisons rather than assign an invented denominator.",
+        "sources": [
+          {
+            "section": "Abstract",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 37,
+              "line_end": 39,
+              "pdf_pages": [
+                1
+              ]
+            }
+          },
+          {
+            "section": "§5.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 733,
+              "line_end": 745,
+              "pdf_pages": [
+                7
+              ]
+            }
+          },
+          {
+            "section": "§6",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 852,
+              "line_end": 861,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "no_such_evaluation",
+      "direct_measured_evidence": null,
+      "related_evidence": "T07-F06 measures aligned labeling under segmentation errors. Figure 4 illustrates false positive/negative boundaries and header terms on one Wikipedia test document. The introduction motivates medical-section context; it does not test retention of conditions, approval scope, action scope, evidence, exceptions, or reply scope.",
+      "sources": [
+        {
+          "section": "§1 motivation",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 46,
+            "line_end": 61,
+            "pdf_pages": [
+              1
+            ]
+          }
+        },
+        {
+          "section": "Figure 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 615,
+            "line_end": 620,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 723,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "§5.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 747,
+            "line_end": 764,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Concrete work-matter identity and cross-Source evidence membership",
+      "Email, asynchronous conversations, thread interleaving, or out-of-order replies",
+      "One span belonging to several concrete Topics; disjoint spans linked to one Topic",
+      "Sentence versus clause/arbitrary span/EDU comparisons",
+      "Condition, exception, evidence, approval, action, question, and reply-scope preservation",
+      "Abstention, calibrated membership uncertainty, or partial-message coverage",
+      "Incremental processing, latency, RAM use, and Raspberry Pi performance"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T07-I01",
+        "type": "prose_vs_table",
+        "description": "Pooling improves MAP and Prec@1 across all four datasets is contradicted by the ablation rows.",
+        "prose_source": {
+          "section": "§5.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 774,
+            "line_end": 779,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        "table_source": {
+          "section": "Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 724,
+            "line_end": 728,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        "values": {
+          "en_disease": {
+            "mean_pool_no_exploration": {
+              "Prec@1": 52.3,
+              "MAP": 59.5
+            },
+            "LSTM_pool_no_exploration": {
+              "Prec@1": 52.1,
+              "MAP": 59.0
+            }
+          },
+          "de_disease": {
+            "mean_pool_no_exploration": {
+              "Prec@1": 34.4,
+              "MAP": 45.0
+            },
+            "LSTM_pool_no_exploration": {
+              "Prec@1": 34.7,
+              "MAP": 44.8
+            }
+          }
+        },
+        "status": "Original PDF page 7 confirms both values and prose; no correction guessed."
+      },
+      {
+        "id": "T07-I02",
+        "type": "reversed_table_references",
+        "description": "§5.5 calls fixed-boundary labeling Table 5 and boundary-only prediction Table 4. The actual captions/rows place fixed-boundary labeling in Table 4 and boundary prediction in Table 5.",
+        "prose_source": {
+          "section": "§5.5",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+            "line_start": 837,
+            "line_end": 841,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "table_sources": [
+          {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 793,
+              "line_end": 803,
+              "pdf_pages": [
+                8
+              ]
+            }
+          },
+          {
+            "section": "Table 5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 804,
+              "line_end": 813,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ],
+        "values": {
+          "Table_4_oracle_Prec1_MAP_without_boundary_loss": [
+            42.3,
+            52.1
+          ],
+          "Table_4_oracle_Prec1_MAP_with_boundary_loss": [
+            43.3,
+            53.3
+          ],
+          "Table_5_Pk_without_with_label_loss": [
+            21.8,
+            19.1
+          ],
+          "Table_5_joint_Prec1_MAP": [
+            34.7,
+            44.8
+          ]
+        },
+        "status": "Original PDF page 8 confirms mismatch. Analysis uses actual table captions and rows and retains the erroneous prose references."
+      },
+      {
+        "id": "T07-I03",
+        "type": "paper_reported_correction_to_prior_counts",
+        "description": "This paper explicitly reports revised header-word vocabulary counts after checking with dataset authors; not a contradiction resolved by this worker.",
+        "dataset_order": [
+          "en_disease",
+          "de_disease",
+          "en_city",
+          "de_city"
+        ],
+        "earlier_counts_as_reported_here": [
+          "1.5k",
+          "1.0k",
+          "2.8k",
+          "1.1k"
+        ],
+        "corrected_counts_in_this_paper": [
+          179,
+          115,
+          603,
+          318
+        ],
+        "sources": [
+          {
+            "section": "§4.1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 424,
+              "line_end": 430,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "Table 2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 708,
+              "line_end": 718,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        ],
+        "status": "Both versions retained; only T07 read and evaluated."
+      },
+      {
+        "id": "T07-I04",
+        "type": "evaluation_setting_ambiguity",
+        "description": "Table 4 says both models receive oracle boundaries, yet reports joint Pk=19.1. This could reflect a separately scored boundary head, but the paper does not explain that route. Its 43.3/53.3 oracle label scores must remain distinct from Table 5 end-to-end 34.7/44.8.",
+        "sources": [
+          {
+            "section": "Tables 4–5",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 797,
+              "line_end": 813,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ],
+        "status": "Do not treat the nonzero Pk as oracle segmentation error or resolve missing evaluation details by inference."
+      },
+      {
+        "id": "T07-I05",
+        "type": "figure_vs_method_wording",
+        "description": "Figure 1 step 4 says prediction per sentence, while its caption and §3.3 describe a pooled segment label. The method and experiments are analyzed as segment labeling; no extra independent sentence-label task is inferred.",
+        "sources": [
+          {
+            "section": "Figure 1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 316,
+              "line_end": 321,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "section": "§3.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+              "line_start": 277,
+              "line_end": 295,
+              "pdf_pages": [
+                3
+              ]
+            }
+          }
+        ],
+        "status": "Original PDF page 4 preserves the wording difference."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Limited: sentence inputs with section-level gold; no comparative unit experiment (F01).",
+      "RQ2": "No direct asynchronous/email clustering evidence; transfer segmentation only.",
+      "RQ3": "Useful task distinction: gold and predicted header-word multilabeling, not work-matter membership (F02–F03).",
+      "RQ4": "Negative capability boundary, not a negative empirical result: no overlapping or linked discontinuous Topic-span evaluation.",
+      "RQ5": "Related aligned label-error evidence (F06), no direct decision-bearing scope preservation.",
+      "RQ6": "Strong relevance for alignment-dependent metrics, oracle versus predicted boundaries, and numeric contradictions (F04–F12).",
+      "RQ7": "Borrowed Wikipedia/clinical datasets, explicit vocabulary correction, missing IAA/split/leakage detail (F10–F11).",
+      "RQ8": "Motivates bounded perturbation and alignment-audit experiments; no approved representation choice."
+    },
+    "interpretation": [
+      {
+        "id": "T07-INT1",
+        "statement": "Complementary boundary and label losses are a transfer hypothesis for email. Section types and header words are reusable categories, while msgloom Topics denote concrete work matters. A taxonomy improvement is not evidence of Topic identity resolution.",
+        "finding_refs": [
+          "T07-F02",
+          "T07-F09",
+          "T07-F10"
+        ]
+      },
+      {
+        "id": "T07-INT2",
+        "statement": "Alignment can credit a merged segment for several gold labels even if its evidence boundaries are too broad for a decision. It may also credit split pieces of a gold section. This is a plausible metric blind spot for scope preservation, not a measured harm in this paper.",
+        "finding_refs": [
+          "T07-F03",
+          "T07-F06",
+          "T07-F12"
+        ]
+      },
+      {
+        "id": "T07-INT3",
+        "statement": "The evidence supports testing joint supervision and scheduled exploration, but does not establish a best annotation unit, overlapping Topic representation, or universally beneficial LSTM pooling.",
+        "finding_refs": [
+          "T07-F01",
+          "T07-F06",
+          "T07-F07",
+          "T07-F08"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T07-EXP1",
+        "status": "untested_msgloom_proposal",
+        "proposal": "On user-reviewed synthetic or authorized work messages, hold work-matter identities fixed and compare sentence, clause, arbitrary-span, and EDU candidate annotations. Preserve exact offsets, multiple memberships, linked disjoint spans, and uncertainty. Measure retained conditions/evidence/scope separately from agreement and annotation effort.",
+        "motivation": [
+          "T07-F01",
+          "T07-F02"
+        ]
+      },
+      {
+        "id": "T07-EXP2",
+        "status": "untested_msgloom_proposal",
+        "proposal": "Create controlled boundary merges, splits, and shifts around conditions, exceptions, approval limits, questions, and scoped replies. Compare greedy many-to-many aligned label scores with exact evidence assignment and decision-bearing scope retention. Report lost evidence and broadened scope separately.",
+        "motivation": [
+          "T07-F03",
+          "T07-F06",
+          "T07-F12"
+        ]
+      },
+      {
+        "id": "T07-EXP3",
+        "status": "untested_msgloom_proposal",
+        "proposal": "With identical data partitions and encoders, compare separate versus joint boundary/label losses and teacher forcing versus scheduled exploration. Report oracle-boundary label scores and end-to-end scores in separate tables. Include per-domain pooling ablations and variance rather than assume all datasets improve.",
+        "motivation": [
+          "T07-F06",
+          "T07-F08",
+          "T07-F09"
+        ]
+      },
+      {
+        "id": "T07-EXP4",
+        "status": "untested_msgloom_proposal",
+        "proposal": "For any later transfer test, audit exact and near duplicates and related messages across partitions. Group a concrete work matter and its message branches when defining leakage controls. Evaluate concrete identity and evidence membership independently of broad section-type labels.",
+        "motivation": [
+          "T07-F10",
+          "T07-F11"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-segmentation/2020_barrow_et_al_joint_document_segmentation_segment_labeling.pdf",
+      "pdf_sha256": "318a4293b28a17c8f1e4fdaa60fd8376423a57e0a92e5b5cbd3104961fdc521b",
+      "expected_pdf_sha256": "318a4293b28a17c8f1e4fdaa60fd8376423a57e0a92e5b5cbd3104961fdc521b",
+      "pdf_hash_matches_expected": true,
+      "primary_conversion": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T07.md",
+        "sha256": "37a186ce6b2eb6396b3a5e5158bc43e82f26d63936fb2db33d1c76df734cd3d8",
+        "read": "full text including references; no convert_fine/T07.md present"
+      },
+      "quote_source": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.raw.txt",
+        "sha256": "cbc6f5d50886397d708f39b4cca3732ece2fdb02e74e95874a06c32d11f04c52",
+        "read": "full text including references",
+        "line_convention": "1-based LF lines, equivalent to text.split(\"\\n\"); form feed is not an added line; whitespace-only quote normalization"
+      },
+      "auxiliary_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.layout.txt",
+          "sha256": "1084a55a1e4c24cd20621d0d0abd59be1d736f3b6159bf807bd8ba46f9cba3ed",
+          "read": "selected tables, results, and setup passages"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T07.pages.md",
+          "sha256": "85e5996e42bf25725f4bf4282ab0b4e7032282654735615708431953cac734f0",
+          "read": "metadata and PDF page index; not used to replace full primary text"
+        }
+      ],
+      "pdf_inspection": {
+        "pages": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "printed_pages": [
+          316,
+          317,
+          318,
+          319,
+          320
+        ],
+        "images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-04.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-05.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-06.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-07.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T07/pdf-page-08.png"
+        ],
+        "checked": [
+          "Figure 1 and joint-loss equation",
+          "Figure 2 greedy alignment and Figure 3 Pk",
+          "Figure 4 qualitative boundaries/labels",
+          "Tables 1–5, numerical exceptions, footnotes, and §5.3/5.5 prose"
+        ],
+        "conversion_damage": "Rough conversion duplicates table headers and damages the TextSeg Wiki-50 asterisk and diagram layout. Independent raw/layout text and original PDF resolve these extraction issues. Text numeric/prose disagreements remain source-level issues.",
+        "visual_transcription_created": false,
+        "unresolved_extraction_damage": false
+      },
+      "network_used": false,
+      "other_papers_analyzed": false
+    }
+  }
+}

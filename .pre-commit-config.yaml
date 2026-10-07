@@ -9,12 +9,18 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        # Generated research archives preserve the bytes produced by the research pipeline.
+        exclude: '^research/(?:0[3-9]|10)-[^/]+/(?:chatgpt/|runs/|\.(?:bad|abandoned)-[^/]+/|msgloom-topic-[^/]+-research-report(?:\.r[0-9]+)?\.md$|msgloom-topic-[^/]+-research-report\.validation\.json$|gaps\.json$|resume_context\.json$|round_state\.json$|validation_result\.json$|workflow_state\.json$)'
       - id: end-of-file-fixer
+        # Preserve exact bytes for validated generated research artifacts whose SHA-256 is part of the audit trail.
+        exclude: '^(?:research/(?:01-email-conversation-structure/(?:round2-20260915/gaps\.json|engineering-validation/audit/independent-review-03/verdict\.json)|02-message-topic-segmentation/(?:analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/validate/validation_result\.json|round2-20260915/(?:gaps\.json|pipeline-workspace-recovery/runs/a504cd060ba4/(?:review/synthesis_review\.json|validate/validation_result\.json))|engineering-validation/(?:audit/independent-review-0[1-6]/verdict\.json|src/topic02_validation/uncertainty\.py)))$|research/(?:0[3-9]|10)-[^/]+/(?:chatgpt/|runs/|\.(?:bad|abandoned)-[^/]+/|msgloom-topic-[^/]+-research-report(?:\.r[0-9]+)?\.md$|msgloom-topic-[^/]+-research-report\.validation\.json$|gaps\.json$|resume_context\.json$|round_state\.json$|validation_result\.json$|workflow_state\.json$))'
       - id: check-yaml
       - id: check-json
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: mixed-line-ending
+        # Preserve exact bytes for validated generated research artifacts whose SHA-256 is part of the audit trail.
+        exclude: '^research/(?:01-email-conversation-structure/(?:round2-20260915/gaps\.json|engineering-validation/audit/independent-review-03/verdict\.json)|02-message-topic-segmentation/(?:analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/validate/validation_result\.json|round2-20260915/(?:gaps\.json|pipeline-workspace-recovery/runs/a504cd060ba4/(?:review/synthesis_review\.json|validate/validation_result\.json))|engineering-validation/(?:audit/independent-review-0[1-6]/verdict\.json|src/topic02_validation/uncertainty\.py)))$'
   # YAML linter -- config lives in the repo's .yamllint.yaml (copied by the skill).
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
@@ -30,3 +36,29 @@ repos:
     rev: v0.23.2
     hooks:
       - id: markdownlint-cli2
+        # Pipeline prompts, syntheses, transcripts, and generated reports are archival artifacts,
+        # not hand-authored repository Markdown.
+        exclude: '^research/(?:0[3-9]|10)-[^/]+/(?:chatgpt/|runs/|\.(?:bad|abandoned)-[^/]+/|msgloom-topic-[^/]+-research-report(?:\.r[0-9]+)?\.md$|msgloom-topic-[^/]+-research-report\.validation\.json$|gaps\.json$|resume_context\.json$|round_state\.json$|validation_result\.json$|workflow_state\.json$)'
+  # Python lint/format -- custom hook preserved by manage-precommit.
+  # The current manage-precommit catalog does not manage Ruff.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+        files: '^(?:msgloom|message_ingest|microsoft_graph|tests|scripts)/.*\.py$'
+      - id: ruff-format
+        files: '^(?:msgloom|message_ingest|microsoft_graph|tests|scripts)/.*\.py$'
+  # Mermaid syntax validation without browser-based rendering.
+  - repo: local
+    hooks:
+      - id: mermaid-parse
+        name: mermaid-parse
+        description: Validate fenced Mermaid diagrams without rendering
+        entry: node scripts/lint-mermaid.mjs
+        language: node
+        language_version: system
+        files: '\.(md|markdown)$'
+        additional_dependencies:
+          - "mermaid@11.17.2"
+          - "linkedom@0.18.13"

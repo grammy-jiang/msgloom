@@ -1,0 +1,71 @@
+{
+ "paper_id": "1412.5687",
+ "title": "Towards Open World Recognition",
+ "research_question": "How can a recognition system reject observations belonging to previously unseen classes and then incrementally incorporate newly labeled classes without retraining the complete classifier?",
+ "methodology": "The paper formalizes open-world recognition as a process combining recognition, novelty detection, labeling of unknowns, and incremental learning, and analyzes open-space risk for recognition functions. It introduces Nearest Non-Outlier, which represents classes by means in a learned metric space, uses compact abating probability-style scores to reject sufficiently distant observations, and adds a newly labeled class by inserting its class mean. Experiments on ImageNet progressively vary the numbers of known and unknown categories and compare open-set Nearest Class Mean with NNO, including experiments starting metric learning with different numbers of classes and supplementary feature representations.",
+ "key_findings": [
+  {
+   "finding": "The paper gives an explicit formulation of open-world recognition in which unknown inputs must be rejected and subsequently labeled classes can be added incrementally.",
+   "evidence_type": "supported",
+   "section": "Open World Recognition"
+  },
+  {
+   "finding": "Thresholded recognition functions that decrease with distance can be constructed to control open-space risk under the conditions analyzed by the authors.",
+   "evidence_type": "supported",
+   "section": "Managing Open Space Risk"
+  },
+  {
+   "finding": "NNO can add a new class by computing and storing its class mean rather than retraining the complete multiclass classifier.",
+   "evidence_type": "supported",
+   "section": "Nearest Non-Outlier"
+  },
+  {
+   "finding": "In the ImageNet open-world experiments, NNO consistently handles mixtures of known and unknown classes better than the open-set adaptation of Nearest Class Mean while retaining comparable closed-set behavior.",
+   "evidence_type": "supported",
+   "section": "Experiments"
+  },
+  {
+   "finding": "For the largest reported comparison with 500 trained known classes and testing involving 500 known plus 500 unknown classes, the paper reports almost a 74 percent improvement for open-set NNO over open-set NCM.",
+   "evidence_type": "supported",
+   "section": "Experiments"
+  },
+  {
+   "finding": "Once the representation and metric are established, adding classes to NNO is computationally inexpensive because incremental learning requires class statistics rather than a full optimization pass.",
+   "evidence_type": "supported",
+   "section": "Experiments"
+  }
+ ],
+ "limitations": [
+  "Unknown classes are assumed to be assigned semantic labels by a supervised labeling process before they can be learned.",
+  "The incremental procedure keeps the previously learned feature transformation or metric fixed rather than jointly relearning the representation as classes accumulate.",
+  "The theoretical open-space bounds can be loose when recognition is performed after dimensionality reduction, and a threshold that minimizes open-space risk can also reduce useful generalization.",
+  "The empirical evaluation is centered on ImageNet object recognition, so applicability to identity tracking or conversational topics is not directly demonstrated.",
+  "The primary experiments use engineered visual descriptors rather than an end-to-end representation that is itself updated incrementally."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "open_world_formalization": 0.99,
+  "open_space_risk_control": 0.96,
+  "cheap_incremental_class_addition": 0.99,
+  "nno_beats_open_ncm": 0.98,
+  "reported_74_percent_improvement": 0.99
+ },
+ "raw_claims": [
+  "Open-world recognition requires a system to distinguish known classes from observations that belong to classes it has not learned.",
+  "The authors model unknown-class rejection as part of the recognition function rather than forcing every observation into a known class.",
+  "After unknown observations receive labels, the learner is expected to extend its recognized class set.",
+  "NNO stores a representative mean for each learned class in a transformed feature space.",
+  "An observation is rejected as unknown when no learned class gives it sufficient support.",
+  "Adding a class to NNO mainly requires computing a new class mean.",
+  "The ImageNet protocol progressively adds known categories while also exposing the classifier to withheld unknown categories.",
+  "Open-set NCM performance deteriorates markedly as unknown categories are introduced.",
+  "NNO performs substantially better than the open-set NCM baseline in the reported open-world tests.",
+  "The incremental class update is much cheaper than the initial metric-learning stage."
+ ],
+ "source_url": "https://arxiv.org/html/1412.5687",
+ "access": "full_text"
+}

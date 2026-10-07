@@ -1,0 +1,78 @@
+{
+ "paper_id": "manual-2362cbe877",
+ "title": "ProPara-CRTS: Canonical Referent Tracking for Reliable Evaluation of Entity State Tracking in Process Narratives",
+ "research_question": "Can a canonical referent-tracking representation and targeted reannotation make ProPara a more reliable benchmark for longitudinal entity-state tracking while improving model training and evaluation without changing model architectures?",
+ "methodology": "The authors define Canonical Referent Tracking for States (CRTS) around unique immutable discourse referents, temporally atomic transitions, and complete state accounting at every process step. They manually reannotate ProPara using minimal paraphrasing to disambiguate referents, split or merge temporally problematic steps, add missing implicit transitions, and remove non-process paragraphs. Quality control uses trained graduate annotators and a dual-annotation sample, after which the authors compare prompt-based GPT models, a fine-tuned Llama model, and supervised state-tracking systems on the original and revised annotations, including cross-dataset training tests.",
+ "key_findings": [
+  {
+   "finding": "The CRTS representation separates surface mentions from immutable underlying referents and requires an explicit state for each referent at each process step, directly reducing ambiguity in longitudinal state chains.",
+   "evidence_type": "supported",
+   "section": "Sections 3 and 4.1"
+  },
+  {
+   "finding": "The reannotation identified 789 errors, with incomplete state accounting accounting for 357 cases and referent-uniqueness problems for 311, showing that missing transitions and referential ambiguity were major sources of label noise.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Table 1"
+  },
+  {
+   "finding": "On a 100-paragraph dual-annotation sample, state-label agreement reached Cohen's kappa of 0.72 and location agreement reached pairwise F1 of 0.56, indicating meaningful but nontrivial residual annotation difficulty.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Across the main model comparisons, CRTS generally increased sentence-level or document-level F1, including improvements for fine-tuned Llama 3.1, MeeT, and CGLI.",
+   "evidence_type": "supported",
+   "section": "Section 5, Tables 2 and 3"
+  },
+  {
+   "finding": "The paper's broad statement that CRTS improves F1 in all settings except GPT-4o-mini sentence-level evaluation is not fully consistent with Table 2, where GPT-4o direct prompting has document-level F1 of 58.8 on CRTS versus 59.6 on original ProPara.",
+   "evidence_type": "contradicted",
+   "section": "Section 5, Table 2"
+  },
+  {
+   "finding": "Models trained on CRTS annotations also outperform counterparts trained on original ProPara when both are evaluated on CRTS, including on the shared test-paragraph subset, supporting the claim that benefits are not merely an artifact of changed test composition.",
+   "evidence_type": "supported",
+   "section": "Section 7.1, Tables 4 and 5"
+  },
+  {
+   "finding": "Qualitative examples show that erroneous or incomplete original gold annotations can reward predictions that are factually wrong or miss implicit state changes, whereas canonicalized annotations better preserve process continuity.",
+   "evidence_type": "supported",
+   "section": "Section 7.2"
+  }
+ ],
+ "limitations": [
+  "Only 100 paragraphs were independently reannotated by multiple annotators for the reported agreement analysis; most of the corpus did not receive the same dual-annotation treatment.",
+  "The same annotation effort revised both paragraph wording and state labels, which the authors identify as a possible source of annotation bias.",
+  "Referent resolution, implicit transitions, and locations still require subjective judgments, so residual annotation errors are possible.",
+  "The benchmark consists of procedural process narratives rather than workplace messages, work-item discussions, or explicit revision histories, so distinctions such as reopening, supersession, or claimed completion are not directly modeled.",
+  "CRTS represents state evolution of entities but does not provide a general discourse taxonomy for correction, supplementation, contradiction, or independently verified completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "canonical_referent_schema": 0.99,
+  "error_taxonomy": 0.99,
+  "annotation_agreement": 0.99,
+  "general_model_improvement": 0.98,
+  "table_prose_mismatch": 0.99,
+  "cross_dataset_generalization": 0.98,
+  "gold_label_failure_examples": 0.96
+ },
+ "raw_claims": [
+  "CRTS maps each surface mention to a unique immutable discourse referent.",
+  "The revised corpus contains 452 process paragraphs and 13,417 state annotations.",
+  "The authors report 789 corrected annotation errors across their error taxonomy.",
+  "Missing implicit transitions are the largest single error subtype reported in Table 1.",
+  "The dual-annotation sample yields state-label kappa of 0.72 and location-agreement F1 of 0.56.",
+  "Fine-tuned Llama 3.1, MeeT, and CGLI obtain higher reported scores on CRTS than on the original benchmark in the main comparison.",
+  "CGLI sentence-level F1 rises from 65.4 to 69.5 and document-level F1 from 72.4 to 75.1 in the reported comparison.",
+  "GPT-4o direct prompting has lower document-level F1 on CRTS than on original ProPara despite the paper's broader summary of gains.",
+  "Training on CRTS improves performance on the shared test-paragraph subset for all three cross-dataset model comparisons.",
+  "Qualitative cases demonstrate that omissions in the original gold states can make incorrect state predictions appear correct."
+ ],
+ "source_url": "https://aclanthology.org/2025.iwcs-main.22.pdf",
+ "access": "full_text"
+}

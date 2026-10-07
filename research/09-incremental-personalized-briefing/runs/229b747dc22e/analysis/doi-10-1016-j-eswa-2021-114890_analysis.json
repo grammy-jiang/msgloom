@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-1016-j-eswa-2021-114890",
+ "title": "A case study of batch and incremental recommender systems in supermarket data under concept drifts and cold start",
+ "research_question": "How do batch and streaming collaborative-filtering recommender systems compare on real supermarket interaction data affected by concept drift and cold-start conditions?",
+ "methodology": "The authors construct and release a real positive-only supermarket interaction dataset, SMDI, together with two preprocessed variants intended to expose concept-drift and cold-start behavior. They temporally split four months of data into the first two months for training and the remaining two months for testing, comparing batch models such as SVD, BPRMF, GMF, MLP and NeuMF with incremental ISGD and IBPRMF. Streaming models preserve event order and use test-then-train evaluation, while performance is measured with RECALL@1, @5, @10 and @20, supplemented by window-based prequential analysis and Friedman/Nemenyi statistical testing over repeated runs.",
+ "key_findings": [
+  {
+   "finding": "Streaming recommenders achieved improvements of up to 21% over corresponding batch approaches in the studied supermarket data.",
+   "evidence_type": "supported",
+   "section": "Abstract; Section 6.1"
+  },
+  {
+   "finding": "ISGD significantly outperformed its batch SVD counterpart on RECALL@10 across all three dataset variants at the reported 95% confidence level.",
+   "evidence_type": "supported",
+   "section": "Section 6.1 Basic evaluation"
+  },
+  {
+   "finding": "IBPRMF improved RECALL@10 by as much as 21% over BPRMF in the preprocessed datasets, where abrupt changes and cold-start effects were more visible.",
+   "evidence_type": "supported",
+   "section": "Section 6.1 Basic evaluation"
+  },
+  {
+   "finding": "In the original dataset, IBPRMF's decreases at RECALL@10 and RECALL@20 were not statistically significant and were associated with volatile runs in which the model did not always converge.",
+   "evidence_type": "supported",
+   "section": "Section 6.1 Basic evaluation"
+  },
+  {
+   "finding": "Windowed prequential evaluation showed that incrementally updated models adapted more effectively when abrupt distribution changes occurred, supporting the value of continual updating under drift and cold start.",
+   "evidence_type": "supported",
+   "section": "Section 6.2 Window-based evaluation; Section 7 Conclusion"
+  },
+  {
+   "finding": "The authors report that streaming recommenders were especially beneficial under cold start and could outperform the evaluated neural approaches during recurrent concept drift.",
+   "evidence_type": "supported",
+   "section": "Section 7 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The empirical study uses a single supermarket domain, limiting external validity to other recommendation settings.",
+  "Only roughly four months of transaction history were available, and the authors explicitly state that a longer multi-year timespan would be preferable for concept-drift analysis.",
+  "Available item content such as price, section and brand was not used in the evaluated collaborative-filtering models.",
+  "The study does not integrate an explicit drift-detection mechanism; this is identified as future work.",
+  "The interaction data are positive-only purchases, so the experiments do not evaluate richer explicit preference signals or negative feedback."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "streaming_up_to_21_percent": 0.99,
+  "isgd_beats_svd_recall10": 0.99,
+  "ibprmf_preprocessed_gain": 0.99,
+  "ibprmf_original_instability": 0.98,
+  "streaming_adapts_to_drift": 0.97,
+  "cold_start_recovery": 0.97
+ },
+ "raw_claims": [
+  "The study compares batch and incremental recommendation algorithms on real supermarket purchase data.",
+  "The supermarket data exhibit both changing user-item behavior and cold-start events.",
+  "The first two months are used for training and the remaining two months for testing.",
+  "Streaming evaluation preserves temporal order and applies a test-then-train protocol.",
+  "RECALL at several cutoff values is the principal predictive-performance measure.",
+  "ISGD has significantly higher RECALL@10 than SVD across the evaluated dataset variants.",
+  "IBPRMF reaches substantially higher RECALL@10 than BPRMF on the preprocessed variants.",
+  "Incremental models can recover more rapidly when new users or changing interaction patterns appear.",
+  "The authors make both the supermarket dataset and experiment source code available.",
+  "The authors identify longer historical coverage, content-aware modeling and explicit drift detection as future work."
+ ],
+ "source_url": "https://jpbarddal.github.io/assets/pdf/2021_ESWA_case_study_recsys.pdf",
+ "access": "full_text"
+}

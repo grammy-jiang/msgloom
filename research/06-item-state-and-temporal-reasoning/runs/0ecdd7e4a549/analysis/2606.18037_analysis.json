@@ -1,0 +1,73 @@
+{
+ "paper_id": "2606.18037",
+ "title": "ProvenanceGuard: Source-Aware Factuality Verification for MCP-Based LLM Agents",
+ "research_question": "Can factuality verification for multi-source MCP agents explicitly preserve source ownership so that unsupported claims, contradictions, and claims supported by the wrong source are reliably blocked?",
+ "methodology": "ProvenanceGuard captures MCP traces containing stable tool IDs, source IDs, and raw outputs, decomposes generated answers into atomic claims, routes each claim to source-specific evidence, and applies NLI plus evidence-derived features to determine support. It separately checks whether the source stated or implied by an answer agrees with the source to which supporting evidence was routed, allowing cross-source conflation to be detected even when pooled evidence supports the factual content. The system is evaluated on 281 medical-domain MCP-agent traces, a held-out claim set, a harder multi-source adjudicated benchmark, controlled attribution-swap probes, and repair-and-reverification experiments. The main operational metrics include reject/block F1, exact verdict accuracy, source accuracy, source-plus-relation accuracy, and repair outcomes.",
+ "key_findings": [
+  {
+   "finding": "On the held-out set of 40 traces and 361 claims, ProvenanceGuard achieved 0.802 reject/block F1, 0.993 reject recall, and 0.858 source accuracy over source-eligible claims.",
+   "evidence_type": "supported",
+   "section": "V.1 RQ1: Source-Aware Support Decisions"
+  },
+  {
+   "finding": "Source-blind support baselines remained competitive on binary rejection, with MiniCheck reaching 0.783 F1, and the 0.019 F1 gap to ProvenanceGuard was not statistically significant; the distinctive measured capability was explicit claim-to-source attribution.",
+   "evidence_type": "supported",
+   "section": "V.4 RQ3: Comparison With Source-Blind Baselines"
+  },
+  {
+   "finding": "On the harder multi-source benchmark, reject/block F1 remained 0.846 while source accuracy fell to 0.503 and source-plus-relation accuracy to 0.229, showing that exact provenance attribution becomes much harder among semantically similar candidate sources.",
+   "evidence_type": "supported",
+   "section": "V.2 Multi-Source Benchmark Rerun and Multi-Tool Stress Slices"
+  },
+  {
+   "finding": "All 50 deliberately injected source-attribution swaps in the controlled conflation probes were blocked and labeled as conflations, and no repaired output retained the deliberately wrong attribution.",
+   "evidence_type": "supported",
+   "section": "V.6 RQ5: Targeted Source Conflation"
+  },
+  {
+   "finding": "The repair loop made all 173 initially blocked full-trace answers pass reverification, but 144 resolutions used terminal fallback text, so verifier passage did not usually imply successful recovery of a rich substantive answer.",
+   "evidence_type": "supported",
+   "section": "V.5 RQ4: Repair After Source-Aware Blocking"
+  },
+  {
+   "finding": "The experiments directly demonstrate that factual support and provenance attribution are separable: a statement can be supported somewhere in the trace while still being invalid for the source to which the answer attributes it.",
+   "evidence_type": "supported",
+   "section": "III.6 Attribution and Conflation; V.6 RQ5"
+  }
+ ],
+ "limitations": [
+  "The primary empirical setting is one medical MCP-agent stack rather than longitudinal workplace or operational communication.",
+  "The main held-out evaluation contains only 40 traces, and the reported confidence intervals for several metrics are correspondingly wide.",
+  "Training and validation adjudication relies substantially on LLM-assisted labels; the paper reports human expert review of all 361 held-out claims but does not claim equivalent expert review of all training and validation labels.",
+  "The 50 source-conflation probes each contain a clear deliberate attribution swap and are not an adversarial test of arbitrary source confusion.",
+  "Repair is scored using the same verifier that triggered blocking, so successful reverification is not independent domain-level corroboration of answer completeness.",
+  "The system does not label longitudinal work-item relations such as supersession, correction, supplementation, reopening, or temporal conflict.",
+  "The public paper-artifact repository states that reproducible code and data are not currently released."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "heldout_blocking": 0.99,
+  "source_attribution": 0.99,
+  "multisource_degradation": 0.99,
+  "conflation_detection": 0.99,
+  "repair_fallback_caveat": 0.99,
+  "support_provenance_separation": 0.99
+ },
+ "raw_claims": [
+  "The verifier preserves source identity instead of pooling all tool evidence into one undifferentiated context.",
+  "Its operational reject class includes unsupported, contradicted, not-enough-evidence, and conflation cases.",
+  "A claim may be factually supported by one MCP source while being wrongly attributed to another.",
+  "The held-out evaluation contains 361 claims from 40 captured agent traces.",
+  "Exact source selection is substantially harder when many semantically close source candidates are present.",
+  "The support-only advantage over the strongest source-blind comparator is small and not statistically significant in the held-out sample.",
+  "Controlled source-attribution swaps are detected by comparing answer attribution with routed supporting evidence.",
+  "Passing the post-repair verifier does not independently prove that the repaired answer is complete or useful."
+ ],
+ "source_url": "https://arxiv.org/html/2606.18037",
+ "source_ref": "citeturn111088view0turn111088view1turn111088view2turn111088view3turn111088view4",
+ "access": "full_text"
+}

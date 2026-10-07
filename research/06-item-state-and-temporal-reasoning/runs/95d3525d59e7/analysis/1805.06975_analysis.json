@@ -1,0 +1,79 @@
+{
+ "paper_id": "1805.06975",
+ "title": "Tracking State Changes in Procedural Text: A Challenge Dataset and Models for Process Paragraph Comprehension",
+ "research_question": "Can models reliably infer when entities are created, destroyed, or moved and where they are located across natural procedural paragraphs, and does global process modeling outperform approaches developed for shorter or synthetic reasoning tasks?",
+ "methodology": "The authors construct ProPara from 488 human-written paragraphs covering 183 process prompts and annotate entity existence and location over successive sentences. Expert annotators establish participant and creation/destruction grids, while multiple crowd workers provide location annotations; train, development, and test partitions are separated by process prompt. They compare prior neural reasoning baselines and feature/rule systems with ProLocal, which predicts sentence-local transitions followed by symbolic propagation, and ProGlobal, which jointly models the paragraph and recurrent entity state. Evaluation decomposes performance into whether a state changes, when it changes, and where the entity is located.",
+ "key_findings": [
+  {
+   "finding": "ProPara provides dense longitudinal annotations of entity existence and location over natural process descriptions, enabling evaluation of complete state trajectories rather than isolated sentence classification.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "ProGlobal substantially outperforms ProLocal and the earlier baselines on the aggregate state-tracking metrics, with reported macro scores of 45.08 for ProGlobal and 34.50 for ProLocal.",
+   "evidence_type": "supported",
+   "section": "Section 5, Table 3"
+  },
+  {
+   "finding": "The largest gap between global and local modeling appears on locating entities after changes: ProGlobal scores 35.9 on the location category versus 10.35 for ProLocal.",
+   "evidence_type": "supported",
+   "section": "Section 5, Table 3"
+  },
+  {
+   "finding": "About 30% of final locations are not explicitly stated in the sentence where the state change occurs, providing a structural reason that sentence-local extraction is insufficient for many examples.",
+   "evidence_type": "supported",
+   "section": "Section 5, error analysis"
+  },
+  {
+   "finding": "Human performance remains far above the evaluated models, with a reported macro score of 80.76 compared with 45.08 for ProGlobal, showing substantial remaining difficulty.",
+   "evidence_type": "supported",
+   "section": "Section 5, Table 3"
+  },
+  {
+   "finding": "In a manual analysis of 100 ProGlobal development errors, implicit creation or destruction accounts for 37% and location errors for 27%, highlighting the importance of implicit and cross-sentence state transitions.",
+   "evidence_type": "supported",
+   "section": "Section 5, error analysis"
+  },
+  {
+   "finding": "A quarter of the test vocabulary is unseen in train or development data, making lexical generalization an explicit challenge in the benchmark.",
+   "evidence_type": "supported",
+   "section": "Section 5, analysis"
+  }
+ ],
+ "limitations": [
+  "The represented state is centered on entity existence and location rather than the richer lifecycle of workplace work items, decisions, assignments, or completion claims.",
+  "The corpus is composed of science-oriented process descriptions rather than conversational or operational communication, so transfer to email, chat, incident logs, or ticket histories is not demonstrated.",
+  "Average pairwise agreement for location annotation is reported as 0.67, and the human upper-bound results indicate substantial ambiguity remains.",
+  "Twenty-five percent of test-set vocabulary is unseen in training and development data, increasing lexical generalization difficulty.",
+  "ProLocal can accumulate cascading prediction errors through its symbolic propagation, while the forward recurrent approaches do not naturally exploit backward temporal inference.",
+  "The dataset does not explicitly label discourse relations such as correction, supersession, contradiction, reopening, or claimed versus independently confirmed completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "longitudinal_dataset": 0.99,
+  "global_beats_local": 0.99,
+  "location_advantage": 0.99,
+  "nonlocal_location_evidence": 0.98,
+  "human_model_gap": 0.99,
+  "error_distribution": 0.98,
+  "unseen_vocabulary": 0.98
+ },
+ "raw_claims": [
+  "ProPara contains 488 paragraphs describing 183 different processes.",
+  "The corpus contains 81,345 annotations concerning entity existence and location.",
+  "Process prompts are separated across train, development, and test partitions so test processes are unseen during training.",
+  "ProGlobal obtains a reported macro score of 45.08, compared with 34.50 for ProLocal.",
+  "ProGlobal's reported score for predicting where changes occur is 35.9, compared with 10.35 for ProLocal.",
+  "Roughly 30% of end locations are not explicitly mentioned in the sentence containing the corresponding state change.",
+  "Human macro performance is reported as 80.76 on the benchmark.",
+  "Among 100 analyzed ProGlobal errors, 37% involve implicit creation or destruction and 27% involve location.",
+  "The authors report that 25% of test vocabulary is unseen in the training and development partitions.",
+  "The results indicate that maintaining a global representation of process state is more effective than relying only on sentence-local decisions plus propagation."
+ ],
+ "source_url": "https://arxiv.org/html/1805.06975",
+ "access": "full_text"
+}

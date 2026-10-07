@@ -1,0 +1,82 @@
+{
+ "paper_id": "manual-4cb48c423e",
+ "title": "Interactive Multi-Objective Probabilistic Preference Learning with Soft and Hard Bounds",
+ "research_question": "Can an interactive probabilistic preference-learning framework using editable soft and hard bounds, active querying and global sensitivity analysis efficiently identify preferred Pareto-optimal solutions while improving decision-maker confidence?",
+ "methodology": "The paper proposes Active-MoSH, which maintains probabilistic beliefs over objective preferences and soft-hard bounds and actively chooses queries intended to refine those beliefs, together with C-MoSH, a global sensitivity component intended to expose potentially overlooked high-value alternatives. The framework is evaluated through simulated multi-objective optimization experiments and ablations, a human study with 21 Amazon Mechanical Turk participants selecting AI-generated magazine-cover images, and a retrospective cervical-cancer brachytherapy case study using three patient datasets and a domain expert. Comparisons include pairwise feedback, full ranking and partial ranking, with utility, convergence, Iteration Stop Efficiency, Likert-scale trust, cognitive effort and expressiveness among the reported measures.",
+ "key_findings": [
+  {
+   "finding": "Active-C-MoSH reached higher second-iteration utility than pairwise feedback and full ranking in the user study, while its difference from partial ranking was not statistically significant.",
+   "evidence_type": "supported",
+   "section": "Section 7.2 User Study Results"
+  },
+  {
+   "finding": "Participants rated Active-C-MoSH as providing significantly greater decision confidence or trust than full ranking, partial ranking and pairwise feedback.",
+   "evidence_type": "supported",
+   "section": "Section 7.2 User Study Results; Appendix E.3"
+  },
+  {
+   "finding": "The initial comparative ISE result was not statistically significant, but in the four-trial longitudinal study the final Active-C-MoSH trial reached a mean ISE of 0.82 and was reported as significantly higher than the baseline feedback mechanisms.",
+   "evidence_type": "supported",
+   "section": "Section 7.2 User Study Results"
+  },
+  {
+   "finding": "An ablation comparing Active-C-MoSH with Active-MoSH produced higher ISE for the version including C-MoSH, supporting the sensitivity-analysis component as a contributor to decision confidence.",
+   "evidence_type": "supported",
+   "section": "Section 7.2 User Study Results"
+  },
+  {
+   "finding": "Active-C-MoSH was rated as more cognitively demanding than the simpler feedback mechanisms but also more expressive than full ranking and pairwise feedback.",
+   "evidence_type": "supported",
+   "section": "Section 7.2 User Study Results"
+  },
+  {
+   "finding": "In the three-case retrospective cervical-cancer study, Active-MoSH obtained a reported mean utility of 1.11 plus or minus 0.02, compared with approximately 0.80 to 0.82 for the ranking and pairwise baselines.",
+   "evidence_type": "supported",
+   "section": "Section 8 Case Study: Cervical Cancer"
+  },
+  {
+   "finding": "Simulation ablations showed lower average utility and often greater variance when probabilistic preference modeling was replaced by a uniform preference distribution or when active query selection was replaced by random sampling.",
+   "evidence_type": "supported",
+   "section": "Appendix D.5 Additional Experiments and Ablation Studies"
+  }
+ ],
+ "limitations": [
+  "Maintaining Gaussian-process models, preference posteriors, acquisition optimization and sensitivity analysis can become computationally expensive as the number of objectives or interaction rounds grows.",
+  "The method depends on decision-makers being able to express meaningful soft and hard bounds; fatigue, inconsistency and difficulty articulating preferences can degrade performance.",
+  "The assumption that only one bound is modified per iteration may be restrictive for users who want to express several preference changes at once.",
+  "The authors note that simulated decision-maker behavior cannot fully reproduce complex human feedback, particularly for the C-MoSH mechanism.",
+  "The human study contains only 21 MTurk participants and uses a specific image-selection task.",
+  "The high-stakes case study uses only three retrospective patient datasets and one domain-expert workflow, limiting clinical generalizability.",
+  "The retrospective clinical datasets are not identified as a publicly released dataset."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "faster_convergence_vs_two_baselines": 0.99,
+  "higher_reported_trust": 0.99,
+  "longitudinal_ise_improvement": 0.98,
+  "cmosh_ablation_confidence": 0.98,
+  "cognitive_load_and_expressiveness": 0.99,
+  "clinical_case_utility": 0.98,
+  "preference_and_sampling_ablations": 0.97
+ },
+ "raw_claims": [
+  "Active-MoSH represents preferences and soft-hard bounds probabilistically and updates them from interactive feedback.",
+  "Soft bounds represent aspirational targets while hard bounds represent non-negotiable feasibility limits.",
+  "C-MoSH uses multi-objective sensitivity analysis to expose potentially overlooked high-value alternatives.",
+  "The user study recruited 21 Mechanical Turk participants.",
+  "The primary user study compares Active-C-MoSH with pairwise, full-ranking and partial-ranking feedback.",
+  "Active-C-MoSH produced significantly higher second-iteration utility than pairwise and full-ranking feedback.",
+  "Participants rated Active-C-MoSH as more trustworthy than each of the three comparison mechanisms.",
+  "Repeated exposure to Active-C-MoSH was associated with higher Iteration Stop Efficiency by the fourth longitudinal trial.",
+  "The soft-hard-bounds interaction required more reported mental effort than the simpler comparison mechanisms.",
+  "The cervical-cancer case study used three retrospective patient datasets and a strict decision-time budget.",
+  "The authors report that their implementation details are included in provided code.",
+  "The authors identify computational scaling, cognitive load and limits of simulated feedback as important constraints."
+ ],
+ "source_url": "https://arxiv.org/html/2506.21887",
+ "access": "full_text"
+}

@@ -1,0 +1,80 @@
+{
+ "paper_id": "doi-10-18653-v1-2020-acl-main-122",
+ "title": "Examining the State-of-the-Art in News Timeline Summarization",
+ "research_question": "Which high-level strategies for news timeline summarization perform best under end-to-end temporal evaluation, and what dataset characteristics make longitudinal timeline construction difficult?",
+ "methodology": "The paper compares direct summarization, a date-wise strategy, and event-clustering approaches to timeline summarization, with the proposed date-wise method exploiting publication dates and textual temporal expressions to identify candidate dates before summarizing each selected date. Temporal expressions are extracted and sentence selection is performed using date-related representations, while the clustering alternative uses temporally constrained document clustering. Evaluation covers the T17, Crisis, and newly introduced Entities datasets, the latter containing 47 topics and averaging 4,437 days of coverage per topic. Systems are evaluated with alignment-based ROUGE F1 and Date-F1 using leave-one-out cross-validation over tasks and approximate-randomization significance tests.",
+ "key_findings": [
+  {
+   "finding": "The Datewise system achieved the highest alignment-based ROUGE results among evaluated non-oracle methods on all three benchmark datasets.",
+   "evidence_type": "supported",
+   "section": "5.4 Results; 6.1 Performance of TLS Strategies"
+  },
+  {
+   "finding": "Datewise did not consistently dominate in Date-F1, indicating that much of its advantage came from sentence selection and summarization rather than superior date prediction alone.",
+   "evidence_type": "supported",
+   "section": "6.1 Performance of TLS Strategies"
+  },
+  {
+   "finding": "The new Entities benchmark substantially extends longitudinal coverage, with 47 topics, 47 timelines, an average of 959 documents and 600 publication dates per task, and an average duration of about 12 years.",
+   "evidence_type": "supported",
+   "section": "4 Dataset"
+  },
+  {
+   "finding": "The clustering approach generally underperformed Datewise and the prior Martschat method, with analysis showing that nearby articles were sometimes merged even when ground-truth timelines treated them as separate events.",
+   "evidence_type": "supported",
+   "section": "6.1 Performance of TLS Strategies"
+  },
+  {
+   "finding": "Automatically generated timelines frequently contained adjacent-date redundancy, and simply prohibiting adjacent dates reduced the automatic evaluation scores, exposing a mismatch between redundancy control and the evaluated objectives.",
+   "evidence_type": "supported",
+   "section": "6.4 Adjacent Dates and Redundancy"
+  },
+  {
+   "finding": "Datewise and the clustering method were substantially faster than the combinatorial prior system, and the prior system could not be run on Crisis because of memory requirements.",
+   "evidence_type": "supported",
+   "section": "6.3 Running Time; Appendix A.4"
+  },
+  {
+   "finding": "Even the improved systems remained far from oracle performance, leaving substantial room for better longitudinal event selection and summarization.",
+   "evidence_type": "supported",
+   "section": "7 Conclusion"
+  }
+ ],
+ "limitations": [
+  "Human editorial decisions about which events belong in a timeline and how they should be summarized are subjective.",
+  "The available article collections may omit important events, so system evaluation can be constrained by source coverage rather than summarization quality alone.",
+  "The Entities input collection was retrieved from a single news provider, The Guardian.",
+  "Article headlines were excluded from the main experiments partly to preserve comparability with earlier work and because T17 lacks titles.",
+  "Adjacent-date redundancy remains unresolved, and automatic metrics can reward redundancy rather than a balanced temporal spread.",
+  "The work models news events rather than workplace obligations and does not track explicit new, open, resolved, or superseded work-item states.",
+  "It does not model obligation-versus-preference selection, adaptive personalization, preference drift, or joint omission/repetition/false-alert evaluation."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "datewise_best_alignment_scores": 0.99,
+  "date_selection_not_sole_advantage": 0.98,
+  "entities_long_horizon_benchmark": 0.99,
+  "clustering_granularity_problem": 0.96,
+  "redundancy_metric_mismatch": 0.98,
+  "scalability_advantage": 0.99,
+  "large_oracle_gap": 0.98
+ },
+ "raw_claims": [
+  "The study evaluates timeline summarization end to end rather than considering only date selection or date summarization in isolation.",
+  "The Entities dataset contains 47 topics and 47 ground-truth timelines.",
+  "Entities averages 959 documents, 31,545 sentences, and 600 publication dates per task.",
+  "The average Entities task spans 4,437 days, or approximately 12 years.",
+  "Datewise has the strongest alignment-based ROUGE performance across T17, Crisis, and Entities.",
+  "Date-F1 is not always better for Datewise than for competing methods.",
+  "Large numbers of articles and publication dates generally make timeline tasks harder.",
+  "Adjacent dates often produce repeated descriptions of the same event.",
+  "The authors recommend treating automatic timeline metrics cautiously and supplementing them with qualitative analysis or user studies.",
+  "The paper provides the Entities dataset through the news-tls repository."
+ ],
+ "source_url": "https://arxiv.org/html/2005.10107",
+ "access": "full_text"
+}

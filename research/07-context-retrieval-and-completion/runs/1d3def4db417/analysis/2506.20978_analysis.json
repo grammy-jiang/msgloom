@@ -1,0 +1,80 @@
+{
+ "paper_id": "2506.20978",
+ "title": "Response Quality Assessment for Retrieval-Augmented Generation via Conditional Conformal Factuality",
+ "research_question": "Can conformal prediction filter unreliable sub-claims from RAG answers while retaining substantially more useful content and providing marginal or group-conditional factuality guarantees?",
+ "methodology": "Conformal-RAG decomposes each generated answer into sub-claims and assigns each claim a relevance score based on query-document and claim-document cosine similarities. During calibration, GPT-4o labels claim factuality using the query, ground-truth answer, and retrieved documents, after which conformal prediction selects a relevance threshold; inference removes claims below that threshold and merges the retained claims back into a coherent response. A Mondrian conditional variant partitions calibration examples into known groups and learns a separate threshold for each group, and experiments cover FActScore, PopQA, HotpotQA, and MedLFQA using a FAISS retriever and GPT-4o generator.",
+ "key_findings": [
+  {
+   "finding": "Conformal-RAG provides a probabilistic factuality guarantee for the retained sub-claims under the conformal assumptions and the assumption that calibration annotations are correct.",
+   "evidence_type": "supported",
+   "section": "3.1-3.2 Methodology"
+  },
+  {
+   "finding": "The conditional variant uses Mondrian conformal prediction to provide separately calibrated thresholds for pre-specified query groups such as dataset or medical sub-domain.",
+   "evidence_type": "supported",
+   "section": "3.3 Conditional Conformal Factuality with RAG"
+  },
+  {
+   "finding": "The authors report that Conformal-RAG retains up to 60% more high-quality sub-claims than direct conformal factuality applied to the LLM while targeting the same reliability level.",
+   "evidence_type": "supported",
+   "section": "Abstract; 4.1 Results"
+  },
+  {
+   "finding": "At an 85% target factuality level on FActScore, Conformal-RAG removed 8.9% of claims while the Conformal-LLM baseline removed 86.8%.",
+   "evidence_type": "supported",
+   "section": "4.1 Marginal Conformal Factuality"
+  },
+  {
+   "finding": "Empirical factuality was generally at or above target for the marginal experiments, and conditional Conformal-RAG approximately achieved target factuality across the tested groups with less fluctuation than the Conformal-LLM baseline.",
+   "evidence_type": "supported",
+   "section": "4.1 Results"
+  },
+  {
+   "finding": "The conditional method assumes that group identity is known at inference and does not itself address arbitrary or continuously changing distribution shift.",
+   "evidence_type": "supported",
+   "section": "3.3; 4 Dataset"
+  },
+  {
+   "finding": "Conformal-RAG is a post-generation claim-filtering mechanism rather than an iterative evidence-sufficiency or retrieval-budget stopping controller, and it does not track temporal document versions or source permissions.",
+   "evidence_type": "supported",
+   "section": "3 Methodology"
+  }
+ ],
+ "limitations": [
+  "The basic conformal guarantee relies on calibration and test examples satisfying the usual i.i.d./exchangeability condition.",
+  "The factuality guarantee assumes that the automatic calibration annotation function correctly labels factual and non-factual claims.",
+  "Conditional calibration requires the relevant group label to be available at inference time.",
+  "The experimental grouping captures known sub-domains rather than arbitrary unseen or non-stationary distribution shifts.",
+  "GPT-4o is used for calibration annotation, answer decomposition, and answer re-merging, introducing dependence on an external LLM at several stages.",
+  "Filtering low-scoring claims controls factuality but does not guarantee completeness of the remaining answer or quantify important omitted claims.",
+  "The framework does not iteratively retrieve additional evidence when a response is insufficient.",
+  "It does not represent temporal/version provenance, source supersession, or permission-aware evidence access."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conformal_subclaim_factuality": 0.99,
+  "group_conditional_calibration": 0.99,
+  "higher_claim_retention": 0.99,
+  "factuality_targets_empirically_met": 0.97,
+  "known_group_requirement": 0.99,
+  "not_iterative_retrieval_stopping": 0.97
+ },
+ "raw_claims": [
+  "Conformal-RAG scores each generated sub-claim using its similarity to retrieved documents weighted by query-document similarity.",
+  "Calibration uses ground-truth answers and retrieved documents to automatically label sub-claim factuality.",
+  "Inference does not require a ground-truth answer.",
+  "Claims scoring below the conformally calibrated threshold are removed.",
+  "The conditional method calibrates separate thresholds for pre-defined groups.",
+  "The experimental conditional groups are known at inference time.",
+  "The evaluation uses FActScore, PopQA, HotpotQA, and MedLFQA.",
+  "The authors test target error levels from 0.05 through 0.40.",
+  "Conformal-RAG retains substantially more claims than the Conformal-LLM baseline at matched factuality targets.",
+  "The implementation is linked through a public GitHub repository."
+ ],
+ "source_url": "https://arxiv.org/html/2506.20978",
+ "access": "full_text"
+}

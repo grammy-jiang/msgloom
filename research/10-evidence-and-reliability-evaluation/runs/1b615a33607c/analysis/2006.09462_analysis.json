@@ -1,0 +1,73 @@
+{
+ "paper_id": "2006.09462",
+ "title": "Selective Question Answering under Domain Shift",
+ "research_question": "Can selective question answering remain reliable under an unknown domain shift by learning a confidence calibrator from source-domain examples and examples from a different known out-of-domain dataset?",
+ "methodology": "A BERT-base question-answering model is trained on SQuAD, while a separate random-forest calibrator predicts whether the QA model's answer will be correct. The calibrator uses passage length, predicted-answer length, and the top five answer probabilities, and is trained on a mixture of source-domain examples and labeled examples from one known out-of-domain dataset. Evaluation mixes SQuAD with a different, previously unseen out-of-domain dataset and averages results across ordered choices drawn from five QA datasets; baselines include maximum softmax probability, a source-only calibrator, QA retraining with known out-of-domain data, test-time dropout, and an outlier detector.",
+ "key_findings": [
+  {
+   "finding": "Training the calibrator with source and known out-of-domain data raised average coverage at 80% target accuracy to about 56.1%, compared with 48.2% for maximum softmax probability.",
+   "evidence_type": "supported",
+   "section": "Main experiments"
+  },
+  {
+   "finding": "Using known out-of-domain data to train the confidence calibrator was more effective for selective QA than merely retraining the QA model with that data, reaching about 56.1% versus 51.8% coverage at 80% target accuracy.",
+   "evidence_type": "supported",
+   "section": "Main experiments"
+  },
+  {
+   "finding": "A calibrator trained on both source and known out-of-domain examples also outperformed a source-only calibrator at the same target accuracy, demonstrating transfer of calibration information across domains.",
+   "evidence_type": "supported",
+   "section": "Main experiments"
+  },
+  {
+   "finding": "Adding test-time dropout-derived features improved the calibrator further, reaching about 60.0% coverage at 80% target accuracy, but required repeated inference passes.",
+   "evidence_type": "supported",
+   "section": "Test-time dropout"
+  },
+  {
+   "finding": "Maximum softmax probability is systematically overconfident on shifted domains, whereas the learned calibrator narrows the confidence-quality gap between source and out-of-domain examples.",
+   "evidence_type": "supported",
+   "section": "Analysis of calibration under domain shift"
+  },
+  {
+   "finding": "A generic outlier detector was substantially weaker for selective QA than directly learning to predict answer correctness.",
+   "evidence_type": "supported",
+   "section": "Outlier detection baseline"
+  }
+ ],
+ "limitations": [
+  "The approach assumes access to labeled examples from a known out-of-domain distribution, which may not exist or may not resemble the future unknown domain.",
+  "Experiments center on extractive question answering with a SQuAD-trained BERT-base model and do not establish behavior for free-form long-form generation.",
+  "The evaluation uses an offline mixture of source and shifted datasets rather than a temporally evolving online stream.",
+  "The learned feature relationships may themselves be domain dependent; simple properties such as question or passage length can behave differently across datasets.",
+  "Test-time dropout improves selective performance but incurs substantial inference overhead because many stochastic forward passes are required.",
+  "The method provides empirical risk-coverage performance rather than a finite-sample statistical guarantee that a specified risk constraint will hold.",
+  "The study does not evaluate evidence completeness, partial support within compound claims, superseded work-item states, or longitudinal omission."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "known_ood_calibrator_gain": 0.99,
+  "calibrator_vs_retraining": 0.98,
+  "cross_domain_calibration_transfer": 0.97,
+  "dropout_gain_and_cost": 0.99,
+  "maxprob_overconfidence": 0.98,
+  "outlier_detector_weakness": 0.97
+ },
+ "raw_claims": [
+  "The QA model is trained on SQuAD and evaluated under mixtures containing a previously unseen question-answering domain.",
+  "The calibrator estimates the probability that the underlying QA model's answer is correct.",
+  "Its features include passage length, predicted-answer length, and the five largest answer probabilities.",
+  "The experiments rotate among TriviaQA, HotpotQA, NewsQA, Natural Questions, and SearchQA as shifted domains.",
+  "The source-plus-known-domain calibrator achieves higher selective coverage than maximum answer probability at fixed target accuracy.",
+  "Known out-of-domain data remains useful even when it comes from a different domain than the unknown test shift.",
+  "Test-time dropout improves the reported risk-coverage results but requires repeated model evaluations.",
+  "An outlier detector that focuses on domain membership performs worse than a calibrator trained to predict answer correctness.",
+  "The authors release code, data, and experiment artifacts through CodaLab."
+ ],
+ "source_url": "https://arxiv.org/html/2006.09462",
+ "access": "full_text"
+}

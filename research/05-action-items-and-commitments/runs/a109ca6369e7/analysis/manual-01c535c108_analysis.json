@@ -1,0 +1,74 @@
+{
+ "paper_id": "manual-01c535c108",
+ "title": "Dialogue Act Modeling for Automatic Tagging and Recognition of Conversational Speech",
+ "research_question": "Can dialogue acts in spontaneous conversation be automatically recognized by probabilistically combining lexical, prosodic, and dialogue-sequence evidence, while also using dialogue-act information to improve speech recognition?",
+ "methodology": "The study uses 1,155 hand-labeled Switchboard telephone conversations and a reduced 42-class SWBD-DAMSL dialogue-act inventory; eight linguistics graduate students performed the labeling, with reported agreement of 84% and kappa 0.80. The statistical framework models dialogue-act sequences with an HMM-style formulation and dialogue-act n-grams, combines these priors with dialogue-act-specific word models and prosodic classifiers based on decision trees or neural networks, and integrates the model with speech recognition. The main training partition contains 1,115 conversations and about 198,000 utterances, while a 19-conversation test set contains about 4,000 utterances, with additional conversations held aside.",
+ "key_findings": [
+  {
+   "finding": "Using transcribed words, dialogue-act classification reached 71.0% accuracy with a trigram discourse grammar, compared with a 35% chance baseline and approximately 84% human labeling agreement.",
+   "evidence_type": "supported",
+   "section": "5.1.3 Results"
+  },
+  {
+   "finding": "Dialogue-sequence context was highly informative: with true words, accuracy rose from 54.3% without a discourse grammar to 71.0% with a trigram model, and with recognized words it rose from 42.8% to 64.8%.",
+   "evidence_type": "supported",
+   "section": "5.1.3 Results, Table 6"
+  },
+  {
+   "finding": "Combining recognized-word evidence with prosody and a bigram discourse grammar yielded 65.0% dialogue-act accuracy, slightly above the 64.3% recognizer-only result.",
+   "evidence_type": "supported",
+   "section": "5.3.1 Results, Table 9"
+  },
+  {
+   "finding": "In balanced focused classifications, adding prosody consistently improved word-only classification for question-versus-statement and agreement-versus-backchannel distinctions, with larger relative value when words came from speech recognition.",
+   "evidence_type": "supported",
+   "section": "5.3.2 Focused Classifications"
+  },
+  {
+   "finding": "The 42-class inventory contains an Action-directive category and an Offers, Options & Commits category, but they account for only about 0.4% and 0.1% of utterances respectively.",
+   "evidence_type": "supported",
+   "section": "2.2 Tag Set, Table 2"
+  },
+  {
+   "finding": "The experiments assume gold utterance segmentation rather than solving segmentation and dialogue-act classification jointly.",
+   "evidence_type": "supported",
+   "section": "2.1 Utterance Segmentation"
+  }
+ ],
+ "limitations": [
+  "Switchboard consists of informal telephone conversations between strangers rather than workplace email, workplace chat, or task-oriented organizational dialogue.",
+  "The action-directive and offers/options/commits categories are extremely rare, so the overall accuracy results do not establish strong performance specifically for requests or commitments.",
+  "Each segmented utterance receives one primary dialogue-act label, apart from special handling for rare mixed cases, which is restrictive for multi-act workplace utterances.",
+  "Utterance segmentation is manually supplied and treated as given.",
+  "The taxonomy classifies illocutionary function but does not extract an action predicate, owner, object, deadline, or condition.",
+  "The corpus has a highly skewed dialogue-act distribution.",
+  "Results based on recognized words remain affected by substantial speech-recognition errors."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "transcript_accuracy_71": 0.99,
+  "discourse_context_large_gain": 0.99,
+  "prosody_adds_information": 0.98,
+  "request_commit_categories_rare": 0.99,
+  "gold_segmentation_assumed": 0.99
+ },
+ "raw_claims": [
+  "The experiments use 1,155 labeled conversations from the Switchboard corpus.",
+  "The reduced dialogue-act inventory contains 42 mutually exclusive utterance types.",
+  "Human interlabeler agreement for the 42-label inventory was 84%, corresponding to kappa 0.80.",
+  "The statistical model combines dialogue-act sequence priors with lexical and prosodic evidence.",
+  "A trigram discourse model with true words reached 71.0% dialogue-act accuracy.",
+  "With recognized words, a trigram discourse model reached 64.8% accuracy.",
+  "Recognized words plus prosody with a bigram discourse grammar reached 65.0% accuracy.",
+  "Prosody was especially useful where word sequences alone were ambiguous or recognition was imperfect.",
+  "Action-directives make up about 0.4% of the corpus utterances.",
+  "Offers, options, and commitments make up about 0.1% of the corpus utterances.",
+  "The reported dialogue-act experiments take utterance boundaries as given."
+ ],
+ "source_url": "https://arxiv.org/html/cs/0006023",
+ "access": "full_text"
+}

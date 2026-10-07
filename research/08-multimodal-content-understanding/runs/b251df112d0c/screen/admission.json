@@ -1,0 +1,217 @@
+{
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Document layout analysis, logical structure and reading order: physical segmentation plus logical organization of document pages, including region types, hierarchy, columns and reading sequence."
+  },
+  {
+   "id": "F2",
+   "description": "Visually rich document understanding and layout-aware multimodal representation: joint modeling of text, two-dimensional layout and visual appearance for document understanding."
+  },
+  {
+   "id": "F4",
+   "description": "Document visual question answering, multi-page and long-document understanding: question-conditioned understanding and reasoning over single- and multi-page document images."
+  },
+  {
+   "id": "F5",
+   "description": "Grounded document QA and document evidence localization: answers or claims explicitly linked to supporting pages, bounding boxes, semantic regions or other spatial evidence locations."
+  },
+  {
+   "id": "F6",
+   "description": "Table detection, structure recognition and functional structure: localization and reconstruction of rows, columns, cells, spans, headers and table structure from document images."
+  },
+  {
+   "id": "F7",
+   "description": "Semantic table understanding, table QA and spreadsheet structure: reasoning over table content, hierarchy, cell roles, headers and numerical or semantic relationships."
+  },
+  {
+   "id": "F8",
+   "description": "Chart and data-visualization understanding: recognition and reasoning over charts, including visual elements and numerical relationships."
+  },
+  {
+   "id": "F9",
+   "description": "Cross-modal reference resolution and visual grounding: mapping language expressions to visual entities or regions."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "1911.10683",
+   "decision": "ADMIT",
+   "reason": "The abstract directly shows image-to-structured-table reconstruction, including table contents and HTML structure, plus a structure-aware evaluation measure. This materially strengthens evidence for preserving cell organization rather than merely detecting a table.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2105.11021",
+   "decision": "REJECT",
+   "reason": "The capability is relevant to F6, but the abstract describes another detection-plus-TSR pipeline whose core contribution is already represented more strongly by the admitted PubTabNet paper and the admitted complex-table structure paper. Reading it would mainly duplicate table reconstruction evidence.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2010.04565",
+   "decision": "REJECT",
+   "reason": "The abstract clearly concerns structural table reconstruction, but this capability is already covered by admitted F6 papers. Its top-down/bottom-up cue combination does not, from the abstract alone, add a distinct project-critical capability such as semantic headers, evidence grounding or difficult spanning-cell semantics.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "doi-10-1016-j-patcog-2022-109006",
+   "decision": "REJECT",
+   "reason": "The abstract describes table detection and structure recognition across heterogeneous documents, but that F6 capability duplicates admitted verified papers. Because this candidate's identity is UNCHECKED and otherwise overlaps the verified alternatives, the verified evidence is preferred.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-fd70ca328b",
+   "decision": "REJECT",
+   "reason": "The paper addresses table-structure reconstruction from text blocks and ruled lines, but that capability is duplicated by substantially newer admitted F6 work. Its identity is also UNCHECKED, so it does not justify an additional reading slot on the supplied abstract.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "1903.01949",
+   "decision": "REJECT",
+   "reason": "TableBank is directly relevant to table detection and recognition, but the supplied abstract mainly contributes another benchmark for capabilities already represented by the admitted PubTabNet paper. The abstract does not show a distinct semantic, grounding or functional-structure contribution needed by another stream.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-1007-s00521-022-06948-5",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies recovery of reading order from document structure and contextual relationships. Reading-order errors can change meaning even when OCR succeeds, making this a distinct contribution not supplied by the table or VQA papers. The handwritten domain limits direct workplace generalization, but the structural problem is directly relevant.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.85
+  },
+  {
+   "paper_id": "2010.12537",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly represents generally structured tables using tree-based positional and structural information. Its focus on hierarchical organization and headers materially strengthens semantic table understanding beyond image-level table reconstruction.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-patcog-2022-108946",
+   "decision": "REJECT",
+   "reason": "Detection plus relation parsing for tables and forms is relevant, but the supplied abstract does not establish a distinct capability beyond structural reconstruction already covered by admitted F6 papers. The identity is UNCHECKED, further favoring the verified overlapping evidence.",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2006.14806",
+   "decision": "ADMIT",
+   "reason": "The abstract addresses contextual representations for already structured relational tables and tasks involving entities and semantic relationships. This materially complements structural table recognition by addressing what table cells and their relationships mean after extraction.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2111.07129",
+   "decision": "ADMIT",
+   "reason": "The abstract specifically targets visually complex tables whose meaning depends on nontrivial row, column and spanning-cell organization. These are exactly the structures most likely to be corrupted by flattening, making this a distinct and project-relevant strengthening of F6.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "manual-1ee6b36111",
+   "decision": "REJECT",
+   "reason": "The abstract concerns desktop search using personal metadata and relationships between email messages and documents. It does not show multimodal document understanding, precise email-to-attachment reference grounding, attachment-version identity resolution or source-region localization. Topic words match, but the required capability does not.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+   "decision": "ADMIT",
+   "reason": "The abstract demonstrates question answering over normalized tables through explicit cell selection and aggregation. Although it does not recover table structure from images, cell-level selection and numerical aggregation materially strengthen F7's downstream table reasoning and evidence-selection problem.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "manual-0661fc0cba",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly grounds document-QA evidence using masks at multiple granularities, including phrases, lines and blocks, and supports multiple evidence spans. This directly addresses the project's requirement that answers be traceable to precise source locations rather than only to an answer string or document page. The identifier remains UNCHECKED, but no verified candidate here provides the same stated multi-granular localization capability.",
+   "stream_id": "F5",
+   "role": "DIRECT",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "manual-1048d6caf2",
+   "decision": "ADMIT",
+   "reason": "The abstract studies referring-expression grounding where scene text is needed to identify the referenced visual region. That combination of textual content and spatial grounding is directly transferable to phrases such as references to a screenshot region or rendered document element. The identifier is UNCHECKED, so it should be treated as transfer rather than target-domain evidence.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2503.23131",
+   "decision": "ADMIT",
+   "reason": "The abstract goes beyond chart QA by explicitly grounding visual answers in chart images. This materially strengthens chart understanding for a product that must preserve the relationship between an answer and the chart elements or regions supporting it.",
+   "stream_id": "F8",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2401.00908",
+   "decision": "REJECT",
+   "reason": "The abstract shows a strong layout-aware document model, but its contribution substantially overlaps the admitted DocFormer paper for F2. For this admission round, DocFormer more explicitly covers the full text-plus-visual-appearance-plus-spatial combination named by F2, while the supplied DocLLM abstract does not show a separate grounding or preservation capability that requires another reading slot.",
+   "confidence": 0.82
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d19-1515",
+   "decision": "REJECT",
+   "reason": "This is generic natural-image phrase grounding. The mechanism is transferable, but the admitted scene-text referring-expression paper is closer to document and screenshot surfaces because text inside the image participates in grounding. The abstract therefore does not justify a separate F9 reading slot.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-acl-main-745",
+   "decision": "REJECT",
+   "reason": "Joint text-table pretraining is relevant once table structure is already available, but the F7 capabilities it offers are substantially covered by the admitted TUTA, TURL and TaPas papers: hierarchical structure, semantic table representation and question-conditioned cell reasoning respectively. The abstract does not identify a distinct source-grounding capability.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2212.05935",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses multi-page document question answering with a hierarchical architecture that includes page selection and answer generation. This materially strengthens the cross-page evidence-selection and long-document reasoning problem, while its page selection also supplies coarse provenance.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2407.01523",
+   "decision": "ADMIT",
+   "reason": "The benchmark explicitly covers long multimodal PDFs containing text, images, charts, tables and layout, with questions requiring evidence to be located across pages. That combination directly tests whether long-document systems preserve heterogeneous evidence instead of reducing PDFs to plain text.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-4b299c7874",
+   "decision": "REJECT",
+   "reason": "DocVQA directly establishes document-image question answering, but within this candidate set its core capability is covered more strongly by admitted multi-page, long-document and infographic-oriented VQA work. The supplied abstract also does not show explicit bounding-box or region evidence localization, so it does not materially strengthen F5.",
+   "confidence": 0.84
+  },
+  {
+   "paper_id": "2412.18424",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly combines long-document understanding and reasoning with a locating task. That locating component materially strengthens the project's requirement to identify where supporting evidence occurs, especially in long multimodal documents where an answer alone is insufficient.",
+   "stream_id": "F5",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2106.11539",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly combines textual content, visual appearance and spatial information in an end-to-end document model. This matches F2's central requirement to preserve and jointly reason over text, two-dimensional layout and visual page information rather than treating extracted text as a flat sequence.",
+   "stream_id": "F2",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2104.12756",
+   "decision": "ADMIT",
+   "reason": "The abstract targets question answering where evidence is distributed across text, graphics and spatial layout. This adds a materially different multimodal document surface from ordinary text-heavy pages and is directly relevant to image-rich workplace attachments whose meaning cannot be preserved by OCR text alone.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.94
+  }
+ ],
+ "notes": "Admission was deliberately capability-driven rather than quota-driven. No candidate was admitted to F3, F10, F11, F12, F13 or F14 because the supplied abstracts did not establish a sufficiently direct or distinct contribution to those streams. In particular, none of the candidates demonstrates the full F12 target problem of grounding message-language references to a particular attachment, version, page, table, cell or visual region while preserving attachment/version identity. UNCHECKED identity was treated as a disadvantage when a verified candidate offered substantially the same capability, but not as automatic grounds for rejection when the abstract described a unique contribution."
+}

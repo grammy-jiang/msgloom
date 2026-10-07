@@ -1,0 +1,77 @@
+{
+ "paper_id": "manual-5c0971730d",
+ "title": "A Twin-Candidate Based Approach for Event Pronoun Resolution using Composite Kernel",
+ "research_question": "Can event pronouns be resolved more accurately by combining lexical and positional features with syntactic tree kernels and by learning pairwise preferences between competing antecedent candidates?",
+ "methodology": "The paper formulates event-pronoun resolution over verbal antecedent candidates and combines a flat feature kernel with a convolution tree kernel encoding syntactic structure. It introduces a twin-candidate ranking formulation in which pairs of candidates are compared and the candidate winning the most pairwise comparisons is selected, and it also uses non-event examples plus a development-set decision threshold to distinguish resolvable event pronouns from other pronouns. Experiments use OntoNotes Release 2.0 English newswire and broadcast-news material with 502 event pronouns, ten-fold cross-validation, precision/recall/F-score, and paired significance tests.",
+ "key_findings": [
+  {
+   "finding": "Combining syntactic tree information with the flat lexical, positional, and syntactic features produced markedly better event-pronoun resolution than the flat-feature baseline.",
+   "evidence_type": "supported",
+   "section": "Experiments"
+  },
+  {
+   "finding": "The best composite-kernel configuration using the simple expansion tree reached an F-score of 0.561 before twin-candidate ranking, whereas the flat-feature baseline obtained 0.406.",
+   "evidence_type": "supported",
+   "section": "Experiments: Composite Kernel"
+  },
+  {
+   "finding": "Training with negative examples drawn from non-event pronouns improved precision and overall F-score relative to training without those negative instances.",
+   "evidence_type": "supported",
+   "section": "Experiments: Negative Training Examples"
+  },
+  {
+   "finding": "Balancing negative examples and tuning the event/non-event hyperplane on development data further improved the reported resolution performance.",
+   "evidence_type": "supported",
+   "section": "Experiments: Negative Training Examples"
+  },
+  {
+   "finding": "Twin-candidate preference learning increased recall from 0.492 to 0.540 and F-score from 0.561 to 0.579, with a modest decrease in precision from 0.652 to 0.626.",
+   "evidence_type": "supported",
+   "section": "Experiments: Twin-Candidate Resolution"
+  },
+  {
+   "finding": "The improvement of the twin-candidate method over the single-candidate method was reported as statistically significant at the 5 percent level.",
+   "evidence_type": "supported",
+   "section": "Experiments: Twin-Candidate Resolution"
+  },
+  {
+   "finding": "The most-recent-verb heuristic performed poorly, showing that proximity alone is insufficient for general event-pronoun resolution in this corpus.",
+   "evidence_type": "supported",
+   "section": "Experiments: Baselines"
+  }
+ ],
+ "limitations": [
+  "Antecedent candidates are limited to inflectional verbs and therefore do not cover every possible linguistic realization of an event.",
+  "The search window is restricted to the current sentence and two preceding sentences, so longer-distance antecedents are excluded by construction.",
+  "Evaluation is confined to English OntoNotes 2.0 newswire and broadcast news.",
+  "The structural representation depends on automatic parsing and is susceptible to syntactic-analysis noise, particularly in less regular broadcast material.",
+  "The model has limited explicit semantic representation; the authors identify semantic-role information and verb frames as future extensions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "composite_kernel_improves_fscore": 0.98,
+  "negative_examples_help": 0.95,
+  "twin_candidate_improves_fscore": 0.99,
+  "twin_candidate_significant": 0.97,
+  "proximity_baseline_weak": 0.96,
+  "structural_representation_useful": 0.95
+ },
+ "raw_claims": [
+  "The paper presents a general-purpose approach to resolving event pronouns to verbal event mentions.",
+  "The evaluated OntoNotes material contains 502 event pronouns.",
+  "Candidate antecedents are inflectional verbs in the current sentence and the two preceding sentences, with only preceding verbs considered within the current sentence.",
+  "An event pronoun has about 6.93 candidate antecedents on average under the paper's candidate-generation procedure.",
+  "Syntactic structures are represented with convolution tree kernels and combined with conventional features through a composite kernel.",
+  "The paper compares minimum, simple, and full syntactic-tree expansion schemes.",
+  "Negative examples from pronouns without verbal event antecedents are used to train the event-versus-non-event distinction.",
+  "The twin-candidate method learns pairwise preferences between antecedent candidates instead of scoring each candidate independently.",
+  "The best single-candidate composite model reports an F-score of 0.561.",
+  "The twin-candidate model reports an F-score of 0.579 and significantly higher recall than the corresponding single-candidate model."
+ ],
+ "source_url": "https://aclanthology.org/C10-1022.pdf",
+ "access": "full_text"
+}

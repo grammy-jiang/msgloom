@@ -1,0 +1,68 @@
+{
+ "run_id": "9af0d6417416",
+ "round": 1,
+ "topic": "evidence-gap-driven context retrieval and completion for workplace communication: turning an explicit evidence gap into bounded retrieval, deciding what to fetch next, and knowing when to stop, while preserving permissions, versions, temporal validity, cost and uncertainty",
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; S2G-RAG explicitly identifies these as limitations of its current schema.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"structured evidence gap\" temporal constraints multi-entity compositional retrieval iterative RAG"
+  },
+  {
+   "id": "gap-2",
+   "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"version-aware retrieval\" temporal provenance iterative RAG document lineage freshness sufficiency"
+  },
+  {
+   "id": "gap-3",
+   "description": "Stopping reliability under domain shift remains open: sufficiency and confidence signals can guide stopping, but conservative over-retrieval, calibration drift, and unsafe early stops are all observed, and no admitted study provides a general bounded-risk stopping guarantee.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"adaptive retrieval\" calibrated stopping domain shift selective prediction RAG risk"
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Implement a prototype controller against one or more enterprise-style IAM or ACL interfaces. Instrument each retrieval round to record candidate generation, authorization filtering, surviving evidence, sufficiency reassessment, retry decisions, and termination. Test cases should include partial authorization, complete denial, permission changes between rounds, and situations where sufficient authorized evidence becomes available only after reformulation. This can be resolved through system implementation, IAM documentation, and controlled benchmarks without requiring a new research paper."
+  },
+  {
+   "id": "gap-5",
+   "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Define an explicit retrieval-outcome taxonomy and controller state machine with separate machine-readable states for no matches, authorization failure, source unavailability, extraction failure or unsupported content, budget exhaustion, and evidence supporting a genuine negative conclusion. Specify retryability and terminal behavior for each state, then validate the transitions with fault-injection and end-to-end tests."
+  },
+  {
+   "id": "gap-6",
+   "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency is still missing from the admitted corpus.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "resolution_notes": "Create an instrumentation and benchmark harness that measures per-query retrieval calls, passages and tokens retrieved, planner or judge model calls and tokens, reranking cost, authorization-check count and latency, network or storage latency, and end-to-end wall-clock time. Run representative workloads across different evidence-gap complexity and retrieval budgets and report both component-level and aggregate cost distributions."
+  },
+  {
+   "id": "gap-7",
+   "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "resolution_notes": "Construct a benchmark or evaluation suite using synthetic, permission-safe, or suitably licensed workplace-style email, chat, attachment, and document collections. Annotate explicit evidence gaps, dependency chains, access-control visibility, document versions and effective times, conflicts, and gold sufficiency or abstention outcomes. Evaluate bounded retrieval controllers on evidence completeness, unsupported claims, stale-evidence use, permission violations, retrieval rounds, cost, and latency. Creating and running this benchmark is an engineering and empirical-evaluation task rather than a prerequisite literature gap."
+  },
+  {
+   "id": "gap-8",
+   "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the component results therefore do not establish correctness of such a combined scheme.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_search_query": "\"enterprise RAG\" permission-aware provenance temporal adaptive retrieval calibrated stopping abstention"
+  }
+ ],
+ "convergence": {
+  "should_continue": true,
+  "reason": "open_gaps_remain",
+  "next_round_topic": "Integrated adaptive retrieval controllers with structured evidence gaps, temporal and version-aware provenance, permission-aware access, and calibrated bounded-risk stopping"
+ }
+}

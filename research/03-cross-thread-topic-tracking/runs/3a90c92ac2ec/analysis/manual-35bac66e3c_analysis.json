@@ -1,0 +1,83 @@
+{
+ "paper_id": "manual-35bac66e3c",
+ "title": "Detecting Subevent Structure for Event Coreference Resolution",
+ "research_question": "Can event coreference resolution explicitly distinguish full event identity from partial identity expressed through hierarchical subevent parent-child and sister relations, and can structural reasoning improve those classifications?",
+ "methodology": "The authors formulate pairwise event-relation classification with four classes: full coreference, subevent parent-child, subevent sister, and no coreference. A first-stage L2-regularized multiclass logistic-regression model uses 135 features, with MetaCost addressing severe class imbalance; a second-stage voting procedure exploits predicted sister clusters to select a likely parent and improve parent-child relations. The system is evaluated with BLANC-style precision, recall, and F1 under five-fold cross-validation on 65 Intelligence Community-domain newspaper articles containing 35,908 annotated or derived event-pair relations.",
+ "key_findings": [
+  {
+   "finding": "The paper directly distinguishes full event identity from partial event identity, treating subevent parent-child relations as a form of partial coreference rather than collapsing them into either identity or non-identity.",
+   "evidence_type": "supported",
+   "section": "Introduction; Approach"
+  },
+  {
+   "finding": "Event structure is not purely pairwise: several subevents can share a parent and form a subevent cluster, while subevents under the same parent can have sister relations.",
+   "evidence_type": "supported",
+   "section": "Introduction"
+  },
+  {
+   "finding": "The first-stage multiclass model jointly predicts full coreference, directed subevent parent-child relations, subevent sister relations, and no coreference.",
+   "evidence_type": "supported",
+   "section": "First Stage: Event Relation Learning"
+  },
+  {
+   "finding": "Using sister-cluster structure to vote for a parent improved subevent-parent BLANC F1 from 56.19 in the first-stage model to 59.45 with the stronger second-stage option, a gain of about 3.2 points.",
+   "evidence_type": "supported",
+   "section": "Experimental Results"
+  },
+  {
+   "finding": "The results support the value of enforcing structure beyond independent pairwise judgments, but the authors identify structural consistency as unfinished work rather than a solved problem.",
+   "evidence_type": "supported",
+   "section": "Conclusion"
+  },
+  {
+   "finding": "A common error occurs when the parent event is expressed with a rare or abstract linguistic form, illustrating that semantic identity relations may be difficult to infer from surface similarity alone.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  },
+  {
+   "finding": "Despite its relevance to partial and evolving event identity, the evaluated relations are within-document, not cross-document workplace threads.",
+   "evidence_type": "supported",
+   "section": "Introduction / Scope"
+  }
+ ],
+ "limitations": [
+  "The experiment is explicitly restricted to within-document full coreference and subevent relations.",
+  "The corpus contains only 65 newspaper articles from an Intelligence Community domain.",
+  "Subevent parent-child annotation agreement is relatively modest, with Fleiss kappa reported as 0.467.",
+  "The relation distribution is highly imbalanced, with no-coreference pairs dominating the corpus.",
+  "The system assumes gold-annotated event mentions rather than solving event detection jointly.",
+  "Independent pairwise classifications can create structurally inconsistent subevent configurations.",
+  "The paper reports no evaluation on enterprise email, chat, or cross-thread work-matter continuity.",
+  "The corpus is not stated to be publicly released in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "partial_identity_distinct_from_full_identity": 0.99,
+  "hierarchical_subevent_structure": 0.99,
+  "four_way_relation_model": 0.99,
+  "structural_voting_improves_parent_detection": 0.99,
+  "pairwise_consistency_remains_open": 0.98,
+  "abstract_parent_expression_causes_errors": 0.97,
+  "not_cross_document_or_workplace": 0.99
+ },
+ "raw_claims": [
+  "Event mentions can exhibit partial identity rather than only perfect identity or complete non-coreference.",
+  "A subevent may stand in a directed parent-child relation to a larger event.",
+  "Subevents sharing a parent can also be related as sisters.",
+  "The first-stage classifier distinguishes full coreference, parent-child subevent, sister subevent, and no-coreference relations.",
+  "The classifier models direction for parent-child relations.",
+  "The second stage uses predicted subevent clusters to vote for a likely parent.",
+  "The evaluation corpus contains 65 Intelligence Community-domain newspaper articles.",
+  "The corpus is strongly imbalanced toward no-coreference pairs.",
+  "The second-stage aggregate voting option improves parent-child BLANC F1 by about 3.2 points.",
+  "Rare or abstract parent-event expressions are a recurring source of errors.",
+  "The authors propose structural consistency checking as future work.",
+  "The reported experiment is within-document rather than cross-document."
+ ],
+ "source_url": "https://www.cs.cmu.edu/~hovy/papers/14LREC-subevents.pdf",
+ "access": "full_text"
+}

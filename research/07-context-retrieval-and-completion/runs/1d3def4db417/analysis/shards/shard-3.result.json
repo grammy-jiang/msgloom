@@ -1,0 +1,403 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2006.09462",
+   "title": "Selective Question Answering under Domain Shift",
+   "research_question": "Can a question-answering system learn an abstention policy that maintains high accuracy on answered questions when deployment data mixes in-domain examples with previously unseen out-of-domain examples?",
+   "methodology": "The authors train an extractive BERT QA model on SQuAD and evaluate selective prediction on mixtures of SQuAD and five out-of-domain QA datasets, rotating which OOD dataset is known during calibration and which is unseen at test time. They compare maximum softmax probability, test-time dropout, and a random-forest calibrator trained to predict whether the base QA model will answer correctly using source and known-OOD examples. Performance is measured with risk-coverage curves, area under those curves, and maximum coverage at specified accuracy levels. Results are averaged across all 20 ordered choices of known and unknown OOD datasets, with repeated random calibration splits.",
+   "key_findings": [
+    {
+     "finding": "A calibrator trained on both source and known-OOD examples reached 56.1% coverage while maintaining 80% accuracy, compared with 48.2% coverage for MaxProb using the same source-trained QA model.",
+     "evidence_type": "supported",
+     "section": "5.2 Main results"
+    },
+    {
+     "finding": "Training the calibrator with known-OOD data improved coverage at 80% accuracy by 2.4 percentage points relative to training the calibrator only on source-domain examples.",
+     "evidence_type": "supported",
+     "section": "5.2 Main results"
+    },
+    {
+     "finding": "The base QA model is systematically overconfident on OOD examples relative to in-domain examples, which makes raw softmax confidence a weak abstention signal under mixed-domain deployment.",
+     "evidence_type": "supported",
+     "section": "5.3 Overconfidence of MaxProb"
+    },
+    {
+     "finding": "OOD inputs should not simply be rejected wholesale because the source-trained QA model still obtains roughly 40% to 50% exact-match accuracy on most evaluated OOD datasets.",
+     "evidence_type": "supported",
+     "section": "5.2 Main results"
+    },
+    {
+     "finding": "Test-time dropout can improve selective prediction further, but the experiment uses 30 stochastic forward passes and therefore introduces approximately 30-fold inference overhead.",
+     "evidence_type": "supported",
+     "section": "5.2 Main results"
+    },
+    {
+     "finding": "Selective prediction under domain shift is distinct from detecting intrinsically unanswerable questions: the controller is intended to abstain when its particular model is likely to be wrong, not merely when no valid answer exists.",
+     "evidence_type": "supported",
+     "section": "2.3 Related goals and tasks"
+    }
+   ],
+   "limitations": [
+    "The experiments concern extractive QA rather than iterative retrieval-augmented generation, so there is no retrieval-loop stopping policy or evidence-assembly controller.",
+    "The method requires labeled examples from at least one known OOD distribution, and transfer to an arbitrary unseen shift depends on how useful that known OOD behavior is.",
+    "The paper evaluates relative confidence through risk-coverage behavior but does not provide conformal or other finite-sample risk guarantees under arbitrary distribution shift.",
+    "The calibrator does not represent structured evidence sufficiency, temporal validity, document versions, or provenance.",
+    "There is no permission-aware retrieval or access-control mechanism and no explicit retrieval-token or retrieval-call budget.",
+    "The dropout-enhanced variant has substantial inference cost because it requires many forward passes.",
+    "Some measured QA errors are caused by exact-match annotation or span-matching artifacts rather than genuinely incorrect answers."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "calibrator_improves_selective_coverage": 0.99,
+    "known_ood_data_improves_abstention": 0.99,
+    "maxprob_is_overconfident_under_shift": 0.99,
+    "ood_examples_remain_partly_answerable": 0.98,
+    "dropout_has_accuracy_cost_tradeoff": 0.98,
+    "no_formal_conformal_risk_control": 0.97
+   },
+   "raw_claims": [
+    "Selective QA answers a question only when its confidence exceeds an abstention threshold.",
+    "The test distribution contains a mixture of source-domain and unseen OOD examples.",
+    "Maximum softmax probability is relatively overconfident on OOD inputs.",
+    "The proposed random-forest calibrator predicts whether the underlying QA model is likely to answer correctly.",
+    "Known-OOD calibration examples improve selective prediction on a different unseen OOD domain.",
+    "The source-plus-known-OOD calibrator reaches 56.1% coverage at 80% answered-question accuracy.",
+    "OOD questions remain sufficiently answerable that treating OOD detection as an automatic rejection rule would be overly conservative.",
+    "Test-time dropout improves confidence estimation in some configurations but requires repeated model inference.",
+    "The study evaluates abstention through risk-coverage behavior rather than a formal conformal coverage guarantee.",
+    "The system does not perform iterative evidence retrieval or provenance-aware stopping."
+   ],
+   "source_url": "https://arxiv.org/html/2006.09462",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2604.19899",
+   "title": "A Reproducibility Study of Metacognitive Retrieval-Augmented Generation",
+   "research_question": "How reproducible is MetaRAG under current models and retrieval implementations, and how do reranking and an alternative critic-based stopping framework affect its accuracy, robustness, and efficiency?",
+   "methodology": "The study reconstructs MetaRAG's explicit monitor-evaluate-plan loop and evaluates it on 500 development examples each from HotpotQA and 2WikiMultiHopQA. MetaRAG monitors answer confidence, evaluates internal and retrieved-evidence sufficiency with LLM and NLI components, and either accepts the answer, revises reasoning, or retrieves more evidence, with a threshold of 0.4 and at most five iterations in the reproduced configuration. The authors add PointWise and ListWise rerankers and compare MetaRAG with SIM-RAG under a shared hybrid BM25-plus-dense retrieval pipeline. They report exact match, F1, precision, recall, diagnostic sufficiency judgments, model-call counts, tokens, latency, and monetary cost.",
+   "key_findings": [
+    {
+     "finding": "The reproduction preserves MetaRAG's relative advantage over the evaluated baselines on both multi-hop QA datasets, but absolute scores are lower than originally reported, particularly on 2WikiMultiHopQA.",
+     "evidence_type": "supported",
+     "section": "5.1 RQ1: Reproducibility of MetaRAG"
+    },
+    {
+     "finding": "The LLM's sufficiency judgment and the NLI critic frequently disagree: among retrieval-required cases, the LLM judged retrieved evidence sufficient for 63.3% of HotpotQA and 33.6% of 2WikiMultiHopQA cases, while the NLI critic validated 86.7% and 72.9%, respectively.",
+     "evidence_type": "supported",
+     "section": "5.1 RQ1: Reproducibility of MetaRAG"
+    },
+    {
+     "finding": "In the reproduced 2WikiMultiHopQA threshold study, answer quality peaked at a judgment threshold of 0.2 with EM 38.1 and F1 46.2, while average retrievals fell from 2.8 at threshold 0.4 to 1.2 at threshold 0.2.",
+     "evidence_type": "supported",
+     "section": "5.1 RQ1: Reproducibility of MetaRAG"
+    },
+    {
+     "finding": "Reranking often improves MetaRAG but is configuration-dependent rather than uniformly beneficial; BGE and RankGPT are the strongest PointWise and ListWise configurations selected for the MetaRAG-versus-SIM-RAG comparison.",
+     "evidence_type": "supported",
+     "section": "5.2 RQ2: Impact of Reranking"
+    },
+    {
+     "finding": "SIM-RAG degrades substantially after some reranking-induced retrieval-distribution changes, especially with Llama3.3, whereas MetaRAG's prompt-based self-critique is more robust to those changes.",
+     "evidence_type": "supported",
+     "section": "5.3 RQ3: Comparison with SIM-RAG"
+    },
+    {
+     "finding": "MetaRAG has high computational overhead: on 500 HotpotQA questions with GPT-3.5, the reported retrieval-only setup averages 14.85 model requests per question and costs 37.66 USD for the run, versus 6.5 requests and 21.3 USD for SIM-RAG.",
+     "evidence_type": "supported",
+     "section": "5.3 RQ3: Comparison with SIM-RAG"
+    }
+   ],
+   "limitations": [
+    "Exact reproduction is obstructed by continuously changing closed-source LLMs and underspecified components in the original MetaRAG implementation.",
+    "The original study's exact 500-example development subsets were unavailable, so the reproduction uses newly sampled subsets.",
+    "Evaluation is limited to 500 examples from each of two multi-hop QA datasets rather than full-dataset or broader-domain evaluation.",
+    "The stopping decision is highly sensitive to a manually selected judgment threshold; it is not statistically calibrated and has no conformal risk guarantee.",
+    "Although the loop has a hard maximum of five iterations, it does not optimize against a formal global retrieval-token or monetary budget.",
+    "MetaRAG's repeated metacognitive calls have substantially higher computational cost and latency than standard RAG and SIM-RAG.",
+    "SIM-RAG's fine-tuned critic can be sensitive to retrieval-distribution changes, limiting cross-configuration generalization.",
+    "Neither evaluated framework tracks temporal or document-version provenance or implements permission-aware access control."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "relative_metarag_results_reproduced": 0.97,
+    "absolute_scores_differ_from_original": 0.99,
+    "sufficiency_signals_disagree": 0.99,
+    "threshold_materially_affects_stopping": 0.99,
+    "metarag_more_robust_to_reranking_shift": 0.96,
+    "metarag_has_high_inference_overhead": 0.99
+   },
+   "raw_claims": [
+    "MetaRAG controls retrieval with an explicit monitor-evaluate-plan loop.",
+    "Its evaluation stage separately examines internal knowledge and external evidence sufficiency.",
+    "When evidence is judged insufficient, MetaRAG can reformulate the question and retrieve additional documents.",
+    "The reproduced configuration uses a judgment threshold of 0.4 and permits at most five iterations.",
+    "The reproduced relative performance trends broadly match the original study, but some absolute scores are lower.",
+    "The LLM's own evidence-sufficiency judgment is substantially more conservative than the NLI critic on the tested datasets.",
+    "A threshold of 0.2 outperformed 0.4 in the reproduced 2WikiMultiHopQA sensitivity experiment while requiring fewer retrieval rounds.",
+    "Reranking can improve evidence ordering but does not help every model and configuration.",
+    "SIM-RAG's trained critic is vulnerable to changes in the retrieval input distribution.",
+    "MetaRAG consumes substantially more model calls, latency, and compute than simpler RAG variants.",
+    "The study releases its reproduction code and sampled evaluation subsets."
+   ],
+   "source_url": "https://arxiv.org/html/2604.19899",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2605.05245",
+   "title": "AdaGATE: Adaptive Gap-Aware Token-Efficient Evidence Assembly for Multi-Hop Retrieval-Augmented Generation",
+   "research_question": "Can a training-free multi-hop RAG controller use explicit evidence gaps and utility-based replacement to assemble sufficient complementary evidence under a global token constraint while remaining robust to redundant and noisy retrieval?",
+   "methodology": "AdaGATE formulates retrieval as iterative token-constrained evidence repair and maintains an evidence set, an entity-centric ledger, and explicit unresolved information gaps. Each iteration generates gap-targeted microqueries plus question-anchored fallback queries, scores candidates using gap coverage, corroboration, novelty, redundancy, and direct question relevance, and replaces lower-utility evidence while enforcing a global token budget. The process stops when no useful repair remains, no meaningful gaps remain, or the maximum repair count is reached. The authors evaluate AdaGATE on HotpotQA under clean, redundancy-injected, and noise-injected settings against Basic RAG, Self-RAG, Adaptive-k, and SEAL-RAG using shared retrieval and generation components.",
+   "key_findings": [
+    {
+     "finding": "AdaGATE obtains the highest evidence F1 among the compared controllers in all three reported conditions: 62.3% on clean data, 71.2% with redundancy injection, and 62.7% with noise injection.",
+     "evidence_type": "supported",
+     "section": "6 Discussion"
+    },
+    {
+     "finding": "AdaGATE uses 2.6 times fewer input tokens than Adaptive-k while obtaining higher evidence F1, demonstrating a favorable evidence-completeness versus context-cost tradeoff in the reported setup.",
+     "evidence_type": "supported",
+     "section": "5.2 Token Efficiency"
+    },
+    {
+     "finding": "The redundancy-aware utility mechanism improves rather than degrades evidence F1 under the redundancy stress test, while the controller also reduces the amount of selected context.",
+     "evidence_type": "supported",
+     "section": "5.4 Robustness Under Stress-Test Conditions"
+    },
+    {
+     "finding": "Under noise injection, evidence F1 remains close to the clean result even though answer accuracy declines, indicating that evidence-set completeness can remain comparatively stable while passage quality or downstream reasoning deteriorates.",
+     "evidence_type": "supported",
+     "section": "5.4 Robustness Under Stress-Test Conditions"
+    },
+    {
+     "finding": "The controller explicitly bounds final evidence length and can terminate on resolved gaps, lack of useful repair, or a repair-iteration ceiling, thereby combining structured sufficiency reasoning with bounded evidence assembly.",
+     "evidence_type": "supported",
+     "section": "3.3 Token-Constrained Selection with Adaptive Capacity"
+    },
+    {
+     "finding": "The nominal token budget did not actually become binding in the reported evaluation because retrieval used k=3, leaving the strength of budget control under larger candidate pools untested.",
+     "evidence_type": "supported",
+     "section": "6 Limitations and future work"
+    },
+    {
+     "finding": "Conservative gap detection can cause unnecessary abstention when indirect evidence would have been sufficient to answer correctly.",
+     "evidence_type": "supported",
+     "section": "5.5 Pipeline-Level Analysis"
+    }
+   ],
+   "limitations": [
+    "The evaluation is restricted to the HotpotQA distractor setting, so web-scale and cross-domain behavior is unknown.",
+    "The retriever uses k=3, which prevents the global token budget from binding in the reported experiments and therefore weakens empirical validation of budget-constrained operation.",
+    "The five utility weights are set heuristically rather than learned or statistically calibrated.",
+    "The sufficiency and stopping decisions are heuristic and can over-abstain when indirect evidence is enough.",
+    "There is no conformal or calibrated guarantee on answer error, evidence completeness, or stopping risk under distribution shift.",
+    "The stress tests inject redundancy and noise but do not evaluate temporal distribution shift or document-version changes.",
+    "The entity-centric ledger does not represent temporal validity intervals, source versions, or amendment/supersession relationships.",
+    "There is no runtime permission-aware or user-specific access-control mechanism."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "highest_evidence_f1_across_conditions": 0.99,
+    "token_efficiency_over_adaptive_k": 0.99,
+    "structured_gap_aware_stopping": 0.99,
+    "robustness_to_redundancy": 0.98,
+    "budget_not_binding_in_evaluation": 0.99,
+    "conservative_sufficiency_can_overabstain": 0.99,
+    "no_formal_risk_calibration": 0.97
+   },
+   "raw_claims": [
+    "AdaGATE treats multi-hop RAG as a token-constrained evidence-repair problem.",
+    "The controller maintains an entity-centric ledger and explicit unresolved information gaps.",
+    "Unresolved gaps generate targeted microqueries, while question-based fallback queries protect against defective gap extraction.",
+    "Candidate passages are scored for gap coverage, corroboration, novelty, redundancy, and question relevance.",
+    "Evidence updates replace low-utility passages instead of only expanding the context.",
+    "The loop terminates when gaps disappear, no useful repair remains, or the repair-iteration limit is reached.",
+    "AdaGATE achieves the best evidence F1 among the reported controllers in clean, redundant, and noisy test conditions.",
+    "The method uses substantially fewer input tokens than Adaptive-k in the reported experiments.",
+    "The stated 3000-token global budget does not bind under the evaluation's k=3 retrieval setup.",
+    "The paper identifies over-conservative gap detection as a cause of avoidable abstention.",
+    "The controller has no conformal risk-control mechanism or temporal-version provenance layer."
+   ],
+   "source_url": "https://arxiv.org/html/2605.05245",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2208.08401",
+   "title": "Conformal Inference for Online Prediction with Arbitrary Distribution Shifts",
+   "research_question": "Can online conformal prediction maintain locally accurate coverage under changing distribution shifts without knowing the rate or magnitude of distribution change in advance?",
+   "methodology": "The paper introduces DtACI, which extends adaptive conformal inference by running multiple ACI step-size choices and dynamically weighting them according to their recent online performance. The authors analyze the method through online convex optimization and establish dynamic-regret bounds over local time intervals, then connect these bounds to local coverage under additional regularity conditions and derive an exact long-run coverage result for decaying hyperparameters. DtACI is compared with AgACI and MVP in stationary, smoothly shifting, and abruptly shifting simulations. The method is also evaluated on online stock-volatility prediction and one-week-ahead US county COVID-19 case forecasting.",
+   "key_findings": [
+    {
+     "finding": "DtACI adaptively tunes ACI's step size rather than requiring prior knowledge of how rapidly the data-generating distribution changes.",
+     "evidence_type": "supported",
+     "section": "2 Dynamically-tuned Adaptive Conformal Inference"
+    },
+    {
+     "finding": "Theorem 3.1 provides a local dynamic-regret guarantee whose bound adapts to variation in the time-varying optimal miscoverage parameter over the evaluated interval.",
+     "evidence_type": "supported",
+     "section": "3.1 Dynamic regret of DtACI"
+    },
+    {
+     "finding": "The local-regret result can be translated into a local-coverage bound when the conformity-score distribution has a suitable density lower bound and the coverage map is sufficiently smooth.",
+     "evidence_type": "supported",
+     "section": "3.2 Bounds on the local coverage"
+    },
+    {
+     "finding": "A modified DtACI with eta and sigma tending to zero obtains exact long-run average coverage at the target level.",
+     "evidence_type": "supported",
+     "section": "3.3 Bounds on the long-term coverage"
+    },
+    {
+     "finding": "In simulations, DtACI suffers a small disadvantage under stationarity but adapts better than the comparison methods when the magnitude of distribution shifts changes sharply.",
+     "evidence_type": "supported",
+     "section": "4.1 Simulated data"
+    },
+    {
+     "finding": "The stock-volatility and COVID-19 experiments show DtACI adapting its prediction sets to real nonstationary sequences while maintaining coverage close to the target.",
+     "evidence_type": "supported",
+     "section": "4.2 Real data examples and 4.3 Predicting Covid-19 case counts"
+    },
+    {
+     "finding": "Bootstrap error bars shown for empirical conditional coverage under distribution shift are explicitly diagnostic rather than guaranteed confidence intervals.",
+     "evidence_type": "supported",
+     "section": "4.2.2 Conditional coverage"
+    }
+   ],
+   "limitations": [
+    "DtACI controls prediction-set coverage rather than retrieval, evidence sufficiency, answer generation, or a RAG stopping loop.",
+    "The interpretation of dynamic regret as local coverage requires additional density and smoothness conditions; arbitrary distribution shift does not imply assumption-free exact local conditional coverage.",
+    "The exact long-run coverage statement uses a modified regime in which eta and sigma decay toward zero.",
+    "The empirical conditional-coverage bootstrap intervals shown under nonstationarity do not themselves have formal coverage guarantees.",
+    "There is a tradeoff between reacting quickly to local changes and stabilizing prediction-set behavior under stationary data.",
+    "The method contains no evidence provenance, temporal document versioning, permissions, or retrieval-cost budget.",
+    "Applying DtACI to a RAG stopping decision would require defining an appropriate conformity score and loss event and then validating that the resulting online feedback is available and meaningful."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "adaptive_step_size_handles_unknown_shift_rate": 0.99,
+    "dynamic_regret_theory": 0.99,
+    "local_coverage_requires_regularities": 0.99,
+    "exact_long_run_coverage_under_decay": 0.99,
+    "better_adaptation_to_sharp_shift": 0.98,
+    "conditional_bootstrap_not_formally_guaranteed": 0.99,
+    "not_a_rag_controller": 1.0
+   },
+   "raw_claims": [
+    "DtACI dynamically adjusts the step-size behavior of adaptive conformal inference.",
+    "Its design does not require advance knowledge of the rate of distribution change.",
+    "The theoretical analysis controls dynamic regret over local time intervals.",
+    "Additional density and Lipschitz assumptions connect the regret result to local coverage error.",
+    "When eta and sigma decay to zero, the modified procedure attains exact long-run average coverage.",
+    "DtACI is slightly less precise than some competitors in the stationary simulation.",
+    "DtACI adapts more effectively when the magnitude of distribution shift changes abruptly.",
+    "The real-data experiments cover stock-market volatility and COVID-19 case forecasting.",
+    "The COVID-19 experiment uses data from a public Carnegie Mellon DELPHI repository.",
+    "The conditional-coverage bootstrap plots under shift are visual diagnostics rather than guaranteed intervals.",
+    "The method supplies a potential risk-control primitive but does not itself implement retrieval stopping or provenance control."
+   ],
+   "source_url": "https://arxiv.org/html/2208.08401",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2608.08512",
+   "title": "Time Present and Time Past: Benchmarking Large Language Models on Temporally Evolving Document Understanding",
+   "research_question": "How well can modern language models identify and reason from the version of an evolving authoritative document that was actually in force at a queried date under parametric, gold-context, and retrieval-based access?",
+   "methodology": "The authors construct TIDE, an expert-verified benchmark containing 3,050 QA instances over 644 official Bangladesh customs instruments from 1969 through 2025, organized into temporal threads and eight task types with per-instance provenance metadata. Nine LLMs are evaluated under parametric-only, gold-context ICL, and RAG access, with free-form outputs judged by a three-model council and a hard date gate that assigns no credit when required dates are wrong. The RAG corpus contains 6,939 indexed vectors and the main configuration uses gemini-embedding-2 with Top-10 semantic retrieval without temporal reranking. The paper separately examines version-sensitive tasks, misleading-context robustness, retrieval-depth ablations, source provenance, and dataset-release permissions.",
+   "key_findings": [
+    {
+     "finding": "Providing document access substantially improves performance for every evaluated model, but the best reported macro strict accuracy is still only 68.49% for GPT-5 in the gold-context ICL setting.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "For GPT-5, macro strict accuracy rises from 35.39% with parametric knowledge to 57.06% with RAG and 68.49% with gold-context ICL, illustrating both the value of authoritative context and the remaining version-resolution gap.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "Event Sorting drops from 66.23% for GPT-5 with gold context to 31.42% under RAG because a standard semantic retriever without temporal reranking often fails to retrieve all provisions required to reconstruct the amendment timeline.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "Context Misalignment is extremely difficult: strict accuracy never exceeds 27.62% under ICL or 25.09% under RAG even when authoritative clauses are supplied alongside a misleading premise.",
+     "evidence_type": "supported",
+     "section": "4 Results"
+    },
+    {
+     "finding": "The benchmark's hard date gate exposes cases in which a model captures the semantic rule but associates it with the wrong effective date, which ordinary semantic-answer scoring would over-credit.",
+     "evidence_type": "supported",
+     "section": "3.2 Evaluation"
+    },
+    {
+     "finding": "Every TIDE instance retains source clause identifiers, thread identifiers, and originating files, giving the benchmark explicit version-oriented provenance rather than treating time as only an annotation.",
+     "evidence_type": "supported",
+     "section": "2 The TIDE Benchmark"
+    },
+    {
+     "finding": "The source documents were collected from the official public NBR portal, and because the portal did not grant bulk redistribution rights, the authors obtained written authority permission for academic use and dataset release; every released record carries its source file and retrieval link.",
+     "evidence_type": "supported",
+     "section": "A.2.1 Licensing and Terms of Use"
+    }
+   ],
+   "limitations": [
+    "TIDE is an evaluation benchmark rather than an iterative RAG controller, so it does not decide dynamically whether evidence is sufficient or whether another retrieval round is warranted.",
+    "The benchmark focuses on Bangladesh customs documents in a particular multilingual and dual-calendar setting, leaving cross-domain temporal generalization untested.",
+    "The main RAG baseline is a standard semantic retriever without temporal reranking and therefore represents a lower-bound retrieval architecture for timeline-sensitive tasks.",
+    "The evaluated models are frozen and prompt-based; the study does not establish whether fine-tuning or continued pretraining would resolve the identified failures.",
+    "The parametric-knowledge setting relies on unverifiable assumptions about proprietary models' training corpora.",
+    "The corpus ends in 2025 and will require updates as governing documents continue to change.",
+    "The paper has strong source and release provenance, but its permission treatment concerns corpus acquisition and redistribution rather than runtime user-specific document authorization or ACL enforcement.",
+    "There is no calibrated or conformal risk-controlled stopping rule, no selective abstention guarantee, and no adaptive global retrieval budget.",
+    "The fixed Top-10 RAG configuration does not jointly reason about temporal validity, structured sufficiency, uncertainty, and retrieval cost."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "gold_context_outperforms_rag": 0.99,
+    "version_resolution_remains_unsolved": 0.99,
+    "semantic_retrieval_misses_timeline_evidence": 0.99,
+    "context_misalignment_is_hard": 0.99,
+    "instance_level_provenance_is_explicit": 0.99,
+    "source_permission_is_documented": 0.99,
+    "no_runtime_permission_controller": 0.97,
+    "no_calibrated_stopping_controller": 0.98
+   },
+   "raw_claims": [
+    "TIDE contains 3,050 QA instances derived from 644 official customs instruments spanning 1969 through 2025.",
+    "Each benchmark instance retains source-clause, temporal-thread, and originating-file provenance.",
+    "Nine recent language models are evaluated with parametric knowledge, retrieved context, and gold document context.",
+    "A hard date gate prevents temporally incorrect answers from receiving full semantic credit.",
+    "All evaluated models improve when source documents are supplied, but even gold context does not solve version resolution.",
+    "The strongest macro strict result reported is 68.49%.",
+    "Standard semantic retrieval often misses one or more provisions needed to reconstruct an amendment sequence.",
+    "Context Misalignment remains difficult even when authoritative evidence is positioned with the misleading premise.",
+    "The main retrieval configuration uses Top-10 semantic retrieval without temporal reranking.",
+    "The authors obtained written permission from the source authority for academic use and release because the portal terms did not grant bulk redistribution rights.",
+    "Every released record includes a source file and retrieval link for verification against the authoritative document.",
+    "The benchmark evaluates temporal provenance failures but does not implement a calibrated iterative retrieval-stopping controller."
+   ],
+   "source_url": "https://arxiv.org/html/2608.08512",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

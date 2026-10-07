@@ -1,0 +1,79 @@
+{
+ "paper_id": "2608.20116",
+ "title": "When Text and Numbers Disagree: Evidence Arbitration in Large Language Models",
+ "research_question": "How do instruction-tuned language models arbitrate between conflicting textual, numerical, temporally recent, reliability-marked, and tool-generated evidence when exactly one source is correct?",
+ "methodology": "The authors create a controlled synthetic binary forecasting benchmark in which a latent trajectory determines whether future risk is above or below a threshold. Evidence can be presented as a numerical time series, a natural-language summary, or an additional simulated tool forecast, and conflict conditions are constructed so exactly one source agrees with ground truth. Four experiments isolate modality preference, temporal recency, explicit reliability cues, and disagreement with an external tool, while presentation order is varied. Seven instruction-tuned models from the Qwen, Gemma, Llama, and Mistral families are evaluated primarily by classification accuracy across three seeds.",
+ "key_findings": [
+  {
+   "finding": "Models exhibit model-specific modality priors even when textual and numerical evidence are designed to be equally reliable: Qwen models tend toward numerical evidence, while Llama and Mistral show stronger textual preferences and Gemma is more balanced.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Evidence presentation order materially affects arbitration, with later evidence frequently exerting greater influence and textual evidence benefiting especially from being placed last.",
+   "evidence_type": "supported",
+   "section": "Sections 4.1 and 4.2"
+  },
+  {
+   "finding": "Temporal recency is a stronger and more consistently used arbitration cue than an explicit indication that one source is unreliable.",
+   "evidence_type": "supported",
+   "section": "Sections 4.2 and 4.3"
+  },
+  {
+   "finding": "Conflicting tool forecasts produce the strongest degradation among the tested conflict types, and some model configurations follow the tool despite the observed context being perfectly informative.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  },
+  {
+   "finding": "Increasing model size does not monotonically improve conflict arbitration in the principal experiments; larger Qwen variants can still make systematic source-selection errors under conflict.",
+   "evidence_type": "supported",
+   "section": "Sections 4.1 and 4.5"
+  },
+  {
+   "finding": "Changes to answer labels and task domain can alter conflict behavior, indicating that arbitration is not entirely invariant to superficial task formulation.",
+   "evidence_type": "supported",
+   "section": "Section 4.5"
+  },
+  {
+   "finding": "The combined experiments support the authors' interpretation that current models often use heuristic source arbitration rather than consistently integrating evidence according to explicit reliability and provenance.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  }
+ ],
+ "limitations": [
+  "All principal experiments use synthetically generated trajectories and templated textual summaries rather than naturally occurring workplace or operational records.",
+  "The task is binary forecasting, so it does not directly represent multi-state work-item lifecycles or open-ended revision semantics.",
+  "The benchmark guarantees that exactly one conflicting source is correct, whereas real operational conflicts may contain partial truth, unresolved ambiguity, or multiple compatible interpretations.",
+  "No real-world high-stakes deployment study is presented, and the authors explicitly caution against treating the results as deployment guidance.",
+  "The study evaluates evidence arbitration rather than longitudinal discourse relations such as supersession, correction, supplementation, reopening, or completion verification.",
+  "No public release of the experiment code or generated benchmark dataset was identified in the paper text that was read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "modality_priors": 0.98,
+  "position_effect": 0.97,
+  "recency_over_reliability": 0.98,
+  "tool_overreliance": 0.99,
+  "nonmonotonic_scale": 0.96,
+  "formulation_sensitivity": 0.94,
+  "heuristic_arbitration": 0.95
+ },
+ "raw_claims": [
+  "The benchmark deliberately creates cases in which textual and numerical evidence disagree while exactly one source matches the ground truth.",
+  "The main experiments distinguish modality preference, temporal recency, explicit reliability, and conflicting tool forecasts.",
+  "The evaluated models generally perform well when only one evidence source is presented.",
+  "Different model families exhibit different preferences for text versus numerical sequences under direct conflict.",
+  "Placing a source later in the prompt can make the model more likely to follow it.",
+  "Recency is used more consistently than explicit reliability warnings when sources disagree.",
+  "A conflicting simulated tool forecast can dominate otherwise informative evidence for some models.",
+  "Several Qwen and Gemma conditions show very large accuracy degradation in the presence of a conflicting tool forecast.",
+  "Larger parameter count does not guarantee better evidence arbitration in the main conflict experiments.",
+  "Changing answer choices or domain framing can change conflict accuracy, revealing sensitivity beyond the substantive evidence."
+ ],
+ "source_url": "https://arxiv.org/html/2608.20116",
+ "access": "full_text"
+}

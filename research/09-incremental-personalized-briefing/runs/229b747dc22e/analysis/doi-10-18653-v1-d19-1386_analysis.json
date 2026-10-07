@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-18653-v1-d19-1386",
+ "title": "Summary Cloze: A New Task for Content Selection in Topic-Focused Summarization",
+ "research_question": "Can next-sentence prediction conditioned on a topic, reference documents, and the summary-so-far provide a scalable task for learning content selection in topic-focused summarization?",
+ "methodology": "The authors define the summary cloze task, where a model must generate the next summary sentence given a topic, reference material, and a partial summary, and construct the WIKICITE dataset from cited sentences in Wikipedia articles about living people. They collect 486,015 instances and evaluate extractive baselines plus a two-stage system that first selects reference sentences and then generates a cloze with a pointer-generator model conditioned on the preceding summary context. Evaluation uses ROUGE, perplexity, ablations of topic and context, oracle comparisons, and a small human study in which manually written clozes are judged for continuation quality.",
+ "key_findings": [
+  {
+   "finding": "Access to the topic and preceding summary context helped human writers select content closer to the reference cloze, with human ROUGE-1 increasing from 24.49 without topic/context to 31.78 with them.",
+   "evidence_type": "supported",
+   "section": "6.1 Human Performance & Evaluation"
+  },
+  {
+   "finding": "The learned extractive ContentSelector outperformed the non-oracle extractive baselines, reaching ROUGE-1 25.13 versus 21.33 for BM25 and 17.50 for Lead-1.",
+   "evidence_type": "supported",
+   "section": "6.3 Extractive Models"
+  },
+  {
+   "finding": "Most of the ContentSelector improvement from conditioning came from the partial-summary context; removing the topic alone did not produce a statistically significant degradation.",
+   "evidence_type": "supported",
+   "section": "6.3 Extractive Models"
+  },
+  {
+   "finding": "Conditioning the abstractive decoder on the preceding summary context improved generated clozes across tested preprocessing variants, including roughly a two-point ROUGE-1 gain with ContentSelector preprocessing.",
+   "evidence_type": "supported",
+   "section": "6.4 Abstractive Models"
+  },
+  {
+   "finding": "The model design uses coverage together with the preceding summary context to discourage generation of information already expressed in that context, directly addressing local repetition.",
+   "evidence_type": "supported",
+   "section": "4.2 Two-Step Abstractive Model"
+  },
+  {
+   "finding": "A large gap remained between learned extraction and oracle extraction, indicating substantial unresolved content-selection headroom.",
+   "evidence_type": "supported",
+   "section": "6.3 Extractive Models"
+  },
+  {
+   "finding": "ROUGE is an imperfect measure for this task because many different next sentences can be valid; the paper reports only moderate correlation between ROUGE and crowd quality judgments.",
+   "evidence_type": "supported",
+   "section": "6.1 Human Performance & Evaluation"
+  }
+ ],
+ "limitations": [
+  "The task isolates sentence-level content selection rather than evaluating a complete evolving summarization system.",
+  "WIKICITE is derived from Wikipedia articles in the Living people category and therefore differs substantially from workplace communication.",
+  "The construction assumes that a cited reference document contains the information expressed in the associated Wikipedia sentence, despite noisy web extraction and citation practices.",
+  "Only one observed cloze serves as the automatic reference even though multiple next sentences can be valid.",
+  "ROUGE has difficulty distinguishing alternative valid continuations and showed only moderate correlation with human quality judgments.",
+  "The experiments model preceding textual context but do not represent explicit temporal state transitions, supersession, open-versus-resolved status, user-specific priorities, or longitudinal briefing delivery."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "context_improves_human_selection": 0.98,
+  "contentselector_best_learned_extractor": 0.99,
+  "context_more_useful_than_topic": 0.97,
+  "context_improves_generation": 0.98,
+  "context_discourages_repetition": 0.96,
+  "large_oracle_gap": 0.99,
+  "rouge_evaluation_limit": 0.98
+ },
+ "raw_claims": [
+  "The summary cloze task predicts the next summary sentence from a topic, reference documents, and the summary generated so far.",
+  "WIKICITE contains 486,015 summary-cloze instances collected from Wikipedia and web references.",
+  "Wikipedia section headings and article titles are used as high-level topic information.",
+  "The ContentSelector combines representations of reference sentences with topic and context representations through attention.",
+  "The abstractive system first reduces the reference material extractively and then generates the cloze.",
+  "The preceding summary is used to initialize the abstractive decoder and also influences its coverage mechanism.",
+  "Human-written clozes were closer to the gold cloze when writers had access to topic and context.",
+  "Removing context from ContentSelector hurt performance more than removing the topic.",
+  "The topic did not significantly improve the learned ContentSelector in the reported extractive experiment.",
+  "ContentSelector remained far below the oracle extractor.",
+  "Adding context improved the abstractive results across tested extraction preprocessing methods.",
+  "The authors note that many different clozes can be valid, which makes single-reference automatic evaluation difficult."
+ ],
+ "source_url": "https://aclanthology.org/D19-1386.pdf",
+ "access": "full_text"
+}

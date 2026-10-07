@@ -1,0 +1,1787 @@
+{
+  "paper_id": "T11",
+  "title": "Leveraging Summarization for Unsupervised Dialogue Topic Segmentation",
+  "bibliographic_context": {
+    "authors": "Aleksei Artemiev et al.",
+    "venue": "Findings of NAACL 2024",
+    "printed_pages": "4697–4704",
+    "status": "Publication details taken from frozen PDF; shortlist January 1 timestamps are not treated as exact publication dates.",
+    "source_locator": {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+      "line_start": 1,
+      "line_end": 3,
+      "pdf_pages": [
+        1
+      ]
+    }
+  },
+  "research_question": "Can pretrained dialogue summaries, used to construct sentence vectors and combined with Savitzky–Golay filtering and TextTiling, improve unsupervised contiguous topic segmentation of noisy dialogues?",
+  "methodology": "SumSeg obtains a full-document summary or joins summaries of consecutive context-sized chunks, extracts dependency-based simple summary sentences, embeds source units and summary units, and forms their n × nss cosine-similarity matrix. Section 3.3 explicitly applies the Savitzky–Golay filter to each row. Section 3.4 applies TextTiling to the resulting source-unit row vectors: depth_j = (hl_j + hr_j − 2c_j)/2, where c_j compares adjacent mean-pooled windows. It emits a boundary when depth exceeds a threshold and c_j is a local minimum. Predefined validation sets tune hyperparameters; predefined test sets provide Pk and WD. This is target-segmentation unsupervised learning with pretrained summarizers and validation tuning, not an entirely supervision-free system. The paper names NLTK and spaCy for parsing but does not name the proposed method’s embedding checkpoint or report final tuning settings.",
+  "methodology_source_refs": [
+    "E_SUMMARY",
+    "E_CLAUSE",
+    "E_MATRIX",
+    "E_BOUNDARY",
+    "E_SPLIT",
+    "E_MODELS",
+    "E_SUPERVISION"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "T11-F01",
+      "finding": "On the predefined test splits, Table 2 SumSeg has lower WD and Pk than BERTSeg on SuperDialSeg (1,277 dialogues), TIAGE (97 dialogues), and QMSum (35 meetings with intermediate gaps added as segments). The six SumSeg scores equal the BART-samsum column in Table 3; that model identification is a table-value match, not an explicit Table 2 model label. Exact scores and derived differences are in topic02.metrics.",
+      "evidence_type": "supported",
+      "evidence_basis": "Direct reported segmentation results; no statistical significance test, uncertainty interval, or repeated-run variance is reported.",
+      "section": "PDF p.5, Table 2",
+      "quote": "SumSeg (ours) 0.480 0.469 0.455 0.438 0.379 0.357",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 440,
+        "line_end": 440,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "additional_source_refs": [
+        "E_T2",
+        "E_T3",
+        "E_T1",
+        "E_SPLIT",
+        "E_QMSUM"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F02",
+      "finding": "Table 2 does not establish uniform superiority over every comparator. On the SuperDialSeg test split, CohereSeg has Pk 0.438 versus SumSeg 0.469. Supervised Bi-H-LSTM has WD/Pk 0.220/0.210 there, versus SumSeg 0.480/0.469. On the QMSum test split, SumSeg has 0.379/0.357 versus Bi-H-LSTM 0.714/0.648. These are distinct dataset-specific comparisons. The CohereSeg variant uses the pretrained aws-ai/dse-bert-base scorer without the full DailyDialog fine-tuning described in §4.3.",
+      "evidence_type": "supported",
+      "evidence_basis": "Direct table comparison; causal explanations for the supervised model gap are not established.",
+      "section": "PDF p.5, Table 2",
+      "quote": "CohereSeg 0.562 0.438 0.528 0.451 0.817 0.569",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 439,
+        "line_end": 439,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "additional_source_refs": [
+        "E_T2",
+        "E_T1",
+        "E_BASELINES"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F03",
+      "finding": "Summary-model choice materially changes the reported test scores. In Table 3, BART-samsum has the lowest WD and Pk on SuperDialSeg and QMSum. TIAGE favors BART and FLAN-T5-samsum jointly for WD (0.443), and FLAN-T5-samsum for Pk (0.402). LED-samsum is worse than BERTSeg in both metrics on each of the three test sets. The model variants therefore do not all inherit the across-dataset BERTSeg improvement in T11-F01.",
+      "evidence_type": "supported",
+      "evidence_basis": "Direct summary-model comparison; effects of training corpus, model architecture, and context size are not isolated.",
+      "section": "PDF p.5, Table 3",
+      "quote": "WD↓ 0.443 0.455 0.443 0.493 PK↓ 0.415 0.438 0.402 0.479",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 452,
+        "line_end": 453,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "additional_source_refs": [
+        "E_T3",
+        "E_T2",
+        "E_STABILITY",
+        "E_SPLIT"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F04",
+      "finding": "The §5.1 claim of a best 5% WD and 6% Pk improvement over BERTSeg cannot be reproduced from its cited Table 2 under either exact absolute or exact relative reductions. Table 2 maxima are a 0.015 WD reduction on TIAGE (1.5 percentage points; 3.191489% relative) and a 0.020 Pk reduction on QMSum (2.0 points; 5.305040% relative). Selecting the best Table 3 model per test metric instead gives TIAGE reductions of 0.027 WD and 0.037 Pk, or 5.744681% and 8.428246% relative. The paper does not state the percentage convention, rounding rule, or model selection underlying 5%/6%; retain its wording and the table values separately.",
+      "evidence_type": "contradicted",
+      "evidence_basis": "Numerical prose/table mismatch at printed precision; contradicted applies to this exact numerical reading, not to the existence of a segmentation improvement.",
+      "section": "PDF p.4, §5.1 Main results",
+      "quote": "At best, our method sur- passed BERTSeg by 5% on WD and 6% on PK.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 407,
+        "line_end": 408,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "additional_source_refs": [
+        "E_MAIN",
+        "E_T2",
+        "E_T3",
+        "E_SPLIT",
+        "E_T1"
+      ],
+      "confidence": 0.98
+    },
+    {
+      "finding_id": "T11-F05",
+      "finding": "The PDF Figure 1 illustration changes the representation beyond boundary detection: S3 places the single/divorced attributes and beetle/Honda Civic ownership from U2–U4 under one summary subject and repeats beetle; S4 expands U11’s au to Australia. S1/S2 also precede S3 although their source U5 follows U2–U4. These are directly visible transformations in one illustration. They are not a measured summary-fidelity error rate, an adjudicated speaker-coreference error, evidence of the intended expansion of au, or a measured loss of decision-bearing content.",
+      "evidence_type": "supported",
+      "evidence_basis": "Direct visual/textual illustration only; verified in pdf-page-1-figure-1.png. No population or gold fidelity annotation is supplied.",
+      "section": "PDF p.1, Figure 1",
+      "quote": "S3: is single, divorced, he owns a beetle, a beetle and a Honda Civic S4: He will attend Australia next year",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 82,
+        "line_end": 83,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "additional_source_refs": [
+        "E_FIG1",
+        "E_FIG2",
+        "E_CLAUSE"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F06",
+      "finding": "Appendix C asserts that smoothing makes segment boundaries more obvious and supplies TIAGE and SuperDialseg heat-map examples. It does not report a controlled test-score ablation with and without smoothing. The illustrations do not quantify a general smoothing benefit or establish which axis an implementation filters.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Qualitative examples support visualization of a change; a general measured improvement attributable to smoothing is not tested.",
+      "section": "PDF p.8, Appendix C, Figures 3–4",
+      "quote": "It can be seen that adding a filter makes segment boundaries more obvious.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 808,
+        "line_end": 809,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "additional_source_refs": [
+        "E_SMOOTH",
+        "E_MATRIX",
+        "E_T2",
+        "E_T3"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F07",
+      "finding": "The contribution claiming fewer tunable hyperparameters lacks a baseline parameter-count table, search spaces, final settings, or a matched tuning-budget experiment. The paper still uses validation labels for tuning and reports approximately two hours to select parameters across the three datasets for one summarization model, with hardware and search details unspecified.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Claimed setup advantage without comparative experimental backing; reported tuning time is not a measured advantage over other methods.",
+      "section": "PDF p.2, Introduction contribution 3",
+      "quote": "The proposed approach also has fewer hyper- parameters to tune than other unsupervised approaches.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 107,
+        "line_end": 109,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "additional_source_refs": [
+        "E_SETUP",
+        "E_SPLIT",
+        "E_RUNTIME"
+      ],
+      "confidence": 0.98
+    },
+    {
+      "finding_id": "T11-F08",
+      "finding": "T11’s related-work paragraph literally attributes LDA sentence vectors to Original TextTiling, while the preceding paragraph calls classic TextTiling’s representation Bag of Words. Both wordings are printed in the original PDF. Preserve this internal attribution inconsistency; do not export the LDA sentence as a validated description of another paper or silently change Original TextTiling to TopicTiling.",
+      "evidence_type": "contradicted",
+      "evidence_basis": "Internal representation attribution conflicts; no other paper was analyzed to correct it.",
+      "section": "PDF p.2, §2.1.1 TextTiling / TopicTiling paragraph",
+      "quote": "Original TextTiling utilizes the Latent Dirichlet allocation (LDA) model for sen- tence vector calculations under the hood.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 128,
+        "line_end": 130,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "additional_source_refs": [
+        "E_BOW",
+        "E_LDA"
+      ],
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T11-F09",
+      "finding": "Sections 5.2–5.3 attribute weak Bi-H-LSTM performance on QMSum to limited and diverse training data. Table 2 measures the performance gap, but the paper does not isolate training-set size or diversity experimentally. This causal explanation remains an author interpretation.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Observed score gap with an untested causal explanation; sentence continues at raw text lines 457–458 on PDF p.5.",
+      "section": "PDF pp.4–5, §5.2 Comparison with supervised model",
+      "quote": "supervised models Bi-H-LSTM show poor quality due to the training data’s small amount",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 413,
+        "line_end": 415,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "additional_source_refs": [
+        "E_T2",
+        "E_T1",
+        "E_CAUSE_START",
+        "E_CAUSE_END"
+      ],
+      "confidence": 0.98
+    }
+  ],
+  "limitations": [
+    "Paper-reported: summarization adds computation and low-resource summarizers may be difficult to obtain (E_LIMIT). Table 4 timing conditions are insufficient for deployment estimates (E_RUNTIME).",
+    "No business-email evaluation, overlapping/discontinuous Topic assignment, or decision-bearing work-text preservation measure (topic02.not_evaluated_for_msgloom). No evaluation is not a negative result.",
+    "No IAA, duplicate/near-duplicate controls, summarizer training/test overlap audit, per-dataset unit conversion details, exact metric aggregation, confidence intervals, or significance test is supplied (E_DATA, E_SPLIT, E_T1, E_T2, E_T3).",
+    "No quantitative no-summary/no-smoothing ablation isolates the contribution of compression, parsing, smoothing, or model pretraining (T11-F03, T11-F06).",
+    "Hyperparameter counts, search spaces, chosen threshold/window/filter values, random seeds, embedding checkpoint, parser/model revisions, decoding settings, and detailed chunk-boundary rules are not reported (E_CLAUSE, E_BOUNDARY, E_RUNTIME).",
+    "Material numerical and representation ambiguities remain visible in topic02.material_inconsistencies; no other paper or online code was used to repair them."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported availability only. The boolean code_available means the paper reports a public repository; dataset_available means the paper names reused benchmark datasets and predefined splits. Neither boolean asserts current online reachability, license terms, complete archived artifacts, or local possession of those benchmark data.",
+    "code_url_paper_reported": "https://github.com/milteam/unsupervised-summary-based-segmentation",
+    "availability_source_refs": [
+      "E_CODE",
+      "E_DATA",
+      "E_SPLIT"
+    ],
+    "models": [
+      {
+        "name": "BART",
+        "checkpoint": "facebook/bart-large-cnn",
+        "context_tokens": 1024,
+        "source_refs": [
+          "E_MODELS"
+        ]
+      },
+      {
+        "name": "BART-samsum",
+        "checkpoint": "philschmid/bart-large-cnn-samsum",
+        "context_tokens": 1024,
+        "source_refs": [
+          "E_MODELS"
+        ]
+      },
+      {
+        "name": "FLAN-T5-samsum",
+        "checkpoint": "philschmid/flan-t5-base-samsum",
+        "context_tokens": 512,
+        "source_refs": [
+          "E_MODELS"
+        ]
+      },
+      {
+        "name": "LED-samsum",
+        "checkpoint": "rooftopcoder/led-base-book-summary-samsum",
+        "context_tokens": 16384,
+        "source_refs": [
+          "E_MODELS"
+        ]
+      }
+    ],
+    "supervision_note": "SAMSum-suffixed models were fine-tuned on manually annotated chat summaries (E_SUPERVISION); detailed external pretraining provenance is not supplied.",
+    "replay_performed": false,
+    "network_verification_performed": false,
+    "limitations_location": "limitations and topic02.split_and_leakage"
+  },
+  "confidence_scores": {
+    "T11-F01": 0.99,
+    "T11-F02": 0.99,
+    "T11-F03": 0.99,
+    "T11-F04": 0.98,
+    "T11-F05": 0.99,
+    "T11-F06": 0.99,
+    "T11-F07": 0.98,
+    "T11-F08": 0.99,
+    "T11-F09": 0.98
+  },
+  "confidence_score_meaning": "Confidence in the accuracy of this evidence assessment and source reading, not a calibrated probability that an unsupported causal/general claim is true.",
+  "raw_claims": [
+    "The model predicts segment boundary when depthj exceeds the threshold and cj is the local minimum.",
+    "When dialogue fits the context size of the neu- ral model, the summary is obtained for the whole dialogue. Otherwise we split a document into con- secutive parts (chunks) of a size suitable for the summarization model. Then, each chunk is individ- ually summarized, and the resulting summaries are joined together.",
+    "The proposed approach also has fewer hyper- parameters to tune than other unsupervised approaches.",
+    "At best, our method sur- passed BERTSeg by 5% on WD and 6% on PK.",
+    "Some models have the suffix ’samsum’, meaning that a model was fine-tuned using the SAMSum corpus (Gliwa et al., 2019), collected from manu- ally annotated summaries for chat dialogues.",
+    "It can be seen that adding a filter makes segment boundaries more obvious."
+  ],
+  "raw_claim_locators": [
+    {
+      "claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 317,
+        "line_end": 319,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 268,
+        "line_end": 274,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 107,
+        "line_end": 109,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    {
+      "claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 407,
+        "line_end": 408,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "claim_index": 4,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 695,
+        "line_end": 698,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    {
+      "claim_index": 5,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 808,
+        "line_end": 809,
+        "pdf_pages": [
+          8
+        ]
+      }
+    }
+  ],
+  "evidence_map": {
+    "E_TASK": {
+      "section": "PDF p.2, §3.1 Task formulation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 176,
+        "line_end": 187,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "E_PIPELINE": {
+      "section": "PDF p.3, §3.2 and Figure 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 248,
+        "line_end": 257,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_SUMMARY": {
+      "section": "PDF p.3, §3.3 Step 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 263,
+        "line_end": 274,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_CLAUSE": {
+      "section": "PDF p.3, §3.3 Steps 2–3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 275,
+        "line_end": 289,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_MATRIX": {
+      "section": "PDF p.3, §3.3 Steps 4–5 and §3.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 290,
+        "line_end": 305,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_BOUNDARY": {
+      "section": "PDF p.3, §3.4, Equation (1)",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 300,
+        "line_end": 319,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_DATA": {
+      "section": "PDF p.4, §4.1 Datasets",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 322,
+        "line_end": 356,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_QMSUM": {
+      "section": "PDF p.4, §4.1 QMSum adaptation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 341,
+        "line_end": 349,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_SPLIT": {
+      "section": "PDF p.4, §4.1 Splits and preprocessing",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 350,
+        "line_end": 356,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_T1": {
+      "section": "PDF p.5, Table 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 417,
+        "line_end": 424,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E_BASELINES": {
+      "section": "PDF p.4, §4.3 Baselines",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 362,
+        "line_end": 391,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_LANGUAGE": {
+      "section": "PDF p.4, §4.4 Summary models",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 392,
+        "line_end": 401,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_MAIN": {
+      "section": "PDF p.4, §5.1 Main results",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 403,
+        "line_end": 411,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_CAUSE_START": {
+      "section": "PDF p.4, §5.2 Comparison with supervised model, sentence start",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 413,
+        "line_end": 415,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "E_CAUSE_END": {
+      "section": "PDF p.5, §5.2 Comparison with supervised model, sentence continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 457,
+        "line_end": 458,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E_T2": {
+      "section": "PDF p.5, Table 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 425,
+        "line_end": 440,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E_T3": {
+      "section": "PDF p.5, Table 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 441,
+        "line_end": 456,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E_STABILITY": {
+      "section": "PDF p.5, §5.3 Summarizer comparison",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 459,
+        "line_end": 469,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "E_LIMIT": {
+      "section": "PDF p.6, Limitations",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 487,
+        "line_end": 494,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "E_PK": {
+      "section": "PDF p.7, Appendix A, Pk",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 646,
+        "line_end": 661,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "E_WD": {
+      "section": "PDF p.7, Appendix A, WindowDiff",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 662,
+        "line_end": 679,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "E_MODELS": {
+      "section": "PDF p.7, Appendix B.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 680,
+        "line_end": 693,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "E_SUPERVISION": {
+      "section": "PDF p.8, Appendix B.1 continuation",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 695,
+        "line_end": 698,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "E_RUNTIME": {
+      "section": "PDF p.8, Appendix B.2 and Table 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 699,
+        "line_end": 710,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "E_SMOOTH": {
+      "section": "PDF p.8, Appendix C, Figures 3–4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 711,
+        "line_end": 809,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "E_FIG1": {
+      "section": "PDF p.1, Figure 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 66,
+        "line_end": 86,
+        "pdf_pages": [
+          1
+        ]
+      }
+    },
+    "E_FIG2": {
+      "section": "PDF p.3, Figure 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 220,
+        "line_end": 247,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "E_BOW": {
+      "section": "PDF p.2, §2.1.1 TextTiling",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 115,
+        "line_end": 123,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "E_LDA": {
+      "section": "PDF p.2, §2.1.1 TopicTiling paragraph",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 124,
+        "line_end": 130,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "E_SETUP": {
+      "section": "PDF p.2, Introduction contribution 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 107,
+        "line_end": 109,
+        "pdf_pages": [
+          2
+        ]
+      }
+    },
+    "E_CODE": {
+      "section": "PDF p.1, Introduction and footnote 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+        "line_start": 93,
+        "line_end": 105,
+        "pdf_pages": [
+          1
+        ]
+      }
+    }
+  },
+  "topic02": {
+    "evidence_family": "DIRECT_WORK",
+    "evidence_family_qualification": "Dialogue/meeting segmentation evidence with qualified transfer to business email. This is not direct email evidence.",
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated indirectly through Pk and WD of the resulting partition",
+        "source_refs": [
+          "E_BOUNDARY",
+          "E_PK",
+          "E_WD"
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "primary evaluated task on predefined dataset test splits",
+        "source_refs": [
+          "E_TASK",
+          "E_SPLIT",
+          "E_T2",
+          "E_T3"
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "gold": "Reference topic boundaries in a linear dialogue/meeting sequence. T11 defaults to sentences as utterances but also uses dataset utterances; exact per-dataset sentence-to-turn mapping is not reported.",
+      "auxiliary": "Dependency-derived simple sentences from generated summaries are model preprocessing units, not new gold source-span or EDU annotations.",
+      "caution": "Figure 1 U1–U14 entries can each contain multiple sentences. Do not infer clause- or arbitrary-span gold from their labels.",
+      "source_refs": [
+        "E_TASK",
+        "E_DATA",
+        "E_CLAUSE",
+        "E_FIG1"
+      ]
+    },
+    "prediction_unit": {
+      "primary": "Binary segment-boundary decisions between ordered source sentence/utterance vectors; induced contiguous segments.",
+      "representation": "A source sentence has cosine similarity coordinates to all simple summary sentences; these real-valued coordinates are features, not Topic memberships or exact source-to-summary span assignments.",
+      "label_names": "No segment topic-name classifier or stable recurring Topic identity is evaluated.",
+      "source_refs": [
+        "E_MATRIX",
+        "E_BOUNDARY"
+      ]
+    },
+    "contiguity": {
+      "gold_used_in_evaluation": "Linear reference segmentation; QMSum provided segmentation is completed by treating every intermediate gap as a segment.",
+      "prediction": "Contiguous partition induced by thresholded local depth minima/maxima procedure.",
+      "non_sequential_cluster": "No linking of separated segments to the same semantic Topic is specified or evaluated.",
+      "source_refs": [
+        "E_QMSUM",
+        "E_BOUNDARY"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "One segment membership per sequence unit in the evaluated linear partition (interpretation of this task). Original dataset multilabel capability or ontology size is not specified by T11.",
+      "prediction": "One induced segment per source unit; no multiple Topic labels. Multiple nonzero summary-similarity coordinates do not change this.",
+      "number_of_topics": "Not reported as a fixed taxonomy; predicted boundaries determine segment count.",
+      "source_refs": [
+        "E_TASK",
+        "E_BOUNDARY",
+        "E_MATRIX",
+        "E_QMSUM"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not reported/evaluated as one Topic attached to separated spans within a message.",
+        "thread_level": "Not reported/evaluated as repeated Topic identity across nonadjacent turns or separate threads.",
+        "QMSum": "Using provided segmentation plus intermediate gaps is a constructed linear reference. It is not evidence that original QMSum contains, or that T11 evaluates, discontinuous Topic gold."
+      },
+      "prediction": {
+        "within_one_message": "No representation of one semantic Topic as several separated spans.",
+        "thread_level": "No nonsequential cluster or recurring-Topic linking output; separated segments remain separate segment instances."
+      },
+      "source_refs": [
+        "E_TASK",
+        "E_QMSUM",
+        "E_MATRIX",
+        "E_BOUNDARY"
+      ]
+    },
+    "overlap": {
+      "gold_status": "Unsupported for the evaluated Topic task; no overlapping gold Topic-span evaluation is reported.",
+      "gold_scope": "T11 does not document all original dataset overlap capabilities. Its reported protocol scores linear partitions.",
+      "prediction_status": "Not supported by the specified partition output.",
+      "prediction_scope": "Neither multiple Topics per source span nor overlapping within-message source spans are output. Potential dependency-subtree overlap in summary text is not evaluated Topic overlap.",
+      "source_refs": [
+        "E_CLAUSE",
+        "E_TASK",
+        "E_BOUNDARY",
+        "E_QMSUM"
+      ]
+    },
+    "dataset_domain": {
+      "language": "English summarization models and English dialogue/meeting benchmarks in this study; other-language adaptation is discussed but not evaluated.",
+      "corpora": [
+        {
+          "dataset": "SuperDialSeg",
+          "split_unit": "dialogue/document",
+          "train": 6690,
+          "validation": 1298,
+          "test": 1277,
+          "derived_total": 9265,
+          "words_per_document": {
+            "min": 33,
+            "mean": 218.3,
+            "max": 525
+          },
+          "mean_words_per_section": 48.8,
+          "mean_utterances_per_document": 13.4,
+          "mean_utterances_per_section": 3.4,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+            "line_start": 422,
+            "line_end": 422,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "domain": "Document-grounded dialogue; T11 says derived from two dialogue corpora but does not name them here."
+        },
+        {
+          "dataset": "TIAGE",
+          "split_unit": "dialogue/document",
+          "train": 286,
+          "validation": 96,
+          "test": 97,
+          "derived_total": 479,
+          "words_per_document": {
+            "min": 109,
+            "mean": 185.1,
+            "max": 264
+          },
+          "mean_words_per_section": 40.4,
+          "mean_utterances_per_document": 15.4,
+          "mean_utterances_per_section": 4.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+            "line_start": 423,
+            "line_end": 423,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "domain": "Human-annotated dialogue topic shifts; Figure 1 is an informal written-style dialogue. T11 does not detail collection or provenance further."
+        },
+        {
+          "dataset": "QMSum",
+          "split_unit": "meeting/document",
+          "train": 162,
+          "validation": 35,
+          "test": 35,
+          "derived_total": 232,
+          "words_per_document": {
+            "min": 1371,
+            "mean": 9521.4,
+            "max": 25529
+          },
+          "mean_words_per_section": 1593.6,
+          "mean_utterances_per_document": 334.7,
+          "mean_utterances_per_section": 76.5,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+            "line_start": 424,
+            "line_end": 424,
+            "pdf_pages": [
+              5
+            ]
+          },
+          "domain": "Transcribed product, academic, and committee meetings; provided segmentation plus every intermediate gap as a segment."
+        }
+      ],
+      "source_reported_QMSum_origin": {
+        "query_summary_pairs": 1808,
+        "meetings": 232,
+        "source_refs": [
+          "E_QMSUM"
+        ]
+      },
+      "qualification": "T11 motivates spoken-versus-written/noisy distinctions but does not supply a controlled noise-level comparison or business-email data. It does not justify classifying all three datasets as synthetic or all as spoken.",
+      "source_refs": [
+        "E_DATA",
+        "E_LANGUAGE"
+      ]
+    },
+    "annotation_process": {
+      "SuperDialSeg": "Existing segmentation points derived with document-grounded dialogues; detailed annotator protocol is not reproduced.",
+      "TIAGE": "Existing human-annotated topic shifts; this paper evaluates segmentation only, not the benchmark’s response-generation tasks.",
+      "QMSum": "Existing human annotations across meeting domains; provided segmentation plus intermediate gaps converted to segments.",
+      "new_annotations": "No new Topic-span annotations, fidelity judgments, or business-email annotations are described.",
+      "guidelines_annotator_counts_adjudication": "Not reported in T11.",
+      "source_refs": [
+        "E_DATA",
+        "E_QMSUM"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported",
+      "metric": null,
+      "population": null,
+      "scope": "No IAA coefficient or annotator population for segmentation, summary clauses, or preservation is supplied by T11. This does not assert that cited dataset papers lack IAA.",
+      "source_refs": [
+        "E_DATA",
+        "E_CLAUSE"
+      ]
+    },
+    "split_and_leakage": {
+      "protocol": "Use predefined train/validation/test splits; tune hyperparameters on validation and report test metrics.",
+      "split_counts_source_refs": [
+        "E_SPLIT",
+        "E_T1"
+      ],
+      "counts_location": "topic02.dataset_domain.corpora",
+      "split_unit": "Dialogue/document for SuperDialSeg and TIAGE; meeting/document for QMSum, as Table 1 labels # docs.",
+      "training_scope": "Target segmentation is called unsupervised. Pretrained summarizers carry external learned information; SAMSum-suffixed models were fine-tuned on manually annotated chat summaries. Validation tuning also uses target reference labels. Do not call the whole system supervision-free.",
+      "target_training": "The paper does not describe supervised SumSeg target-boundary training; Bi-H-LSTM is the supervised comparator.",
+      "duplicate_and_near_duplicate_controls": "Not reported.",
+      "dialogue_speaker_document_grouping_controls": "Beyond predefined splits, not reported.",
+      "summarizer_pretraining_overlap": "Overlap/contamination between summarizer training data and segmentation test data is not audited in the paper; no leakage is demonstrated.",
+      "summary_model_selection": "Table 2 names only SumSeg; all six values match BART-samsum in Table 3. No independent summary-model selection rule or separate model-selection split is stated.",
+      "existing_gold_summaries": "§3.3 allows existing summaries in principle, but Tables 2–3 evaluate pretrained summary-model variants. Use of QMSum query-linked human summaries as an experimental input is not reported and must not be assumed.",
+      "cross_paper_comparison": "Use only these exact T11 counts and protocol. No T09/T10 values or Topic01 conclusions were read or compared.",
+      "source_refs": [
+        "E_SPLIT",
+        "E_T1",
+        "E_MODELS",
+        "E_SUPERVISION",
+        "E_SUMMARY",
+        "E_BASELINES",
+        "E_T2",
+        "E_T3"
+      ]
+    },
+    "metrics": {
+      "common_context": {
+        "task": "contiguous dialogue/meeting topic segmentation",
+        "split": "predefined test",
+        "test_documents": {
+          "SuperDialSeg": 1277,
+          "TIAGE": 97,
+          "QMSum": 35
+        },
+        "preprocessing": "All-speaker utterances used and concatenated for summarization; QMSum gaps become reference segments.",
+        "tuning": "Validation split",
+        "lower_is_better": true,
+        "reported_scale": "0 to 1 error fraction, not percent",
+        "cross_document_aggregation": "Not reported: macro/micro averaging, exact total window denominator, and individual-document scores are absent.",
+        "repetitions_uncertainty": "Number of seeds/runs, standard deviations, confidence intervals, and formal significance tests are not reported.",
+        "source_refs": [
+          "E_SPLIT",
+          "E_QMSUM",
+          "E_T1",
+          "E_T2",
+          "E_PK",
+          "E_WD"
+        ]
+      },
+      "definitions": [
+        {
+          "metric": "Pk",
+          "definition": "Slide a k-length window and count disagreements between reference and prediction on whether the two endpoints belong to the same segment.",
+          "denominator": "Number of evaluated windows/measurements; N is source sentences or content utterances. Exact corpus-level denominator is not reported.",
+          "k": "Prose: half mean reference-segment length. Printed formula: N / (2 * number of bounderies). Endpoint-count and integer-rounding conventions are unspecified; see T11-I04.",
+          "scope": "Same linear partition task and test datasets as common_context; no Topic-cluster, source-span, or preservation score.",
+          "source_refs": [
+            "E_PK"
+          ]
+        },
+        {
+          "metric": "WindowDiff",
+          "definition": "Normalized count of windows for which the reference and predicted boundary/segment-end counts differ; indicator inequality, not the magnitude of their difference.",
+          "denominator": "N − k within each document; printed summation i = 1 through N − k. N and k are defined as in the Pk paragraph.",
+          "formula": "WD = (1 / (N − k)) * sum_{i=1}^{N−k} [R_{i,i+k} != C_{i,i+k}]",
+          "scope": "Same linear partition task and test datasets as common_context.",
+          "source_refs": [
+            "E_WD"
+          ]
+        }
+      ],
+      "table2": {
+        "context": "All entries inherit common_context; each row has its original PDF/text locator.",
+        "rows": [
+          {
+            "model": "Bi-H-LSTM",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.22,
+                "Pk": 0.21
+              },
+              "TIAGE": {
+                "WD": 0.492,
+                "Pk": 0.442
+              },
+              "QMSum": {
+                "WD": 0.714,
+                "Pk": 0.648
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 432,
+              "line_end": 432,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "random",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.554,
+                "Pk": 0.474
+              },
+              "TIAGE": {
+                "WD": 0.591,
+                "Pk": 0.499
+              },
+              "QMSum": {
+                "WD": 0.53,
+                "Pk": 0.47
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 433,
+              "line_end": 433,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "absence",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.533,
+                "Pk": 0.533
+              },
+              "TIAGE": {
+                "WD": 0.52,
+                "Pk": 0.52
+              },
+              "QMSum": {
+                "WD": 0.404,
+                "Pk": 0.404
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 434,
+              "line_end": 434,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "BERTSeg",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.483,
+                "Pk": 0.476
+              },
+              "TIAGE": {
+                "WD": 0.47,
+                "Pk": 0.439
+              },
+              "QMSum": {
+                "WD": 0.387,
+                "Pk": 0.377
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 435,
+              "line_end": 435,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "TT+BERTopic",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.489,
+                "Pk": 0.478
+              },
+              "TIAGE": {
+                "WD": 0.478,
+                "Pk": 0.461
+              },
+              "QMSum": {
+                "WD": 0.447,
+                "Pk": 0.438
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 436,
+              "line_end": 436,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "DialSTART",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.498,
+                "Pk": 0.483
+              },
+              "TIAGE": {
+                "WD": 0.507,
+                "Pk": 0.471
+              },
+              "QMSum": {
+                "WD": 0.478,
+                "Pk": 0.443
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 437,
+              "line_end": 437,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "HyperSeg",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.512,
+                "Pk": 0.503
+              },
+              "TIAGE": {
+                "WD": 0.522,
+                "Pk": 0.519
+              },
+              "QMSum": {
+                "WD": 0.485,
+                "Pk": 0.461
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 438,
+              "line_end": 438,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "CohereSeg",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.562,
+                "Pk": 0.438
+              },
+              "TIAGE": {
+                "WD": 0.528,
+                "Pk": 0.451
+              },
+              "QMSum": {
+                "WD": 0.817,
+                "Pk": 0.569
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 439,
+              "line_end": 439,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "model": "SumSeg (ours)",
+            "values": {
+              "SuperDialSeg": {
+                "WD": 0.48,
+                "Pk": 0.469
+              },
+              "TIAGE": {
+                "WD": 0.455,
+                "Pk": 0.438
+              },
+              "QMSum": {
+                "WD": 0.379,
+                "Pk": 0.357
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 440,
+              "line_end": 440,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "model_notes": "Only Bi-H-LSTM is marked supervised. CohereSeg uses the pretrained scorer variant in §4.3. Decimal commas in the Bi-H-LSTM row are numerically normalized to decimal points; original tokens remain in the cited source."
+      },
+      "table3": {
+        "context": "Same test protocol, varying pretrained summarizer. All four models use chunking on QMSum, per caption. Other-dataset chunk use is not enumerated. No controlled fixed-context or matched-training ablation.",
+        "rows": [
+          {
+            "dataset": "SuperDialSeg",
+            "values": {
+              "BART": {
+                "WD": 0.488,
+                "Pk": 0.48
+              },
+              "BART-samsum": {
+                "WD": 0.48,
+                "Pk": 0.469
+              },
+              "FLAN-T5-samsum": {
+                "WD": 0.485,
+                "Pk": 0.475
+              },
+              "LED-samsum": {
+                "WD": 0.491,
+                "Pk": 0.483
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 449,
+              "line_end": 450,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "dataset": "TIAGE",
+            "values": {
+              "BART": {
+                "WD": 0.443,
+                "Pk": 0.415
+              },
+              "BART-samsum": {
+                "WD": 0.455,
+                "Pk": 0.438
+              },
+              "FLAN-T5-samsum": {
+                "WD": 0.443,
+                "Pk": 0.402
+              },
+              "LED-samsum": {
+                "WD": 0.493,
+                "Pk": 0.479
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 452,
+              "line_end": 453,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "dataset": "QMSum",
+            "values": {
+              "BART": {
+                "WD": 0.431,
+                "Pk": 0.414
+              },
+              "BART-samsum": {
+                "WD": 0.379,
+                "Pk": 0.357
+              },
+              "FLAN-T5-samsum": {
+                "WD": 0.41,
+                "Pk": 0.399
+              },
+              "LED-samsum": {
+                "WD": 0.436,
+                "Pk": 0.419
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+              "line_start": 455,
+              "line_end": 456,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "source_refs": [
+          "E_T3"
+        ]
+      },
+      "derived_table2_differences": [
+        {
+          "dataset": "SuperDialSeg",
+          "split": "test",
+          "metric": "WD",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.483,
+          "model": "Table 2 SumSeg",
+          "score": 0.48,
+          "absolute_reduction": 0.003,
+          "percentage_point_reduction": 0.3,
+          "relative_error_reduction_percent": 0.621118,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        },
+        {
+          "dataset": "SuperDialSeg",
+          "split": "test",
+          "metric": "Pk",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.476,
+          "model": "Table 2 SumSeg",
+          "score": 0.469,
+          "absolute_reduction": 0.007,
+          "percentage_point_reduction": 0.7,
+          "relative_error_reduction_percent": 1.470588,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        },
+        {
+          "dataset": "TIAGE",
+          "split": "test",
+          "metric": "WD",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.47,
+          "model": "Table 2 SumSeg",
+          "score": 0.455,
+          "absolute_reduction": 0.015,
+          "percentage_point_reduction": 1.5,
+          "relative_error_reduction_percent": 3.191489,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        },
+        {
+          "dataset": "TIAGE",
+          "split": "test",
+          "metric": "Pk",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.439,
+          "model": "Table 2 SumSeg",
+          "score": 0.438,
+          "absolute_reduction": 0.001,
+          "percentage_point_reduction": 0.1,
+          "relative_error_reduction_percent": 0.22779,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        },
+        {
+          "dataset": "QMSum",
+          "split": "test",
+          "metric": "WD",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.387,
+          "model": "Table 2 SumSeg",
+          "score": 0.379,
+          "absolute_reduction": 0.008,
+          "percentage_point_reduction": 0.8,
+          "relative_error_reduction_percent": 2.067183,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        },
+        {
+          "dataset": "QMSum",
+          "split": "test",
+          "metric": "Pk",
+          "baseline_model": "BERTSeg",
+          "baseline": 0.377,
+          "model": "Table 2 SumSeg",
+          "score": 0.357,
+          "absolute_reduction": 0.02,
+          "percentage_point_reduction": 2.0,
+          "relative_error_reduction_percent": 5.30504,
+          "status": "analyst arithmetic from printed scores",
+          "source_refs": [
+            "E_T2"
+          ]
+        }
+      ],
+      "unavailable_metrics": [
+        "Boundary precision/recall/F1",
+        "Topic cluster/pair scores",
+        "Whole-message multilabel scores",
+        "Source-span F1/IoU",
+        "Overlap/discontinuity scores",
+        "Decision-bearing condition/evidence/scope preservation"
+      ],
+      "runtime": {
+        "task": "Summarization model inference, not an end-to-end segmentation or msgloom throughput benchmark",
+        "split": "not reported",
+        "dataset": "not reported",
+        "measurement_unit": "seconds; per-document/per-batch/per-chunk denominator not reported",
+        "model_seconds": {
+          "BART": 7.5,
+          "BART-samsum": 6.6,
+          "FLAN-T5-samsum": 19.2,
+          "LED-samsum": 0.8
+        },
+        "hardware_batch_input_lengths_repetitions": "Not reported for Table 4. The A100 mentioned in §4.3 concerns full CohereSeg fine-tuning, not this benchmark.",
+        "tuning_time": "Approximately two hours across three datasets for one summarizer; hardware/search size unspecified.",
+        "transfer": "Cannot use these times as Raspberry Pi 5 latency or daily-message capacity estimates.",
+        "source_refs": [
+          "E_RUNTIME",
+          "E_BASELINES"
+        ]
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measurement": "No measured preservation of decision-bearing conditions, evidence, exceptions, action scope, approval scope, or reply scope.",
+      "related_observation": "T11-F05 records illustration-level transformation, not adjudicated preservation errors or a population rate.",
+      "distinction": "Pk/WD improvements and summary similarity vectors do not establish semantic fidelity. No quantitative summarization-fidelity metric is reported either.",
+      "source_refs": [
+        "E_FIG1",
+        "E_PK",
+        "E_WD",
+        "E_T2",
+        "E_T3"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Segment topic labeling and stable work-matter identity.",
+      "Whole-message multilabel classification.",
+      "Exact source-span assignment to a Topic.",
+      "Overlapping source-span assignment or multiple memberships per span.",
+      "Non-contiguous assignment to one Topic within a message or across turns/threads.",
+      "Discourse/EDU segmentation as an evaluated task; auxiliary summary parsing is distinct.",
+      "Action/question/reply-scope extraction.",
+      "Preservation of decision-bearing conditions, evidence, exceptions, approval scope, action scope, or reply scope.",
+      "Business-email boundaries, quoted-history handling, attachments, asynchronous interleaving, uncertain assignments, incremental updates, or Raspberry Pi resource use."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T11-I01",
+        "type": "numerical prose/table mismatch",
+        "finding_ref": "T11-F04",
+        "printed_claim": "5% on WD and 6% on PK over BERTSeg (§5.1).",
+        "table_values": "Table 2 differences and both percentage conventions are in metrics.derived_table2_differences; selecting best Table 3 models changes the comparison.",
+        "source_refs": [
+          "E_MAIN",
+          "E_T2",
+          "E_T3"
+        ],
+        "resolution": "Unresolved; no percentage convention or rounding/model-choice correction inferred."
+      },
+      {
+        "id": "T11-I02",
+        "type": "percentage convention ambiguity",
+        "printed_claim": "§5.3 says TIAGE BART is within a 3% Pk difference from FLAN-T5-samsum.",
+        "table_values": {
+          "dataset": "TIAGE",
+          "split": "test",
+          "metric": "Pk",
+          "BART": 0.415,
+          "FLAN_T5_samsum": 0.402,
+          "derived_absolute_difference": 0.013,
+          "derived_percentage_point_difference": 1.3,
+          "derived_percent_relative_to_FLAN_T5": 3.233831,
+          "derived_percent_relative_to_BART": 3.13253
+        },
+        "source_refs": [
+          "E_STABILITY",
+          "E_T3"
+        ],
+        "resolution": "A 1.3-point difference is within 3 points, whereas both usual relative denominators give slightly over 3%. Do not silently choose a convention."
+      },
+      {
+        "id": "T11-I03",
+        "type": "internal historical attribution conflict",
+        "finding_ref": "T11-F08",
+        "source_refs": [
+          "E_BOW",
+          "E_LDA"
+        ],
+        "resolution": "Retain both printed wordings; no Topic01 reuse or external correction."
+      },
+      {
+        "id": "T11-I04",
+        "type": "metric window definition ambiguity",
+        "printed_claim": "Appendix A says k is half the reference mean segment length; its formula is k = N / (2 * number of bounderies).",
+        "impact": "The paper does not define whether boundary counts include an endpoint. In a linear partition the number of internal boundaries and the number of segments differ. Rounding k and zero-boundary handling are also unspecified.",
+        "source_refs": [
+          "E_PK"
+        ],
+        "resolution": "Preserve the printed denominator and spelling; do not replace bounderies with segments or assert the implementation convention."
+      },
+      {
+        "id": "T11-I05",
+        "type": "matrix/filter axis ambiguity and terminology mismatch",
+        "printed_claim": "§3.3 defines E with shape n × nss and filters each row; §3.4 identifies row j as source sentence j. Appendix C instead describes heat-map colors as cosine distance, while §3.3 uses cosine similarities.",
+        "impact": "Literal row filtering acts across summary-sentence coordinates for each source sentence. Figures label the horizontal axis simple sentences in summary and vertical axis sentences in document. The temporal smoothing motivation and visible examples do not authorize substitution of column filtering or a transpose.",
+        "source_refs": [
+          "E_MATRIX",
+          "E_BOUNDARY",
+          "E_SMOOTH"
+        ],
+        "resolution": "No code audit was performed. Preserve row as printed, flag axis and distance/similarity terminology, and leave actual implementation unresolved."
+      },
+      {
+        "id": "T11-I06",
+        "type": "illustration versus simple-sentence definition",
+        "printed_claim": "§3.3 defines simple sentences as containing only one verb. Figure 1 S3 and Figure 2 SS3 print is single, divorced, he owns ... as one item, including both is and owns.",
+        "impact": "The example does not transparently instantiate the literal one-verb definition. It cannot establish exact clause boundaries or source-span annotation quality.",
+        "source_refs": [
+          "E_CLAUSE",
+          "E_FIG1",
+          "E_FIG2"
+        ],
+        "resolution": "Retain definition and illustration; no parser repair or author-intent correction inferred."
+      },
+      {
+        "id": "T11-I07",
+        "type": "reported count/precision differences; not established contradictions",
+        "printed_claim": "§4.1 describes SuperDialseg as 9K dialogues; Table 1 lists 6,690/1,298/1,277, summing to 9,265. Table 3 caption describes QMSum mean/max lengths as 10k/25k words; Table 1 lists 9,521.4/25,529.",
+        "impact": "Use exact Table 1 split counts and statistics for this protocol. Its averaging population is not split-qualified. Rounded prose is not an alternate exact count. No comparison with frozen T09/T10 split protocols is made.",
+        "source_refs": [
+          "E_DATA",
+          "E_T1",
+          "E_T3"
+        ],
+        "resolution": "Retained as precision differences; neither totals nor rounding imply corpus corruption."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "relevance": "Partial method-transfer evidence",
+        "assessment": "Source sentence/utterance vectors and auxiliary summary clauses are distinguished. No comparative evidence selects sentence, clause, arbitrary span, EDU, or hybrid for work-matter scope.",
+        "source_refs": [
+          "E_TASK",
+          "E_CLAUSE"
+        ]
+      },
+      "RQ2": {
+        "relevance": "No direct email evidence",
+        "assessment": "A linear dialogue/meeting partition does not establish asynchronous email clustering or interleaving handling.",
+        "source_refs": [
+          "E_DATA",
+          "E_BOUNDARY"
+        ]
+      },
+      "RQ3": {
+        "relevance": "Representation boundary",
+        "assessment": "Dense similarities to multiple summary units are features, not gold or predicted multi-Topic memberships. Within-message discontinuous assignments are untested.",
+        "source_refs": [
+          "E_MATRIX",
+          "E_BOUNDARY"
+        ]
+      },
+      "RQ4": {
+        "relevance": "No positive overlap/discontinuity result",
+        "assessment": "QMSum gap insertion is explicit; it is not original discontinuous Topic gold. No direct email or transfer overlap score is supplied.",
+        "source_refs": [
+          "E_QMSUM",
+          "E_BOUNDARY"
+        ]
+      },
+      "RQ5": {
+        "relevance": "Illustration motivates a hypothesis only",
+        "assessment": "T11-F05 motivates checking aggregation, reordering, omission, and abbreviation expansion. No measured work-scope preservation.",
+        "finding_refs": [
+          "T11-F05"
+        ]
+      },
+      "RQ6": {
+        "relevance": "Strong protocol-specific measurement evidence",
+        "assessment": "Full Pk/WD tables, exact split contexts, derived absolute/relative deltas, and numerical ambiguities retained.",
+        "source_refs": [
+          "E_T1",
+          "E_T2",
+          "E_T3",
+          "E_PK",
+          "E_WD"
+        ],
+        "finding_refs": [
+          "T11-F01",
+          "T11-F02",
+          "T11-F03",
+          "T11-F04"
+        ]
+      },
+      "RQ7": {
+        "relevance": "Partial reproducibility evidence",
+        "assessment": "Predefined splits and pretrained checkpoint names are available in the paper. Detailed annotation/IAA, duplicate controls, contamination audits, tuning settings, and aggregation details are absent.",
+        "source_refs": [
+          "E_DATA",
+          "E_T1",
+          "E_MODELS",
+          "E_SUPERVISION"
+        ]
+      },
+      "RQ8": {
+        "relevance": "Untested experiment design input",
+        "assessment": "Compare source and summary-derived representations with separate partition and work-preservation outcomes; see proposed_experiments.",
+        "source_refs": [
+          "E_SUMMARY",
+          "E_MATRIX",
+          "E_T2",
+          "E_FIG1"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "T11-A01",
+        "status": "analyst interpretation",
+        "text": "The transferable idea is to test summary-derived coordinates as a feature representation. SumSeg still embeds every source unit; it does not establish an exact evidence-preserving source-to-Topic assignment.",
+        "source_refs": [
+          "E_CLAUSE",
+          "E_MATRIX",
+          "E_BOUNDARY"
+        ]
+      },
+      {
+        "id": "T11-A02",
+        "status": "analyst interpretation",
+        "text": "Compression can change which content anchors the feature space. Figure 1 provides a concrete reason to inspect those changes, but does not prove that the measured segmentation gains cause or prevent lost work scope.",
+        "finding_refs": [
+          "T11-F01",
+          "T11-F05"
+        ]
+      },
+      {
+        "id": "T11-A03",
+        "status": "analyst interpretation",
+        "text": "Whole-dialogue or joined chunk summaries use available document context. Online causality and incremental recomputation costs are not measured. Better QMSum partition error alone does not justify use for asynchronous messages.",
+        "source_refs": [
+          "E_SUMMARY",
+          "E_T3",
+          "E_RUNTIME"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T11-X01",
+        "status": "untested msgloom research proposal; not architecture approval",
+        "proposal": "On the same authorized synthetic or public work-message examples, compare source embedding features with SumSeg-style summary-derived features and with a source-plus-summary feature variant. Keep the encoder, source unit, split, and tuning budget fixed.",
+        "annotation": "Have reviewers mark work matters, exact source evidence, conditions, exceptions, owners, and action/approval/reply scope. Preserve multiple memberships and uncertainty in gold instead of forcing a partition.",
+        "evaluation": "Use Pk/WD only on an explicitly linear-boundary subset. Report span/multilabel/discontinuous assignment scores and decision-bearing item omissions or scope broadening separately, each with its own reviewed denominator.",
+        "motivation_refs": [
+          "T11-F01",
+          "T11-F05",
+          "T11-A01"
+        ]
+      },
+      {
+        "id": "T11-X02",
+        "status": "untested msgloom research proposal; not architecture approval",
+        "proposal": "Compare candidate source units (sentence, clause, arbitrary reviewed span, EDU, and a documented hybrid) without treating dependency clauses in generated summaries as gold evidence units.",
+        "evaluation": "Measure exact coverage of work-scope annotations and assignment errors separately from contiguous boundaries; record annotation agreement and disagreements by unit.",
+        "motivation_refs": [
+          "E_TASK",
+          "E_CLAUSE",
+          "T11-I06"
+        ]
+      },
+      {
+        "id": "T11-X03",
+        "status": "untested msgloom research proposal; not architecture approval",
+        "proposal": "Audit Figure-1-like transformations using paired examples with multiple speakers, repeated work matters, ambiguous abbreviations, negation, conditions, and a reply that answers only part of a request. Compare full-context and fixed nonoverlapping chunk summaries.",
+        "evaluation": "Track each source item’s attribution, omission, expansion, reordering, and scope under a preregistered rubric. Keep this preservation denominator distinct from Pk/WD. Do not label au a known abbreviation expansion without source evidence.",
+        "motivation_refs": [
+          "T11-F05",
+          "E_SUMMARY"
+        ]
+      },
+      {
+        "id": "T11-X04",
+        "status": "untested msgloom research proposal; not architecture approval",
+        "proposal": "Before any implementation comparison, document the matrix orientation and obtain or inspect an authorized frozen implementation. Evaluate no smoothing and explicit row/column variants as separate experiments; retain the paper’s row wording.",
+        "evaluation": "Use identical validation tuning budgets and report both boundary errors and preservation outcomes. Record timing, memory, input/chunk size, hardware, and latency denominator on the intended host.",
+        "motivation_refs": [
+          "T11-I05",
+          "T11-F06",
+          "T11-F07",
+          "E_RUNTIME"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2024_artemiev_et_al_summarization_unsupervised_dialogue_topic_segmentation.pdf",
+      "pdf_sha256": "2de0f3deea739f64ba20fba6610db70a1a2225285b27dafe156b43e3fda0da19",
+      "expected_pdf_sha256": "2de0f3deea739f64ba20fba6610db70a1a2225285b27dafe156b43e3fda0da19",
+      "pdf_hash_matches": true,
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T11.md",
+      "converted_text_sha256": "a71f865f2e6a0b7282df7119e5a0230fdbda5bec952f2dd7c858dda9e4cfc45f",
+      "conversion_tier": "convert_rough; convert_fine/T11.md is absent",
+      "quote_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.raw.txt",
+      "quote_text_sha256": "b88fc313efc95c434e1df6333505e0e37cd39ddd5b70d6e2019a7c7c356847d5",
+      "auxiliary_conversions": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.pages.md",
+          "sha256": "bcbe584e714fb92f8e018f6d9967ce044bd203d82d6b52f005ec85d4abd90c3d",
+          "read_scope": "Opening page inspected; interleaved layout is unsuitable for primary quote locators."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T11.layout.txt",
+          "sha256": "65ce1e81853d07532412444116cc534ead48dab1ea46834050cf294b5a5d5eee",
+          "read_scope": "Lines 220–370 inspected for independent table/prose checking."
+        }
+      ],
+      "full_text_read": [
+        "convert_rough/T11.md, all lines through 1221",
+        "T11.raw.txt, all lines through 811; includes references and appendices"
+      ],
+      "line_convention": "1-based Unix LF lines: text.split('\\n'); form feed does not add a line; quotation verification normalizes whitespace only and keeps line-break hyphens.",
+      "original_pdf_inspection": {
+        "pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8
+        ],
+        "images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-1-figure-1.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-1.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-2.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-3.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-4.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-5.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-7.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/pdf-page-8.png"
+        ],
+        "observations_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T11/visual-verification.md"
+      },
+      "conversion_issues": "Rough conversion omits Figure 1 text, interleaves Figure 2, merges table rows, and damages equations; independent raw text plus local PDF rendering resolve the readings. Source ambiguities remain explicitly recorded.",
+      "acquisition": "Frozen local sources only. No network requests, corpus extension, pipeline stages, installed-code edits, or workflow-state mutations."
+    }
+  },
+  "runtime_provenance": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "role": "paper-T11",
+    "source": "Launcher-reported environment values from invocation arguments; parent independently verifies actual turn_context and exit receipts.",
+    "fabricated_runtime_identifiers": false
+  }
+}

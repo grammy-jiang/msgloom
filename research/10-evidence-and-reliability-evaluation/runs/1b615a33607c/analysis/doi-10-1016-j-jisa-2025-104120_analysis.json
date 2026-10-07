@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-1016-j-jisa-2025-104120",
+ "title": "Conformal prediction for labelling and updating online models in the presence of concept drift in cybersecurity",
+ "research_question": "Can conformal prediction supply sufficiently reliable pseudo-labels to update online cybersecurity classifiers when true labels are scarce and the data distribution undergoes concept drift?",
+ "methodology": "The study evaluates Adaptive Hoeffding Tree, Adaptive Random Forest, and Logistic Regression online learners on three public cybersecurity datasets covering Android malware, network intrusion, and malicious IP detection. A chronological initial segment is used for training and conformal calibration, while later examples arrive as a stream; high-confidence and high-credibility conformal predictions can be used immediately as pseudo-labels, with varying proportions of delayed true labels also supplied. The authors vary class imbalance and label availability, estimate marginal and conditional drift with total-variation-based measures, and report F1, Matthews correlation coefficient, sensitivity, specificity, and non-parametric statistical tests.",
+ "key_findings": [
+  {
+   "finding": "Conformal pseudo-label updates improve online classification in a substantial subset of dataset-model-labeling configurations, but the gains are not consistent across all conditions.",
+   "evidence_type": "supported",
+   "section": "Results and Discussion"
+  },
+  {
+   "finding": "On the malicious-IP dataset, Adaptive Random Forest with conformal updates shows statistically significant improvements across the reported metrics for all evaluated true-label proportions.",
+   "evidence_type": "supported",
+   "section": "Results, malicious-IP experiment"
+  },
+  {
+   "finding": "On CICIDS 2018, the conformal-update strategy is especially beneficial for Adaptive Random Forest and Logistic Regression in the reported comparisons.",
+   "evidence_type": "supported",
+   "section": "Results, CICIDS 2018 experiment"
+  },
+  {
+   "finding": "The effect of conformal pseudo-labeling is model- and dataset-dependent, and some configurations obtain little benefit or deteriorate.",
+   "evidence_type": "supported",
+   "section": "Results and Discussion"
+  },
+  {
+   "finding": "Larger concept drift is associated with smaller expected gains from the conformal-update mechanism in the authors' experiments.",
+   "evidence_type": "supported",
+   "section": "Discussion of RQ2(d)"
+  },
+  {
+   "finding": "Concept drift can make a previously calibrated conformal mechanism stale because the exchangeability conditions underlying conventional conformal validity no longer hold for the evolving stream.",
+   "evidence_type": "supported",
+   "section": "Discussion"
+  }
+ ],
+ "limitations": [
+  "Classical conformal validity relies on exchangeability, an assumption explicitly challenged by concept drift in the deployment stream.",
+  "The confidence and credibility thresholds used to accept pseudo-labels are experimentally chosen and can become inappropriate after distributional change.",
+  "The study covers three cybersecurity datasets and three online-learning algorithms, so conclusions may not transfer to other domains or model families.",
+  "Incorrect pseudo-labels can feed back into subsequent online updates and therefore propagate errors.",
+  "Improvements in F1 or MCC do not imply uniformly improved sensitivity and specificity; the paper reports inconsistent behavior for these operational metrics.",
+  "The experiments do not establish instance-wise selective-prediction guarantees after arbitrary non-stationary drift.",
+  "A public implementation repository was not identified in the paper material examined."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conditional_benefit_of_pseudolabel_updates": 0.98,
+  "adaptive_random_forest_ip_gain": 0.98,
+  "cicids_model_specific_gain": 0.97,
+  "model_dataset_dependence": 0.99,
+  "larger_drift_smaller_gain": 0.96,
+  "exchangeability_problem_under_drift": 0.99
+ },
+ "raw_claims": [
+  "The proposed online update strategy uses conformal confidence and credibility to decide whether an unlabeled observation can be pseudo-labeled.",
+  "Only pseudo-labels passing high confidence and credibility thresholds are used for immediate model updates.",
+  "The experiments use three public cybersecurity datasets with chronological ordering.",
+  "The evaluated online learners are Adaptive Hoeffding Tree, Adaptive Random Forest, and Logistic Regression.",
+  "The study varies how many delayed ground-truth labels are eventually made available.",
+  "Evaluation includes F1, MCC, sensitivity, and specificity.",
+  "Conformal pseudo-labeling is beneficial in some but not all model and dataset configurations.",
+  "Adaptive Random Forest shows strong gains on the malicious-IP task.",
+  "Greater measured drift is associated with reduced improvement from conformal updating.",
+  "Concept drift weakens the exchangeability premise used by conventional conformal calibration."
+ ],
+ "source_url": "https://www.sciencedirect.com/science/article/pii/S2214212625001577",
+ "access": "full_text"
+}

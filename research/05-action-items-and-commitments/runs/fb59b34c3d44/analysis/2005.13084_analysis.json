@@ -1,0 +1,74 @@
+{
+ "paper_id": "2005.13084",
+ "title": "Learning with Weak Supervision for Email Intent Detection",
+ "research_question": "Can noisy supervision derived from users' post-email interactions be combined with a small quantity of clean annotations to improve enterprise email intent detection?",
+ "methodology": "The study uses the Avocado enterprise email corpus and formulates three binary intent-detection tasks: Request Information, Schedule Meeting, and Promise Action. Weak positive labels are generated from interaction heuristics such as replies with attachments, calendar interactions, and follow-up-related behavior, while a much smaller set of examples receives manual clean labels. The proposed Hydra architecture jointly learns from clean and weak supervision using separate prediction heads, label-noise correction, and self-paced learning, with experiments across multiple clean-to-weak data ratios and text encoders. The authors also test cross-domain transfer to Enron email.",
+ "key_findings": [
+  {
+   "finding": "Behavioral weak-labeling functions are informative but substantially noisy: manual checks reported accuracies of about 0.675 for Request Information, 0.71 for Schedule Meeting, and 0.63 for Promise Action.",
+   "evidence_type": "supported",
+   "section": "2.3.2 Quality of Weak Labeling Functions"
+  },
+  {
+   "finding": "Hydra consistently outperformed comparison methods that had access to both clean and weak examples, with the advantage especially useful when clean labels were scarce.",
+   "evidence_type": "supported",
+   "section": "4.2 Impact of Weak Supervision and 4.3 Impact of Clean Data Ratio"
+  },
+  {
+   "finding": "Both self-paced learning and explicit weak-label correction contributed measurably: at a 10% clean ratio aggregate accuracy fell from 0.716 to 0.690 without self-paced learning and to 0.688 without label correction.",
+   "evidence_type": "supported",
+   "section": "4.4 Ablation Analysis"
+  },
+  {
+   "finding": "For the Request Information task with a fixed clean set, increasing weakly labeled data improved reported accuracy from 0.688 with no weak examples to 0.804 when the full weak set was used.",
+   "evidence_type": "supported",
+   "section": "4.5 Additional Experiments"
+  },
+  {
+   "finding": "Weak supervision learned from Avocado transferred to Enron; the reported zero-shot experiment using an Avocado-trained Hydra model achieved 0.738 accuracy on Enron.",
+   "evidence_type": "supported",
+   "section": "4.6 Domain Transfer"
+  },
+  {
+   "finding": "Promise Action is treated as an email-level intent that the sender commits to a future action, but the experiments do not extract a structured action record containing an explicit owner span, deadline bound to that action, obligation polarity, or supporting evidence span.",
+   "evidence_type": "unsupported",
+   "section": "2.2 Dataset and 4 Experiments"
+  }
+ ],
+ "limitations": [
+  "The three weak-labeling heuristics have substantial false-positive and false-negative rates and depend on downstream user behavior rather than direct semantic annotation.",
+  "Only three intent types are evaluated, so the experiments do not cover the broader range of workplace actions, decisions, delegations, or obligation states.",
+  "The main task is intent classification rather than structured extraction of actor, action, deadline, condition, polarity, and evidence.",
+  "The constructed datasets are balanced for evaluation and therefore do not directly represent natural intent base rates.",
+  "Interaction signals are useful for training but generally become available only after a recipient has processed the email, so they are inappropriate as inference-time features.",
+  "The domain-transfer evaluation is limited primarily to Avocado and Enron."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "weak_labels_are_noisy": 0.99,
+  "hydra_improves_low_label_regime": 0.98,
+  "self_paced_and_label_correction_help": 0.98,
+  "more_weak_data_can_help": 0.99,
+  "cross_domain_transfer_demonstrated": 0.97,
+  "no_structured_owner_deadline_binding": 0.96
+ },
+ "raw_claims": [
+  "The paper studies Request Information, Schedule Meeting, and Promise Action intents in enterprise email.",
+  "User interactions are converted into weak supervision rather than being used as inference-time features.",
+  "Replying with an attachment is used as a weak indicator of a preceding information request.",
+  "Calendar-related behavior is used to weakly supervise scheduling intent.",
+  "Follow-up-related interaction is used as a proxy for Promise Action.",
+  "Manual evaluation shows that all three weak-labeling functions contain considerable label noise.",
+  "Hydra combines a small clean-labeled set with a substantially larger weak-labeled set.",
+  "Self-paced learning controls which weak examples contribute during training.",
+  "Increasing the amount of weak data improved performance in the Request Information experiment.",
+  "Weak labels from Avocado could improve a model evaluated on Enron.",
+  "The paper does not evaluate extraction of an owner-deadline-action tuple."
+ ],
+ "source_url": "https://arxiv.org/html/2005.13084",
+ "access": "full_text"
+}

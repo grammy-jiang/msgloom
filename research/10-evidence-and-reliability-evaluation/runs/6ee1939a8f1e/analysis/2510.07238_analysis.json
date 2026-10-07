@@ -1,0 +1,74 @@
+{
+ "paper_id": "2510.07238",
+ "title": "When Benchmarks Age: Temporal Misalignment through Large Language Model Factuality Evaluation",
+ "research_question": "How much do static factuality benchmarks become temporally misaligned with current real-world facts, and how does that aging distort evaluations of modern LLM factuality?",
+ "methodology": "The study examines five widely used QA factuality benchmarks and eight LLMs released at different times. An LLM-assisted detector identifies time-sensitive benchmark questions, while a web-search pipeline using Google and Brave retrieves current answers during a fixed July 18-19, 2025 window; human evaluations assess both time-sensitive classification and retrieved-answer quality. The authors introduce Dataset Drift Score, Evaluation Misleading Rate, and Temporal Alignment Gap to distinguish agreement with stale benchmark labels from agreement with current information. They additionally run a controlled BoolQ experiment comparing model behavior with and without potentially stale passage context.",
+ "key_findings": [
+  {
+   "finding": "Among time-sensitive questions, Dataset Drift Scores range from 24.19% to 63.78% across the five investigated benchmarks, except that the paper separately notes TriviaQA has relatively few time-sensitive questions overall.",
+   "evidence_type": "supported",
+   "section": "3.1 RQ1: A Considerable Portion of the Benchmarks Are Outdated"
+  },
+  {
+   "finding": "More than half of the reported model-benchmark combinations have an Evaluation Misleading Rate above 10%, meaning current answers can be scored as wrong because benchmark labels are stale.",
+   "evidence_type": "supported",
+   "section": "3.2 RQ2: Benchmark Aging Affects the Reliability of LLM Evaluation"
+  },
+  {
+   "finding": "Seventy percent of Temporal Alignment Gap measurements are positive, indicating that model outputs more often align better with current web-derived facts than with benchmark gold answers.",
+   "evidence_type": "supported",
+   "section": "3.2 RQ2: Benchmark Aging Affects the Reliability of LLM Evaluation"
+  },
+  {
+   "finding": "Supplying outdated BoolQ passages can pull models toward obsolete benchmark information even when their unaided responses better reflect current facts.",
+   "evidence_type": "supported",
+   "section": "D.3 BoolQ TAG Comparison by Controlling Context"
+  },
+  {
+   "finding": "The web-search pipeline was judged correct on 89.52% of a 105-question human-evaluated sample, with Cohen's kappa of 0.58.",
+   "evidence_type": "supported",
+   "section": "C.3 Web Search Pipeline"
+  },
+  {
+   "finding": "The paper's LLM-as-a-judge comparison procedure achieved 97% accuracy in its human validation and average Cohen's kappa of 0.72 among three evaluators.",
+   "evidence_type": "supported",
+   "section": "C.4 LLM-as-a-judge Prompt"
+  }
+ ],
+ "limitations": [
+  "The study's approximation of present-day truth is produced by a web-search and LLM-processing pipeline rather than by an authoritative ground-truth database.",
+  "Human validation of the web-search answers reports only moderate inter-annotator agreement, with Cohen's kappa of 0.58.",
+  "All current-fact retrieval is tied to the fixed July 18-19, 2025 observation window, so the derived current answers themselves will age.",
+  "The analysis covers five QA benchmarks and eight models and may not generalize to other factuality tasks, languages, or domains.",
+  "Time-sensitive sample detection and pairwise answer comparison partly rely on LLM-based classifiers and judges, introducing another learned component into the evaluation chain.",
+  "The paper's model-size observation is based on comparisons within the Qwen family and should not by itself be interpreted as a universal scaling law.",
+  "The public code repository provides the pipeline but expects users to supply source benchmark data and external search/API access."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "benchmark_drift": 0.98,
+  "misleading_evaluation": 0.98,
+  "positive_temporal_alignment_gap": 0.97,
+  "stale_context_anchoring": 0.96,
+  "search_validation": 0.99,
+  "judge_validation": 0.98
+ },
+ "raw_claims": [
+  "The study evaluates five static factuality benchmarks using eight LLMs.",
+  "The benchmark questions include a non-negligible subset whose correct answers can change over time.",
+  "Dataset Drift Score measures disagreement between benchmark gold answers and web-derived current answers.",
+  "Evaluation Misleading Rate counts cases where a model matches the current answer but is penalized by the old benchmark label.",
+  "Temporal Alignment Gap contrasts alignment with current information against alignment with benchmark labels.",
+  "A substantial fraction of time-sensitive benchmark answers had changed by the July 2025 retrieval window.",
+  "Many modern-model responses align better with current information than with the old gold answers.",
+  "Outdated passages can override more recent information already represented in an LLM.",
+  "The current-answer search pipeline uses both Google Search and Brave Search and may issue repeated searches until evidence is sufficient.",
+  "The authors release code for the benchmark-aging analysis pipeline."
+ ],
+ "source_url": "https://arxiv.org/html/2510.07238",
+ "access": "full_text"
+}

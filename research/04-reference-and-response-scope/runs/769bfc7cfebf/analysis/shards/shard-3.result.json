@@ -1,0 +1,238 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1162-coli-a-00327",
+   "title": "Anaphora With Non-nominal Antecedents in Computational Linguistics: a Survey",
+   "research_question": "What linguistic properties, annotation practices, computational approaches, resources, and unresolved problems characterize anaphora whose antecedents are non-nominal and denote abstract entities such as events, facts, situations, or propositions?",
+   "methodology": "The paper conducts a structured survey and synthesis of theoretical, corpus-annotation, rule-based, statistical, and neural work on non-nominal-antecedent anaphora. It compares competing terminologies, analyzes the syntax and semantics of anaphors and their antecedents, reviews prominent annotated corpora, and summarizes automatic resolution systems and their reported evaluations. The survey concentrates primarily on English and uses tables to compare corpora, annotation choices, system architectures, and performance metrics.",
+   "key_findings": [
+    {
+     "finding": "Non-nominal anaphora is computationally difficult because potential antecedents have diverse syntactic forms, the candidate space is large, antecedent boundaries can be unclear, and ordinary nominal-coreference features such as gender and number are generally unavailable.",
+     "evidence_type": "supported",
+     "section": "Sections 1 and 5"
+    },
+    {
+     "finding": "The referent evoked from the same linguistic antecedent can be interpreted at different semantic types, such as an event, proposition, or fact, and the predication context of the anaphor provides important constraints on that interpretation.",
+     "evidence_type": "supported",
+     "section": "Section 3.2.1"
+    },
+    {
+     "finding": "Precisely delimiting non-nominal antecedent spans is a central annotation problem and is associated with low or only moderate inter-annotator agreement in several annotation efforts.",
+     "evidence_type": "supported",
+     "section": "Sections 4.1 and 4.3"
+    },
+    {
+     "finding": "Only a limited number of annotated corpora reviewed by the survey are reusable, and many available corpora are small for supervised machine-learning purposes.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "Older rule-based resolution approaches often remain competitive with statistical approaches, motivating combinations of explicit linguistic knowledge with modern data-driven representations.",
+     "evidence_type": "supported",
+     "section": "Sections 5 and 6"
+    },
+    {
+     "finding": "Whether a resolver must identify an exact antecedent text span is application-dependent; some applications may primarily need the abstract semantic type, whereas others need explicit textual grounding.",
+     "evidence_type": "supported",
+     "section": "Section 6"
+    },
+    {
+     "finding": "Current formulations inadequately handle antecedents that are discontinuous or extend across more than one sentence, so proposition-level reference cannot always be reduced to selection of one contiguous local span.",
+     "evidence_type": "supported",
+     "section": "Section 6"
+    }
+   ],
+   "limitations": [
+    "The survey explicitly focuses mostly on English, so its synthesis does not fully characterize language-specific phenomena in other languages.",
+    "The authors state that the survey only scratches the surface of the semantics and pragmatics of reference to event-like and other abstract entities.",
+    "The surveyed studies use heterogeneous corpora, annotation schemes, target expressions, and evaluation measures, which limits direct comparison of reported system performance.",
+    "Much of the available empirical literature reviewed by the paper relies on relatively small annotated datasets.",
+    "The review necessarily reflects work available up to 2018 and therefore does not cover subsequent developments."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "computational_challenges": 0.99,
+    "context_constrains_semantic_type": 0.99,
+    "antecedent_boundary_annotation_is_difficult": 0.99,
+    "limited_reusable_training_data": 0.98,
+    "rule_based_methods_remain_competitive": 0.93,
+    "exact_span_requirement_is_task_dependent": 0.99,
+    "discontinuous_antecedents_are_under-modeled": 0.99
+   },
+   "raw_claims": [
+    "Non-nominal antecedents commonly evoke abstract entities such as events, facts, propositions, and situations.",
+    "A non-nominal antecedent need not correspond to an easily delimited noun phrase or other conventional discourse referent.",
+    "The semantic interpretation of an anaphor can differ from the basic semantic type contributed by its antecedent.",
+    "Predicates surrounding an anaphor can constrain whether its referent is interpreted as an event, proposition, fact, or another abstract type.",
+    "Demonstratives such as this and that are important forms for reference to non-nominal antecedents.",
+    "Shell nouns can package proposition-like content and participate in anaphoric relations with non-nominal material.",
+    "Identifying exact antecedent boundaries is one of the main sources of annotation disagreement.",
+    "Few reviewed corpora are both reusable and large enough to support modern supervised learning comfortably.",
+    "Rule-based systems encode linguistic constraints that remain potentially useful to data-driven models.",
+    "The usefulness of recovering an exact antecedent string depends on the downstream application.",
+    "Some abstract antecedents are discontinuous or span multiple sentences, which complicates span-based resolution."
+   ],
+   "source_url": "https://aclanthology.org/J18-3007.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p17-1009",
+   "title": "Joint Learning for Event Coreference Resolution",
+   "research_question": "Can event coreference resolution be improved by jointly learning trigger detection, event anaphoricity, and antecedent selection instead of treating these interdependent tasks as a pipeline?",
+   "methodology": "The authors formulate document-level event analysis as a structured conditional random field that jointly predicts event subtype, event anaphoricity, and an antecedent for each candidate event mention. Unary factors encode task-specific features, while binary and ternary factors model interactions among trigger detection, coreference, and anaphoricity, with approximate inference performed using belief propagation. The system is trained and evaluated on the TAC KBP 2016 English and Chinese corpora and compared with independently trained versions and the strongest official KBP 2016 systems. Ablation experiments and an error analysis are used to identify which task interactions help and where the model fails.",
+   "key_findings": [
+    {
+     "finding": "Joint learning improves event coreference over the independently trained model by 1.80 AVG-F points on English and 1.95 AVG-F points on Chinese.",
+     "evidence_type": "supported",
+     "section": "Section 4.2, Table 2"
+    },
+    {
+     "finding": "Joint learning yields particularly large improvements in event anaphoricity determination, increasing F-score by 4.59 points on English and 4.02 points on Chinese relative to independent models.",
+     "evidence_type": "supported",
+     "section": "Section 4.2, Table 2"
+    },
+    {
+     "finding": "On English, the joint model exceeds the strongest KBP 2016 system by 3.00 points in average event-coreference F-score and by 2.31 points in trigger-detection F-score.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "On Chinese, the joint model exceeds the strongest KBP 2016 system by 1.36 points in average event-coreference F-score and by 0.52 points in trigger-detection F-score.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Coreference-trigger interaction factors make the largest contribution to event-coreference performance among the three modeled interaction types and are also the most effective for improving trigger detection.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "Major remaining errors arise from mistyped or missing triggers, inadequate argument extraction, absence of entity-coreference information, and insufficient context beyond the sentence containing the event mention.",
+     "evidence_type": "supported",
+     "section": "Section 4.4"
+    }
+   ],
+   "limitations": [
+    "Evaluation is confined to the TAC KBP 2016 English and Chinese Event Nugget Detection and Coreference setting and its 18 event subtypes.",
+    "The candidate representation effectively prevents one word occurrence from straightforwardly triggering multiple event mentions, although the appendix provides a partial workaround.",
+    "The model does not exploit annotated event arguments and instead relies on dependency-based heuristics that the error analysis finds inadequate, especially for noun triggers and arguments outside the trigger sentence.",
+    "Entity-coreference information is not incorporated, which weakens event comparison when corresponding arguments are expressed differently or pronominally.",
+    "Contextual features are drawn primarily from the sentence containing an event mention, and the authors identify missing neighboring-sentence context as a source of recall errors.",
+    "The paper does not provide a public implementation link for the proposed joint model."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "joint_model_improves_coreference": 0.99,
+    "joint_model_improves_anaphoricity": 0.99,
+    "english_outperforms_kbp_system": 0.99,
+    "chinese_outperforms_kbp_system": 0.98,
+    "coreference_trigger_interaction_most_useful": 0.98,
+    "context_and_argument_errors_remain": 0.99
+   },
+   "raw_claims": [
+    "The model jointly predicts trigger subtype, event anaphoricity, and an antecedent for every candidate event mention.",
+    "Event anaphoricity is defined by whether an event mention corefers with an earlier mention in the document.",
+    "The coreference component uses a mention-ranking formulation in which a mention selects a preceding antecedent or starts a new cluster.",
+    "Cross-task factors encourage compatible combinations of trigger, anaphoricity, and coreference decisions.",
+    "The joint model improves all three tasks over the corresponding independent models on both evaluation languages.",
+    "Coreference-trigger interactions contribute the most to event-coreference gains in the ablation experiments.",
+    "Mistyped triggers can induce incorrect event-coreference links.",
+    "Missing triggers prevent otherwise valid event-coreference links from being established.",
+    "Dependency-based argument extraction misses information needed to reject false coreference links.",
+    "Lack of entity-coreference information is especially problematic when event arguments are pronouns or otherwise lexically different.",
+    "Using only sentence-local contextual features limits the system when coreferent events are described differently across neighboring sentences."
+   ],
+   "source_url": "https://aclanthology.org/P17-1009.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+   "title": "The CODI-CRAC 2021 Shared Task on Anaphora, Bridging, and Discourse Deixis in Dialogue",
+   "research_question": "How can identity anaphora, bridging reference, and discourse deixis in conversational dialogue be benchmarked across multiple dialogue genres, and what performance do contemporary systems achieve under common evaluation conditions?",
+   "methodology": "The organizers define three shared-task tracks covering identity anaphora, bridging anaphora, and discourse deixis, using ARRAU as training material and four newly annotated dialogue datasets for development and testing. The new datasets span AMI, LIGHT, PERSUASION, and SWITCHBOARD and are represented in the CONLL-UA format, with gold-mention and predicted-mention conditions provided for bridging and discourse deixis. Systems are submitted through CodaLab and evaluated with the Universal Anaphora scorer using task-specific metrics, while released baselines provide reference performance. The paper summarizes 115 runs from six teams and compares system performance across the four test genres.",
+   "key_findings": [
+    {
+     "finding": "The shared task establishes a multi-genre benchmark for three distinct kinds of dialogue anaphora: identity, bridging, and discourse deixis.",
+     "evidence_type": "supported",
+     "section": "Sections 1 and 4"
+    },
+    {
+     "finding": "The newly annotated portion of the CODI-CRAC 2021 corpus contains 147,725 tokens, 41,807 markables, and 1,097 discourse-deixis instances across four dialogue datasets.",
+     "evidence_type": "supported",
+     "section": "Section 3.4, Table 1"
+    },
+    {
+     "finding": "For predicted-mention discourse deixis, UTD_NLP obtains CoNLL average F1 scores between roughly 35 and 42 across the four sub-corpora, substantially ahead of the second submitted system.",
+     "evidence_type": "supported",
+     "section": "Section 8.3, Table 5"
+    },
+    {
+     "finding": "In the discourse-deixis track, every submitted system reported in the evaluation outperforms the simple baseline on every sub-corpus.",
+     "evidence_type": "supported",
+     "section": "Section 8.3"
+    },
+    {
+     "finding": "Providing gold markables does not substantially improve the leading discourse-deixis system on LIGHT, AMI, or SWITCHBOARD, but raises its PERSUASION score by more than 12 CoNLL average F1 points.",
+     "evidence_type": "supported",
+     "section": "Section 8.3"
+    },
+    {
+     "finding": "Dialogue genre materially affects difficulty: the paper identifies AMI as especially challenging for identity anaphora because of annotation ambiguity and substantially longer conversations requiring longer-distance reference resolution.",
+     "evidence_type": "supported",
+     "section": "Section 8.1"
+    },
+    {
+     "finding": "The organizers caution that this first shared-task iteration is insufficient for broad conclusions about task or genre difficulty and identify annotation, scoring, and evaluation design as areas requiring refinement.",
+     "evidence_type": "supported",
+     "section": "Section 8.4"
+    }
+   ],
+   "limitations": [
+    "Because of time constraints, each newly annotated document was annotated by only one annotator, with spot checks by another annotator and an expert rather than full independent double annotation.",
+    "Participants lacked in-domain training data and primarily received out-of-domain training material plus in-domain development data, making the evaluation partly a domain-transfer problem.",
+    "Only two teams submitted discourse-deixis systems and three submitted bridging systems, limiting the breadth of comparisons for those tracks.",
+    "The organizers explicitly state that they had to address annotation, scorer development, and fair evaluation within a short period and could not resolve every issue completely satisfactorily.",
+    "The authors caution that it is premature to generalize strongly about task or genre properties from this first iteration.",
+    "Dataset accessibility is mixed: AMI, LIGHT, and PERSUASION shared-task data are freely available, whereas ARRAU and SWITCHBOARD are distributed through LDC under their respective access conditions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "three_track_dialogue_benchmark": 0.99,
+    "corpus_statistics": 0.99,
+    "discourse_deixis_leader_performance": 0.99,
+    "discourse_deixis_systems_beat_baseline": 0.99,
+    "gold_markables_have_genre_specific_effect": 0.99,
+    "ami_is_challenging": 0.97,
+    "authors_caution_against_broad_generalization": 0.99
+   },
+   "raw_claims": [
+    "CODI-CRAC 2021 evaluates identity anaphora, bridging reference, and discourse deixis in conversational data.",
+    "Four dialogue datasets were newly annotated for development and testing using an annotation scheme related to ARRAU.",
+    "The newly annotated corpus covers multiple dialogue genres rather than a single conversational domain.",
+    "Bridging and discourse-deixis evaluation include both predicted-markable and gold-markable settings.",
+    "The organizers released scoring and data-conversion scripts in addition to distributing the evaluation data.",
+    "A simple discourse-deixis baseline treats this and that as candidate anaphors and selects the immediately preceding clause or utterance as antecedent.",
+    "The leading submitted discourse-deixis system substantially exceeds the baseline on all four evaluated sub-corpora.",
+    "Gold markables do not yield uniform gains for discourse-deixis resolution across genres.",
+    "AMI contains longer conversations than the other newly annotated datasets and therefore creates more long-distance reference cases.",
+    "Each new document received only one primary annotation because of schedule constraints.",
+    "The organizers regard the first shared-task iteration as exploratory and call for improved annotation guidelines and further comparative analysis."
+   ],
+   "source_url": "https://aclanthology.org/2021.codi-sharedtask.1.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

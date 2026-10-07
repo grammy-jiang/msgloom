@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-18653-v1-2025-acl-long-837",
+ "title": "Can LLMs Evaluate Complex Attribution in QA? Automatic Benchmarking using Knowledge Graphs",
+ "research_question": "Can a knowledge-graph-generated benchmark with fine-grained attribution categories and compositional evidence requirements reliably evaluate and improve automatic attribution evaluators, including under out-of-domain testing?",
+ "methodology": "The paper constructs CAQA automatically from Freebase and two KGQA datasets by extending logical queries, extracting knowledge-graph subgraphs, editing those subgraphs, and verbalizing the resulting facts as answers and citations. CAQA contains 161,174 examples spanning supportive, partially supportive, contradictory, and irrelevant attribution labels, with reasoning complexity organized into single, union, intersection, and concatenation cases. The authors benchmark 25 automatic evaluators, comprising two existing attribution evaluators and 23 LLM evaluators under zero-shot, few-shot, and fine-tuned settings. Evaluation uses per-class F1 and micro-F1, comparison with human labels, FACTSCORES for partially supportive cases, human checks of KG-to-text conversion quality, and out-of-domain testing on ALCE-FineGrained.",
+ "key_findings": [
+  {
+   "finding": "Zero-shot and few-shot evaluators struggle with fine-grained negative attribution categories, especially partially supportive evidence, whereas after CAQA fine-tuning all evaluated models except Mistral-v0.2 exceed 90% performance in the reported fine-grained evaluation.",
+   "evidence_type": "supported",
+   "section": "Section 6.1"
+  },
+  {
+   "finding": "Evaluator errors increase on attribution cases requiring multi-piece logical reasoning, and the paper documents failures caused by keyword co-occurrence rather than correct reasoning over evidence relationships.",
+   "evidence_type": "supported",
+   "section": "Section 6.1"
+  },
+  {
+   "finding": "Evaluator micro-F1 scores computed using CAQA's automatically generated labels closely align with scores computed using separately collected human labels, with Pearson correlation 0.97.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "On 200 partially supportive examples, CAQA's automatically computed FACTSCORE is 0.62 versus 0.58 from human annotations, a gap of 0.04 that is smaller than the gaps of the evaluated attribution models.",
+   "evidence_type": "supported",
+   "section": "Section 6.3"
+  },
+  {
+   "finding": "On out-of-domain ALCE-FineGrained, the CAQA-fine-tuned T5-11B reaches overall F1 of 0.63 versus 0.54 for AutoIS, while CAQA-fine-tuned Vicuna-13B reaches 0.38 versus 0.36 for AttrScore.",
+   "evidence_type": "supported",
+   "section": "Section 6.4"
+  },
+  {
+   "finding": "Further fine-tuning the CAQA-trained Vicuna-13B with a small amount of ALCE-FineGrained target-domain data raises its overall score to 0.52, showing additional benefit from target-domain adaptation.",
+   "evidence_type": "supported",
+   "section": "Section 6.4"
+  }
+ ],
+ "limitations": [
+  "The benchmark does not cover lengthy answers and long citations.",
+  "Mathematical reasoning is outside the benchmark's current scope.",
+  "Temporal and spatial reasoning are explicitly identified as missing cases.",
+  "Reasoning requiring domain-specific knowledge is not fully represented.",
+  "The benchmark is generated from knowledge graphs and structured KGQA queries, so real-world free-form multi-source evidence can contain phenomena not represented by the current construction."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "fine_tuning_over_90_percent": 0.99,
+  "complex_reasoning_weakness": 0.99,
+  "human_alignment_pearson": 0.99,
+  "partial_support_gap": 0.99,
+  "ood_transfer": 0.99,
+  "temporal_reasoning_absent": 0.99
+ },
+ "raw_claims": [
+  "CAQA automatically creates fine-grained attribution examples from knowledge graphs.",
+  "The benchmark contains 161,174 examples.",
+  "Its attribution labels include supportive, partially supportive, contradictory, and irrelevant.",
+  "Its complexity categories include single, union, intersection, and concatenation.",
+  "The study evaluates 25 automatic attribution evaluators.",
+  "The evaluator set includes two existing attribution systems and 23 LLM evaluators.",
+  "Partially supportive evidence is particularly difficult for zero-shot and few-shot evaluators.",
+  "Fine-tuning on CAQA substantially improves fine-grained attribution classification.",
+  "CAQA automatic labels and human labels produce evaluator scores with Pearson correlation 0.97.",
+  "CAQA's automatic partial-support FACTSCORE differs from the human score by 0.04.",
+  "CAQA-trained evaluators show out-of-domain gains on ALCE-FineGrained.",
+  "The current benchmark does not cover temporal reasoning.",
+  "The authors publicly release CAQA code and data."
+ ],
+ "source_url": "https://aclanthology.org/2025.acl-long.837.pdf",
+ "access": "full_text"
+}

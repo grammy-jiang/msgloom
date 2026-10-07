@@ -1,0 +1,88 @@
+{
+ "paper_id": "2604.23783",
+ "title": "S2G-RAG: Structured Sufficiency and Gap Judging for Iterative Retrieval-Augmented QA",
+ "research_question": "Can iterative retrieval-augmented QA be improved by explicitly judging whether current evidence is sufficient, representing unresolved information needs as structured gaps, using those gaps to choose the next bounded retrieval, and stopping once adequate evidence has been accumulated?",
+ "methodology": "S2G-RAG introduces a controller called S2G-Judge that reads only the question and currently accumulated evidence and predicts both a binary sufficiency decision and structured unresolved gaps. When evidence is insufficient, the gap representation is converted into a new query, top-ranked documents are retrieved, and a sentence-level extractor appends a compact set of evidence to the retained context; when evidence is sufficient, or the maximum retrieval budget is reached, the answer reasoner is invoked. The judge is trained with process supervision distilled from multi-turn execution trajectories, and the system is evaluated on TriviaQA, HotpotQA, and 2WikiMultiHopQA with both BM25 and dense E5 retrieval.",
+ "key_findings": [
+  {
+   "finding": "The controller makes retrieval explicitly evidence-gap-driven: insufficiency produces typed gap items containing fields such as target, slot, and description, and those items are converted into the next retrieval query.",
+   "evidence_type": "supported",
+   "section": "Sections 3.1, 3.2 and 3.3"
+  },
+  {
+   "finding": "The retrieval process is bounded by a maximum number of turns and a fixed top-k per turn; the principal experiments use at most four retrieval turns and retrieve six documents per turn.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "S2G-RAG reports the strongest EM and F1 among the compared systems across the BM25 and E5 settings, with particularly large gains on HotpotQA and 2WikiMultiHopQA.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  },
+  {
+   "finding": "On HotpotQA with BM25, removing S2G-Judge causes the largest reported ablation loss, reducing EM from 43.3 to 27.5 and F1 from 56.5 to 37.6.",
+   "evidence_type": "supported",
+   "section": "Section 4.5.1"
+  },
+  {
+   "finding": "Against a sufficiency proxy based on whether all gold supporting titles have been retrieved, the judge has a reported false-positive rate of 6.44 percent but judges 31.60 percent of proxy-sufficient cases as still insufficient, indicating conservative stopping behavior.",
+   "evidence_type": "supported",
+   "section": "Section 4.5.2"
+  },
+  {
+   "finding": "Sentence-level evidence extraction reduces final accumulated context by approximately 4.5 to 6.4 times relative to raw document concatenation while retaining similar downstream effectiveness, and it lowers latency relative to the same iterative pipeline without extraction.",
+   "evidence_type": "supported",
+   "section": "Section 4.5.3"
+  },
+  {
+   "finding": "Increasing the permitted retrieval turns yields diminishing gains after important supporting evidence has been accumulated, and the learned judge's budget-performance trend closely follows the teacher used for supervision.",
+   "evidence_type": "supported",
+   "section": "Section 4.5.5"
+  },
+  {
+   "finding": "The authors explicitly identify temporal constraints and more complex compositional evidence requirements as cases that the current structured gap schema may fail to represent adequately.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  }
+ ],
+ "limitations": [
+  "The gap schema deliberately trades expressiveness for stable control and may not adequately represent multi-entity joins, temporal constraints, or complex compositional relations.",
+  "Sentence-level extraction can omit surrounding context needed for disambiguation or evidence that spans several sentences.",
+  "The sufficiency judge is conservative and still requires better calibration.",
+  "The learning procedure uses trajectory distillation rather than jointly optimizing retrieval and stopping decisions with reinforcement-learning or actor-critic objectives.",
+  "The experiments use QA benchmarks rather than workplace email, messaging, document, or meeting communication.",
+  "Authorization and source-level permission checks are not part of the retrieval controller.",
+  "Document-version lineage and freshness-validity policies are not modeled.",
+  "Although latency and retrieval budgets are measured, monetary cost and organization-specific retrieval costs are not incorporated into the decision objective."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_gap_control": 0.99,
+  "multi_hop_qa_gain": 0.99,
+  "judge_ablation": 0.99,
+  "sufficiency_calibration": 0.99,
+  "evidence_compression": 0.98,
+  "budget_saturation": 0.97,
+  "temporal_schema_limitation": 0.99
+ },
+ "raw_claims": [
+  "S2G-Judge decides from the question and accumulated evidence whether the evidence is sufficient to answer.",
+  "When evidence is insufficient, the judge emits structured descriptions of the unresolved information gaps.",
+  "Gap items are transformed into retrieval queries rather than asking the retriever to search again with an unchanged question.",
+  "The judge is constrained to evaluate supplied evidence instead of relying on the language model's parametric knowledge.",
+  "Retrieved documents are reduced to selected evidence sentences before being added to the accumulated context.",
+  "The iterative process stops when the judge declares the context sufficient or when the retrieval-turn budget is exhausted.",
+  "Removing the sufficiency-and-gap judge produces the largest performance loss among the reported component ablations.",
+  "The sufficiency judge has relatively few false declarations of sufficiency under the paper's supporting-title proxy but frequently continues retrieval after that proxy is satisfied.",
+  "Compact evidence extraction substantially reduces the amount of text carried through later retrieval turns.",
+  "Additional retrieval turns provide diminishing returns as the evidence set becomes more complete.",
+  "The current gap representation is acknowledged to be weak for temporal constraints and some complex relations.",
+  "The experiments do not incorporate enterprise permissions, changing document versions, or source-expiration rules."
+ ],
+ "source_url": "https://arxiv.org/html/2604.23783",
+ "access": "full_text"
+}

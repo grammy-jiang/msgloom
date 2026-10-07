@@ -1,0 +1,74 @@
+{
+ "paper_id": "2605.06635",
+ "title": "Cited but Not Verified: Parsing and Evaluating Source Attribution in LLM Deep Research Agents",
+ "research_question": "Do citations in deep-research reports actually support the claims attached to them, and how do citation reliability and factual support change across models and as research depth increases?",
+ "methodology": "The authors build an end-to-end citation-evaluation framework that parses Markdown research reports into sentence-level claim-citation relationships, retrieves the cited web sources, and evaluates each relationship separately. The evaluation distinguishes link accessibility, topical relevance, and factual support, with LLM judges used for the latter two dimensions and the factual judge calibrated through manual review. Fourteen models are tested on 130 research queries drawn from DeepResearch Bench and BrowseComp. A separate depth ablation varies allowed tool calls from 2 through 150 for GPT-5.4 and Claude Opus 4.6.",
+ "key_findings": [
+  {
+   "finding": "Working links and topically relevant sources substantially overstate citation reliability because factual support is much lower than those surface-level citation metrics.",
+   "evidence_type": "supported",
+   "section": "4.1 Overall Citation Quality"
+  },
+  {
+   "finding": "Across the evaluated models, factual-support performance spans a much wider and lower range than link accessibility, including a low of 24.4 percent Fact Check accuracy for OSS-120B.",
+   "evidence_type": "supported",
+   "section": "4.1 Overall Citation Quality, Table 1"
+  },
+  {
+   "finding": "Fewer than half of the evaluated open-source-model runs successfully generated the required cited report, with reported task-success rates of 17 to 40 percent compared with 83 to 100 percent for frontier models.",
+   "evidence_type": "supported",
+   "section": "4.1 Overall Citation Quality"
+  },
+  {
+   "finding": "Increasing search depth from 2 to 150 tool calls reduced Fact Check accuracy by approximately 42 percent on average across the two frontier models in the ablation, while link validity and topical relevance stayed comparatively stable.",
+   "evidence_type": "supported",
+   "section": "4.3 Search Depth Ablation"
+  },
+  {
+   "finding": "For GPT-5.4, the largest factual-support deterioration appeared early in the depth ablation, with Fact Check accuracy falling from about 79 percent at 2 tool calls to 46 percent at 10 calls.",
+   "evidence_type": "supported",
+   "section": "4.3 Search Depth Ablation"
+  },
+  {
+   "finding": "The paper attributes the degradation with additional retrieved information to information overload impairing factual synthesis, but the experiments establish the association rather than isolating that causal mechanism.",
+   "evidence_type": "unsupported",
+   "section": "4.3 Search Depth Ablation"
+  }
+ ],
+ "limitations": [
+  "Relevant Content and Fact Check rely on an LLM judge and may retain position bias, self-enhancement bias, or other judge-model biases despite human calibration.",
+  "Web pages and URLs are temporally unstable, so later reruns may observe changed content or unavailable sources.",
+  "The study is limited to models with web-search capabilities and does not evaluate enterprise RAG systems over private internal corpora.",
+  "Retrieved source content supplied to the relevance judge is truncated to 5,000 characters, which can exclude potentially relevant material outside that window.",
+  "The search-depth experiment uses only two frontier models, limiting how broadly its degradation pattern can be generalized.",
+  "The proposed evaluation measures support in retrieved web content but does not independently guarantee the truth or authority of every source."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "surface_metrics_hide_support_failures": 0.99,
+  "wide_fact_check_range": 0.99,
+  "open_source_task_success_gap": 0.99,
+  "depth_reduces_factual_support": 0.99,
+  "early_gpt54_decline": 0.99,
+  "information_overload_mechanism": 0.72
+ },
+ "raw_claims": [
+  "The framework separates whether a citation link works, whether its content is relevant, and whether it actually supports the attributed claim.",
+  "Citation-to-claim relationships are recovered from generated Markdown reports and evaluated at sentence-level granularity.",
+  "The study evaluates 14 models on 130 research queries.",
+  "Frontier systems generally produce accessible and relevant citations more consistently than they produce factually supporting citations.",
+  "OSS-120B receives 24.4 percent on the reported Fact Check metric.",
+  "Open-source systems have substantially lower success rates at producing the requested cited reports in the evaluated one-shot setting.",
+  "Search-depth experiments vary tool usage from 2 to 150 calls.",
+  "Average Fact Check accuracy across the two depth-ablation models falls by roughly 42 percent from the shallowest to deepest setting.",
+  "Link accessibility and topical relevance remain relatively stable while factual support deteriorates with search depth.",
+  "Web-source changes over time are identified as a reproducibility problem for citation evaluation.",
+  "The framework does not cover enterprise systems that attribute claims to private internal document collections."
+ ],
+ "source_url": "https://arxiv.org/html/2605.06635",
+ "access": "full_text"
+}

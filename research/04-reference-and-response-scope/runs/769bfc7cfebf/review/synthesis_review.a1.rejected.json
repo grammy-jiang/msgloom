@@ -1,0 +1,44 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/04-reference-and-response-scope/runs/769bfc7cfebf/analysis/synthesis.json",
+ "status": "rejected",
+ "issues": [
+  "Finding 2 overstates the cited evidence. 1706.02256, doi-10-18653-v1-2021-naacl-main-329, manual-555fa5b6e8, and manual-5c0971730d show successful mention-ranking, cluster-ranking, or pairwise-candidate formulations, but none compares those formulations against an 'unconstrained whole-message label'. The statement that antecedent resolution 'should' use candidate ranking 'rather than' that alternative therefore exceeds the analyses.",
+  "Finding 4 includes doi-10-18653-v1-2021-naacl-main-329 as evidence for abstract-reference antecedents that are discontinuous, multi-sentential, or composed from propositions. That paper concerns split antecedents consisting of multiple entity clusters, not non-nominal or propositional abstract antecedents. doi-10-1162-coli-a-00327 and manual-8b8a394daa support the abstract-reference portion directly, but the split-antecedent paper is transfer evidence and must not be presented as direct support for the same phenomenon.",
+  "Finding 5 is broadly supported by doi-10-3765-sp-5-6, which explicitly permits partial answers and strategically subordinate questions. doi-10-1007-bf00351935 establishes question denotations and multiple-wh semantics but does not, in the supplied analysis, establish partial reply scope. doi-10-1007-bf00983299 establishes a contextual question-resolution relation only from an abstract. The evidence list should distinguish direct support from background semantic theory.",
+  "Finding 7 mixes an empirical observation with a product prescription. doi-10-18653-v1-2021-naacl-main-329 and doi-10-18653-v1-p17-1009 directly support upstream candidate/anaphor/trigger bottlenecks, while doi-10-18653-v1-2021-codi-sharedtask-1 shows genre-dependent effects of gold versus predicted markables. The further instruction that msgloom therefore 'should preserve intermediate uncertainty' is a reasonable engineering response, but it was not experimentally validated by these papers and should be labeled as an engineering implication rather than a literature finding.",
+  "The actionable insight 'Allow one response to link to one, several, or composite antecedents and record scope independently for each link' transfers evidence from split-antecedent entity coreference and abstract-anaphora theory to reply semantics. The synthesis itself correctly reports that business replies, approvals, and multi-question responses lack direct validation, so this should be framed as a design hypothesis requiring evaluation rather than as an evidence-established implementation requirement.",
+  "The actionable insight stating that incorrectly expanding an approval or commitment is 'more damaging than leaving an uncertain link unresolved' is unsupported by the supplied analyses. The limitations explicitly acknowledge that the corpus does not evaluate the product-critical asymmetric cost of over-broad approval or rejection scope. This creates an internal evidence conflict: the synthesis identifies the cost asymmetry as unevaluated and then asserts the ordering as a reason for an evaluation policy.",
+  "The executive-summary wording that candidate selection 'cannot safely rely on proximity alone' introduces an unvalidated production-safety claim. The cited evidence establishes that recency/proximity is useful in some dialogue data and inadequate as a universal heuristic in other event-reference settings; it does not evaluate operational safety in work communication.",
+  "The synthesis otherwise handles the principal empirical tension around recency well: doi-10-18653-v1-2022-emnlp-main-778 supports strong locality in dialogue discourse deixis, while manual-555fa5b6e8 and manual-5c0971730d show that event-reference behavior does not justify a universal most-recent heuristic.",
+  "The synthesis also handles the syntax contradiction coherently. doi-10-3115-v1-d14-1056, 1706.02256, and manual-555fa5b6e8 collectively support the conclusion that syntactic information can help while rigid or unnecessarily rich syntactic constraints can hurt.",
+  "The gap section is substantially complete for the stated topic. In particular, G1 and G2 correctly leave business-email reply scope, approvals, multi-question replies, and terse agreement-target selection open rather than claiming that the corpus closes them."
+ ],
+ "unsupported_claims": [
+  "Antecedent resolution should use explicit candidate ranking rather than an unconstrained whole-message label.",
+  "The split-antecedent entity-coreference results in doi-10-18653-v1-2021-naacl-main-329 directly establish multi-span or composite abstract-reference behavior.",
+  "The cited question-semantics papers collectively establish partial reply scope; among the supplied analyses, the direct support for partial answers and subordinate-question relevance comes primarily from doi-10-3765-sp-5-6.",
+  "A failed link should operationally be represented by preserving intermediate uncertainty; this is an engineering inference, not an experimentally established result of the cited studies.",
+  "One response should be allowed to link to several or composite antecedents as an evidence-established response model for work communication.",
+  "Incorrectly broadening an approval or commitment is more damaging than leaving an uncertain link unresolved.",
+  "Reliance on proximity alone is unsafe in production work communication; the corpus establishes inadequacy as a universal resolution heuristic, not production safety."
+ ],
+ "required_fixes": [
+  "Rewrite Finding 2 descriptively: state that several successful systems formulate resolution as mention ranking, cluster ranking, or pairwise candidate comparison. Remove the unsupported comparison against an 'unconstrained whole-message label' unless direct comparative evidence is added.",
+  "In Finding 4, either remove doi-10-18653-v1-2021-naacl-main-329 or explicitly label it as analogous transfer evidence about multi-antecedent entity reference. Base the abstract-reference claim directly on doi-10-1162-coli-a-00327 and manual-8b8a394daa.",
+  "In Finding 5, identify doi-10-3765-sp-5-6 as the direct support for partial answers and subordinate-question relevance. Restrict the Karttunen and 'Resolving questions, II' citations to the semantic distinctions actually documented in their analyses.",
+  "Separate empirical findings from msgloom engineering implications. Move prescriptions such as preserving intermediate uncertainty into actionable insights and mark them as design recommendations motivated by, but not validated by, the reviewed evidence.",
+  "Rephrase the multi-antecedent response recommendation as a hypothesis or representation capability to evaluate for msgloom, explicitly noting that direct evidence for multi-proposition reply scope in work communication is absent.",
+  "Remove the unsupported assertion that over-broad approval/commitment links are more damaging than abstention, or explicitly state it as an unvalidated product-risk assumption whose asymmetric cost must be established by product requirements or dedicated evaluation.",
+  "Replace 'cannot safely rely on proximity alone' with an evidence-faithful formulation such as 'proximity alone is not a universally adequate antecedent-selection heuristic across the reviewed reference types and domains.'",
+  "Preserve G1-G6 and the confidence-summary caveat that the reviewed evidence does not establish production behavior for approval scope, multi-question email replies, or work-state transitions."
+ ],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.82,
+  "coherence": 0.95,
+  "gap_completeness": 0.96,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_id values are in the permitted set, so identifier-level citation integrity passes. The central scientific synthesis is mostly well supported, and the major cross-paper contradictions and domain gaps are explicitly represented. The gate nevertheless fails because several statements convert transfer-domain evidence or reasonable engineering intuitions into stronger comparative or production claims than the supplied per-paper analyses establish. The most material problem is the asserted asymmetric harm of over-broad approval scope despite the synthesis itself acknowledging that this cost has not been evaluated."
+}

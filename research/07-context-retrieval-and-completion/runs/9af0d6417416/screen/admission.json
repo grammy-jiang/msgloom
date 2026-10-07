@@ -1,0 +1,227 @@
+{
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Explicit information-need resolution and conversational query resolution: methods that resolve context-dependent information needs into searchable representations."
+  },
+  {
+   "id": "F2",
+   "description": "Conversational query rewriting and question decontextualization: rewriting context-dependent requests into stand-alone retrieval queries."
+  },
+  {
+   "id": "F3",
+   "description": "Adaptive, active, and iterative retrieval-augmented generation: dynamically deciding whether, when, and what to retrieve as model state and accumulated evidence change."
+  },
+  {
+   "id": "F4",
+   "description": "Multi-hop retrieval and iterative evidence chaining: conditioning later retrieval on evidence or intermediate reasoning obtained in earlier hops."
+  },
+  {
+   "id": "F5",
+   "description": "Retrieval planning and read-only tool-use planning: decomposing information needs and choosing bounded search, lookup, read, or source-selection actions."
+  },
+  {
+   "id": "F6",
+   "description": "Answerability, unanswerability, selective QA, abstention, and evidence sufficiency: judging whether available evidence is enough and stopping or abstaining when it is not."
+  },
+  {
+   "id": "F7",
+   "description": "Budgeted, cost-aware, and value-of-information retrieval: allocating additional retrieval under explicit query, latency, token, computation, or other resource limits."
+  },
+  {
+   "id": "F8",
+   "description": "Temporal information retrieval and temporal validity: interpreting temporal information needs and selecting evidence according to relevant temporal dimensions."
+  },
+  {
+   "id": "F10",
+   "description": "Enterprise retrieval with authorization and access constraints: retrieval in which evidence availability is governed by user permissions and independently administered source boundaries."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2105.04166",
+   "decision": "ADMIT",
+   "reason": "The abstract shows conversational query resolution as a retrieval capability rather than mere vocabulary overlap: ConvDR constructs contextualized searchable representations that retain useful prior turns while suppressing irrelevant dialogue history. This directly strengthens resolution of context-dependent information needs before retrieval.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "doi-10-1016-j-neucom-2025-132272",
+   "decision": "REJECT",
+   "reason": "The feedback-driven iterative retrieval capability is relevant to F3, but on the supplied abstract it substantially duplicates stronger VERIFIED candidates that explicitly cover repeated retrieval, sufficiency assessment, information-need-conditioned querying, or uncertainty-triggered retrieval. Its UNCHECKED identity further weakens the case for spending a reading slot when verified substitutes are available.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2406.19215",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly connects model uncertainty to the decision to retrieve, uses uncertainty reduction to rank evidence, and permits repeated retrieval when accumulated evidence remains inadequate. That directly strengthens the project's retrieve-versus-stop decision loop.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2604.23783",
+   "decision": "ADMIT",
+   "reason": "This is unusually close to the core research object: it explicitly judges evidence sufficiency, represents what evidence is missing when sufficiency fails, converts those structured gap descriptions into the next retrieval query, and bounds context accumulation. The abstract therefore demonstrates an evidence-gap-driven iterative retrieval controller rather than generic RAG.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2411.06037",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies whether retrieved context contains sufficient information to answer and couples that judgment to selective answering and abstention. It therefore strengthens the distinction between retrieval success and actual answerability, which is central to responsible stopping.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2305.06983",
+   "decision": "ADMIT",
+   "reason": "The abstract establishes active retrieval during generation and a concrete trigger based on confidence about upcoming content. This is a foundational mechanism for deciding during an ongoing reasoning/generation process that additional external evidence is needed.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2608.13237",
+   "decision": "ADMIT",
+   "reason": "The paper makes stopping itself the sequential decision problem and uses structured sufficiency-and-gap judgments to identify the earliest state at which retrieval can terminate. That directly strengthens the project's requirement to stop because evidence is sufficient rather than merely because a fixed search budget was consumed.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1007-s44443-026-01028-3",
+   "decision": "REJECT",
+   "reason": "The abstract describes a relevant closed-loop multi-hop mechanism, but its hypothesis/verification, sufficiency, missing-evidence, and subsequent-retrieval functions substantially overlap VERIFIED papers already admitted for iterative retrieval and evidence chaining. With identity UNCHECKED, it does not show enough distinct capability to justify another reading slot.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-findings-acl-2090",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly treats retrieval as a planning problem and decomposes a larger request into successive retrieval queries rather than a single ranking operation. This materially strengthens bounded next-action planning for information acquisition. Identity is UNCHECKED, but no otherwise equivalent VERIFIED candidate in the set states this retrieval-planning contribution as directly.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2310.05002",
+   "decision": "REJECT",
+   "reason": "It does decide whether retrieval should be invoked, but the supplied abstract bases that decision on estimated parametric self-knowledge rather than on an explicit evidence gap or sufficiency of currently available source evidence. The retrieve-or-not capability is also covered more directly by admitted F3 and F6 papers.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2604.25676",
+   "decision": "ADMIT",
+   "reason": "Beyond generic iterative RAG, the abstract shows a controller that can change which corpus is searched, critique retrieved evidence, check sufficiency, and rewrite the next query. The adaptive source/corpus-selection step materially strengthens retrieval planning for heterogeneous collections, even though the evaluation domain is multilingual and culturally aligned rather than workplace communication.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2212.10509",
+   "decision": "ADMIT",
+   "reason": "IRCoT explicitly conditions later retrieval on facts and intermediate conclusions produced from earlier evidence. That is a clear, established mechanism for evidence chaining in which one retrieval step exposes information needed to formulate the next.",
+   "stream_id": "F4",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2212.14024",
+   "decision": "REJECT",
+   "reason": "The abstract presents a broad programming framework for composing language models and retrieval, but it does not expose a distinct evidence-gap, stopping, planning, temporal, permission, or provenance mechanism beyond capabilities already represented by more focused admitted papers. The claim is too general to strengthen a stream materially at this gate.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2112.08558",
+   "decision": "ADMIT",
+   "reason": "The paper directly trains context-dependent conversational query rewriting against downstream retrieval success. This materially strengthens the handoff from unresolved conversational context to a stand-alone search query because the rewrite is optimized for whether evidence can actually be retrieved.",
+   "stream_id": "F2",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1145-1247715-1247720",
+   "decision": "ADMIT",
+   "reason": "The abstract models temporal profiles of both queries and retrieved material, directly addressing how relevance and information demand vary with time. That strengthens temporal retrieval beyond ordinary topical matching. Identity is UNCHECKED, but its temporal-profile contribution is distinct from the other temporal candidate.",
+   "stream_id": "F8",
+   "role": "DIRECT",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-2139-ssrn-7111899",
+   "decision": "REJECT",
+   "reason": "The abstract is highly relevant to revision, supersession, expiration, and temporal applicability, but it describes an evaluation methodology rather than a retrieval method that preserves document revision, source lineage, or the identity of the evidence version used. It therefore does not establish the F9 capability required by this admission gate, and its identity is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1203",
+   "decision": "REJECT",
+   "reason": "The iterative construction of evidence and generation of subsequent retrieval queries is relevant, but on the supplied abstract it duplicates the core multi-hop and adaptive-retrieval capabilities already represented by VERIFIED IRCoT, S2G-RAG, and DRAGIN. Its UNCHECKED identity provides no reason to prefer it over those papers.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-1145-1571941-1572085",
+   "decision": "ADMIT",
+   "reason": "The abstract directly targets retrieval for queries whose temporal intent is implicit and modifies retrieval using temporal evidence when topical matching is insufficient. This materially strengthens interpretation of temporal intent and time-sensitive relevance rather than merely analyzing temporal query behavior.",
+   "stream_id": "F8",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2412.15101",
+   "decision": "REJECT",
+   "reason": "The abstract combines refined subqueries with temporal information in multi-hop QA, but it does not show a distinct temporal-validity mechanism such as interpreting event/effective/document time, and its iterative subquery contribution overlaps admitted F4 and F3 papers. Temporal vocabulary alone is insufficient for another reading slot.",
+   "confidence": 0.85
+  },
+  {
+   "paper_id": "doi-10-1145-1935826-1935862",
+   "decision": "REJECT",
+   "reason": "The abstract analyzes how query popularity, result content, intent, and relevance change over time, but it does not itself show a retrieval capability that selects temporally valid evidence or resolves temporal intent. It supplies useful background distinctions rather than materially strengthening the operational F8 stream. Identity is also UNCHECKED.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2403.10081",
+   "decision": "ADMIT",
+   "reason": "DRAGIN explicitly models changing information needs during generation and uses those needs to decide both when retrieval is necessary and what query should be issued. This directly strengthens the project's transition from an identified missing-information need to a bounded retrieval request.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2606.29090",
+   "decision": "ADMIT",
+   "reason": "The abstract explicitly combines evidence/confidence signals with a retrieval budget to choose between stopping and acquiring more evidence. This directly addresses bounded sequential retrieval and budget exhaustion rather than treating the number of retrieval calls as an externally fixed constant.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2606.29959",
+   "decision": "ADMIT",
+   "reason": "The paper formulates retrieval as calibrated allocation among no retrieval, smaller retrieval, larger retrieval, and abstention while exposing latency and token-cost trade-offs. This materially strengthens cost-aware acquisition because it considers not only stopping but also how much retrieval resource to allocate.",
+   "stream_id": "F7",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2210.03350",
+   "decision": "ADMIT",
+   "reason": "Self-ask provides a concrete transferable mechanism for generating follow-up questions during multi-step reasoning and issuing those questions to an external search system. It therefore strengthens decomposition of a larger unresolved need into bounded next evidence requests.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-1109-access-2025-3628960",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses the authorization boundary required by the project: retrieval across independently governed resources is filtered in real time using each source's native IAM rather than collapsing permissions into a common store. No competing F10 candidate is present, so the UNCHECKED identity does not create an otherwise-equal VERIFIED alternative to prefer.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "No candidate was admitted to F9. The only candidate centered on repository evolution, RCEF, is described as an evaluation methodology and does not show the required version/provenance-preserving retrieval mechanism. UNCHECKED identity was treated as a disadvantage when a materially equivalent VERIFIED paper was available, but not as an automatic rejection when the abstract showed a distinct capability with no verified substitute."
+}

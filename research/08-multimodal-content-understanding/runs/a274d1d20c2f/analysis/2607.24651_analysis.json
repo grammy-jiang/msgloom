@@ -1,0 +1,73 @@
+{
+ "paper_id": "2607.24651",
+ "title": "Evidence Attribution in Visual Document Understanding without Coordinates or Region Labels",
+ "research_question": "Can visual document question-answering systems provide reliable, spatially grounded evidence attribution without requiring models to emit coordinates or training data with region-level labels?",
+ "methodology": "The paper compares coordinate-based evidence attribution with a language-based interface in which a VLM emits verbatim textual evidence quotes that are subsequently aligned to semantic page regions by a layout parser and multimodal retriever. Six open VLMs are evaluated on a verified 719-question single-document subset of CiteVQA, with answer quality and several evidence-attribution metrics measured under both interfaces. The authors additionally train Qwen3-VL-8B with GRPO using LongDocURL questions and a judge that evaluates answers against gold answers and crops of retrieved evidence regions, without region annotations in the training examples. Error analyses separate failures caused by missing quotations, parser coverage, retrieval assignment, and other attribution errors.",
+ "key_findings": [
+  {
+   "finding": "Replacing direct bounding-box generation with textual evidence quotations substantially increased evidence recall across all six evaluated open VLMs, from a maximum of 8.1% under coordinate output to 25.9%-46.9% under the language interface.",
+   "evidence_type": "supported",
+   "section": "Results; Table 1"
+  },
+  {
+   "finding": "The language interface sharply reduced attribution hallucination rates, from 82.1%-97.0% with coordinate output to 38.6%-65.4% with language-based attribution.",
+   "evidence_type": "supported",
+   "section": "Results; Table 1"
+  },
+  {
+   "finding": "Answer quality was largely preserved when switching attribution interfaces: five of six backbones changed by no more than 2.3 answer-score points, although Qwen3-VL-8B showed a larger decrease before training.",
+   "evidence_type": "supported",
+   "section": "Results"
+  },
+  {
+   "finding": "GRPO training without region labels increased Qwen3-VL-8B evidence recall from 39.9% to 51.3%, reduced attribution hallucination from 41.2% to 28.4%, and raised strict attributed accuracy from 22.4% to 33.8%.",
+   "evidence_type": "supported",
+   "section": "Results; Table 1"
+  },
+  {
+   "finding": "Residual failures under the language interface are dominated by cases in which the model does not quote the necessary evidence at all, while parser misses and quote-to-region assignment conflicts impose additional ceilings.",
+   "evidence_type": "supported",
+   "section": "Discussion and Error Analysis"
+  },
+  {
+   "finding": "The method does not eliminate spatial localization from the system; it transfers localization from the VLM output interface to an external layout parser and retriever.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "The experiments are scoped to single-document evidence attribution rather than retrieval and attribution across multiple documents or document versions.",
+  "The approach depends on an external layout parser and quote-to-region retriever, so evidence recall cannot exceed the parser's coverage of relevant regions.",
+  "The VLM itself does not directly localize evidence geometrically; localization is performed downstream by the parser and retriever.",
+  "Evaluation uses a verified subset of 719 questions from 987 single-document CiteVQA validation questions, so results do not cover excluded examples with source or annotation problems.",
+  "Figure evidence remains harder to recover than text and tables because textual quotation is a less direct representation of primarily visual evidence.",
+  "The paper states that code and configurations will be released, but the examined version does not establish that the promised code release is already publicly available."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "language_interface_improves_recall": 0.99,
+  "language_interface_reduces_hallucination": 0.99,
+  "answer_quality_mostly_stable": 0.97,
+  "grpo_improves_attribution": 0.99,
+  "missing_quotes_dominate_residual_errors": 0.95,
+  "external_parser_sets_ceiling": 0.98
+ },
+ "raw_claims": [
+  "Direct coordinate generation performs poorly as an evidence-attribution interface for the evaluated open VLMs.",
+  "A model can instead identify evidence with verbatim textual quotations and delegate spatial grounding to a retrieval layer.",
+  "Semantic document blocks are produced by a layout parser and matched to model quotations using multimodal retrieval.",
+  "The language interface improves evidence recall and precision while substantially reducing hallucinated citations.",
+  "Most evaluated backbones retain similar answer quality when coordinates are replaced with textual evidence references.",
+  "GRPO can improve attributed answering even when training examples do not contain region-level evidence labels.",
+  "The largest remaining error category is failure by the answering model to quote required evidence.",
+  "Parser coverage provides an upper bound on what the downstream attribution system can recover.",
+  "Tables are handled relatively well by the textual interface, while figure evidence is more difficult.",
+  "The study evaluates single-document attribution and does not establish performance for cross-document or cross-version provenance."
+ ],
+ "source_url": "https://arxiv.org/html/2607.24651",
+ "access": "full_text"
+}

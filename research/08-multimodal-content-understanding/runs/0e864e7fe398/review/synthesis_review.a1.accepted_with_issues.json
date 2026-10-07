@@ -1,0 +1,26 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/08-multimodal-content-understanding/runs/0e864e7fe398/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 2 overstates its cited evidence by including \"quotation\" as a provenance level. Papers 2605.12882, 2607.29638, 2608.03292, manual-0661fc0cba, and doi-10-18653-v1-2020-acl-main-398 support document/page/region-or-box/element/cell/answer-span-style grounding, but none of those supplied analyses establishes quotation-based attribution. Paper 2607.24651 does provide textual-evidence quotations and would support that part of the statement.",
+  "Finding 9 is slightly stronger than the supplied analysis for doi-10-1109-tmm-2022-3219642. The analysis establishes that scene text is an informative cue, that STAN explicitly aligns referring expressions, scene text, and regions, and that the method reports strong performance, but the reduced findings do not expose a controlled comparison showing that visible-text cues themselves improve grounding. The causal wording \"visible text cues can improve\" should therefore be weakened or supported with a more explicit comparative result.",
+  "The contradictions section mixes genuine cross-paper conditional disagreements with within-paper benchmark/model reversals. In particular, the RefChartQA entry cites only 2503.23131 and the spreadsheet-retrieval entry cites only 2601.08741. These are useful qualifications, but they are not contradictions between papers as requested by the coherence criterion.",
+  "The version-lineage discussion omits relevant evidence from 2609.08364 (SentryLine), which explicitly handles evolving guideline versions and structured source-document/page/passage/update-status citations. This omission does not close gap-1 or gap-4, because SentryLine still does not establish stable cross-version region/cell lineage through answer spans for revised workplace attachments, but it should be acknowledged in the version-aware evidence summary.",
+  "Theme 10 uses the temporal-trend wording \"increasingly evaluates\". The supplied analyses establish that multiple recent benchmarks evaluate grounding, evidence selection, provenance, or traceability in addition to answer accuracy, but they do not directly establish a longitudinal trend. A non-temporal formulation would be more faithful."
+ ],
+ "unsupported_claims": [
+  "Finding 2: the inclusion of \"quotation\" is unsupported by the papers actually cited for that finding.",
+  "Finding 9: \"visible text cues can improve language-to-region grounding\" is stronger than the reduced Scene-Text Oriented Referring Expression Comprehension findings supplied here, which do not provide the necessary comparative result.",
+  "Theme 10: \"benchmark design increasingly evaluates\" asserts a temporal trend that is not directly established by the supplied per-paper analyses."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.93,
+  "coherence": 0.94,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "The central synthesis is supported. All cited paper_ids are in the permitted set, the duplicate Scene-Text record is correctly recognized as one distinct study, and the paper-count explanation is consistent with 38 supplied analyses representing 37 distinct papers. Most findings are directly traceable to the supplied analyses, and the synthesis appropriately distinguishes adjacent-domain evidence from direct workplace-attachment evidence. Most importantly for the gate, none of the eight gaps is incorrectly presented as closed: the corpus does not validate a unified cross-version workplace-attachment scheme combining stable attachment/version identity, persistent region or cell lineage, message-to-attachment reference resolution, semantic revision interpretation, and answer-span provenance. The issues above are localized wording, citation-scope, and coherence-classification problems rather than failures of the synthesis's main conclusion."
+}

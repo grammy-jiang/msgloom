@@ -1,0 +1,74 @@
+{
+ "paper_id": "manual-03d6dfa532",
+ "title": "Post-Hoc Uncertainty Calibration for Domain Drift Scenarios",
+ "research_question": "Can post-hoc confidence calibration remain reliable under domain drift by fitting calibrators to deliberately perturbed validation data rather than only to in-domain validation examples?",
+ "methodology": "The authors create perturbed validation sets by applying controlled image perturbations of varying severity and then fit standard post-hoc calibration methods on those shifted samples. They evaluate temperature scaling, ensemble temperature scaling, isotonic-regression variants, and combinations of these methods, comparing ordinary calibration with perturbation-aware counterparts. Experiments cover CIFAR-10 and ImageNet models across multiple neural architectures, numerous synthetic image perturbations, and the naturally shifted ObjectNet dataset. Calibration is primarily evaluated with expected calibration error while predictive entropy and confidence are also examined for out-of-distribution data.",
+ "key_findings": [
+  {
+   "finding": "Post-hoc calibrators fitted only on in-domain validation data become increasingly overconfident as domain shift grows.",
+   "evidence_type": "supported",
+   "section": "Results - Calibration under Domain Drift"
+  },
+  {
+   "finding": "Fitting calibrators on perturbed validation samples reduces overall calibration error across the evaluated drift scenarios and architectures.",
+   "evidence_type": "supported",
+   "section": "Results - Perturbed Validation Calibration"
+  },
+  {
+   "finding": "The benefit of perturbation-aware calibration also appears on ObjectNet, providing evidence beyond the synthetic perturbation experiments.",
+   "evidence_type": "supported",
+   "section": "Results - ObjectNet"
+  },
+  {
+   "finding": "Perturbation-aware temperature-scaling variants can trade better shifted-domain calibration for worse calibration on unshifted or mildly shifted data.",
+   "evidence_type": "supported",
+   "section": "Results and Discussion"
+  },
+  {
+   "finding": "Perturbation-aware isotonic regression provides a comparatively favorable balance, improving shifted-domain calibration without the same pronounced in-domain deterioration observed for some temperature-scaling variants.",
+   "evidence_type": "supported",
+   "section": "Results and Discussion"
+  },
+  {
+   "finding": "Perturbation-aware calibrators reduce overconfidence on out-of-distribution ObjectNet examples.",
+   "evidence_type": "supported",
+   "section": "Out-of-Distribution Detection"
+  }
+ ],
+ "limitations": [
+  "The empirical study is entirely based on image-classification tasks, so it supplies no direct evidence about enterprise email, chat, workflow, or event-identity data.",
+  "Artificial Gaussian and image-corruption perturbations may not represent semantic, organizational, or temporal drift in work communications.",
+  "Several perturbation-aware temperature-scaling methods improve robustness to drift at the cost of worse calibration on in-domain data.",
+  "Isotonic regression can change prediction ordering and therefore potentially affect classification accuracy, although the observed changes in the reported ImageNet experiments are small.",
+  "The method assumes access to labeled validation data from which perturbed calibration examples can be constructed.",
+  "The paper does not study cross-thread identity, event coreference, or incremental matter linking; its relevance to those problems is methodological rather than direct evidence."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overconfidence_under_drift": 0.99,
+  "perturbed_validation_improvement": 0.99,
+  "objectnet_generalization": 0.97,
+  "in_domain_tradeoff": 0.98,
+  "isotonic_balance": 0.94,
+  "ood_confidence_improvement": 0.96
+ },
+ "raw_claims": [
+  "Standard post-hoc calibration can work well in-domain while becoming overconfident under dataset shift.",
+  "The proposed strategy perturbs validation examples before fitting the calibration model.",
+  "Perturbation severities are chosen to cover progressively stronger performance degradation.",
+  "The experiments evaluate several established post-hoc calibration techniques rather than introducing a new prediction architecture.",
+  "CIFAR-10 and ImageNet models are tested under multiple perturbation types and strengths.",
+  "ObjectNet is used as a naturally shifted evaluation dataset.",
+  "Expected calibration error is a primary metric in the experiments.",
+  "Across the evaluated architectures, perturbation-aware calibration lowers calibration error under drift.",
+  "Some temperature-scaling variants sacrifice in-domain calibration to improve robustness under shift.",
+  "Isotonic-regression-based calibration is more flexible than simple temperature scaling in the reported drift experiments.",
+  "Perturbation-aware calibration also reduces confidence on out-of-distribution inputs."
+ ],
+ "source_url": "https://arxiv.org/html/2012.10988",
+ "access": "full_text"
+}

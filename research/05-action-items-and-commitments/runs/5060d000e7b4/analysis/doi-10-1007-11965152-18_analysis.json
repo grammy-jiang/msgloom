@@ -1,0 +1,69 @@
+{
+ "paper_id": "doi-10-1007-11965152-18",
+ "title": "Detecting Action Items in Multi-party Meetings: Annotation and Initial Experiments",
+ "research_question": "How should action items in multi-party meetings be annotated and detected so that systems can identify both the relevant dialogue region and properties such as task description, owner, timeframe, and commitment?",
+ "methodology": "The paper first examines a flat annotation of action-item-related utterances in ICSI and ISL meeting data and trains lexical SVM classifiers, finding weak agreement and weak detection performance. It then introduces a more structured action-item definition requiring a concrete future action, an explicit responsible person who agrees to perform it, and a reasonably specific timeframe, with utterances labeled as Description, Owner, Timeframe, or Agreement. Initial classifiers for these components are combined over local dialogue windows and evaluated mainly on five CALO meetings using leave-one-meeting-out validation together with additional fixed ICSI and ISL training data.",
+ "key_findings": [
+  {
+   "finding": "The initial flat utterance-level formulation performs poorly, with precision, recall, and F1 below 0.25 on the earlier meeting data and relatively low inter-annotator agreement.",
+   "evidence_type": "supported",
+   "section": "2 Previous Work and Initial Annotation"
+  },
+  {
+   "finding": "The revised annotation scheme decomposes an action item into task Description, Owner, Timeframe, and Agreement components, explicitly modeling both responsibility and commitment.",
+   "evidence_type": "supported",
+   "section": "3 Action Item Annotation"
+  },
+  {
+   "finding": "Among the component classifiers, Agreement is easiest in the reported experiment with F1 0.40, while Owner is hardest with F1 0.17.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  },
+  {
+   "finding": "Combining evidence from several nearby utterances can locate action-item regions, but results vary greatly between meetings, with reported per-meeting F1 ranging from 0.00 to 1.00.",
+   "evidence_type": "supported",
+   "section": "4 Experiments"
+  },
+  {
+   "finding": "The results motivate treating action-item creation as a multi-utterance discourse process rather than as an isolated sentence-classification problem.",
+   "evidence_type": "supported",
+   "section": "4 Experiments and 5 Discussion"
+  }
+ ],
+ "limitations": [
+  "The structured experiments use only a very small number of meetings, so the authors explicitly regard the results as preliminary.",
+  "Part of the evaluation uses simulated CALO meetings rather than only naturally occurring workplace meetings.",
+  "The experiments use human transcripts rather than a full automatic-speech-recognition pipeline.",
+  "The combination of component scores uses manually chosen weights and thresholds rather than a learned integration model.",
+  "Owner detection is especially weak in the reported component results.",
+  "Performance varies dramatically across individual meetings.",
+  "The combined action-item evaluation primarily checks whether an action-item region is found and does not establish that every extracted Description, Owner, Timeframe, and Agreement value is correct.",
+  "The paper does not report a public release of the complete task-specific annotation set or implementation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "flat_detection_weak": 0.99,
+  "structured_aida_schema": 0.99,
+  "owner_hardest": 0.98,
+  "meeting_level_variance": 0.99,
+  "multi_utterance_structure": 0.94
+ },
+ "raw_claims": [
+  "The earliest flat action-item annotation produced low agreement and weak lexical classification results.",
+  "The revised definition requires a concrete future action suitable for a to-do list.",
+  "The revised definition expects an identifiable person or people who will perform the action.",
+  "Owner agreement or commitment is treated as a distinct part of establishing an action item.",
+  "A timeframe is included as a separate action-item component.",
+  "Description, Owner, Timeframe, and Agreement are annotated separately.",
+  "Separate lexical classifiers are trained for the structured subclasses.",
+  "Owner classification has the lowest F1 among the four reported subclasses.",
+  "The combined detector pools subclass evidence across a local sequence of utterances.",
+  "The very small evaluation set prevents strong conclusions about general performance."
+ ],
+ "source_url": "https://www.researchgate.net/publication/221040314_Detecting_Action_Items_in_Multi-party_Meetings_Annotation_and_Initial_Experiments",
+ "access": "full_text"
+}

@@ -1,0 +1,658 @@
+{
+ "topic": "longitudinal and cross-thread workplace briefing systems that track new, open, resolved, and superseded work-item state over repeated cycles, with adaptive user-specific prioritization, reminder value, uncertainty presentation, and omission/repetition evaluation",
+ "seed_audit": [
+  {
+   "seed": "update summarization",
+   "academic_meaning": "Summarization conditioned on information the user is assumed to have already seen, with the new summary emphasizing information added by later document sets. DUC 2007 and TAC 2008 established a canonical newswire version of this task.",
+   "fit": "STRONG",
+   "main_risk": "Canonical update summarization optimizes novelty relative to prior documents; it does not require unchanged-but-still-open obligations to remain visible and therefore can incorrectly suppress persistent important state.",
+   "false_positive_literature": "Newswire update summaries, document-version diffs, and novelty-only systems with no open/resolved/superseded work-item state."
+  },
+  {
+   "seed": "incremental summarization",
+   "academic_meaning": "A broad label for systems that update a summary or compressed representation as additional observations, documents, or dialogue turns arrive rather than regenerating only from a fixed completed corpus.",
+   "fit": "STRONG",
+   "main_risk": "The term is highly overloaded across text streams, dialogue, clinical records, sensor streams, and engineering analytics; incrementally updating an output does not imply distinguishing new information from persistent open state.",
+   "false_positive_literature": "Incremental aggregation of sensor or numeric streams, context-window compression, and algorithms called incremental because their model updates online rather than because user-facing summaries evolve."
+  },
+  {
+   "seed": "temporal summarization",
+   "academic_meaning": "Summarization that explicitly models time or evolving information. In information retrieval, TREC Temporal Summarization studied sequential delivery of novel, relevant updates about developing events.",
+   "fit": "MODERATE",
+   "main_risk": "Most established work concerns breaking-news streams and low-latency novelty, not persistent obligations or lifecycle state.",
+   "false_positive_literature": "News-event monitoring, crisis streams, time-series summarization, and temporal summarization that outputs a final historical account rather than repeated briefings."
+  },
+  {
+   "seed": "timeline summarization",
+   "academic_meaning": "Construction of a temporally ordered summary of salient events, commonly by selecting important dates and generating descriptions for those dates from a news collection.",
+   "fit": "MODERATE",
+   "main_risk": "A timeline represents salient history; it usually does not model what the user has already seen, what should remain visible because it is unresolved, or what should disappear after resolution.",
+   "false_positive_literature": "Static news timelines, entity biographies, date-selection benchmarks, historical timeline generation, and event chronology extraction."
+  },
+  {
+   "seed": "query-focused summarization",
+   "academic_meaning": "Generation or extraction of a summary optimized to answer a user's explicit query or information need rather than representing the source generically.",
+   "fit": "MODERATE",
+   "main_risk": "A query supplies relevance but normally does not represent persistent work-item state, repeated report cycles, explicit triage rules, or longitudinal user adaptation.",
+   "false_positive_literature": "Single-document question-focused summaries, QA-style answer generation, and static one-shot summaries."
+  },
+  {
+   "seed": "query-focused multi-document summarization",
+   "academic_meaning": "Synthesis of information from multiple documents into a summary responsive to an explicit information need or question; DUC 2005-2007 is a canonical evaluation lineage.",
+   "fit": "STRONG",
+   "main_risk": "It provides cross-document selection and synthesis but generally assumes a fixed document set and a single reporting episode.",
+   "false_positive_literature": "Static news clusters, complex-question answering, and one-shot multi-document summaries with no previous-view or state-carry-forward model."
+  },
+  {
+   "seed": "multi-document summarization",
+   "academic_meaning": "Automatic synthesis or extraction of salient content from multiple related source documents into a shorter representation.",
+   "fit": "MODERATE",
+   "main_risk": "The term is too broad to imply longitudinal operation, stable Topic identity, personalization, novelty control, or work-item state.",
+   "false_positive_literature": "Generic news clustering, scientific-paper summarization, review summarization, opinion summarization, and static document collections."
+  },
+  {
+   "seed": "entity-centric summarization",
+   "academic_meaning": "Summarization organized around a target entity and information or events associated with that entity.",
+   "fit": "WEAK",
+   "main_risk": "A msgloom Topic is a work matter, not necessarily an entity; entity identity can incorrectly merge unrelated work involving the same person, organization, product, or project.",
+   "false_positive_literature": "Entity biographies, knowledge-base entity profiles, entity timelines, entity-centric news streams, and entity retrieval."
+  },
+  {
+   "seed": "event-centric summarization",
+   "academic_meaning": "Summarization organized around events or event structures rather than purely sentence-level salience.",
+   "fit": "MODERATE",
+   "main_risk": "A work item can span requests, conditions, decisions, revisions, and unresolved obligations that are not naturally represented as one event.",
+   "false_positive_literature": "Breaking-news event summaries, event extraction pipelines, crisis-event monitoring, and event graph compression without persistent task state."
+  },
+  {
+   "seed": "topic-focused summarization",
+   "academic_meaning": "A diffuse label for summarization restricted or weighted toward a target topic; in many papers it overlaps with query-focused or topic-oriented multi-document summarization rather than naming a distinct standardized task.",
+   "fit": "MODERATE",
+   "main_risk": "Academic 'topic' often means a lexical or latent theme, not msgloom's stable cross-thread work-item identity.",
+   "false_positive_literature": "Topic-model-based summarization, topical news clusters, thematic summarization, and summaries grouped by lexical similarity."
+  },
+  {
+   "seed": "novelty detection",
+   "academic_meaning": "Detection of information that is new relative to previously observed documents, sentences, events, or user knowledge; it is closely related to redundancy detection and novelty-oriented retrieval.",
+   "fit": "STRONG",
+   "main_risk": "Novelty is only one selection signal. A novelty-only briefing will suppress unchanged but unresolved critical work.",
+   "false_positive_literature": "TREC novelty detection, first-story detection, duplicate detection, anomaly detection, and news novelty ranking with no persistence requirement."
+  },
+  {
+   "seed": "redundancy reduction in summarization",
+   "academic_meaning": "Selection or generation techniques that penalize repeated semantic content while preserving relevance or salience; MMR is a foundational example of jointly considering relevance and novelty.",
+   "fit": "STRONG",
+   "main_risk": "Reducing redundancy can remove repeated evidence that is intentionally necessary to keep an unresolved action, deadline, or risk visible.",
+   "false_positive_literature": "Diversity-only ranking, deduplication, sentence similarity filtering, and compression evaluated without omission cost."
+  },
+  {
+   "seed": "delta summarization",
+   "academic_meaning": "Not a stable canonical academic summarization task name. Current usage commonly means summarizing differences between two document versions or generating only newly added content.",
+   "fit": "REJECT",
+   "main_risk": "The phrase encourages literal document diffing, which the project explicitly distinguishes from semantic work-item update briefing.",
+   "false_positive_literature": "Document redlining, version comparison products, software/database delta summaries, change logs, and non-academic LLM workflow material."
+  },
+  {
+   "seed": "information update detection",
+   "academic_meaning": "A non-standard umbrella phrase that can refer to novelty detection, event update detection, change detection, or detecting new information in a stream.",
+   "fit": "WEAK",
+   "main_risk": "Because it is not a stable task label, retrieval precision is poor and relevant academic work is better found through update summarization, novelty detection, stream summarization, or temporal summarization terminology.",
+   "false_positive_literature": "Change-data capture, web-page change detection, event detection, database updates, and generic information monitoring."
+  },
+  {
+   "seed": "personalized summarization",
+   "academic_meaning": "Summarization conditioned on a user model, profile, interests, history, or feedback so that retained content is specifically relevant to that user.",
+   "fit": "STRONG",
+   "main_risk": "Most work personalizes for interest or relevance and may silently omit mandatory information; it rarely formalizes explicit non-negotiable user rules above learned preferences.",
+   "false_positive_literature": "Personalized news, recommendation-oriented summaries, consumer interest profiles, and static-profile personalization."
+  },
+  {
+   "seed": "user-adaptive summarization",
+   "academic_meaning": "Summarization that adapts its content or presentation to user characteristics, interactions, feedback, or inferred preferences.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is diffuse and often means one-session adaptation or interface adaptation rather than long-term preference drift.",
+   "false_positive_literature": "Adaptive interfaces, readability adaptation, educational summarization, static user profiles, and one-shot feedback loops."
+  },
+  {
+   "seed": "personalized ranking",
+   "academic_meaning": "Ranking items using user-specific signals so that different users receive different orderings or relevance scores.",
+   "fit": "STRONG",
+   "main_risk": "Most personalized-ranking literature concerns recommendation or search and optimizes preference/engagement rather than preserving mandatory work obligations.",
+   "false_positive_literature": "Product recommendation, social feeds, personalized web search, advertising, and entertainment ranking."
+  },
+  {
+   "seed": "learning to rank",
+   "academic_meaning": "Machine-learning methods that learn an ordering function from relevance labels, preferences, clicks, pairwise comparisons, or listwise objectives.",
+   "fit": "MODERATE",
+   "main_risk": "Learning to rank normally treats all ranking signals inside an optimization objective and does not automatically enforce deterministic policy constraints or guarantee recall of mandatory items.",
+   "false_positive_literature": "Web search ranking, recommender systems, ads, click prediction, and generic ranking benchmarks."
+  },
+  {
+   "seed": "preference-aware ranking",
+   "academic_meaning": "A broad phrase for ranking that incorporates explicit or inferred user preferences; it is less standardized than personalized ranking, preference learning, or preference elicitation.",
+   "fit": "MODERATE",
+   "main_risk": "Search results are dominated by recommendation and multi-criteria preference optimization rather than workplace obligations or explicit Triage precedence.",
+   "false_positive_literature": "Travel/product recommendation, social feeds, multi-criteria recommendation, and preference-aware search."
+  },
+  {
+   "seed": "email prioritization",
+   "academic_meaning": "Prediction or ranking of incoming email by importance, urgency, expected user action, criticality, or expected cost of delayed review, often using personalized behavioral signals.",
+   "fit": "STRONG",
+   "main_risk": "Importance labels frequently come from observed actions such as reading, replying, starring, or interacting; these are behavioral proxies and must not be interpreted as response obligation.",
+   "false_positive_literature": "Spam filtering, generic email classification, sentiment-only priority, and action-probability models treated as obligation classifiers."
+  },
+  {
+   "seed": "email triage",
+   "academic_meaning": "The process by which users inspect unhandled email and decide what to do with it, including prioritization, responding, deferring, filing, deleting, or turning messages into tasks.",
+   "fit": "STRONG",
+   "main_risk": "Triage is broader than briefing selection and papers may be descriptive HCI studies without an algorithm or repeated briefing evaluation.",
+   "false_positive_literature": "Inbox organization, folder prediction, email client usability, spam handling, and purely descriptive workflow studies."
+  },
+  {
+   "seed": "response priority prediction",
+   "academic_meaning": "A non-canonical phrase used in some recent work for estimating urgency or priority of responding; adjacent literatures more commonly study reply prediction, response likelihood, email importance, or urgency.",
+   "fit": "WEAK",
+   "main_risk": "It strongly invites the forbidden conflation of likelihood to respond, perceived urgency, and actual obligation to respond.",
+   "false_positive_literature": "Social-media response prioritization, customer-review response behavior, reply-likelihood prediction, sentiment/urgency classification, and engagement prediction."
+  },
+  {
+   "seed": "salience estimation",
+   "academic_meaning": "Estimating which units, facts, sentences, entities, events, or concepts are most important for inclusion in a summary or other compressed representation.",
+   "fit": "MODERATE",
+   "main_risk": "Generic salience usually reflects corpus frequency or model-estimated importance, not user-specific mandatory coverage or unresolved-state persistence.",
+   "false_positive_literature": "Generic extractive summarization, entity salience, visual salience, discourse salience, and summarization without user/task context."
+  },
+  {
+   "seed": "content selection",
+   "academic_meaning": "The summarization subproblem of deciding which source information should be represented in the output before or jointly with realization/generation.",
+   "fit": "STRONG",
+   "main_risk": "The term is extremely broad and needs modifiers for longitudinal, update, personalized, constraint-aware, or coverage-sensitive selection.",
+   "false_positive_literature": "Generic summarization pipelines, data-to-text generation, headline generation, marketing content selection, and multimedia selection."
+  },
+  {
+   "seed": "coverage-aware summarization",
+   "academic_meaning": "Summarization methods or objectives that explicitly encourage coverage of source concepts, topics, semantic units, entities, or other content units rather than selecting only individually salient sentences.",
+   "fit": "MODERATE",
+   "main_risk": "Coverage usually uses proxy units and may count broad topical coverage while still omitting a decision-essential deadline, condition, or unresolved action.",
+   "false_positive_literature": "Topic coverage, entity coverage, neural coverage mechanisms for repetition control, and ROUGE-oriented coverage objectives."
+  },
+  {
+   "seed": "constrained summarization",
+   "academic_meaning": "Summarization performed subject to explicit constraints such as length, required concepts, lexical conditions, style, structure, dates, entities, or other output restrictions.",
+   "fit": "MODERATE",
+   "main_risk": "Most 'constraints' in this literature are generation or content-form constraints, not a precedence architecture in which deterministic user rules dominate softer learned preferences.",
+   "false_positive_literature": "Length-constrained summarization, lexical constraints, controllable generation, style constraints, constrained decoding, and entity/date filtering."
+  },
+  {
+   "seed": "long-running conversation summarization",
+   "academic_meaning": "A descriptive phrase for summarizing lengthy dialogues or conversations over extended histories, including rolling summaries, meeting/dialogue compression, and long-context summarization.",
+   "fit": "MODERATE",
+   "main_risk": "It is not a sharply standardized task name, and much recent material is engineering-oriented context compression rather than academic evaluation of evolving state.",
+   "false_positive_literature": "Chatbot memory compression, context-window management, meeting recap generation, and one-conversation summaries without cross-thread aggregation."
+  },
+  {
+   "seed": "incremental dialogue summarization",
+   "academic_meaning": "Dialogue summarization in which the representation or summary is updated as utterances arrive. Academic systems such as QART explicitly used incremental dialogue summarization for real-time contact-center monitoring.",
+   "fit": "STRONG",
+   "main_risk": "Most instances operate inside one dialogue and do not solve repeated cross-conversation work-item briefing or long-lived state persistence.",
+   "false_positive_literature": "Single-session contact-center dialogue summaries, live meeting summaries, rolling chatbot context, and turn-level dialogue-state updates."
+  },
+  {
+   "seed": "notification prioritization",
+   "academic_meaning": "Ranking, filtering, delaying, routing, or scheduling notifications based on value, urgency, expected cost of delay, user attention, interruption cost, or contextual relevance.",
+   "fit": "MODERATE",
+   "main_risk": "The primary decision is often when or whether to interrupt, not what longitudinal information belongs in a periodic briefing.",
+   "false_positive_literature": "Mobile notification timing, interruptibility prediction, attention management, alert routing, and notification engagement optimization."
+  },
+  {
+   "seed": "digest generation",
+   "academic_meaning": "A product-oriented umbrella term for producing compact collections or summaries of multiple information items, such as news, email, alerts, or feeds; it is not a stable academic task label.",
+   "fit": "WEAK",
+   "main_risk": "Search precision is low and results are dominated by product implementations, news recommenders, newsletters, and generic summarization.",
+   "false_positive_literature": "RSS/news digests, newsletter generation, product documentation, social-media digests, recommender-system interfaces, and LLM engineering tutorials."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "TF1",
+   "name": "Update and sequential-update summarization",
+   "description": "Generate a later summary under the assumption that earlier material has already been consumed, emphasizing information that is new relative to the previous view.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is the strongest established academic analogue for repeated-cycle novelty suppression and directly informs gap-1 and the repetition side of gap-4, but canonical evaluations do not require unchanged unresolved work to remain visible.",
+   "seed_papers": [
+    "Overview of the TAC 2008 Update Summarization Task",
+    "The Use of MMR, Diversity-Based Reranking for Reordering Documents and Producing Summaries"
+   ]
+  },
+  {
+   "id": "TF2",
+   "name": "Temporal, streaming, and timeline summarization",
+   "description": "Monitor an evolving information stream or collection and produce temporally organized or sequentially emitted updates about important developments.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family supplies online/sequential evaluation concepts, novelty-vs-coverage tradeoffs, temporal ordering, and event evolution useful to gaps 1, 4, and 6.",
+   "seed_papers": [
+    "TREC 2013 Temporal Summarization",
+    "Examining the State-of-the-Art in News Timeline Summarization",
+    "From Moments to Milestones: Incremental Timeline Summarization Leveraging Large Language Models"
+   ]
+  },
+  {
+   "id": "TF3",
+   "name": "Query-focused multi-document and cross-document synthesis",
+   "description": "Select and synthesize information across multiple documents in response to a user information need, including topic-oriented and cross-document temporal synthesis.",
+   "role": "TRANSFER",
+   "why_it_matters": "It is the best mature family for cross-source content selection and synthesis, and should be searched specifically for multi-thread, multi-conversation, and task-centric variants to attack gap-6.",
+   "seed_papers": [
+    "DUC 2005: Evaluation of Question-Focused Summarization Systems"
+   ]
+  },
+  {
+   "id": "TF4",
+   "name": "Longitudinal state-preserving summarization",
+   "description": "Summarize records accumulated over repeated encounters while preserving evolution over time, important persistent state, and newly documented changes.",
+   "role": "TRANSFER",
+   "why_it_matters": "Longitudinal clinical records provide a particularly useful transfer domain because they are fragmented, repetitive, multi-encounter, stateful, and decision-sensitive; this directly targets the new-versus-persistent-state part of gaps 1 and 4.",
+   "seed_papers": [
+    "CLIN-SUMM: Incremental Longitudinal Summarization of Clinical Notes Enables Scalable Representation and Early Disease Prediction",
+    "Large Language Models with Temporal Reasoning for Longitudinal Clinical Summarization and Prediction"
+   ]
+  },
+  {
+   "id": "TF5",
+   "name": "Workplace email triage, task management, and collaborative reminders",
+   "description": "Study how knowledge workers use email to manage outstanding tasks, requests, commitments, reminders, and triage decisions, including systems that surface collaborative-task reminders.",
+   "role": "DIRECT",
+   "why_it_matters": "This is direct target-domain evidence for why unresolved work must remain salient and for how reminder usefulness is experienced in workplace email. It is central to gaps 2 and 5 and provides direct user-facing evidence relevant to gap-7.",
+   "seed_papers": [
+    "Email Overload: Exploring Personal Information Management of Email",
+    "Taking Email to Task: The Design and Evaluation of a Task Management Centered Email Tool",
+    "RemindMe: Plugging a Reminder Manager into Email for Enhancing Workplace Responsiveness",
+    "Email Triage: Challenges and Opportunities",
+    "AI-Powered Reminders for Collaborative Tasks: Experiences and Futures"
+   ]
+  },
+  {
+   "id": "TF6",
+   "name": "Personalized email importance and criticality ranking",
+   "description": "Rank or classify email using per-user models of importance, expected action, urgency, criticality, or cost of delayed review.",
+   "role": "DIRECT",
+   "why_it_matters": "This family directly studies personalized prioritization in email and online adaptation, but its behavioral labels must remain separate from obligation. It is important for gaps 2, 3, and 5.",
+   "seed_papers": [
+    "Attention-Sensitive Alerting",
+    "The Learning Behind Gmail Priority Inbox"
+   ]
+  },
+  {
+   "id": "TF7",
+   "name": "Longitudinal personalization, user modeling, and preference drift",
+   "description": "Adapt user-specific ranking or summarization models as short-term and long-term interests, feedback, roles, or behavioral patterns change over time.",
+   "role": "TRANSFER",
+   "why_it_matters": "The key missing requirement in gap-3 is not merely personalization but adaptation under non-stationarity. Preference drift, concept drift, continual user modeling, and online personalization are the appropriate neighboring literatures.",
+   "seed_papers": [
+    "User-model based personalized summarization",
+    "Personalized Preference Drift Aware Sequential Recommender System"
+   ]
+  },
+  {
+   "id": "TF8",
+   "name": "Hard-constraint and soft-preference selection or ranking",
+   "description": "Select or rank feasible items while distinguishing non-negotiable constraints from softer learned or elicited preferences and utility tradeoffs.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family directly expresses the structural distinction needed by gap-2: explicit Triage rules must act as constraints or precedence rules rather than merely another learned feature.",
+   "seed_papers": [
+    "Constructive Preference Elicitation",
+    "End-to-end Learning for Fair Ranking Systems"
+   ]
+  },
+  {
+   "id": "TF9",
+   "name": "Reminder value, prospective memory, and attention-sensitive alerting",
+   "description": "Model whether and when a reminder or alert is valuable by considering forgetting, delayed-review cost, urgency, context, and interruption cost.",
+   "role": "TRANSFER",
+   "why_it_matters": "This family provides mechanisms for gap-5: reminder value is conceptually distinct from importance and can be modeled as expected benefit of resurfacing information or expected cost of delay.",
+   "seed_papers": [
+    "Attention-Sensitive Alerting",
+    "Effects of Intelligent Notification Management on Users and Their Tasks",
+    "Reminders Through Association"
+   ]
+  },
+  {
+   "id": "TF10",
+   "name": "Incremental dialogue and long-conversation summarization",
+   "description": "Maintain or update summaries while a dialogue evolves, sometimes with structured task-specific state and real-time monitoring.",
+   "role": "TRANSFER",
+   "why_it_matters": "It supplies mechanisms for repeated updates inside an evolving conversation and is relevant to gaps 1 and 6, but does not by itself solve cross-thread Topic identity.",
+   "seed_papers": [
+    "QART: A System for Real-Time Holistic Quality Assurance for Contact Center Dialogues"
+   ]
+  },
+  {
+   "id": "TF11",
+   "name": "Uncertainty communication and decision support",
+   "description": "Represent uncertain, incomplete, ambiguous, low-confidence, stale, or otherwise qualified information so that decision makers can understand limitations and decide whether more information is needed.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is the core transfer family for gap-7. Search must focus on effects on decisions, confidence, information seeking, and recognition of ambiguity rather than only visual aesthetics.",
+   "seed_papers": [
+    "Uncertainty Visualizations: Helping Decision Makers Become More Aware of Uncertainty and Its Implications",
+    "Effects of visualizing uncertainty on decision-making in a target identification scenario"
+   ]
+  },
+  {
+   "id": "TF12",
+   "name": "Coverage, omission, redundancy, and sequential briefing evaluation",
+   "description": "Evaluate whether an output covers required information while avoiding redundant or false-positive content, including recall/comprehensiveness measures and sequential-update evaluation.",
+   "role": "TRANSFER",
+   "why_it_matters": "Gap-4 requires joint measurement of misses, repetition, false alerts, and persistent-state preservation. Existing summarization and retrieval evaluation provides components but not the complete msgloom benchmark.",
+   "seed_papers": [
+    "TREC 2013 Temporal Summarization",
+    "Overview of the TAC 2008 Update Summarization Task",
+    "Recall, Robustness, and Lexicographic Evaluation"
+   ]
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "TF1",
+   "role": "TRANSFER",
+   "purpose": "Find established repeated-view summarization and explicitly probe whether any work preserves unresolved information while suppressing redundant history.",
+   "targets_gaps": [
+    "gap-1",
+    "gap-4"
+   ],
+   "queries": [
+    "\"update summarization\" previously read multi-document novelty",
+    "\"sequential update summarization\" novelty redundancy coverage",
+    "\"update summarization\" persistent important information",
+    "\"incremental summarization\" unresolved state open items",
+    "\"update summarization\" carry forward unresolved",
+    "\"update summarization\" evaluation omission redundancy",
+    "\"novelty\" \"update summarization\" important information"
+   ]
+  },
+  {
+   "family_id": "TF2",
+   "role": "TRANSFER",
+   "purpose": "Find sequential monitoring, temporal evolution, value tracking, and timeline work that can support repeated-cycle state-change detection and evaluation.",
+   "targets_gaps": [
+    "gap-1",
+    "gap-4",
+    "gap-6"
+   ],
+   "queries": [
+    "\"temporal summarization\" sequential updates",
+    "\"sequential update summarization\" temporal stream",
+    "\"timeline summarization\" incremental",
+    "\"incremental timeline summarization\"",
+    "\"temporal summarization\" value tracking state",
+    "\"stream summarization\" novelty coverage redundancy",
+    "\"timeline summarization\" evolving state changes"
+   ]
+  },
+  {
+   "family_id": "TF3",
+   "role": "TRANSFER",
+   "purpose": "Search aggressively for cross-thread or cross-conversation variants of mature multi-document synthesis methods to close gap-6 rather than admitting ordinary static email-thread summaries.",
+   "targets_gaps": [
+    "gap-6",
+    "gap-1"
+   ],
+   "queries": [
+    "\"query-focused multi-document summarization\" email",
+    "\"cross-thread summarization\" email",
+    "\"multi-thread email summarization\"",
+    "\"task-centric email\" summarization",
+    "\"multi-conversation summarization\" topic",
+    "\"cross-document timeline\" summarization topic",
+    "\"topic-level summarization\" multiple conversations",
+    "\"cross-conversation\" summarization workplace"
+   ]
+  },
+  {
+   "family_id": "TF4",
+   "role": "TRANSFER",
+   "purpose": "Use longitudinal clinical and other stateful record domains to find explicit preservation of evolving and persistent state rather than novelty-only compression.",
+   "targets_gaps": [
+    "gap-1",
+    "gap-4"
+   ],
+   "queries": [
+    "\"longitudinal summarization\" evolving state",
+    "\"incremental longitudinal summarization\" new information",
+    "\"longitudinal clinical summarization\" redundancy temporal",
+    "\"longitudinal summarization\" unresolved resolved state",
+    "\"longitudinal summarization\" persistent problems changes",
+    "\"problem-oriented\" longitudinal summarization clinical",
+    "\"assessment and plan\" longitudinal summarization",
+    "\"longitudinal summarization\" omission completeness"
+   ]
+  },
+  {
+   "family_id": "TF5",
+   "role": "DIRECT",
+   "purpose": "Retrieve direct workplace evidence about outstanding tasks, collaborative requests, reminder usefulness, stale reminders, and user triage behavior.",
+   "targets_gaps": [
+    "gap-2",
+    "gap-5",
+    "gap-7"
+   ],
+   "queries": [
+    "\"email triage\" workplace outstanding tasks",
+    "\"task-centric email\" outstanding tasks reminders",
+    "\"email task management\" unresolved tasks workplace",
+    "\"collaborative task reminders\" email workplace",
+    "\"email reminder\" workplace responsiveness",
+    "\"AI-powered reminders\" collaborative tasks email",
+    "\"daily briefing\" email reminders workplace",
+    "\"email triage\" priority response task management"
+   ]
+  },
+  {
+   "family_id": "TF6",
+   "role": "DIRECT",
+   "purpose": "Find direct email personalization and importance ranking, while keeping action probability, importance, urgency, and obligation as separate labels.",
+   "targets_gaps": [
+    "gap-2",
+    "gap-3",
+    "gap-5"
+   ],
+   "queries": [
+    "\"email prioritization\" personalized importance",
+    "\"email importance\" personalized ranking",
+    "\"email criticality\" prioritization user model",
+    "\"expected cost of delayed review\" email",
+    "\"email importance\" online learning user",
+    "\"Priority Inbox\" non-stationary user model",
+    "\"email prioritization\" user feedback adaptive",
+    "\"email triage\" personalized ranking"
+   ]
+  },
+  {
+   "family_id": "TF7",
+   "role": "TRANSFER",
+   "purpose": "Search specifically for adaptation under changing preferences and non-stationarity instead of admitting static-profile personalization.",
+   "targets_gaps": [
+    "gap-3",
+    "gap-2"
+   ],
+   "queries": [
+    "\"preference drift\" personalized ranking",
+    "\"concept drift\" personalized ranking user",
+    "\"dynamic user modeling\" preferences longitudinal",
+    "\"longitudinal personalization\" user preferences",
+    "\"continual personalization\" ranking user feedback",
+    "\"online personalization\" non-stationary preferences",
+    "\"user model\" short-term long-term interests summarization",
+    "\"preference drift\" summarization personalization",
+    "\"email prioritization\" concept drift"
+   ]
+  },
+  {
+   "family_id": "TF8",
+   "role": "TRANSFER",
+   "purpose": "Find formalisms that separate mandatory rules from softer personalized utility instead of collapsing both into one learned importance score.",
+   "targets_gaps": [
+    "gap-2"
+   ],
+   "queries": [
+    "\"hard constraints\" \"soft preferences\" ranking",
+    "\"constructive preference elicitation\" hard constraints",
+    "\"constrained ranking\" user preferences",
+    "\"learning to rank\" hard constraints preferences",
+    "\"constrained learning to rank\" user preferences",
+    "\"lexicographic preferences\" ranking constraints",
+    "\"preference learning\" hard constraints soft preferences",
+    "\"personalized ranking\" policy constraints"
+   ]
+  },
+  {
+   "family_id": "TF9",
+   "role": "TRANSFER",
+   "purpose": "Find models in which resurfacing value, forgetting, urgency, and interruption/delay costs are explicit and can be compared with ordinary importance.",
+   "targets_gaps": [
+    "gap-5",
+    "gap-2"
+   ],
+   "queries": [
+    "\"prospective memory\" reminders importance",
+    "\"prospective memory\" reminder value task",
+    "\"attention-sensitive alerting\" email criticality",
+    "\"expected cost of delayed review\"",
+    "\"notification management\" relevance interruption cost",
+    "\"reminder utility\" forgetting task",
+    "\"reminder timing\" forgetting urgency",
+    "\"collaborative task reminders\" importance urgency"
+   ]
+  },
+  {
+   "family_id": "TF10",
+   "role": "TRANSFER",
+   "purpose": "Find genuine incremental dialogue summarization systems and determine whether any preserve open tasks, decisions, or unresolved issues across updates.",
+   "targets_gaps": [
+    "gap-1",
+    "gap-6"
+   ],
+   "queries": [
+    "\"incremental dialogue summarization\"",
+    "\"task-oriented incremental dialogue summarization\"",
+    "\"real-time dialogue summarization\" task state",
+    "\"long dialogue summarization\" unresolved issues",
+    "\"conversation summarization\" open tasks decisions",
+    "\"incremental conversation summarization\" state",
+    "\"rolling summary\" dialogue unresolved decisions academic"
+   ]
+  },
+  {
+   "family_id": "TF11",
+   "role": "TRANSFER",
+   "purpose": "Find experimental evidence for presenting stale, incomplete, disputed, or uncertain state and measuring resulting decision behavior.",
+   "targets_gaps": [
+    "gap-7"
+   ],
+   "queries": [
+    "\"uncertainty visualization\" incomplete information decision support",
+    "\"uncertainty communication\" decision making confidence",
+    "\"information sufficiency\" uncertainty decision support",
+    "\"stale information\" decision support display",
+    "\"data freshness\" uncertainty decision support",
+    "\"conflicting information\" uncertainty visualization decision",
+    "\"epistemic uncertainty\" visualization decision support",
+    "\"uncertainty visualization\" information seeking ambiguity",
+    "\"incomplete information\" visualization decision making"
+   ]
+  },
+  {
+   "family_id": "TF12",
+   "role": "TRANSFER",
+   "purpose": "Assemble evaluation components for the required cycle-based benchmark and probe for studies jointly measuring misses, redundancy, false alerts, and persistent-state recall.",
+   "targets_gaps": [
+    "gap-4",
+    "gap-8"
+   ],
+   "queries": [
+    "\"update summarization\" evaluation coverage redundancy",
+    "\"temporal summarization\" comprehensiveness redundancy evaluation",
+    "\"summary evaluation\" omission redundancy coverage",
+    "\"longitudinal summarization\" completeness redundancy evaluation",
+    "\"summarization\" omission error important information",
+    "\"recall-oriented\" summarization evaluation",
+    "\"false positives\" \"false negatives\" email alerts",
+    "\"briefing\" omission redundancy evaluation",
+    "\"sequential summarization\" evaluation persistent state"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "sequential update summarization",
+  "sequential update summarization task",
+  "longitudinal summarization",
+  "incremental longitudinal summarization",
+  "stream summarization",
+  "temporal summarization",
+  "cross-document timeline extraction",
+  "query-focused multi-document summarization",
+  "task-centric email",
+  "collaborative task reminders",
+  "email importance ranking",
+  "email criticality",
+  "expected cost of delayed review",
+  "attention-sensitive alerting",
+  "prospective memory",
+  "dynamic user modeling",
+  "preference drift",
+  "concept drift",
+  "online personalization",
+  "constructive preference elicitation",
+  "hard constraints and soft preferences",
+  "constrained ranking",
+  "lexicographic preferences",
+  "task-oriented incremental dialogue summarization",
+  "uncertainty communication",
+  "uncertainty visualization",
+  "information sufficiency",
+  "comprehensiveness",
+  "recall-oriented evaluation",
+  "content selection",
+  "novelty and redundancy"
+ ],
+ "demoted_terms": [
+  "delta summarization",
+  "information update detection",
+  "response priority prediction",
+  "digest generation",
+  "entity-centric summarization",
+  "preference-aware ranking",
+  "user-adaptive summarization",
+  "long-running conversation summarization",
+  "topic-focused summarization"
+ ],
+ "downgrade_rules": [
+  "Downgrade generic summarization papers that process a fixed corpus once and have no repeated-cycle, previous-view, longitudinal, or update condition.",
+  "Downgrade update or novelty systems that intentionally emit only new information and provide no mechanism or evaluation for carrying forward unchanged but unresolved important state.",
+  "Downgrade timeline summarization when the output is merely a retrospective ordered history rather than successive briefings conditioned on what the user has already seen.",
+  "Downgrade multi-document or email-thread summarization that lacks a stable cross-thread/cross-conversation work-item identity; multiple documents alone do not close gap-6.",
+  "Downgrade entity-centric literature when entity identity is used as a proxy for Topic identity.",
+  "Downgrade literal text-diff, redline, document-version, or change-log systems; semantic state changes and supersession are not equivalent to changed strings.",
+  "Downgrade email importance, Priority Inbox, reply prediction, or response-likelihood work if observed user action is treated as evidence of response obligation.",
+  "Downgrade email triage work that is only descriptive unless it supplies evidence about prioritization, unresolved work, reminders, or evaluation relevant to the briefing problem.",
+  "Downgrade personalized summarization or ranking based on a fixed profile when there is no longitudinal update, feedback adaptation, non-stationarity, or preference-drift evaluation; it cannot close gap-3.",
+  "Downgrade recommendation-system preference-drift studies to TRANSFER unless the study directly concerns workplace communication or analogous decision-essential information.",
+  "Downgrade learning-to-rank work that merely adds explicit rules as ordinary features or weighted objectives when it cannot guarantee precedence of hard user rules over soft learned preferences.",
+  "Downgrade constrained summarization whose constraints are only length, lexical form, style, language, or output format; those do not answer gap-2.",
+  "Downgrade reminder studies that only test whether reminders increase compliance or engagement without modeling which competing work items should be resurfaced and how reminder value interacts with importance or urgency.",
+  "Downgrade notification-management studies that optimize interruption timing only; notification timing is not equivalent to briefing content selection.",
+  "Downgrade uncertainty papers that study only statistical confidence graphics without incomplete, stale, disputed, conflicting, or insufficiently investigated information unless they provide transferable decision-outcome evidence.",
+  "Downgrade summarization evaluation based only on ROUGE, BLEU, fluency, coherence, or generic preference judgments when omission of decision-essential information and redundant resurfacing are not measured.",
+  "Downgrade coverage-aware methods when coverage units are merely topics, entities, or n-grams and no evidence shows that decision-essential actions, deadlines, conditions, risks, or unresolved states are protected.",
+  "Downgrade novelty/redundancy work that reports only average similarity or diversity without false-negative cost for omitted important content.",
+  "Downgrade false-alert research from spam, intrusion detection, medical alarms, or unrelated classifiers unless the paper offers an evaluation mechanism that transfers explicitly to briefing selection.",
+  "Downgrade non-academic product pages, newsletters, engineering blogs, LLM context-management tutorials, and vendor 'digest' or 'delta summary' documentation even when terminology matches.",
+  "Do not count synthetic or transfer-domain results as evidence of production-email accuracy; use them only to justify a mechanism or benchmark design.",
+  "Do not treat the presence of multiple sources as proof of cross-thread Topic reasoning; the method must reconcile information belonging to the same work matter across source boundaries.",
+  "Do not treat brevity or compression ratio as evidence of safe omission. Papers must expose some notion of retained important content, recall, comprehensiveness, user decision quality, or comparable loss-sensitive evaluation.",
+  "Do not treat a newer state mention as sufficient evidence that older state may be dropped; papers that do not represent supersession, resolution, contradiction, or persistent open state cannot close the lifecycle-related gaps."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1996,
+  "rationale": "Discovery must reach at least 1996. The direct workplace lineage already exists in the 1990s: Whittaker and Sidner's 1996 email-overload study documented email as task management and task tracking with outstanding work; late-1990s work then established relevance-versus-novelty/redundancy mechanisms and attention-sensitive email prioritization. A 2005-, 2010-, or recent-LLM-only window would silently remove foundational concepts needed to interpret modern briefing systems. Later canonical landmarks include task-centric email in 2003, question-focused multi-document summarization in DUC 2005, update summarization in DUC 2007/TAC 2008, and later temporal, personalized, reminder, and uncertainty work."
+ }
+}

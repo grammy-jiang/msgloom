@@ -1,0 +1,72 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "changed-subject-reply",
+  "description": "Explicit ancestry remains evidence even when the subject changes completely.",
+  "family": "subject_change",
+  "messages": [
+    {
+      "message_id": "changed-subject-root",
+      "expected_text": "Original matter remains active.",
+      "arrival_rank": 1,
+      "internet_message_id": "<changed-subject-root@synthetic.invalid>",
+      "subject": "Old subject",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "changed-subject-reply",
+      "expected_text": "> Original matter remains active.\n\nNew framing, same reply relation.",
+      "arrival_rank": 2,
+      "internet_message_id": "<changed-subject-reply@synthetic.invalid>",
+      "subject": "Completely new subject text",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "changed-subject-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "changed-subject-root"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "changed-subject-q1",
+      "message_id": "changed-subject-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 33
+      },
+      "source_candidates": [
+        {
+          "message_id": "changed-subject-root",
+          "span": {
+            "start": 0,
+            "end": 31
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "changed-subject-root",
+      "changed-subject-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3"
+  ]
+}

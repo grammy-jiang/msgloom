@@ -1,0 +1,69 @@
+{
+ "paper_id": "2605.12882",
+ "title": "CiteVQA: Benchmarking Evidence Attribution for Trustworthy Document Intelligence",
+ "research_question": "How can document visual question answering be evaluated so that a model receives credit only when its answer is correct and its cited document region genuinely supports that answer?",
+ "methodology": "CiteVQA constructs a benchmark of 1,897 questions over 711 PDFs spanning seven domains and two languages, including single-document and multi-document settings. Its automated construction pipeline parses documents, links related documents, extracts evidence packages, generates and verifies question-answer pairs, and uses masking ablation to identify crucial evidence before expert review. Gold evidence is represented at element-level bounding-box granularity with document and page indices, and synthetic multi-document evidence is mapped back to coordinates in the original source PDFs. Twenty multimodal language models are evaluated using evidence recall, relevance, answer correctness, page-level metrics, and Strict Attributed Accuracy, which jointly requires acceptable answers and evidence.",
+ "key_findings": [
+  {
+   "finding": "CiteVQA demonstrates a substantial gap between answer correctness and faithful evidence attribution: the strongest evaluated system reports 76.0 Strict Attributed Accuracy despite an 86.1 answer score, while the strongest open-source model reports 22.5 SAA.",
+   "evidence_type": "supported",
+   "section": "Abstract and §4 Main Results"
+  },
+  {
+   "finding": "Evidence attribution becomes more difficult as document scope increases; for the strongest system, reported evidence recall decreases from 68.9 in the single-document setting to 55.3 in the multi-document multiple-gold setting.",
+   "evidence_type": "supported",
+   "section": "§4 Main Results and Appendix analysis of multi-document complexity"
+  },
+  {
+   "finding": "Restricting models to ground-truth pages or gold documents improves answer accuracy in the paper's oracle-style analyses, providing preliminary evidence that evidence localization is itself an important performance bottleneck rather than merely an explanation layer.",
+   "evidence_type": "supported",
+   "section": "§5.2 Further Analysis of Evidence Attribution"
+  },
+  {
+   "finding": "The benchmark provides a hierarchical spatial evidence address consisting of document index, page index, and element bounding box, and its multi-document synthesis pipeline maintains a mapping from synthetic evidence back to source-PDF coordinates.",
+   "evidence_type": "supported",
+   "section": "§4.1 Evaluation Metrics and §8.1 Spatial Mapping and Evidence Synthesis"
+  },
+  {
+   "finding": "A human study on a sampled subset finds no statistically significant difference between the automated and human assessments for the reported relevance and answer-correctness judging dimensions, supporting the evaluation pipeline's use of automated judges.",
+   "evidence_type": "supported",
+   "section": "§9.2 Validation of Automated Evaluation via Human Study"
+  }
+ ],
+ "limitations": [
+  "CiteVQA grounds evidence in static PDF coordinates and does not define stable region identifiers or lineage across successive revisions of the same PDF.",
+  "Document index, page index, and bounding-box coordinates can change after pagination, layout, or content revisions, so they are not by themselves revision-stable identifiers.",
+  "The automated annotation pipeline relies on capable document parsers and MLLMs and is computationally expensive to reproduce at full scale.",
+  "The paper notes that determining authoritative evidence can be domain-dependent even when a visually matching region is available.",
+  "Evaluation uses model-based relevance and correctness judges, adding cost and another possible source of error despite the reported human validation.",
+  "The benchmark distribution may encourage overfitting if systems are tuned closely to its domains and document characteristics.",
+  "Benchmark annotations and code are available, but access to the complete source-PDF collection is constrained by copyright and may require approval or rely on external URLs."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "answer_attribution_gap": 1.0,
+  "multi_document_difficulty": 0.99,
+  "localization_bottleneck": 0.94,
+  "hierarchical_bbox_provenance": 1.0,
+  "judge_validation": 0.98,
+  "no_cross_version_lineage": 0.97
+ },
+ "raw_claims": [
+  "CiteVQA contains 1,897 questions derived from 711 multi-page PDFs across seven broad domains and two languages.",
+  "Each gold citation identifies evidence at element-level bounding-box granularity rather than only at page level.",
+  "Strict Attributed Accuracy requires both the answer and the supporting evidence to satisfy the benchmark's correctness criteria.",
+  "Models can produce correct textual answers while citing incorrect document regions.",
+  "The benchmark includes single-document, multi-document one-gold, and multi-document multiple-gold scenarios.",
+  "Masking candidate evidence elements is used during dataset construction to help identify evidence that is crucial for answering a question.",
+  "Synthetic multi-document evidence is mapped back to the spatial coordinates of its original source document.",
+  "The released repository contains inference, evaluation, summarization, prompts, and benchmark-data tooling.",
+  "Oracle-style restriction to correct pages or documents improves answer accuracy for several evaluated models.",
+  "CiteVQA does not track the identity of a document element across revised versions of the same attachment."
+ ],
+ "source_url": "https://arxiv.org/html/2605.12882",
+ "access": "full_text"
+}

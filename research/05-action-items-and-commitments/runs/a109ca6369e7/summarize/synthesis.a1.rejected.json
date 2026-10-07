@@ -1,0 +1,421 @@
+{
+ "topic": "action items, requests, commitments, and decisions in workplace email and chat: extracting action, owner, object, deadline, conditions, and speech act with evidence",
+ "paper_count": 17,
+ "executive_summary": "Across 17 papers, the strongest recurring conclusion is that workplace action understanding should be modeled as structured, contextual extraction rather than binary action-item detection. Requests, commitments, decisions, owners, timeframes, conditions, modality, negation, and evidence loci are partially separable phenomena, and several can span multiple utterances. Context usually helps, but thread or neighboring-context features can also degrade particular classes, so contextual reasoning should be selective rather than unconditional. Owner extraction is repeatedly difficult, while conditions, implicit requests, conditional offers, and commitment interpretation create substantial human disagreement. Temporal work supports explicit event-time relations and underspecified dates, but direct evidence for correctly linking workplace actions to deadlines remains weak. The corpus provides useful design principles, but direct end-to-end evidence for extracting msgloom's complete schema from modern workplace email and chat remains missing.",
+ "themes": [
+  "Structured action representations outperform or better explain the task than undifferentiated action-item labels.",
+  "Speech-act classification and argument extraction are distinct: detecting a request or commitment does not recover owner, object, deadline, condition, or evidence span.",
+  "Context and discourse structure are important but can introduce error and are not uniformly beneficial.",
+  "Implicit requests, conditional commitments, modality, negation, and organizational relationships create systematic ambiguity.",
+  "Owner/responsibility identification is a particularly weak component in structured action-item systems.",
+  "Temporal expressions require explicit binding to the relevant event; merely detecting a date is insufficient for deadline extraction.",
+  "Action and decision content frequently spans multiple utterances or has multiple textual realizations.",
+  "Preprocessing choices such as message zoning, sentence segmentation, and ASR materially affect downstream extraction.",
+  "Speech acts may overlap: request, commitment, proposal, delivery, and related functions should not automatically be forced into one mutually exclusive label.",
+  "Human disagreement and application-dependent definitions support explicit uncertainty and evidence-preserving output rather than forced completion of missing fields."
+ ],
+ "findings": [
+  {
+   "statement": "The evidence favors representing work-relevant actions as structured records with separately recoverable components rather than as a single binary action-item label. Meeting studies explicitly decompose actions into description, owner, timeframe, and agreement, while email work separately models requestor/requestee or committor/committee, action, conditions, and action/object/subject dimensions.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-11965152-18",
+     "section": "3 Action Item Annotation"
+    },
+    {
+     "paper_id": "doi-10-3115-1564535-1564540",
+     "section": "4 Hierarchical Annotations"
+    },
+    {
+     "paper_id": "manual-d19b0f6f1e",
+     "section": "Defining Requests and Commitments: Basic Concepts"
+    },
+    {
+     "paper_id": "manual-fde6beef40",
+     "section": "2 Background"
+    }
+   ]
+  },
+  {
+   "statement": "Owner or responsible-party extraction is a high-risk component: the structured meeting experiments repeatedly report owner as their weakest subclass, and none of the direct email studies demonstrates robust end-to-end owner extraction suitable for filling an action record automatically.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-11965152-18",
+     "section": "4 Experiments"
+    },
+    {
+     "paper_id": "doi-10-3115-1564535-1564540",
+     "section": "5 Experiments"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+     "section": "5 Action Item Summarization"
+    }
+   ]
+  },
+  {
+   "statement": "Conditions, modality, and negation must be attached to the action they govern rather than treated as lexical flags. Conditional offers and commitments are major sources of human disagreement, conditions may occur outside the same sentence, unrestricted modal triggers are much harder than a closed modal-verb list, and complete negation scope resolution is substantially harder than cue detection.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-0839b98ee7",
+     "section": "6.1 Conditional Offers"
+    },
+    {
+     "paper_id": "manual-d19b0f6f1e",
+     "section": "Conditionality"
+    },
+    {
+     "paper_id": "2106.08037",
+     "section": "5. Results — Modal Triggers Detection"
+    },
+    {
+     "paper_id": "manual-ee40d588e3",
+     "section": "5 Results and Discussion"
+    }
+   ]
+  },
+  {
+   "statement": "Discourse context generally improves difficult action and speech-act classification, but contextual features are not uniformly beneficial. Local/global meeting context, dialogue-act sequence models, and email-thread relations produce gains in several experiments, while some configurations transfer poorly and some email-act classes degrade when relational context is added.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2303.16763",
+     "section": "4.2 Results and Analysis"
+    },
+    {
+     "paper_id": "manual-01c535c108",
+     "section": "5.1.3 Results, Table 6"
+    },
+    {
+     "paper_id": "doi-10-1145-1076034-1076094",
+     "section": "5.3 Leave-one-team-out Experiments"
+    }
+   ]
+  },
+  {
+   "statement": "Localization should not be equated with forcing one action into one sentence. Sentence-level email models can improve action-item detection, yet workplace email and meeting studies show that one obligation may have several textual realizations and that the description, owner, timeframe, agreement, or condition may be distributed across multiple utterances.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1145-1076034-1076140",
+     "section": "4. Results & Discussion"
+    },
+    {
+     "paper_id": "manual-20b8cd2fdd",
+     "section": "4.1 Locus Ambiguity"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+     "section": "5 Action Item Summarization"
+    },
+    {
+     "paper_id": "doi-10-3115-1564535-1564540",
+     "section": "4 Hierarchical Annotations"
+    }
+   ]
+  },
+  {
+   "statement": "Request and commitment labels should remain conceptually distinct but should not be forced to be mutually exclusive. Email taxonomies distinguish directives, information requests, commitments, and proposals, while empirical annotation work shows that the same utterance can function simultaneously as a commitment and a request; multi-label email-act modeling is therefore better aligned with observed cases than a single primary class.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-hicss-2006-528",
+     "section": "Table 2 and 3. Corpus"
+    },
+    {
+     "paper_id": "manual-20b8cd2fdd",
+     "section": "4.8 Third-Party Commitments as Requests"
+    },
+    {
+     "paper_id": "doi-10-1145-1076034-1076094",
+     "section": "1. Introduction and 2. Email-Acts Taxonomy and Applications"
+    }
+   ]
+  },
+  {
+   "statement": "A deadline should be represented as a temporal relation attached to a particular action, not merely as a detected date. TimeML supplies event-time relations and underspecified temporal values, meeting experiments show that semantic and temporal features can improve timeframe extraction, but direct workplace-email research explicitly leaves deadline representation incomplete.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-1e8332286e",
+     "section": "2. Introduction to TimeML and 3.1 TLINK"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+     "section": "5 Action Item Summarization"
+    },
+    {
+     "paper_id": "manual-d19b0f6f1e",
+     "section": "Defining Requests and Commitments: footnote 2"
+    }
+   ]
+  },
+  {
+   "statement": "Input preparation materially changes action extraction quality. Removing quoted and non-author email zones produces a large request-detection improvement, sentence segmentation errors are non-trivial in workplace email, and ASR errors substantially reduce structured action-item detection in meeting speech.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-cd3fa58e4c",
+     "section": "5 Results"
+    },
+    {
+     "paper_id": "manual-0839b98ee7",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+     "section": "4 Action Item Detection"
+    }
+   ]
+  },
+  {
+   "statement": "Decision extraction benefits from explicitly modeling issue, proposed or restated resolution, and agreement rather than treating every future-oriented statement as a decision. Structured graphical models improve decision-dialogue-act detection, but the studied decision representation still does not recover workplace owners, deadlines, or conditions.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3115-1708376-1708410",
+     "section": "4.2 Results and 5.3 Experiments"
+    }
+   ]
+  },
+  {
+   "statement": "Annotation ambiguity is part of the task rather than only annotation noise. Commitments are less reliably annotated than requests, conditional and implicit cases account for many disagreements, improved guidelines can materially raise agreement, and application goals affect what should be counted as an actionable request or commitment.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-0839b98ee7",
+     "section": "5 Results and Discussion"
+    },
+    {
+     "paper_id": "manual-20b8cd2fdd",
+     "section": "3 The Data and Annotation Experiments and 2.3 Considering the End Goal"
+    },
+    {
+     "paper_id": "manual-d19b0f6f1e",
+     "section": "Manual Annotation Experiments"
+    },
+    {
+     "paper_id": "2303.16763",
+     "section": "2.2 Building A Large-scale Chinese Meeting Corpus"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Whether additional discourse context reliably improves extraction",
+   "papers": [
+    "2303.16763",
+    "doi-10-1145-1076034-1076094",
+    "manual-01c535c108"
+   ],
+   "note": "Sequence and contextual information frequently improve difficult labels [2303.16763] [manual-01c535c108], and email collective classification improves several commissive categories [doi-10-1145-1076034-1076094]. However, the strongest context configuration differs between AMC-A and AMI [2303.16763], and Deliver deteriorates when thread context is added [doi-10-1145-1076034-1076094]. The evidence therefore supports selective, validated context use rather than an assumption that more context is always better."
+  },
+  {
+   "topic": "Sentence-level versus message-level granularity",
+   "papers": [
+    "doi-10-1145-1076034-1076140",
+    "manual-20b8cd2fdd"
+   ],
+   "note": "Sentence-level modeling improves automatic document-level action-item detection [doi-10-1145-1076034-1076140], while message-level human annotation yields higher agreement than sentence-level annotation because it avoids locus ambiguity [manual-20b8cd2fdd]. This is a task-objective tension rather than a direct experimental contradiction: localization is useful for extraction, but forcing a unique sentence locus can reduce annotation reliability."
+  },
+  {
+   "topic": "Single-label versus overlapping speech-act representation",
+   "papers": [
+    "doi-10-1109-hicss-2006-528",
+    "manual-20b8cd2fdd",
+    "doi-10-1145-1076034-1076094"
+   ],
+   "note": "Some email classification experiments collapse theoretically different acts into one experimental class or seek a primary communicative intent [doi-10-1109-hicss-2006-528], whereas workplace annotation explicitly finds cases that are simultaneously commitments and requests [manual-20b8cd2fdd], and CSpace permits multiple email-act labels per message [doi-10-1145-1076034-1076094]. For msgloom, the latter evidence argues against an exclusive single-label schema."
+  },
+  {
+   "topic": "Effect of ASR on structured dialogue extraction",
+   "papers": [
+    "doi-10-18653-v1-2007-sigdial-1-4",
+    "doi-10-3115-1708376-1708410"
+   ],
+   "note": "Structured action-item detection degrades substantially from manual transcripts to ASR [doi-10-18653-v1-2007-sigdial-1-4]. In decision-dialogue-act experiments, some ASR configurations equal or exceed manual-transcript results, although the authors partly attribute this to altered segmentation and sparsity rather than intrinsically better ASR input [doi-10-3115-1708376-1708410]. The apparent disagreement should therefore not be generalized into ASR robustness without task-specific testing."
+  },
+  {
+   "topic": "What is required before something counts as an action item",
+   "papers": [
+    "doi-10-1007-11965152-18",
+    "doi-10-18653-v1-2007-sigdial-1-4",
+    "manual-d19b0f6f1e",
+    "manual-cd3fa58e4c"
+   ],
+   "note": "Meeting work defines a comparatively strict action item requiring a concrete future action, responsible person, timeframe, and agreement or public commitment [doi-10-1007-11965152-18] [doi-10-18653-v1-2007-sigdial-1-4]. Email request work instead treats an obligation imposed on a recipient as a request even without an accepted commitment or explicit timeframe [manual-d19b0f6f1e] [manual-cd3fa58e4c]. These are different semantic objects and should not be collapsed into one label."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G1",
+   "description": "There is no direct end-to-end benchmark in this corpus for modern workplace email or chat that jointly extracts speech-act type, actor/owner, recipient, action object, deadline, conditions/exceptions, and exact supporting evidence spans while preserving unresolved fields.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"workplace email\" OR \"business email\" OR \"enterprise chat\" structured action extraction owner assignee deadline condition evidence span request commitment decision",
+   "evidence": [
+    "manual-d19b0f6f1e",
+    "manual-20b8cd2fdd",
+    "doi-10-1145-1076034-1076140",
+    "2303.16763"
+   ]
+  },
+  {
+   "id": "G2",
+   "description": "Direct evidence for contemporary workplace chat and cross-channel generalization is missing; the target-domain email evidence is dominated by Enron or small personal/university collections, while much structured work comes from meetings or simulated environments.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"Microsoft Teams\" OR Slack OR \"enterprise chat\" request detection commitment detection action item extraction workplace",
+   "evidence": [
+    "manual-0839b98ee7",
+    "manual-20b8cd2fdd",
+    "manual-cd3fa58e4c",
+    "doi-10-1145-1076034-1076094",
+    "2303.16763"
+   ]
+  },
+  {
+   "id": "G3",
+   "description": "Reliable owner/assignee resolution, especially when responsibility is implicit, distributed across utterances, or inferable only from participants and organizational context, remains unresolved.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"assignee extraction\" OR \"owner extraction\" OR \"responsibility extraction\" implicit argument workplace email task action item",
+   "evidence": [
+    "doi-10-1007-11965152-18",
+    "doi-10-3115-1564535-1564540",
+    "manual-0839b98ee7"
+   ]
+  },
+  {
+   "id": "G4",
+   "description": "Direct workplace evidence is insufficient for linking conditionality, negation, modality, prerequisites, and exceptions to the correct requested or committed action rather than merely detecting their lexical cues.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"conditional commitment\" request negation modality scope email dialogue obligation NLP",
+   "evidence": [
+    "manual-d19b0f6f1e",
+    "manual-0839b98ee7",
+    "2106.08037",
+    "manual-ee40d588e3"
+   ]
+  },
+  {
+   "id": "G5",
+   "description": "Direct workplace email/chat evidence for distinguishing and jointly representing proposal, intention, commitment, assignment, approval, rejection, and final decision remains limited, particularly when several acts coexist.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"decision extraction\" approval proposal commitment \"workplace email\" OR \"enterprise chat\" speech act",
+   "evidence": [
+    "doi-10-1109-hicss-2006-528",
+    "doi-10-1145-1076034-1076094",
+    "doi-10-3115-1708376-1708410"
+   ]
+  },
+  {
+   "id": "G6",
+   "description": "Build an engineering benchmark and adversarial fixture suite for msgloom's full action schema, including implicit owners, multiple actions per sentence, shared deadlines, multiple evidence spans, conditional and negated actions, request/commit overlap, reported speech, and deliberately unknown fields.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "manual-20b8cd2fdd",
+    "manual-d19b0f6f1e",
+    "doi-10-3115-1564535-1564540",
+    "manual-ee40d588e3"
+   ]
+  },
+  {
+   "id": "G7",
+   "description": "Engineer and test deadline binding separately from temporal-expression detection: preserve original wording, normalize only when justified by an anchor, represent uncertainty, and verify that each time expression is linked to the correct action.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "manual-1e8332286e",
+    "doi-10-18653-v1-2007-sigdial-1-4",
+    "manual-d19b0f6f1e"
+   ]
+  },
+  {
+   "id": "G8",
+   "description": "Evaluate extraction robustness to message zoning, quoted history, sentence-boundary errors, attachment references, and chat-style segmentation instead of benchmarking only on cleaned message bodies or gold utterance boundaries.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "manual-cd3fa58e4c",
+    "manual-0839b98ee7",
+    "manual-20b8cd2fdd",
+    "manual-01c535c108"
+   ]
+  },
+  {
+   "id": "G9",
+   "description": "Develop disagreement-aware evaluation and review policy: score each argument and evidence relation separately, retain ambiguous cases instead of deleting them from test data, and expose uncertainty when human interpretation is unstable.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "evidence": [
+    "manual-0839b98ee7",
+    "manual-20b8cd2fdd",
+    "2303.16763",
+    "2106.08037"
+   ]
+  },
+  {
+   "id": "G10",
+   "description": "Determining whether an extracted commitment or action is later completed, cancelled, superseded, contradicted, or still pending belongs to Topic 06 rather than Topic 05.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH",
+   "evidence": [
+    "doi-10-1007-11965152-18"
+   ]
+  },
+  {
+   "id": "G11",
+   "description": "Determining the correct antecedent proposition or request to which an approval, rejection, agreement, or commitment applies belongs to Topic 04; Topic 05 should consume that scope and must not treat its own act label as proof that the scope is correct.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH",
+   "evidence": [
+    "doi-10-3115-1708376-1708410",
+    "doi-10-1145-1076034-1076094"
+   ]
+  },
+  {
+   "id": "G12",
+   "description": "Executing actions, sending messages, invoking tools, or treating a generated draft as approval belongs outside Topic 05's semantic-extraction remit.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM",
+   "evidence": [
+    "manual-fde6beef40"
+   ]
+  }
+ ],
+ "actionable_insights": [
+  "Use a first-class structured event record: act type(s), actor/owner, recipient or beneficiary, action/object, modality/status at utterance time, original deadline wording, normalized time only when justified, conditions/exceptions, evidence spans, confidence, and unresolved fields.",
+  "Do not invent missing owners, deadlines, conditions, or objects. Represent them as unknown, and separately mark whether an owner is explicit, contextually inferred, or unresolved.",
+  "Permit multi-label speech acts. In particular, preserve request versus commitment as different semantics while allowing one passage to instantiate both when the evidence supports it.",
+  "Allow one event to have multiple evidence spans and allow arguments to come from different utterances; do not require a unique sentence locus.",
+  "Use context selectively. Evaluate sentence-only, local-message, thread, and broader Topic context separately and gate context use when it introduces conflicting evidence.",
+  "Model condition, modality, and negation as scoped relations to an action/event rather than Boolean features attached to a whole message.",
+  "Treat deadline extraction as two problems: temporal-expression interpretation and attachment of that time to the correct action. Preserve the source wording even after normalization.",
+  "Separate detection from extraction in evaluation: score whether an actionable act was found, then score act label, owner, object, deadline, conditions, and evidence independently.",
+  "Preserve source zones and lineage even if quoted text or signatures are excluded from primary classification; discarded text can contain evidence needed for context or later Topics.",
+  "Include difficult and disputed examples in evaluation rather than restricting tests to unanimous labels; msgloom's highest-risk cases are precisely the implicit, conditional, multi-act, and organizationally contextual cases.",
+  "Use human review or explicit uncertainty for low-confidence structured records rather than silently transforming suggestive language into executable obligations.",
+  "Keep Topic 05 outputs at utterance-time semantics. Later completion, cancellation, contradiction, and revision should be handed to Topic 06."
+ ],
+ "confidence_summary": "Confidence is HIGH that structured argument-level extraction, context-sensitive interpretation, explicit conditionality/modality handling, multi-span evidence, and uncertainty preservation are necessary design requirements: these conclusions recur across independent email, meeting, dialogue-act, temporal, modality, and negation studies. Confidence is also HIGH that owner extraction and implicit/conditional cases are difficult. Confidence is MEDIUM for expected production accuracy in msgloom because no paper in this corpus evaluates the complete requested schema end-to-end on modern Outlook/Teams-like communication, many studies use small or old datasets, and several structured results transfer from meetings or simulated dialogue rather than authentic contemporary workplace chat.",
+ "limitations": [
+  "No paper in the corpus directly evaluates msgloom's complete structured record over modern workplace email and chat; most studies solve only detection, classification, or a subset of arguments [manual-d19b0f6f1e] [2303.16763].",
+  "Much direct email evidence comes from Enron, personal collections, university volunteers, or simulated-company email, limiting organizational and temporal representativeness [manual-20b8cd2fdd] [doi-10-1109-hicss-2006-528] [doi-10-1145-1076034-1076094].",
+  "The strongest structured action and decision representations are largely derived from meeting transcripts, so their transfer to asynchronous email and chat is plausible but not established [doi-10-18653-v1-2007-sigdial-1-4] [doi-10-3115-1708376-1708410].",
+  "Metrics are not directly comparable across papers because tasks range from message classification and sentence detection to dialogue-region overlap, component classification, annotation agreement, and temporal or negation subtasks.",
+  "Several experiments use very small datasets, manually chosen weights, indirect labels, gold segmentation, or manually supplied dialogue-act features [doi-10-1007-11965152-18] [doi-10-3115-1564535-1564540] [doi-10-3115-1708376-1708410] [manual-01c535c108].",
+  "Difficult or disputed examples are sometimes excluded from classifier evaluation, so published performance can understate the difficulty of the ambiguous cases most relevant to missed-work risk [manual-cd3fa58e4c].",
+  "Attachments are absent from important email corpora even though attachment-review requests are explicitly identified as an important edge case [manual-20b8cd2fdd] [manual-cd3fa58e4c].",
+  "The supplied corpus contains little evidence on modern foundation-model or LLM-based structured extraction, so this synthesis supports representation and evaluation requirements more strongly than it supports a particular contemporary model architecture.",
+  "This synthesis relies only on the 17 supplied paper analyses and does not claim literature exhaustion."
+ ],
+ "gap_status": []
+}

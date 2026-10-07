@@ -1,0 +1,81 @@
+{
+ "paper_id": "2607.19322",
+ "title": "Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT, a Benchmark for Factual Completeness",
+ "research_question": "How can factual completeness of open-ended long-form generation be evaluated with rubrics rich enough to represent structured answer requirements yet simple enough for reliable automated judging?",
+ "methodology": "The paper introduces a two-level representation in which a structured meta-rubric captures simple facts, strict and flexible lists, ordered processes, relationships, meta-insights, and three importance tiers, after which deterministic rules compile it into flat checks for LLM judging. Gamut contains 1,813 human-verified everyday deep-research questions grounded in wearable imagery, with rubrics constructed through LLM-assisted web research, self-refinement, multiple rounds of expert revision, and supporting evidence snippets. Each check receives one of four verdicts—meets, partially meets, missing, or contradicts—and tier scores penalize contradictions more strongly than omissions before combining Answer-Critical, Valuable, and Context tiers. Fourteen proprietary and open-weight models are evaluated with three different LLM judges, and a 1,806-question text-only variant tests how much of the benchmark difficulty comes from visual identification rather than answer completeness.",
+ "key_findings": [
+  {
+   "finding": "Gamut exposes substantial factual incompleteness in current systems: the strongest evaluated model scored 58.7% on the multimodal benchmark.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Omission was the dominant failure mode, with missing rubric elements accounting for more than a quarter of checks even for the strongest systems and roughly two-thirds for some weak systems.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "The structured meta-rubric was empirically necessary for nearly all questions: 98% contained answer structure that a flat list of independently required facts would misrepresent.",
+   "evidence_type": "supported",
+   "section": "6.3 The Structure Behind the Rubrics; 7 Conclusion"
+  },
+  {
+   "finding": "Model ordering was highly stable across Gemini 3.1 Pro and Claude Opus 4.8 judges, while Qwen3-VL 235B was more lenient but preserved the broad ordering.",
+   "evidence_type": "supported",
+   "section": "5 Evaluating Models on Gamut - Judge agreement"
+  },
+  {
+   "finding": "Removing the visual-identification requirement improved every evaluated model by roughly 10 to 20 Gamut points while broadly preserving model ordering.",
+   "evidence_type": "supported",
+   "section": "5.2 A Text-Only Variant"
+  },
+  {
+   "finding": "The scoring rule explicitly distinguishes omission from contradiction and imposes a larger penalty for a confident falsehood than for missing information.",
+   "evidence_type": "supported",
+   "section": "3.3 Scoring"
+  },
+  {
+   "finding": "The claim that the two-level framework generalizes broadly beyond long-form factuality is proposed conceptually but is not empirically tested on other open-ended generation tasks in this paper.",
+   "evidence_type": "unsupported",
+   "section": "7 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The paper has no dedicated limitations section, so limitations here are inferred from the reported benchmark design.",
+  "The benchmark focuses on everyday deep-research factuality grounded mainly in wearable imagery and does not establish validity for every form of open-ended generation.",
+  "Question and rubric construction depend heavily on Gemini 3.1 Pro before expert review, which may imprint model-specific search and decomposition patterns on the benchmark.",
+  "Final scoring still depends on LLM judges; cross-judge experiments show ranking robustness but do not prove every individual rubric verdict is correct.",
+  "The tier weights, partial-credit value, and contradiction penalty are design choices rather than parameters learned from user utility or downstream risk.",
+  "Web evidence can become stale or change after benchmark construction, but the paper does not evaluate temporal validity, source-version drift, or periodic rubric refresh.",
+  "The benchmark measures whether expected facts are present but is not a calibrated abstention benchmark and does not estimate the probability that a model should decline an answer.",
+  "Evidence-backed rubrics define reference completeness at construction time, so facts absent from the rubric cannot receive completeness credit even if they later become relevant."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "benchmark_challenging": 0.99,
+  "omission_dominant": 0.99,
+  "structured_rubrics_needed": 0.99,
+  "judge_robustness": 0.98,
+  "text_only_gain": 0.99,
+  "contradiction_penalty": 0.99,
+  "generalization_beyond_factuality": 0.88
+ },
+ "raw_claims": [
+  "Gamut evaluates factual completeness rather than only factual precision.",
+  "Each question is represented first by a structured meta-rubric and then by mechanically generated grading checks.",
+  "The benchmark contains 1,813 multimodal questions across ten everyday domains.",
+  "Rubric checks distinguish fully met, partially met, missing, and contradictory content.",
+  "Contradictions are penalized more strongly than omissions in the scoring formula.",
+  "The strongest evaluated multimodal model obtains a Gamut score of 58.7%.",
+  "Missing information is more common than contradiction for the strongest models.",
+  "Ninety-eight percent of questions contain structure that an ordinary flat fact checklist would fail to represent faithfully.",
+  "The text-only variant contains 1,806 questions and broadly preserves the multimodal model ordering.",
+  "The authors release the dataset and evaluation code."
+ ],
+ "source_url": "https://arxiv.org/html/2607.19322",
+ "access": "full_text"
+}

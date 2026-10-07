@@ -1,0 +1,368 @@
+{
+ "analyses": [
+  {
+   "paper_id": "manual-13a21477e7",
+   "title": "Summarize What You Are Interested In: An Optimization Framework for Interactive Personalized Summarization",
+   "research_question": "Can interactive user feedback be incorporated into an optimization framework so that successive extractive summaries increasingly reflect an individual user's interests while retaining conventional summary quality?",
+   "methodology": "The paper formulates interactive personalized summarization as an optimization problem combining conventional summary utility, including coverage and diversity, with user-specific utility inferred from sentence clicks and examination of nearby context. The summary is iteratively revised between interaction sessions by substitutions that increase the combined utility objective. The authors evaluated the approach on four news-event collections containing 5,197 documents in total and compared it with several non-personalized and personalized baselines. Three evaluators supplied interactive feedback and rated summaries, while ROUGE-1 was used as an automatic content-overlap metric.",
+   "key_findings": [
+    {
+     "finding": "Sparse click and examination feedback can be propagated to related sentence content and used to update the summary toward the user's expressed interests over successive interactions.",
+     "evidence_type": "supported",
+     "section": "Section 3: Interactive Personalized Summarization"
+    },
+    {
+     "finding": "The interactive personalized method received substantially higher personalized human ratings than the non-interactive baselines across the four evaluated news collections.",
+     "evidence_type": "supported",
+     "section": "Section 4.5: Experimental Results"
+    },
+    {
+     "finding": "The personalized summaries did not consistently achieve the highest ROUGE-1 scores; generic summarization could score better when a user's interests diverged from the generic reference summaries.",
+     "evidence_type": "supported",
+     "section": "Section 4.5: Experimental Results"
+    },
+    {
+     "finding": "Summaries preferred by different evaluators exhibited relatively low content consistency, which the authors interpret as evidence that the interaction mechanism was capturing individual rather than generic preferences.",
+     "evidence_type": "supported",
+     "section": "Section 4.6: Personalized Summarization Analysis"
+    },
+    {
+     "finding": "Increasing the weight on user-specific utility strengthens personalization, but excessive weighting causes generic ROUGE quality to decline, demonstrating a trade-off between personal relevance and corpus-level representativeness.",
+     "evidence_type": "supported",
+     "section": "Section 4.7: Parameter Analysis"
+    }
+   ],
+   "limitations": [
+    "Only three evaluators supplied the personalized judgments, so evidence about variation across users is based on a very small participant pool.",
+    "The four collections are news-event corpora rather than workplace email, chat, or other organizational communication.",
+    "The approach depends on explicit interaction through clicks and examination behavior before it can adapt to a particular user.",
+    "The method is extractive and operates primarily at sentence level rather than maintaining structured propositions, decisions, tasks, or open-state records.",
+    "It does not explicitly model temporal validity, superseded facts, completed versus still-open items, or incremental briefing state.",
+    "Generic reference summaries can be intrinsically misaligned with personalized interests, limiting the interpretability of ROUGE as an evaluation metric for personalization."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "interactive_feedback_updates_summary": 0.99,
+    "higher_personalized_human_ratings": 0.98,
+    "rouge_can_diverge_from_preference": 0.98,
+    "users_prefer_different_content": 0.95,
+    "personalization_weight_tradeoff": 0.97
+   },
+   "raw_claims": [
+    "The framework combines traditional summary quality with a utility term representing inferred user interest.",
+    "Clicks on summary sentences and examination of surrounding material are treated as implicit evidence of user interest.",
+    "The system regenerates a summary after interaction rather than treating personalization as a one-shot ranking problem.",
+    "The evaluation used four news-event collections containing 5,197 source documents in total.",
+    "Three evaluators rated the personalized importance of generated summaries.",
+    "Interactive personalized summaries received high subjective ratings across all four collections.",
+    "A personalized summary can be preferred by a user even when its ROUGE score is below that of a generic baseline.",
+    "Different evaluators often preferred summaries containing different information.",
+    "Giving excessive weight to user-interest utility can reduce overlap with generic reference summaries."
+   ],
+   "source_url": "https://aclanthology.org/D/D11/D11-1124.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-1557019-1557124",
+   "title": "Mining social networks for personalized email prioritization",
+   "research_question": "Can features derived from each user's personal email social network, including semi-supervised propagation of importance, improve personalized email-priority prediction when only limited labeled email is available?",
+   "methodology": "The authors recruited 25 participants to label non-spam personal email on a five-level importance scale over approximately one month, with the final experiments using the seven participants who supplied more than 200 labeled messages. Each user's model was trained independently, using standard message and header features augmented with social-network clustering, social-importance features, and a semi-supervised importance-propagation method operating over message and person nodes. SVM classifiers predicted the five importance levels, with 150 labeled messages used for training per user and remaining messages used for testing. Performance was evaluated mainly with micro- and macro-averaged mean absolute error and repeated training experiments.",
+   "key_findings": [
+    {
+     "finding": "Adding induced social-network information to conventional email features reduced priority-prediction error for personalized models.",
+     "evidence_type": "supported",
+     "section": "Section 5.6: Evaluation Results"
+    },
+    {
+     "finding": "The complete combination of basic, clustering, social-importance, and importance-propagation features reduced average macro MAE from about 0.8510 to 0.7449, corresponding to roughly a 14% relative error reduction.",
+     "evidence_type": "supported",
+     "section": "Section 5.6: Evaluation Results"
+    },
+    {
+     "finding": "The complete social-feature combination reduced micro-averaged MAE from about 0.7759 to 0.5909, reported as approximately a 31% relative error reduction.",
+     "evidence_type": "supported",
+     "section": "Section 5.6: Evaluation Results"
+    },
+    {
+     "finding": "Social-network-derived information was particularly useful when only a limited number of explicit priority judgments were available, although the best feature combination varied with training-set size.",
+     "evidence_type": "supported",
+     "section": "Section 5.6: Evaluation Results"
+    },
+    {
+     "finding": "The design permits each person's prioritizer to be learned from that person's own email and judgments without pooling private email across users.",
+     "evidence_type": "supported",
+     "section": "Introduction and Problem Setting"
+    }
+   ],
+   "limitations": [
+    "Although 25 people were recruited, only seven participants supplied enough labels to be included in the reported experiments.",
+    "Participants were drawn primarily from a Carnegie Mellon University research environment, limiting organizational and occupational diversity.",
+    "Priority labels were subjective self-assessments and may differ substantially in meaning between users.",
+    "The labeling period was approximately one month, providing little evidence about long-term preference drift.",
+    "The personal email collection was not released as a public benchmark because of privacy constraints.",
+    "The model predicts message importance but does not explicitly represent whether information is new, still open, resolved, stale, or superseded.",
+    "Evaluation was offline rather than a longitudinal deployment measuring whether learned priority actually improved users' work."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "social_features_improve_priority_prediction": 0.99,
+    "macro_mae_reduction": 0.99,
+    "micro_mae_reduction": 0.99,
+    "social_features_help_with_few_labels": 0.94,
+    "personal_models_preserve_data_separation": 0.96
+   },
+   "raw_claims": [
+    "The paper treats email importance as a personalized five-level prediction problem rather than a universal ranking problem.",
+    "Each user's social network is constructed from that user's own email relationships.",
+    "The social representation includes clustering and measures intended to capture the importance of correspondents from the user's perspective.",
+    "The semi-supervised method propagates importance information through connected message and person nodes.",
+    "Seven participants with sufficient labeled mail were retained for the final experiments.",
+    "Each retained user contributed 150 labeled messages for model training.",
+    "Combining social and conventional email features produced lower prediction error than using conventional features alone.",
+    "The reported relative MAE reduction was larger under micro-averaging than under macro-averaging.",
+    "The authors identify scarcity of labeled personal email as an important constraint on practical personalized prioritization."
+   ],
+   "source_url": "https://www.researchgate.net/publication/221654545_Mining_social_networks_for_personalized_email_prioritization",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-2063576-2063683",
+   "title": "Modeling Personalized Email Prioritization: Classification-based and Regression-based Approaches",
+   "research_question": "For personalized five-level email priority prediction, do ordinal-regression models or classification-based models better capture users' judgments, and under what data assumptions does each modeling strategy work best?",
+   "methodology": "The study extends an earlier personalized email collection to 19 experimental subjects and assigns each message one of five importance levels using the user's own judgments. For each user, the first 150 messages by timestamp were reserved for training and later messages for testing, with learning curves constructed from training subsets of 30 through 150 messages. Header and body tokens were represented as weighted document features, and several SVM classification schemes, proposed order-based classifier cascades, and support-vector ordinal regression were evaluated with micro- and macro-averaged MAE and significance tests. The authors also tested the approaches on seven UCI-derived ordinal benchmark datasets and synthetic data to investigate why email and conventional ordinal datasets behaved differently.",
+   "key_findings": [
+    {
+     "finding": "On personalized email data, the order-based majority-voting classification approach significantly outperformed support-vector ordinal regression, despite the apparently ordinal nature of the five priority labels.",
+     "evidence_type": "supported",
+     "section": "Section 4.1.4: Results and Analysis"
+    },
+    {
+     "finding": "With 150 training messages, the reported macro MAE was approximately 0.8689 for the order-based majority-voting method versus 1.0480 for SVOR and 1.1560 for the constant baseline.",
+     "evidence_type": "supported",
+     "section": "Section 4.1.4: Results and Analysis"
+    },
+    {
+     "finding": "With 150 training messages, micro MAE was approximately 0.7907 for the order-based majority-voting method, compared with 1.0259 for SVOR and 1.0887 for the baseline.",
+     "evidence_type": "supported",
+     "section": "Section 4.1.4: Results and Analysis"
+    },
+    {
+     "finding": "On the seven UCI-derived ordinal benchmarks, the result reversed: SVOR performed best across the evaluated training sizes, showing that the email result was not a general failure of ordinal regression.",
+     "evidence_type": "supported",
+     "section": "Section 4.2.2: Results and Analysis"
+    },
+    {
+     "finding": "The authors attribute the email result to violations of the restrictive single-model or parallel-boundary assumptions underlying ordinal regression, while flexible classifiers can model different boundaries between priority regions.",
+     "evidence_type": "supported",
+     "section": "Sections 2 and 4.1.4"
+    },
+    {
+     "finding": "Chronological separation of training and test messages was deliberately used so that priority prediction would not exploit labels from future email.",
+     "evidence_type": "supported",
+     "section": "Section 4.1.1: Dataset and Preprocessing"
+    }
+   ],
+   "limitations": [
+    "The personalized evaluation contains only 19 subjects and a relatively small labeled training set per person.",
+    "The five-level labels are subjective personal judgments, so boundaries between levels need not have consistent spacing or semantics across users.",
+    "Private email data prevent straightforward public replication on the original personalized collection.",
+    "The representation relies primarily on tokenized message headers and text and does not model richer task, conversation, calendar, or organizational state.",
+    "The experiments evaluate static per-user models rather than continuing preference adaptation as a user's priorities change.",
+    "The system ranks individual messages but does not explicitly track which facts or tasks remain open, have been resolved, or have been superseded.",
+    "The UCI benchmark tasks are converted into ordinal targets and therefore provide diagnostic evidence about modeling assumptions rather than direct evidence about workplace email use."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "classification_beats_svor_on_email": 0.99,
+    "macro_mae_at_150": 0.99,
+    "micro_mae_at_150": 0.99,
+    "svor_wins_on_uci_benchmarks": 0.99,
+    "ordinal_model_assumption_mismatch": 0.96,
+    "chronological_split_avoids_future_leakage": 0.99
+   },
+   "raw_claims": [
+    "The personalized email dataset was expanded from seven to nineteen experimental subjects.",
+    "Users assigned their own messages to five ordered importance levels.",
+    "The experiments reserve the first 150 messages in time for training and later messages for testing.",
+    "The message representation uses tokens from sender, recipient, carbon-copy, subject, and body fields.",
+    "Mean absolute error is the principal metric because prediction mistakes can differ by more than one priority level.",
+    "The order-based classification method performs better than SVOR on the personalized email collection.",
+    "SVOR performs better than the classification methods on the UCI-derived ordinal benchmarks.",
+    "The contrast between email and benchmark results indicates that merely having ordered labels does not guarantee that a single ordinal-regression model is appropriate.",
+    "The proposed order-based classifiers seek to combine flexible decision boundaries with partial use of priority ordering.",
+    "Limited per-user labeled data is treated as a central practical constraint for personalized email prioritization."
+   ],
+   "source_url": "https://digital.library.unt.edu/ark:/67531/metadc835677/",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1093-jcmc-zmac001",
+   "title": "Measurement of Perceived Importance and Urgency of Email: An Employees’ Perspective",
+   "research_question": "What cues do employees use to judge received email as important or urgent, how can those perceptions be measured reliably, and how are the resulting constructs associated with email overload, work-role overload, and stress?",
+   "methodology": "The authors used the Act Frequency Approach to develop employee-centered measures of perceived email importance and urgency, beginning with interviews of 30 employees from one public- and one private-sector organization to elicit prototypical cues. A second sample of 86 employees rated the prototypicality of 76 candidate acts, after which the most representative items were retained. A larger web survey of 1,491 employees was then used for measurement validation and structural modeling. Reliability, convergent and discriminant validity, and a PLS-SEM nomological model linking email characteristics, overload, work-role overload, and perceived stress were evaluated.",
+   "key_findings": [
+    {
+     "finding": "Employees' judgments did not support three cleanly separate constructs for important, urgent, and important-and-urgent email; the validated structure contained important email and important-and-urgent email, without a distinct urgent-only construct.",
+     "evidence_type": "supported",
+     "section": "Study 1: Scale Development and Discussion"
+    },
+    {
+     "finding": "Important-but-not-urgent messages were characterized primarily by their relevance to the employee's own work, whereas important-and-urgent messages commonly involved consequential matters, key stakeholders, or adverse consequences from delay.",
+     "evidence_type": "supported",
+     "section": "Study 1: Prototypical Acts"
+    },
+    {
+     "finding": "The resulting scales showed acceptable internal consistency and convergent validity, with reported Cronbach's alpha values of about 0.84 for important email and 0.88 for important-and-urgent email.",
+     "evidence_type": "supported",
+     "section": "Study 1: Measurement Validation"
+    },
+    {
+     "finding": "Both perceived important email and important-and-urgent email had positive statistically significant associations with work-role overload in the structural model.",
+     "evidence_type": "supported",
+     "section": "Study 2: Nomological Validity"
+    },
+    {
+     "finding": "Email overload and time spent on email were associated with work-role overload, while raw email volume was not a statistically significant predictor in the reported model.",
+     "evidence_type": "supported",
+     "section": "Study 2: Nomological Validity"
+    },
+    {
+     "finding": "Work-role overload had a substantial positive association with perceived stress, while the hypothesized moderating role of work control was not supported.",
+     "evidence_type": "supported",
+     "section": "Study 2: Nomological Validity"
+    }
+   ],
+   "limitations": [
+    "The Act Frequency Approach emphasizes prototypical cues and may omit less common but still meaningful indicators of importance or urgency.",
+    "Participants had difficulty cleanly disentangling urgency from importance, which limits interpretation of urgency as an independent construct.",
+    "Survey recruitment through email and voluntary participation create potential self-selection bias.",
+    "The main evidence is self-reported rather than based on objective message content, observed handling behavior, or server logs.",
+    "The study is cross-sectional, so the structural relationships cannot establish longitudinal causal effects.",
+    "Numeric response scales may influence how respondents express perceived frequency or intensity.",
+    "The study measures perceived email characteristics but does not provide a mechanism for updating an individual's priorities over time or for distinguishing newly changed state from unresolved prior state."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "two_construct_structure": 0.99,
+    "work_relevance_and_consequence_cues": 0.97,
+    "scale_reliability": 0.99,
+    "importance_predicts_work_role_overload": 0.98,
+    "volume_not_significant": 0.99,
+    "work_role_overload_predicts_stress": 0.99
+   },
+   "raw_claims": [
+    "The scale-development process began by asking employees themselves what makes received email important or urgent.",
+    "Thirty employees were interviewed during the initial act-generation stage.",
+    "Eighty-six employees participated in the subsequent prototypicality-rating stage.",
+    "The larger validation study included 1,491 respondents.",
+    "The analysis yielded measures for important email and for email that is both important and urgent.",
+    "A separate urgent-but-not-important construct did not survive the empirical scale-development process.",
+    "Work relevance is a prominent cue for perceived importance.",
+    "Potential consequences of delayed action are prominent in perceptions of important-and-urgent email.",
+    "Both perceived-importance constructs were associated with greater work-role overload.",
+    "Email volume itself was not a significant predictor of work-role overload in the reported structural model.",
+    "The study data are stated to be available from the lead author upon informed request."
+   ],
+   "source_url": "https://academic.oup.com/jcmc/article/27/2/zmac001/6548841",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1207-s15327051hci2001-2-3",
+   "title": "Supporting Collaborative Task Management in E-mail",
+   "research_question": "How can email interfaces better support collaborative task management, particularly remembering outstanding activities, finding prior task-related messages, and accessing distributed task information?",
+   "methodology": "The work begins from empirical investigations of email use by 64 business professionals across 15 organizations using observations, sampled email archives, and semi-structured interviews. Those observations motivated two prototype approaches: TeleNotes, which uses spatially organized note piles and brief reminders, and ContactMap, which organizes task cues around people and social relationships. TeleNotes was iteratively developed over nine months and deployed to eight users for approximately two months, with usage logs and qualitative feedback collected. ContactMap was evaluated in a controlled comparison with participants' normal mail software using 15 industrial-research users, task-success and completion-time measures, preference ratings, and a smaller follow-up deployment.",
+   "key_findings": [
+    {
+     "finding": "Users commonly appropriate their inboxes as informal task-management systems, but chronological message organization becomes inadequate for collaborative tasks that persist over time and span multiple exchanges.",
+     "evidence_type": "supported",
+     "section": "Empirical Studies of Email Use"
+    },
+    {
+     "finding": "Dedicated to-do folders imposed enough filing and remembering overhead that almost all observed users who had tried them abandoned the practice.",
+     "evidence_type": "supported",
+     "section": "Empirical Studies of Email Use"
+    },
+    {
+     "finding": "TeleNotes users made active use of spatial task piles and very short personal reminder annotations, showing value in separating task cues from the original message chronology.",
+     "evidence_type": "supported",
+     "section": "TeleNotes Evaluation"
+    },
+    {
+     "finding": "TeleNotes did not replace conventional chronological email; users continued using their ordinary mail interface for recent events while using the prototype selectively for salient or longer-running tasks.",
+     "evidence_type": "supported",
+     "section": "TeleNotes Evaluation"
+    },
+    {
+     "finding": "In the controlled evaluation, ContactMap produced higher task success than participants' normal email interfaces, with a reported interface effect of F(1,112)=23.52, p<0.0001.",
+     "evidence_type": "supported",
+     "section": "ContactMap Evaluation"
+    },
+    {
+     "finding": "ContactMap also reduced completion time for the evaluated collaborative-task-management activities, with a reported interface effect of F(1,112)=11.07, p<0.001.",
+     "evidence_type": "supported",
+     "section": "ContactMap Evaluation"
+    },
+    {
+     "finding": "The results support complementary message-centric and people-centric views rather than replacing ordinary email chronology with a single alternative organization.",
+     "evidence_type": "supported",
+     "section": "Discussion and Design Implications"
+    }
+   ],
+   "limitations": [
+    "The TeleNotes deployment involved only eight users and approximately two months of use.",
+    "The ContactMap controlled study involved only 15 users and focused on selected collaborative task-management activities rather than the full range of email work.",
+    "The controlled evaluation cannot establish whether the observed advantages persist during long-term everyday use.",
+    "The interfaces require users to perform some explicit organization or annotation, so task state is not inferred entirely automatically.",
+    "The work predates current high-volume multi-channel workplace communication and therefore does not evaluate integration across email, chat, documents, and meetings.",
+    "The prototypes support reminders and task context but do not explicitly model semantic state transitions such as newly changed, still open, resolved, or superseded facts.",
+    "The work addresses information organization and retrieval rather than automatic personalized briefing or summarization."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "inbox_used_for_task_management": 0.99,
+    "todo_folders_abandoned": 0.97,
+    "spatial_piles_support_reminding": 0.95,
+    "chronological_email_remains_useful": 0.96,
+    "contactmap_improves_task_success": 0.99,
+    "contactmap_reduces_completion_time": 0.99,
+    "message_and_people_views_are_complementary": 0.96
+   },
+   "raw_claims": [
+    "Email is used not only for communication but also as an informal collaborative task-management environment.",
+    "Long-running tasks are difficult to manage when their relevant information is scattered across multiple messages and times.",
+    "Users need support for remembering outstanding tasks, locating earlier task information, and assembling relevant context.",
+    "Most users who experimented with dedicated to-do mail folders did not sustain that practice.",
+    "TeleNotes represents tasks as spatially arranged piles that can retain related communication and personal reminder notes.",
+    "The TeleNotes deployment involved eight users over roughly two months.",
+    "Users retained their normal chronological mail interface alongside TeleNotes rather than abandoning it.",
+    "ContactMap associates reminders and task information with people in a social representation.",
+    "Fifteen users participated in the controlled ContactMap comparison.",
+    "ContactMap improved both task success and task-completion speed in the evaluated collaborative task-management activities.",
+    "The paper argues that social, spatial, and chronological organizations can provide complementary support for different aspects of email work."
+   ],
+   "source_url": "https://www.researchgate.net/publication/247676562_Supporting_Collaborative_Task_Management_in_E-mail",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

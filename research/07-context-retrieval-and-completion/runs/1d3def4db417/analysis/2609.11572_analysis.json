@@ -1,0 +1,86 @@
+{
+ "paper_id": "2609.11572",
+ "title": "TimelyRAG: Semantic-Temporal Hybrid Retrieval for Time-Critical Question Answering in Overlapping-Evolving Documents",
+ "research_question": "Can a retriever-agnostic semantic-temporal reranking method reliably select the temporally valid version of highly overlapping evolving documents for time-critical question answering?",
+ "methodology": "TimelyRAG uses a two-stage pipeline: a conventional sparse or dense retriever first produces a candidate pool, then a temporal reranker combines semantic relevance with compatibility among query insertion time, query event time, document insertion time, and document event-time validity intervals. The temporal contribution is query-adaptive, with its weight increased when explicit event times or finer temporal granularity are present, while missing or ambiguous event-time signals fall back to insertion-time information under a causality constraint. The authors also construct TimelyQABench, a controlled synthetic Korean benchmark of 12,000 time-critical QA instances across legal regulations, university regulations, company policies, and terms of service, with semantically overlapping document versions and temporally valid gold evidence. They evaluate retrieval with nDCG, MAP, Recall, and Hit metrics across multiple retrievers and datasets, assess downstream generation with Llama-3.3-70B and GPT-5 pairwise judging, perform ablations and candidate-pool sensitivity tests, and conduct a small human-validation study.",
+ "key_findings": [
+  {
+   "finding": "On the four overlapping-evolving TimelyQABench domains, temporal reranking improves retrieval over the corresponding vanilla sparse and dense retrievers, with the largest reported nDCG@10 gain reaching 28.6%.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Overlapping-Evolving Benchmark"
+  },
+  {
+   "finding": "TimelyRAG substantially outperforms deployable temporal query rewriting, hard effective-date filtering, and LLM-based temporal reranking on the reported TimelyQABench nDCG@5 and MAP@5 comparisons, although an oracle using gold temporal information remains stronger.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Overlapping-Evolving Benchmark"
+  },
+  {
+   "finding": "The method also improves retrieval on the disjoint-evolving TS-Retriever benchmark while leaving BEIR-FiQA retrieval scores unchanged when temporal context is absent.",
+   "evidence_type": "supported",
+   "section": "5.2.2 Disjoint-Evolving Benchmark and 5.2.3 General RAG Benchmark"
+  },
+  {
+   "finding": "Ablations across four domains and both BM25 and BGE-M3 show that the full model performs better than variants using naive temporal distance or removing event-time activation or temporal-granularity modeling.",
+   "evidence_type": "supported",
+   "section": "5.5 Ablation Study and C.6 Expanded Ablation"
+  },
+  {
+   "finding": "Temporal reranking adds low incremental latency in the reported implementation: 2.15 ms per query over BM25 and 2.64 ms per query over BGE-M3 when averaged across TimelyQABench domains.",
+   "evidence_type": "supported",
+   "section": "5.6 Computational Overhead"
+  },
+  {
+   "finding": "Performance saturates after the first-stage candidate pool becomes moderately large, but TimelyRAG cannot recover a relevant version that the first-stage retriever omitted entirely.",
+   "evidence_type": "supported",
+   "section": "3.1 Semantic-Temporal Hybrid Retrieval and 5.7 Candidate-Pool Sensitivity"
+  },
+  {
+   "finding": "Category-level results reveal a failure mode for historical retrospective questions: on the Company subset, temporal reranking lowers nDCG@10 for that category even though it improves or preserves most other categories.",
+   "evidence_type": "supported",
+   "section": "C.5 Category-Wise Analysis"
+  }
+ ],
+ "limitations": [
+  "TimelyRAG is only a reranker, so its maximum recall is bounded by the first-stage candidate pool and it cannot recover temporally correct evidence that was never retrieved.",
+  "TimelyQABench is a controlled synthetic benchmark generated with an LLM rather than a corpus of naturally occurring amendment histories, so transfer to real regulatory versioning remains insufficiently established.",
+  "The main overlapping-evolving benchmark is Korean and covers four regulation-focused domains, limiting evidence for cross-lingual and broader-domain generalization.",
+  "Temporal event times can be missing, ambiguous, or low-confidence; the method then relies on heuristic fallback to insertion times and query-adaptive weighting rather than calibrated uncertainty over temporal extraction.",
+  "Historical retrospective questions show a measurable category-level degradation, indicating that the temporal-distance formulation does not handle all past-validity cases reliably.",
+  "The full-dataset benchmark validation relies heavily on LLM judges; human validation is limited to a pilot sample of 50 queries evaluated by two annotators from the authors' research group.",
+  "Downstream generation quality is evaluated primarily through GPT-5 pairwise judging rather than a large independent human evaluation.",
+  "The work does not implement structured evidence-gap completion, iterative retrieval decisions, calibrated selective prediction, risk-controlled stopping, or explicit evaluation under non-stationary distribution shift, so those parts of the broader adaptive-controller problem remain untested."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overlapping_evolving_retrieval_gain": 0.99,
+  "stronger_than_deployable_temporal_baselines": 0.98,
+  "disjoint_and_static_generalization": 0.98,
+  "adaptive_temporal_components_help": 0.97,
+  "low_incremental_overhead": 0.99,
+  "candidate_pool_dependency": 0.99,
+  "historical_retrospective_failure_mode": 0.99,
+  "no_risk_controlled_stopping_evaluation": 0.98
+ },
+ "raw_claims": [
+  "Time-critical retrieval over amended documents requires matching evidence validity to the temporal context of the query, not merely finding semantically similar passages.",
+  "TimelyRAG first retrieves candidates semantically and then reranks them using temporal compatibility.",
+  "The method models query and document insertion times separately from event times mentioned or represented in their contents.",
+  "When event-time information is unavailable or unreliable, the scoring procedure falls back to available insertion-time signals and enforces that evidence cannot come from documents inserted after the query.",
+  "The temporal weight is adapted according to whether the query contains event-time information and how fine-grained its temporal expressions are.",
+  "TimelyQABench contains 12,000 generated QA instances spanning four regulation-oriented domains with multiple overlapping document versions.",
+  "The benchmark deliberately creates hard negatives by keeping versions semantically similar while changing validity periods, eligibility, scope, exceptions, or required actions.",
+  "TimelyRAG improves retrieval metrics across the principal TimelyQABench retrievers and domains, with a reported maximum nDCG@10 improvement of 28.6%.",
+  "The method also improves several retrievers on the TS-Retriever time-sensitive benchmark while preserving baseline results on the non-temporal FiQA benchmark.",
+  "The full temporal formulation outperforms ablations that remove event-time activation, temporal granularity, or more precise temporal-distance handling.",
+  "Reported temporal reranking overhead is only a few milliseconds per query relative to the underlying retrieval stage.",
+  "Increasing the candidate pool from 10 to 50 improves effectiveness substantially, while larger pools yield only small additional gains.",
+  "Company-domain historical retrospective queries are an exception to the otherwise mostly positive category-level results and show reduced nDCG after reranking.",
+  "The framework does not include calibrated abstention, uncertainty-based stopping, or a controller that iteratively retrieves additional evidence until a risk criterion is met."
+ ],
+ "source_url": "https://arxiv.org/html/2609.11572",
+ "access": "full_text"
+}

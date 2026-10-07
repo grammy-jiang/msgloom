@@ -1,0 +1,88 @@
+{
+ "paper_id": "2402.03181",
+ "title": "C-RAG: Certified Generation Risks for Retrieval-Augmented Language Models",
+ "research_question": "Can a conformal risk controller certify generation risk for configurable RAG systems, identify configurations satisfying a desired risk level, and maintain valid risk bounds under bounded test-time distribution shift?",
+ "methodology": "C-RAG defines a constrained generation protocol parameterized by the number of retrieved examples, the number of candidate generations, and a similarity threshold controlling generation diversity. Calibration statistics are used to compute a high-probability upper bound on generation risk for each configuration and, using family-wise error control, a set of configurations certified below a user-specified risk threshold. The theoretical analysis is extended to test distributions within a bounded Hellinger distance of the calibration distribution, and experiments evaluate the guarantees on AESLC, CommonGen, DART, and E2E with BM25, BGE, OpenAI ada, and a supervised bi-encoder retriever.",
+ "key_findings": [
+  {
+   "finding": "For a fixed RAG configuration, C-RAG computes a high-confidence upper bound on a bounded generation-risk function from calibration data.",
+   "evidence_type": "supported",
+   "section": "4.3 Risk Guarantees for RAG Models"
+  },
+  {
+   "finding": "Given a desired risk level, C-RAG can certify a set of configurations whose generation risks are jointly controlled below that level using family-wise error-rate control.",
+   "evidence_type": "supported",
+   "section": "4.3 Proposition 2; 7.5"
+  },
+  {
+   "finding": "The configuration explicitly includes the number of retrieved examples, so retrieval quantity is a controllable and certifiable resource dimension, although it is selected as a configuration rather than by a per-query evidence-sufficiency stopping loop.",
+   "evidence_type": "supported",
+   "section": "4.1-4.2 Constrained Generation Protocol"
+  },
+  {
+   "finding": "The paper derives a conformal generation-risk bound for general bounded risk functions when the shifted test distribution lies within a specified Hellinger-distance radius of the calibration distribution.",
+   "evidence_type": "supported",
+   "section": "6.2 Theorem 2"
+  },
+  {
+   "finding": "In the simulated shift experiments, the certified risk bounds remained above empirical risk and rose approximately linearly with Hellinger distance, remaining non-trivial through a reported distance of 0.2.",
+   "evidence_type": "supported",
+   "section": "7.3; Appendix J.3"
+  },
+  {
+   "finding": "Across the experiments, increasing the number of retrieved examples generally reduced conformal generation risk more strongly than increasing the number of candidate generations.",
+   "evidence_type": "supported",
+   "section": "7.2; 7.4"
+  },
+  {
+   "finding": "For the tested valid configuration sets, empirical risks stayed below the requested conformal risk threshold.",
+   "evidence_type": "supported",
+   "section": "7.5 Valid Configurations"
+  },
+  {
+   "finding": "C-RAG supplies calibrated risk control under bounded shift but does not incorporate structured evidence-sufficiency judgments, temporal/version-aware provenance, or permission-aware retrieval.",
+   "evidence_type": "supported",
+   "section": "4 Conformal Generation Risks of RAG Models; 6 C-RAG under Distribution Shifts"
+  }
+ ],
+ "limitations": [
+  "Practical deployment may require continuously obtaining sufficiently current in-distribution calibration queries, which the authors identify as a latency and computational challenge.",
+  "The guarantee is high-confidence rather than absolute, so high-risk outlier generations can still occur.",
+  "Higher confidence can require more calibration samples.",
+  "Large external knowledge bases improve parts of the theoretical risk analysis but increase nearest-neighbor search time and storage cost.",
+  "The theoretical comparison between RAG and non-retrieval generation relies on a simplified one-layer self-attention model and additional assumptions about retrieval and transformer quality.",
+  "The theorem handles distributions within a bounded Hellinger radius, but the empirical shift experiments instantiate covariate shift through sample reweighting rather than a broad set of natural temporal or semantic shifts.",
+  "Adaptive conformal calibration for sequential time-series query streams is explicitly left for future work.",
+  "The number of retrieved examples is a configurable bounded resource but not a runtime stop decision based on whether structured evidence has become sufficient.",
+  "The framework contains no temporal/version provenance or permission-aware access mechanism."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "configuration_level_risk_certification": 0.99,
+  "valid_risk_bounded_configuration_sets": 0.99,
+  "distribution_shift_risk_bound": 0.99,
+  "retrieval_count_as_control_parameter": 0.99,
+  "empirical_shift_bound_soundness": 0.98,
+  "no_evidence_sufficiency_or_provenance_control": 0.96
+ },
+ "raw_claims": [
+  "C-RAG controls a generation protocol using retrieval count, generation-set size, and a diversity threshold.",
+  "A bounded risk function maps generated outputs and references to a value between zero and one.",
+  "The controller computes a high-probability generation-risk upper bound for a fixed configuration.",
+  "It can also identify a set of configurations certified below a requested risk level.",
+  "The distribution-shift extension assumes the test distribution lies within a bounded Hellinger distance of the calibration distribution.",
+  "The experiments use AESLC, CommonGen, DART, and E2E.",
+  "The external knowledge base is assembled from 30 public datasets and contains more than six million documents.",
+  "The experiments use one minus ROUGE-L as the principal generation-risk function.",
+  "Empirical conformal risk generally decreases as more in-context examples are retrieved.",
+  "The simulated shift experiments report usable risk bounds through Hellinger distance 0.2.",
+  "The authors identify real-time calibration for time-varying query streams as an unresolved practical issue.",
+  "The code is publicly available on GitHub."
+ ],
+ "source_url": "https://arxiv.org/html/2402.03181",
+ "access": "full_text"
+}

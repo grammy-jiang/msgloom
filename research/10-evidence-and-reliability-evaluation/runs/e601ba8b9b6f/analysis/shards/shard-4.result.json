@@ -1,0 +1,183 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2406.07967",
+   "title": "Better than Random: Reliable NLG Human Evaluation with Constrained Active Sampling",
+   "research_question": "Can a constrained active sampling procedure select a limited human-evaluation subset that preserves full-dataset NLG system rankings more reliably than random or heuristic sampling?",
+   "methodology": "The authors propose Constrained Active Sampling Framework (CASF), which iteratively combines a learner that predicts sample quality, systematic sampling across predicted quality levels, and a constrained controller intended to reduce redundancy. They re-evaluate 137 NLG evaluation setups involving 137 systems, 44 human-evaluation metrics, 16 datasets, and five NLG task types. Subset-derived system rankings are compared with rankings on the full datasets using Kendall's Tau, with additional tests for top-system identification and retention of statistically significant system differences. CASF is compared with random sampling, heuristic sampling, and several ablations, with additional analyses across sampling ratios, sample sizes, preliminary automatic metrics, and phase configurations.",
+   "key_findings": [
+    {
+     "finding": "Repeated random sampling can produce materially different inter-system rankings, with 87.5% of examined datasets showing different rankings across five random samples.",
+     "evidence_type": "supported",
+     "section": "Introduction"
+    },
+    {
+     "finding": "At the main 50% sampling setting, CASF achieved an overall inter-system ranking Kendall correlation of 0.83, exceeding the reported aggregate performance of the comparison methods.",
+     "evidence_type": "supported",
+     "section": "Results and Analysis / Full Inter-System Ranking Accuracy"
+    },
+    {
+     "finding": "CASF ranked first on 79.55% of the 44 human-evaluation metrics and first or second on 90.91% of them.",
+     "evidence_type": "supported",
+     "section": "Results and Analysis / Full Inter-System Ranking Accuracy"
+    },
+    {
+     "finding": "CASF identified the full-dataset top-ranked system correctly for 93.18% of the 44 human-evaluation metrics.",
+     "evidence_type": "supported",
+     "section": "Results and Analysis / Top-Ranked System Accuracy"
+    },
+    {
+     "finding": "Wilcoxon signed-rank comparisons reported statistically better ranking performance for CASF than random and heuristic sampling.",
+     "evidence_type": "supported",
+     "section": "Results and Analysis / Full Inter-System Ranking Accuracy"
+    },
+    {
+     "finding": "CASF generally retained inter-system ranking accuracy better than random and heuristic sampling over a range of sampling ratios and typical fixed sample sizes, although individual dataset and sampling-ratio cases did not always favor CASF.",
+     "evidence_type": "supported",
+     "section": "Appendix / Different Sampling Ratio; Different Sampling Size"
+    },
+    {
+     "finding": "For preserving statistically significant pairwise system differences at a 50% sample rate, CASF obtained slightly higher retention accuracy than random and heuristic sampling at both the 0.05 and 0.001 significance levels.",
+     "evidence_type": "supported",
+     "section": "Appendix / Significant Information Retention Accuracy"
+    },
+    {
+     "finding": "Among the automatic metrics tested for preliminary sample-quality ordering, MOVER-SCORE produced the strongest average pre-ranking result, while the authors found five sampling phases effective in most tested cases.",
+     "evidence_type": "supported",
+     "section": "Results and Analysis / Automatic Metric for Preliminary Phase; Phases and Associated Sampling Ratios"
+    }
+   ],
+   "limitations": [
+    "CASF predicts sample quality from automatic-metric features, which the authors acknowledge may not comprehensively represent sample quality.",
+    "The redundancy controller also uses a limited representation of sample similarity, and the authors suggest incorporating additional characteristics in future work.",
+    "The empirical study is restricted to NLG human evaluation, so applicability to other NLP evaluation tasks is not established.",
+    "The learner requires enough labeled samples for training, and the authors state that CASF may not be appropriate for extremely small evaluation samples, such as fewer than 50 items.",
+    "CASF does not dominate the baselines for every individual dataset and sampling ratio.",
+    "Its primary target is reliable system ranking from already available human scores rather than direct evaluation of factual correctness, evidence attribution, or omissions in generated content."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "random_sampling_instability": 0.98,
+    "overall_ranking_improvement": 0.98,
+    "top_system_recognition": 0.99,
+    "first_or_second_metric_rate": 0.99,
+    "statistical_comparison": 0.96,
+    "significance_retention": 0.95,
+    "sampling_ratio_robustness": 0.91,
+    "preliminary_metric_selection": 0.94
+   },
+   "raw_claims": [
+    "Human evaluation on different sampled subsets can yield different rankings of the same NLG systems.",
+    "Random sampling produced different system rankings across repeated draws for most datasets examined.",
+    "CASF selects samples through a learner, a systematic sampler, and a redundancy-constraining controller.",
+    "Previously annotated samples are used to update the learner during later active-sampling phases.",
+    "Ranking quality is evaluated by comparing subset-derived and full-dataset system rankings with Kendall's Tau.",
+    "The main evaluation covers 44 human-evaluation metrics across 16 datasets and five NLG task families.",
+    "CASF achieved 93.18% accuracy at recognizing the top-ranked system.",
+    "CASF ranked first or second on 90.91% of the evaluated human metrics.",
+    "MOVER-SCORE was the strongest tested automatic metric for the preliminary quality-ranking stage.",
+    "CASF generally performed better as the available sampling ratio increased, although non-monotonic cases occurred.",
+    "CASF slightly improved retention of statistically significant differences between systems relative to random and heuristic sampling.",
+    "The method can be unsuitable when the available sample size is too small to train its learner."
+   ],
+   "source_url": "https://arxiv.org/html/2406.07967",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1162-tacl-a-00407",
+   "title": "How Can We Know When Language Models Know? On the Calibration of Language Models for Question Answering",
+   "research_question": "How reliably do generative language-model probabilities indicate whether answers to knowledge-based questions are correct, and which calibration techniques can improve that correspondence?",
+   "methodology": "The authors evaluate generative QA using T5 and UnifiedQA as primary models, with BART and GPT-2 in additional experiments, across multiple-choice and extractive QA benchmarks spanning factual, commonsense, science, reading-comprehension, physical, and social domains. They quantify calibration with expected calibration error (ECE) and answer quality with accuracy, and separate several datasets into calibration-training and out-of-domain evaluation groups. They test candidate-aware fine-tuning objectives, temperature scaling, gradient-boosted feature-based confidence estimation, candidate-answer paraphrasing, Wikipedia retrieval-based input augmentation, and combinations of these techniques. Ablations examine architecture, model size, number of paraphrases, and transfer from calibration-training datasets to different evaluation datasets.",
+   "key_findings": [
+    {
+     "finding": "Strong generative QA models can have high answer accuracy while remaining poorly calibrated, and their raw probabilities frequently assign excessive confidence to incorrect answers.",
+     "evidence_type": "supported",
+     "section": "5.2 Are LM-based QA Models Well Calibrated?"
+    },
+    {
+     "finding": "On the main multiple-choice evaluation datasets, candidate-aware fine-tuning and post-hoc calibration both reduced ECE with little or no corresponding loss of answer accuracy for several methods.",
+     "evidence_type": "supported",
+     "section": "5.3 Can LM-based QA Models be Calibrated?"
+    },
+    {
+     "finding": "The combined calibration approach reduced ECE on MC-test from 0.095 for the original UnifiedQA model to 0.044, although its accuracy decreased from 0.769 to 0.748.",
+     "evidence_type": "supported",
+     "section": "5.3 Can LM-based QA Models be Calibrated?"
+    },
+    {
+     "finding": "Calibration transferred imperfectly across domains: temperature scaling learned on the training domains over-corrected confidence on MC-test, and an oracle temperature fit directly on the evaluation domain was better aligned.",
+     "evidence_type": "supported",
+     "section": "5.3 Can LM-based QA Models be Calibrated?"
+    },
+    {
+     "finding": "Calibration improvements were substantially more limited for extractive QA than for multiple-choice QA, which the authors associate with the more uncertain automatically generated candidate-span sets.",
+     "evidence_type": "supported",
+     "section": "5.3 Can LM-based QA Models be Calibrated?"
+    },
+    {
+     "finding": "Temperature scaling and feature-based post-processing consistently reduced the extreme overconfidence of the tested language models across the evaluated datasets.",
+     "evidence_type": "supported",
+     "section": "5.4 Analysis of Individual Calibration Methods"
+    },
+    {
+     "finding": "Paraphrasing candidate answers and adding retrieved evidence improved calibration on multiple-choice QA, showing that confidence estimates are sensitive to both answer wording and contextual evidence.",
+     "evidence_type": "supported",
+     "section": "5.4 Analysis of Individual Calibration Methods"
+    },
+    {
+     "finding": "In the tested T5 and UnifiedQA configurations, the larger 11B models were generally more accurate and better calibrated than their smaller counterparts, while calibration methods still further reduced ECE.",
+     "evidence_type": "supported",
+     "section": "5.5 Ablation Study / Performance of LMs with Different Sizes"
+    }
+   ],
+   "limitations": [
+    "The study excludes free-form abstractive QA because determining whether unrestricted generated answers are semantically correct is difficult.",
+    "Calibration is evaluated primarily with aggregate ECE, while the authors identify finer-grained calibration across meaningful data subsets as future work.",
+    "Calibration parameters learned on one collection of domains do not transfer perfectly to different domains.",
+    "The extractive-QA calibration setup depends on an approximate candidate-span generation procedure, and calibration gains there are smaller.",
+    "Input augmentation uses a relatively simple Wikipedia retrieval procedure and does not establish whether retrieved evidence is always relevant or factually sufficient.",
+    "The study does not experimentally evaluate how calibrated confidence affects actual users or downstream decision-making; this is proposed as future work.",
+    "The evaluated setting assumes a constrained candidate set for probability normalization, which limits direct applicability to unconstrained generation."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "baseline_models_poorly_calibrated": 0.99,
+    "fine_tuning_improves_calibration": 0.98,
+    "post_hoc_methods_improve_calibration": 0.98,
+    "combined_mc_ece_reduction": 0.99,
+    "cross_domain_calibration_challenge": 0.97,
+    "extractive_qa_harder_to_calibrate": 0.95,
+    "paraphrasing_and_retrieval_help": 0.96,
+    "larger_models_better_calibrated_in_tests": 0.94
+   },
+   "raw_claims": [
+    "High QA accuracy does not imply that a language model's confidence probabilities are trustworthy.",
+    "The tested language models often place confidence values near the extremes and can be highly confident when wrong.",
+    "The experiments use expected calibration error to measure agreement between confidence and empirical correctness.",
+    "Candidate-aware softmax and margin objectives improve calibration on multiple-choice QA.",
+    "Temperature scaling can substantially reduce calibration error without changing the model's selected answers.",
+    "Feature-based confidence estimation also improves calibration by using probability and input-related signals.",
+    "Calibration learned on one set of QA domains transfers less effectively to different domains.",
+    "Automatically generated candidate spans make extractive QA harder to calibrate than curated multiple-choice candidates.",
+    "Different paraphrases of the same candidate answer can receive very different probabilities from a language model.",
+    "Aggregating probabilities over answer paraphrases can improve confidence estimation.",
+    "Adding retrieved Wikipedia context can improve calibration on multiple-choice questions.",
+    "Combining several calibration mechanisms produced the lowest reported ECE on the main multiple-choice test set.",
+    "Larger tested T5 and UnifiedQA models generally had lower calibration error as well as higher accuracy.",
+    "The paper leaves calibration of unconstrained free-form QA as future work.",
+    "The authors identify evaluation of calibrated confidence in actual user or downstream decision settings as an open problem."
+   ],
+   "source_url": "https://arxiv.org/html/2012.00955",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

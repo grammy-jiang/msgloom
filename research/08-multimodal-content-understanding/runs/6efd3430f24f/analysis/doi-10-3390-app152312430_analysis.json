@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-3390-app152312430",
+ "title": "Document Image Verification Based on Paragraph Alignment and Subtle Change Detection",
+ "research_question": "Can document images be verified against stored references by combining paragraph-structure retrieval, geometric paragraph alignment, and contrastive visual comparison robust to print-scan distortions and subtle content changes?",
+ "methodology": "The system first segments paragraphs with Faster R-CNN and represents each reference document through structural descriptors including paragraph count, bounding boxes, normalized areas, aspect ratios, and neighboring-paragraph relationships; a four-step matching procedure retrieves candidate references and establishes paragraph correspondences. Matched input paragraphs are geometrically aligned to their reference counterparts, divided into smaller blocks, and compared using a contrastively trained ResNet50 feature extractor, followed by an additional neighborhood-based verification step intended to reject residual misalignment false positives. Experiments use a PubLayNet-derived retrieval database and a second English/Chinese print-scan and tampering database, with retrieval benchmarks, change-detection baselines, and ablations.",
+ "key_findings": [
+  {
+   "finding": "The proposed structural retrieval method achieved 0.976 precision, 0.96 hit rate, 24.29 ms average retrieval time, and a 1.33 MB retrieval data size in the reported Database A experiment.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Table 2"
+  },
+  {
+   "finding": "With paragraph alignment, the final verification scheme achieved 0.949 precision, 0.978 recall, 0.963 accuracy, and 0.963 F1; removing paragraph alignment reduced precision to 0.725, accuracy to 0.788, and F1 to 0.814 while recall remained 0.975.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Table 7"
+  },
+  {
+   "finding": "At threshold 0.9, adding the secondary verification step increased precision from 0.767 to 0.949 and accuracy from 0.840 to 0.963 while recall remained 0.978.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Tables 5 and 6"
+  },
+  {
+   "finding": "VGG19 produced a higher precision of 0.976, but the proposed aligned method had substantially higher recall and a higher F1 score, 0.978 and 0.963 versus 0.910 and 0.942.",
+   "evidence_type": "supported",
+   "section": "Section 4.3, Table 7"
+  },
+  {
+   "finding": "The approach establishes paragraph-level correspondences independently of OCR text and was evaluated with English and Chinese documents as well as changes affecting text, images, and tables.",
+   "evidence_type": "supported",
+   "section": "Sections 3 and 4.1"
+  },
+  {
+   "finding": "Removing position matching from the four-step retrieval procedure reduced retrieval precision from 0.976 to 0.886 while leaving the reported hit rate at 0.96.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Table 4"
+  }
+ ],
+ "limitations": [
+  "Performance depends on accurate paragraph segmentation, which can be difficult for documents with highly variable or uncommon content types.",
+  "The comparison remains sensitive to feature mismatch caused by geometric distortion.",
+  "Rotation of the input document relative to its reference can degrade detection performance.",
+  "The paper's constructed datasets are not readily available because the authors state that the data are part of an ongoing study.",
+  "The system compares an input document against candidate reference images and detects changed content, but it does not evaluate longitudinal multi-version lineage or provenance graphs across a sequence of revisions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structural_retrieval_result": 0.99,
+  "alignment_ablation": 0.99,
+  "secondary_verification_gain": 0.99,
+  "vgg19_tradeoff": 0.99,
+  "paragraph_level_cross_content_matching": 0.98,
+  "position_matching_ablation": 0.99
+ },
+ "raw_claims": [
+  "The verification pipeline has a reference-retrieval stage followed by a content-change-detection stage.",
+  "Paragraph structure rather than recognized text is used to retrieve candidate reference document images.",
+  "The structural descriptor includes paragraph geometry and neighborhood information.",
+  "The retrieval procedure also establishes paragraph correspondences between the input and candidate references.",
+  "Paragraph alignment is performed before fine-grained block comparison.",
+  "A contrastively trained ResNet50 representation is used to distinguish genuine and changed blocks under print-scan distortions.",
+  "A second verification pass examines neighboring regions to reduce false positives caused by residual misalignment.",
+  "Database A includes 20,000 reference document images selected from PubLayNet for retrieval testing.",
+  "Database B contains English and Chinese documents and includes print-scan and deliberately modified samples.",
+  "The final aligned configuration reports 0.963 accuracy and 0.963 F1.",
+  "The authors report that paragraph alignment is important for avoiding false modification detections caused by spatial mismatch.",
+  "The study's constructed datasets are not presently released because they are part of ongoing work."
+ ],
+ "source_url": "https://www.mdpi.com/2076-3417/15/23/12430",
+ "access": "full_text"
+}

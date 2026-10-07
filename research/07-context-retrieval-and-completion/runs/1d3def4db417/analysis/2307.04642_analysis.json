@@ -1,0 +1,73 @@
+{
+ "paper_id": "2307.04642",
+ "title": "TRAQ: Trustworthy Retrieval Augmented Question Answering via Conformal Prediction",
+ "research_question": "Can conformal prediction provide an end-to-end statistical correctness guarantee for open-domain RAG while keeping the resulting semantic answer sets reasonably small?",
+ "methodology": "TRAQ applies conformal prediction separately to retrieval and generation: the retriever constructs a set intended to contain the most relevant passage, while the generator constructs semantic answer sets using repeated LLM sampling and clustering of equivalent responses. The component error budgets are combined through a union-bound/Bonferroni-style construction, and Bayesian optimization allocates the total error budget between retrieval and generation to reduce prediction-set size. The authors evaluate GPT-3.5-Turbo and Llama-2-7B on Natural Questions, TriviaQA, SQuAD-1, and BioASQ, using separate calibration, optimization, and test splits.",
+ "key_findings": [
+  {
+   "finding": "TRAQ provides an end-to-end coverage guarantee that the aggregated answer set contains a semantically correct answer with probability at least the requested coverage level, subject to its conformal and model-capability assumptions.",
+   "evidence_type": "supported",
+   "section": "3.2 Aggregated Set; Theorem 3"
+  },
+  {
+   "finding": "Empirical retriever, generator, and end-to-end coverage generally matched or exceeded the requested conformal coverage levels, while PAC variants were usually more conservative.",
+   "evidence_type": "supported",
+   "section": "4 Experiments, Q1-Q2"
+  },
+  {
+   "finding": "Bayesian optimization reduced average prediction-set size by 16.2% relative to the corresponding non-optimized Bonferroni ablations while preserving the target coverage.",
+   "evidence_type": "supported",
+   "section": "4 Experiments, Q3"
+  },
+  {
+   "finding": "The semantic-level conformal construction can operate with black-box generators because its uncertainty score is based on frequencies of sampled semantic clusters rather than token probabilities.",
+   "evidence_type": "supported",
+   "section": "1 Introduction; 3.2 LLM Set"
+  },
+  {
+   "finding": "The guarantees assume i.i.d. or approximately exchangeable calibration and test data and therefore do not provide explicit protection against test-time distribution shift.",
+   "evidence_type": "supported",
+   "section": "3.1 Assumptions; 7 Limitations"
+  },
+  {
+   "finding": "TRAQ calibrates retrieval and answer-set coverage but does not implement an iterative evidence-sufficiency stopping controller, temporal/version-aware provenance, or permission-aware retrieval.",
+   "evidence_type": "supported",
+   "section": "3 The TRAQ Framework"
+  }
+ ],
+ "limitations": [
+  "The formal guarantee assumes i.i.d. data, with only exchangeability mentioned as a possible relaxation, so non-stationary distribution shift is outside the demonstrated guarantee.",
+  "The retriever must contain the most relevant passage within its top-K candidates and the LLM must generate a semantically correct answer within its sampled top-M responses.",
+  "Increasing K or M can alleviate capability assumptions but increases computational and API cost.",
+  "Incorrect semantic clustering can merge semantically unrelated responses and reduce the interpretability or efficiency of prediction sets.",
+  "TRAQ is post-hoc, so weak underlying retrievers or generators can force unnecessarily large prediction sets.",
+  "The framework does not track document versions, temporal validity, source-page provenance, or access permissions.",
+  "Its conformal decision is a prediction-set construction mechanism rather than a runtime retrieve-more-until-sufficient stopping rule."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "end_to_end_conformal_coverage": 0.99,
+  "bayesian_optimization_reduces_set_size": 0.99,
+  "semantic_black_box_calibration": 0.97,
+  "iid_dependency": 0.99,
+  "no_temporal_or_permission_control": 0.94,
+  "not_iterative_sufficiency_stopping": 0.94
+ },
+ "raw_claims": [
+  "TRAQ conformalizes retrieval and generation separately and unions the resulting answer sets.",
+  "The retriever nonconformity score is derived from the negative similarity between a question and its relevant passage.",
+  "The generator samples multiple responses and clusters semantically equivalent answers before calibration.",
+  "The overall error budget is split between retrieval and generation.",
+  "Bayesian optimization searches for an error-budget split that minimizes prediction-set size.",
+  "The reported experiments use Natural Questions, TriviaQA, SQuAD-1, and BioASQ.",
+  "The paper reports a 16.2% average reduction in prediction-set size from Bayesian optimization relative to its ablation.",
+  "The formal analysis assumes i.i.d. examples as well as adequate retriever and generator capability.",
+  "The paper publishes an implementation on GitHub."
+ ],
+ "source_url": "https://arxiv.org/html/2307.04642",
+ "access": "full_text"
+}

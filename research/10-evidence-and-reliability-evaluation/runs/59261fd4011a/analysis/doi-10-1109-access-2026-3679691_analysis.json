@@ -1,0 +1,78 @@
+{
+ "paper_id": "doi-10-1109-access-2026-3679691",
+ "title": "Program-Verifiable Evaluation for Temporal QA: Metrics for Evidence Validity",
+ "research_question": "How can temporal question-answering systems be evaluated so that answer correctness is separated from whether the cited evidence was actually valid at the query time?",
+ "methodology": "The paper defines a program-verifiable temporal-QA framework in which each question has a query time and each evidence document has an explicit validity interval. It introduces an oracle-answer diagnostic that fixes answers to gold while evaluating evidence selection, together with Recency-Aware Score, Recency-Aware Recall, Temporal Mismatch Rate, and evidence-attribution metrics. Evaluation uses the synthetic TimeFact-CEO benchmark and the semi-structured Wikidata-CEO corpus, comparing BM25, date and recency heuristics, and a lightweight lexico-temporal reranker. The paper additionally reports end-to-end evaluation, cross-corpus robustness, parameter sensitivity, and error analysis.",
+ "key_findings": [
+  {
+   "finding": "Answer correctness does not guarantee valid evidence: under oracle answers on TimeFact-CEO, 11.8 percent of selected citations are temporally invalid, with TMR 0.118 and RAS 0.903.",
+   "evidence_type": "supported",
+   "section": "Abstract and Section VI"
+  },
+  {
+   "finding": "The proposed lexico-temporal reranker raises temporal-validity recall on TimeFact-CEO from 48.2 percent for BM25 to 88.2 percent, a 40.0 percentage-point improvement under oracle-answer evaluation.",
+   "evidence_type": "supported",
+   "section": "Section VI-B"
+  },
+  {
+   "finding": "On the noisy Wikidata-CEO corpus, the temporal reranker achieves RAS 0.936, RAR 0.934, and TMR 0.066, indicating that interval-aware evaluation remains useful outside the perfectly controlled synthetic benchmark.",
+   "evidence_type": "supported",
+   "section": "Section VI-B"
+  },
+  {
+   "finding": "First-stage retrieval coverage is the dominant bottleneck: coverage is 76.3 percent at K=3 and the authors attribute 82.4 percent of analyzed errors to gold evidence being absent from the retrieved candidate set.",
+   "evidence_type": "supported",
+   "section": "Abstract, Introduction, and Section VI-D"
+  },
+  {
+   "finding": "Separating an oracle-answer diagnostic from end-to-end QA exposes evidence-timeliness failures that aggregate answer accuracy can hide.",
+   "evidence_type": "supported",
+   "section": "Section III-D"
+  },
+  {
+   "finding": "The framework does not evaluate completeness of multi-document evidence because its primary protocol intentionally enforces a single top-1 evidence citation.",
+   "evidence_type": "unsupported",
+   "section": "Section III-A and Limitations"
+  },
+  {
+   "finding": "The evaluation covers changing temporal validity but does not establish generalization to unrestricted free-form multi-source generation, because experiments are confined to CEO-tenure facts with explicit intervals.",
+   "evidence_type": "unsupported",
+   "section": "Section IV and Limitations"
+  }
+ ],
+ "limitations": [
+  "The framework assumes that evidence units have explicit validity intervals; purely implicit temporal signals require additional temporal grounding.",
+  "The minimum-citation policy evaluates one selected evidence document and therefore does not address multi-evidence synthesis or multi-hop temporal reasoning.",
+  "The main baselines are interpretable lexical, date, and recency heuristics rather than stronger neural or LLM-based temporal rerankers.",
+  "Both benchmarks use CEO-tenure facts, so cross-domain generalization remains unvalidated.",
+  "The framework evaluates evidence timeliness and attribution but not whether all decision-relevant evidence has been retrieved or summarized.",
+  "Its deterministic interval setting is substantially simpler than versioned free-form sources whose validity periods are uncertain or implicit."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "correct_answer_invalid_evidence": 0.99,
+  "temporal_reranker_gain": 0.99,
+  "wikidata_robustness": 0.98,
+  "retrieval_coverage_bottleneck": 0.99,
+  "oracle_diagnostic_value": 0.98,
+  "single_evidence_not_complete": 0.99,
+  "limited_domain_generalization": 0.99
+ },
+ "raw_claims": [
+  "A factually correct answer can still be supported by evidence that was invalid at the time referenced by the question.",
+  "The oracle-answer diagnostic fixes answer accuracy so evidence-timeliness errors can be measured independently.",
+  "RAS, RAR, and TMR quantify complementary aspects of temporal evidence validity.",
+  "TimeFact-CEO provides controlled synthetic validity intervals, whereas Wikidata-CEO contains noisier real-world interval data.",
+  "The lexico-temporal reranker substantially improves temporal evidence selection over lexical BM25 retrieval.",
+  "Retrieval coverage at K=3 is a major source of downstream evidence-selection error.",
+  "The framework uses exactly one cited evidence document in its minimum-citation evaluation protocol.",
+  "The experiments are restricted to CEO-tenure information with explicit validity intervals.",
+  "The paper references a public TimeFact-CEO code repository."
+ ],
+ "source_url": "https://www.researchgate.net/publication/403423426_Program-Verifiable_Evaluation_for_Temporal_QA_Metrics_for_Evidence_Validity",
+ "access": "full_text"
+}

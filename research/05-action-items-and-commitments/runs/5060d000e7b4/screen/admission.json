@@ -1,0 +1,184 @@
+{
+ "round": 4,
+ "streams": [
+  {
+   "id": "F5",
+   "description": "Meeting action-item and decision discourse modeling: transfer evidence on the discourse regions and dialogue acts through which decisions or action items are expressed and their content is identified."
+  },
+  {
+   "id": "F6",
+   "description": "Span-based event and predicate argument extraction: transferable methods and benchmarks that link event predicates or triggers to textual argument spans, including document-level and cross-sentence arguments."
+  },
+  {
+   "id": "F7",
+   "description": "Implicit semantic role labeling and implicit argument resolution: transferable evidence for recovering semantic participants that are not overtly realized with a predicate."
+  },
+  {
+   "id": "F9",
+   "description": "Negation, speculation, and modality scope resolution: transferable methods that attach modality or negation information to the event or proposition it governs."
+  },
+  {
+   "id": "F10",
+   "description": "Conditional relation and exception attachment: transferable structured representations that associate conditions, prerequisites, or scope restrictions with the obligation or demand they govern."
+  },
+  {
+   "id": "F11",
+   "description": "Span-level structured communicative-event annotation: direct email benchmarks that annotate events together with structured argument evidence in source text."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2305.13469",
+   "decision": "ADMIT",
+   "reason": "F11 [DIRECT]. MailEx is the strongest target-domain candidate in this set: the abstract describes a structured event-and-argument dataset built from conversational email threads, with 10 event types and 76 argument roles, and explicitly identifies non-contiguous/shared triggers, non-named-entity arguments, and dependence on conversation history. Those properties materially strengthen direct evidence for span-level structured extraction from email rather than merely classifying whole messages. It does not by itself establish the full owner/deadline/condition benchmark required by gap-1, but it is directly relevant to the representation and annotation problem.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1145-3594536-3595162",
+   "decision": "ADMIT",
+   "reason": "F10 [TRANSFER]. The abstract describes extraction of obligation logic graphs rather than generic contract classification and explicitly includes complex conditions. That is a structurally relevant transfer analogue for attaching a condition or prerequisite to the obligation/action it governs. The legal domain prevents it from providing workplace evidence, but the graph representation materially strengthens F10. Identity is UNCHECKED, but no verified candidate here provides the same obligation-plus-condition graph capability.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "2109.09393",
+   "decision": "ADMIT",
+   "reason": "F9 [TRANSFER]. The paper explicitly integrates multiple kinds of modality and negation into event extraction so that non-actual events are not treated as ordinary factual events. This is more than factuality classification: the modality/negation information is associated with extracted events, directly supporting the required distinction between an action mention and an action under negation or modality. The political-news domain makes the evidence transfer-only.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "1606.07965",
+   "decision": "ADMIT",
+   "reason": "F5 [TRANSFER]. The paper targets the content of individual decisions in multi-party spoken meetings and models decision summarization at token and dialogue-act levels. That materially strengthens meeting-domain evidence about where decision content resides and how decision-related discourse units contribute to a specific decision proposition, rather than merely detecting whether a meeting contains decisions. It remains transfer evidence because the source is spoken meetings.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d17-1108",
+   "decision": "REJECT",
+   "reason": "Topic words match temporal binding, but the abstract describes structured temporal-relation prediction among events and global consistency constraints. It does not show the F8 capability needed here: linking a particular action/event to an explicit temporal expression such as its deadline. Event-event temporal ordering is insufficient evidence for distinguishing an action deadline from another mentioned date."
+  },
+  {
+   "paper_id": "2104.05919",
+   "decision": "ADMIT",
+   "reason": "F6 [TRANSFER]. The paper provides document-level event argument extraction with complete event/coreference annotation in WikiEvents and evaluates informative argument extraction that requires recovering useful mentions through implicit coreference reasoning. This materially strengthens the exact-argument and non-local-context side of F6 and is especially relevant to arguments whose best evidence mention is not sentence-local.",
+   "stream_id": "F6",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-18653-v1-n18-1076",
+   "decision": "ADMIT",
+   "reason": "F7 [TRANSFER]. The abstract directly targets implicit arguments that are not syntactically connected to their predicates and uses event knowledge, narrative coherence, and entity salience to recover them, with evaluation on naturally occurring as well as synthetic implicit arguments. This is a close transfer analogue for recovering an unstated action owner or participant from discourse context. Identity is UNCHECKED, but the capability itself is clearly stated and is not duplicated by a verified candidate with the same implicit-argument focus.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-naacl-long-295",
+   "decision": "REJECT",
+   "reason": "The paper is primarily an evaluation-metric study about alternatives to exact span match for event argument extraction. That can inform later benchmark scoring, but the abstract does not add an extraction or annotation capability within F6/F11 and therefore does not materially strengthen an authorized research stream for this reading round."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-findings-naacl-187",
+   "decision": "REJECT",
+   "reason": "The abstract presents a generic reformulation of event argument extraction as textual entailment and studies zero/few-shot transfer between established event datasets. It does not add a capability specific to implicit owners, condition/deadline attachment, exact evidence provenance, or workplace communication beyond the document-level argument-extraction papers already admitted."
+  },
+  {
+   "paper_id": "1911.03766",
+   "decision": "ADMIT",
+   "reason": "F6 [TRANSFER]. RAMS explicitly annotates event arguments as spans across sentence boundaries and directly evaluates multi-sentence argument linking. This supplies a canonical benchmark for the exact span-to-event association problem that msgloom faces when actor, object, recipient, or other arguments are separated from the triggering action predicate.",
+   "stream_id": "F6",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2311.09105",
+   "decision": "REJECT",
+   "reason": "MAVEN-ARG is a substantial general event-argument benchmark, but for this round its abstract mainly adds scale and an integrated event-understanding dataset. RAMS and WikiEvents already admitted above provide the specifically needed cross-sentence span linking, complete document context, and coreference-sensitive argument extraction. The abstract does not show an additional capability tied to the current owner/deadline/condition gaps that justifies another reading slot."
+  },
+  {
+   "paper_id": "doi-10-1162-coli-a-00236",
+   "decision": "REJECT",
+   "reason": "The work concerns inducing implicit arguments from comparable texts. That is related to F7 vocabulary, but the abstract does not establish the discourse-entity resolution capability most relevant to an omitted workplace owner or participant in the current conversation. The admitted implicit-argument papers provide more direct evidence for recovering missing arguments from discourse/event context."
+  },
+  {
+   "paper_id": "2310.05991",
+   "decision": "REJECT",
+   "reason": "The paper improves document-level event argument extraction through contextual clues and role relevance, but the abstract describes a general modeling improvement on RAMS and WikiEvents rather than a distinct capability required by the current gaps. The underlying cross-sentence/contextual argument problem is already directly covered by the admitted RAMS and WikiEvents papers."
+  },
+  {
+   "paper_id": "2005.06579",
+   "decision": "REJECT",
+   "reason": "The paper extracts document-level event role fillers as text spans across multiple sentences, which is relevant to F6, but that capability is substantially duplicated by the admitted RAMS and WikiEvents papers. Its abstract does not show a distinctive contribution to implicit ownership, action-specific deadlines, conditions, or workplace communication sufficient to justify another reading slot."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-s15-1005",
+   "decision": "REJECT",
+   "reason": "The paper focuses on combining differently annotated corpora for implicit semantic role labeling. That is a resource-integration method rather than direct evidence about recovering an implicit argument from discourse, and it does not materially strengthen the owner-recovery capability beyond the implicit-argument papers admitted for F7."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w19-5929",
+   "decision": "REJECT",
+   "reason": "TDDiscourse annotates temporal ordering between events across sentence boundaries. The current F8 need is event-to-temporal-expression anchoring, especially determining which explicit date or deadline belongs to which action. Event-event ordering alone does not establish that capability."
+  },
+  {
+   "paper_id": "doi-10-63317-2kaxd8nu44bx",
+   "decision": "REJECT",
+   "reason": "The abstract explicitly moves beyond span-based arguments toward normalized, inferred, and categorical event information. Although actor identity and temporal scope are adjacent to the project, it does not demonstrate the exact source-span binding or implicit-owner resolution required here, and its inferred/normalized outputs risk conflating extracted evidence with inferred event state. It therefore does not materially strengthen F6/F7 for this round. Identity is also UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1162-coli-a-00110",
+   "decision": "ADMIT",
+   "reason": "F7 [TRANSFER]. This paper contributes a manually annotated corpus of implicit arguments and studies automatic recovery of semantic participants absent from the predicate's local syntactic context. That benchmark-oriented evidence complements the event-knowledge model admitted above and is directly useful for designing evaluation of context-recovered versus overt owners/participants. Its nominal-predicate scope limits direct applicability but does not remove the transfer value. Identity is UNCHECKED.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "doi-10-26615-978-954-452-092-2-076",
+   "decision": "ADMIT",
+   "reason": "F10 [TRANSFER]. The abstract decomposes real natural-language requirements into scope, condition, and demand and supplies extraction baselines for those components. It further identifies implicit scope as a major challenge and reports gains from document context. This is a close structural analogue for attaching conditions to the correct requested/obligatory action rather than treating conditions as free-standing text. The requirements domain makes it transfer evidence, and identity is UNCHECKED.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "1804.07828",
+   "decision": "REJECT",
+   "reason": "The paper provides an annotation scheme for temporal relations among events, particularly event start-point ordering. That does not establish action-to-time-expression or action-to-deadline linking, which is the relevant F8 capability. It therefore does not close gap-4."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-n16-1173",
+   "decision": "REJECT",
+   "reason": "The method learns prototypical fillers for implicit semantic roles, which predicts semantically expected participants rather than necessarily resolving an omitted participant to a concrete discourse entity. For msgloom's owner field that distinction is critical: an expected filler must not be invented as an assignee. The abstract therefore does not materially strengthen the required F7 owner-resolution capability."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-findings-naacl-202",
+   "decision": "REJECT",
+   "reason": "EA²E improves consistency of argument roles across related events, but the abstract does not demonstrate implicit participant recovery, group ownership, or explicit evidence-span provenance. Its general multi-event argument consistency is adjacent to the multi-action-owner problem but is not sufficiently specific to strengthen the current gaps beyond the document-level argument papers already admitted."
+  },
+  {
+   "paper_id": "doi-10-1162-tacl-a-00182",
+   "decision": "REJECT",
+   "reason": "The paper addresses dense temporal ordering among events and global consistency through transitive closure. That capability is event-event ordering, not action-to-explicit-time or deadline attachment, so it does not materially strengthen F8 or gap-4."
+  },
+  {
+   "paper_id": "doi-10-1007-s10579-009-9089-9",
+   "decision": "REJECT",
+   "reason": "FactBank annotates event factuality such as actual, non-occurring, and uncertain events. That is valuable factuality/state evidence but does not, from the abstract, annotate the precise cue-to-scope relationship required by F9. It also overlaps the Topic 06 factuality/state boundary, so it should not be admitted here merely because negation and uncertainty affect factuality."
+  },
+  {
+   "paper_id": "2005.00242",
+   "decision": "REJECT",
+   "reason": "TORQUE evaluates contextual temporal ordering among events, including relations not explicitly stated. It does not show extraction or linking of an explicit temporal expression to a particular event and therefore cannot establish deadline binding for gap-4."
+  }
+ ],
+ "notes": "This gate intentionally leaves several streams without an admitted paper. In particular, none of the candidates provides direct modern workplace email/chat evidence for structured decisions/approvals/rejections/proposals (gap-2), explicit or implicit task-person assignment including group owners (gap-3), or action-specific deadline binding to a textual time expression (gap-4). The event-event temporal-ordering papers were rejected rather than treated as substitutes for deadline attachment. MailEx materially strengthens direct email span-level event/argument evidence but does not by itself close gap-1 because the abstract does not establish joint annotation of speech-act type, owner, action object, deadline, conditions/exceptions, and exact evidence spans."
+}

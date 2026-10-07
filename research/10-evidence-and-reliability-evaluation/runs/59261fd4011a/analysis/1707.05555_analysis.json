@@ -1,0 +1,66 @@
+{
+ "paper_id": "1707.05555",
+ "title": "Runtime Verification of Temporal Properties over Out-of-order Data Streams",
+ "research_question": "How can a runtime monitor soundly and completely evaluate data-aware real-time temporal properties when observations may be delayed, lost, incomplete, or received out of order?",
+ "methodology": "The authors extend Metric Temporal Logic with freeze quantification to form MTL with data binding and define observations that explicitly represent gaps in a monitor's knowledge. They introduce a three-valued semantics with true, false, and unknown and prove properties relating semantic values to refinement of partial observations. They construct an online monitoring algorithm and prove soundness and observational completeness for this semantics. A prototype is evaluated on synthetic banking-compliance event streams under both in-order and out-of-order message delivery and is compared with MONPOLY where the specification fragments overlap.",
+ "key_findings": [
+  {
+   "finding": "The proposed three-valued semantics is monotonic under refinement of observations, so filling a knowledge gap cannot invalidate a previously established Boolean verdict.",
+   "evidence_type": "supported",
+   "section": "3.3 Properties"
+  },
+  {
+   "finding": "The monitoring algorithm is sound and observationally complete for the proposed semantics while making no assumption that event messages arrive in timestamp order.",
+   "evidence_type": "supported",
+   "section": "4 Monitoring Algorithm"
+  },
+  {
+   "finding": "The general decision problem for evaluating an MTL-with-freeze formula over an observation is PSPACE-complete.",
+   "evidence_type": "supported",
+   "section": "3.3 Properties, Theorem 3.2"
+  },
+  {
+   "finding": "The prototype can process event streams at rates of hundreds of events per second even when messages arrive out of order, but it does not scale to systems producing thousands or millions of events per second.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and 7 Conclusion"
+  },
+  {
+   "finding": "MONPOLY was up to three orders of magnitude faster on overlapping policies, but that comparison favors a mature optimized tool that requires in-order input and delays some bounded-future verdicts, whereas the proposed prototype supports out-of-order observations and prompt verdicts.",
+   "evidence_type": "supported",
+   "section": "5 Experiments, Interpretation"
+  }
+ ],
+ "limitations": [
+  "The prototype does not scale to workloads producing thousands or millions of events per second.",
+  "Memory consumption cannot in general be bounded, even in simpler settings without message loss and with in-order delivery.",
+  "The full logic has high computational complexity, and detailed time and space complexity of the monitoring implementation is left for further investigation.",
+  "The empirical evaluation uses synthetic banking-compliance streams rather than a large-scale production distributed system.",
+  "Completeness is defined relative to the paper's three-valued observational semantics; a stronger requirement based on all possible completions is not generally obtainable for the full expressive logic."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "monotonic_verdicts": 0.99,
+  "sound_complete_monitoring": 0.99,
+  "pspace_complexity": 0.99,
+  "hundreds_events_per_second": 0.99,
+  "monpoly_tradeoff": 0.98
+ },
+ "raw_claims": [
+  "The monitor represents missing information explicitly rather than assuming that all earlier events are already known.",
+  "The third truth value represents information that is still unknown to the monitor.",
+  "Observation refinement can replace unknown information with additional event knowledge.",
+  "Boolean verdicts remain stable as an observation is refined.",
+  "The monitoring algorithm accepts messages without requiring them to arrive in temporal order.",
+  "The specification language can bind data values from events through freeze quantification.",
+  "Evaluating arbitrary formulas over observations is PSPACE-complete.",
+  "The prototype sustains hundreds of events per second in the evaluated out-of-order scenarios.",
+  "MONPOLY is substantially faster for the policies it can express and monitor under its more restrictive delivery assumptions.",
+  "The presented implementation is not yet suitable for event rates in the thousands or millions per second."
+ ],
+ "source_url": "https://arxiv.org/html/1707.05555",
+ "access": "full_text"
+}

@@ -1,0 +1,422 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-18653-v1-d19-1386",
+   "title": "Summary Cloze: A New Task for Content Selection in Topic-Focused Summarization",
+   "research_question": "Can next-sentence prediction conditioned on a topic, reference documents, and the summary-so-far provide a scalable task for learning content selection in topic-focused summarization?",
+   "methodology": "The authors define the summary cloze task, where a model must generate the next summary sentence given a topic, reference material, and a partial summary, and construct the WIKICITE dataset from cited sentences in Wikipedia articles about living people. They collect 486,015 instances and evaluate extractive baselines plus a two-stage system that first selects reference sentences and then generates a cloze with a pointer-generator model conditioned on the preceding summary context. Evaluation uses ROUGE, perplexity, ablations of topic and context, oracle comparisons, and a small human study in which manually written clozes are judged for continuation quality.",
+   "key_findings": [
+    {
+     "finding": "Access to the topic and preceding summary context helped human writers select content closer to the reference cloze, with human ROUGE-1 increasing from 24.49 without topic/context to 31.78 with them.",
+     "evidence_type": "supported",
+     "section": "6.1 Human Performance & Evaluation"
+    },
+    {
+     "finding": "The learned extractive ContentSelector outperformed the non-oracle extractive baselines, reaching ROUGE-1 25.13 versus 21.33 for BM25 and 17.50 for Lead-1.",
+     "evidence_type": "supported",
+     "section": "6.3 Extractive Models"
+    },
+    {
+     "finding": "Most of the ContentSelector improvement from conditioning came from the partial-summary context; removing the topic alone did not produce a statistically significant degradation.",
+     "evidence_type": "supported",
+     "section": "6.3 Extractive Models"
+    },
+    {
+     "finding": "Conditioning the abstractive decoder on the preceding summary context improved generated clozes across tested preprocessing variants, including roughly a two-point ROUGE-1 gain with ContentSelector preprocessing.",
+     "evidence_type": "supported",
+     "section": "6.4 Abstractive Models"
+    },
+    {
+     "finding": "The model design uses coverage together with the preceding summary context to discourage generation of information already expressed in that context, directly addressing local repetition.",
+     "evidence_type": "supported",
+     "section": "4.2 Two-Step Abstractive Model"
+    },
+    {
+     "finding": "A large gap remained between learned extraction and oracle extraction, indicating substantial unresolved content-selection headroom.",
+     "evidence_type": "supported",
+     "section": "6.3 Extractive Models"
+    },
+    {
+     "finding": "ROUGE is an imperfect measure for this task because many different next sentences can be valid; the paper reports only moderate correlation between ROUGE and crowd quality judgments.",
+     "evidence_type": "supported",
+     "section": "6.1 Human Performance & Evaluation"
+    }
+   ],
+   "limitations": [
+    "The task isolates sentence-level content selection rather than evaluating a complete evolving summarization system.",
+    "WIKICITE is derived from Wikipedia articles in the Living people category and therefore differs substantially from workplace communication.",
+    "The construction assumes that a cited reference document contains the information expressed in the associated Wikipedia sentence, despite noisy web extraction and citation practices.",
+    "Only one observed cloze serves as the automatic reference even though multiple next sentences can be valid.",
+    "ROUGE has difficulty distinguishing alternative valid continuations and showed only moderate correlation with human quality judgments.",
+    "The experiments model preceding textual context but do not represent explicit temporal state transitions, supersession, open-versus-resolved status, user-specific priorities, or longitudinal briefing delivery."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "context_improves_human_selection": 0.98,
+    "contentselector_best_learned_extractor": 0.99,
+    "context_more_useful_than_topic": 0.97,
+    "context_improves_generation": 0.98,
+    "context_discourages_repetition": 0.96,
+    "large_oracle_gap": 0.99,
+    "rouge_evaluation_limit": 0.98
+   },
+   "raw_claims": [
+    "The summary cloze task predicts the next summary sentence from a topic, reference documents, and the summary generated so far.",
+    "WIKICITE contains 486,015 summary-cloze instances collected from Wikipedia and web references.",
+    "Wikipedia section headings and article titles are used as high-level topic information.",
+    "The ContentSelector combines representations of reference sentences with topic and context representations through attention.",
+    "The abstractive system first reduces the reference material extractively and then generates the cloze.",
+    "The preceding summary is used to initialize the abstractive decoder and also influences its coverage mechanism.",
+    "Human-written clozes were closer to the gold cloze when writers had access to topic and context.",
+    "Removing context from ContentSelector hurt performance more than removing the topic.",
+    "The topic did not significantly improve the learned ContentSelector in the reported extractive experiment.",
+    "ContentSelector remained far below the oracle extractor.",
+    "Adding context improved the abstractive results across tested extraction preprocessing methods.",
+    "The authors note that many different clozes can be valid, which makes single-reference automatic evaluation difficult."
+   ],
+   "source_url": "https://aclanthology.org/D19-1386.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-c2f56a571b",
+   "title": "Summarizing Emails with Conversational Cohesion and Subjectivity",
+   "research_question": "Can the conversational structure of email threads, local lexical cohesion, and subjective language improve extractive summaries of email conversations?",
+   "methodology": "The authors construct a sentence quotation graph that links sentences according to quotation and reply structure, and weight graph relationships using clue-word overlap, cosine similarity, or WordNet-based semantic similarity. They compare a generalized ClueWordSummarizer with PageRank and also augment sentence scores using two lexicons of subjective or opinion-bearing expressions. Evaluation uses 39 Enron conversations containing at least four emails, annotated by 50 human summarizers with five annotators per conversation, and measures sentence-pyramid precision plus ROUGE-2 and ROUGE-L over several summary lengths.",
+   "key_findings": [
+    {
+     "finding": "Simple clue-word overlap was more accurate than cosine similarity and both tested WordNet semantic-similarity variants for weighting conversational links.",
+     "evidence_type": "supported",
+     "section": "6.3 Evaluating the Weight of Edges"
+    },
+    {
+     "finding": "The clue-word method achieved pyramid precision 0.60, compared with 0.39 for cosine similarity and 0.57 for each tested semantic-similarity method, with statistically significant differences.",
+     "evidence_type": "supported",
+     "section": "6.3 Evaluating the Weight of Edges"
+    },
+    {
+     "finding": "The local-neighborhood ClueWordSummarizer outperformed PageRank variants, suggesting that local conversational cohesion was more aligned with human sentence selections than global graph centrality in this corpus.",
+     "evidence_type": "supported",
+     "section": "6.4 Comparing Page-Rank and CWS"
+    },
+    {
+     "finding": "Subjective-word scores alone were not consistently superior to the clue-word baseline, but combining subjective evidence with clue-word cohesion improved pyramid precision from 0.60 to 0.65 or 0.64.",
+     "evidence_type": "supported",
+     "section": "6.5 Evaluating Subjective Opinions"
+    },
+    {
+     "finding": "Clue-word and subjective-word signals overlapped only weakly, supporting the interpretation that they captured complementary forms of sentence importance.",
+     "evidence_type": "supported",
+     "section": "6.5 Evaluating Subjective Opinions"
+    },
+    {
+     "finding": "Human annotators explicitly distinguished essential sentences from optional supporting sentences, providing an empirical distinction between core and lower-priority information within an email conversation.",
+     "evidence_type": "supported",
+     "section": "6.1 Dataset Setup"
+    },
+    {
+     "finding": "The paper does not test whether its importance model adapts to a particular user's changing priorities or whether previously summarized information should be retained, superseded, or omitted in later briefings.",
+     "evidence_type": "unsupported",
+     "section": "Scope of the reported experiments"
+    }
+   ],
+   "limitations": [
+    "The evaluation corpus contains only 39 qualifying conversations selected from the ten largest inbox folders in Enron.",
+    "The task-specific human annotation corpus is constructed by the authors, and the paper states that no public annotated email-summarization corpus was available at the time.",
+    "The summaries are purely extractive and operate at sentence granularity.",
+    "The essential-versus-optional distinction is aggregated across annotators rather than personalized to a specific recipient.",
+    "The method treats a conversation as a static object rather than evaluating incremental updates as new messages arrive.",
+    "There is no representation of resolved versus still-open issues, fact supersession, or explicit prevention of repeating information across successive briefings.",
+    "The Enron corpus and handcrafted lexical resources may limit generalization to contemporary workplace communication."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "clue_words_best_edge_measure": 0.99,
+    "cws_outperforms_pagerank": 0.99,
+    "subjectivity_complements_cohesion": 0.99,
+    "importance_tiers_from_humans": 0.99,
+    "no_personalized_incremental_state": 0.96
+   },
+   "raw_claims": [
+    "The model represents email conversation structure using a sentence quotation graph rather than only a message-level thread.",
+    "Three edge-weighting strategies are evaluated: clue words, TF-IDF cosine similarity, and WordNet-based semantic similarity.",
+    "The evaluation corpus contains 39 Enron conversations with at least four emails each.",
+    "Those conversations contain 1,394 segmented sentences.",
+    "Fifty human summarizers participated, with five reviewers assigned to each conversation.",
+    "Annotators selected about 30 percent of each conversation's sentences for their summaries.",
+    "Selected sentences were separately labeled essential or optional.",
+    "A weighted human-selection score was used to identify sentences on which summarizers most strongly agreed.",
+    "About 12 percent of sentences in the evaluated conversations met the paper's overall-essential threshold.",
+    "Clue-word weighting substantially outperformed cosine similarity in the reported evaluations.",
+    "PageRank was less accurate than the corresponding generalized clue-word methods.",
+    "Combining subjective words with clue-word cohesion improved the reported summary accuracy."
+   ],
+   "source_url": "https://aclanthology.org/P08-1041.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+   "title": "Detecting and Summarizing Action Items in Multi-Party Dialogue",
+   "research_question": "Can action items in multi-party meetings be detected more accurately by modeling their dialogue structure and then summarized by extracting task and timeframe phrases using syntactic and semantic information?",
+   "methodology": "The study separates the problem into detecting action-item subdialogues and extracting phrases that summarize task descriptions and timeframes. Eighteen ICSI Meeting Corpus meetings are annotated for four action-item dialogue-act classes—description, timeframe, owner, and agreement—and four SVM sub-classifiers feed a higher-level classifier operating over dialogue windows, evaluated with 18-fold leave-one-meeting-out cross-validation. For summarization, a robust semantic parser generates candidate fragments from manual or ASR-derived speech, and an SVM regression model ranks fragments using acoustic, syntactic, semantic, lexical, and temporal features.",
+   "key_findings": [
+    {
+     "finding": "The structured subdialogue detector outperformed a flat action-item classifier on manual transcripts, with overlap F1 of 0.45 versus 0.35.",
+     "evidence_type": "supported",
+     "section": "3.5 Results"
+    },
+    {
+     "finding": "Action-item utterances were extremely sparse, with only about 1.4 percent of utterances receiving any action-item dialogue-act label.",
+     "evidence_type": "supported",
+     "section": "3.2 Data"
+    },
+    {
+     "finding": "ASR errors caused a substantial degradation in action-item detection, reducing overlap F1 by roughly 8 to 9 absolute percentage points, although structured detection remained above the flat baseline in absolute performance.",
+     "evidence_type": "supported",
+     "section": "3.5 Results"
+    },
+    {
+     "finding": "For timeframe summarization, semantic and lexical-head features plus temporal-expression information improved fragment ranking to F1 0.51, above the 1-best utterance baseline of 0.39 and TIMEX-only baseline of 0.31.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "For task-description phrases, none of the tested feature sets outperformed the full 1-best utterance baseline in F1, despite some gains in precision.",
+     "evidence_type": "supported",
+     "section": "4.3 Results"
+    },
+    {
+     "finding": "Restricting a summary to one acoustically segmented utterance is a major limitation because ideal action-item descriptions often combine information distributed across multiple utterances.",
+     "evidence_type": "supported",
+     "section": "5 Conclusions & Future Work"
+    },
+    {
+     "finding": "The authors propose using user confirmations, deletions, and edits of detected action items as feedback for incremental learning, but this longitudinal feedback mechanism is future work rather than an evaluated result in this paper.",
+     "evidence_type": "unsupported",
+     "section": "5 Conclusions & Future Work"
+    }
+   ],
+   "limitations": [
+    "Only 18 meetings are used, and positive action-item examples comprise about 1.4 percent of utterances.",
+    "The dataset consists of naturally occurring research-group meetings and may not represent other workplace domains.",
+    "Detection accuracy is modest and drops materially on ASR output.",
+    "The exact ASR word-error rate for the paper's meeting subset is not known.",
+    "Task-description extraction fails to beat the simple 1-best utterance baseline in F1.",
+    "The summarizer only considers phrases within one acoustically segmented utterance even when the information required for an action item spans several utterances.",
+    "Owner/addressee resolution is not fully addressed in the summarization experiments.",
+    "Priority among action items, personalization to a recipient, supersession, resolution tracking, and repeated longitudinal briefings are outside the evaluated system."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "structured_detection_beats_flat": 0.99,
+    "action_items_are_sparse": 0.99,
+    "asr_degrades_detection": 0.98,
+    "timeframe_extraction_improves": 0.99,
+    "description_extraction_remains_weak": 0.99,
+    "multi_utterance_summary_needed": 0.99,
+    "incremental_feedback_only_proposed": 0.98
+   },
+   "raw_claims": [
+    "The system separates action-item processing into subdialogue detection and phrase-level summarization.",
+    "Four action-item dialogue-act types are modeled: task description, timeframe, owner, and agreement or commitment.",
+    "The study annotates 18 meetings from the ICSI Meeting Corpus.",
+    "Pairwise agreement for individual action-item dialogue-act classes ranges from kappa 0.64 to 0.78.",
+    "Only about 1.4 percent of utterances have any action-item label.",
+    "Four independent dialogue-act classifiers feed a higher-level classifier over a dialogue window.",
+    "Evaluation uses 18-fold cross-validation with one meeting held out per fold.",
+    "The structured detector reaches overlap F1 0.45 on manual transcripts, compared with 0.35 for the flat baseline.",
+    "Recognition errors reduce the structured detector's overlap F1 to about 0.36 to 0.37.",
+    "Semantic parsing is used to generate short candidate phrases for task and timeframe summaries.",
+    "The best timeframe fragment model reaches F1 0.51.",
+    "No tested task-description fragment model beats the 1-best utterance baseline in F1.",
+    "The authors identify multi-utterance information integration as a necessary direction for better action-item summaries.",
+    "User editing of hypothesized action items is proposed as feedback for future incremental learning."
+   ],
+   "source_url": "https://aclanthology.org/2007.sigdial-1.4.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-1056808-1057071",
+   "title": "Beyond “From” and “Received”: Exploring the Dynamics of Email Triage",
+   "research_question": "How do information workers actually triage accumulated email, what determines which messages they handle first, and what additional information could email interfaces expose to support that process?",
+   "methodology": "The authors conduct contextual interviews with ten information workers and then survey 2,000 randomly selected employees within the same company, obtaining 233 responses. All participants use Microsoft Outlook, and survey respondents are grouped into low-, medium-, and high-volume triagers according to daily email volume. The study measures preprocessing practices, conversation grouping, sequential versus priority processing, single- versus multi-pass strategies, which emails are handled first, and when triage occurs during the day.",
+   "key_findings": [
+    {
+     "finding": "Unread inbox messages and messages received today were rated the most important categories to include during triage, both averaging 4.4 on the study's five-point scale.",
+     "evidence_type": "supported",
+     "section": "Choosing What to Triage"
+    },
+    {
+     "finding": "Users did not share a single priority policy: 19 percent reported priority-only triage, 30 percent sequential-only triage, and 15 percent reported using both approaches.",
+     "evidence_type": "supported",
+     "section": "Email Triage Approaches"
+    },
+    {
+     "finding": "Multi-pass triage was more common than single-pass triage, with 47 percent reporting multi-pass only versus 17 percent single-pass only under the authors' combined-question criterion.",
+     "evidence_type": "supported",
+     "section": "Email Triage Approaches"
+    },
+    {
+     "finding": "Many multi-pass users first removed low-importance or junk messages because they were quick to process and because clearing them made important messages easier to find.",
+     "evidence_type": "supported",
+     "section": "Email Triage Approaches"
+    },
+    {
+     "finding": "Message importance depended substantially on the user's current social and work context, including schedule, close collaborators, active projects, and project role.",
+     "evidence_type": "supported",
+     "section": "Email Triage Approaches"
+    },
+    {
+     "finding": "High-volume users triaged email more frequently throughout the day than low-volume users and were more likely to perform triage outside core work periods.",
+     "evidence_type": "supported",
+     "section": "Triage Times"
+    },
+    {
+     "finding": "The authors recommend exposing socially salient sender, receiver, recency, and contextual metadata to help users foreground important mail or clear unimportant mail, but the study does not experimentally validate such an interface.",
+     "evidence_type": "unsupported",
+     "section": "Discussion"
+    }
+   ],
+   "limitations": [
+    "All interview and survey participants are employees of one company and all use Microsoft Outlook.",
+    "The observational sample includes only ten contextual-interview participants, while most other evidence is self-reported survey behavior.",
+    "The study was conducted in 2005, before many current email, chat, mobile-notification, and machine-learning interface conventions.",
+    "The work studies triage behavior rather than implementing or evaluating a prioritization or briefing algorithm.",
+    "The proposed socially salient interface features are design implications rather than experimentally tested interventions.",
+    "The study does not determine how message importance changes after a fact is resolved or superseded.",
+    "It does not study incremental summarization, information deduplication, or explicit maintenance of still-open state across successive briefings."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "recency_and_unread_status_matter": 0.99,
+    "triage_strategies_are_heterogeneous": 0.99,
+    "multi_pass_common": 0.99,
+    "low_importance_often_cleared_first": 0.98,
+    "priority_depends_on_social_context": 0.99,
+    "high_volume_users_triage_more_often": 0.98,
+    "social_metadata_interface_not_tested": 0.99
+   },
+   "raw_claims": [
+    "The study defines email triage as reviewing unhandled email and deciding what to do with it.",
+    "Ten information workers participated in contextual interviews.",
+    "A survey was sent to 2,000 randomly selected employees and received 233 responses.",
+    "All participants used Microsoft Outlook.",
+    "Higher-volume email users used preprocessing rules more heavily.",
+    "Conversation grouping was not commonly used by the studied users.",
+    "Unread inbox mail and mail received today received the highest importance ratings for triage inclusion.",
+    "Some users processed messages sequentially while others used explicit priority-based passes.",
+    "Multi-pass triage was more common than single-pass triage among survey respondents under the authors' classification.",
+    "Users sometimes handled low-importance mail before high-importance mail because it was fast to delete or file.",
+    "The importance of a message varied with current projects, relationships, role, schedule, and recency.",
+    "High-volume users performed triage at more times during the day.",
+    "Participants asked for ways to keep important items visible and for better task-management support.",
+    "The authors argue that email interfaces should expose more socially salient information for sorting and searching."
+   ],
+   "source_url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2005/04/triagechishort2005.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2109.06896",
+   "title": "Decision-Focused Summarization",
+   "research_question": "Can summaries be selected specifically to support a downstream decision by optimizing both faithfulness to a predictive model's full-text decision and representativeness of the decision evidence in the input?",
+   "methodology": "The authors formulate extractive decision-focused summarization and propose DecSum, which uses a supervised prediction model as a virtual decision maker while optimizing decision faithfulness, decision representativeness, and textual non-redundancy during sentence selection. They test the approach on 18,112 Yelp restaurants, using each restaurant's first ten reviews to select a summary intended to support prediction of its average rating after fifty reviews, with a Longformer regression model providing decision signals. DecSum is compared with random extraction, PreSumm, BART, integrated gradients, and attention using automatic decision and text-quality metrics, followed by a Mechanical Turk study on 200 restaurant pairs.",
+   "key_findings": [
+    {
+     "finding": "DecSum achieved much closer agreement with the full-text model prediction than text-only summarization and attribution baselines, with MSE-to-full of 0.0005 for the all-components variant versus roughly 0.34 to 0.54 for the main baselines.",
+     "evidence_type": "supported",
+     "section": "4.1.1 Decision Faithfulness"
+    },
+    {
+     "finding": "Explicitly optimizing representativeness significantly improved how well selected sentences covered the distribution of sentence-level decision evidence, measured by Wasserstein distance.",
+     "evidence_type": "supported",
+     "section": "4.1.2 Decision Representativeness"
+    },
+    {
+     "finding": "DecSum selected a broader mix of positive, neutral, and negative evidence than the tested text-only systems, while PreSumm and BART tended toward positive sentences and attribution methods tended to omit neutral evidence.",
+     "evidence_type": "supported",
+     "section": "4.1.2 Decision Representativeness"
+    },
+    {
+     "finding": "DecSum produced strong textual non-redundancy but scored worse on grammaticality and coherence than conventional text-focused summarizers.",
+     "evidence_type": "supported",
+     "section": "4.1.3 Text-only Summary Evaluation"
+    },
+    {
+     "finding": "On the simplified model decision task, DecSum summaries preserved 76.1 percent model accuracy, essentially matching the 76.0 percent result from full text and exceeding the tested summarization baselines.",
+     "evidence_type": "supported",
+     "section": "4.2 Human Evaluation"
+    },
+    {
+     "finding": "In the human study, DecSum was the only tested summary condition under which aggregate participant accuracy was statistically above chance, reaching 54.7 percent with p=0.017.",
+     "evidence_type": "supported",
+     "section": "4.2 Human Evaluation"
+    },
+    {
+     "finding": "The approach operationalizes priority relative to an explicit decision objective rather than generic textual salience, but it does not maintain evolving state or distinguish newly changed information from previously accepted open information over time.",
+     "evidence_type": "unsupported",
+     "section": "Scope of the proposed formulation"
+    }
+   ],
+   "limitations": [
+    "The main testbed is Yelp future-rating prediction, not workplace communication or an operational decision workflow.",
+    "Summary relevance is defined through a supervised predictive model, so weaknesses, biases, or distribution shifts in that model can directly influence selected evidence.",
+    "The regression model is trained on ten-review inputs but is also applied to individual sentences; the authors report that simpler candidate models behaved poorly under this input-length shift.",
+    "DecSum is extractive and static rather than a longitudinal mechanism for updating an existing briefing.",
+    "The method does not explicitly model fact supersession, resolved versus still-open state, or whether an item was already communicated to a user.",
+    "Human decision accuracy remained low in absolute terms even in the strongest condition.",
+    "Decision-oriented selection trades off against grammaticality and coherence.",
+    "The beam-search implementation with the faithfulness component is computationally expensive on the reported test set.",
+    "Fairness-related properties of decision-focused summaries are identified as future work."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "decision_faithfulness_improves": 0.99,
+    "representativeness_objective_works": 0.99,
+    "captures_diverse_decision_evidence": 0.98,
+    "nonredundancy_coherence_tradeoff": 0.99,
+    "preserves_model_decision": 0.99,
+    "human_accuracy_above_chance": 0.99,
+    "no_longitudinal_state_management": 0.96
+   },
+   "raw_claims": [
+    "Decision-focused summarization selects a subset of sentences intended to support a specified decision.",
+    "DecSum uses a predictive model trained on the full input to provide signals about decision relevance.",
+    "Its objective combines decision faithfulness, decision representativeness, and textual non-redundancy.",
+    "Decision faithfulness measures whether the summary produces a model decision similar to the full input.",
+    "Decision representativeness measures whether summary sentences cover the distribution of decision signals across the input.",
+    "The Yelp experiment uses the first ten restaurant reviews to support prediction of the rating after fifty reviews.",
+    "The dataset contains 18,112 restaurants split into training, validation, and test partitions.",
+    "Longformer is used as the decision model because simpler tested models did not behave appropriately at sentence-level input lengths.",
+    "DecSum's all-components version obtains MSE-to-full of 0.0005.",
+    "Text-only summarizers have MSE-to-full values around 0.34 to 0.37 in the reported experiment.",
+    "DecSum is significantly more representative of the decision-score distribution than the compared baselines.",
+    "DecSum has strong non-redundancy but lower grammaticality and coherence.",
+    "The human evaluation uses 200 restaurant pairs with three judgments collected per pair.",
+    "Human accuracy with DecSum reaches 54.7 percent and is statistically above random chance.",
+    "The paper releases its code and data."
+   ],
+   "source_url": "https://arxiv.org/html/2109.06896",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

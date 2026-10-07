@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1109-hicss-2006-528",
+ "title": "Using Speech Acts to Categorize Email and Identify Email Genres",
+ "research_question": "Can email-specific speech-act and genre categories be reliably annotated and automatically identified from verb-class and email-specific features?",
+ "methodology": "The authors constructed an email-act taxonomy and prepared approximately 280 randomly selected, redacted messages from their personal email collections, using the first 160 to refine annotation guidelines and 100 to measure inter-annotator agreement. Sparse categories were then merged or removed and deficient categories were supplemented by hand-selected messages, yielding 50 to 56 examples in each of five experimental classes: Transmissive, Information-request/Directive, Assertion, Response, and Response-with-forward-function. Random Forests with 100 trees and SVM-light with a radial-basis-function kernel were evaluated using ten-fold cross-validation on email-specific features and two verb-class lexicons, with and without part-of-speech filtering.",
+ "key_findings": [
+  {
+   "finding": "The 30-subcategory annotation scheme achieved Cohen's kappa of 0.89 on 100 emails, indicating high agreement between the two annotators.",
+   "evidence_type": "supported",
+   "section": "3. Corpus"
+  },
+  {
+   "finding": "The taxonomy explicitly distinguishes information requests, directives that ask another person to act, and commitments or offers to perform an action, but the experimental data merged information requests with directives and did not retain commitments as a standalone classifier class.",
+   "evidence_type": "supported",
+   "section": "Table 2 and 3. Corpus"
+  },
+  {
+   "finding": "Email-specific features alone produced 0.57 precision with Random Forests, outperforming either verb lexicon alone in the overall five-class task.",
+   "evidence_type": "supported",
+   "section": "6. Experiments, Table 4"
+  },
+  {
+   "finding": "Combining the 24-class Ballmer-Brennenstuhl verb representation with the email-specific feature set gave the best reported Random Forest result, with precision of 0.63.",
+   "evidence_type": "supported",
+   "section": "6. Experiments, Table 4"
+  },
+  {
+   "finding": "Part-of-speech filtering did not improve the best combination: BB plus email features fell from 0.63 without TnT tagging to 0.52 with it.",
+   "evidence_type": "supported",
+   "section": "6. Experiments, Table 4"
+  },
+  {
+   "finding": "Verb features were comparatively useful for the merged directive/information-request class and for assertions, whereas email-specific structural features were substantially stronger for several response and transmissive classes.",
+   "evidence_type": "supported",
+   "section": "6. Experiments, Tables 6-9"
+  }
+ ],
+ "limitations": [
+  "The initial corpus contains only about 280 redacted emails drawn from the authors' personal collections.",
+  "The experimental class distribution was partly constructed by hand-selecting examples to supplement deficient categories, so it does not preserve the natural class distribution.",
+  "Several theoretically distinct speech acts were collapsed because of data sparsity; directives and information requests were merged, and commitments were observed only in response categories.",
+  "The task predicts a primary communicative intent for a whole email rather than locating multiple utterance-level acts within a message.",
+  "The representation does not extract the owner, action object, deadline, or condition of an action item.",
+  "The LCS-based approach did not use grammatical parsing even though the lexical resource was designed around syntactic-semantic alternations.",
+  "Only sender-written material was modeled after removing signatures and quoted text, so conversational context from quoted history was not exploited.",
+  "The paper does not state that the redacted personal-email corpus or exact experiment annotations were released."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "annotation_kappa_high": 0.99,
+  "taxonomy_contains_request_directive_commit": 0.99,
+  "email_features_outperform_verb_only": 0.98,
+  "bb_plus_email_features_best": 0.99,
+  "pos_filtering_not_helpful": 0.98,
+  "message_level_not_argument_extraction": 0.97
+ },
+ "raw_claims": [
+  "The taxonomy includes separate concepts for information requests, directives, and commitments.",
+  "Approximately 280 redacted personal emails were initially collected.",
+  "One hundred emails were used to measure annotation agreement, yielding kappa 0.89 for the 30 subcategories.",
+  "Rare categories were collapsed or removed before classifier evaluation.",
+  "Commitments in this dataset occurred only within response categories.",
+  "Directives and information requests were merged into a single experimental class.",
+  "The email-specific feature set contains cues for questions, politeness, action requests, commitments, replies, attachments, and other structural characteristics.",
+  "Random Forest experiments used 100 trees and ten-fold cross-validation.",
+  "The best Random Forest feature combination reported precision of 0.63.",
+  "The experiments classify the primary intent of an email rather than extracting structured action-item arguments."
+ ],
+ "source_url": "https://www.researchgate.net/publication/259703374_Using_Speech_Acts_to_Categorize_Email_and_Identify_Email_Genres",
+ "access": "full_text"
+}

@@ -1,0 +1,2502 @@
+{
+  "paper_id": "T10",
+  "title": "Def-DTS: Deductive Reasoning for Open-domain Dialogue Topic Segmentation",
+  "bibliography": {
+    "authors": [
+      "Seungmin Lee",
+      "Yongsang Yoo",
+      "Minhwa Jung",
+      "Min Song"
+    ],
+    "venue": "Findings of ACL 2025",
+    "printed_pages": "20736–20753",
+    "paper_url_as_frozen_metadata": "https://aclanthology.org/2025.findings-acl.1066/",
+    "metadata_date_caveat": "Shortlist has 2025-01-01 placeholders; the PDF front matter states July 27–August 1, 2025. No external metadata request made.",
+    "source": {
+      "section": "PDF p. 1, publication footer",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 87,
+        "line_end": 92,
+        "pdf_pages": [
+          1
+        ]
+      }
+    }
+  },
+  "research_question": "Can structured LLM prompting that summarizes bidirectional context, classifies utterance intent, and deduces binary topic shifts improve open-domain dialogue topic segmentation across the reported dialogue benchmarks?",
+  "methodology": "Offline/full-dialogue XML prompting with intermediate preceding/subsequent context summaries, one mutually exclusive intent per utterance, and an intended intent-to-YES/NO mapping. Five TIAGE intents distinguish commenting, answering, developing, introducing, and changing topics; the latter two imply shifts. The inventory and demonstrations change for other datasets. Main evaluation uses GPT-4o on TIAGE, SuperDialseg and synthetically stitched Dialseg711, compared with borrowed and rerun baselines using Pk, WD and F1. Ablations, I/O-format comparisons, conditional binary diagnostics, local-model experiments, cue-word association and model/gold kappa are reported. See evidence_catalog for source locators and topic02.metrics for exact settings. No email/span/overlap/preservation task is evaluated.",
+  "key_findings": [
+    {
+      "finding_id": "T10-F01",
+      "finding": "Def-DTS generates preceding/subsequent summaries, one utterance intent, and a binary topic-shift label for each utterance. The intended output induces contiguous dialogue segments; intent labels are mutually exclusive and are not semantic Topic identifiers.",
+      "evidence_type": "supported",
+      "section": "PDF p. 15, Appendix A.5",
+      "quote": "The intent list allows for mutually exclusive categorization of utterances.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1206,
+        "line_end": 1207,
+        "pdf_pages": [
+          15
+        ]
+      },
+      "evidence_refs": [
+        "method",
+        "intent_rules",
+        "deduction",
+        "prompt_task",
+        "exclusive"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F02",
+      "finding": "In the Table 3 evaluation, GPT-4o Def-DTS reports Pk/WD/F1 of 0.232/0.256/0.699 on TIAGE (100 dialogues), 0.315/0.324/0.686 on SuperDialseg (1322), and 0.015/0.018/0.979 on Dialseg711 (711). It leads the tested LLM variants on all three datasets. Supervised RoBERTa is better on SuperDialseg: 0.185/0.192/0.784. These are dialogue segmentation results, not span or Topic-membership scores.",
+      "evidence_type": "supported",
+      "section": "PDF p. 6, §4.4, Table 3",
+      "quote": "Def-DTS (Ours) **0.232** **0.256** **0.699** **0.315** **0.324** **0.686** **0.015** **0.018** **0.979**",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 558,
+        "line_end": 558,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "evidence_refs": [
+        "datasets",
+        "main",
+        "reproduction"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F03",
+      "finding": "For TIAGE, the complete method scores better than all reported module ablations, and XML scores better than the tested JSON and natural-language formats. The comparison supports the combined prompt in this setting; it does not show that every module helps in every dataset or that context summaries preserve decision-bearing content.",
+      "evidence_type": "supported",
+      "section": "PDF p. 7, §5.2, Table 5",
+      "quote": "XML 0.232 0.256 0.699",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 680,
+        "line_end": 680,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "ablation_tiage",
+        "format",
+        "ablation_other"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F04",
+      "finding": "Tables 6 and 12 measure binary topic-shift outcomes grouped by predicted intent. There are no gold intents, so the reported Acc values are not multiclass intent accuracy. TIAGE row totals yield TP=210, FP=76, TN=1073, FN=105 over 1464 decisions; the recomputed binary F1 is 0.698835, consistent with Table 3 after rounding. Some intent/shift outputs violate the stated deterministic mapping.",
+      "evidence_type": "supported",
+      "section": "PDF p. 7, §5.3",
+      "quote": "Since there is no ground truth about intent and only topic shift labels are provided, correctness is determined by whether the predicted intent aligns with the topic shift label.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 575,
+        "line_end": 578,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "intent_tiage",
+        "intent_other",
+        "deduction"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F05",
+      "finding": "The experiments use dataset-specific intent inventories and demonstrations. Dialseg711 removes INTRODUCE_TOPIC; SuperDialseg replaces the inventory with question/answer/comment labels. TIAGE examples come from its source paper, while Appendix A.4 says other examples come from a Train split. The record supports adaptation without model training, not a single unchanged zero-shot prompt.",
+      "evidence_type": "supported",
+      "section": "PDF p. 14, Table 8 caption",
+      "quote": "so we modified intent pool from original template for each dataset.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1130,
+        "line_end": 1131,
+        "pdf_pages": [
+          14
+        ]
+      },
+      "evidence_refs": [
+        "adaptation",
+        "example_selection",
+        "prompt_examples",
+        "limitations"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F06",
+      "finding": "The exact preceding window is inconsistent. Algorithm 1 passes max(1,i−2) through i and labels the range through its end; §3.3 specifies −2:−1. Appendix A.1 allows previous/next 1–3 utterances, but its U2 example uses preceding U0–U1 and subsequent U3–U5. The PDF confirms these differences. No implementation window is inferred.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, Algorithm 1, steps 3–4",
+      "quote": "3: Pi ← EXTRACTCONTEXT(D, max(1, i − 2), i) 4: Qi ← EXTRACTCONTEXT(D, i+1, min(i+3, N))",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 229,
+        "line_end": 230,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_refs": [
+        "method",
+        "windows",
+        "prompt_task"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F07",
+      "finding": "The broad claim that every subtask improves performance is contradicted by the sampled Dialseg711 ablation. On the 100-dialogue subset in Appendix B.1, w/o context reports Pk/WD/F1=0.005800/0.008464/0.989770 versus full Def-DTS 0.009024/0.013738/0.982143; w/o all and w/o examples also beat the full method on all three metrics. This does not negate the main full-benchmark result.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 7, §5.1 concluding claim; counterevidence on PDF pp. 15–16, Appendix B.1",
+      "quote": "In summary, each module of **Def-** **DTS** contributes to performance improvement",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 661,
+        "line_end": 663,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "ablation_subset",
+        "ablation_other"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F08",
+      "finding": "The preliminary auto-labeling experiment reports model-versus-gold Cohen kappa of 0.485 (TIAGE), 0.429 (SuperDialseg), and 0.975 (Dialseg711). It compares TIAGE with a cited human agreement score of 0.479. No matched model/human study, confidence interval, annotation-cost study, or improved training dataset is reported.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §5.7",
+      "quote": "Kappa scores of 0.485 for TIAGE, 0.429 for SuperDialseg, and 0.975 for Dialseg711,",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 664,
+        "line_end": 665,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "kappa",
+        "datasets"
+      ],
+      "analyst_interpretation": "The numerical comparison does not establish human parity or reliable unattended labeling. The synthetic Dialseg711 score is not evidence for real within-email recurrence.",
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F09",
+      "finding": "The large local-model comparison uses 100 randomly sampled examples per dataset, not the full SuperDialseg and Dialseg711 evaluation pools. Smaller-model Table 13 scores exclude incorrectly formatted outputs. Its format-error counts and model-specific surviving samples must accompany any performance comparison; the large-model success does not establish suitability on a Raspberry Pi.",
+      "evidence_type": "supported",
+      "section": "PDF p. 17, Table 13 caption",
+      "quote": "P _k_, WD, F1 were calculated only for correctly formatted outputs.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1738,
+        "line_end": 1739,
+        "pdf_pages": [
+          17
+        ]
+      },
+      "evidence_refs": [
+        "local_protocol",
+        "local_large",
+        "small_results",
+        "small_prose",
+        "implementation"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F10",
+      "finding": "The paper aims to conserve tokens while maintaining nuanced topic relationships, but it does not measure summary fidelity, conditions, exceptions, supporting evidence, action scope, approval scope, or reply scope. Boundary improvements do not establish work-text preservation.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 4, §3.3",
+      "quote": "By summarizing each context range, we aim to conserve tokens while maintaining nuanced topic relationships.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 276,
+        "line_end": 278,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "evidence_refs": [
+        "windows",
+        "metrics",
+        "ablation_tiage",
+        "ablation_other"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F11",
+      "finding": "Figure 3 conditions comparisons on Def-DTS correctness: panel (a) keeps only its correct cases, and panel (b) counts shared errors only within its incorrect cases. These subsets cannot establish an unconditional 20% or 40% accuracy improvement. Printed figure counts also do not uniformly match the approximate ranges in §5.4.",
+      "evidence_type": "supported",
+      "section": "PDF p. 7, §5.4, Figure 3 caption",
+      "quote": "Figure 3: (a) MATCHED INTENT indicates the accu- racy of the other methodologies for grouped utterances by our intent classification process only in the true cases of our method. (b) MISMATCHED CASE indicates the co-error count of the other methodologies with our methods for only in the false cases of our method.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 592,
+        "line_end": 597,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "evidence_refs": [
+        "figure_counts",
+        "figure_prose",
+        "intent_tiage"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F12",
+      "finding": "Table 3 combines borrowed baseline results with reruns. Appendix D.2 reports differences from original results; LLM comparisons use GPT-4o, omit the Plain Text system prompt, and change S3-DST from turns to utterances. Table 15 preserves different original-setting scores. The Table 3 ranking is therefore limited to the stated comparison variants.",
+      "evidence_type": "supported",
+      "section": "PDF p. 18, Appendix D.2",
+      "quote": "we modified turn-based inference to utterance-based.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1844,
+        "line_end": 1848,
+        "pdf_pages": [
+          18
+        ]
+      },
+      "evidence_refs": [
+        "reproduction",
+        "original_baselines",
+        "main"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    },
+    {
+      "finding_id": "T10-F13",
+      "finding": "The linguistic analysis reports χ²(32)=76.2263 and p<0.001 for cue-word frequency association, but gives no contingency table, dataset identity, sample count, cue-word list, or gold intent evaluation for that test. This is insufficient to establish optimal or universally valid intent categories.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, §5.5",
+      "quote": "A χ2 test yielded χ2(32) = 76.2263, p < 0.001",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 633,
+        "line_end": 634,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "linguistic",
+        "limitations"
+      ],
+      "confidence_basis": "Confidence in this bounded evidence assessment; not a probability of transfer to email."
+    }
+  ],
+  "limitations": [
+    "T10-F01/T10-F10: Fixed utterance-level contiguous segmentation does not establish the representation or preservation properties required for msgloom.",
+    "T10-F05; T10-I02: Adapted inventories/demonstrations and unclear Dialseg711 example-split provenance limit universal-prompt and leakage claims.",
+    "T10-F06: Lookahead excludes a direct claim of online/asynchronous performance; the exact preceding window is inconsistent.",
+    "T10-F07: Module benefits vary by dataset; synthetic joins are not natural within-message recurrence.",
+    "T10-F04/T10-F11: No gold intents; conditional diagnostic accuracy and co-error plots are not independent intent or overall accuracy evaluations.",
+    "T10-F08: Human agreement comparison lacks matched populations, uncertainty and annotation-effort evaluation.",
+    "T10-F09: Small-model metric denominators exclude malformed output; no deployment cost or Raspberry Pi measurements.",
+    "T10-F12: Mixed borrowed/rerun baselines and model/unit/prompt changes constrain comparability.",
+    "T10-F13: Cue-frequency test lacks sample details; the authors acknowledge potentially better intents, example selection and dataset-labeling quality as open issues (§7, evidence_catalog.limitations).",
+    "No reported segmentation confidence intervals, repeated-run variability, benchmark contamination audit or near-duplicate controls."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported availability only; no present-day network or repository verification. Booleans denote paper resource signals, not independently tested access.",
+    "code": "Footnote 1 reports public code and prompts at https://github.com/ElPlaguister/Def-DTS; Appendix D.2 says final prompts are attached to the repository.",
+    "datasets": "Existing named datasets are used; TIAGE is explicitly described as publicly available. T10 does not re-release a new gold corpus here; current access, licenses and exact versions were not checked.",
+    "implementation": "Appendix D.1 reports GPT-4o, Llama-3.1-70B-Instruct, Qwen2.5-72B-Instruct; temperature 0, otherwise original/default parameters; no model-specific tuning or quantization; local inference on 4 NVIDIA A100 80GB GPUs.",
+    "missing": "Dated GPT-4o snapshot, exact executable window semantics, scored sample IDs, explicit metric aggregation and boundary exclusions, local subset seed, complete error-handling policy and API/library versions not specified in the paper.",
+    "source_refs": [
+      "availability",
+      "datasets",
+      "prompt_task",
+      "implementation",
+      "reproduction"
+    ]
+  },
+  "confidence_scores": {
+    "T10-F01": 0.99,
+    "T10-F02": 0.99,
+    "T10-F03": 0.98,
+    "T10-F04": 0.99,
+    "T10-F05": 0.99,
+    "T10-F06": 0.99,
+    "T10-F07": 0.99,
+    "T10-F08": 0.97,
+    "T10-F09": 0.99,
+    "T10-F10": 0.99,
+    "T10-F11": 0.99,
+    "T10-F12": 0.99,
+    "T10-F13": 0.97
+  },
+  "raw_claims": [
+    "In the first stage of Def-DTS, we instruct the LLM to summarize both the preceding and subsequent dialogues for each utterance.",
+    "We explicitly instruct the model to process this step for two reasons.",
+    "For example, given current utterance number is 2, preceding range is 0-1, subsequent range is 3-5."
+  ],
+  "raw_claims_note": "Verbatim source sentences; prompt/list text is source content, not an instruction to this worker.",
+  "raw_claim_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+      "line_start": 250,
+      "line_end": 252,
+      "pdf_pages": [
+        4
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+      "line_start": 416,
+      "line_end": 417,
+      "pdf_pages": [
+        5
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+      "line_start": 1108,
+      "line_end": 1108,
+      "pdf_pages": [
+        14
+      ]
+    }
+  ],
+  "topic02": {
+    "evidence_family": {
+      "code": "DIRECT_WORK",
+      "qualification": "Direct dialogue topic-segmentation work; transfer from open-domain/document-grounded/task-oriented dialogue to business email is qualified, not direct email evidence."
+    },
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated",
+        "detail": "Binary shift label at an utterance boundary; main Pk/WD/F1 and binary-error diagnostics.",
+        "finding_refs": [
+          "T10-F02",
+          "T10-F04"
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "evaluated",
+        "detail": "Segments induced from a sequence of utterance boundary labels.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F02"
+        ]
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "not evaluated"
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not evaluated"
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not evaluated"
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not evaluated"
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not evaluated"
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "not evaluated"
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not evaluated"
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not evaluated"
+      },
+      {
+        "task": "utterance intent classification",
+        "status": "intermediate prediction only; no gold-intent evaluation",
+        "finding_refs": [
+          "T10-F04"
+        ]
+      },
+      {
+        "task": "context summarization",
+        "status": "intermediate generation only; no summary-fidelity evaluation",
+        "finding_refs": [
+          "T10-F10"
+        ]
+      }
+    ],
+    "annotation_unit": {
+      "unit": "Utterance-level topic-shift/boundary label in dialogue order",
+      "semantic_scope": "A benchmark dialogue topic, not an annotated concrete work matter. No comparison of sentence, clause, span, EDU or hybrid units.",
+      "source_refs": [
+        "datasets",
+        "intent_tiage",
+        "prompt_task"
+      ]
+    },
+    "prediction_unit": {
+      "unit": "One XML U-element per utterance, with context ranges/summaries, one categorical intent, one YES/NO shift label",
+      "boundary_position": "YES marks the current utterance as starting a segment, including the first utterance in the prompt; scoring treatment of the initial boundary is unspecified.",
+      "source_refs": [
+        "method",
+        "prompt_task"
+      ]
+    },
+    "contiguity": {
+      "gold": "Contiguous segmentation as evaluated through ordered boundary labels.",
+      "prediction": "Contiguous utterance partition induced by YES/NO labels.",
+      "non_sequential_cluster": "Not represented or evaluated; recurring content in separated segments is not linked by a persistent semantic Topic ID.",
+      "source_refs": [
+        "method",
+        "datasets",
+        "prompt_task"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "boundary": "One binary topic-shift label per scored utterance decision.",
+        "segment_membership": "Single contiguous segment membership in the evaluated partition; multiple semantic Topic memberships are not annotated in the reported task.",
+        "intent": "No gold intents, explicitly stated in §5.3.",
+        "semantic_topic_ids": "Not reported as targets."
+      },
+      "prediction": {
+        "intent": "One mutually exclusive intent. TIAGE has five classes; Dialseg711 has four after removing INTRODUCE_TOPIC; SuperDialseg has four replacement classes.",
+        "boundary": "One YES/NO label.",
+        "semantic_topic_membership": "No set-valued semantic Topic output; binary segmentation does not establish multi-label message/span classification."
+      },
+      "source_refs": [
+        "intent_tiage",
+        "exclusive",
+        "intent_rules",
+        "adaptation",
+        "prompt_task"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "No annotation/evaluation of non-contiguous spans assigned to one semantic Topic.",
+        "dialogue_or_thread_level": "No persistent topic cluster joining separated segments is exposed by the reported boundary gold. Dialogue content could recur, but recurrence membership is not scored."
+      },
+      "prediction": {
+        "within_one_message": "Not represented.",
+        "dialogue_or_thread_level": "Not represented as one semantic object; a later return can at most produce another segment.",
+        "cross_thread_or_source": "Not evaluated."
+      },
+      "source_refs": [
+        "method",
+        "datasets",
+        "prompt_task"
+      ]
+    },
+    "overlap": {
+      "gold": {
+        "status": "unsupported by reported gold/task",
+        "scope": "No overlapping topic spans, multi-topic utterance membership, or simultaneous cluster membership annotations reported."
+      },
+      "prediction": {
+        "status": "unsupported by output representation",
+        "scope": "Mutually exclusive utterance intents and a flat contiguous partition; no predicted Topic overlap."
+      },
+      "context_window_overlap": "Neighboring context windows may reuse utterances. This is contextual input reuse, not overlapping semantic Topic assignment.",
+      "source_refs": [
+        "windows",
+        "exclusive",
+        "prompt_task"
+      ]
+    },
+    "dataset_domain": [
+      {
+        "name": "TIAGE",
+        "evaluation_dialogues": 100,
+        "utterances_per_dialogue": {
+          "mean": 15.6,
+          "min": 14,
+          "max": 16
+        },
+        "segments_per_dialogue_mean": 4.2,
+        "segment_length_mean_utterances": 3.8,
+        "domain": "PersonaChat-derived open-domain daily conversations",
+        "boundary_basis": "Topic-shift annotations from the existing TIAGE resource; response-pattern guidelines inform the prompt.",
+        "source_refs": [
+          "datasets",
+          "adaptation"
+        ],
+        "count_scope": "Table 2 evaluation pool; not a complete corpus/train/dev/test inventory.",
+        "version": "Exact dataset release identifier and sample IDs not reported in T10."
+      },
+      {
+        "name": "SuperDialseg",
+        "evaluation_dialogues": 1322,
+        "utterances_per_dialogue": {
+          "mean": 12.1,
+          "min": 7,
+          "max": 19
+        },
+        "segments_per_dialogue_mean": 4.0,
+        "segment_length_mean_utterances": 3.0,
+        "domain": "Document-grounded dialogue",
+        "boundary_basis": "Appendix A.2 says a change of referenced document defines a topic shift.",
+        "source_refs": [
+          "datasets",
+          "adaptation"
+        ],
+        "count_scope": "Table 2 evaluation pool; not a complete corpus/train/dev/test inventory.",
+        "version": "Exact dataset release identifier and sample IDs not reported in T10."
+      },
+      {
+        "name": "Dialseg711",
+        "evaluation_dialogues": 711,
+        "utterances_per_dialogue": {
+          "mean": 26.2,
+          "min": 7,
+          "max": 47
+        },
+        "segments_per_dialogue_mean": 4.9,
+        "segment_length_mean_utterances": 5.4,
+        "domain": "Synthetic stitching of distinct-topic dialogues from MultiWOZ and Stanford Dialog Dataset",
+        "boundary_basis": "Automatically labeled joins; clear topical differences and low coherence at joins.",
+        "source_refs": [
+          "datasets",
+          "adaptation"
+        ],
+        "count_scope": "Table 2 evaluation pool; not a complete corpus/train/dev/test inventory.",
+        "version": "Exact dataset release identifier and sample IDs not reported in T10."
+      }
+    ],
+    "annotation_process": {
+      "new_gold_annotation": "No new human gold corpus or gold-intent annotation is reported. Existing benchmark labels are reused.",
+      "dataset_details": "TIAGE derives from PersonaChat; SuperDialseg is document-grounded; Dialseg711 joins distinct-topic conversations and auto-labels their joins. Annotator recruitment, training, adjudication and detailed annotation counts are not reproduced here.",
+      "prompt_demonstrations": "Appendix A.4: TIAGE source-paper examples; other datasets use Train-split fragments selected to end in the desired intent, taken from a single dialogue, with concise utterances. This is demonstration construction, not gold intent annotation.",
+      "source_refs": [
+        "datasets",
+        "adaptation",
+        "example_selection",
+        "intent_tiage"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "human": {
+        "TIAGE": {
+          "reported_agreement_score": 0.479,
+          "exact_population_and_metric": "Secondhand actual-human-annotator agreement reference in §5.7; exact sample, number of annotators and statistic for that referenced score not restated."
+        },
+        "SuperDialseg": "Not reported in T10.",
+        "Dialseg711": "Not reported in T10; boundaries described as automatically labeled."
+      },
+      "model_vs_gold": "See metrics.Section_5_7 for Cohen kappa; this is not human inter-annotator agreement.",
+      "matched_human_parity_evaluation": "Not performed/reported.",
+      "source_refs": [
+        "kappa",
+        "datasets"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "Dialogue examples for evaluation and sampling; source-partition construction unit and train/dev grouping rules not reported.",
+      "counts": "See dataset_domain for Table 2 evaluation sizes. Train/dev sizes are not supplied; Dialseg711 explicitly has no train/validation split.",
+      "prompt_selection": "Appendix A.4 Train-split statement conflicts with the absent Dialseg711 training split (T10-I02). TIAGE source-paper examples could encode benchmark annotation policy; exact overlap with scored examples is not audited.",
+      "subset_scope": "Table 11 uses the same 100-dialogue samples as §5.6; Table 13 does not restate membership or total.",
+      "duplicate_controls": "Near-duplicate, conversation-origin, document, speaker and template overlap controls are not reported.",
+      "pretraining_contamination": "Not evaluated; unknown, not proven.",
+      "version_warning": "SuperDialseg 1322 belongs to T10’s Table 2. Do not reconcile another paper’s count without frozen version/sample evidence.",
+      "source_refs": [
+        "datasets",
+        "main",
+        "example_selection",
+        "ablation_subset",
+        "small_prose"
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "Pk": {
+          "direction": "lower is better",
+          "paper_definition": "Sliding-window segment-allocation error.",
+          "operational_interpretation": "Fraction of eligible windows whose endpoints disagree in same-segment status between gold and prediction.",
+          "denominator": "Eligible windows; k, edge handling, and aggregation across dialogues not specified in T10."
+        },
+        "WD": {
+          "direction": "lower is better",
+          "paper_definition": "Compare numbers of gold and predicted boundaries within a sliding window.",
+          "denominator": "Eligible windows; window length and aggregation details not specified in T10."
+        },
+        "F1": {
+          "direction": "higher is better",
+          "paper_definition": "Named as f1 score without a formula or averaging convention.",
+          "operational_interpretation": "Binary boundary F1; 2TP/(2TP+FP+FN) from Tables 6/12 reproduces all three main Def-DTS F1 values after rounding. This is an analyst consistency check, not a reported implementation specification.",
+          "denominator": "Predicted/gold positive boundary counts under that interpretation; exclusion rules not explicitly reported."
+        },
+        "Acc": {
+          "direction": "higher is better",
+          "paper_definition": "Topic-shift correctness within each predicted-intent group, not correctness against gold intents.",
+          "denominator": "TP+FP+TN+FN in that predicted-intent row; printed values retained separately from recomputation."
+        },
+        "Cohen_kappa": {
+          "paper_definition": "Agreement between model-generated segmentation labels and gold labels.",
+          "operational_interpretation": "Chance-corrected label agreement (po−pe)/(1−pe).",
+          "denominator": "Exact number of label decisions and human-comparison population not stated in §5.7."
+        },
+        "source_refs": [
+          "metrics",
+          "intent_tiage",
+          "kappa"
+        ]
+      },
+      "Table_3": {
+        "task": "Utterance-boundary detection and induced contiguous dialogue segmentation",
+        "dataset_order": [
+          "TIAGE",
+          "SuperDialseg",
+          "Dialseg711"
+        ],
+        "columns_per_dataset": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "evaluation_dialogues": [
+          100,
+          1322,
+          711
+        ],
+        "split": "Table 2 benchmark evaluation pools; exact split labels/version IDs not stated.",
+        "rows": {
+          "Random": [
+            0.526,
+            0.664,
+            0.237,
+            0.494,
+            0.649,
+            0.266,
+            0.533,
+            0.714,
+            0.204
+          ],
+          "TextTiling": [
+            0.469,
+            0.488,
+            0.204,
+            0.441,
+            0.453,
+            0.388,
+            0.47,
+            0.493,
+            0.245
+          ],
+          "TextTiling+Glove": [
+            0.486,
+            0.511,
+            0.236,
+            0.519,
+            0.524,
+            0.353,
+            0.399,
+            0.438,
+            0.436
+          ],
+          "CSM": [
+            0.4,
+            0.42,
+            0.427,
+            0.462,
+            0.467,
+            0.381,
+            0.278,
+            0.302,
+            0.61
+          ],
+          "DialSTART": [
+            0.482,
+            0.528,
+            0.378,
+            0.373,
+            0.412,
+            0.627,
+            0.179,
+            0.198,
+            0.733
+          ],
+          "SumSeg": [
+            0.482,
+            0.496,
+            0.075,
+            0.479,
+            0.485,
+            0.119,
+            0.477,
+            0.483,
+            0.07
+          ],
+          "BERT": [
+            0.418,
+            0.435,
+            0.124,
+            0.214,
+            0.225,
+            0.725,
+            null,
+            null,
+            null
+          ],
+          "RoBERTa": [
+            0.265,
+            0.287,
+            0.572,
+            0.185,
+            0.192,
+            0.784,
+            null,
+            null,
+            null
+          ],
+          "RetroTS-T5": [
+            0.28,
+            0.317,
+            0.576,
+            0.227,
+            0.237,
+            0.733,
+            null,
+            null,
+            null
+          ],
+          "Plain Text (GPT-4o)": [
+            0.445,
+            0.485,
+            0.185,
+            0.412,
+            0.427,
+            0.048,
+            0.333,
+            0.353,
+            0.01
+          ],
+          "S3-DST_uttr (GPT-4o)": [
+            0.439,
+            0.498,
+            0.265,
+            0.442,
+            0.469,
+            0.404,
+            0.087,
+            0.109,
+            0.79
+          ],
+          "Def-DTS (GPT-4o)": [
+            0.232,
+            0.256,
+            0.699,
+            0.315,
+            0.324,
+            0.686,
+            0.015,
+            0.018,
+            0.979
+          ]
+        },
+        "null_meaning": "No supervised Dialseg711 result because train/validation splits are absent; not a zero or a negative result.",
+        "baseline_provenance": "Random, TextTiling, TextTiling+Glove, CSM, BERT, RoBERTa, RetroTS-T5 borrowed from the SuperDialseg paper; DialSTART, SumSeg and the LLM methods reproduced.",
+        "source_refs": [
+          "main",
+          "datasets",
+          "reproduction"
+        ]
+      },
+      "Table_4": {
+        "task": "TIAGE segmentation module ablation",
+        "dataset": "TIAGE",
+        "evaluation_pool": "Same reported TIAGE setting as Table 3; Table 2 lists 100 dialogues.",
+        "model": "GPT-4o",
+        "columns": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "rows": {
+          "w/o all": [
+            0.295,
+            0.333,
+            0.605
+          ],
+          "w/o intent": [
+            0.316,
+            0.342,
+            0.524
+          ],
+          "w/o examples": [
+            0.287,
+            0.308,
+            0.617
+          ],
+          "w/o context": [
+            0.263,
+            0.296,
+            0.682
+          ],
+          "w/o bidirectional": [
+            0.269,
+            0.301,
+            0.659
+          ],
+          "Def-DTS": [
+            0.232,
+            0.256,
+            0.699
+          ]
+        },
+        "source_refs": [
+          "ablation_tiage"
+        ]
+      },
+      "Table_5": {
+        "task": "TIAGE segmentation I/O-format comparison",
+        "dataset": "TIAGE",
+        "evaluation_pool": "Same reported TIAGE setting; Table 2 lists 100 dialogues.",
+        "model": "GPT-4o",
+        "columns": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "rows": {
+          "NL": [
+            0.274,
+            0.302,
+            0.64
+          ],
+          "JSON": [
+            0.259,
+            0.292,
+            0.658
+          ],
+          "XML": [
+            0.232,
+            0.256,
+            0.699
+          ]
+        },
+        "source_refs": [
+          "format"
+        ]
+      },
+      "Tables_6_and_12": [
+        {
+          "dataset": "TIAGE",
+          "task": "Binary topic-shift classification, conditioned on predicted intent",
+          "gold_intent_labels": false,
+          "columns": [
+            "TP",
+            "FP",
+            "TN",
+            "FN",
+            "Acc_as_printed"
+          ],
+          "rows": {
+            "JUST_COMMENT": [
+              0,
+              1,
+              498,
+              35,
+              0.93
+            ],
+            "JUST_ANSWER": [
+              0,
+              1,
+              456,
+              23,
+              0.95
+            ],
+            "DEVELOP_TOPIC": [
+              0,
+              0,
+              119,
+              47,
+              0.71
+            ],
+            "INTRODUCE_TOPIC": [
+              189,
+              68,
+              0,
+              0,
+              0.73
+            ],
+            "CHANGE_TOPIC": [
+              21,
+              6,
+              0,
+              0,
+              0.78
+            ]
+          },
+          "source_refs": [
+            "intent_tiage"
+          ],
+          "analyst_computed": {
+            "row_denominators": {
+              "JUST_COMMENT": 534,
+              "JUST_ANSWER": 480,
+              "DEVELOP_TOPIC": 166,
+              "INTRODUCE_TOPIC": 257,
+              "CHANGE_TOPIC": 27
+            },
+            "row_binary_accuracy_from_counts": {
+              "JUST_COMMENT": 0.9325842696629213,
+              "JUST_ANSWER": 0.95,
+              "DEVELOP_TOPIC": 0.7168674698795181,
+              "INTRODUCE_TOPIC": 0.7354085603112841,
+              "CHANGE_TOPIC": 0.7777777777777778
+            },
+            "total_TP_FP_TN_FN": [
+              210,
+              76,
+              1073,
+              105
+            ],
+            "total_scored_decisions": 1464,
+            "positive_gold_decisions": 315,
+            "binary_F1_from_counts": 0.6988352745424293
+          },
+          "denominator_caveat": "Counts are printed for the benchmark diagnostics, not the 100-dialogue local-model subset. The paper does not explicitly explain how these decision totals treat first utterances or filtered outputs. Do not label the row totals gold intent frequencies."
+        },
+        {
+          "dataset": "SuperDialseg",
+          "task": "Binary topic-shift classification, conditioned on predicted intent",
+          "gold_intent_labels": false,
+          "columns": [
+            "TP",
+            "FP",
+            "TN",
+            "FN",
+            "Acc_as_printed"
+          ],
+          "rows": {
+            "DIFFERENT_QUESTION": [
+              2456,
+              688,
+              83,
+              192,
+              0.74
+            ],
+            "RELEVANT_QUESTION": [
+              1,
+              0,
+              811,
+              989,
+              0.45
+            ],
+            "ANSWERING": [
+              0,
+              2,
+              7819,
+              168,
+              0.98
+            ],
+            "ADDITIONAL_COMMENT": [
+              0,
+              0,
+              1264,
+              211,
+              0.86
+            ]
+          },
+          "source_refs": [
+            "intent_other"
+          ],
+          "analyst_computed": {
+            "row_denominators": {
+              "DIFFERENT_QUESTION": 3419,
+              "RELEVANT_QUESTION": 1801,
+              "ANSWERING": 7989,
+              "ADDITIONAL_COMMENT": 1475
+            },
+            "row_binary_accuracy_from_counts": {
+              "DIFFERENT_QUESTION": 0.7426147996490202,
+              "RELEVANT_QUESTION": 0.45086063298167683,
+              "ANSWERING": 0.9787207410189009,
+              "ADDITIONAL_COMMENT": 0.8569491525423729
+            },
+            "total_TP_FP_TN_FN": [
+              2457,
+              690,
+              9977,
+              1560
+            ],
+            "total_scored_decisions": 14684,
+            "positive_gold_decisions": 4017,
+            "binary_F1_from_counts": 0.6859296482412061
+          },
+          "denominator_caveat": "Counts are printed for the benchmark diagnostics, not the 100-dialogue local-model subset. The paper does not explicitly explain how these decision totals treat first utterances or filtered outputs. Do not label the row totals gold intent frequencies."
+        },
+        {
+          "dataset": "Dialseg711",
+          "task": "Binary topic-shift classification, conditioned on predicted intent",
+          "gold_intent_labels": false,
+          "columns": [
+            "TP",
+            "FP",
+            "TN",
+            "FN",
+            "Acc_as_printed"
+          ],
+          "rows": {
+            "JUST_COMMENT": [
+              0,
+              6,
+              5067,
+              14,
+              0.996
+            ],
+            "JUST_ANSWER": [
+              0,
+              6,
+              7675,
+              8,
+              0.998
+            ],
+            "DEVELOP_TOPIC": [
+              0,
+              3,
+              2359,
+              13,
+              0.993
+            ],
+            "CHANGE_TOPIC": [
+              2708,
+              66,
+              0,
+              0,
+              0.976
+            ]
+          },
+          "source_refs": [
+            "intent_other"
+          ],
+          "analyst_computed": {
+            "row_denominators": {
+              "JUST_COMMENT": 5087,
+              "JUST_ANSWER": 7689,
+              "DEVELOP_TOPIC": 2375,
+              "CHANGE_TOPIC": 2774
+            },
+            "row_binary_accuracy_from_counts": {
+              "JUST_COMMENT": 0.9960684096717122,
+              "JUST_ANSWER": 0.9981792170633372,
+              "DEVELOP_TOPIC": 0.9932631578947368,
+              "CHANGE_TOPIC": 0.9762076423936553
+            },
+            "total_TP_FP_TN_FN": [
+              2708,
+              81,
+              15101,
+              35
+            ],
+            "total_scored_decisions": 17925,
+            "positive_gold_decisions": 2743,
+            "binary_F1_from_counts": 0.9790310918293564
+          },
+          "denominator_caveat": "Counts are printed for the benchmark diagnostics, not the 100-dialogue local-model subset. The paper does not explicitly explain how these decision totals treat first utterances or filtered outputs. Do not label the row totals gold intent frequencies."
+        }
+      ],
+      "Figure_3": {
+        "task": "TIAGE binary boundary comparison conditioned on Def-DTS correctness",
+        "model": "Main Def-DTS/GPT-4o comparison setting",
+        "panel_a": {
+          "columns": [
+            "Def-DTS_correct_group_size",
+            "S3-DST_correct",
+            "Plain_Text_correct",
+            "DialSTART_correct"
+          ],
+          "rows": {
+            "JUST_COMMENT": [
+              498,
+              400,
+              353,
+              378
+            ],
+            "JUST_ANSWER": [
+              456,
+              387,
+              329,
+              377
+            ],
+            "DEVELOP_TOPIC": [
+              119,
+              102,
+              94,
+              90
+            ],
+            "INTRODUCE_TOPIC": [
+              189,
+              51,
+              32,
+              102
+            ],
+            "CHANGE_TOPIC": [
+              21,
+              10,
+              5,
+              8
+            ]
+          },
+          "denominator": "First number in each row; all these examples already have a correct Def-DTS binary prediction."
+        },
+        "panel_b": {
+          "columns": [
+            "Def-DTS_errors",
+            "S3-DST_coerrors",
+            "Plain_Text_coerrors",
+            "DialSTART_coerrors"
+          ],
+          "rows": {
+            "all": [
+              181,
+              106,
+              94,
+              117
+            ],
+            "topic_shift": [
+              105,
+              87,
+              78,
+              80
+            ],
+            "no_shift": [
+              76,
+              19,
+              16,
+              37
+            ]
+          },
+          "denominator": "First number in row; these are only Def-DTS error cases."
+        },
+        "source_refs": [
+          "figure_caption",
+          "figure_counts",
+          "figure_prose"
+        ],
+        "source_image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-07-figure-03.png"
+      },
+      "Section_5_5": {
+        "task": "Cue-word frequency association with proposed intent labels",
+        "test": "Chi-square",
+        "statistic": 76.2263,
+        "degrees_of_freedom": 32,
+        "p_value": "<0.001",
+        "dataset": "Not specified for this test",
+        "sample_size_and_denominator": "Not reported",
+        "contingency_table_and_cue_inventory": "Not reported",
+        "source_refs": [
+          "linguistic"
+        ]
+      },
+      "Section_5_7": {
+        "task": "Model-versus-gold binary segmentation-label agreement",
+        "model_name_as_written": "GPT-4 in §5.7; GPT-4o in implementation Appendix D.1",
+        "Cohen_kappa": {
+          "TIAGE": 0.485,
+          "SuperDialseg": 0.429,
+          "Dialseg711": 0.975
+        },
+        "setting": "Existing benchmark gold; exact label-decision denominators not restated.",
+        "human_reference": {
+          "dataset": "TIAGE",
+          "agreement_score": 0.479,
+          "population": "Actual human annotators as reported secondhand; number, sample overlap, individual-vs-consensus protocol and exact statistic for this reference not restated."
+        },
+        "source_refs": [
+          "kappa",
+          "implementation"
+        ]
+      },
+      "Table_7": {
+        "task": "Local large-model dialogue segmentation",
+        "dataset_order": [
+          "TIAGE",
+          "SuperDialseg",
+          "Dialseg711"
+        ],
+        "columns_per_dataset": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "evaluation_dialogues_per_dataset": 100,
+        "sampling": "Random examples per §5.6; seed and IDs not specified in the paper.",
+        "rows": {
+          "Plain Text + Llama-3.1-70B-Instruct": [
+            0.472,
+            0.515,
+            0.215,
+            0.492,
+            0.495,
+            0.026,
+            0.35,
+            0.373,
+            0.032
+          ],
+          "Plain Text + Qwen2.5-72B-Instruct": [
+            0.495,
+            0.533,
+            0.162,
+            0.485,
+            0.487,
+            0.059,
+            0.422,
+            0.434,
+            0.012
+          ],
+          "S3-DST_uttr + Llama-3.1-70B-Instruct": [
+            0.456,
+            0.474,
+            0.143,
+            0.49,
+            0.512,
+            0.072,
+            0.158,
+            0.19,
+            0.553
+          ],
+          "S3-DST_uttr + Qwen2.5-72B-Instruct": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "Def-DTS + Llama-3.1-70B-Instruct": [
+            0.307,
+            0.339,
+            0.552,
+            0.384,
+            0.385,
+            0.432,
+            0.029,
+            0.039,
+            0.941
+          ],
+          "Def-DTS + Qwen2.5-72B-Instruct": [
+            0.327,
+            0.345,
+            0.53,
+            0.433,
+            0.434,
+            0.171,
+            0.102,
+            0.208,
+            0.729
+          ]
+        },
+        "null_meaning": "S3-DST_uttr with Qwen formatting failure; exact failure count not reported. Do not convert to zero scores.",
+        "source_refs": [
+          "local_protocol",
+          "local_large"
+        ]
+      },
+      "Table_11": {
+        "task": "Segmentation module ablation",
+        "dataset_order": [
+          "SuperDialseg",
+          "Dialseg711"
+        ],
+        "columns_per_dataset": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "evaluation_dialogues_per_dataset": 100,
+        "sampling": "Same samples as §5.6, explicitly stated in Appendix B.1.",
+        "model": "Main GPT-4o method context; table does not restate model ID.",
+        "rows": {
+          "w/o all": [
+            0.378,
+            0.382,
+            0.467,
+            0.00721,
+            0.009416,
+            0.987245
+          ],
+          "w/o intent": [
+            0.363,
+            0.364,
+            0.448,
+            0.093486,
+            0.127211,
+            0.70133
+          ],
+          "w/o examples": [
+            0.338,
+            0.341,
+            0.646,
+            0.005826,
+            0.012322,
+            0.984733
+          ],
+          "w/o context": [
+            0.327,
+            0.331,
+            0.635,
+            0.0058,
+            0.008464,
+            0.98977
+          ],
+          "Def-DTS": [
+            0.317,
+            0.322,
+            0.674,
+            0.009024,
+            0.013738,
+            0.982143
+          ]
+        },
+        "source_refs": [
+          "ablation_subset",
+          "ablation_other"
+        ]
+      },
+      "Table_13": {
+        "task": "Small local-model dialogue segmentation and format errors",
+        "dataset_order": [
+          "TIAGE",
+          "SuperDialseg",
+          "Dialseg711"
+        ],
+        "columns_per_dataset": [
+          "Pk",
+          "WD",
+          "F1",
+          "Error_count_as_printed"
+        ],
+        "rows": {
+          "Plain Text + Llama-3.1-8B-Instruct": [
+            0.529,
+            0.604,
+            0.303,
+            1,
+            0.497,
+            0.504,
+            0.036,
+            0,
+            0.35,
+            0.373,
+            0.032,
+            0
+          ],
+          "Plain Text + Qwen2.5-7B-Instruct": [
+            0.509,
+            0.563,
+            0.249,
+            2,
+            0.517,
+            0.522,
+            0.132,
+            1,
+            0.486,
+            0.513,
+            0.069,
+            0
+          ],
+          "Plain Text + Qwen2.5-32B-Instruct": [
+            0.476,
+            0.515,
+            0.221,
+            0,
+            0.466,
+            0.471,
+            0.083,
+            0,
+            0.391,
+            0.415,
+            0.015,
+            0
+          ],
+          "S3-DST_uttr + Llama-3.1-8B-Instruct": [
+            0.46,
+            0.46,
+            0.018,
+            0,
+            0.472,
+            0.494,
+            0.076,
+            0,
+            0.188,
+            0.196,
+            0.705,
+            0
+          ],
+          "S3-DST_uttr + Qwen2.5-7B-Instruct": [
+            0.563,
+            0.86,
+            0.299,
+            57,
+            0.578,
+            0.952,
+            0.351,
+            47,
+            0.582,
+            0.759,
+            0.093,
+            71
+          ],
+          "S3-DST_uttr + Qwen2.5-32B-Instruct": [
+            0.43,
+            0.455,
+            0.211,
+            22,
+            0.431,
+            0.443,
+            0.106,
+            57,
+            0.237,
+            0.27,
+            0.497,
+            83
+          ],
+          "Def-DTS + Llama-3.1-8B-Instruct": [
+            0.474,
+            0.525,
+            0.218,
+            1,
+            0.473,
+            0.527,
+            0.398,
+            0,
+            0.246,
+            0.268,
+            0.464,
+            10
+          ],
+          "Def-DTS + Qwen2.5-7B-Instruct": [
+            0.462,
+            0.465,
+            0.022,
+            20,
+            0.473,
+            0.474,
+            0.071,
+            14,
+            0.162,
+            0.17,
+            0.715,
+            44
+          ],
+          "Def-DTS + Qwen2.5-32B-Instruct": [
+            0.338,
+            0.374,
+            0.501,
+            38,
+            0.392,
+            0.4,
+            0.429,
+            1,
+            0.221,
+            0.343,
+            0.435,
+            18
+          ]
+        },
+        "score_denominator": "Correctly formatted outputs only; different models can have different scored examples. Exact retained utterance counts not reported.",
+        "sample_size": "Appendix C.1 extends §5.6 local-model experiments, which use 100 examples per dataset; Table 13 does not independently restate the total or certify identical sample membership. Error counts retained as counts, not assumed error percentages.",
+        "source_refs": [
+          "small_prose",
+          "small_results",
+          "local_protocol"
+        ]
+      },
+      "Table_14": {
+        "task": "TIAGE dialogue segmentation with additional LLMs",
+        "dataset": "TIAGE",
+        "columns": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "rows": {
+          "DeepSeek-R1": [
+            0.286,
+            0.331,
+            0.644
+          ],
+          "DeepSeek-V3": [
+            0.259,
+            0.204,
+            0.674
+          ],
+          "GPT-4o": [
+            0.232,
+            0.256,
+            0.699
+          ]
+        },
+        "sample_scope": "TIAGE; Table 2 lists 100 dialogues, but Appendix C.2 does not separately state sample IDs/count.",
+        "caveat": "Preserve V3 WD=0.204 exactly; do not repair its relation to Pk=0.259. Window settings and metric implementation are insufficient to resolve this atypical ordering.",
+        "source_refs": [
+          "additional_models",
+          "additional_results"
+        ]
+      },
+      "Table_15": {
+        "task": "Other papers’ original-setting segmentation results, as reproduced in T10; not independently verified here",
+        "dataset_order": [
+          "TIAGE",
+          "SuperDialseg",
+          "Dialseg711"
+        ],
+        "columns_per_dataset": [
+          "Pk",
+          "WD",
+          "F1"
+        ],
+        "rows": {
+          "DialSTART": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.179,
+            0.198,
+            null
+          ],
+          "SumSeg": [
+            0.438,
+            0.455,
+            null,
+            0.469,
+            0.48,
+            null,
+            null,
+            null,
+            null
+          ],
+          "Plain Text (GPT-3.5)": [
+            0.496,
+            0.56,
+            0.362,
+            0.318,
+            0.347,
+            0.658,
+            0.29,
+            0.355,
+            0.69
+          ],
+          "S3-DST_turn": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.009,
+            0.008,
+            null
+          ]
+        },
+        "denominator": "Original-paper settings and sample versions not established by this T10-only analysis. S3-DST_turn has a different prediction unit.",
+        "null_meaning": "Not reported in this table",
+        "source_refs": [
+          "original_baselines",
+          "reproduction"
+        ]
+      },
+      "uncertainty": "No segmentation confidence intervals, repeated-run variability, or significance tests for method-score differences are reported. The chi-square test is a different analysis."
+    },
+    "measured_work_text_preservation": {
+      "direct_evaluation": "No such evaluation.",
+      "summary_fidelity": "No reference summaries, fidelity scores, evidence-retention labels or scope-preservation tests.",
+      "related_errors": "Topic-boundary FP/FN and intent-to-shift instruction failures are measured; these are not measured loss/broadening of conditions, approvals, actions or reply scope.",
+      "outcome_type": "Absence of evaluation, not a negative preservation result.",
+      "finding_refs": [
+        "T10-F04",
+        "T10-F10"
+      ],
+      "source_refs": [
+        "metrics",
+        "intent_tiage",
+        "intent_other",
+        "windows"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Business-email evaluation or natural within-email multi-topic recurrence.",
+      "Comparative annotation-unit study (sentence/clause/span/EDU/hybrid).",
+      "Multiple semantic Topics per message or per span, overlapping spans, discontinuous membership, or cross-thread topic identity.",
+      "Exact source offsets and attachment/cross-source evidence assignment.",
+      "Action, question, answer-target, approval, exception or reply-scope extraction; question/answer intent categories do not constitute scope extraction.",
+      "Summary fidelity, missed decision-bearing evidence, scope loss/broadening or user-reviewed work coverage.",
+      "Calibrated uncertainty, abstention and uncertainty-preserving assignments.",
+      "Streaming/asynchronous evaluation without future utterances, branch/reply-to structures or out-of-order messages.",
+      "Latency, token usage, monetary cost, memory use, throughput, or Raspberry Pi deployment measurements."
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T10-I01",
+        "kind": "method specification",
+        "issue": "Preceding context range differs between Algorithm 1, §3.3 and Appendix A.1.",
+        "values": [
+          "Algorithm: max(1,i−2) to i, plus range label Ustart–Uend.",
+          "Prose: −2:−1; subsequent 1:3.",
+          "Prompt: previous/next 1–3; example for U2 is preceding 0–1, subsequent 3–5."
+        ],
+        "source_refs": [
+          "method",
+          "windows",
+          "prompt_task"
+        ],
+        "disposition": "Unresolved in the frozen paper. A half-open slice assumption cannot silently repair both preceding and subsequent specifications. The figures/prompt establish use of future context, not an exact verified executable window."
+      },
+      {
+        "id": "T10-I02",
+        "kind": "protocol and split provenance",
+        "issue": "Appendix A.4 says examples for other datasets are selected from a Train split, but Table 3 says Dialseg711 has no train or validation split.",
+        "source_refs": [
+          "example_selection",
+          "main"
+        ],
+        "disposition": "The source of Dialseg711 demonstrations and their disjointness from evaluation data remain unclear; no leakage is asserted as proven."
+      },
+      {
+        "id": "T10-I03",
+        "kind": "table versus module claim",
+        "issue": "§5.1 says each module contributes; Appendix B.1 calls context extraction crucial on Dialseg711, but Table 11 favors removing it.",
+        "values": [
+          "Dialseg711 sampled full: Pk/WD/F1 0.009024/0.013738/0.982143.",
+          "Same subset w/o context: 0.005800/0.008464/0.989770.",
+          "Same subset w/o all: 0.007210/0.009416/0.987245.",
+          "Same subset w/o examples: 0.005826/0.012322/0.984733."
+        ],
+        "source_refs": [
+          "ablation_tiage",
+          "ablation_subset",
+          "ablation_other"
+        ],
+        "disposition": "Retain both prose and table. TIAGE ablation support is dataset-specific. Even SuperDialseg is not monotonically better on every metric at each added step: w/o intent F1 0.448 is below w/o all 0.467, although full is best."
+      },
+      {
+        "id": "T10-I04",
+        "kind": "binary diagnostic counts versus enforced mapping",
+        "issue": "The claimed enforced intent-to-shift rule has output exceptions in Tables 6/12.",
+        "values": [
+          "TIAGE: JUST_COMMENT and JUST_ANSWER each contain one FP although the intent rule mandates NO.",
+          "SuperDialseg: DIFFERENT_QUESTION has 83 TN and 192 FN despite its YES rule; RELEVANT_QUESTION has one TP and ANSWERING has two FP despite NO rules.",
+          "Dialseg711: JUST_COMMENT/JUST_ANSWER/DEVELOP_TOPIC have 6/6/3 FP despite NO rules."
+        ],
+        "source_refs": [
+          "deduction",
+          "intent_tiage",
+          "intent_other",
+          "adaptation"
+        ],
+        "disposition": "Preserve final binary outputs separately from predicted intents. Appendix B.2 acknowledges instruction-following errors. Table 6 prose highlights positives in JUST_COMMENT/JUST_ANSWER, but DEVELOP_TOPIC has 47 FN versus their 35/23 and the lowest printed conditional Acc (0.71); the highlight is not a complete ranking of failure sources."
+      },
+      {
+        "id": "T10-I05",
+        "kind": "reported rounding and conditional percentage ambiguity",
+        "issue": "Some printed intent-group accuracies or percentages differ from ordinary rounding of the printed counts.",
+        "values": [
+          "TIAGE DEVELOP_TOPIC: printed Acc 0.71; counts give 119/166=0.716867.",
+          "TIAGE INTRODUCE_TOPIC: printed Acc 0.73; counts give 189/257=0.735409.",
+          "Dialseg711 instruction errors: prose 18% DEVELOP_TOPIC, 30% JUST_COMMENT, 42% JUST_ANSWER; FP/(FP+FN) gives 3/16=18.75%, 6/20=30%, 6/14=42.857%."
+        ],
+        "source_refs": [
+          "intent_tiage",
+          "intent_other"
+        ],
+        "disposition": "Retain reported numbers and label derived arithmetic. The latter denominators are each intent’s binary-error subset, not all utterances, all intents’ errors, or gold-intent populations."
+      },
+      {
+        "id": "T10-I06",
+        "kind": "figure versus approximate prose",
+        "issue": "§5.4 approximate percentages do not uniformly describe the Figure 3 counts, and its performance gains condition on Def-DTS success/failure.",
+        "values": [
+          "Among correctly predicted JUST_COMMENT cases, Plain Text has 353/498=70.88%, below the prose 80–85% range for non-shifts.",
+          "Among correctly predicted INTRODUCE_TOPIC cases, Plain Text has 32/189=16.93%, below the prose 20–50% shift range; DialSTART has 102/189=53.97%, above it.",
+          "Of Def-DTS’s 76 false positives (gold no shift), other methods correct 57/76=75% (S3-DST), 60/76=78.95% (Plain Text), and 39/76=51.32% (DialSTART), not uniformly 50%.",
+          "Of Def-DTS’s 105 false negatives (gold shift), co-errors are 87/105=82.86%, 78/105=74.29%, 80/105=76.19%."
+        ],
+        "source_refs": [
+          "figure_caption",
+          "figure_counts",
+          "figure_prose"
+        ],
+        "disposition": "Use exact conditional counts and retain approximate author prose separately. Do not report its roughly 20%/over 40% gains as unconditional benchmark accuracy gains."
+      },
+      {
+        "id": "T10-I07",
+        "kind": "claim scope",
+        "issue": "Domain-agnostic language coexists with dataset-specific inventories and selected examples.",
+        "source_refs": [
+          "intent_rules",
+          "adaptation",
+          "example_selection",
+          "prompt_examples"
+        ],
+        "disposition": "Describe dataset-adapted prompting without model fine-tuning. An unchanged zero-shot cross-domain experiment is not reported."
+      },
+      {
+        "id": "T10-I08",
+        "kind": "evaluation-scope difference, not a contradiction",
+        "issue": "Main benchmark, local-model subset, and other-dataset ablation have different sample scopes.",
+        "values": [
+          "Table 2/Table 3: TIAGE 100, SuperDialseg 1322, Dialseg711 711 dialogues.",
+          "§5.6/Table 7 and Appendix B.1/Table 11: 100 randomly sampled examples/dialogues per dataset."
+        ],
+        "source_refs": [
+          "datasets",
+          "main",
+          "local_protocol",
+          "ablation_subset"
+        ],
+        "disposition": "Retain T10’s exact SuperDialseg count 1322. No release ID or sample list supports substituting a count from another frozen paper. Cross-paper count reconciliation is outside this T10-only task."
+      },
+      {
+        "id": "T10-I09",
+        "kind": "reproduction and task-unit differences, not equivalent scores",
+        "issue": "Table 3 reruns differ materially from Table 15 originals.",
+        "values": [
+          "Dialseg711 Plain Text: Table 3 GPT-4o F1 0.010 versus Table 15 GPT-3.5 F1 0.690.",
+          "Dialseg711 S3-DST_uttr: Table 3 Pk/WD 0.087/0.109 versus original S3-DST_turn in Table 15 0.009/0.008.",
+          "SumSeg TIAGE: Table 3 Pk/WD 0.482/0.496 versus Table 15 0.438/0.455."
+        ],
+        "source_refs": [
+          "main",
+          "original_baselines",
+          "reproduction"
+        ],
+        "disposition": "The paper explicitly acknowledges changed results and prompt/unit modifications. Preserve both; do not equate unit-specific or model-specific settings, or infer a cause for the entire gap."
+      },
+      {
+        "id": "T10-I10",
+        "kind": "model naming and atypical reported metric ordering",
+        "issue": "§5.7 calls the model GPT-4, while Appendix D.1 specifies GPT-4o. Table 14 reports V3 WD below its Pk.",
+        "values": [
+          "Auto-labeling text: GPT-4; implementation: gpt-4o, no dated snapshot.",
+          "TIAGE V3 Table 14: Pk=0.259, WD=0.204, F1=0.674."
+        ],
+        "source_refs": [
+          "kappa",
+          "implementation",
+          "additional_results"
+        ],
+        "disposition": "Keep author model strings and numeric cells exactly. No model snapshot or metric code was inspected; do not guess a corrected WD or claim an independently verified model identity."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "assessment": "Limited: fixes the unit at utterance; no evidence selecting an email annotation unit.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F10"
+        ]
+      },
+      "RQ2": {
+        "assessment": "Indirect only: no email clusters, interleaving or non-sequential topic identity.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F05"
+        ]
+      },
+      "RQ3": {
+        "assessment": "No direct support: single predicted intent and boundary; no multi-topic message/span memberships.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F04"
+        ]
+      },
+      "RQ4": {
+        "assessment": "No evaluated overlapping/discontinuous Topic representation; context overlap is a different concept.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F06"
+        ]
+      },
+      "RQ5": {
+        "assessment": "Boundary and instruction errors are measured; scope/evidence preservation is not.",
+        "finding_refs": [
+          "T10-F04",
+          "T10-F10"
+        ]
+      },
+      "RQ6": {
+        "assessment": "Strong diagnostic relevance if metrics, conditional denominators and subset scopes remain separate.",
+        "finding_refs": [
+          "T10-F02",
+          "T10-F04",
+          "T10-F07",
+          "T10-F09",
+          "T10-F11",
+          "T10-F12"
+        ]
+      },
+      "RQ7": {
+        "assessment": "Useful transfer caveats: synthetic joins, dataset-specific prompts, incomplete split/leakage evidence and unmatched human comparison.",
+        "finding_refs": [
+          "T10-F05",
+          "T10-F08",
+          "T10-F12"
+        ]
+      },
+      "RQ8": {
+        "assessment": "Suggests controlled prompting/format/boundary baselines and independent preservation tests; no architecture approval.",
+        "finding_refs": [
+          "T10-F03",
+          "T10-F06",
+          "T10-F09",
+          "T10-F10"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "claim": "A bounded baseline for offline dialogue-boundary detection is the supported transfer use. The task’s topic-coherence notion can merge distinct work matters or split one matter across segments. Those work-matter errors remain unmeasured.",
+        "finding_refs": [
+          "T10-F01",
+          "T10-F02",
+          "T10-F10"
+        ]
+      },
+      {
+        "claim": "Bidirectional context assumes access to future utterances. This differs from incremental email collection; a no-future variant must be evaluated separately. Exact-window reproducibility is limited by T10-I01.",
+        "finding_refs": [
+          "T10-F06"
+        ],
+        "source_refs": [
+          "full_dialogue"
+        ]
+      },
+      {
+        "claim": "A good binary boundary F1 or kappa cannot establish multi-label cardinality, recurring Topic identity, exact span assignment, or scope preservation. Synthetic stitching is especially weak evidence for those requirements.",
+        "finding_refs": [
+          "T10-F02",
+          "T10-F08",
+          "T10-F10"
+        ]
+      },
+      {
+        "claim": "The measured local-model prompts used unquantized models and four A100 80GB GPUs. The paper gives no arm64/Raspberry Pi cost or feasibility evidence. Small-model conditional scores must include format failures.",
+        "finding_refs": [
+          "T10-F09"
+        ],
+        "source_refs": [
+          "implementation"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T10-P01",
+        "status": "untested msgloom proposal; not approved architecture",
+        "experiment": "On user-reviewed work-text examples, compare utterance/sentence/clause/EDU/arbitrary-span candidates with the same gold work-matter evidence. Permit several Topic memberships and non-contiguous spans in gold. Keep boundary, span, membership and preservation metrics separate.",
+        "motivation_refs": [
+          "T10-F01",
+          "T10-F10"
+        ]
+      },
+      {
+        "id": "T10-P02",
+        "status": "untested msgloom proposal; not approved architecture",
+        "experiment": "Freeze explicit window semantics and compare no-future, bidirectional and full-original-context variants. Compare direct boundary prompting, intent-mediated prompting and summaries with retained source offsets. Score missed/broadened conditions, evidence, approval, action and reply scope separately from Pk/WD/F1.",
+        "motivation_refs": [
+          "T10-F03",
+          "T10-F06",
+          "T10-F07",
+          "T10-F10"
+        ]
+      },
+      {
+        "id": "T10-P03",
+        "status": "untested msgloom proposal; not approved architecture",
+        "experiment": "Hold out conversation origins and work matters. Compare a frozen general prompt with demonstrations selected only from training examples and with dataset-adapted labels. Report example provenance, duplicate checks, annotation-policy dependence and variance across example choices.",
+        "motivation_refs": [
+          "T10-F05",
+          "T10-F12"
+        ]
+      },
+      {
+        "id": "T10-P04",
+        "status": "untested msgloom proposal; not approved architecture",
+        "experiment": "Report end-to-end results including malformed outputs and intent-to-shift contradictions. Test a deterministic intent-to-boundary mapping as a separately named variant. Preserve original outputs and uncertain assignments; measure its effect instead of silently repairing them.",
+        "motivation_refs": [
+          "T10-F04",
+          "T10-F09"
+        ]
+      },
+      {
+        "id": "T10-P05",
+        "status": "untested msgloom proposal; not approved architecture",
+        "experiment": "For auto-labeling, collect multiple human labels and model labels on the same items. Measure agreement with uncertainty, adjudicated boundary accuracy and work-evidence preservation. Include natural recurrent work matters as well as synthetic joins, and measure human review effort.",
+        "motivation_refs": [
+          "T10-F08",
+          "T10-F10"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "original_pdf": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2025_lee_et_al_def_dts_deductive_reasoning_dialogue_topic_segmentation.pdf",
+        "sha256": "11c1d0f426fcc305606c866bd368f7e166a90b0ba41b767eede4bf8019a439b1",
+        "expected_sha256": "11c1d0f426fcc305606c866bd368f7e166a90b0ba41b767eede4bf8019a439b1",
+        "matches_expected": true,
+        "pages": 18
+      },
+      "primary_conversion": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "sha256": "4c2f745b107afbe89dff62ed66de2603c254bf1eaa2887fff5180c88d8c13b6d",
+        "full_text_read": true,
+        "fine_conversion_available": false
+      },
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2025_lee_et_al_def_dts_deductive_reasoning_dialogue_topic_segmentation.pdf",
+          "sha256": "11c1d0f426fcc305606c866bd368f7e166a90b0ba41b767eede4bf8019a439b1",
+          "read_scope": "original PDF, hash verified; selected pages visually inspected"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+          "sha256": "4c2f745b107afbe89dff62ed66de2603c254bf1eaa2887fff5180c88d8c13b6d",
+          "read_scope": "complete primary conversion read, LF lines 1–1856; no fine conversion exists"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+          "sha256": "0c118e148f328074da8f51857873a264a5318f2579768352e1582dd5fe7aea64",
+          "read_scope": "independent raw pdftotext consulted for equations, complete appendix prompt, diagnoses and source quotes"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.layout.txt",
+          "sha256": "1f74cb71a9af4636c2947c8030634a58adf5729922581ed4ddec2174e11449a4",
+          "read_scope": "independent layout pdftotext consulted for tables and diagnostics"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.pages.md",
+          "sha256": "232167222a6a8cbb717703dc6b04561cd8aee5c4fc94d7dd94430e60676dbd5f",
+          "read_scope": "auxiliary page-indexed conversion read through LF line 340; column interleaving makes raw/rough better citation sources"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "T10 entry only inspected; no other paper analyzed"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "full user context"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "full shared context; old Topic 01-only scope superseded by current T10 authorization; no Topic 01 conclusions read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "full product context"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "full product context"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "full mandatory worker requirements"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "installed skill read; delegated-worker limits and explicit user scope govern this task"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "full installed worker contract"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "full installed schema"
+        }
+      ],
+      "page_images": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-03.png",
+          "sha256": "5072dff13720326c117fcf5c86f7da7d0186344b9b42b53d59f885aa316255a2"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-06.png",
+          "sha256": "534052b5c2b591d2487528977775aa21a96d038a5f0d4058ff93cea5e21bfe7a"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-07-figure-03.png",
+          "sha256": "ca9376a7dfafc8b99f8115ecc550656844c75e4a06f24cd182041ff408f617bd"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-07.png",
+          "sha256": "d6b700f325186f7035fdeb90af22b3061c7563ae429cdbbd2edd3346ac9d49a6"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-14.png",
+          "sha256": "f174c8d7edf26c40ce40d40b9421aded7c3a32928546664f0d8bc610f1b72c29"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-15.png",
+          "sha256": "358b289d5c1c1c03e1972bb3e2b97d9b3c2e0ce5e89d76480c0d2878e98e6ae0"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-16.png",
+          "sha256": "14cdc0d59b393205afd0a7a38a16f180eb289078872ee97bb5926fef697f29fc"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/pdf-page-17.png",
+          "sha256": "ae7be151713b61b21f9fd3983678d985ebc9e5bf3e1f07bcaecd68a87d8b8e10"
+        }
+      ],
+      "visual_transcription": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/figure-03.visual-transcription.md",
+        "sha256": "4f74520fadafe9a77e7e4826f762d78b63b79a8966b1ed75906be170a037c42a",
+        "scope": "Figure 3 printed count labels; independently inspected local PDF crop"
+      },
+      "line_convention": "1-based Unix LF lines using text.split(\"\\n\"); form feed is not an additional line; quotes normalize whitespace only and retain line-break hyphens.",
+      "network_access": "None; all sources are frozen local files.",
+      "extraction_assessment": "Original PDF is readable. Primary conversion mangles equation typography and some table layouts; raw/layout text and local PDF images resolve the cells. Unresolved items are paper/protocol ambiguities, not unreadable evidence."
+    }
+  },
+  "evidence_catalog": {
+    "method": {
+      "section": "PDF p. 3, §§3.1–3.2 and Algorithm 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 185,
+        "line_end": 244,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    "windows": {
+      "section": "PDF p. 4, §3.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 249,
+        "line_end": 286,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "intent_rules": {
+      "section": "PDF p. 4, §3.4 and Table 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 342,
+        "line_end": 396,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    "deduction": {
+      "section": "PDF p. 5, §3.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 403,
+        "line_end": 422,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "datasets": {
+      "section": "PDF p. 5, §4.1 and Table 2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 428,
+        "line_end": 466,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "metrics": {
+      "section": "PDF p. 5, §4.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 470,
+        "line_end": 482,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    "main": {
+      "section": "PDF p. 6, Table 3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 523,
+        "line_end": 563,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "main_prose": {
+      "section": "PDF p. 6, §4.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 570,
+        "line_end": 600,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "ablation_tiage": {
+      "section": "PDF pp. 6–7, §5.1 and Table 4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 609,
+        "line_end": 663,
+        "pdf_pages": [
+          6,
+          7
+        ]
+      }
+    },
+    "format": {
+      "section": "PDF p. 7, §5.2 and Table 5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 666,
+        "line_end": 694,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "intent_tiage": {
+      "section": "PDF p. 7, §5.3 and Table 6",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 562,
+        "line_end": 590,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "figure_caption": {
+      "section": "PDF p. 7, §5.4, Figure 3 caption",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 591,
+        "line_end": 597,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "figure_counts": {
+      "section": "PDF p. 7, Figure 3; labeled visual transcription",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T10/figure-03.visual-transcription.md",
+        "line_start": 8,
+        "line_end": 22,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    "figure_prose": {
+      "section": "PDF p. 8, §5.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 599,
+        "line_end": 622,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "linguistic": {
+      "section": "PDF p. 8, §5.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 623,
+        "line_end": 638,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "local_protocol": {
+      "section": "PDF p. 8, §5.6",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 639,
+        "line_end": 654,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "kappa": {
+      "section": "PDF p. 8, §5.7",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 655,
+        "line_end": 673,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    "local_large": {
+      "section": "PDF p. 9, Table 7",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 844,
+        "line_end": 865,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "limitations": {
+      "section": "PDF p. 9, §7",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 876,
+        "line_end": 891,
+        "pdf_pages": [
+          9
+        ]
+      }
+    },
+    "prompt_examples": {
+      "section": "PDF p. 13, Appendix A.1, Table 8 first part",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1040,
+        "line_end": 1088,
+        "pdf_pages": [
+          13
+        ]
+      }
+    },
+    "prompt_task": {
+      "section": "PDF p. 14, Appendix A.1, Table 8 second part",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1090,
+        "line_end": 1131,
+        "pdf_pages": [
+          14
+        ]
+      }
+    },
+    "adaptation": {
+      "section": "PDF p. 15, Appendix A.2, Table 9",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1133,
+        "line_end": 1152,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "full_dialogue": {
+      "section": "PDF p. 15, Appendix A.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1162,
+        "line_end": 1183,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "example_selection": {
+      "section": "PDF p. 15, Appendix A.4",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1184,
+        "line_end": 1199,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "exclusive": {
+      "section": "PDF p. 15, Appendix A.5",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1200,
+        "line_end": 1214,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "ablation_subset": {
+      "section": "PDF p. 15, Appendix B.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1215,
+        "line_end": 1224,
+        "pdf_pages": [
+          15
+        ]
+      }
+    },
+    "ablation_other": {
+      "section": "PDF p. 16, Appendix B.1 and Table 11",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1226,
+        "line_end": 1245,
+        "pdf_pages": [
+          16
+        ]
+      }
+    },
+    "intent_other": {
+      "section": "PDF p. 16, Appendix B.2 and Table 12",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1246,
+        "line_end": 1294,
+        "pdf_pages": [
+          16
+        ]
+      }
+    },
+    "small_prose": {
+      "section": "PDF p. 16, Appendix C.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.raw.txt",
+        "line_start": 1295,
+        "line_end": 1311,
+        "pdf_pages": [
+          16
+        ]
+      }
+    },
+    "small_results": {
+      "section": "PDF p. 17, Table 13",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.layout.txt",
+        "line_start": 960,
+        "line_end": 976,
+        "pdf_pages": [
+          17
+        ]
+      }
+    },
+    "additional_models": {
+      "section": "PDF p. 16, Appendix C.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1681,
+        "line_end": 1693,
+        "pdf_pages": [
+          16
+        ]
+      }
+    },
+    "additional_results": {
+      "section": "PDF p. 17, Table 14",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1743,
+        "line_end": 1759,
+        "pdf_pages": [
+          17
+        ]
+      }
+    },
+    "implementation": {
+      "section": "PDF p. 17, Appendix D.1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1770,
+        "line_end": 1790,
+        "pdf_pages": [
+          17
+        ]
+      }
+    },
+    "original_baselines": {
+      "section": "PDF p. 17, Appendix D.2 and Table 15",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T10.layout.txt",
+        "line_start": 982,
+        "line_end": 1002,
+        "pdf_pages": [
+          17
+        ]
+      }
+    },
+    "reproduction": {
+      "section": "PDF pp. 17–18, Appendix D.2",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 1812,
+        "line_end": 1850,
+        "pdf_pages": [
+          17,
+          18
+        ]
+      }
+    },
+    "availability": {
+      "section": "PDF p. 1, footnote 1",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T10.md",
+        "line_start": 52,
+        "line_end": 54,
+        "pdf_pages": [
+          1
+        ]
+      }
+    }
+  },
+  "runtime": {
+    "role": "paper-T10",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "provenance": "Launcher-reported runtime values from MSGLOOM_WORKER_ROLE, MSGLOOM_WORKER_MODEL, MSGLOOM_WORKER_EFFORT. Parent independently verifies actual turn_context and process exit receipts. No process/turn identifier inferred."
+  },
+  "analysis_scope": "T10 only. No other paper/worker, pipeline stage, workflow-state change, installed-code edit, network request or result submission."
+}

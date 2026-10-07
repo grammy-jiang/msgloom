@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-18653-v1-2024-acl-long-390",
+ "title": "From Moments to Milestones: Incremental Timeline Summarization Leveraging Large Language Models",
+ "research_question": "Can a unified LLM-based incremental event-clustering pipeline generate effective event and topic timelines from evolving text streams while remaining more efficient and interpretable than conventional timeline-summarization approaches?",
+ "methodology": "The authors introduce LLM-TLS, a streaming two-stage cluster-and-summarize pipeline using Llama2-13B, GTE embeddings, vector retrieval, temporal filtering, and LLM-based event-membership decisions. For event timelines, new tweets are retrieved against evolving timelines and classified for membership; for topic timelines, article event summaries are incrementally connected into event graphs and high-prominence clusters are selected as milestones. The approach is evaluated on CrisisLTLSum for event timeline summarization and T17, CRISIS, and ENTITIES for topic timeline summarization, using clustering precision/recall/F1, ROUGE, alignment-based ROUGE, and Date-F1 against prior systems and ablations.",
+ "key_findings": [
+  {
+   "finding": "The proposed pipeline supports incremental event clustering and summarization as new text arrives, rather than requiring retrospective processing of the complete collection.",
+   "evidence_type": "supported",
+   "section": "Method"
+  },
+  {
+   "finding": "On event clustering, retrieval mode achieved 89.63 precision and 81.94 F1 while reducing the reported experiment time from roughly 35 minutes in global mode to 7 minutes.",
+   "evidence_type": "supported",
+   "section": "Results & Analysis — Event LLM-TLS Performance"
+  },
+  {
+   "finding": "For event summarization on noisy input streams, LLM-TLS exceeded the reproduced oracle BART and DistillBART baselines on ROUGE-2 and ROUGE-L, although its results did not dominate every model on every ROUGE measure.",
+   "evidence_type": "supported",
+   "section": "Results & Analysis — Event LLM-TLS Performance"
+  },
+  {
+   "finding": "For topic timelines, the hybrid LLM-TLS variant produced the strongest reported Date-F1 values among the compared methods on T17, CRISIS, and ENTITIES.",
+   "evidence_type": "supported",
+   "section": "Results & Analysis — Topic LLM-TLS Performance; Table 5"
+  },
+  {
+   "finding": "The advantage of event-oriented LLM-TLS over the date-wise comparison became more apparent for topics spanning hundreds or more publication dates, suggesting greater robustness for long-range timeline construction.",
+   "evidence_type": "supported",
+   "section": "Results & Analysis — Event-wise versus date-wise"
+  },
+  {
+   "finding": "Direct GPT-4 clustering on sampled noisy timelines was substantially less stable than LLM-TLS with Llama2-13B in the reported comparison, with average F1 of 56.65 versus 87.26 across five trials.",
+   "evidence_type": "supported",
+   "section": "Discussion — Why not just use GPT-4?"
+  },
+  {
+   "finding": "Manual checking of 1,000 randomly sampled ENTITIES article-summary pairs identified factual inconsistencies in 4.8% of Llama2-13B event summaries, demonstrating a remaining factuality risk.",
+   "evidence_type": "supported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "The approach requires substantial computational resources, including fine-tuning and multi-hour GPU runs for some topic datasets.",
+  "LLM-generated summaries can contain factual inconsistencies; manual verification found inconsistencies in 4.8% of the sampled article-summary pairs examined by the authors.",
+  "Performance is sensitive to prompt design.",
+  "The authors could reconstruct only 772 of the original 1,000 CrisisLTLSum timelines because some source tweets had been deleted.",
+  "The benchmarks concern crisis tweets and news timelines rather than workplace threads, so they do not directly test work-item states such as open, resolved, or superseded.",
+  "Evaluation emphasizes overlap, date selection, clustering quality, and factual consistency rather than omission/repetition across repeated user briefings or user-specific adaptive prioritization."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "incremental_streaming_pipeline": 0.99,
+  "retrieval_mode_efficiency": 0.99,
+  "event_summarization_outperforms_bart_baselines": 0.97,
+  "hybrid_topic_date_f1": 0.99,
+  "long_range_advantage": 0.93,
+  "gpt4_direct_clustering_less_stable": 0.98,
+  "factual_inconsistency_rate": 0.99
+ },
+ "raw_claims": [
+  "LLM-TLS treats timeline summarization as an incremental process over an evolving text stream.",
+  "The same event-clustering concept is applied to both event and topic timeline summarization.",
+  "Vector retrieval restricts candidate comparisons before LLM-based event-membership classification.",
+  "Temporal heuristics further constrain candidate event matches.",
+  "The event-timeline experiments use a reconstructed CrisisLTLSum stream containing both relevant and noisy tweets.",
+  "The topic-timeline experiments use T17, CRISIS, and ENTITIES news collections.",
+  "Event clustering is evaluated with precision, recall, and F1.",
+  "Generated event summaries are evaluated with ROUGE-1, ROUGE-2, and ROUGE-L F1 measures.",
+  "Topic timelines are evaluated with alignment-based ROUGE and Date-F1.",
+  "Retrieval substantially reduces event-clustering runtime relative to comparison against every evolving timeline.",
+  "The hybrid topic method combines LLM-generated event summaries with temporally tagged article sentences.",
+  "Source code is publicly linked by the paper.",
+  "Some LLM-generated event summaries remain factually inconsistent despite the system's improved benchmark performance."
+ ],
+ "source_url": "https://aclanthology.org/2024.acl-long.390.pdf",
+ "access": "full_text"
+}

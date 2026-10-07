@@ -1,0 +1,65 @@
+{
+ "paper_id": "manual-eef7a0219f",
+ "title": "More than Classification: A Unified Framework for Event Temporal Relation Extraction",
+ "research_question": "Can event temporal relation extraction be improved and made more transferable by representing relation labels as logical constraints over event start and end points rather than as independent one-hot classes?",
+ "methodology": "The authors first construct a strong pretrained-language-model baseline using event markers, extended sentence context, label-symmetry augmentation, an MLP classifier, and cross-entropy training. Their unified framework instead interprets each temporal label as a logical expression over four cross-event endpoint pairs and predicts endpoint relations by answering two binary ordering questions for each pair. Soft logic makes the rule-based conversion differentiable so that the whole framework can be trained from event-relation labels. Experiments use TB-Dense and MATRES with BERT-Base and RoBERTa-Large, followed by error, low-resource, and cross-definition transfer analyses.",
+ "key_findings": [
+  {
+   "finding": "The unified endpoint framework consistently improves over the enhanced direct-classification baseline and reaches 68.1 micro-F1 on TB-Dense and 82.6 on MATRES with RoBERTa-Large, reported as 0.3 F1 above the previous state of the art on both benchmarks.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Explicit logical treatment of the Vague relation substantially reduces confusion with Vague: the number of Vague-associated errors falls by 95 on TB-Dense and 22 on MATRES, although non-Vague errors increase slightly.",
+   "evidence_type": "supported",
+   "section": "6.1 Better Comprehension of Relations"
+  },
+  {
+   "finding": "The unified representation is more data-efficient in low-resource TB-Dense experiments, averaging gains of 2.9 micro-F1 and 1.8 macro-F1 over the baseline across training subsets from 1% to 30%.",
+   "evidence_type": "supported",
+   "section": "6.2 Capability of Capturing Dependency"
+  },
+  {
+   "finding": "When trained on TB-Dense and evaluated under MATRES relation definitions, the unified model obtains 70.4 micro-F1 versus 63.1 and 64.3 for two baseline label-mapping strategies.",
+   "evidence_type": "supported",
+   "section": "6.3 Adaptation to Different Definitions"
+  },
+  {
+   "finding": "Gains occur with both BERT-Base and RoBERTa-Large, suggesting that the endpoint decomposition contributes beyond the choice of text encoder.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  }
+ ],
+ "limitations": [
+  "The authors explicitly evaluate only TB-Dense and MATRES and state that more relation inventories and datasets are needed to establish generalization and robustness.",
+  "The experiments concern event-pair temporal relations rather than end-to-end detection of evolving work-item states.",
+  "The framework does not directly represent factuality distinctions such as planned, confirmed, revoked, completed, or contradicted; such distinctions would require additional semantics beyond endpoint ordering.",
+  "The evaluated input context is local text around supplied event mentions, leaving cross-document or long-running communication histories outside the demonstrated setting."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "endpoint_framework_improves_f1": 0.99,
+  "vague_errors_reduced": 0.99,
+  "low_resource_improvement": 0.99,
+  "cross_definition_transfer": 0.99,
+  "gains_across_encoders": 0.97
+ },
+ "raw_claims": [
+  "Standard temporal-relation classification discards semantic structure by treating relation labels as independent categories.",
+  "The framework represents event intervals through their start and end points.",
+  "Four cross-event endpoint pairs are sufficient for the temporal interpretations used by the framework.",
+  "Two binary questions are used to distinguish before, after, equal, and vague relations between time points.",
+  "Soft logic provides a differentiable mapping from endpoint judgments to event-level temporal labels.",
+  "TB-Dense uses six evaluated relation types while MATRES focuses on four start-point relations.",
+  "The unified model improves over its matched enhanced baseline on both evaluated datasets.",
+  "Logical interpretation reduces many errors in which non-Vague instances are predicted as Vague.",
+  "Sharing endpoint structure among relation labels improves performance when training data are limited.",
+  "Changing the logical conversion rules permits transfer between different temporal-relation definitions without learning a new one-to-one label mapping."
+ ],
+ "source_url": "https://arxiv.org/html/2305.17607",
+ "access": "full_text"
+}

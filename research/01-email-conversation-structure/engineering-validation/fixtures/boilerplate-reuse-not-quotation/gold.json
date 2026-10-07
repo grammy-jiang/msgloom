@@ -1,0 +1,52 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "boilerplate-reuse-not-quotation",
+  "description": "Exact repeated boilerplate is a negative control for reuse-augmented quote detection.",
+  "family": "reuse_negative_control",
+  "messages": [
+    {
+      "message_id": "reuse-boiler-source",
+      "expected_text": "Please review the attached proposal.\nAlpha context.",
+      "arrival_rank": 1,
+      "internet_message_id": "<reuse-boiler-source@synthetic.invalid>",
+      "subject": "Boilerplate",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "reuse-boiler-new",
+      "expected_text": "Please review the attached proposal.\nThis is independently written new content.",
+      "arrival_rank": 2,
+      "internet_message_id": "<reuse-boiler-new@synthetic.invalid>",
+      "subject": "Different matter",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [],
+  "spans": [
+    {
+      "span_id": "reuse-new",
+      "message_id": "reuse-boiler-new",
+      "span": {
+        "start": 37,
+        "end": 79
+      },
+      "kind": "new_content",
+      "text": "This is independently written new content.",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "reuse-boiler-source",
+      "reuse-boiler-new"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "negative-control"
+  ]
+}

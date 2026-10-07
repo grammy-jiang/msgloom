@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-18653-v1-p19-1412",
+ "title": "Do You Know That Florence Is Packed with Visitors? Evaluating State-of-the-art Models of Speaker Commitment",
+ "research_question": "How well do state-of-the-art speaker-commitment models generalize to naturally occurring discourse, and which linguistic constructions systematically explain their errors?",
+ "methodology": "The authors evaluate existing speaker-commitment systems on CommitmentBank, which contains 1,200 naturally occurring English examples involving complements of clause-embedding verbs under negation, modality, questions, and conditionals, drawn from newswire, fiction, and dialogue. At least eight native-English Mechanical Turk annotators rate the speaker's commitment on a graded scale, and a 556-item high-agreement subset is used for detailed analysis. The study compares a linguistically informed rule-based system with linear, tree, and hybrid biLSTM models trained in a multi-task setting on four existing factuality datasets, using Pearson correlation, mean absolute error, and a three-class commitment analysis. citeturn991644view8turn991644view9",
+ "key_findings": [
+  {
+   "finding": "The linguistically informed rule-based model outperforms the evaluated biLSTM models on the full CommitmentBank, but all systems perform substantially worse there than on their original reference datasets.",
+   "evidence_type": "supported",
+   "section": "4 Evaluation citeturn991644view9"
+  },
+  {
+   "finding": "Pearson correlation on the full set is 0.41 for the rule-based model versus 0.24, 0.09, and 0.23 for the linear, tree, and hybrid biLSTMs; on the restricted set the corresponding values are 0.50, 0.31, 0.13, and 0.33.",
+   "evidence_type": "supported",
+   "section": "4 Evaluation, Figure 3 citeturn323813view0"
+  },
+  {
+   "finding": "The rule-based model captures negation relatively well with r=0.45 but performs poorly on modal and question environments, while the hybrid model is more consistent across negation, modality, and questions; both fail on conditionals.",
+   "evidence_type": "supported",
+   "section": "5 Analysis: Embedding Environment citeturn991644view10"
+  },
+  {
+   "finding": "Both models have essentially no useful correlation on neg-raising examples, with r=0.04 for the rule-based model and -0.07 for the hybrid model.",
+   "evidence_type": "supported",
+   "section": "5 Analysis: Neg-raising citeturn991644view10"
+  },
+  {
+   "finding": "In the three-way classification analysis, neither system reliably recognizes the no-commitment class: its F1 is 0 for the rule-based model and 0.11 for the hybrid model.",
+   "evidence_type": "supported",
+   "section": "5 Analysis, Table 4 citeturn991644view11"
+  },
+  {
+   "finding": "The systems are better at recognizing commitment polarity than its graded strength: the rule-based system tends toward extreme predictions while the hybrid model struggles with negative commitment.",
+   "evidence_type": "supported",
+   "section": "5 Analysis and 6 Conclusion citeturn991644view11"
+  },
+  {
+   "finding": "Both systems achieve their strongest correlation on dialogue and their weakest correlation on newswire, demonstrating substantial genre sensitivity.",
+   "evidence_type": "supported",
+   "section": "5 Analysis: Genre citeturn991644view10"
+  }
+ ],
+ "limitations": [
+  "CommitmentBank is English-only and restricted to complements of clause-embedding verbs in four selected entailment-canceling environments, so it does not cover the full range of discourse revision phenomena. citeturn991644view8",
+  "Detailed error analysis focuses on a 556-item high-agreement subset, which intentionally excludes many ambiguous judgments and contains only a subset of the original corpus.",
+  "The evaluated systems are transferred from other factuality datasets rather than optimized directly for CommitmentBank, making the experiment primarily a test of linguistic generalization rather than the best achievable in-domain performance. citeturn991644view9",
+  "Speaker commitment represents what a speaker presents as true, false, or uncertain; it does not independently establish objective truth, so it cannot by itself distinguish a claimed completion from externally confirmed completion.",
+  "The dataset does not explicitly label longitudinal relations such as supersession, correction, supplementation, reopening, or conflict resolution."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rule_based_outperforms_bilstm": 0.99,
+  "conditional_generalization_failure": 0.99,
+  "neg_raising_failure": 0.99,
+  "no_commitment_failure": 0.99,
+  "polarity_vs_gradience": 0.98,
+  "genre_sensitivity": 0.97,
+  "speaker_commitment_not_external_truth": 0.97
+ },
+ "raw_claims": [
+  "CommitmentBank contains 1,200 naturally occurring examples of speaker commitment.",
+  "Its examples cover negation, modal, question, and conditional environments.",
+  "The corpus includes newswire, fiction, and conversational dialogue.",
+  "Speaker commitment is annotated as a graded judgment rather than only a binary truth label.",
+  "The rule-based system generalizes better overall than the tested biLSTM systems.",
+  "Negation is the strongest environment for the rule-based system.",
+  "Both evaluated model families perform poorly on conditional inferences.",
+  "Neg-raising is difficult for both systems.",
+  "Neither system reliably recognizes cases where the speaker has no clear commitment.",
+  "Current models capture commitment polarity better than fine-grained commitment strength.",
+  "Performance varies substantially across discourse genres."
+ ],
+ "source_url": "https://aclanthology.org/P19-1412.pdf",
+ "access": "full_text"
+}

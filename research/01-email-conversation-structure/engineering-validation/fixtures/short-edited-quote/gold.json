@@ -1,0 +1,85 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "short-edited-quote",
+  "description": "A short edited quote must not be silently normalized back to the source wording.",
+  "family": "edited_quote",
+  "messages": [
+    {
+      "message_id": "edit-source",
+      "expected_text": "Ship 10 units Monday.",
+      "arrival_rank": 1,
+      "internet_message_id": "<edit-source@synthetic.invalid>",
+      "subject": "Shipment",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "edit-reply",
+      "expected_text": "> Ship 12 units Monday.\n\nPlease use the revised quantity.",
+      "arrival_rank": 2,
+      "internet_message_id": "<edit-reply@synthetic.invalid>",
+      "subject": "Re: Shipment",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [
+    {
+      "occurrence_id": "edit-q1",
+      "message_id": "edit-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 23
+      },
+      "source_candidates": [
+        {
+          "message_id": "edit-source",
+          "span": {
+            "start": 0,
+            "end": 21
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": "Fuzzy structural source relation; quoted text itself differs and must be preserved."
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "edit-decision-source",
+      "message_id": "edit-source",
+      "span": {
+        "start": 5,
+        "end": 7
+      },
+      "kind": "decision_bearing",
+      "text": "10",
+      "notes": ""
+    },
+    {
+      "span_id": "edit-decision-reply",
+      "message_id": "edit-reply",
+      "span": {
+        "start": 7,
+        "end": 9
+      },
+      "kind": "decision_bearing",
+      "text": "12",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "edit-source",
+      "edit-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "E4"
+  ]
+}

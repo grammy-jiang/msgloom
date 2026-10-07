@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-1145-1076034-1076094",
+ "title": "On the collective classification of email \"speech acts\"",
+ "research_question": "Does exploiting the sequential relationship among messages in an email thread improve classification of email acts such as requests and commitments beyond content-only classifiers?",
+ "methodology": "The authors use the CSpace corpus of approximately 15,000 task-oriented emails produced by 277 MBA students working in roughly 50 simulated-company teams, with experiments focused on threaded messages from several individual teams. Each message can receive multiple email-act labels, including Request, Commit, Propose, Deliver, broader Directive and Commissive categories, Meeting, and deliveredData. Local maximum-entropy classifiers use body and subject words together with relational features representing predicted acts in a message's parent and first child, and an iterative dependency-network-style procedure repeatedly updates labels across a thread. Performance is compared with bag-of-words baselines using F1 and kappa in cross-team tests, including four leave-one-team-out experiments and a prospectively collected fourth-team test set.",
+ "key_findings": [
+  {
+   "finding": "Email acts show exploitable sequential regularities: requests are often followed by delivery-related acts, while commitments are particularly associated with proposals or preceding commitments.",
+   "evidence_type": "supported",
+   "section": "4.1 Pairwise correlation of adjacent acts"
+  },
+  {
+   "finding": "In the preliminary 3F2-to-1F3 experiment, iterative collective classification improved Commit from F1 36.66 and kappa 23.16 to F1 44.06 and kappa 32.42.",
+   "evidence_type": "supported",
+   "section": "5.3 Leave-one-team-out Experiments, Table 3"
+  },
+  {
+   "finding": "The broader Commissive class improved in the same preliminary experiment from F1 77.47 and kappa 35.19 to F1 82.96 and kappa 47.83.",
+   "evidence_type": "supported",
+   "section": "5.3 Leave-one-team-out Experiments, Table 3"
+  },
+  {
+   "finding": "Thread context was not universally beneficial: Deliver degraded in the preliminary experiment from F1 77.08 and kappa 47.47 to F1 71.27 and kappa 35.78.",
+   "evidence_type": "supported",
+   "section": "5.3 Leave-one-team-out Experiments, Table 3"
+  },
+  {
+   "finding": "Across the four test teams, average kappa improvement was statistically significant for the non-delivery-related email acts at p=0.01, but the improvement across all eight acts was not significant at p=0.18.",
+   "evidence_type": "supported",
+   "section": "5.3 Leave-one-team-out Experiments"
+  },
+  {
+   "finding": "At the individual-act level across four team tests, improvement was significant for Commissive with a two-tailed p=0.01 test and for Meeting with a one-tailed p=0.04 test, while Commit did not reach conventional significance with one-tailed p=0.06.",
+   "evidence_type": "supported",
+   "section": "5.3 Leave-one-team-out Experiments"
+  },
+  {
+   "finding": "The model is multi-label at the message level: a single email may contain several email acts, but it does not locate their textual spans or extract structured action arguments such as owner, object, deadline, or condition.",
+   "evidence_type": "supported",
+   "section": "1. Introduction and 2. Email-Acts Taxonomy and Applications"
+  }
+ ],
+ "limitations": [
+  "The corpus comes from MBA students operating simulated companies rather than a naturally occurring production workplace.",
+  "Only messages belonging to explicitly identified email threads were used in the relational experiments.",
+  "Most threads contain only two or three messages and most messages have at most one child, providing relatively sparse relational structure.",
+  "Different teams exhibit different negotiation styles, making cross-team generalization harder and introducing domain variation.",
+  "The relational representation uses only parent and first-child email-act predictions rather than richer thread, participant, or organizational relationships.",
+  "Collective classification improves some acts but degrades others, particularly Deliver and deliveredData.",
+  "The classifiers assign message-level email-act labels rather than extracting the action span, owner, object, deadline, or condition.",
+  "The CSpace dataset is described as research-accessible under participant agreements, but the paper does not state that the experimental corpus or labels were publicly released.",
+  "The exact experiment code is not released in the paper, although the maximum-entropy implementation is based on the external Minorthird toolkit."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "thread_acts_are_correlated": 0.99,
+  "commit_improves_preliminary": 0.99,
+  "commissive_improves": 0.99,
+  "deliver_degrades": 0.99,
+  "non_delivery_gain_significant": 0.99,
+  "act_specific_significance_mixed": 0.99,
+  "message_level_multi_label": 0.99
+ },
+ "raw_claims": [
+  "The CSpace corpus contains approximately 15,000 emails from a simulated management-course environment.",
+  "The course involved 277 MBA students organized into roughly 50 teams.",
+  "The experiments use only threaded subsets of selected team datasets.",
+  "A Request asks the recipient to perform an activity, while a Commit binds the sender to a future course of action.",
+  "A Propose combines a request for joint activity with a commitment by the sender.",
+  "An email can carry more than one email-act label.",
+  "Parent and child email-act predictions are used as relational features.",
+  "The collective method iteratively updates message labels using maximum-entropy local classifiers.",
+  "Commit and Commissive classifications benefited strongly from collective context in the preliminary experiment.",
+  "Deliver classification could become worse when thread context was added.",
+  "Across four team tests, the overall benefit was stronger and statistically supported for non-delivery-related acts than for the complete set of email acts."
+ ],
+ "source_url": "https://www.cs.cmu.edu/~vitor/papers/sigir05.pdf",
+ "access": "full_text"
+}

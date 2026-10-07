@@ -1,0 +1,76 @@
+{
+ "paper_id": "2109.09393",
+ "title": "Modality and Negation in Event Extraction",
+ "research_question": "Can an open-domain event extractor distinguish events that happened, did not happen, or remain uncertain by modeling negation, modality, conditionality, counterfactuality, and propositional attitudes with syntactic scope?",
+ "methodology": "The authors build MoNTEE, a lexicon-driven event extraction system on top of CCG parsing and dependency structures. Event relations are extracted together with modality tags generated from lexical triggers and graph paths intended to follow syntactic scope; phenomena include explicit negation, lexical negation, modal operators, conditionals, counterfactuals, and propositional attitudes. The method is evaluated intrinsically on 100 manually labeled event relations and then applied at scale to general, political, and sports news collections.",
+ "key_findings": [
+  {
+   "finding": "MoNTEE represents several kinds of event uncertainty rather than treating all extracted events as factual, including explicit and lexical negation, modal operators, conditionality, counterfactuality, and propositional attitudes.",
+   "evidence_type": "supported",
+   "section": "Sections 2 and 5"
+  },
+  {
+   "finding": "The system uses dependency paths from modality triggers to events as a mechanism for approximating syntactic scope.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  },
+  {
+   "finding": "On the 100-relation intrinsic evaluation, the three-way happened/uncertain/did-not-happen classification achieves micro-F1 of 0.81 and macro-F1 of 0.76.",
+   "evidence_type": "supported",
+   "section": "Section 7"
+  },
+  {
+   "finding": "The paper explicitly excludes implicit negation from its treatment of negation, limiting coverage of pragmatically implied negative meaning.",
+   "evidence_type": "supported",
+   "section": "Section 2.1"
+  },
+  {
+   "finding": "The authors identify missing discourse context as an important limitation because modality can depend on surrounding text rather than only the local sentence.",
+   "evidence_type": "supported",
+   "section": "Section 9"
+  },
+  {
+   "finding": "The evaluated data are news articles rather than workplace email or enterprise chat, so performance does not establish robustness for conversational work communication.",
+   "evidence_type": "supported",
+   "section": "Sections 7-8"
+  }
+ ],
+ "limitations": [
+  "The experiments use news text, not authentic workplace email or enterprise chat.",
+  "Implicit negation is explicitly outside the modeled negation coverage.",
+  "The system does not incorporate broader discourse context even though the authors note that modality can be context dependent.",
+  "The intrinsic manually labeled test contains only 100 event relations and has limited representation of some classes.",
+  "The CCG parser is trained for news-style English and may degrade on out-of-domain language such as conversational questions.",
+  "The task does not model assignee resolution, group assignees, or action-to-deadline binding.",
+  "Argument extraction is not evaluated as an exact evidence-span provenance task.",
+  "Only English is addressed."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "scope_via_ccg": 0.99,
+  "intrinsic_micro_f1": 0.99,
+  "explicit_negation_only": 0.99,
+  "context_limitation": 0.99,
+  "news_domain_not_workplace": 0.99,
+  "assignee_binding_not_addressed": 0.97
+ },
+ "raw_claims": [
+  "MoNTEE classifies extracted events according to whether they happened, did not happen, or are uncertain.",
+  "The modeled phenomena include negation, lexical negation, modality, conditionals, counterfactuals, and propositional attitudes.",
+  "CCG dependency structure is used to connect modality triggers with events in their syntactic scope.",
+  "Implicit negation is not handled by the proposed system.",
+  "Two authors annotated 100 event relations for the intrinsic evaluation.",
+  "The annotators achieved a reported kappa of 0.77.",
+  "The system obtains micro-F1 of 0.81 and macro-F1 of 0.76 on that evaluation.",
+  "Large-scale analysis is performed on general, political, and sports news.",
+  "Modal operators constitute a large share of the detected non-factual-event phenomena.",
+  "The authors identify absence of wider context as an important limitation.",
+  "The implementation is publicly linked from the paper."
+ ],
+ "source_url": "https://arxiv.org/html/2109.09393",
+ "access": "full_text"
+}

@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-18653-v1-n18-1076",
+ "title": "Implicit Argument Prediction with Event Knowledge",
+ "research_question": "Can distributed event knowledge and entity-salience information improve prediction of implicit arguments whose fillers occur elsewhere in a document?",
+ "methodology": "The paper introduces an argument-cloze formulation in which one argument of an event is removed and the model must select its filler from entities mentioned elsewhere in the document. Event representations are learned from a large English Wikipedia corpus, and a neural coherence model scores candidate entities using event compatibility together with salience features. The model is evaluated on two OntoNotes-derived cloze settings and is additionally adapted to the natural implicit-argument dataset of Gerber and Chai.",
+ "key_findings": [
+  {
+   "finding": "Combining learned event knowledge with entity-salience features substantially improves argument-cloze accuracy over frequency and simpler event-embedding baselines.",
+   "evidence_type": "supported",
+   "section": "Experiments on OntoNotes / Tables 3 and 5"
+  },
+  {
+   "finding": "On the shorter OntoNotes setting, the 40-million-example EventComp model with salience reaches 47.75% accuracy, compared with 41.89% without salience and 22.76% for the most-frequent-entity baseline.",
+   "evidence_type": "supported",
+   "section": "OntoNotes argument cloze results / Table 3"
+  },
+  {
+   "finding": "On the longer and more entity-dense OntoNotes setting, the 40-million-example EventComp model with salience reaches 27.87% accuracy, outperforming the corresponding model without salience at 21.79%.",
+   "evidence_type": "supported",
+   "section": "Long-document OntoNotes results / Table 5"
+  },
+  {
+   "finding": "For the Gerber-Chai natural implicit-argument task, successive adaptations for deciding whether a role is filled, handling multiple roles, and adding salience raise the 40-million-example EventComp system to 49.6 F1.",
+   "evidence_type": "supported",
+   "section": "Evaluation on naturally occurring implicit arguments / Table 6"
+  },
+  {
+   "finding": "The final adapted system approaches the original Gerber-Chai result while exceeding the authors' automatically reproducible Gerber-Chai baseline, suggesting that broad event knowledge can substitute for some manually engineered resources.",
+   "evidence_type": "supported",
+   "section": "Evaluation on naturally occurring implicit arguments and Conclusion"
+  },
+  {
+   "finding": "Among the tested salience signals, mention-count information contributes most of the gain, while first-mention location and head-count features provide little or negative additional benefit in the reported ablation.",
+   "evidence_type": "supported",
+   "section": "Salience feature ablation / Table 4"
+  }
+ ],
+ "limitations": [
+  "The argument-cloze benchmark is synthetically constructed by deleting otherwise explicit event arguments, so it is only a proxy for naturally omitted arguments.",
+  "The natural implicit-argument evaluation is small and restricted to ten nominal predicates, limiting conclusions about broader predicate and discourse coverage.",
+  "The experiments concern Wikipedia and newswire-style text rather than authentic workplace email or enterprise chat.",
+  "The formulation predicts entity fillers for event roles; it does not annotate workplace-specific assignees, group assignees, decisions, deadlines, or action-to-deadline links.",
+  "Condition, negation, and modality scope are not represented as target structures.",
+  "Candidate fillers are entities/coreference chains rather than arbitrary exact evidence spans, so the task does not directly evaluate exact argument-span extraction.",
+  "The natural-task adaptation relies on mapping nominal predicates and semantic roles into the model's verbal/syntactic event representation.",
+  "The paper releases code but does not state that its generated cloze instances are distributed as a standalone benchmark dataset."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "event_knowledge_and_salience_improve_cloze": 0.99,
+  "short_ontonotes_result": 0.99,
+  "long_ontonotes_result": 0.99,
+  "natural_task_f1": 0.99,
+  "event_knowledge_competes_with_engineered_model": 0.94,
+  "mention_count_salience_is_most_useful": 0.96
+ },
+ "raw_claims": [
+  "Implicit arguments are arguments that are not syntactically attached to their predicates but may have fillers elsewhere in the surrounding discourse.",
+  "The proposed argument-cloze task removes one event argument and asks a model to recover its entity from the other entities in the document.",
+  "The training resources are automatically derived from a large English Wikipedia dump using dependency parsing and coreference information.",
+  "The EventComp architecture scores narrative coherence between the event with the missing role and events associated with candidate entities.",
+  "Entity salience is represented with features including mention frequency, first-mention location, and head-mention count.",
+  "The OntoNotes evaluation uses gold dependency and coreference information to construct controlled argument-cloze cases.",
+  "The longer-document test set is harder because each document contains substantially more candidate entities.",
+  "Adding salience improves both short- and long-document cloze performance for the EventComp models.",
+  "The model must be modified to handle whether an implicit role should be filled and to predict several roles for the Gerber-Chai task.",
+  "The best adapted model achieves 49.6 F1 on the Gerber-Chai evaluation.",
+  "The authors identify richer global narrative-coherence modeling as a direction for future work."
+ ],
+ "source_url": "https://aclanthology.org/N18-1076.pdf",
+ "access": "full_text"
+}

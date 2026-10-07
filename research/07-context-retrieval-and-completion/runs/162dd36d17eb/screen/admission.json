@@ -1,0 +1,227 @@
+{
+ "streams": [
+  {
+   "id": "TF1_structured_gap_sufficiency",
+   "description": "Structured evidence-gap representation and evidence sufficiency judging: represent missing evidence requirements, judge set-level sufficiency, and use unresolved gaps to drive further retrieval."
+  },
+  {
+   "id": "TF2_iterative_multihop_control",
+   "description": "Iterative multi-hop retrieval and retrieval-reasoning control in which evidence obtained at one step determines subsequent retrieval."
+  },
+  {
+   "id": "TF3_stopping_budget_utility",
+   "description": "Adaptive retrieval stopping, evidence coverage, expected utility, and explicit retrieval budgets."
+  },
+  {
+   "id": "TF4_selective_risk_calibration",
+   "description": "Selective prediction, abstention, calibration, and formal risk control, including robustness or recalibration under distribution shift."
+  },
+  {
+   "id": "TF5_temporal_ir",
+   "description": "Temporal information retrieval using temporal intent, timestamps, freshness, recency, and temporal relevance."
+  },
+  {
+   "id": "TF6_bitemporal_validity",
+   "description": "Valid-time and transaction-time semantics for distinguishing when information is true from when it is recorded or known."
+  },
+  {
+   "id": "TF7_versioned_document_retrieval",
+   "description": "Retrieval and question answering over evolving documents while retaining explicit version identity, sequence, and changes."
+  },
+  {
+   "id": "TF9_permission_constrained_retrieval",
+   "description": "Authorization-aware retrieval constrained by IAM, RBAC, ABAC, document entitlements, or equivalent access-control semantics."
+  },
+  {
+   "id": "TF10_failure_aware_answerability",
+   "description": "Answerability and unanswerability detection that distinguishes insufficient or unavailable evidence from supported answers."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2606.13814",
+   "decision": "ADMIT",
+   "reason": "TF3. The abstract describes an actual adaptive stopping rule for iterative retrieval, combining answer stability with an isotonically calibrated confidence signal and evaluating the same calibration across multiple models, retrievers, corpora, and retrieval extensions. This directly strengthens gap-3 on calibrated stopping reliability rather than merely improving retrieval ranking.",
+   "stream_id": "TF3_stopping_budget_utility",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2510.14337",
+   "decision": "ADMIT",
+   "reason": "TF3. Stop-RAG explicitly formulates repeated retrieval as a finite-horizon control problem and learns the continue-versus-stop decision from value, directly addressing whether an additional retrieval step is worth its cost. Its comparison against fixed-iteration and prompting-based stopping provides evidence specifically about adaptive stopping.",
+   "stream_id": "TF3_stopping_budget_utility",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2406.10490",
+   "decision": "ADMIT",
+   "reason": "TF4. The paper provides anytime-valid risk-control guarantees under sequential and adaptive data collection and considers a fixed resource budget. Although not a RAG paper, this is unusually close transfer evidence for a controller whose evidence-acquisition policy changes adaptively while risk guarantees must remain valid.",
+   "stream_id": "TF4_selective_risk_calibration",
+   "role": "TRANSFER",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2609.16301",
+   "decision": "ADMIT",
+   "reason": "TF2. CLEAR does more than aggregate sources: unresolved cross-source conflicts explicitly trigger targeted follow-up search followed by another adjudication round. That observation-dependent evidence-acquisition loop materially strengthens the iterative-control stream and is relevant to msgloom's requirement that conflicting evidence generate a new bounded evidence need instead of premature closure.",
+   "stream_id": "TF2_iterative_multihop_control",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-6a9dcf9d48",
+   "decision": "REJECT",
+   "reason": "Its secure-search and attribute-based document-fetching capabilities fit TF9, but for this reading round they are substantially redundant with the admitted VERIFIED paper 2508.01084, which also constrains retrieval to authorized entities and adds formal security arguments. The candidate is UNCHECKED and the abstract does not add the permission-aware replenishment loop required by gap-4.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2605.03534",
+   "decision": "ADMIT",
+   "reason": "TF1. SURE-RAG explicitly treats sufficiency as a property of the accumulated evidence set and combines coverage, relation strength, disagreement, conflict, and retrieval uncertainty to distinguish supported, refuted, and insufficient cases. It therefore strengthens the sufficiency-judging half of TF1 and supplies a concrete insufficient-evidence state that can feed subsequent retrieval, while also connecting that state to calibrated selective answering.",
+   "stream_id": "TF1_structured_gap_sufficiency",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1038-s41598-026-71936-x",
+   "decision": "ADMIT",
+   "reason": "TF9. The abstract describes enterprise RAG in which IAM semantics, role-resource-action-condition authorization, and trust are applied before similarity ranking, rather than treating security as a post-generation filter. That directly strengthens permission-constrained retrieval and is relevant to gap-4's requirement that unauthorized candidates be excluded through native authorization semantics. Identity is UNCHECKED, so canonical verification remains important during acquisition.",
+   "stream_id": "TF9_permission_constrained_retrieval",
+   "role": "DIRECT",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2401.15884",
+   "decision": "REJECT",
+   "reason": "Topic words match iterative retrieval, but the abstract describes a coarse retrieval-quality evaluator that selects corrective actions such as web search. It does not represent the exact missing evidence, preserve temporal/version or authorization constraints, or provide a bounded stopping criterion. The current corpus needs evidence-gap and stopping mechanisms beyond generic weak-retrieval correction.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "doi-10-1016-j-knosys-2025-114988",
+   "decision": "REJECT",
+   "reason": "The paper performs temporal knowledge-graph QA by retrieving semantically relevant temporal facts, but the abstract does not show temporal-intent ranking over changing document collections, version identity, freshness control, or iterative evidence-gap acquisition. Its temporal vocabulary therefore does not materially close TF5 or the version-aware gap-2.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2412.15540",
+   "decision": "ADMIT",
+   "reason": "TF5. MRAG explicitly separates semantic content from temporal constraints and combines semantic and temporal relevance during retrieval and ranking for time-sensitive questions. This directly strengthens the mechanism needed to prevent 'latest' from being conflated with 'temporally valid for the question.'",
+   "stream_id": "TF5_temporal_ir",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2010.11915",
+   "decision": "ADMIT",
+   "reason": "TF10. The paper explicitly separates failures of paragraph retrieval from failures of answerability prediction and analyzes questions whose evidence is distributed across multiple sources. That distinction is directly useful to msgloom's requirement that an empty or incomplete retrieval result not be interpreted as proof of a negative answer, and it partially informs gap-5's failure-state taxonomy.",
+   "stream_id": "TF10_failure_aware_answerability",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-emnlp-main-287",
+   "decision": "REJECT",
+   "reason": "The targeted temporal fact-extraction mechanism is relevant to missing knowledge, but the abstract primarily supplements an incomplete temporal knowledge base rather than controlling bounded document retrieval. It does not retain version lineage, authorization, explicit sufficiency decisions, or stopping state, and MRAG plus VersionRAG are materially closer to the open temporal/version retrieval gaps.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2510.08109",
+   "decision": "ADMIT",
+   "reason": "TF7. VersionRAG explicitly models document evolution through version sequences, boundaries, and changes, routes retrieval according to version intent, and evaluates QA over evolving document versions. This is direct evidence for gap-2's version-lineage component and is substantially closer to msgloom's attachment-history requirements than ordinary temporal retrieval.",
+   "stream_id": "TF7_versioned_document_retrieval",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2607.24010",
+   "decision": "ADMIT",
+   "reason": "TF3. This study directly evaluates active retrieval as utility estimation under explicit budgets and tests calibration transfer, retrieval harm, and cost across datasets and budgets. Its finding that thresholds and router rankings fail to transfer reliably is directly targeted at gap-3's calibration-drift and unsafe-stopping problem.",
+   "stream_id": "TF3_stopping_budget_utility",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1145-181550-181560",
+   "decision": "ADMIT",
+   "reason": "TF6. The paper establishes consensus definitions for valid time and transaction time, supplying the canonical semantic distinction needed to represent when a fact is effective separately from when a system recorded or learned it. That distinction is foundational to gap-2 and Topic 06's handed-off requirement not to conflate effective time with collection/version time. Identity is UNCHECKED, but its contribution is distinct from the retrieval papers.",
+   "stream_id": "TF6_bitemporal_validity",
+   "role": "TRANSFER",
+   "confidence": 0.89
+  },
+  {
+   "paper_id": "2208.02814",
+   "decision": "ADMIT",
+   "reason": "TF4. Conformal Risk Control supplies a formal mechanism for bounding expected monotone loss rather than relying on uncalibrated confidence thresholds. This materially strengthens the theoretical side of gap-3, where the admitted retrieval controllers need a principled bounded-risk reference rather than only empirical stopping accuracy.",
+   "stream_id": "TF4_selective_risk_calibration",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "1904.06019",
+   "decision": "ADMIT",
+   "reason": "TF4. This paper directly addresses calibration validity under covariate shift through importance-weighted conformal prediction. It materially strengthens the distribution-shift portion of gap-3, which cannot be answered by ordinary in-distribution calibration results alone.",
+   "stream_id": "TF4_selective_risk_calibration",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1145-3786625",
+   "decision": "ADMIT",
+   "reason": "TF9. HONEYBEE studies nearest-neighbor retrieval itself under role-based permission predicates and explicitly evaluates the memory and latency consequences of enforcing those constraints. That is directly relevant both to native permission-constrained candidate generation in gap-4 and to the permission-check and retrieval-cost accounting requested by gap-6. Identity is UNCHECKED, so acquisition should verify the canonical record.",
+   "stream_id": "TF9_permission_constrained_retrieval",
+   "role": "DIRECT",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-1145-318898-318921",
+   "decision": "REJECT",
+   "reason": "The temporal-database taxonomy is foundationally relevant, but its contribution for this round is substantially redundant with the admitted 1994 consensus glossary, which more directly standardizes valid-time and transaction-time terminology. Reading both is not justified by the current open gaps, especially because this record is also UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2604.08304",
+   "decision": "REJECT",
+   "reason": "The paper surveys RAG attack and defense categories and observes fragmented security defenses, but the abstract does not contribute an authorization-aware retrieval mechanism, evidence-replenishment controller, or permission-constrained stopping behavior. Security vocabulary alone is out of scope for the targeted controller questions.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2601.19827",
+   "decision": "ADMIT",
+   "reason": "TF2. The study evaluates iterative RAG specifically on scientific multi-hop QA and diagnoses retrieval coverage, query quality, compositional reasoning, control calibration, early stopping, and late-hop retrieval failures. This directly strengthens evidence about how multi-hop controllers fail and provides unusually relevant empirical support for gap-3's unsafe early-stop concern.",
+   "stream_id": "TF2_iterative_multihop_control",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-52710-cfs-976",
+   "decision": "REJECT",
+   "reason": "The architecture combines identity-aware filtering, ABAC, provenance, and refusal behavior, but the abstract does not show the bounded permission-aware replenishment loop required by gap-4 or the temporal/version/sufficiency integration required by gap-8. Its access-control evidence is also substantially overlapped by the admitted PPPARITL, HONEYBEE, and VERIFIED 2508.01084 candidates, while this identity is UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2310.11511",
+   "decision": "ADMIT",
+   "reason": "TF2. Self-RAG makes retrieval conditional rather than mandatory and repeatedly interleaves retrieval, generation, and reflection signals about relevance and factual support. The abstract therefore establishes a genuine observation-conditioned retrieval-control mechanism rather than a fixed retrieve-then-generate pipeline, providing an important direct baseline for iterative controllers.",
+   "stream_id": "TF2_iterative_multihop_control",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2508.01084",
+   "decision": "ADMIT",
+   "reason": "TF9. The paper limits retrieval to authorized entities while protecting both source contents and embeddings and supports the design with formal confidentiality and integrity arguments plus experiments. This materially strengthens the authorization-constrained retrieval stream and is the stronger VERIFIED secure-retrieval candidate where overlapping unchecked alternatives exist.",
+   "stream_id": "TF9_permission_constrained_retrieval",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2403.14403",
+   "decision": "REJECT",
+   "reason": "Adaptive-RAG dynamically routes questions among no retrieval, one retrieval, and iterative retrieval based on predicted question complexity, but the decision is made from the question before evidence acquisition. It therefore does not address the central open problem of reassessing structured evidence sufficiency after each retrieval step or making a calibrated evidence-driven stopping decision.",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "The admitted set materially strengthens component streams but still does not close the principal integration gaps. In particular, none of the abstracts establishes one loop that jointly preserves structured missing-evidence state, document-version lineage, effective-time or freshness constraints, permission-aware replenishment, explicit provenance, calibrated bounded-risk stopping, differentiated retrieval failure states, and total-cost budgeting. Gap-8 therefore remains open. Gap-4 also remains open because the permission papers enforce authorization but do not show the required retrieve-filter-reassess-requery replenishment loop. Gap-5 is only partially informed by the unanswerability paper; the full distinction among empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence is not demonstrated."
+}

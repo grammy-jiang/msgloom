@@ -1,0 +1,23 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/08-multimodal-content-understanding/runs/6efd3430f24f/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 1 overstates the method in 1704.08476 by saying spreadsheet versions can be recovered \"probabilistically\". The supplied analysis supports similarity-based clustering with measured precision, recall, and F-measure, but does not describe a probabilistic recovery model.",
+  "The actionable recommendation to preserve hidden-state metadata, named ranges, formatting cues, and related workbook features is reasonable as a target-system design recommendation, but several of those individual metadata types are not empirically shown by the supplied analyses to improve reasoning or provenance. They are better framed as requirements motivated by the identified gap rather than as evidence-backed design principles.",
+  "The first contradiction entry is principally a scope qualification rather than a clean cross-paper contradiction: 2503.23131 evaluates grounding instruction tuning with mixed model-specific effects, 2511.12003 evaluates joint reasoning/evidence-attribution training, and 2605.12882 reports oracle evidence-access analyses. The synthesis correctly warns against averaging these results, but the entry should be labeled as heterogeneous intervention effects rather than implying a controlled contradiction across the three papers."
+ ],
+ "unsupported_claims": [
+  "The phrase \"spreadsheet versions can be recovered probabilistically\" in Finding 1 is unsupported by the supplied analysis of 1704.08476; the evidence establishes similarity-based clustering, not probabilistic inference.",
+  "The recommendation to preserve hidden-state metadata, named ranges, formatting cues, and units as an empirically supported package goes beyond the supplied findings. Those attributes are identified as unclosed requirements in gap-3, but their individual downstream value is not directly demonstrated by the admitted analyses."
+ ],
+ "required_fixes": [],
+ "confidence": 0.96,
+ "scores": {
+  "faithfulness": 0.96,
+  "coherence": 0.98,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the 53 supplied analysis records representing 52 distinct studies, correctly accounting for manual-1048d6caf2 and doi-10-1109-tmm-2022-3219642 as duplicate records of the same Scene-Text Oriented Referring Expression Comprehension study. All cited paper_ids in findings, contradictions, and gap-status evidence are present in the allowed identifier set. The central conclusions are well supported: cross-version evidence exists only as fragmented components; spreadsheet provenance is primarily within-version; hierarchical page/region/cell evidence localization is empirically demonstrated in several benchmark domains; answer correctness and provenance correctness can diverge; and direct workplace-message grounding into versioned attachment pages, regions, rows, or cells remains unvalidated. The synthesis appropriately distinguishes adjacent-domain evidence from direct target-domain evidence and does not claim production workplace accuracy from GUI, dialogue, scene-text, scientific-PDF, XML, or benchmark-spreadsheet results. All eight gaps are defensibly kept open. The identified issues are localized wording and evidentiary-framing problems rather than defects requiring rejection."
+}

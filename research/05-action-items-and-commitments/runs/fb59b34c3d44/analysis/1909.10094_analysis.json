@@ -1,0 +1,83 @@
+{
+ "paper_id": "1909.10094",
+ "title": "Deep Structured Neural Network for Event Temporal Relation Extraction",
+ "research_question": "Can a jointly trained neural and structured-prediction model improve event-event temporal relation extraction by combining contextual representations with global consistency constraints?",
+ "methodology": "The model combines a neural pairwise scoring network with a structured SVM that performs joint prediction subject to temporal constraints. Token representations use pretrained BERT and POS embeddings followed by a bidirectional LSTM, while structured inference incorporates symmetry and transitivity and, for TCR, temporal-causal constraints through integer linear programming. Experiments are conducted on TB-Dense, MATRES, and TCR, with augmented reverse-order training pairs, multiple random seeds, micro-averaged and temporal-awareness metrics, ablations, and qualitative error analysis. This is not a workplace email/chat study; its relevance to the review topic is methodological, especially for temporal relation binding and treatment of negation.",
+ "key_findings": [
+  {
+   "finding": "The global structured model improved over its local neural counterpart across all three temporal-relation datasets, and the TCR improvement of more than 1.2 F1 points was reported as statistically significant.",
+   "evidence_type": "supported",
+   "section": "5 Results and Analysis"
+  },
+  {
+   "finding": "With BERT representations, reported global-model F1 values were 63.2 on TB-Dense, 81.7 on MATRES, and 80.9 on TCR, exceeding the cited previous state of the art.",
+   "evidence_type": "supported",
+   "section": "6.3 Effect of BERT Representations"
+  },
+  {
+   "finding": "Ablations show that transitivity constraints consistently improve results, while symmetry-related augmentation and constraints improve robustness when relation direction is reversed.",
+   "evidence_type": "supported",
+   "section": "6.1 Effect of the Structured Constraints"
+  },
+  {
+   "finding": "BERT representations account for a substantial part of the gain, although the structured architecture using GloVe remained competitive or superior to previous systems on several datasets.",
+   "evidence_type": "supported",
+   "section": "6.3 Effect of BERT Representations"
+  },
+  {
+   "finding": "Negation remained a significant failure mode: 20% of a manually analyzed sample of common errors was categorized as negation-related, and the authors explicitly identify better handling of negation and hypothetical language as future work.",
+   "evidence_type": "supported",
+   "section": "5.4 Error Analysis and 7 Conclusion"
+  },
+  {
+   "finding": "The annotated units are event pairs and their temporal relations, which provides relational supervision useful for temporal binding but does not directly identify workplace actions, owners, obligations, or deadline expressions.",
+   "evidence_type": "supported",
+   "section": "4 Experimental Setup"
+  },
+  {
+   "finding": "The experiments do not demonstrate deadline-to-action extraction in workplace communication or conditional/negated obligation extraction; applying this architecture to such relations would require a different annotation schema and domain evaluation.",
+   "evidence_type": "unsupported",
+   "section": "4 Experimental Setup and 5 Results and Analysis"
+  }
+ ],
+ "limitations": [
+  "The datasets are temporal-relation benchmarks rather than workplace email or chat corpora.",
+  "The task predicts relations between pre-identified events rather than jointly extracting actions, deadlines, owners, and obligation states.",
+  "The architecture considers event pairs within the same or neighboring sentences under the experimental setup.",
+  "Densely annotated temporal datasets are relatively small.",
+  "Error analysis shows unresolved dependence on broader world knowledge.",
+  "Negation and intention or hypothetical expressions remain prominent error sources.",
+  "Event-event temporal relations are not equivalent to explicit deadline-to-action binding.",
+  "The paper does not evaluate ownership, delegation, deontic polarity, or workplace evidence-span annotation."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_global_prediction_improves_results": 0.99,
+  "strong_benchmark_performance": 0.99,
+  "transitivity_and_symmetry_help": 0.98,
+  "bert_contributes_large_gain": 0.99,
+  "negation_is_failure_mode": 0.99,
+  "event_pair_supervision_not_action_schema": 0.99,
+  "workplace_deadline_binding_not_evaluated": 0.99
+ },
+ "raw_claims": [
+  "The model combines neural pairwise scoring with structured global inference.",
+  "BERT representations and a bidirectional LSTM provide contextual features for event pairs.",
+  "The structured layer imposes temporal consistency constraints.",
+  "Symmetry and transitivity are explicitly represented in structured inference.",
+  "Experiments use the TB-Dense, MATRES, and TCR temporal-relation datasets.",
+  "The global model improves over the local model across the three datasets.",
+  "Transitivity constraints consistently improve performance in the reported ablations.",
+  "BERT provides a large performance gain over GloVe representations.",
+  "Some errors require broader contextual or commonsense knowledge.",
+  "Negation can reverse or otherwise alter the inferred temporal relation.",
+  "Intention events are another identified source of temporal-relation errors.",
+  "The paper does not study email action ownership or deontic obligation extraction."
+ ],
+ "source_url": "https://arxiv.org/html/1909.10094",
+ "access": "full_text"
+}

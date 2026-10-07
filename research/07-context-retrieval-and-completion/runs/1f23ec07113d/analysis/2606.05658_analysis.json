@@ -1,0 +1,74 @@
+{
+ "paper_id": "2606.05658",
+ "title": "Agent-Orchestrated Adaptive RAG: A Comparative Study on Structured and Multi-Hop Retrieval",
+ "research_question": "How do adaptive query decomposition, reflection, and rule-based strategy orchestration affect retrieval quality, citation quality, and latency in structured versus open-domain multi-hop RAG?",
+ "methodology": "The paper implements an agent-orchestrated RAG stack whose central orchestrator chooses standard retrieval, complex retrieval, or explicit query decomposition and can invoke a bounded answer-evaluation and reflection loop. It uses Llama-3.1-8B-Instruct with 4-bit local inference, BGE-base-en-v1.5 embeddings, and FAISS retrieval. The system is evaluated on an 80-document, approximately 10,000-word synthetic-and-manually-validated DevOps knowledge base and on MuSiQue using retrieval, citation, coverage, aggregate-quality, and latency metrics.",
+ "key_findings": [
+  {
+   "finding": "On the structured DevOps corpus, decomposition raises overall score from 0.814 to 0.855, critical-source recall from 0.750 to 0.806, MRR from 0.556 to 0.722, Success@5 from 0.833 to 1.000, and citation accuracy from 0.750 to 0.917, while latency rises from 21.00 to 47.66 seconds.",
+   "evidence_type": "supported",
+   "section": "V-A Impact of Query Decomposition, Table III"
+  },
+  {
+   "finding": "On MuSiQue, decomposition improves overall score, citation accuracy, and topic coverage but sharply degrades retrieval ranking, with MRR falling from 0.469 to 0.102 and Success@5 from 1.000 to 0.063.",
+   "evidence_type": "supported",
+   "section": "V-A Impact of Query Decomposition, Table III"
+  },
+  {
+   "finding": "The implemented reflection mechanism does not yield reliable quality gains: overall score falls on both DevOps and MuSiQue while MuSiQue latency increases from 17.21 to 103.53 seconds.",
+   "evidence_type": "supported",
+   "section": "V-B Impact of Reflection, Table IV"
+  },
+  {
+   "finding": "Routing behavior is strongly domain-dependent, with 69.2% of DevOps queries handled by standard retrieval and only about 5% decomposed, compared with roughly 16% decomposition on MuSiQue.",
+   "evidence_type": "supported",
+   "section": "V-C Strategy Distribution"
+  },
+  {
+   "finding": "Even on MuSiQue, 49% of queries remain in the complex-RAG route rather than the decomposition route, which the authors interpret as evidence that the current decomposition trigger is conservative.",
+   "evidence_type": "supported",
+   "section": "V-C Strategy Distribution"
+  },
+  {
+   "finding": "The empirical comparison supports selective rather than universal use of expensive agentic components because their benefits depend on corpus structure and can carry substantial latency and ranking costs.",
+   "evidence_type": "supported",
+   "section": "V-D Tradeoff Analysis and V-E Summary of Findings"
+  }
+ ],
+ "limitations": [
+  "The DevOps knowledge base contains only 80 documents and approximately 10,000 words, and it was generated with LLM assistance before manual validation.",
+  "Evaluation query sets are small, so several metric differences have wide uncertainty and the study does not provide large-sample significance evidence for all comparisons.",
+  "Only one generator and one embedding model are evaluated.",
+  "Routing is controlled by static hand-written heuristics rather than a learned or calibrated policy.",
+  "Latency was measured with local quantized inference and should be interpreted comparatively rather than as portable absolute performance.",
+  "The controller has no statistical risk guarantee or calibrated stopping criterion.",
+  "Temporal validity, evidence versions, and version-aware provenance are not modeled.",
+  "The study does not evaluate controller robustness under distribution shift beyond comparing two distinct benchmark domains."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "devops_decomposition_gain": 0.99,
+  "musique_ranking_degradation": 0.99,
+  "reflection_cost_without_gain": 0.99,
+  "domain_dependent_routing": 0.98,
+  "heuristic_controller_limitation": 0.98
+ },
+ "raw_claims": [
+  "The orchestrator dynamically chooses among standard RAG, complex RAG, and decomposed RAG.",
+  "Reflection is implemented as a bounded post-hoc corrective mechanism rather than as a routing strategy.",
+  "The DevOps knowledge base contains 80 documents across six documentation types.",
+  "Decomposition improves most retrieval metrics on the structured DevOps corpus but more than doubles latency.",
+  "On MuSiQue, decomposition increases topic coverage while substantially damaging MRR and Success@5.",
+  "Reflection lowers the reported overall score on both evaluated datasets.",
+  "Reflection on MuSiQue increases average latency to more than 100 seconds in the reported environment.",
+  "Most DevOps queries are routed through standard retrieval.",
+  "The authors identify learned and cost-aware strategy selection as future replacements for the heuristic controller.",
+  "No formal uncertainty calibration or risk-controlled stopping mechanism is evaluated."
+ ],
+ "source_url": "https://arxiv.org/html/2606.05658",
+ "access": "full_text"
+}

@@ -1,0 +1,132 @@
+{
+  "schema_version": "2",
+  "review_state": "proposed_for_owner_review_not_accepted",
+  "data_origin": "entirely_synthetic",
+  "network_or_provider_access": false,
+  "thresholds": {
+    "state": "owner_decision_pending",
+    "production_values": null
+  },
+  "measurement_fields": {
+    "missed_important_work": "integer_or_null",
+    "wrong_grouping": "integer_or_null",
+    "lost_actions": "integer_or_null",
+    "lost_deadlines": "integer_or_null",
+    "report_topics_expected": "integer_or_null",
+    "report_topics_rendered": "integer_or_null",
+    "model_usage": "provider_usage_or_null",
+    "duration_seconds": "measured_duration_or_null"
+  },
+  "cases": [
+    {
+      "id": "same-subject-independent",
+      "input": "Two independent Outlook-like records share subject Weekly review.",
+      "expected": {
+        "cross_source_join": false,
+        "distinct_topics": true
+      }
+    },
+    {
+      "id": "native-group-multiple-topics",
+      "input": "One confirmed synthetic reply group contains two distinct work items.",
+      "expected": {
+        "group_status": "confirmed",
+        "minimum_topics": 2
+      }
+    },
+    {
+      "id": "ambiguous-deadline",
+      "input": "A synthetic deadline says by Friday with unresolved intended timezone.",
+      "expected": {
+        "preserve_original_deadline_text": true,
+        "ambiguity_visible": true
+      }
+    },
+    {
+      "id": "conflicting-required-priority",
+      "input": "Two matched deterministic rules require Critical and Low-value.",
+      "expected": {
+        "accepted_priority": false,
+        "review_required": true,
+        "low_value_fallback": false
+      }
+    },
+    {
+      "id": "missing-selected-evidence",
+      "input": "Selected attachment bytes and selected memory are unavailable.",
+      "expected": {
+        "limitation_visible": true,
+        "complete_understanding": false
+      }
+    },
+    {
+      "id": "malformed-ai-output",
+      "input": "A deterministic model double returns an undeclared output shape.",
+      "expected": {
+        "accepted_triage": false,
+        "trace_retained": true,
+        "low_value_fallback": false
+      }
+    },
+    {
+      "id": "many-important-topics",
+      "input": "Twelve important synthetic topics each have action, deadline and risk.",
+      "expected": {
+        "overview_includes_every_topic": true,
+        "essential_details_in_report": true,
+        "multipart_exercised": true
+      }
+    },
+    {
+      "id": "unknown-submission",
+      "input": "Reserved for the parallel synthetic delivery uncertainty fixture.",
+      "expected": {
+        "state": "pending_delivery_lane"
+      }
+    },
+    {
+      "id": "restart-collection",
+      "input": "Persisted synthetic collection and downstream results reopen after restart.",
+      "expected": {
+        "immutable_lineage": true,
+        "mutable_recollection_used": false
+      }
+    },
+    {
+      "id": "move-edit-repeated-page",
+      "input": "Synthetic historical edit, folder move and opaque next-page evidence.",
+      "expected": {
+        "history_preserved": true,
+        "repeated_page_not_reinterpreted": true
+      }
+    },
+    {
+      "id": "prompt-version-replay",
+      "input": "The same saved inputs are explicitly replayed with prompt v2.",
+      "expected": {
+        "new_result_identity": true,
+        "prior_result_preserved": true,
+        "mutable_context_recaptured": false
+      }
+    },
+    {
+      "id": "report-and-recipient",
+      "input": "Synthetic report build plus reserved owner-only recipient acceptance.",
+      "expected": {
+        "report_generation": "implemented",
+        "recipient_check": "pending_delivery_lane"
+      }
+    }
+  ],
+  "observations": {
+    "missed_important_work": null,
+    "wrong_grouping": null,
+    "lost_actions": null,
+    "lost_deadlines": null,
+    "report_topics_expected": null,
+    "report_topics_rendered": null,
+    "model_usage": null,
+    "duration_seconds": null,
+    "note": "Populate only during owner-reviewed semantic/model acceptance."
+  }
+}

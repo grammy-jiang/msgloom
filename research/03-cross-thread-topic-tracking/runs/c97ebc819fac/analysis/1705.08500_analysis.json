@@ -1,0 +1,73 @@
+{
+ "paper_id": "1705.08500",
+ "title": "Selective Classification for Deep Neural Networks",
+ "research_question": "How can a pre-trained deep neural classifier be augmented with a rejection mechanism that guarantees, with high probability, a user-specified selective risk while retaining as much prediction coverage as possible?",
+ "methodology": "The paper formulates selective classification in terms of risk and coverage and introduces the Selective Guaranteed Risk algorithm, which selects a confidence threshold using finite-sample probabilistic risk bounds. Two confidence-ranking mechanisms are evaluated: maximum softmax response and Monte Carlo dropout. Experiments use VGG models on CIFAR-10 and CIFAR-100 and VGG-16 and ResNet-50 on ImageNet, with held-out samples used to select thresholds and independently assess achieved risk and coverage.",
+ "key_findings": [
+  {
+   "finding": "The proposed procedure provides a high-probability selective-risk guarantee for a fixed classifier and confidence-ranking function, targeting Pr(R>r*) below the specified confidence parameter delta.",
+   "evidence_type": "supported",
+   "section": "3 Selection with Guaranteed Risk Control"
+  },
+  {
+   "finding": "Softmax response and Monte Carlo dropout produced similar risk-coverage profiles on CIFAR-10 and CIFAR-100, while softmax response was substantially better on ImageNet.",
+   "evidence_type": "supported",
+   "section": "5 Empirical Results"
+  },
+  {
+   "finding": "On CIFAR-10, a target risk of 1% produced test risk 0.92% with test coverage 78.56% at delta=0.001.",
+   "evidence_type": "supported",
+   "section": "5.1 Selective Guaranteed Risk for CIFAR-10"
+  },
+  {
+   "finding": "For ImageNet top-5 classification with ResNet-50, a target risk of 2% produced test risk 1.89% while retaining 59.35% coverage.",
+   "evidence_type": "supported",
+   "section": "5.3 Selective Guaranteed Risk for ImageNet"
+  },
+  {
+   "finding": "Across the reported risk-control experiments, the observed test risks remained below the corresponding computed bounds.",
+   "evidence_type": "supported",
+   "section": "5 Empirical Results"
+  },
+  {
+   "finding": "The experiments demonstrate the central selective-classification trade-off: large reductions in classification error can be obtained by abstaining on lower-confidence examples, at the cost of reduced coverage.",
+   "evidence_type": "supported",
+   "section": "5 Empirical Results"
+  }
+ ],
+ "limitations": [
+  "The method starts from a separately trained, fixed classifier rather than jointly optimizing the predictor and rejection function.",
+  "The theoretical guarantee assumes the calibration examples are sampled i.i.d. from the same underlying distribution relevant to deployment.",
+  "Achievable coverage depends on how well the selected confidence score ranks correct versus incorrect predictions.",
+  "Only standard 0/1 classification loss is studied.",
+  "The empirical study is limited to image classification on CIFAR and ImageNet and does not test distribution shift or non-image domains.",
+  "The paper identifies joint training of the classifier and selection mechanism as an important unresolved problem."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "risk_guarantee": 0.99,
+  "softmax_vs_dropout": 0.99,
+  "cifar10_low_risk_coverage": 0.99,
+  "imagenet_low_risk_coverage": 0.99,
+  "risk_coverage_tradeoff": 0.99
+ },
+ "raw_claims": [
+  "Selective classification allows a model to abstain rather than predict every example.",
+  "The paper represents selective performance through the relationship between risk and coverage.",
+  "The proposed algorithm chooses a confidence threshold intended to satisfy a requested risk bound with high probability.",
+  "Maximum softmax response serves as a simple confidence-ranking function.",
+  "Monte Carlo dropout is evaluated as an alternative uncertainty-based ranking mechanism.",
+  "Softmax response and Monte Carlo dropout behave similarly on the two CIFAR datasets.",
+  "Softmax response is clearly stronger than Monte Carlo dropout on the reported ImageNet experiments.",
+  "On CIFAR-10, very low selective error is attainable while retaining a substantial fraction of examples.",
+  "ImageNet experiments show that the same approach works with both VGG-16 and ResNet-50.",
+  "The paper leaves simultaneous optimization of prediction accuracy and selective coverage for future work."
+ ],
+ "source_url": "https://arxiv.org/html/1705.08500",
+ "access": "full_text",
+ "source_citation": "citeturn399201view0turn915401view5turn614845view9"
+}

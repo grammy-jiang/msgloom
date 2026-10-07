@@ -1,0 +1,177 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2110.08222",
+   "title": "DialFact: A Benchmark for Fact-Checking in Dialogue",
+   "research_question": "Can dialogue fact-checking be benchmarked as a pipeline of verifiable-claim detection, evidence retrieval, and evidence-grounded claim verification, and can dialogue-adapted training improve over models developed for non-dialogue fact-checking?",
+   "methodology": "The authors construct DialFact from Wizard of Wikipedia dialogues, producing 22,245 annotated claims through both automatic transformations and human writing. Synthetic claims are created with negation, entity or adjective substitution, mask-and-fill, and knowledge-conditioned generation, while crowd workers annotate verifiability, Supported/Refuted/NotEnoughInformation labels, and Wikipedia evidence under quality-control procedures. They evaluate baselines for verifiable-claim detection, document retrieval, evidence-sentence selection, and claim verification, including an Aug-WoW model trained with weakly supervised synthetic data. Performance is reported using accuracy, F1, retrieval recall, and annotation-agreement statistics.",
+   "key_findings": [
+    {
+     "finding": "Dialogue context materially improves evidence-document retrieval: test-set recall rises from 60.8 to 75.0 for the WikiAPI method and from 44.7 to 58.8 for the WoW-fine-tuned DPR method when context is added to the claim.",
+     "evidence_type": "supported",
+     "section": "5.2.1 Document Retrieval"
+    },
+    {
+     "finding": "The Aug-WoW verification model outperforms the evaluated baselines across oracle, Wiki-retrieved, and DPR-retrieved evidence settings; on the test set it reaches 69.2% accuracy and 69.0 macro F1 with oracle evidence.",
+     "evidence_type": "supported",
+     "section": "5.3.2 Results"
+    },
+    {
+     "finding": "Evidence retrieval is a major bottleneck: Aug-WoW falls from 69.2% accuracy with oracle evidence to 51.6% with Wiki evidence and 51.5% with DPR evidence, with analogous degradation for other models.",
+     "evidence_type": "supported",
+     "section": "5.3.2 Results"
+    },
+    {
+     "finding": "Verifiable-claim detection remains especially difficult for non-verifiable conversational content: the best reported Lexical+DNLI baseline has 82.8% overall accuracy but only 39.1 F1 for the Non-Verifiable class.",
+     "evidence_type": "supported",
+     "section": "5.1 Verifiable Claim Detection"
+    },
+    {
+     "finding": "Models frequently confuse Refuted and NEI claims and can be misled by lexical overlap instead of correctly reasoning over the semantics of claims and evidence.",
+     "evidence_type": "supported",
+     "section": "5.3.3 Discussion and Appendix A"
+    },
+    {
+     "finding": "DialFact provides an explicit separation between what a dialogue response claims and independent textual evidence used to classify that claim as Supported, Refuted, or lacking sufficient evidence, which is an empirical analogue of separating assertions from corroboration.",
+     "evidence_type": "supported",
+     "section": "3 Task Background"
+    },
+    {
+     "finding": "The benchmark does not define longitudinal work-item relation labels such as supersession, correction, supplementation, reopening, or conflict, nor does it specifically model claimed task completion versus independently corroborated task completion.",
+     "evidence_type": "unsupported",
+     "section": "3 Task Background"
+    }
+   ],
+   "limitations": [
+    "The underlying conversations come from Wizard of Wikipedia rather than workplace or operational communication, so applicability to longitudinal work-item management is not empirically established.",
+    "The external evidence source is Wikipedia, rather than operational artifacts such as subsequent messages, tickets, logs, approvals, documents, or system events.",
+    "The task evaluates the final conversational utterance as a claim and does not model lineage or revision relations among successive versions of a work item.",
+    "The label set concerns factual support, refutation, insufficient information, and non-verifiability rather than supersession, correction, supplementation, reopening, or other revision-specific relations.",
+    "Inter-annotator agreement is only moderate for claim-category labels and lower for Verifiable versus Non-Verifiable decisions; reported Krippendorff's alpha for the latter is 0.49.",
+    "Annotators can fail to locate refuting Wikipedia evidence and consequently assign NEI, creating potential evidence-coverage label noise.",
+    "Automatically generated claims were deliberately selected partly according to how difficult existing models found them, so that subset is not a natural sample of conversational factual errors.",
+    "The work does not operationalize completion status or distinguish a participant's assertion that work is complete from corroborating evidence of completion."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "context_improves_retrieval": 0.99,
+    "aug_wow_best_verification_baseline": 0.99,
+    "retrieval_is_major_bottleneck": 0.99,
+    "nonverifiable_detection_is_difficult": 0.98,
+    "refuted_nei_and_semantic_reasoning_errors": 0.97,
+    "claim_evidence_separation": 0.99,
+    "no_longitudinal_revision_labels": 0.99
+   },
+   "raw_claims": [
+    "DialFact contains 22,245 annotated conversational claims paired with Wikipedia evidence.",
+    "The benchmark decomposes dialogue fact-checking into verifiable-claim detection, evidence retrieval, and claim verification.",
+    "Verification labels distinguish Supported, Refuted, and NotEnoughInformation claims, while non-verifiable responses contain no factual information suitable for verification.",
+    "Both automatically generated and human-written claims are included in the benchmark.",
+    "Adding recent dialogue context improves both WikiAPI and DPR document retrieval.",
+    "The Aug-WoW model performs better than the evaluated verification baselines across the reported evidence settings.",
+    "Verification performance drops substantially when automatically retrieved evidence replaces oracle evidence.",
+    "Generated claims are harder for the evaluated verification models than human-written claims.",
+    "Models often rely too heavily on lexical overlap and fail on reasoning needed to distinguish support, refutation, and insufficient evidence.",
+    "The paper's evidence architecture verifies conversational factual claims but does not represent typed longitudinal revisions of work items."
+   ],
+   "source_url": "https://arxiv.org/html/2110.08222",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-d574dff39d",
+   "title": "Email Task Management: An Iterative Relational Learning Approach",
+   "research_question": "Can email task management be improved by jointly and iteratively learning semantic parent-child relations between messages and message-level speech acts so that each prediction supplies relational evidence for the other?",
+   "methodology": "The study uses two manually annotated email collections: an e-commerce corpus of 111 messages from 39 transactions and subsets of the PWCALO work-email corpus containing 160 messages for User 1 and 33 independent messages for User 2. Task grouping is performed with hierarchical agglomerative clustering using textual similarity augmented with subject, time, sub-clustering, and term-reweighting features; semantic message links are modeled as binary parent-child cause-response relations. Speech acts are classified with SMO support-vector machines using bag-of-words intrinsic features plus extrinsic features derived from speech acts of related ancestor and descendant messages. The final algorithm initializes relations and speech acts automatically and then iteratively re-estimates speech acts from relational context and message links from speech-act information, with precision, recall, F1, Kappa, cross-validation, and significance tests used for evaluation.",
+   "key_findings": [
+    {
+     "finding": "Structured email information and clustering refinements substantially improve task identification in the e-commerce corpus, where reported F1 rises from 0.15 for plain cosine clustering to 0.82 for the strongest reported configuration.",
+     "evidence_type": "supported",
+     "section": "4 Finding Related Messages"
+    },
+    {
+     "finding": "Free-text work email is harder and less cleanly partitioned into tasks than transaction email; the authors note that task boundaries in free text are fuzzy and may be disputed even by human annotators.",
+     "evidence_type": "supported",
+     "section": "4 Finding Related Messages"
+    },
+    {
+     "finding": "Adding neighboring-message speech acts as relational features yields statistically significant Kappa improvements for the Request and Commit speech acts and overall improvements for several speech-act classifiers.",
+     "evidence_type": "supported",
+     "section": "5 Classifying Speech Acts"
+    },
+    {
+     "finding": "Using speech-act information to identify message links achieves precision 0.91, recall 0.80, and F1 0.85 in the authors' potential-improvement experiment, improving precision relative to similarity-only relation identification.",
+     "evidence_type": "supported",
+     "section": "4 Finding Related Messages"
+    },
+    {
+     "finding": "In the final cross-user iterative experiment, relation identification starts at precision, recall, and F1 of 0.95 and after the first iteration reaches precision 1.0, recall 0.95, and F1 0.98; speech-act performance also improves for most acts except Amend.",
+     "evidence_type": "supported",
+     "section": "6 Iterative Algorithm for Task Management"
+    },
+    {
+     "finding": "The iterative procedure converges rapidly in the reported experiment, with link and speech-act performance remaining unchanged after the first main iteration.",
+     "evidence_type": "supported",
+     "section": "6 Iterative Algorithm for Task Management"
+    },
+    {
+     "finding": "Although Amend is one of the five message-level speech-act verbs, the paper's relation model itself is only a linked-versus-unlinked semantic parent-child relation and does not classify edges as supersession, correction, supplementation, reopening, conflict, or other revision relations.",
+     "evidence_type": "unsupported",
+     "section": "2 Email Corpora and 4 Finding Related Messages"
+    },
+    {
+     "finding": "The study contains no independent corroboration layer for task completion: Commit is modeled as a sender-intent speech act, not as a distinction between a claimed completion and independently observed evidence that the work was actually completed.",
+     "evidence_type": "unsupported",
+     "section": "2 Email Corpora and 5 Classifying Speech Acts"
+    }
+   ],
+   "limitations": [
+    "The authors explicitly characterize the experiments as limited and small-scale and call for evaluation on larger and different email corpora.",
+    "The e-commerce corpus contains only 111 messages from 39 transactions, while the PWCALO cross-user experiment uses 160 User 1 messages for training and only 33 User 2 messages for testing.",
+    "PWCALO was produced during a four-day staged exercise with six participants in assigned work roles, limiting evidence about long-term naturally occurring workplace communication.",
+    "The PWCALO relation structure assumes that each message responds to at most one parent, yielding trees rather than more general multi-parent or DAG revision structures.",
+    "Only the five most frequent speech-act verbs—Propose, Request, Deliver, Commit, and Amend—are used in these experiments despite the richer original verb-noun ontology.",
+    "The experiment assessing the potential benefit of speech acts for link prediction trains and tests on the same User 1 subset, so its reported link result is not an out-of-sample generalization result.",
+    "The final iterative evaluation relies on a single small User 1 to User 2 split, leaving corpus- and person-transferability unresolved.",
+    "The relation labels are binary semantic cause-response links rather than typed revision relations such as supersession, correction, supplementation, reopening, or conflict.",
+    "The model has no evidence representation for separating a participant's assertion that a work item is complete from independently corroborating events or artifacts.",
+    "The authors state that privacy concerns and manual annotation restrict access to large realistic email corpora and limit the scale of empirical evaluation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "structured_features_help_task_grouping": 0.98,
+    "relational_features_help_some_speech_acts": 0.98,
+    "speech_acts_help_link_identification": 0.96,
+    "iterative_algorithm_improves_links": 0.99,
+    "rapid_convergence": 0.99,
+    "relations_are_binary_not_revision_typed": 0.99,
+    "no_completion_corroboration_model": 0.98
+   },
+   "raw_claims": [
+    "The study treats email activities as multi-message tasks rather than independent messages.",
+    "The e-commerce corpus contains 111 messages grouped into 39 business transactions.",
+    "The PWCALO data used for relational learning is split into a 160-message User 1 set and an independent 33-message User 2 set.",
+    "PWCALO messages have manually annotated semantic cause-response links as well as email speech acts.",
+    "The experiments use five speech-act verbs: Propose, Request, Deliver, Commit, and Amend.",
+    "Task clustering combines textual similarity with structured information such as subject lines and message timing.",
+    "The relational speech-act classifier uses properties of linked ancestor and descendant messages as extrinsic features.",
+    "Speech-act predictions can in turn be used as features for deciding whether two messages are semantically linked.",
+    "The final iterative algorithm alternates speech-act reclassification with message-link re-estimation.",
+    "The final cross-user experiment improves link F1 from 0.95 to 0.98 after the first iteration.",
+    "Amend does not show the same improvement as most other speech acts in the final iterative experiment.",
+    "The paper models whether messages are related but not what kind of longitudinal revision relation holds between them.",
+    "No external evidence source is used to distinguish claimed completion from independently verified completion."
+   ],
+   "source_url": "https://studylib.net/doc/8259168/email-task-management--an-iterative-relational-learning-a...",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,82 @@
+{
+ "paper_id": "2605.05245",
+ "title": "AdaGATE: Adaptive Gap-Aware Token-Efficient Evidence Assembly for Multi-Hop Retrieval-Augmented Generation",
+ "research_question": "Can a training-free multi-hop RAG controller use explicit evidence gaps and utility-based replacement to assemble sufficient complementary evidence under a global token constraint while remaining robust to redundant and noisy retrieval?",
+ "methodology": "AdaGATE formulates retrieval as iterative token-constrained evidence repair and maintains an evidence set, an entity-centric ledger, and explicit unresolved information gaps. Each iteration generates gap-targeted microqueries plus question-anchored fallback queries, scores candidates using gap coverage, corroboration, novelty, redundancy, and direct question relevance, and replaces lower-utility evidence while enforcing a global token budget. The process stops when no useful repair remains, no meaningful gaps remain, or the maximum repair count is reached. The authors evaluate AdaGATE on HotpotQA under clean, redundancy-injected, and noise-injected settings against Basic RAG, Self-RAG, Adaptive-k, and SEAL-RAG using shared retrieval and generation components.",
+ "key_findings": [
+  {
+   "finding": "AdaGATE obtains the highest evidence F1 among the compared controllers in all three reported conditions: 62.3% on clean data, 71.2% with redundancy injection, and 62.7% with noise injection.",
+   "evidence_type": "supported",
+   "section": "6 Discussion"
+  },
+  {
+   "finding": "AdaGATE uses 2.6 times fewer input tokens than Adaptive-k while obtaining higher evidence F1, demonstrating a favorable evidence-completeness versus context-cost tradeoff in the reported setup.",
+   "evidence_type": "supported",
+   "section": "5.2 Token Efficiency"
+  },
+  {
+   "finding": "The redundancy-aware utility mechanism improves rather than degrades evidence F1 under the redundancy stress test, while the controller also reduces the amount of selected context.",
+   "evidence_type": "supported",
+   "section": "5.4 Robustness Under Stress-Test Conditions"
+  },
+  {
+   "finding": "Under noise injection, evidence F1 remains close to the clean result even though answer accuracy declines, indicating that evidence-set completeness can remain comparatively stable while passage quality or downstream reasoning deteriorates.",
+   "evidence_type": "supported",
+   "section": "5.4 Robustness Under Stress-Test Conditions"
+  },
+  {
+   "finding": "The controller explicitly bounds final evidence length and can terminate on resolved gaps, lack of useful repair, or a repair-iteration ceiling, thereby combining structured sufficiency reasoning with bounded evidence assembly.",
+   "evidence_type": "supported",
+   "section": "3.3 Token-Constrained Selection with Adaptive Capacity"
+  },
+  {
+   "finding": "The nominal token budget did not actually become binding in the reported evaluation because retrieval used k=3, leaving the strength of budget control under larger candidate pools untested.",
+   "evidence_type": "supported",
+   "section": "6 Limitations and future work"
+  },
+  {
+   "finding": "Conservative gap detection can cause unnecessary abstention when indirect evidence would have been sufficient to answer correctly.",
+   "evidence_type": "supported",
+   "section": "5.5 Pipeline-Level Analysis"
+  }
+ ],
+ "limitations": [
+  "The evaluation is restricted to the HotpotQA distractor setting, so web-scale and cross-domain behavior is unknown.",
+  "The retriever uses k=3, which prevents the global token budget from binding in the reported experiments and therefore weakens empirical validation of budget-constrained operation.",
+  "The five utility weights are set heuristically rather than learned or statistically calibrated.",
+  "The sufficiency and stopping decisions are heuristic and can over-abstain when indirect evidence is enough.",
+  "There is no conformal or calibrated guarantee on answer error, evidence completeness, or stopping risk under distribution shift.",
+  "The stress tests inject redundancy and noise but do not evaluate temporal distribution shift or document-version changes.",
+  "The entity-centric ledger does not represent temporal validity intervals, source versions, or amendment/supersession relationships.",
+  "There is no runtime permission-aware or user-specific access-control mechanism."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "highest_evidence_f1_across_conditions": 0.99,
+  "token_efficiency_over_adaptive_k": 0.99,
+  "structured_gap_aware_stopping": 0.99,
+  "robustness_to_redundancy": 0.98,
+  "budget_not_binding_in_evaluation": 0.99,
+  "conservative_sufficiency_can_overabstain": 0.99,
+  "no_formal_risk_calibration": 0.97
+ },
+ "raw_claims": [
+  "AdaGATE treats multi-hop RAG as a token-constrained evidence-repair problem.",
+  "The controller maintains an entity-centric ledger and explicit unresolved information gaps.",
+  "Unresolved gaps generate targeted microqueries, while question-based fallback queries protect against defective gap extraction.",
+  "Candidate passages are scored for gap coverage, corroboration, novelty, redundancy, and question relevance.",
+  "Evidence updates replace low-utility passages instead of only expanding the context.",
+  "The loop terminates when gaps disappear, no useful repair remains, or the repair-iteration limit is reached.",
+  "AdaGATE achieves the best evidence F1 among the reported controllers in clean, redundant, and noisy test conditions.",
+  "The method uses substantially fewer input tokens than Adaptive-k in the reported experiments.",
+  "The stated 3000-token global budget does not bind under the evaluation's k=3 retrieval setup.",
+  "The paper identifies over-conservative gap detection as a cause of avoidable abstention.",
+  "The controller has no conformal risk-control mechanism or temporal-version provenance layer."
+ ],
+ "source_url": "https://arxiv.org/html/2605.05245",
+ "access": "full_text"
+}

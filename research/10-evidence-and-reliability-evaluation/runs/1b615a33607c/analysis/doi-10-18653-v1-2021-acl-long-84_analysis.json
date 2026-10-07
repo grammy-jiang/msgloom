@@ -1,0 +1,67 @@
+{
+ "paper_id": "doi-10-18653-v1-2021-acl-long-84",
+ "title": "The Art of Abstention: Selective Prediction and Error Regularization for Natural Language Processing",
+ "research_question": "How well do common confidence estimators support abstention in NLP classification, and can training-time error regularization improve the ordering of examples by confidence without materially reducing task accuracy?",
+ "methodology": "The paper evaluates selective classification with LSTM, BERT-base, BERT-large, and ALBERT-base models on MRPC, QNLI, MNLI, and additional abstention experiments involving SST-5. It compares softmax response and Monte Carlo dropout as confidence estimators using risk-coverage AUC and reversed pair proportion in addition to conventional task metrics. The authors introduce pairwise error regularization that penalizes confidence orderings inconsistent with either current prediction error or a historical estimate of example difficulty, and they also test selective confidence in a two-model classifier cascade.",
+ "key_findings": [
+  {
+   "finding": "More capable Transformer classifiers generally achieved both better task accuracy and better selective-prediction quality than the LSTM baseline.",
+   "evidence_type": "supported",
+   "section": "Model and confidence-estimator comparison"
+  },
+  {
+   "finding": "Softmax response was a strong confidence baseline and generally compared favorably with Monte Carlo dropout; the latter required roughly 20 stochastic repetitions before becoming competitive in the reported setting.",
+   "evidence_type": "supported",
+   "section": "Confidence estimation"
+  },
+  {
+   "finding": "Pairwise error regularization improved confidence ranking while leaving task accuracy largely unchanged, with the best configurations reducing risk-coverage AUC by roughly 10% on average relative to unregularized training.",
+   "evidence_type": "supported",
+   "section": "Effect of Error Regularization"
+  },
+  {
+   "finding": "Neither current-error regularization nor history-based regularization consistently dominated the other across tasks and models.",
+   "evidence_type": "supported",
+   "section": "Effect of Error Regularization"
+  },
+  {
+   "finding": "In classifier cascades, confidence produced by an error-regularized first-stage model enabled a better accuracy-computation tradeoff than random routing and improved over the corresponding unregularized confidence strategy.",
+   "evidence_type": "supported",
+   "section": "Classifier cascading"
+  }
+ ],
+ "limitations": [
+  "The empirical study focuses predominantly on classification benchmarks rather than generative question answering or multi-source generation.",
+  "GLUE development sets are used for evaluation because public test labels are unavailable, limiting strict separation between model development and final evaluation.",
+  "Monte Carlo dropout has significant inference cost because it requires many stochastic forward passes.",
+  "The pairwise regularizer is approximated with mini-batch pairs, and the history-based variant requires additional per-example state tracking during training.",
+  "The experiments do not identify a consistently superior definition of training error for regularization.",
+  "The method offers no finite-sample risk guarantee and no mechanism for continuous recalibration under domain or temporal drift.",
+  "The paper does not address evidence completeness, partially supported compound claims, or longitudinal new, resolved, and superseded work-item states."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "transformer_selective_advantage": 0.98,
+  "softmax_vs_mc_dropout": 0.97,
+  "error_regularization_gain": 0.98,
+  "no_regularizer_variant_dominates": 0.95,
+  "cascade_tradeoff": 0.96
+ },
+ "raw_claims": [
+  "Selective prediction combines an ordinary classifier with a confidence score used to decide whether to abstain.",
+  "The paper evaluates LSTM and several Transformer models on standard NLP classification datasets.",
+  "Risk-coverage AUC and reversed pair proportion are used to measure selective behavior.",
+  "The proposed regularizer penalizes pairs whose confidence ordering conflicts with their relative prediction errors.",
+  "One regularizer uses current errors while another uses historical errors accumulated during training.",
+  "Error regularization usually improves selective metrics without materially changing classification accuracy.",
+  "Monte Carlo dropout requires repeated stochastic inference and is computationally more expensive than a single softmax-response evaluation.",
+  "The classifier-cascade experiment routes low-confidence examples from a cheaper model to a stronger model.",
+  "The authors provide public source code for the experiments."
+ ],
+ "source_url": "https://aclanthology.org/2021.acl-long.84.pdf",
+ "access": "full_text"
+}

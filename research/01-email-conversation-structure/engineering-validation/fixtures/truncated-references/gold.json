@@ -1,0 +1,129 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "truncated-references",
+  "description": "A truncated References chain must not replace explicit In-Reply-To direct-parent evidence.",
+  "family": "truncated_references",
+  "messages": [
+    {
+      "message_id": "tr-root",
+      "expected_text": "Root statement.",
+      "arrival_rank": 1,
+      "internet_message_id": "<tr-root@synthetic.invalid>",
+      "subject": "References",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "tr-mid",
+      "expected_text": "> Root statement.\n\nMiddle reply.",
+      "arrival_rank": 2,
+      "internet_message_id": "<tr-mid@synthetic.invalid>",
+      "subject": "Re: References",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "tr-reply",
+      "expected_text": "> Middle reply.\n\nFinal reply.",
+      "arrival_rank": 3,
+      "internet_message_id": "<tr-reply@synthetic.invalid>",
+      "subject": "Re: References",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "tr-mid",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "tr-root"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    },
+    {
+      "message_id": "tr-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "tr-mid"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    },
+    {
+      "message_id": "tr-reply",
+      "relation_type": "ancestry",
+      "target_ids": [
+        "tr-root"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": "Ancestry is distinct from direct parent."
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "tr-q1",
+      "message_id": "tr-mid",
+      "occurrence_span": {
+        "start": 0,
+        "end": 17
+      },
+      "source_candidates": [
+        {
+          "message_id": "tr-root",
+          "span": {
+            "start": 0,
+            "end": 15
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    },
+    {
+      "occurrence_id": "tr-q2",
+      "message_id": "tr-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 15
+      },
+      "source_candidates": [
+        {
+          "message_id": "tr-mid",
+          "span": {
+            "start": 19,
+            "end": 32
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "tr-root",
+      "tr-mid",
+      "tr-reply"
+    ],
+    [
+      "tr-reply",
+      "tr-root",
+      "tr-mid"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3",
+    "references"
+  ]
+}

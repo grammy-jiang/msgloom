@@ -1,0 +1,842 @@
+{
+  "paper_id": "B01",
+  "study_id": "B01",
+  "title": "SWING: Balancing Coverage and Faithfulness for Dialogue Summarization",
+  "evidence_role": "TRANSFER_EVAL",
+  "target_stream": "R2-B / G3-A",
+  "task_boundary": "Dialogue-summary coverage and missing-information evaluation versus faithfulness. This is transfer evidence for R2-B, not evidence for Topic segmentation, work-matter assignment, discontinuous Topic spans, or simultaneous Topic labels.",
+  "summary": "SWING trains a BART-LARGE dialogue summarizer with NLI-derived sentence alignment, an uncovered-content loss, and a contrastive loss. Experiments on SAMSum and DialogSum support improved reference-summary coverage relative to the tested baselines. Human evaluation separates reference-based recall, reference-based precision, and dialogue-grounded faithfulness. The most useful transfer is this separation of evaluation targets and the distinction between missing details and missing sentences. The paper does not establish exhaustive source-content coverage or reliable preservation of business conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers.",
+  "research_question": "Can sentence-level NLI guidance improve coverage of reference summaries while preserving dialogue-summary faithfulness, and which automatic metrics agree with human judgments of these separate dimensions?",
+  "methodology": "{\"alignment\": \"The method checks one-to-many and many-to-one mappings through consecutive sentence groups before checking one-to-one mappings. Equivalence involves entailment in both directions, including a reverse check against concatenated sentences for group mappings.\", \"backbone\": \"BART-LARGE.\", \"evaluation\": \"Automatic summary metrics, pairwise human evaluation on 100 test dialogues per dataset, qualitative missing-information comparisons on 100 SAMSum dialogues, ablations, and an augmentation comparison.\", \"implementation_caveat\": \"Some equations and algorithm notation are damaged or inconsistent in the embedded conversion. The prose supports the high-level method, but not an exact reconstruction of every mathematical expression.\", \"inference\": \"The NLI component is used during training. Appendix F states that inference uses the backbone model without the NLI component.\", \"losses\": \"The final objective combines ordinary maximum likelihood, maximum likelihood on MixAndMatch summaries, and a sentence-level contrastive objective. MixAndMatch combines uncovered reference sentences with matched generated sentences.\", \"settings\": {\"contrastive_loss_weight\": 1.0, \"entailment_threshold\": 0.5, \"learning_rate\": \"3e-5\", \"maximum_input_sequence_length\": 1024, \"uncovered_loss_weight\": 1.0, \"weight_decay\": \"1e-3\"}, \"task\": \"English abstractive dialogue summarization.\", \"training_signal\": \"A RoBERTa-LARGE model trained on MNLI predicts entailment between reference-summary sentences and generated-summary sentences. An induced bipartite graph identifies uncovered reference sentences and generated sentences matched to reference content.\"}",
+  "dataset_and_gold": {
+    "datasets": [
+      {
+        "name": "SAMSum",
+        "language": "English",
+        "domain": "Online chitchat dialogues",
+        "dialogue_count": 16369,
+        "gold_unit": "Reference summary associated with a dialogue",
+        "length_statistics": "Section 3.1 reports about 94 tokens per dialogue. Appendix A reports 124.1 dialogue words and 23.4 summary words using the NLTK tokenizer. These figures are not reconciled."
+      },
+      {
+        "name": "DialogSum",
+        "language": "English",
+        "domain": "Spoken dialogues in real-life scenarios",
+        "dialogue_count": 13460,
+        "gold_unit": "Reference summary associated with a dialogue",
+        "length_statistics": "Section 3.1 reports about 131 tokens per dialogue. Appendix A reports 187.5 dialogue words and 31.0 summary words using the NLTK tokenizer. These figures are not reconciled."
+      }
+    ],
+    "units": "Dialogue inputs and free-text reference summaries. The method segments summaries into sentences for training alignment.",
+    "labels": "The reported task uses summary text as supervision. NLI-derived covered/uncovered and matched/unmatched statuses are model-generated training signals, not reported human gold alignment labels.",
+    "actually_annotated_for_evaluation": "Humans compare two system summaries using win/tie/loss judgments for reference coverage, reference precision, and dialogue faithfulness. The paper also reports manual analyses of missing details, missing sentences, and remaining error categories.",
+    "human_evaluation_population": "100 test dialogues from each dataset; CLIFF, CONFIT, and SWING outputs. Appendix B reports eight qualified annotators after screening, but does not specify the number of judgments per pair.",
+    "overlap": "No overlapping work-matter span labels or simultaneous Topic annotations are reported. Multiple edges in a predicted summary-sentence alignment graph are not evidence of overlapping gold Topic labels.",
+    "discontinuity": "No discontinuous semantic-span annotation is reported. Group alignment explicitly checks consecutive sentences, so it does not establish arbitrary separated-span prediction.",
+    "gold_completeness": "Reference summaries specify selected summary content. The paper does not establish that they exhaustively enumerate all important source facts or all business-critical qualifiers.",
+    "model_output_capability": "The deployed output is a generated summary. The paper does not report inference-time Topic labels, source-span assignments, an omission inventory, or an exhaustive coverage certificate."
+  },
+  "key_findings": [
+    {
+      "finding_id": "B01-F01",
+      "finding": "The empirical task is dialogue summarization on two English datasets. It provides transfer evidence for summary evaluation, not direct evidence for business-email Topic segmentation or assignment.",
+      "evidence_type": "supported",
+      "section": "3.1 Datasets",
+      "quote": "Experiments are conducted on two Englishlanguage dialogue summarization datasets:",
+      "source_line_start": 584,
+      "source_line_end": 584,
+      "interpretation_boundary": "SAMSum contains online chitchat and DialogSum contains spoken dialogues. Neither reported task predicts concrete work-matter Topics."
+    },
+    {
+      "finding_id": "B01-F02",
+      "finding": "Human evaluation distinguishes reference-based recall and precision from faithfulness to the source dialogue. Content absent from a reference can therefore reduce reference precision while remaining faithful to the dialogue.",
+      "evidence_type": "supported",
+      "section": "4.2 Human Evaluation",
+      "quote": "examines whether the generated summary is factually consistent with the dialogue.",
+      "source_line_start": 843,
+      "source_line_end": 843,
+      "interpretation_boundary": "The surrounding definitions at lines 838–843 assign recall and precision to reference-summary content. These are distinct evaluation targets, even though the paper sometimes groups missing information under factual consistency."
+    },
+    {
+      "finding_id": "B01-F03",
+      "finding": "SWING uses sentence equivalence mappings that can relate one sentence to several sentences, but group matching is restricted to consecutive sentences.",
+      "evidence_type": "supported",
+      "section": "2.1 Entailment-induced Bipartite Graph",
+      "quote": "We only check",
+      "source_line_start": 417,
+      "source_line_end": 417,
+      "interpretation_boundary": "Lines 414–420 explicitly restrict the groups to consecutive sentences. This is a predicted alignment between two summaries, not discontinuous source-span representation, simultaneous Topic labeling, or evidence of annotation prevalence."
+    },
+    {
+      "finding_id": "B01-F04",
+      "finding": "The uncovered loss trains on summaries that combine missing reference sentences with generated sentences judged equivalent to reference content.",
+      "evidence_type": "supported",
+      "section": "2.2 Uncovered Loss",
+      "quote": "with M IX A ND M ATCH summaries, which are constructed by combining reference sentences that are",
+      "source_line_start": 450,
+      "source_line_end": 450,
+      "interpretation_boundary": "Lines 446–453 describe recovery relative to the reference summary. The training target cannot explicitly recover an obligation or qualifier that the reference itself omits."
+    },
+    {
+      "finding_id": "B01-F05",
+      "finding": "SWING improves the reported recall-oriented automatic scores over the listed non-ablation baselines on both datasets, but it does not lead every metric or every ablation comparison.",
+      "evidence_type": "supported",
+      "section": "4.1 Main results; Table 1",
+      "quote": "S WING **51.96** 59.04 [∗] **-1.999** [∗] -1.904 [∗] **86.48** **89.03** -1.082 [∗] 2.087 **50.08** 52.91 -2.228 -2.310 [∗] 64.19 **63.52** -0.829 **2.407** [∗]",
+      "source_line_start": 610,
+      "source_line_end": 610,
+      "interpretation_boundary": "These are aggregate dialogue-summary scores. They do not measure recall of individually labeled conditions, deadlines, exceptions, approval constraints, or Topics. Some ablations have higher recall scores than full SWING."
+    },
+    {
+      "finding_id": "B01-F06",
+      "finding": "The reported human comparison ranks SWING highest for recall and faithfulness on both datasets, while the text states that SWING is not highest for reference precision.",
+      "evidence_type": "supported",
+      "section": "4.2 Human Evaluation; Figure 3",
+      "quote": "Figure 3: Human evaluation results. S WING achieves the highest R ECALL and F AITHFULNESS scores on both",
+      "source_line_start": 784,
+      "source_line_end": 784,
+      "interpretation_boundary": "The comparison covers CLIFF, CONFIT, and SWING on 100 dialogues per dataset. The score is percentage wins minus percentage losses, not absolute information recall. Exact bar values are not recoverable from the embedded figure."
+    },
+    {
+      "finding_id": "B01-F07",
+      "finding": "The manual error analysis separates partial loss within a reference sentence from loss of an entire reference sentence. Against CONFIT on 100 SAMSum dialogues, SWING improves 10 missing-detail cases and 6 missing-sentence cases, while introducing those errors in 1 and 2 examples respectively.",
+      "evidence_type": "supported",
+      "section": "4.3 Qualitative Analysis",
+      "quote": "sub-types: (1) _**missing details**_ where partial information of a sentence in the reference summary is",
+      "source_line_start": 951,
+      "source_line_end": 951,
+      "interpretation_boundary": "The definitions and counts span lines 948–966. These are comparative example counts, not recall over an annotated inventory of atomic facts. The paper does not state that the two error categories are mutually exclusive."
+    },
+    {
+      "finding_id": "B01-F08",
+      "finding": "BARTScore recall has the highest reported correlation with human recall among the tested metrics on both datasets: Kendall's tau of 26.48% for DialogSum and 32.10% for SAMSum.",
+      "evidence_type": "supported",
+      "section": "4.4 Correlation with Human Judgements; Table 4",
+      "quote": "BARTS CORE _R_ **26.48** 14.87 9.25 **32.10** 9.68 **24.11**",
+      "source_line_start": 1004,
+      "source_line_end": 1004,
+      "interpretation_boundary": "These are correlations after converting metric and human comparisons to lose/tie/win, not coverage percentages or omission-detection accuracy. The results support a candidate transfer metric, not reliable detection of every lost qualifier."
+    },
+    {
+      "finding_id": "B01-F09",
+      "finding": "The strongest transfer limitation is dependence on reference quality: SWING treats reference content as the basis for both missing-content recovery and training-time consistency judgments, and the authors explicitly caution that the method may fail on datasets with unfaithful references.",
+      "evidence_type": "supported",
+      "section": "8 Limitations",
+      "quote": "faithful to the corresponding dialogue. The proposed method may not work on other summarization datasets, such as XSum, which contains hallu",
+      "source_line_start": 1196,
+      "source_line_end": 1196,
+      "interpretation_boundary": "Faithful references need not be exhaustive references. Neither the method nor the reported gold establishes complete preservation of msgloom's business-critical facts. The XSum statement is a cited caution, not a SWING experiment on XSum."
+    },
+    {
+      "finding_id": "B01-F10",
+      "finding": "Missing information remains the largest reported category of residual errors after applying SWING.",
+      "evidence_type": "supported",
+      "section": "4.5 Remaining Challenges",
+      "quote": "largest portion of factual errors, even though our approach significantly exceeds prior methods in mitigating this issue.",
+      "source_line_start": 1069,
+      "source_line_end": 1069,
+      "interpretation_boundary": "The analysis covers 100 SAMSum outputs. The prose reports 42 missing-information cases for BART-LARGE, but the converted Figure 4 does not reliably associate all displayed counts with SWING error categories. Improvement does not establish complete coverage."
+    }
+  ],
+  "metrics": [
+    {
+      "name": "ROUGE-L recall",
+      "target": "Lexical coverage of reference-summary content.",
+      "denominator_or_population": "Reference-side sequence content for each evaluated summary pair, aggregated over each dataset's evaluation outputs. Exact evaluated split sizes are not supplied.",
+      "reported_result": {
+        "SWING_DialogSum_percent": 59.04,
+        "SWING_SAMSum_percent": 52.91,
+        "BART_LARGE_DialogSum_percent": 56.78,
+        "BART_LARGE_SAMSum_percent": 52.71
+      },
+      "limitations": "Lexical summary recall is not semantic recall of required business facts. Full SWING is below some ablations. Only the DialogSum SWING recall value has a significance marker in Table 1."
+    },
+    {
+      "name": "ROUGE-L F",
+      "target": "Bidirectional lexical overlap between generated and reference summaries.",
+      "denominator_or_population": "Generated and reference summary content in the evaluated pairs.",
+      "reported_result": {
+        "SWING_DialogSum_percent": 51.96,
+        "SWING_SAMSum_percent": 50.08
+      },
+      "limitations": "The paper labels this F1 but describes the F setting generally as an average of directions. The precise formula is not supplied. It is not Topic-assignment F1 or atomic fact recall."
+    },
+    {
+      "name": "BARTScore recall",
+      "target": "Reference reconstruction likelihood as a proxy for semantic coverage.",
+      "denominator_or_population": "Evaluated generated/reference summary pairs. The displayed expression is p(S* | S, theta), with S* elsewhere denoting the reference. Token normalization and dataset aggregation are not detailed here.",
+      "reported_result": {
+        "SWING_DialogSum": -1.904,
+        "SWING_SAMSum": -2.31,
+        "BART_LARGE_DialogSum": -1.96,
+        "BART_LARGE_SAMSum": -2.332
+      },
+      "limitations": "Section 3.2 reverses the S and S* names in its verbal explanation. This is a likelihood score, not a proportion of required facts recovered. Both SWING values carry significance markers, but some ablations score higher."
+    },
+    {
+      "name": "BARTScore F",
+      "target": "Bidirectional summary likelihood or semantic overlap.",
+      "denominator_or_population": "Generated/reference summary pairs; the paper describes averaging the two directions.",
+      "reported_result": {
+        "SWING_DialogSum": -1.999,
+        "SWING_SAMSum": -2.228
+      },
+      "limitations": "It does not directly measure source-grounded completeness. CONFIT has a higher SAMSum score of -2.188."
+    },
+    {
+      "name": "FactCC recall",
+      "target": "Predicted support for reference sentences using the generated summary as source text.",
+      "denominator_or_population": "The stated recall orientation uses reference sentences as claims. The following aggregation description instead refers to sentences within a generated summary, leaving the exact sentence population inconsistent.",
+      "reported_result": {
+        "SWING_DialogSum_percent": 89.03,
+        "SWING_SAMSum_percent": 63.52,
+        "human_recall_tau_DialogSum_percent": 4.79,
+        "human_recall_tau_SAMSum_percent": 4.13
+      },
+      "limitations": "These percentages are model probabilities, not measured percentages of facts covered. Low correlation with human recall weakens this metric as a coverage validator. The stated sentence population needs clarification."
+    },
+    {
+      "name": "FactCC F",
+      "target": "Bidirectional predicted consistency between generated and reference summaries.",
+      "denominator_or_population": "Both summary directions, averaged according to Section 3.2; detailed aggregation inherits the FactCC population ambiguity.",
+      "reported_result": {
+        "SWING_DialogSum_percent": 86.48,
+        "SWING_SAMSum_percent": 64.19,
+        "human_faithfulness_tau_DialogSum_percent": 1.19,
+        "human_faithfulness_tau_SAMSum_percent": -2.28
+      },
+      "limitations": "This is not an observed factual-accuracy rate. Its reported correlation with human dialogue faithfulness is weak or negative. CONFIT scores higher on SAMSum."
+    },
+    {
+      "name": "QUALS",
+      "target": "QA-based summary factuality evaluation.",
+      "denominator_or_population": "Evaluated summaries and internally generated questions and answers. The paper does not specify the exact question population or aggregation formula.",
+      "reported_result": {
+        "SWING_DialogSum": -1.082,
+        "SWING_SAMSum": -0.829
+      },
+      "limitations": "The paper reports many invalid generated questions and answers. QUALS is an adjacent factuality metric, not a demonstrated exhaustive missing-information measure. Its strongest reported use here is relative agreement with reference precision."
+    },
+    {
+      "name": "QAFactEval",
+      "target": "QA-based factual consistency evaluation.",
+      "denominator_or_population": "Evaluated summaries and the metric's QA procedure; exact question counts and denominator are not reported.",
+      "reported_result": {
+        "SWING_DialogSum": 2.087,
+        "SWING_SAMSum": 2.407
+      },
+      "limitations": "This measures an adjacent factuality task rather than the target inventory of missing business information. SWING is below CLIFF on DialogSum and has a significance marker on SAMSum."
+    },
+    {
+      "name": "Human recall preference",
+      "target": "How much reference-summary information a generated summary covers.",
+      "denominator_or_population": "Pairwise judgments involving CLIFF, CONFIT, and SWING on 100 test dialogues per dataset. Score equals percentage wins minus percentage losses.",
+      "reported_result": "SWING ranks highest on both datasets. Exact scores are not recoverable from the converted Figure 3.",
+      "limitations": "Relative preference is not an absolute recall rate. References are selected summaries, not demonstrated exhaustive source-fact inventories. Numbers of judgments per pair and exact score denominators are not stated."
+    },
+    {
+      "name": "Human precision preference",
+      "target": "Whether generated-summary content occurs in the reference summary.",
+      "denominator_or_population": "The same pairwise human-evaluation population; percentage wins minus percentage losses.",
+      "reported_result": "SWING is not highest on precision.",
+      "limitations": "Dialogue-supported content absent from the reference can lower this measure. It must not be interpreted as hallucination-only precision."
+    },
+    {
+      "name": "Human faithfulness preference",
+      "target": "Factual consistency of a generated summary with the original dialogue.",
+      "denominator_or_population": "The same pairwise human-evaluation population; percentage wins minus percentage losses.",
+      "reported_result": "SWING ranks highest on both datasets. Exact scores are not recoverable from the converted Figure 3.",
+      "limitations": "This measures source consistency, not complete source coverage. Pairwise superiority does not establish a zero-error rate."
+    },
+    {
+      "name": "Inter-annotator agreement",
+      "target": "Agreement among human evaluators.",
+      "denominator_or_population": "Human annotations from the pairwise evaluation; the averaging procedure and judgment multiplicity are not specified.",
+      "reported_result": "Average 'Cohan’s Kappa' of 54.35%, described as moderate agreement.",
+      "limitations": "The source spelling is preserved. This is annotation agreement, not summarizer accuracy or coverage."
+    },
+    {
+      "name": "Kendall's tau with human judgments",
+      "target": "Agreement between automatic metric preferences and human preferences.",
+      "denominator_or_population": "Automatic and human comparisons converted to {-1, 0, 1}, corresponding to lose, tie, and win, on the Section 4.2 evaluation.",
+      "reported_result": {
+        "dimension_order": [
+          "recall",
+          "precision",
+          "faithfulness"
+        ],
+        "DialogSum_percent": {
+          "ROUGE_L_F": [
+            23.5,
+            24.21,
+            10.29
+          ],
+          "ROUGE_L_R": [
+            23.46,
+            2.51,
+            4.24
+          ],
+          "BARTScore_F": [
+            18.35,
+            25.94,
+            3.17
+          ],
+          "BARTScore_R": [
+            26.48,
+            14.87,
+            9.25
+          ],
+          "FactCC_F": [
+            6.15,
+            6.93,
+            1.19
+          ],
+          "FactCC_R": [
+            4.79,
+            6.86,
+            10.56
+          ],
+          "QUALS": [
+            14.23,
+            23.61,
+            -0.83
+          ],
+          "QAFactEval": [
+            14.06,
+            16.2,
+            16.8
+          ]
+        },
+        "SAMSum_percent": {
+          "ROUGE_L_F": [
+            6.07,
+            10.24,
+            -0.75
+          ],
+          "ROUGE_L_R": [
+            29.52,
+            9.61,
+            17.88
+          ],
+          "BARTScore_F": [
+            15.5,
+            8.0,
+            10.69
+          ],
+          "BARTScore_R": [
+            32.1,
+            9.68,
+            24.11
+          ],
+          "FactCC_F": [
+            -3.43,
+            5.12,
+            -2.28
+          ],
+          "FactCC_R": [
+            4.13,
+            10.32,
+            -1.43
+          ],
+          "QUALS": [
+            1.55,
+            15.35,
+            4.5
+          ],
+          "QAFactEval": [
+            5.03,
+            2.83,
+            6.26
+          ]
+        }
+      },
+      "limitations": "These are correlations, not information-recovery percentages. The exact tie rule for continuous automatic scores and uncertainty estimates are not supplied. BARTScore recall leads recall correlation but does not lead every dimension."
+    },
+    {
+      "name": "Comparative missing-information case counts",
+      "target": "Changes in missing details and missing sentences relative to CONFIT.",
+      "denominator_or_population": "100 randomly sampled SAMSum dialogues.",
+      "reported_result": {
+        "missing_details_improved_cases": 10,
+        "missing_details_introduced_cases": 1,
+        "missing_sentences_improved_cases": 6,
+        "missing_sentences_introduced_cases": 2
+      },
+      "limitations": "Counts refer to examples with comparative changes. They do not provide a total number of required details, category-specific fact recall, or an established count of unique improved examples across both categories."
+    },
+    {
+      "name": "Residual error analysis",
+      "target": "Remaining summary errors, including missing information.",
+      "denominator_or_population": "100 SAMSum generated summaries compared with references; BART-LARGE is inspected on the same dialogues.",
+      "reported_result": "Missing information remains SWING's largest error category. The prose reports 42 BART-LARGE examples with missing information. The converted SWING figure does not reliably map counts to categories.",
+      "limitations": "The paper explicitly says this analysis is not comparable with Tang et al. (2022) because the sampled examples differ. It does not report an exhaustive atomic-fact denominator."
+    },
+    {
+      "name": "Average generated-summary token count",
+      "target": "Summary length as a proxy for conciseness.",
+      "denominator_or_population": "Generated summaries for each model and dataset.",
+      "reported_result": {
+        "SWING": {
+          "DialogSum": 31.32,
+          "SAMSum": 24.23
+        },
+        "CONFIT": {
+          "DialogSum": 29.46,
+          "SAMSum": 22.45
+        },
+        "CLIFF": {
+          "DialogSum": 27.34,
+          "SAMSum": 22.3
+        },
+        "BART_LARGE": {
+          "DialogSum": 28.03,
+          "SAMSum": 23.19
+        }
+      },
+      "limitations": "Length alone does not measure redundancy, importance, or coverage. The reported comparison does not isolate whether some coverage gains result from longer output."
+    },
+    {
+      "name": "NLI model accuracy",
+      "target": "MNLI inference classification by the auxiliary RoBERTa-LARGE model.",
+      "denominator_or_population": "MNLI evaluation population, not specified in detail.",
+      "reported_result": "Around 91% accuracy.",
+      "limitations": "This is a different task from dialogue-summary omission detection and msgloom coverage evaluation. The paper does not establish 91% accuracy for sentence alignment, lost-qualifier detection, or work-email reasoning."
+    }
+  ],
+  "limitations": [
+    "The datasets and output task do not match business-email Topic segmentation or assignment.",
+    "Coverage is anchored to reference summaries. The paper does not demonstrate coverage of source facts that the references omit.",
+    "The gold and manual analyses do not separately label conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers.",
+    "Training-time reference equivalence is a proxy for faithfulness. A generated statement can be supported by the dialogue but absent from the reference.",
+    "The many-sentence alignment procedure assumes consecutive sentences and does not establish arbitrary discontinuous grouping.",
+    "Human evaluation is a limited pairwise comparison with moderate reported agreement. It does not give absolute completeness rates.",
+    "The strongest reported automatic correlation with human recall is 0.321 on SAMSum. No metric is shown to reliably identify every omission.",
+    "Missing information remains a major residual problem.",
+    "The converted figures do not preserve exact human preference scores or a reliable complete mapping of residual error counts.",
+    "The schema file itself was not embedded. Required fields beyond those named in the request cannot be verified without violating the no-tools instruction."
+  ],
+  "research_gaps": [
+    "Develop and validate exhaustive source-grounded inventories of business-critical information, independent of whether a reference summary includes each item.",
+    "Measure recall separately for conditions, exceptions, deadlines, evidence, approval constraints, and decision qualifiers.",
+    "Test automatic omission scores against atomic omission annotations in work email, including faithful summaries that omit critical details.",
+    "Evaluate omissions and unsupported additions separately, and retain a distinct category for dialogue-supported content absent from the reference.",
+    "Establish model performance and gold annotation prevalence for discontinuous work-matter spans and simultaneous Topic labels using task-matched evidence."
+  ],
+  "relevance_to_input_code": "No code was supplied or inspected. The conceptual transfer is an evaluation design that separates coverage from faithfulness and distinguishes partial-detail omissions from whole-unit omissions. The paper supports testing reference-conditioned scores as auxiliary measures, with human validation and explicit reference-quality limits.",
+  "source_conflicts": [
+    {
+      "issue": "BARTScore recall notation and verbal description reverse the identities of the reference and generated summaries.",
+      "locations": [
+        "L00223–L00225: S* denotes the reference and S the generated summary.",
+        "L00649–L00651: the displayed recall expression is p(S* | S, theta), but the following prose calls S the reference and S* the generated summary."
+      ],
+      "impact": "Direction determines whether the score targets coverage or the reverse relation. Reference conditioned on generation is the interpretation supported by the formula and surrounding recall objective, but the prose conflict must remain explicit."
+    },
+    {
+      "issue": "FactCC recall specifies reference sentences as claims but then describes averaging sentences within a generated summary.",
+      "locations": [
+        "L00652–L00654: the reference sentence is the claim and the generated summary is the source.",
+        "L00655–L00656: the aggregation description refers to each sentence within a generated summary."
+      ],
+      "impact": "The sentence population is material to whether the score measures reference coverage or generated-content support. The exact aggregation cannot be resolved from the embedded text."
+    },
+    {
+      "issue": "The F setting is labeled F1 but is generally described as the average of the two directions.",
+      "locations": [
+        "L00618–L00620: F and R are labeled F1 and recall.",
+        "L00664–L00667: the method is described as taking the average of both directions."
+      ],
+      "impact": "The text does not establish a conventional harmonic-mean F1 formula for every metric. Metric names and reported values should be retained without silently imposing a formula."
+    },
+    {
+      "issue": "Dialogue length statistics differ between the main text and Appendix A.",
+      "locations": [
+        "L00626–L00629: approximately 94 SAMSum tokens and 131 DialogSum tokens per dialogue.",
+        "L01625–L01635: 124.1 SAMSum words and 187.5 DialogSum words, counted with NLTK."
+      ],
+      "impact": "Different units or preprocessing might explain the discrepancy, but the paper does not explain it. These statistics should not be merged into a single verified average."
+    },
+    {
+      "issue": "Table 4 highlights a DialogSum precision correlation that is not the largest numerical entry in that column.",
+      "locations": [
+        "L01001: ROUGE-L F precision correlation 24.21 is bold.",
+        "L01003: BARTScore F precision correlation is 25.94.",
+        "L00982–L00983: the prose describes QUALS as best for precision overall."
+      ],
+      "impact": "Per-dataset ranking should follow the reported numbers while preserving the formatting inconsistency. 'Overall' is not defined by a reported aggregation rule and does not mean QUALS wins on each dataset."
+    },
+    {
+      "issue": "Figure 1 presents a one-direction entailment coverage illustration, while the implemented graph uses equivalence checks in both directions.",
+      "locations": [
+        "L00059–L00069: reference-to-generated entailment and a maximum are presented as coverage evidence.",
+        "L00290–L00297: equivalence is checked in both directions.",
+        "L00414–L00435: grouped matches also require reverse entailment after concatenation."
+      ],
+      "impact": "The illustration should not be substituted for the full algorithm. Reference-to-generated entailment alone can support a less detailed generated statement without proving that all reference detail was retained."
+    }
+  ],
+  "unsafe_assumptions": [
+    "Do not infer that a faithful summary necessarily covers all important source information.",
+    "Do not infer that reference-summary coverage equals exhaustive dialogue coverage.",
+    "Do not infer reliable preservation of conditions, exceptions, deadlines, evidence, approval constraints, or decision qualifiers from aggregate summary metrics.",
+    "Do not treat human win-minus-loss scores as absolute recall percentages.",
+    "Do not treat Kendall's tau percentages as percentages of information recovered.",
+    "Do not treat FactCC probabilities as observed factual-accuracy or coverage rates.",
+    "Do not transfer the auxiliary model's approximately 91% MNLI accuracy to omission detection or email reasoning.",
+    "Do not infer discontinuous work-matter span capability from one-to-many sentence alignment.",
+    "Do not infer simultaneous Topic labels or their annotation prevalence from bipartite graph edges.",
+    "Do not treat sentence segmentation used internally for summarization as Topic segmentation.",
+    "Do not classify every generated statement absent from a reference as a hallucination.",
+    "Do not assume the inference model emits alignment graphs, omission reports, or coverage guarantees.",
+    "Do not assume full SWING dominates every ablation or every automatic metric.",
+    "Do not reconstruct exact values from the damaged figures or silently correct conflicting metric definitions.",
+    "Do not infer that the paper's reported improvements generalize to business email without task-matched validation.",
+    "Do not treat the BARTScore symbol inconsistency as evidence of opposing semantic recall definitions or as proof of the executed scoring direction.",
+    "Do not assume a verified FactCC claim population or aggregation when comparing its recall or F results across papers.",
+    "Do not assume that every F-labeled metric uses conventional harmonic-mean F1 or the same alternative averaging formula.",
+    "Do not use Table 4 boldface to override numerical maxima or infer an unstated aggregation rule for overall precision.",
+    "Do not substitute Figure 1's one-direction entailment diagnostic for the graph's bidirectional matching criterion.",
+    "Do not invent a tokenizer or preprocessing explanation for the dialogue-length discrepancy."
+  ],
+  "gap_updates": {
+    "G1_A": {
+      "status": "unchanged",
+      "reason": "Consecutive summary-sentence group matching does not establish discontinuous source spans for a work matter."
+    },
+    "G2_A": {
+      "status": "unchanged",
+      "reason": "Predicted summary-alignment edges do not establish simultaneous Topic labels or their annotation prevalence."
+    },
+    "G3_A": {
+      "status": "strengthened",
+      "reason": "Retain the paper's TRANSFER_EVAL contribution to evaluating reference coverage separately from faithfulness. The metric qualifications bound numerical adoption and leave exhaustive business-critical information coverage unresolved."
+    },
+    "G4_A": {
+      "status": "unchanged",
+      "reason": "The adjudication does not convert dialogue-summary evaluation into business-email Topic segmentation or assignment evidence."
+    }
+  },
+  "raw_claims": [
+    "Experiments are conducted on two Englishlanguage dialogue summarization datasets:",
+    "examines whether the generated summary is factually consistent with the dialogue.",
+    "we look for consecutive generated sentences",
+    "The uncovered loss is effectively maximum likelihood estimation (MLE) with M IX A ND M ATCH",
+    "S WING **51.96** 59.04 [∗] **-1.999** [∗] -1.904 [∗] **86.48** **89.03** -1.082 [∗] 2.087 **50.08** 52.91 -2.228 -2.310 [∗] 64.19 **63.52** -0.829 **2.407** [∗]",
+    "Figure 3: Human evaluation results. S WING achieves the highest R ECALL and F AITHFULNESS scores on both",
+    "sub-types: (1) _**missing details**_ where partial information of a sentence in the reference summary is",
+    "BARTS CORE _R_ **26.48** 14.87 9.25 **32.10** 9.68 **24.11**",
+    "The proposed method may not work on other summarization datasets",
+    "largest portion of factual errors, even though our approach significantly exceeds prior methods in mitigating this issue."
+  ],
+  "raw_claim_records": [
+    {
+      "line_number": 584,
+      "text": "Experiments are conducted on two Englishlanguage dialogue summarization datasets:"
+    },
+    {
+      "line_number": 843,
+      "text": "examines whether the generated summary is factually consistent with the dialogue."
+    },
+    {
+      "line_number": 414,
+      "text": "we look for consecutive generated sentences"
+    },
+    {
+      "line_number": 523,
+      "text": "The uncovered loss is effectively maximum likelihood estimation (MLE) with M IX A ND M ATCH"
+    },
+    {
+      "line_number": 610,
+      "text": "S WING **51.96** 59.04 [∗] **-1.999** [∗] -1.904 [∗] **86.48** **89.03** -1.082 [∗] 2.087 **50.08** 52.91 -2.228 -2.310 [∗] 64.19 **63.52** -0.829 **2.407** [∗]"
+    },
+    {
+      "line_number": 784,
+      "text": "Figure 3: Human evaluation results. S WING achieves the highest R ECALL and F AITHFULNESS scores on both"
+    },
+    {
+      "line_number": 951,
+      "text": "sub-types: (1) _**missing details**_ where partial information of a sentence in the reference summary is"
+    },
+    {
+      "line_number": 1004,
+      "text": "BARTS CORE _R_ **26.48** 14.87 9.25 **32.10** 9.68 **24.11**"
+    },
+    {
+      "line_number": 1196,
+      "text": "The proposed method may not work on other summarization datasets"
+    },
+    {
+      "line_number": 1069,
+      "text": "largest portion of factual errors, even though our approach significantly exceeds prior methods in mitigating this issue."
+    }
+  ],
+  "confidence_scores": {
+    "B01-F01": 0.99,
+    "B01-F02": 0.99,
+    "B01-F03": 0.99,
+    "B01-F04": 0.98,
+    "B01-F05": 0.97,
+    "B01-F06": 0.95,
+    "B01-F07": 0.98,
+    "B01-F08": 0.99,
+    "B01-F09": 0.99,
+    "B01-F10": 0.98
+  },
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "code_statement": "Lines 48–49 state that source code is released for research purposes at https://github.com/amazon-science/AWS-SWING.",
+    "dataset_statement": "Lines 187–192 describe DialogSum and SAMSum as public dialogue summarization datasets.",
+    "metrics_statement": "Tables 1, 4, 6, and 7 report automatic results or correlations. Human evaluation procedures and qualitative error counts are also reported.",
+    "availability_boundary": "Availability is based only on the paper's statements. No repository or dataset was accessed. Release of the paper's new human judgments and manual error annotations is not established.",
+    "reported_environment": "Linux with NVIDIA V100, PyTorch 1.11.0, CUDA 10.1, and Transformers 4.19.2.",
+    "remaining_uncertainty": "Metric-direction and aggregation inconsistencies, damaged mathematical notation, missing exact human figure values, and unspecified judgments per pair limit exact reconstruction from this text alone."
+  },
+  "needs_xhigh_review": false,
+  "escalation_reasons": [
+    "BARTScore recall has a material formula-versus-prose direction conflict. Direction determines whether the metric represents coverage or the reverse relation.",
+    "FactCC recall has a material conflict in its sentence population: reference claims versus generated-summary sentences. This affects the interpretation of its reported coverage scores.",
+    "Review should preserve the supported qualitative separation between coverage and faithfulness while resolving or explicitly quarantining these metric-definition ambiguities before operational adoption."
+  ],
+  "xhigh_adjudication": {
+    "paper_id": "B01",
+    "adjudications": [
+      {
+        "issue": "BARTScore recall direction and inconsistent summary symbols",
+        "verdict": "qualified",
+        "source_basis": [
+          "L00223–L00225 Algorithm 1 defines S* as the reference summary and S as the generated summary.",
+          "L00649–L00651 The formula is p(S* | S, theta). The prose describes generating the reference given the generated summary but reverses their symbol labels."
+        ],
+        "correction_or_qualification": "The formula under Algorithm 1's definitions and the prose's named summary roles agree on reference conditioned on generation. The inconsistency concerns symbol labels; it does not establish two opposing semantic definitions. The executed scoring direction cannot be verified from these windows.",
+        "synthesis_rule": "Describe BARTScore recall conceptually as reference reconstruction conditioned on generation. Retain its reported results under the paper's metric label. Preserve the symbol inconsistency and do not claim implementation verification or exhaustive coverage."
+      },
+      {
+        "issue": "FactCC recall claim population and aggregation",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00652–L00654 FactCC recall uses a reference sentence as the claim and the generated summary as source text.",
+          "L00655–L00656 The aggregation description instead names sentences within a generated summary."
+        ],
+        "correction_or_qualification": "These statements specify different sentence populations. The windows do not establish which population produced the reported scores. FactCC F also inherits this uncertainty because it combines both directions.",
+        "synthesis_rule": "Retain FactCC results and correlations as author-reported observations. Do not use them as verified reference-coverage rates or compare them numerically across papers without resolving the claim population and aggregation."
+      },
+      {
+        "issue": "F1 labels versus averaging both directions",
+        "verdict": "qualified",
+        "source_basis": [
+          "L00618–L00620 The table caption labels F as F1.",
+          "L00664–L00667 The metric description says to compute the reverse direction and average both directions."
+        ],
+        "correction_or_qualification": "The source supports a bidirectional aggregation description but does not provide a metric-specific equation establishing conventional harmonic-mean F1 for every F-labeled metric. It also does not establish that every implementation departs from conventional F1.",
+        "synthesis_rule": "Use the reported F labels and values. Describe the paper's stated bidirectional averaging procedure without imposing a harmonic-mean or arithmetic-mean formula on every metric."
+      },
+      {
+        "issue": "Table 4 precision ranking and the claim that QUALS is best overall",
+        "verdict": "qualified",
+        "source_basis": [
+          "L00982–L00983 The prose calls QUALS best for precision overall without defining an aggregation rule.",
+          "L01001–L01008 BARTScore F has the largest numerical DialogSum precision correlation, 25.94, while QUALS leads SAMSum precision at 15.35. DialogSum ROUGE-L F precision, 24.21, is bold."
+        ],
+        "correction_or_qualification": "The numerical per-dataset leaders are recoverable despite inconsistent highlighting. QUALS does not lead both datasets. An unspecified overall comparison is not necessarily contradicted by these per-dataset results.",
+        "synthesis_rule": "Use numerical entries for per-dataset rankings. Do not interpret boldface as authoritative or assign an unstated aggregation rule to overall. B01-F08 remains supported because BARTScore recall leads the recall column on both datasets."
+      },
+      {
+        "issue": "Figure 1's one-direction entailment illustration versus the graph's equivalence checks",
+        "verdict": "resolved",
+        "source_basis": [
+          "L00059–L00069 Figure 1 illustrates reference-to-generated entailment as a coverage diagnostic.",
+          "L00290–L00297 The graph description checks entailment in both directions for sentence equivalence.",
+          "L00414–L00420 Group matching uses consecutive sentences.",
+          "L00430–L00435 Group matching includes a reverse entailment check after concatenation."
+        ],
+        "correction_or_qualification": "The illustration and full graph description have different scopes. The illustration is not the complete matching criterion. Reference-to-generated entailment alone can hold when the generated sentence retains only part of the reference information.",
+        "synthesis_rule": "Describe the graph using its bidirectional checks and consecutive sentence groups. Do not substitute Figure 1's one-direction diagnostic for full equivalence or treat model-predicted equivalence as a coverage guarantee."
+      },
+      {
+        "issue": "Main-text and appendix dialogue length statistics",
+        "verdict": "unresolved",
+        "source_basis": [
+          "L00626–L00629 The main text reports approximately 94 SAMSum tokens and 131 DialogSum tokens per dialogue.",
+          "L01625–L01635 Appendix A reports 124.1 SAMSum words and 187.5 DialogSum words, counted with the NLTK tokenizer."
+        ],
+        "correction_or_qualification": "The reported values use different unit labels. The windows provide no conversion or preprocessing explanation that reconciles them.",
+        "synthesis_rule": "Keep each statistic attached to its source location and stated unit. Do not merge them into one verified dialogue-length estimate."
+      }
+    ],
+    "finding_repairs": [],
+    "metric_repairs": [
+      {
+        "metric_name_or_issue": "BARTScore recall",
+        "action": "qualify",
+        "qualification": "Reference conditioned on generation is supported by both the formula under Algorithm 1's notation and the prose's named roles. Preserve the conflicting local symbol labels. Treat scores as author-reported likelihood results, not verified implementation outputs or fact-recovery proportions."
+      },
+      {
+        "metric_name_or_issue": "FactCC recall",
+        "action": "exclude_from_cross_paper_comparison",
+        "qualification": "The reference-claim definition conflicts with the generated-sentence aggregation description. Retain paper-specific scores and correlations, but exclude numerical pooling or direct comparison with coverage scores until the claim population and aggregation are established."
+      },
+      {
+        "metric_name_or_issue": "FactCC F",
+        "action": "exclude_from_cross_paper_comparison",
+        "qualification": "The bidirectional score inherits the unresolved FactCC sentence-population issue. Its reported probabilities are not observed factual-accuracy rates."
+      },
+      {
+        "metric_name_or_issue": "ROUGE-L F and BARTScore F aggregation",
+        "action": "qualify",
+        "qualification": "Retain the reported F labels and values. The stated averaging of directions does not establish a metric-specific conventional F1 formula. Require matching definitions before numerical comparison across papers."
+      },
+      {
+        "metric_name_or_issue": "Kendall's tau with human judgments",
+        "action": "qualify",
+        "qualification": "Use Table 4's numerical entries for rankings. BARTScore F leads DialogSum precision; QUALS leads SAMSum precision. The overall precision aggregation is unspecified. BARTScore recall remains the numerical recall leader on both datasets. These are preference correlations, not coverage percentages."
+      },
+      {
+        "metric_name_or_issue": "Dialogue length statistics",
+        "action": "qualify",
+        "qualification": "Preserve the main-text token averages and appendix NLTK word averages separately. Neither a conversion nor a common counting procedure is established."
+      }
+    ],
+    "conflict_repairs": [
+      {
+        "issue": "BARTScore recall notation and verbal description reverse summary identities.",
+        "action": "rephrase",
+        "replacement_issue": "The local symbol labels in the BARTScore prose conflict with Algorithm 1. However, the formula interpreted using Algorithm 1 and the prose's named summary roles both describe reference conditioned on generation.",
+        "replacement_impact": "The conceptual recall direction can be bounded. The symbol inconsistency remains, and the executed scoring direction is not verified by these windows."
+      },
+      {
+        "issue": "FactCC recall specifies reference claims but describes averaging generated-summary sentences.",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "The scored sentence population and aggregation remain unknown. This limits operational adoption and numerical comparison of both FactCC recall and FactCC F."
+      },
+      {
+        "issue": "The F setting is labeled F1 but described as averaging directions.",
+        "action": "rephrase",
+        "replacement_issue": "The source uses a general F1 label and a bidirectional averaging description without metric-specific aggregation equations.",
+        "replacement_impact": "Retain reported metric names and values without asserting either conventional harmonic-mean F1 or a uniform alternative implementation."
+      },
+      {
+        "issue": "Dialogue length statistics differ between the main text and Appendix A.",
+        "action": "keep_unresolved",
+        "replacement_issue": null,
+        "replacement_impact": "Different unit labels prevent treating the values as directly interchangeable. The source does not explain their relationship."
+      },
+      {
+        "issue": "Table 4 highlighting and the overall precision claim obscure numerical rankings.",
+        "action": "rephrase",
+        "replacement_issue": "DialogSum precision highlighting does not mark the numerical maximum. QUALS leads SAMSum precision, while the prose's overall comparison has no stated aggregation rule.",
+        "replacement_impact": "Per-dataset rankings are recoverable from the numbers. The meaning of overall remains unspecified and should not be converted into a claim that QUALS wins both datasets."
+      },
+      {
+        "issue": "Figure 1 uses one-direction entailment while graph matching uses bidirectional checks.",
+        "action": "resolve_with_source",
+        "replacement_issue": "Figure 1 is a partial diagnostic illustration; the graph description specifies additional equivalence checks.",
+        "replacement_impact": "Use the full graph description for method synthesis. One-direction entailment alone does not establish retention of every reference detail."
+      }
+    ],
+    "final_gap_updates": {
+      "G1_A": {
+        "status": "unchanged",
+        "reason": "Consecutive summary-sentence group matching does not establish discontinuous source spans for a work matter."
+      },
+      "G2_A": {
+        "status": "unchanged",
+        "reason": "Predicted summary-alignment edges do not establish simultaneous Topic labels or their annotation prevalence."
+      },
+      "G3_A": {
+        "status": "strengthened",
+        "reason": "Retain the paper's TRANSFER_EVAL contribution to evaluating reference coverage separately from faithfulness. The metric qualifications bound numerical adoption and leave exhaustive business-critical information coverage unresolved."
+      },
+      "G4_A": {
+        "status": "unchanged",
+        "reason": "The adjudication does not convert dialogue-summary evaluation into business-email Topic segmentation or assignment evidence."
+      }
+    },
+    "final_unsafe_assumptions": [
+      "Do not treat the BARTScore symbol inconsistency as evidence of opposing semantic recall definitions or as proof of the executed scoring direction.",
+      "Do not assume a verified FactCC claim population or aggregation when comparing its recall or F results across papers.",
+      "Do not assume that every F-labeled metric uses conventional harmonic-mean F1 or the same alternative averaging formula.",
+      "Do not use Table 4 boldface to override numerical maxima or infer an unstated aggregation rule for overall precision.",
+      "Do not substitute Figure 1's one-direction entailment diagnostic for the graph's bidirectional matching criterion.",
+      "Do not invent a tokenizer or preprocessing explanation for the dialogue-length discrepancy."
+    ],
+    "needs_max_review": false,
+    "max_review_reason": null,
+    "confidence": 0.97
+  },
+  "xhigh_review_sha256": "5f83b5d8bf5d9b27453d979a350ff29c3e732040dba97381607b2ad764062895",
+  "xhigh_effort": "xhigh",
+  "needs_max_review": false,
+  "xhigh_metric_repairs": [
+    {
+      "metric_name_or_issue": "BARTScore recall",
+      "action": "qualify",
+      "qualification": "Reference conditioned on generation is supported by both the formula under Algorithm 1's notation and the prose's named roles. Preserve the conflicting local symbol labels. Treat scores as author-reported likelihood results, not verified implementation outputs or fact-recovery proportions."
+    },
+    {
+      "metric_name_or_issue": "FactCC recall",
+      "action": "exclude_from_cross_paper_comparison",
+      "qualification": "The reference-claim definition conflicts with the generated-sentence aggregation description. Retain paper-specific scores and correlations, but exclude numerical pooling or direct comparison with coverage scores until the claim population and aggregation are established."
+    },
+    {
+      "metric_name_or_issue": "FactCC F",
+      "action": "exclude_from_cross_paper_comparison",
+      "qualification": "The bidirectional score inherits the unresolved FactCC sentence-population issue. Its reported probabilities are not observed factual-accuracy rates."
+    },
+    {
+      "metric_name_or_issue": "ROUGE-L F and BARTScore F aggregation",
+      "action": "qualify",
+      "qualification": "Retain the reported F labels and values. The stated averaging of directions does not establish a metric-specific conventional F1 formula. Require matching definitions before numerical comparison across papers."
+    },
+    {
+      "metric_name_or_issue": "Kendall's tau with human judgments",
+      "action": "qualify",
+      "qualification": "Use Table 4's numerical entries for rankings. BARTScore F leads DialogSum precision; QUALS leads SAMSum precision. The overall precision aggregation is unspecified. BARTScore recall remains the numerical recall leader on both datasets. These are preference correlations, not coverage percentages."
+    },
+    {
+      "metric_name_or_issue": "Dialogue length statistics",
+      "action": "qualify",
+      "qualification": "Preserve the main-text token averages and appendix NLTK word averages separately. Neither a conversion nor a common counting procedure is established."
+    }
+  ],
+  "xhigh_conflict_repairs": [
+    {
+      "issue": "BARTScore recall notation and verbal description reverse summary identities.",
+      "action": "rephrase",
+      "replacement_issue": "The local symbol labels in the BARTScore prose conflict with Algorithm 1. However, the formula interpreted using Algorithm 1 and the prose's named summary roles both describe reference conditioned on generation.",
+      "replacement_impact": "The conceptual recall direction can be bounded. The symbol inconsistency remains, and the executed scoring direction is not verified by these windows."
+    },
+    {
+      "issue": "FactCC recall specifies reference claims but describes averaging generated-summary sentences.",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "The scored sentence population and aggregation remain unknown. This limits operational adoption and numerical comparison of both FactCC recall and FactCC F."
+    },
+    {
+      "issue": "The F setting is labeled F1 but described as averaging directions.",
+      "action": "rephrase",
+      "replacement_issue": "The source uses a general F1 label and a bidirectional averaging description without metric-specific aggregation equations.",
+      "replacement_impact": "Retain reported metric names and values without asserting either conventional harmonic-mean F1 or a uniform alternative implementation."
+    },
+    {
+      "issue": "Dialogue length statistics differ between the main text and Appendix A.",
+      "action": "keep_unresolved",
+      "replacement_issue": null,
+      "replacement_impact": "Different unit labels prevent treating the values as directly interchangeable. The source does not explain their relationship."
+    },
+    {
+      "issue": "Table 4 highlighting and the overall precision claim obscure numerical rankings.",
+      "action": "rephrase",
+      "replacement_issue": "DialogSum precision highlighting does not mark the numerical maximum. QUALS leads SAMSum precision, while the prose's overall comparison has no stated aggregation rule.",
+      "replacement_impact": "Per-dataset rankings are recoverable from the numbers. The meaning of overall remains unspecified and should not be converted into a claim that QUALS wins both datasets."
+    },
+    {
+      "issue": "Figure 1 uses one-direction entailment while graph matching uses bidirectional checks.",
+      "action": "resolve_with_source",
+      "replacement_issue": "Figure 1 is a partial diagnostic illustration; the graph description specifies additional equivalence checks.",
+      "replacement_impact": "Use the full graph description for method synthesis. One-direction entailment alone does not establish retention of every reference detail."
+    }
+  ]
+}

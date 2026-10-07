@@ -1,0 +1,82 @@
+{
+ "paper_id": "2609.16301",
+ "title": "CLEAR: Cross-Source Evidence Adjudication for Large Language Models in Medicine",
+ "research_question": "Can an LLM improve medical reasoning by keeping parametric, curated-local, and dynamically retrieved evidence separate, explicitly adjudicating disagreements among them, and selectively performing additional retrieval when existing evidence remains unresolved?",
+ "methodology": "CLEAR independently produces candidate answers from parametric knowledge, a locally curated corpus, and dynamically retrieved evidence, retaining source-specific evidence and provenance for each pathway. An aggregation verifier examines the candidates together with evidence, provenance, and source-quality signals such as authority, recency, and content type, after which override-guard and challenge-audit mechanisms decide whether to preserve or revise the current conclusion. Unresolved disagreement can trigger a targeted, bounded follow-up query followed by re-adjudication rather than unrestricted search. The framework is evaluated with o3-mini and Qwen-3.5-9B across ten public medical benchmarks, with ablations for evidence-source combinations and follow-up retrieval.",
+ "key_findings": [
+  {
+   "finding": "CLEAR shows its largest gains when the backbone's parametric baseline is weaker; for Qwen-3.5-9B, the best reported CLEAR configurations substantially improve MedQA and NEJM-QA over direct inference and conventional retrieval baselines.",
+   "evidence_type": "supported",
+   "section": "3.1 Results on MCQ Datasets and 4.1 Main Findings"
+  },
+  {
+   "finding": "For o3-mini across MedQA, PubMedQA, and NEJM-QA, the full three-source CLEAR configuration has the highest aggregate score even though the best individual method varies by dataset.",
+   "evidence_type": "supported",
+   "section": "3.3 Ablation Studies"
+  },
+  {
+   "finding": "Targeted follow-up retrieval on Qwen-3.5-9B increases aggregate performance from 77.22 to 78.13, while only 12 of 123 triggered follow-up searches produce an accepted answer revision.",
+   "evidence_type": "supported",
+   "section": "3.3 Ablation Studies"
+  },
+  {
+   "finding": "External retrieval is not uniformly beneficial: when the o3-mini parametric baseline is already strong, additional evidence can provide little benefit and the default CLEAR configuration degrades performance on HealthBench.",
+   "evidence_type": "supported",
+   "section": "4.1 Main Findings"
+  },
+  {
+   "finding": "The architecture preserves the identity and provenance of parametric, local, and dynamic evidence until adjudication, making cross-source agreement and conflict explicit instead of merging all retrieved context before reasoning.",
+   "evidence_type": "supported",
+   "section": "2 Methods"
+  },
+  {
+   "finding": "The dynamic-evidence override guard requires relevance, credible sourcing, explicit support, and an explanation of why the competing conclusion is less appropriate before dynamic evidence is allowed to overturn stronger existing conclusions.",
+   "evidence_type": "supported",
+   "section": "2 Methods: Override Guard"
+  },
+  {
+   "finding": "The framework's source-quality assessment explicitly permits recency to influence evaluation of dynamically retrieved evidence, providing a mechanism for time-sensitive evidence adjudication.",
+   "evidence_type": "supported",
+   "section": "2 Methods: Dynamic-Evidence Pathway"
+  }
+ ],
+ "limitations": [
+  "All evaluations are offline benchmark studies and do not establish clinical effectiveness, patient safety, or readiness for deployment.",
+  "Public medical benchmarks may overlap with model pretraining or post-training data, and the authors cannot fully rule out parametric memorization.",
+  "Dynamic web evidence can vary over time, complicating provenance stability and exact reproducibility.",
+  "Institutional access restrictions, privacy requirements, and data governance are identified as deployment issues but are not implemented or empirically evaluated as permission-aware controller constraints.",
+  "The adjudication logic is substantially prompt- and rule-driven and may itself be sensitive to model post-training behavior.",
+  "Broader validation is needed across backbone families, retrievers, search systems, and application domains.",
+  "The framework tracks source provenance and recency but does not present a formal version model for mutable documents or a statistical bounded-risk guarantee for stopping follow-up retrieval.",
+  "The verifier's confidence output is an operational judgment rather than a demonstrated calibrated probability of correctness."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "larger_gain_with_weaker_parametric_backbone": 0.99,
+  "cross_source_aggregate_advantage": 0.97,
+  "targeted_followup_gain_and_selectivity": 0.99,
+  "retrieval_not_uniformly_beneficial": 0.99,
+  "provenance_preserving_adjudication": 0.99,
+  "override_guard_constraints": 0.99,
+  "recency_aware_source_quality": 0.98
+ },
+ "raw_claims": [
+  "CLEAR keeps parametric, local-corpus, and dynamic-search candidates as separate evidence pathways before aggregation.",
+  "Each pathway carries provenance information into the aggregation stage.",
+  "Dynamic source quality can depend on authority, recency, and content type.",
+  "The aggregation verifier explicitly reasons about agreement and disagreement among source-specific candidates.",
+  "A dynamic source is not automatically allowed to override agreement from other pathways merely because it is newer.",
+  "Unresolved conflicts can generate a targeted follow-up query and another adjudication round.",
+  "Follow-up retrieval is used selectively rather than as an unconditional extra search step.",
+  "The reported benefits are larger for the weaker Qwen backbone than for the stronger o3-mini baseline in several tasks.",
+  "On some strong-backbone settings, retrieval provides little benefit or lowers performance.",
+  "The evaluation uses public multiple-choice and free-text medical benchmarks rather than private patient records.",
+  "The paper explicitly identifies changing search results and external-source reproducibility as deployment concerns."
+ ],
+ "source_url": "https://arxiv.org/html/2609.16301",
+ "access": "full_text"
+}

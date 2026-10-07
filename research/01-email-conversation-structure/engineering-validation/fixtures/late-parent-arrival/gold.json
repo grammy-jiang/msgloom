@@ -1,0 +1,111 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "late-parent-arrival",
+  "description": "Reply and quotation arrive before the referenced original.",
+  "family": "late_parent",
+  "messages": [
+    {
+      "message_id": "late-reply",
+      "expected_text": "> Approve Project Atlas budget.\n> Condition: Legal must sign off.\n\nAgreed, subject to that condition.",
+      "arrival_rank": 1,
+      "internet_message_id": "<late-reply@synthetic.invalid>",
+      "subject": "Re: Atlas",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "late-parent",
+      "expected_text": "Approve Project Atlas budget.\nCondition: Legal must sign off.\nDeadline: Friday.",
+      "arrival_rank": 2,
+      "internet_message_id": "<late-parent@synthetic.invalid>",
+      "subject": "Atlas",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "late-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "late-parent"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "late-q1",
+      "message_id": "late-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 65
+      },
+      "source_candidates": [
+        {
+          "message_id": "late-parent",
+          "span": {
+            "start": 0,
+            "end": 61
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "late-decision",
+      "message_id": "late-parent",
+      "span": {
+        "start": 30,
+        "end": 61
+      },
+      "kind": "decision_bearing",
+      "text": "Condition: Legal must sign off.",
+      "notes": ""
+    },
+    {
+      "span_id": "late-deadline",
+      "message_id": "late-parent",
+      "span": {
+        "start": 62,
+        "end": 79
+      },
+      "kind": "deadline",
+      "text": "Deadline: Friday.",
+      "notes": ""
+    },
+    {
+      "span_id": "late-new",
+      "message_id": "late-reply",
+      "span": {
+        "start": 67,
+        "end": 101
+      },
+      "kind": "new_content",
+      "text": "Agreed, subject to that condition.",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "late-reply",
+      "late-parent"
+    ],
+    [
+      "late-parent",
+      "late-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2",
+    "E3"
+  ]
+}

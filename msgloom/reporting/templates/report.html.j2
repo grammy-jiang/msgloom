@@ -1,0 +1,80 @@
+<!doctype html>
+<html><body>
+<h1>Report {{ report_ref|ref }} — part {{ part_number }}/{{ part_count }}</h1>
+<h2>Overview</h2>
+<ul>
+{% for item in overview %}
+<li data-topic="{{ item.topic_ref|ref }}">
+<strong>{{ item.title }}</strong> [{{ item.priority.value }}]
+<div>{{ item.topic_ref|ref }} / {{ item.assessment_ref|ref }}</div>
+<div>Developments:{% for value in item.developments %} {{ value }}{% else %} none{% endfor %}</div>
+<div>Actions:{% for value in item.actions %} {{ value }}{% else %} none{% endfor %}</div>
+<div>Deadlines:{% for value in item.deadlines %} {{ value }}{% else %} none{% endfor %}</div>
+<div>Risks:{% for value in item.risks %} {{ value }}{% else %} none{% endfor %}</div>
+</li>
+{% endfor %}
+</ul>
+{% if warnings %}
+<h2>Pending work</h2><ul>
+{% for warning in warnings %}
+<li>{{ warning.topic_ref|ref }} selected {{ warning.selected_assessment_ref|ref }};
+pending {{ warning.pending_ref|ref }}: {{ warning.detail }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if limitations %}<h2>Report limitations</h2><ul>
+{% for item in limitations %}<li>{{ item.code }}: {{ item.detail }}</li>{% endfor %}
+</ul>{% endif %}
+<h2>Details</h2>
+{% for topic in topics %}
+<article data-topic="{{ topic.topic_ref|ref }}">
+<h3>{{ topic.title }}</h3>
+<p>Topic: {{ topic.topic_ref|ref }}<br>
+Assessment: {{ topic.assessment_ref|ref }}<br>
+Priority: {{ topic.priority.value }}<br>
+Priority reason: {{ topic.reason }}</p>
+<h4>Developments</h4><ul>
+{% for item in topic.developments %}
+<li>{{ item.text }}<ul>{% for evidence in item.evidence %}
+<li>Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}</li>
+{% endfor %}</ul></li>
+{% else %}<li>none</li>{% endfor %}
+</ul>
+<h4>Actions</h4><ul>
+{% for item in topic.actions %}
+<li>{{ item.text }} — Owner: {{ item.owner.state.value }}{% if item.owner.value %} — {{ item.owner.value }}{% endif %}
+<ul>{% for evidence in item.evidence %}
+<li>Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}</li>
+{% endfor %}</ul></li>
+{% else %}<li>none</li>{% endfor %}
+</ul>
+<h4>Deadlines</h4><ul>
+{% for item in topic.deadlines %}
+<li>Original: {{ item.original_wording }}; Interpreted:
+{% if item.interpreted_at %}{{ item.interpreted_at.isoformat() }}; timezone basis={{ item.timezone_basis }}{% else %}not interpreted{% endif %};
+ambiguous={{ item.ambiguous }}
+<ul>{% for evidence in item.evidence %}
+<li>Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}</li>
+{% endfor %}</ul></li>
+{% else %}<li>none</li>{% endfor %}
+</ul>
+<h4>Risks</h4><ul>
+{% for item in topic.risks %}
+<li>{{ item.text }}<ul>{% for evidence in item.evidence %}
+<li>Evidence [{{ evidence.kind.value }}] {{ evidence.source_ref|ref }}: {{ evidence.statement }}</li>
+{% endfor %}</ul></li>
+{% else %}<li>none</li>{% endfor %}
+</ul>
+<h4>Source messages</h4><ul>
+{% for source in topic.source_refs %}
+<li>{{ source|ref }}{% for link in topic.source_links if link.source_ref == source %} —
+<a href="{{ link.url }}">{{ link.url }}</a>{% endfor %}</li>
+{% endfor %}
+</ul>
+<h4>Limitations</h4><ul>
+{% for item in topic.limitations %}<li>{{ item.code }}: {{ item.detail }}</li>
+{% else %}<li>none</li>{% endfor %}
+</ul>
+</article>
+{% endfor %}
+</body></html>

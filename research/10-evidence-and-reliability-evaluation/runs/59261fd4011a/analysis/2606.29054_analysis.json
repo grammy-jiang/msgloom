@@ -1,0 +1,84 @@
+{
+ "paper_id": "2606.29054",
+ "title": "When Can Conformal Risk Control Certify LLM Outputs? Bounds, Impossibility, and Adaptation for Structured Generation",
+ "research_question": "Under what combinations of base risk, calibration data, confidence-score quality, and distribution shift can conformal risk control provide valid selective guarantees for structured LLM outputs, and when is such certification fundamentally infeasible?",
+ "methodology": "The paper formulates selective structured generation with bounded task losses for NER, JSON extraction, question answering, and classification, then derives feasibility and abstention bounds for conformal risk control. It evaluates Hoeffding, Bernstein, and betting-based e-CRC certification over 716 configurations spanning six open-weight models, eight datasets, and six confidence scores, using calibration/test splits and multiple seeds. It additionally tests heuristic abstention baselines, calibration-data scarcity, temporal shift, cross-dataset transfer, adaptive conformal inference over several step sizes, and confidence-score fusion. For nonstationary streams it contrasts static CRC and ACI with a full-feedback anytime-valid risk monitor and provides an impossibility result for emitted-risk guarantees with only emit-time feedback.",
+ "key_findings": [
+  {
+   "finding": "When base risk exceeds the requested target, any valid distribution-free selective method must abstain on at least (mu-alpha)/(M-alpha) of examples, giving a feasibility limit that cannot be repaired merely by a tighter confidence bound.",
+   "evidence_type": "supported",
+   "section": "2.2 Fundamental Limits of Certification"
+  },
+  {
+   "finding": "At strict targets across 716 seed-42 configurations, Hoeffding, Bernstein, and e-CRC certified 51, 72, and 80 configurations respectively, with zero test violations among their certified configurations in that split.",
+   "evidence_type": "supported",
+   "section": "3.4 CRC Validity"
+  },
+  {
+   "finding": "Variance-aware certification was especially useful with limited calibration data: at a 10% calibration fraction, certification rates were 1.1% for Hoeffding, 1.9% for Bernstein, and 4.2% for e-CRC.",
+   "evidence_type": "supported",
+   "section": "3.4 CRC Validity and Appendix H.6 Data Efficiency"
+  },
+  {
+   "finding": "Under genuine cross-dataset shift with target base risk above the requested level, static CRC and ACI each violated emitted-risk targets on 14 of 16 transfers at the headline ACI setting, and all seven tested ACI step sizes still yielded 14 of 16 emitted-risk violations.",
+   "evidence_type": "supported",
+   "section": "3.5 ACI Under Distribution Shift and Appendix I"
+  },
+  {
+   "finding": "A full-feedback anytime-valid monitor produced zero violations on the same 16 transfer experiments and remained non-vacuous on feasible streams, emitting 65% to 97% of examples in the reported feasible cases.",
+   "evidence_type": "supported",
+   "section": "3.6 A Constructive Counterpart Under Shift"
+  },
+  {
+   "finding": "Confidence-score fusion improved AUROC in 23 of 34 evaluated configurations but did not create a new certification advantage sufficient to overcome underlying feasibility constraints.",
+   "evidence_type": "supported",
+   "section": "3.7 Score Fusion and Appendix R"
+  },
+  {
+   "finding": "The certification guarantees assume i.i.d. calibration data and do not automatically survive distribution shift; ACI provides a long-run effective-risk identity rather than finite-sample emitted-risk control.",
+   "evidence_type": "supported",
+   "section": "Appendix L Limitations and Future Work"
+  }
+ ],
+ "limitations": [
+  "Static conformal guarantees assume i.i.d. calibration data and are voided by arbitrary distribution shift.",
+  "ACI does not provide finite-sample control of emitted-output risk under the studied shifts.",
+  "Sampling-based confidence scores require multiple model forward passes.",
+  "Score fusion consumes a disjoint training split and therefore reduces effective calibration sample size.",
+  "MMLU evaluation subsets contain only 400 examples each.",
+  "Question answering is evaluated on only two datasets, with NQ Open exhibiting unusually high base risk.",
+  "The 72B model is evaluated with only two greedy-decoding scores.",
+  "The JSON extraction tasks are template based, which may make their near-ceiling certification behavior unusually easy.",
+  "ACI conclusions cover only the seven tested step sizes from 0.001 through 0.1.",
+  "The experiments concern structured outputs rather than free-form multi-source research reports or evidence-completeness judgments."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "abstention_feasibility_floor": 0.99,
+  "strict_target_certification": 0.99,
+  "calibration_data_efficiency": 0.99,
+  "aci_cross_dataset_failure": 1.0,
+  "full_feedback_monitor": 0.99,
+  "fusion_not_certification_lever": 0.96,
+  "iid_scope_limit": 1.0
+ },
+ "raw_claims": [
+  "A low-risk certification target can be infeasible when the model's underlying task risk is too high.",
+  "The paper derives a lower bound on the abstention required to attain a requested risk target.",
+  "Variance-sensitive conformal bounds certify more strict-target configurations than the Hoeffding bound in the reported grid.",
+  "Certification becomes especially difficult for high-variance configurations and scarce calibration data.",
+  "Heuristic confidence thresholds do not provide per-deployment risk guarantees.",
+  "Static conformal certification can fail badly after a dataset shift.",
+  "Tuning the ACI step size did not fix emitted-risk violations on the hard cross-dataset transfers.",
+  "Full outcome feedback enables an anytime-valid monitoring construction that avoids the tested shift violations.",
+  "Emit-only feedback is insufficient for a general anytime emitted-risk guarantee under arbitrary shift.",
+  "Improving confidence-score ranking does not remove a fundamental base-risk feasibility barrier.",
+  "The empirical scope is structured generation rather than unrestricted free-form report generation."
+ ],
+ "source_url": "https://arxiv.org/html/2606.29054",
+ "access": "full_text"
+}

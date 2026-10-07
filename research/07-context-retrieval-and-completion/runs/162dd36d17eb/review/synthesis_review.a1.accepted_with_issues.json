@@ -1,0 +1,27 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/runs/162dd36d17eb/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "gap-1 overstates what is traceable to the supplied S2G-RAG analysis. The synthesis says S2G-RAG explicitly identifies temporal constraints, multi-entity joins, and complex compositional evidence requirements as limitations of its schema, but those specific limitations do not appear in the supplied reduced analysis for 2604.23783. The broader conclusion that these cases remain unvalidated by the supplied corpus is defensible, but the attribution to S2G-RAG is not supported here.",
+  "Finding 3 cites stopping papers but omits the clearest supplied evidence for 'conservative over-retrieval': 2604.23783 reports that the sufficiency judge labels 31.60% of proxy-sufficient cases as insufficient, explicitly indicating conservative stopping behavior. As written, the cited evidence set does not cleanly support every listed stopping-error category.",
+  "Finding 9 states that retrieval harm, evidence-usage transfer, retrieval-call count, passage/token budget, and latency 'can rank controllers differently.' The supplied analyses support heterogeneous retrieval harm, threshold-transfer failures, differing call-versus-passage frontiers, and computational-overhead differences, but they do not directly establish that latency itself reverses or changes controller rankings. The claim should be narrowed to distinct trade-offs unless direct ranking evidence is available."
+ ],
+ "unsupported_claims": [
+  "S2G-RAG explicitly identifies temporal constraints, multi-entity joins, and complex compositional evidence requirements as limitations of its current schema.",
+  "Latency can rank retrieval controllers differently, as stated in Finding 9, is not directly demonstrated by the supplied reduced analyses."
+ ],
+ "required_fixes": [
+  "Revise gap-1 and its gap_status note so that temporal constraints, multi-entity joins, and complex compositional requirements are described as unvalidated by the supplied corpus rather than explicitly identified limitations of S2G-RAG, unless that attribution is restored from an analysis that actually contains it.",
+  "Add 2604.23783 to Finding 3's evidence for conservative stopping/over-retrieval, or remove that error category from the finding.",
+  "Narrow Finding 9 from 'can rank controllers differently' across all listed cost dimensions to the directly supported claim that those dimensions expose different quality-cost trade-offs and that call-based and passage-based frontiers can differ; retain a latency-ranking claim only if evidence explicitly demonstrates ranking changes."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.98,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is otherwise strongly grounded in the supplied 34 analyses. All cited paper_ids are in the permitted set. The principal component-level conclusions about adaptive retrieval, explicit sufficiency assessment, temporal/version-aware retrieval, permission gating, selective prediction, formal risk control, and bounded retrieval are traceable to the analyses and appropriately distinguish direct evidence from transfer-domain evidence. The empty cross-paper contradictions array is acceptable: the apparent tensions explicitly discussed in the limitations arise under different tasks or operating conditions and are not demonstrated contradictions. The important Stop-RAG inconsistency is correctly retained as a within-paper qualification. All eight integration gaps remain open, and the synthesis does not improperly claim that separate component successes establish correctness of a production workplace controller."
+}

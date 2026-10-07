@@ -1,0 +1,392 @@
+{
+ "topic": "proposition-level response scope in workplace email and dialogue, with emphasis on partial replies to multi-question or multi-proposition antecedents, unanswered subquestions, approval/rejection scope, and multi-antecedent response links",
+ "paper_count": 38,
+ "executive_summary": "Across the 38 papers, the strongest cross-paper conclusion is that response scope cannot safely be represented as a single message-to-message or nearest-turn link. Dialogue and email contain unanswered questions, non-adjacent answers, one-to-many and many-to-many links, composite antecedents, ambiguous targets, and responses that accept one proposition while rejecting another. The literature therefore supports msgloom's requirement to preserve exact, partial, multiple, ambiguous, and no-link outcomes rather than forcing whole-message resolution. However, evidence is fragmented across discourse parsing, question-answer alignment, abstract anaphora, grounding, and formal pragmatics. Direct empirical evidence for proposition-level approval, rejection, agreement, and partial-answer scope in authentic workplace communication remains insufficient. Consequently, all five carried-over gaps remain open: three require additional academic evidence and two require engineering validation of annotation, evaluation, abstention, and asymmetric error policy.",
+ "themes": [
+  "Response scope is frequently non-bijective: one response may target multiple antecedents, one antecedent may receive multiple responses, and valid no-link cases are common.",
+  "Unanswered and partially resolved issues must remain explicit discourse state rather than being inferred as closed from the presence of a reply.",
+  "Adjacency and thread structure are useful signals but are not reliable semantic scope boundaries, especially in asynchronous email and multi-threaded dialogue.",
+  "Proposition-level and discourse-segment antecedents are empirically distinct from nominal coreference and may have uncertain or composite boundaries.",
+  "Acceptance, rejection, answerhood, clarification, and grounding are relations to particular propositional content, not merely labels on entire responses.",
+  "Composite and split antecedents require representations and metrics that permit multiple supporting spans and partial credit.",
+  "Ambiguity and missing evidence are genuine outcomes: forcing a single antecedent can convert uncertainty into false commitments.",
+  "Genre matters substantially: response behavior, locality, link density, and direct-answer rates differ across task dialogue, free conversation, email, customer service, and institutional interaction.",
+  "Attachment detection and relation labeling interact, suggesting that antecedent selection and response-type classification should not be treated as entirely independent decisions.",
+  "Evaluation must expose rare but decision-critical partial-scope and multi-antecedent errors rather than allowing aggregate scores to hide them."
+ ],
+ "findings": [
+  {
+   "statement": "A single response cannot generally be assumed to resolve exactly one preceding unit: empirical dialogue and email data contain one-to-many, many-to-many, and multi-parent response structures.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-d15-1109",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-3233-aic-2012-0516",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "2403.16609",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Unanswered questions and requests are empirically real discourse states, including in email; the existence of a subsequent message or locally coherent response does not imply that the preceding issue was answered.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3115-1220355-1220483",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-3115-1708376-1708429",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-15398-jlm-v4i2-173",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "manual-e1981ecd9a",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Nearest-turn or reply-thread linkage is insufficient for semantic response scope because answers can target older material, parallel topics, or non-adjacent discourse units.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3115-1220355-1220483",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-3115-1708376-1708429",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-d15-1109",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "2403.16609",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "A response can apply to only part of antecedent propositional content: acceptance of a weaker or entailed component can coexist with rejection of a stronger proposition, and omission or substitution can itself carry rejection scope.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1177-002383099603900306",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "When several questions or directives are presented together, respondents may answer only the most recent or most specific one, leaving broader or earlier material unresolved; however, multiple interrogatives can also be reformulations rather than independent obligations.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-j-pragma-2018-03-015",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-1016-j-pragma-2007-07-011",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "2403.16609",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Proposition-like, event-like, and discourse-segment antecedents are an empirically important reference class, and their exact span boundaries are often substantially harder to determine than their approximate location.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1093-jos-17-1-51",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "manual-7743c50805",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "manual-be69c3aa17",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Composite antecedents are linguistically and computationally justified: several propositions or discourse units can jointly form the target of a later reference or relation, but rhetorical coherence constrains which combinations constitute a valid composite.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1515-ling-2018-0008",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "manual-8b8a394daa",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-d15-1109",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Explicit ambiguity, no-link, and alternative-antecedent outcomes are necessary because some responses cannot be reliably assigned to one active question or antecedent even with conversational context.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2403.16609",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "manual-be69c3aa17",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-1609-aaai-v33i01-3301134",
+     "section": "key_findings"
+    },
+    {
+     "doi": "",
+     "paper_id": "doi-10-3115-1708376-1708429",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Evaluation should give explicit visibility and partial credit to split or multi-antecedent structures because aggregate metrics can largely hide failures on rare multi-antecedent cases.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-5210-dad-2023-201",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2023-eacl-main-247",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Response interpretation may depend on later context, so an incremental system should permit prior scope judgments to remain provisional or be revised rather than treating every first-pass resolution as final.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "2403.16609",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-15398-jlm-v4i2-173",
+     "section": "key_findings"
+    }
+   ]
+  },
+  {
+   "statement": "Joint or tightly coupled modeling of candidate identification, attachment, and relation type is supported by several tasks, because errors in identifying candidate antecedents and deciding their relation interact materially.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2023-eacl-main-247",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-p17-1009",
+     "section": "key_findings"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-s15-1035",
+     "section": "key_findings"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "How local antecedent search should be",
+   "papers": [
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "manual-555fa5b6e8",
+    "doi-10-3115-1220355-1220483",
+    "doi-10-18653-v1-d15-1109"
+   ],
+   "note": "Dialogue discourse deixis was strongly local in one benchmark, with more than 90% of antecedents within four utterances, whereas event references and asynchronous email/chat can span much longer distances or cross active threads. This is best treated as genre- and relation-dependent evidence rather than a universal contradiction; msgloom should not adopt a fixed short recency window without workplace validation."
+  },
+  {
+   "topic": "Whether unresolved issues can be represented by a simple QUD stack",
+   "papers": [
+    "doi-10-3765-sp-5-6",
+    "doi-10-15398-jlm-v4i2-173"
+   ],
+   "note": "The integrated pragmatics account uses a QUD stack, whereas the empirical query-response analysis argues that some response classes require multiple simultaneously accessible issues organized as a partial order rather than a simple stack. The tension matters for multi-question workplace messages where several obligations can remain independently open."
+  },
+  {
+   "topic": "Single-target versus multi-target alignment assumptions",
+   "papers": [
+    "doi-10-1109-icaicta63815-2024-10762999",
+    "manual-5a32708675",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "doi-10-3233-aic-2012-0516"
+   ],
+   "note": "Some alignment pipelines operationalize correspondence through one-to-one matching or grouped cross-product mappings, while customer-service and email evidence explicitly contains answer utterances linked to multiple questions. These are different task formulations rather than direct empirical disagreement, but they show that a one-to-one matcher is too restrictive as a general msgloom scope model."
+  },
+  {
+   "topic": "Whether exact antecedent boundaries are reliably annotatable",
+   "papers": [
+    "manual-be69c3aa17",
+    "manual-7743c50805",
+    "doi-10-1162-coli-a-00327"
+   ],
+   "note": "DAD reports substantial agreement for identifying non-NP antecedents under a structured annotation scheme, whereas unconstrained span selection for abstract-object reference shows only moderate convergence and the survey describes antecedent delimitation as a recurring annotation problem. The apparent conflict is plausibly explained by annotation constraints, data, and task definition; exact-span evaluation should therefore be validated specifically for workplace responses."
+  },
+  {
+   "topic": "Whether syntactic constraints help abstract antecedent resolution",
+   "papers": [
+    "1706.02256",
+    "doi-10-3115-v1-d14-1056",
+    "manual-555fa5b6e8"
+   ],
+   "note": "Explicit syntax helps in some shell-noun and event-reference settings but can hurt broader unrestricted abstract-anaphora resolution or introduce noise when constraints are too rigid. The evidence supports selective use of syntax rather than a universal syntactic restriction."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "Direct empirical evidence is still missing for proposition-level agreement, rejection, approval, clarification, and answer scope in authentic workplace email or enterprise chat, especially cases where one short response applies to only part of a preceding message.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"reply scope\" email dialogue proposition agreement approval rejection workplace communication"
+  },
+  {
+   "id": "gap-2",
+   "description": "A validated annotation and evaluation scheme is still missing for mapping workplace responses to exact proposition or span targets while representing exact, partial, ambiguous, unsupported, discontinuous, multiple-antecedent, and explicit no-link cases. Individual requirements are supported by the literature, but the combined msgloom annotation contract has not been validated.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-3",
+   "description": "Direct evidence remains insufficient for aligning replies to one or more questions when a preceding workplace message contains multiple questions, requests, or alternatives, including proposition-level detection of questions that remain unanswered.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"question answer alignment\" dialogue \"multiple questions\" partial answer unanswered questions"
+  },
+  {
+   "id": "gap-4",
+   "description": "It remains open whether and how a workplace response should be modeled as targeting a composite or multi-proposition antecedent. The corpus supports composite abstract discourse referents and multi-unit discourse antecedents, but does not directly evaluate multi-proposition reply scope in work communication.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"multi-antecedent\" propositional anaphora dialogue composite discourse referent reply"
+  },
+  {
+   "id": "gap-5",
+   "description": "The appropriate msgloom policy for uncertainty-driven abstention, ambiguity, missing antecedents, and asymmetric error costs remains unvalidated. The literature supports explicit no-link outcomes and preservation of ambiguous or multiple antecedents, but it does not establish confidence thresholds or the relative cost of over-broad approval/commitment links versus unresolved links.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  }
+ ],
+ "actionable_insights": [
+  "Represent response scope as a graph over proposition/span units rather than a single message-level parent: permit zero, one, or multiple antecedent links and multiple responses to the same antecedent.",
+  "Keep question/request obligations independently addressable. A reply to one subquestion must not automatically close sibling questions or the containing message.",
+  "Separate structural candidate generation from semantic scope judgment: Topic 01 reply/quote structure and Topic 02 Topic spans should narrow candidates but must not determine semantic answer or approval scope.",
+  "Use relation-specific links such as answer, agreement, rejection, clarification, condition, and reference, because logically related responses can have different acceptance/rejection scope.",
+  "Represent exact, partial, ambiguous, unsupported, and no-link outcomes explicitly; never coerce uncertainty into a whole-message approval or commitment.",
+  "Permit composite antecedents as sets or structured groups of proposition spans, but require evidence of discourse coherence rather than allowing arbitrary span unions.",
+  "Maintain unresolved questions and requests as first-class state that downstream action/state logic can inspect.",
+  "Allow incremental revision of scope judgments when later context changes the interpretation, while preserving earlier assessments and evidence lineage.",
+  "Evaluate multi-antecedent and partial-scope cases separately from aggregate accuracy so rare but high-impact over-broad links cannot disappear inside a strong overall score.",
+  "For gap-2, build an independent annotation pilot with adversarial fixtures covering multi-question messages, partial yes/no answers, mixed approve/reject responses, discontinuous targets, missing antecedents, and explicit abstention.",
+  "For gap-5, evaluate asymmetric costs explicitly: false broad approval/rejection/commitment links should be measured separately from conservative unresolved outcomes.",
+  "Treat locality as a feature rather than a hard rule: short windows are useful for many dialogue references, but asynchronous workplace communication requires escape paths to older or cross-thread candidates."
+ ],
+ "confidence_summary": "Confidence is high in the structural conclusions that response scope can be non-adjacent, unanswered, multi-parent, composite, ambiguous, and proposition-specific because these patterns recur across email, dialogue parsing, grounding, QA alignment, abstract anaphora, and formal-pragmatic work. Confidence is medium for transferring particular algorithms, locality windows, or annotation reliability figures to msgloom because the corpora and tasks differ substantially from enterprise Outlook/Teams traffic. Confidence is low-to-medium regarding production-level partial approval/rejection behavior in authentic workplace communication because the corpus still lacks direct targeted evidence for that central use case.",
+ "limitations": [
+  "The corpus is heterogeneous: it combines workplace email, customer service, institutional interviews, parliamentary minutes, multiparty chat, task dialogue, free conversation, formal semantics, and abstract-anaphora studies.",
+  "Only a subset of papers directly studies workplace email, and none of the supplied evidence directly validates the full msgloom proposition-level approval/rejection scope contract on authentic enterprise communication.",
+  "Several papers evaluate anaphoric reference rather than response scope; they support antecedent representation and ambiguity handling but not production-email answer or commitment accuracy.",
+  "Some question-response studies operate at utterance, sentence, or message level and therefore do not establish exact proposition-level partial-answer boundaries.",
+  "The provided per-paper reductions contain top findings rather than complete methods, annotation manuals, error analyses, and dataset details, limiting finer comparison of definitions and evaluation protocols.",
+  "Reported performance values are not directly comparable across papers because datasets, units, metrics, candidate spaces, and availability of gold mentions or segmentation differ.",
+  "The corpus supports composite antecedents conceptually and structurally but provides little direct evidence about how workplace users interpret short approvals or rejections over composite business propositions.",
+  "No paper in the supplied corpus establishes msgloom-specific decision costs or calibrated abstention thresholds for false broad approvals versus unresolved links."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "The corpus now gives strong transfer evidence that acceptance/rejection can have subpropositional scope and that workplace email contains non-adjacent and unanswered response relations, but it still lacks direct empirical study of proposition-level agreement, rejection, approval, clarification, and partial scope in authentic workplace email or enterprise chat.",
+   "evidence": [
+    "doi-10-1177-002383099603900306",
+    "doi-10-3115-1220355-1220483",
+    "doi-10-3115-1708376-1708429",
+    "doi-10-3233-aic-2012-0516"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "The literature separately supports exact spans, non-NP antecedents, ambiguity, alternatives, no-link, multiple antecedents, and partial-credit evaluation, but no supplied paper validates the combined msgloom annotation and evaluation contract in workplace communication.",
+   "evidence": [
+    "manual-be69c3aa17",
+    "manual-7743c50805",
+    "doi-10-5210-dad-2023-201",
+    "2403.16609",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "doi-10-1162-coli-a-00327"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "The new corpus contains strong evidence for multiple-question behavior, one-answer-to-several-question links, unanswered questions, and batched QA alignment, including some email evidence. It still does not provide direct proposition-level evaluation of partial replies that determines exactly which subquestions in a multi-question workplace message remain unanswered.",
+   "evidence": [
+    "doi-10-1016-j-pragma-2018-03-015",
+    "doi-10-3233-aic-2012-0516",
+    "doi-10-3115-1220355-1220483",
+    "manual-5a32708675",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "2403.16609"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "Composite and multi-unit antecedents are now well supported in abstract anaphora and discourse parsing, but the supplied studies do not directly test short workplace responses whose semantic scope is a composite of several business propositions.",
+   "evidence": [
+    "doi-10-1515-ling-2018-0008",
+    "manual-8b8a394daa",
+    "doi-10-18653-v1-d15-1109",
+    "doi-10-18653-v1-2023-eacl-main-247"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "Several papers justify preserving ambiguous, no-link, multiple-antecedent, and revisable interpretations, but none establishes calibrated confidence thresholds or msgloom-specific asymmetric costs for over-broad approval/commitment links versus unresolved outcomes.",
+   "evidence": [
+    "2403.16609",
+    "doi-10-1609-aaai-v33i01-3301134",
+    "manual-be69c3aa17",
+    "doi-10-5210-dad-2023-201",
+    "doi-10-3115-1708376-1708429"
+   ]
+  }
+ ]
+}

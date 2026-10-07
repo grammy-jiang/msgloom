@@ -1,0 +1,401 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2605.03534",
+   "title": "SURE-RAG: Sufficiency and Uncertainty-Aware Evidence Verification for Selective Retrieval-Augmented Generation",
+   "research_question": "Can answer-level aggregation of claim-evidence sufficiency and uncertainty support more accurate and calibrated selective RAG answering than passage-level pooling while remaining auditable?",
+   "methodology": "SURE-RAG uses a shared DeBERTa-v3-base cross-encoder to classify each claim-evidence pair as supporting, refuting, or neutral, then aggregates local outputs into coverage, relation-strength, uncertainty, and optional retrieval features with a logistic-regression answer-level classifier. Its selective score combines the predicted probability that an answer is safe with an uncertainty penalty, with calibration and answer thresholds selected only on development data. The main evaluation uses the controlled HotpotQA-RAG v3 multi-hop benchmark with supported, partial, hard-insufficient, irrelevant, and refuted evidence conditions, alongside shortcut baselines, no-oracle checks, counterfactual evidence swaps, GPT-4o audits, and risk-coverage evaluation. HaluBench is used as an external boundary test for natural hallucination detection.",
+   "key_findings": [
+    {
+     "finding": "Calibrated SURE-RAG achieved 0.9075 Macro-F1 on HotpotQA-RAG v3, compared with 0.8951 for raw SURE-RAG, 0.6516 for DeBERTa mean-pooling, and 0.8888 for the concat cross-encoder.",
+     "evidence_type": "supported",
+     "section": "VI-B Main HotpotQA-RAG v3 Results"
+    },
+    {
+     "finding": "At 30% coverage, SURE-RAG reduced unsafe-answer risk to 0.1642 versus 0.2588 for mean-pooling, while its advantage narrowed at higher coverage.",
+     "evidence_type": "supported",
+     "section": "VI-D Selective Answering"
+    },
+    {
+     "finding": "Post-hoc calibration reduced binary ECE from 0.0304 to 0.0198, but did not improve Risk@30 and strict fixed-risk thresholds were too conservative to provide useful coverage.",
+     "evidence_type": "supported",
+     "section": "VI-E Calibration and Fixed-Risk Diagnostics"
+    },
+    {
+     "finding": "Removing construction-derived retrieval scores still produced 0.8370 Macro-F1 and replacing them with BM25 scores produced 0.8347, both substantially above mean-pooling at 0.6516.",
+     "evidence_type": "supported",
+     "section": "VI-C Artifact and No-Oracle Checks"
+    },
+    {
+     "finding": "A GPT-4o audit judged 260 of 300 sampled refutation examples valid, and SURE-RAG obtained 0.9370 refuted-F1 on the audited subset.",
+     "evidence_type": "supported",
+     "section": "VI-C Artifact and No-Oracle Checks"
+    },
+    {
+     "finding": "External HaluBench performance reversed the HotpotQA ordering: GPT-4o reached 0.7389 unsafe-F1 while SURE-RAG reached 0.3343, indicating that controlled evidence sufficiency and natural hallucination detection are materially different tasks.",
+     "evidence_type": "supported",
+     "section": "VI-G GPT-4o Judge and External Transfer"
+    },
+    {
+     "finding": "The experiments do not establish effectiveness for naturally generated long-form multi-claim responses, because the main validation uses short-answer multi-hop sufficiency and leaves full long-form claim coverage for future work.",
+     "evidence_type": "supported",
+     "section": "VII-B Limitations"
+    }
+   ],
+   "limitations": [
+    "The main HotpotQA-RAG v3 benchmark is controlled and QA-derived, so transfer to natural RAG traffic and long-form generation is untested.",
+    "The benchmark remains susceptible to some construction artifacts despite the artifact-aware evaluation protocol.",
+    "Entity and answer perturbations used to construct refutations can introduce answer-type mismatches or noisy refutation labels.",
+    "Full multi-claim long-form coverage is formulated but not empirically validated.",
+    "The task is evidence-sufficiency verification rather than open-world hallucination detection, as demonstrated by weak HaluBench transfer.",
+    "The answer-level aggregator summarizes local claim-passage relations rather than explicitly performing end-to-end passage-passage reasoning.",
+    "The GPT-4o semantic audit covers only a sampled subset and does not replace comprehensive human annotation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "classification_gain": 0.99,
+    "low_coverage_risk_reduction": 0.99,
+    "calibration_improvement": 0.99,
+    "no_oracle_robustness": 0.98,
+    "refutation_audit": 0.98,
+    "external_transfer_boundary": 0.99,
+    "long_form_scope_limit": 0.99
+   },
+   "raw_claims": [
+    "Evidence relevance alone is insufficient to determine whether a RAG answer is justified.",
+    "SURE-RAG treats sufficiency as a property of the entire retrieved evidence set.",
+    "The system distinguishes supported, refuted, and insufficient answers before deciding whether to answer or abstain.",
+    "Its answer-level features summarize claim coverage, relation strength, uncertainty, and retrieval information.",
+    "The main HotpotQA-RAG v3 benchmark contains 4,026 examples organized into 900 question groups.",
+    "Answer-level aggregation substantially outperformed simple pooling of the same pair-level verifier.",
+    "Selective ranking produced its strongest risk improvement at relatively low answer coverage.",
+    "Probability calibration improved ECE without providing a corresponding improvement in selective risk.",
+    "No-oracle checks indicate that construction-derived retrieval metadata does not by itself explain the model's advantage.",
+    "The poor HaluBench transfer result limits extrapolation from controlled sufficiency verification to natural hallucination detection."
+   ],
+   "source_url": "https://arxiv.org/html/2605.03534",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2508.20867",
+   "title": "MSRS: Evaluating Multi-Source Retrieval-Augmented Generation",
+   "research_question": "How should RAG systems be evaluated when answering a query requires retrieving complementary information from multiple documents and synthesizing it into a long-form response, and where do retrieval and generation failures arise?",
+   "methodology": "The authors construct MSRS-Story and MSRS-Meet from SQuALITY and QMSum, creating queries whose answers require information distributed over multiple source documents and validating benchmark properties with expert annotation. They evaluate sparse and dense retrieval systems using retrieval metrics such as NDCG, MAP, precision, and recall, then evaluate multiple LLM summarizers with G-EVAL and lexical or semantic generation metrics. Oracle-document, no-document, long-context, and retrieval variants separate retrieval failures from synthesis failures. Human error analysis of oracle-condition outputs examines omissions and other generation defects even after retrieval errors have been removed.",
+   "key_findings": [
+    {
+     "finding": "Generation quality tracked retrieval quality closely; on MSRS-Story, mean G-EVAL across models increased from 40.53 with BM25 to 53.34 with gemini-embedding, compared with an oracle average of 60.90.",
+     "evidence_type": "supported",
+     "section": "5.2 Final Generation Results"
+    },
+    {
+     "finding": "Providing the full set of relevant documents outperformed weaker evidence conditions, supporting the benchmark's intended requirement for multi-document evidence aggregation.",
+     "evidence_type": "supported",
+     "section": "5.2 Final Generation Results"
+    },
+    {
+     "finding": "Even with oracle retrieval, top non-reasoning systems omitted multiple minor details in 40% of evaluated MSRS-Story summaries and 60% of MSRS-Meet summaries, while MSRS-Meet summaries missed multiple major details 35% of the time.",
+     "evidence_type": "supported",
+     "section": "5.3 Oracle Error Analysis"
+    },
+    {
+     "finding": "Reasoning models improved oracle-setting G-EVAL over the strongest non-reasoning baselines by as much as 11.22 points on MSRS-Story and 7.11 points on MSRS-Meet; GPT-5 reached G-EVAL 81.07 and 60.78 respectively.",
+     "evidence_type": "supported",
+     "section": "5.4 Reasoning Model Generation Results"
+    },
+    {
+     "finding": "For Gemini 2.5 Pro, feeding a very long document context did not eliminate the value of retrieval: on MSRS-Story, G-EVAL was 61.30 for long context, 70.63 with the strong retriever, and 76.66 with oracle evidence.",
+     "evidence_type": "supported",
+     "section": "5.2 Final Generation Results and Appendix long-context evaluation"
+    },
+    {
+     "finding": "The experiments evaluate standard single-call RAG rather than iterative or agentic retrieval, so they do not establish how query decomposition, retrieval planning, or multi-stage synthesis would perform on MSRS.",
+     "evidence_type": "supported",
+     "section": "Limitations and Future Work"
+    }
+   ],
+   "limitations": [
+    "Automated query construction can introduce minor inaccuracies.",
+    "The deliberately large source collections introduce noise that complicates multi-source RAG evaluation.",
+    "The evaluated pipelines are primarily standard single-call RAG systems rather than iterative or agentic retrieval systems.",
+    "Query decomposition, retrieval planning, and multi-stage synthesis are not directly evaluated.",
+    "The two benchmark families derive from story and meeting data, limiting evidence about transfer to other multi-source domains."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_generation_link": 0.99,
+    "multi_document_necessity": 0.96,
+    "oracle_omission_rate": 0.99,
+    "reasoning_model_gain": 0.99,
+    "long_context_not_sufficient": 0.99,
+    "agentic_scope_limit": 0.99
+   },
+   "raw_claims": [
+    "MSRS evaluates retrieval and synthesis when useful information is spread across multiple complementary documents.",
+    "The benchmark contains separate story-based and meeting-based variants.",
+    "Stronger retrieval generally produces stronger downstream generation scores.",
+    "Oracle evidence does not eliminate synthesis errors.",
+    "Omission of minor details remains frequent even among the strongest oracle-condition non-reasoning models.",
+    "Major-detail omissions are particularly visible in the meeting benchmark.",
+    "Reasoning-oriented models improve multi-source synthesis substantially in the oracle setting.",
+    "A large context window does not substitute fully for identifying and supplying high-quality relevant evidence.",
+    "No-document evaluation is used to probe whether systems can answer from memorized knowledge rather than supplied evidence.",
+    "The reported evaluation does not cover more complex iterative or agentic retrieval workflows."
+   ],
+   "source_url": "https://arxiv.org/html/2508.20867",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2106.00170",
+   "title": "Adaptive Conformal Inference Under Distribution Shift",
+   "research_question": "Can conformal prediction be adapted online to retain a target long-run coverage frequency when the data distribution changes unpredictably over time without relying on exchangeability?",
+   "methodology": "The paper introduces an online conformal update that adjusts the conformal miscoverage parameter after each observed prediction error, increasing or decreasing it according to whether recent errors are above or below the target. It proves a distribution-free bound on long-run average miscoverage and develops additional results under a hidden Markov model for changing distributions. The method is compared with fixed conformal inference on stock-market volatility and U.S. election forecasting, using local coverage over time to expose distribution-shift failures. Additional experiments and analysis study the role of conformity-score design and the step-size parameter.",
+   "key_findings": [
+    {
+     "finding": "The adaptive update has a distribution-free long-run guarantee: the time-average error rate converges almost surely to the target miscoverage level, with a finite-time deviation bound proportional to 1 divided by T times the step size.",
+     "evidence_type": "supported",
+     "section": "4.1 Distribution-free results, Proposition 4.1"
+    },
+    {
+     "finding": "Adaptation speed and stability are controlled by the step size, creating a trade-off between rapidly tracking distribution changes and producing more volatile parameter updates.",
+     "evidence_type": "supported",
+     "section": "2.1 Adaptive conformal inference"
+    },
+    {
+     "finding": "In the election-night experiment, fixed conformal inference suffered large local-coverage troughs around time-zone changes, whereas adaptive conformal inference maintained approximately 90% local coverage across the sequence.",
+     "evidence_type": "supported",
+     "section": "6 Real data example: election night predictions"
+    },
+    {
+     "finding": "Coverage behavior depends strongly on the conformity score: an unnormalized volatility score produced substantially wider deviations from the 90% coverage target than the normalized score.",
+     "evidence_type": "supported",
+     "section": "5 Impact of the conformity score on performance"
+    },
+    {
+     "finding": "The strongest general guarantee concerns long-run average coverage rather than uniform finite-window conditional coverage during every local distribution shift.",
+     "evidence_type": "supported",
+     "section": "4.1 Distribution-free results"
+    },
+    {
+     "finding": "The method requires outcome feedback after predictions and therefore does not directly cover delayed or batched-feedback settings.",
+     "evidence_type": "supported",
+     "section": "7 Discussion"
+    },
+    {
+     "finding": "The paper does not evaluate LLM generation, evidence completeness, or semantic abstention; its relevance to those settings is through the general problem of adapting statistical coverage guarantees under temporal distribution shift.",
+     "evidence_type": "supported",
+     "section": "Scope of the paper"
+    }
+   ],
+   "limitations": [
+    "The proposed online method assumes that the true response is revealed after each prediction.",
+    "Delayed and batch feedback are left as open problems.",
+    "The more detailed distribution-shift theory is developed only for a particular data-generating model and a fixed quantile function.",
+    "The step size is selected using heuristic knowledge about expected distribution change rather than learned fully adaptively.",
+    "Empirical evaluation is limited to stock-market volatility and election forecasting.",
+    "Prediction-set quality still depends on the underlying regression or forecasting model and the choice of conformity score.",
+    "The paper does not study free-form language generation or multi-source evidence completeness."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "long_run_coverage_guarantee": 1.0,
+    "step_size_tradeoff": 0.98,
+    "election_shift_adaptation": 0.99,
+    "conformity_score_sensitivity": 0.99,
+    "feedback_requirement": 0.99,
+    "llm_scope_limit": 1.0
+   },
+   "raw_claims": [
+    "Adaptive conformal inference updates its target parameter using observed online coverage errors.",
+    "Its basic long-run coverage result does not require a stationary or exchangeable data sequence.",
+    "Average miscoverage converges to the requested target over sufficiently long horizons.",
+    "A larger update step allows faster reaction to changes but can make the adaptive trajectory less stable.",
+    "Election-night geography creates a sequence with meaningful distribution drift.",
+    "Adaptive intervals tracked the desired election coverage much better than the fixed alternative around distribution changes.",
+    "Conformity-score normalization materially affected local coverage stability in the volatility experiment.",
+    "The theory does not guarantee that every short time window has exact target coverage.",
+    "The algorithm assumes that prediction outcomes become available for subsequent updates.",
+    "The accompanying implementation includes the core method and the election prediction procedure."
+   ],
+   "source_url": "https://arxiv.org/html/2106.00170",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2606.29054",
+   "title": "When Can Conformal Risk Control Certify LLM Outputs? Bounds, Impossibility, and Adaptation for Structured Generation",
+   "research_question": "Under what combinations of base risk, calibration data, confidence-score quality, and distribution shift can conformal risk control provide valid selective guarantees for structured LLM outputs, and when is such certification fundamentally infeasible?",
+   "methodology": "The paper formulates selective structured generation with bounded task losses for NER, JSON extraction, question answering, and classification, then derives feasibility and abstention bounds for conformal risk control. It evaluates Hoeffding, Bernstein, and betting-based e-CRC certification over 716 configurations spanning six open-weight models, eight datasets, and six confidence scores, using calibration/test splits and multiple seeds. It additionally tests heuristic abstention baselines, calibration-data scarcity, temporal shift, cross-dataset transfer, adaptive conformal inference over several step sizes, and confidence-score fusion. For nonstationary streams it contrasts static CRC and ACI with a full-feedback anytime-valid risk monitor and provides an impossibility result for emitted-risk guarantees with only emit-time feedback.",
+   "key_findings": [
+    {
+     "finding": "When base risk exceeds the requested target, any valid distribution-free selective method must abstain on at least (mu-alpha)/(M-alpha) of examples, giving a feasibility limit that cannot be repaired merely by a tighter confidence bound.",
+     "evidence_type": "supported",
+     "section": "2.2 Fundamental Limits of Certification"
+    },
+    {
+     "finding": "At strict targets across 716 seed-42 configurations, Hoeffding, Bernstein, and e-CRC certified 51, 72, and 80 configurations respectively, with zero test violations among their certified configurations in that split.",
+     "evidence_type": "supported",
+     "section": "3.4 CRC Validity"
+    },
+    {
+     "finding": "Variance-aware certification was especially useful with limited calibration data: at a 10% calibration fraction, certification rates were 1.1% for Hoeffding, 1.9% for Bernstein, and 4.2% for e-CRC.",
+     "evidence_type": "supported",
+     "section": "3.4 CRC Validity and Appendix H.6 Data Efficiency"
+    },
+    {
+     "finding": "Under genuine cross-dataset shift with target base risk above the requested level, static CRC and ACI each violated emitted-risk targets on 14 of 16 transfers at the headline ACI setting, and all seven tested ACI step sizes still yielded 14 of 16 emitted-risk violations.",
+     "evidence_type": "supported",
+     "section": "3.5 ACI Under Distribution Shift and Appendix I"
+    },
+    {
+     "finding": "A full-feedback anytime-valid monitor produced zero violations on the same 16 transfer experiments and remained non-vacuous on feasible streams, emitting 65% to 97% of examples in the reported feasible cases.",
+     "evidence_type": "supported",
+     "section": "3.6 A Constructive Counterpart Under Shift"
+    },
+    {
+     "finding": "Confidence-score fusion improved AUROC in 23 of 34 evaluated configurations but did not create a new certification advantage sufficient to overcome underlying feasibility constraints.",
+     "evidence_type": "supported",
+     "section": "3.7 Score Fusion and Appendix R"
+    },
+    {
+     "finding": "The certification guarantees assume i.i.d. calibration data and do not automatically survive distribution shift; ACI provides a long-run effective-risk identity rather than finite-sample emitted-risk control.",
+     "evidence_type": "supported",
+     "section": "Appendix L Limitations and Future Work"
+    }
+   ],
+   "limitations": [
+    "Static conformal guarantees assume i.i.d. calibration data and are voided by arbitrary distribution shift.",
+    "ACI does not provide finite-sample control of emitted-output risk under the studied shifts.",
+    "Sampling-based confidence scores require multiple model forward passes.",
+    "Score fusion consumes a disjoint training split and therefore reduces effective calibration sample size.",
+    "MMLU evaluation subsets contain only 400 examples each.",
+    "Question answering is evaluated on only two datasets, with NQ Open exhibiting unusually high base risk.",
+    "The 72B model is evaluated with only two greedy-decoding scores.",
+    "The JSON extraction tasks are template based, which may make their near-ceiling certification behavior unusually easy.",
+    "ACI conclusions cover only the seven tested step sizes from 0.001 through 0.1.",
+    "The experiments concern structured outputs rather than free-form multi-source research reports or evidence-completeness judgments."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "abstention_feasibility_floor": 0.99,
+    "strict_target_certification": 0.99,
+    "calibration_data_efficiency": 0.99,
+    "aci_cross_dataset_failure": 1.0,
+    "full_feedback_monitor": 0.99,
+    "fusion_not_certification_lever": 0.96,
+    "iid_scope_limit": 1.0
+   },
+   "raw_claims": [
+    "A low-risk certification target can be infeasible when the model's underlying task risk is too high.",
+    "The paper derives a lower bound on the abstention required to attain a requested risk target.",
+    "Variance-sensitive conformal bounds certify more strict-target configurations than the Hoeffding bound in the reported grid.",
+    "Certification becomes especially difficult for high-variance configurations and scarce calibration data.",
+    "Heuristic confidence thresholds do not provide per-deployment risk guarantees.",
+    "Static conformal certification can fail badly after a dataset shift.",
+    "Tuning the ACI step size did not fix emitted-risk violations on the hard cross-dataset transfers.",
+    "Full outcome feedback enables an anytime-valid monitoring construction that avoids the tested shift violations.",
+    "Emit-only feedback is insufficient for a general anytime emitted-risk guarantee under arbitrary shift.",
+    "Improving confidence-score ranking does not remove a fundamental base-risk feasibility barrier.",
+    "The empirical scope is structured generation rather than unrestricted free-form report generation."
+   ],
+   "source_url": "https://arxiv.org/html/2606.29054",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2512.17776",
+   "title": "DEER: A Benchmark for Evaluating Deep Research Agents on Expert Report Generation",
+   "research_question": "Can expert-derived omission-sensitive rubrics and report-wide evidence verification provide a reliable, diagnostic evaluation of the completeness, analytical quality, and grounding of deep-research reports?",
+   "methodology": "DEER derives expert-level research tasks and constructs a hierarchical evaluation taxonomy spanning request fulfillment, analytical soundness, structural coherence, format and style, ethics and compliance, information sufficiency, and information integrity. The framework operationalizes the taxonomy with 101 fine-grained rubric items, separating coverage from quality, and augments them with task-specific Expert Evaluation Guidance. It also extracts report claims, classifies their citation requirements, recovers implicit evidence relationships, and verifies cited and uncited verifiable claims against external sources. The authors benchmark multiple fast, reasoning, search-assisted, and deep-research systems and validate the LLM-based judging framework against independent domain-expert ratings.",
+   "key_findings": [
+    {
+     "finding": "DEER separates omission from execution quality through 101 rubric items comprising 66 Coverage items and 35 Quality items; Coverage explicitly checks whether required content is present without omission.",
+     "evidence_type": "supported",
+     "section": "Appendix D.3 Coverage and Quality"
+    },
+    {
+     "finding": "Baseline systems generally scored better on structural coherence, formatting, ethics, and information-use dimensions than on request fulfillment and analytical soundness, exposing a gap between plausible report form and expert-level task completion.",
+     "evidence_type": "supported",
+     "section": "6.1 Main Results"
+    },
+    {
+     "finding": "Search and deep-research modes can improve information-related dimensions without guaranteeing better overall report reasoning or request fulfillment, so evidence acquisition alone is not sufficient for expert-quality synthesis.",
+     "evidence_type": "supported",
+     "section": "6.1 Main Results and 6.2 Fine-grained Analysis"
+    },
+    {
+     "finding": "Adding task-specific Expert Evaluation Guidance produced the strongest agreement with human experts among the evaluated judging configurations, with average Pearson correlation 0.73, Spearman correlation 0.71, and pairwise agreement 0.84.",
+     "evidence_type": "supported",
+     "section": "6.3 Correlation with Human Evaluation"
+    },
+    {
+     "finding": "Expert Guidance also increased agreement among different LLM judges to Krippendorff's alpha 0.55, ICC(2,1) 0.56, and ICC(2,k) 0.87.",
+     "evidence_type": "supported",
+     "section": "6.4 Inter-evaluator Reliability"
+    },
+    {
+     "finding": "The information-verification pipeline attempts report-wide grounding rather than checking only explicit citations, by classifying claims and recovering evidence for verifiable uncited claims before support verification.",
+     "evidence_type": "supported",
+     "section": "4.4 Information Verification"
+    },
+    {
+     "finding": "The selected automated claim-extraction configuration is imperfect, with 90.66 recall, 67.52 classification F1, and 79.0 binary F1, so evidence-completeness measurements inherit nonzero extraction and classification error.",
+     "evidence_type": "supported",
+     "section": "Information Verification Module Performance"
+    }
+   ],
+   "limitations": [
+    "The main report-quality evaluation relies on LLM judges, which may exhibit systematic biases relative to human experts.",
+    "Human-correlation results are strong but remain below inter-human agreement on several measures.",
+    "The benchmark currently evaluates text-based reports rather than multimodal research outputs.",
+    "Automated claim extraction and classification are imperfect, so some claims or citation requirements may be missed or misclassified.",
+    "Automated claim verification is itself an estimated component rather than an error-free source of ground truth.",
+    "The benchmark focuses on expert-report generation and does not directly test calibrated abstention policies.",
+    "Temporal staleness and distribution-shift robustness are not the central experimental variables of the benchmark."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "coverage_omission_separation": 1.0,
+    "expert_requirement_gap": 0.98,
+    "search_not_sufficient": 0.96,
+    "human_correlation_gain": 1.0,
+    "inter_evaluator_reliability": 1.0,
+    "report_wide_evidence_verification": 0.99,
+    "verification_pipeline_error": 0.99
+   },
+   "raw_claims": [
+    "DEER evaluates deep-research reports with a hierarchical taxonomy rather than a single aggregate quality criterion.",
+    "Its rubric design explicitly distinguishes whether required content is present from how well present content is written.",
+    "Coverage scoring is designed to expose omitted requirements distributed across a long report.",
+    "Information sufficiency and information integrity are evaluated separately from prose structure and style.",
+    "The framework attempts to trace verifiable report claims back to supporting external information.",
+    "Uncited claims are not automatically ignored by the evidence-verification stage.",
+    "Current deep-research systems can produce polished and evidence-rich reports while still missing expert-level requirements.",
+    "Task-specific expert guidance makes automated report judging align more closely with domain-expert assessments.",
+    "The chosen automated claim-extraction pipeline does not recover or classify every claim correctly.",
+    "The current benchmark is limited to text reports.",
+    "Code and data are linked from the paper."
+   ],
+   "source_url": "https://arxiv.org/html/2512.17776",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

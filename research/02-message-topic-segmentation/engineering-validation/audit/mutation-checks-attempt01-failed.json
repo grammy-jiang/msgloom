@@ -1,0 +1,111 @@
+{
+  "status": "FAIL",
+  "mutation_count": 4,
+  "rows": [
+    {
+      "mutation": "allow_one_prediction_to_match_multiple_gold_spans",
+      "killed": false,
+      "failures": 0,
+      "errors": 0,
+      "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+    },
+    {
+      "mutation": "hide_false_positive_membership_from_precision_denominator",
+      "killed": false,
+      "failures": 0,
+      "errors": 0,
+      "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+    },
+    {
+      "mutation": "leak_all_future_context_into_each_replay_step",
+      "killed": true,
+      "failures": 1,
+      "errors": 0,
+      "output": "F\n======================================================================\nFAIL: test_no_context_abstains (test_replay.ReplayTests.test_no_context_abstains)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_replay.py\", line 8, in test_no_context_abstains\n    p={x.span_id:x for x in first.predictions};self.assertEqual(p['amb'].status,'abstained');self.assertEqual(p['deadline'].status,'abstained')\n                                               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'resolved' != 'abstained'\n- resolved\n+ abstained\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "remove_coverage_floor_from_threshold_selection",
+      "killed": true,
+      "mutant_selection": {
+        "target_max_accepted_error": 0.05,
+        "target_min_coverage": 0.4,
+        "target_met": true,
+        "selected_threshold": 0.8,
+        "fallback_threshold": 0.6,
+        "sweep": [
+          {
+            "threshold": 0.15,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.2,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.25,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.3,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.34,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.4,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.5,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.6,
+            "accepted": 120,
+            "wrong": 40,
+            "accepted_error": 0.3333333333333333,
+            "coverage": 0.6
+          },
+          {
+            "threshold": 0.7,
+            "accepted": 0,
+            "wrong": 0,
+            "accepted_error": 0.0,
+            "coverage": 0.0
+          },
+          {
+            "threshold": 0.8,
+            "accepted": 0,
+            "wrong": 0,
+            "accepted_error": 0.0,
+            "coverage": 0.0
+          }
+        ]
+      },
+      "expected_guard": "Current test requires target_met=False and selected_threshold=None because only all-abstain thresholds meet the error budget."
+    }
+  ]
+}

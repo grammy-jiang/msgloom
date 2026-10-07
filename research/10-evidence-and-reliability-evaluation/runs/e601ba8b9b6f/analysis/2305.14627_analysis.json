@@ -1,0 +1,88 @@
+{
+ "paper_id": "2305.14627",
+ "title": "Enabling Large Language Models to Generate Text with Citations",
+ "research_question": "How can retrieval-augmented language models generate useful long-form answers with citations, and how can citation completeness and correctness be evaluated automatically and against human judgments?",
+ "methodology": "The paper introduces ALCE, an evaluation framework over 1,000 selected examples each from ASQA, QAMPARI and ELI5, paired with Wikipedia or Sphere retrieval corpora segmented into passages. Systems retrieve evidence with off-the-shelf retrievers and use several prompting or post-processing strategies to make LLMs synthesize answers and attach citations. Evaluation separately measures fluency, task-specific answer correctness, citation recall for whether claims are supported, and citation precision for whether individual citations are relevant, with NLI used for automated citation-support judgments. The authors compare multiple LLMs and retrieval strategies, perform ablations and repeated runs, and validate automatic citation metrics through human evaluation.",
+ "key_findings": [
+  {
+   "finding": "Separating answer correctness from citation recall and citation precision exposes systems that produce plausible or correct text without adequate evidence attribution.",
+   "evidence_type": "supported",
+   "section": "3 Automatic Evaluation"
+  },
+  {
+   "finding": "Current tested systems leave substantial portions of generated content unsupported by their citations; on ELI5, even strong baselines had citation recall around one half rather than complete support.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Simple retrieval followed by placing the retrieved passages directly in the LLM context was competitive with more elaborate interaction strategies.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Reranking multiple generated answers using automated citation recall consistently improved citation quality in the tested ASQA and ELI5 settings.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "Retrieval quality strongly constrains answer correctness and citation quality, but even oracle-like access to relevant evidence does not guarantee that an LLM will successfully use that evidence.",
+   "evidence_type": "supported",
+   "section": "5.3 Retrieval Analysis"
+  },
+  {
+   "finding": "Supplying more retrieved passages did not proportionally improve performance for the tested models, indicating limitations in multi-document synthesis and susceptibility to irrelevant context.",
+   "evidence_type": "supported",
+   "section": "5.3 Retrieval Analysis"
+  },
+  {
+   "finding": "Automated ALCE citation judgments agreed substantially with humans for citation recall and moderately for citation precision, with reported Cohen kappa values of 0.698 and 0.525 respectively.",
+   "evidence_type": "supported",
+   "section": "6 Human Evaluation"
+  },
+  {
+   "finding": "Post-hoc citation assignment to closed-book answers can preserve answer correctness while still yielding poor attribution because correct generated statements may not align closely with retrieved passages.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  }
+ ],
+ "limitations": [
+  "Citation-support evaluation depends on the accuracy and granularity of the NLI model used as the automatic evaluator.",
+  "The automatic citation-precision evaluator cannot represent partial support as accurately as human annotators.",
+  "MAUVE fluency scores are sensitive to generation length and may be unstable.",
+  "Automatically generated ELI5 reference claims may not cover every valid answer because the task is open-ended.",
+  "The three datasets do not cover harder evidence-use settings such as multi-hop reasoning, mathematical reasoning or code generation.",
+  "Experiments focus on prompting existing LLMs rather than training models specifically for citation generation.",
+  "Limited model context windows constrain how many source passages can be presented simultaneously.",
+  "Retrieval corpora and question-answer datasets do not directly model temporal freshness, source versioning or superseded evidence."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "citation_dimensions_separate_failure_modes": 0.99,
+  "incomplete_citation_support": 0.98,
+  "reranking_improves_citations": 0.96,
+  "retrieval_quality_matters": 0.99,
+  "multi_source_synthesis_limit": 0.97,
+  "automatic_human_agreement": 0.99,
+  "posthoc_citation_limit": 0.96
+ },
+ "raw_claims": [
+  "ALCE evaluates generated answers along separate dimensions for fluency, correctness and citation quality.",
+  "Citation recall asks whether generated statements are adequately supported by cited passages.",
+  "Citation precision asks whether individual cited passages actually support the statement to which they are attached.",
+  "The benchmark uses ASQA, QAMPARI and ELI5 questions with retrieved evidence from Wikipedia or Sphere.",
+  "Simple insertion of retrieved passages into the prompt is a strong baseline for citation generation.",
+  "Selecting among multiple candidate generations using citation recall improves evidence support in the tested settings.",
+  "Retrieval recall provides an upper constraint on what evidence a retrieval-augmented generator can use.",
+  "Models still fail to exploit some relevant evidence even when that evidence is present in their context.",
+  "Adding more passages can introduce distraction and does not guarantee better synthesis.",
+  "Closed-book generation followed by post-hoc citation matching produces weak evidence attribution.",
+  "Automatic citation recall showed stronger human agreement than automatic citation precision.",
+  "The authors released ALCE code and data publicly."
+ ],
+ "source_url": "https://arxiv.org/html/2305.14627",
+ "access": "full_text"
+}

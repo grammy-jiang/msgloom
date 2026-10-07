@@ -1,0 +1,216 @@
+{
+ "round": 1,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Source-grounded factual consistency and summarization faithfulness: evaluate whether generated factual statements are licensed by supplied source evidence."
+  },
+  {
+   "id": "F2",
+   "description": "Atomic claim decomposition and evidence-conditioned claim verification: evaluate independently testable claims against supporting, contradicting, or insufficient evidence."
+  },
+  {
+   "id": "F3",
+   "description": "Attribution, citation correctness, and citation completeness: evaluate claim-source linkage, evidential entailment, and whether support-requiring claims are adequately cited."
+  },
+  {
+   "id": "F4",
+   "description": "Content-unit coverage, completeness, and omission evaluation: represent required semantic content units and measure which are present, absent, partial, or distorted."
+  },
+  {
+   "id": "F6",
+   "description": "Answerability, insufficient evidence, and language-task abstention: determine when available context cannot justify an answer and evaluate explicit no-answer or unresolved outcomes."
+  },
+  {
+   "id": "F8",
+   "description": "Probability calibration and reliability under distribution shift: evaluate whether confidence corresponds to empirical correctness and how reliable that calibration remains."
+  },
+  {
+   "id": "F10",
+   "description": "Human evaluation reliability, annotation agreement, and adjudication: validate annotation and judging protocols, agreement measures, adjudication, representative sampling, and retained human review."
+  },
+  {
+   "id": "F11",
+   "description": "Temporal validity, stale evidence, supersession, and current-state evaluation: evaluate claims against evidence valid at the required observation time, including changing and late-arriving evidence."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "doi-10-32604-cmc-2026-086343",
+   "decision": "ADMIT",
+   "reason": "Directly operationalizes F6 by benchmarking answer-versus-abstain behavior across full, partial, irrelevant, absent, and conflicting evidence. That evidence-condition ladder is unusually well aligned with msgloom's need to distinguish supported, insufficient, and contradictory context rather than treating every retrieved context as answerable. The identity is UNCHECKED, but the contribution is sufficiently distinctive that no VERIFIED candidate here is an equivalent substitute.",
+   "stream_id": "F6",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2004.14974",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F2: the task requires retrieval of evidence, support-versus-refute classification, and rationale-span identification for individual scientific claims. This provides a concrete evidence-conditioned claim-verification formulation rather than generic factuality scoring.",
+   "stream_id": "F2",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2510.07238",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F11 by showing that factuality evaluation itself can become invalid when benchmark facts and evidence age. Its explicit treatment of temporal misalignment and refreshed evidence is directly relevant to distinguishing source support from current-state correctness.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "manual-f5ce52cae2",
+   "decision": "ADMIT",
+   "reason": "Strengthens F10 with empirical evidence that human-evaluation results can be sensitive to protocol and reproduction details. This adds a distinct reliability dimension not supplied by agreement coefficients alone. Identity is UNCHECKED, but the reproduction-focused contribution is not duplicated by the VERIFIED sampling and LLM-judge papers admitted below.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.86
+  },
+  {
+   "paper_id": "2408.04568",
+   "decision": "REJECT",
+   "reason": "Topic words match F3, but the abstracted contribution is primarily learning/generating fine-grained grounded citations. It does not establish a distinct evaluation methodology for citation correctness or completeness beyond the stronger evaluation-focused candidates admitted in F3."
+  },
+  {
+   "paper_id": "2410.14964",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F11 by verifying temporally qualified claims through claim and evidence timelines, including complex overlapping or recurring events. It supplies claim-level temporal verification rather than assuming factual truth is invariant over time.",
+   "stream_id": "F11",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "1707.05555",
+   "decision": "ADMIT",
+   "reason": "Provides transferable F11 machinery for evaluating temporal properties when observations arrive out of order. That is materially relevant to msgloom's explicit late-evidence and out-of-order-ingestion evaluation gaps, although the source domain is runtime verification rather than language evaluation.",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "1910.12840",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F1 by evaluating summary factual consistency against the source while also localizing both supporting source spans and inconsistent summary spans. That traceability is substantially more useful than a single aggregate hallucination score.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2212.08037",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F3 because attributed QA makes source support part of the answer contract and develops evaluation of both answer quality and attribution. It provides a foundational formulation for separating answer correctness from whether supplied evidence actually supports the answer.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2412.18004",
+   "decision": "REJECT",
+   "reason": "The distinction between attribution correctness and causal attribution faithfulness is conceptually useful, but the latter asks whether cited evidence actually influenced generation. msgloom's immediate Topic 10 requirement is evidential support, attribution correctness, and completeness; the admitted F3 papers more directly strengthen those evaluation capabilities."
+  },
+  {
+   "paper_id": "manual-e95bbb5d51",
+   "decision": "REJECT",
+   "reason": "This is transferable structured-annotation reliability work, but its coreference-specific treatment offers lower marginal value than the direct NLG/human-evaluation reliability papers admitted for F10. The identity is also UNCHECKED, so there is no reason to consume a reading slot when stronger VERIFIED alternatives cover the needed methodology."
+  },
+  {
+   "paper_id": "doi-10-18653-v1-w19-8642",
+   "decision": "REJECT",
+   "reason": "Relevant to F10, but its central contribution about combining agreement and correlation is substantially overlapped by the more directly applicable modern agreement/abstention analysis admitted under F10. Given the UNCHECKED identity and limited marginal coverage, it does not justify another reading slot."
+  },
+  {
+   "paper_id": "doi-10-1016-j-csl-2020-101151",
+   "decision": "REJECT",
+   "reason": "A broad best-practice review is relevant background for F10, but the candidate set already contains empirical papers on reproducibility, judge validation, abstention-aware agreement, retained human review, and representative sampling. Its incremental contribution is therefore too diffuse for this strict reading round, and its identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2605.06635",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F3 by decomposing source attribution into operational checks such as source accessibility, relevance, and factual support against the actual cited content. This is closely aligned with msgloom's requirement that citation presence must not be mistaken for correct evidential attribution.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2607.08700",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F10 by benchmarking citation-verifier LLM judges against human-reviewed and adjudicated labels while emphasizing false-positive and false-negative behavior. It directly addresses the project rule that LLM-as-judge agreement is not ground truth unless the judge is validated.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1017-s1351324909005051",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F4 by evaluating Pyramid-style semantic content units as a method for summary-content coverage, while also examining annotation reliability and discriminative behavior. This is one of the clearest candidates for explicit unit-based completeness rather than generic similarity. Identity is UNCHECKED, but no VERIFIED candidate here provides an equivalent explicit content-unit framework.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2606.00093",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F10 by analyzing which agreement statistics are informative for LLM-as-judge evaluation and, crucially, how abstentions change the interpretation of agreement and require coverage to be reported. That combination is directly relevant to validated automated review with visible unresolved cases.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1175-1520-0493-1950-078-0001-vofeit-2-0-co-2",
+   "decision": "REJECT",
+   "reason": "The Brier score is foundational probabilistic-scoring machinery, but the candidate does not materially address language-task calibration, distribution shift, selective coverage, or evidence-conditioned reliability. The admitted QA-calibration paper is a substantially closer transfer target for F8, so this historical foundation does not justify a scarce reading slot."
+  },
+  {
+   "paper_id": "2605.16354",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F10 by treating LLM judges as auxiliary rather than substitutive and studying how much retained human review is needed. That is highly aligned with msgloom's requirement for user-reviewed representative samples instead of treating automated judges as unvalidated gold.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2111.09525",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F1 by systematically revisiting NLI-based source-grounded inconsistency detection and meta-evaluating it across factual-consistency datasets. It complements localized span-based factuality evaluation with evidence about evaluator behavior across benchmarks.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2305.14627",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F3 because its citation evaluation distinguishes whether cited passages entail generated claims from whether support-requiring claims are adequately cited. That directly preserves the project's required distinction between citation correctness and citation completeness.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2406.07967",
+   "decision": "ADMIT",
+   "reason": "Directly strengthens F10 by studying how small human-evaluation samples can produce unstable conclusions and proposing constrained sampling for more representative and reliable review. Representative work-sample selection is an explicit msgloom evaluation requirement.",
+   "stream_id": "F10",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1162-tacl-a-00407",
+   "decision": "ADMIT",
+   "reason": "Materially strengthens F8 by directly testing whether language-model confidence corresponds to empirical QA correctness and evaluating calibration techniques. Although the host marks the identity UNCHECKED, its language-task calibration contribution is substantially closer to msgloom than the generic probabilistic-scoring alternative in this candidate set.",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2112.08542",
+   "decision": "REJECT",
+   "reason": "This is a valid F1 factual-consistency evaluator, but its QA-based metric is additional methodological variation after admitting a localized evidence-span evaluator and a cross-dataset NLI meta-evaluation. The abstract does not show a distinct capability needed badly enough to justify another F1 reading slot."
+  },
+  {
+   "paper_id": "2103.12693",
+   "decision": "REJECT",
+   "reason": "QuestEval combines source/summary QA for relevance and factual evaluation, but the admitted Pyramid paper provides a more explicit semantic-unit treatment of completeness and the admitted F1 papers provide stronger source-grounded factuality coverage. Its marginal contribution is therefore insufficient for this strict round."
+  }
+ ],
+ "notes": "Admission was intentionally selective rather than quota-driven. No candidate was admitted for F5, F7, F9, or F12 because none of the supplied abstracts established a sufficiently distinct contribution to those streams. UNCHECKED identity was treated as a tie-break disadvantage when a VERIFIED candidate provided substantially equivalent evidence, but not as an automatic rejection where the contribution was distinctive."
+}

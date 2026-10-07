@@ -1,0 +1,1273 @@
+{
+  "paper_id": "D07",
+  "title": "Assisting Composition of Email Responses: a Topic Prediction Approach",
+  "research_question": "Can customer-query context and the current agent sentence predict the latent topic distribution of an entire email reply and the dominant topic of its next sentence to support interactive composition?",
+  "methodology": "On first-query/first-reply pairs from UK telecom support email, fit LDA on training email and sentence views, infer silver topic labels, and train reply-topic predictors. T1 uses soft-label logistic regression with KL loss and stochastic gradient optimization from customer bag-of-words and joint-LDA topic features. T2 uses multiclass logistic regression with query features, current-sentence content, dominant-topic-conditioned predictors, and optional sentence position, plus a query-only first-sentence model. Reported table feature notation is not fully reconciled with Equation 4 (D07-I01). Evaluate held-out silver-label similarity, sampled response identification, and top-K dominant-topic accuracy; separately compare word perplexity. Evidence: tasks, lda_views, silver, t1_method, t2_method, toolkit, metrics.",
+  "key_findings": [
+    {
+      "finding_id": "D07-F01",
+      "finding": "Reported topic-prediction results measure agreement with LDA-generated silver annotations of training and test documents; they do not establish agreement with human work-matter labels.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3; Section 4, Extracting Topics and Building a Silver Standard",
+      "quote": "These ascribed annotations will subsequently be used for training our prediction models (using the silver-standard annotations of the training set) and evaluating them (using the silver-standard annota- tions of the test set).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 277,
+        "line_end": 281,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "supporting_evidence": [
+        "silver",
+        "lda_views",
+        "metrics"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.99,
+      "source_evidence_type": "reported_method_and_evaluation_protocol",
+      "evidence_type_scope": "Supported as the evaluation protocol used by the reported experiments. This is a method description, not an experimental validation of LDA labels against human topics."
+    },
+    {
+      "finding_id": "D07-F02",
+      "finding": "For T2 on all sentences in the held-out telecom agent replies, with 50 latent topics and the full feature combination, dominant-topic accuracy is 0.471 at top-1, 0.625 at top-2, 0.802 at top-5, and 0.901 at top-10; BC is 0.614. These are silver-label prediction metrics, not span or multi-label recall.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8; 7.2; Table 5",
+      "quote": "+position 0.471 0.625 0.802 0.901",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 848,
+        "line_end": 848,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "supporting_evidence": [
+        "table4",
+        "table5",
+        "t2_setting",
+        "metrics"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.99,
+      "source_evidence_type": "reported_measured_outcome"
+    },
+    {
+      "finding_id": "D07-F03",
+      "finding": "In the same T2 test setting, topic features alone yield top-1 DTA 0.450 and BC 0.588, compared with bag-of-words DTA 0.416 and BC 0.556; adding position to the full feature set raises DTA from 0.451 to 0.471. Table feature descriptions remain subject to D07-I01.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8; 7.2",
+      "quote": "can also see that the topic distribution vectors of the current sentence and the customer’s query give a higher prediction accuracy (0.450) than using the bag of words features of the context (0.416).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 810,
+        "line_end": 813,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "supporting_evidence": [
+        "table4",
+        "t2_setting"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.98,
+      "source_evidence_type": "reported_measured_outcome"
+    },
+    {
+      "finding_id": "D07-F04",
+      "finding": "For T1 response identification over all held-out telecom query/reply pairs, ranking the true reply against four random training replies reaches Recall@1 52.5% with 50 topics; random selection gives 20%. This is a five-candidate retrieval result, not open-corpus retrieval or segmentation.",
+      "evidence_type": "supported",
+      "section": "PDF p. 7; 7.1; Figure 4",
+      "quote": "Recall@1 equal to 20%. The best performance (Recall@1 = 52.5%) is reached when M=50.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 723,
+        "line_end": 724,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_evidence": [
+        "t1_ranking",
+        "metrics",
+        "dataset"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.99,
+      "source_evidence_type": "reported_measured_outcome"
+    },
+    {
+      "finding_id": "D07-F05",
+      "finding": "For test agent sentences, the sentence-trained LDA model gives peaked silver topic distributions for more than 90% of sentences under the paper’s criterion; Figure 1 supports this across its plotted topic-count settings. This concentration motivates a dominant-topic target but does not show that human sentences contain only one work matter.",
+      "evidence_type": "supported",
+      "section": "PDF p. 4; 4; Figure 1",
+      "quote": "that of the second topic. Over the test set, more than 90% of sentences exhibit a peaked distribu- tion when considering the τM S (Ai) topic distribu- tion (see Figure 1). This will motivate the use of the dominant topic instead of the whole distribu- tion when solving the task T2, as explained in Sec- tion 6.2.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 361,
+        "line_end": 368,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "supporting_evidence": [
+        "peaked",
+        "lda_views"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.98,
+      "source_evidence_type": "reported_descriptive_measurement",
+      "evidence_type_scope": "Measured concentration of silver distributions, not a prediction outcome or human topic-cardinality measurement."
+    },
+    {
+      "finding_id": "D07-F06",
+      "finding": "In the held-out agent-reply word-perplexity experiment, the joint customer-plus-agent LDA model conditioned on the customer query has lower perplexity than agent-only LDA over the plotted topic counts. No exact plotted point values are transcribed as numerical results.",
+      "evidence_type": "supported",
+      "section": "PDF p. 4; 5; Figure 2 on PDF p. 5",
+      "quote": "In Figure 2, we present the perplexity scores of the two models. We see that the model which uses the customer’s email as context has lower perplex- ity scores, as could be expected intuitively. This",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 421,
+        "line_end": 424,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "supporting_evidence": [
+        "perplexity"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.98,
+      "source_evidence_type": "reported_measured_outcome"
+    },
+    {
+      "finding_id": "D07-F07",
+      "finding": "T1 predicted reply-topic distributions have higher mean Bhattacharya coefficient against silver reply labels than copying the customer-topic distribution over the plotted settings.",
+      "evidence_type": "supported",
+      "section": "PDF p. 7; 7.1; Figure 3",
+      "quote": "comparison, we also show a baseline where the prediction of the agent’s email topic distribution is simply a copy of the customer’s email topic dis- tribution, with a much lower performance.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 691,
+        "line_end": 694,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_evidence": [
+        "t1_bc",
+        "metrics"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.98,
+      "source_evidence_type": "reported_measured_outcome"
+    },
+    {
+      "finding_id": "D07-F08",
+      "finding": "The claim that a user can recognize or choose the relevant topic from suggestions is an application extrapolation. The measured evidence is top-K agreement with a silver dominant label; no user-recognition, completion-time, or problem-resolution experiment is reported.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 8; 7.2",
+      "quote": "It can be seen that, in an interactive compo- sition scenario where the agent is presented with 5 recommended topics, the agent will be able to rec- ognize the relevant topic in more than 80% of the cases.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 830,
+        "line_end": 834,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "supporting_evidence": [
+        "human_extrapolation",
+        "table5",
+        "future"
+      ],
+      "confidence_scope": "Confidence in the stated evidence assessment, not in transfer to msgloom.",
+      "confidence": 0.99,
+      "source_evidence_type": "untested_application_extrapolation",
+      "evidence_type_scope": "The recognition/choice statement is present in the paper but has no reported human experiment; the associated top-K silver-label scores are measured separately."
+    }
+  ],
+  "limitations": [
+    "Silver-label agreement is not human work-matter correctness; no human topic annotation or IAA is reported (D07-F01).",
+    "Sentence units and dominant-topic targets are assumed rather than validated against alternative units or multiple-matter evidence (D07-F05; lda_views).",
+    "Single-company technical-support email and first-query/first-reply selection limit business-email, full-thread, and cross-Source transfer (dataset).",
+    "Immediate-sentence conditioning leaves longer context for future work; scope-preserving generation and user benefit are not evaluated (t2_method, future, D07-F08).",
+    "Table feature notation, first-sentence pooling details, and a minor bag-of-words notation mismatch remain ambiguous (D07-I01, D07-I02, D07-I04).",
+    "Detailed preprocessing, seed, duplicate controls, development split, predictor implementation and statistical uncertainty are not reported (full-text review; split_and_leakage).",
+    "The authors state that text-only models lack external knowledge needed for detailed, specific answers (external_knowledge)."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability_status": "not reported for this study; MALLET is named with a reference URL, which is a toolkit citation, not a released predictor implementation",
+    "dataset_availability_status": "not reported; telecom corpus described without a paper-reported release link or access procedure",
+    "availability_scope": "Frozen paper statements only; current code/data availability was not checked. Boolean code_available and dataset_available omitted because unknown is not false.",
+    "implementation_details": "LDA uses MALLET standard/default settings; versions, training seeds, iterations, regularization and precise predictor implementation are not specified.",
+    "evidence": [
+      "toolkit",
+      "dataset",
+      "t1_method",
+      "t2_method"
+    ],
+    "toolkit_reference_locator": {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+      "line_start": 925,
+      "line_end": 927,
+      "pdf_pages": [
+        9
+      ]
+    }
+  },
+  "confidence_scores": {
+    "D07-F01": 0.99,
+    "D07-F02": 0.99,
+    "D07-F03": 0.98,
+    "D07-F04": 0.99,
+    "D07-F05": 0.98,
+    "D07-F06": 0.98,
+    "D07-F07": 0.98,
+    "D07-F08": 0.99
+  },
+  "raw_claims": [
+    "For our study, we just considered the first two emails in a thread, namely the original customer’s query and the corresponding agent’s reply.",
+    "However, our training data are not annotated at the level of topics.",
+    "Another extension would be to examine pre- diction models that go beyond the Markovian as- sumption, by exploiting topic dependencies at a longer distance than one sentence."
+  ],
+  "raw_claims_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+      "line_start": 209,
+      "line_end": 211,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+      "line_start": 231,
+      "line_end": 232,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+      "line_start": 872,
+      "line_end": 875,
+      "pdf_pages": [
+        8
+      ]
+    }
+  ],
+  "evidence_catalog": {
+    "identity": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 90,
+        "line_end": 94,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "section": "PDF pp. 1; arXiv margin"
+    },
+    "dataset": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 184,
+        "line_end": 219,
+        "pdf_pages": [
+          2,
+          3
+        ]
+      },
+      "section": "PDF pp. 2, 3; 3 Dataset; Table 1"
+    },
+    "tasks": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 224,
+        "line_end": 230,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF pp. 3; 4 Extracting Topics and Building a Silver Standard"
+    },
+    "lda_views": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 231,
+        "line_end": 263,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF pp. 3; 4"
+    },
+    "silver": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 264,
+        "line_end": 287,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "section": "PDF pp. 3; 4"
+    },
+    "dominant": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 288,
+        "line_end": 313,
+        "pdf_pages": [
+          3,
+          4
+        ]
+      },
+      "section": "PDF pp. 3, 4; 4"
+    },
+    "peaked": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 353,
+        "line_end": 368,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF pp. 4; 4; Figure 1"
+    },
+    "perplexity": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 369,
+        "line_end": 437,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "section": "PDF pp. 4; 5; Equation 1; Figure 2 on PDF p. 5"
+    },
+    "topic_examples": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 453,
+        "line_end": 509,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF pp. 5; Tables 2–3"
+    },
+    "t1_method": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 541,
+        "line_end": 566,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "section": "PDF pp. 5; 6.1; Equation 2"
+    },
+    "t2_method": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 569,
+        "line_end": 624,
+        "pdf_pages": [
+          5,
+          6
+        ]
+      },
+      "section": "PDF pp. 5, 6; 6.2; Equations 3–5"
+    },
+    "toolkit": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 625,
+        "line_end": 631,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "section": "PDF pp. 6; 7 Evaluation"
+    },
+    "metrics": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 633,
+        "line_end": 672,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "section": "PDF pp. 6; 7 Evaluation"
+    },
+    "t1_bc": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 674,
+        "line_end": 718,
+        "pdf_pages": [
+          6,
+          7
+        ]
+      },
+      "section": "PDF pp. 6, 7; 7.1; Figure 3"
+    },
+    "t1_ranking": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 719,
+        "line_end": 731,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "section": "PDF pp. 7; 7.1; Figures 4–5"
+    },
+    "t2_setting": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 758,
+        "line_end": 795,
+        "pdf_pages": [
+          7,
+          8
+        ]
+      },
+      "section": "PDF pp. 7, 8; 7.2"
+    },
+    "table4": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 796,
+        "line_end": 806,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "section": "PDF pp. 8; 7.2; Table 4"
+    },
+    "table5": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 841,
+        "line_end": 850,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "section": "PDF pp. 8; 7.2; Table 5"
+    },
+    "human_extrapolation": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 823,
+        "line_end": 840,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "section": "PDF pp. 8; 7.2"
+    },
+    "future": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 851,
+        "line_end": 889,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "section": "PDF pp. 8; 8 Conclusion and Future Work"
+    },
+    "external_knowledge": {
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 99,
+        "line_end": 105,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "section": "PDF pp. 2; 1 Introduction"
+    }
+  },
+  "topic02": {
+    "evidence_family": "DIRECT_EMAIL_SUPPORT",
+    "evaluated_tasks": {
+      "paper_tasks": [
+        "T1: predict the latent topic probability distribution of a future complete agent reply from its customer query; evaluate BC and sampled reply identification.",
+        "T2: predict the dominant latent topic of the next agent sentence from the customer query, observed current sentence, and optional position; evaluate top-K DTA and output-distribution BC.",
+        "Auxiliary: compare held-out agent word perplexity with versus without customer-query conditioning; characterize silver sentence-topic concentration."
+      ],
+      "required_task_separation": {
+        "topic_boundary_detection": "not evaluated",
+        "contiguous_topic_segmentation": "not evaluated",
+        "segment_topic_labeling": "related only: fixed-sentence future-label prediction, not labeling detected segments",
+        "whole_message_multi_label_classification": "related only: future-reply soft topic-distribution prediction, not a human multi-label set task",
+        "exact_span_assignment": "not evaluated",
+        "overlapping_span_assignment": "not evaluated",
+        "non_contiguous_assignment_to_one_Topic": "not evaluated",
+        "discourse_EDU_segmentation": "not evaluated",
+        "action_question_reply_scope_extraction": "not evaluated",
+        "decision_bearing_conditions_evidence_scope_preservation": "not evaluated"
+      },
+      "evidence": [
+        "tasks",
+        "metrics",
+        "t2_setting"
+      ]
+    },
+    "annotation_unit": {
+      "human_gold": "No human topic annotation.",
+      "silver": "Whole email or individual agent sentence treated as an LDA document; word-level topic distributions can be inferred and aggregated. Existing sentences are assumed; tokenizer and sentence splitter are not specified.",
+      "evidence": [
+        "lda_views",
+        "silver"
+      ]
+    },
+    "prediction_unit": {
+      "T1": "A full future agent-reply topic distribution.",
+      "T2": "A future agent sentence’s dominant topic, with ranked classifier probabilities. The first sentence uses query-only features.",
+      "evidence": [
+        "t1_method",
+        "t2_method"
+      ]
+    },
+    "contiguity": {
+      "description": "Sentences are contiguous input/prediction units. T1 discards order through bag-of-words and a topic mixture; T2 conditions on the immediate preceding sentence. Neither task detects contiguous topic boundaries or creates non-sequential work-matter clusters.",
+      "evidence": [
+        "lda_views",
+        "t1_method",
+        "t2_method"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Not available; human topic-membership cardinality is not established.",
+      "silver": "Distribution over a fixed latent inventory for an email/sentence; T2 evaluation reduces it to exactly one argmax target.",
+      "prediction": "T1 predicts an M-topic probability distribution; T2 predicts a categorical dominant topic and ranks alternatives. The reported T2 setting has M=50. Top-K alternatives are not K simultaneously correct memberships.",
+      "evidence": [
+        "silver",
+        "dominant",
+        "t2_method",
+        "metrics",
+        "t2_setting"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not annotated or measured.",
+        "thread_level": "Not annotated or measured."
+      },
+      "prediction": {
+        "within_one_message": "A latent topic may recur across sentences, but the method does not output or score a linked discontinuous evidence object for one concrete work matter. This recurrence capacity is an interpretation of the fixed topic inventory.",
+        "thread_level": "Not evaluated: only the first customer query and its first agent reply are retained; no multi-turn topic tracking or cross-thread identity output."
+      },
+      "evidence": [
+        "dataset",
+        "t2_method",
+        "future"
+      ]
+    },
+    "overlap": {
+      "gold": "Unsupported: no human overlapping span or multiple-matter annotations.",
+      "prediction": "Soft topic probability mass over several latent labels is available, but no shared span with multiple asserted work-matter memberships is output or scored. Dominant-topic T2 targets collapse alternatives to one label.",
+      "scope": "Neither within-sentence overlap nor overlapping cross-message work matters is demonstrated.",
+      "evidence": [
+        "silver",
+        "t2_method",
+        "metrics"
+      ]
+    },
+    "dataset_domain": {
+      "dataset_id": "D07-UK-telecom-first-query-reply",
+      "description": "Technical-support email from a major UK telecom company, collected January 2013–May 2014.",
+      "raw_threads_reported": "54.7k",
+      "mean_emails_per_original_thread": 8,
+      "filtered_threads_prose": "48.3k",
+      "selection": "Retain only first customer query and corresponding first agent reply; minimum 10 customer words and 20 agent words.",
+      "style": "Customer emails are free form; agent replies have a moderately systematic structure.",
+      "evidence": [
+        "dataset"
+      ],
+      "transfer_limit": "Direct email evidence, but a single support setting with repeated reply structure; not a representative evaluation of multi-party business matters, Teams, attachments, approvals, or arbitrary work messages."
+    },
+    "annotation_process": {
+      "description": "Fit LDA views on training documents with MALLET defaults; use trained word distributions and priors to infer silver labels for training and test inputs. Customer-only, agent-only, concatenated query/reply, and agent-sentence views are described. Predictors learn these synthetic labels. No human work-matter annotation, annotator guidance, adjudication, or human validation is reported.",
+      "evidence": [
+        "lda_views",
+        "silver",
+        "toolkit",
+        "t1_method"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported",
+      "metric": null,
+      "population": "No human topic annotators reported; silver labels cannot supply IAA.",
+      "evidence": [
+        "silver",
+        "lda_views"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "Filtered thread represented by its first query/reply pair; paper reports an 80% training / 20% testing split.",
+      "training_pairs": 38650,
+      "test_pairs": 9660,
+      "table1_statistics": {
+        "customer_train": {
+          "emails": 38650,
+          "mean_tokens": 68,
+          "mean_sentences": 2.6
+        },
+        "agent_train": {
+          "emails": 38650,
+          "mean_tokens": 221,
+          "mean_sentences": 8.1
+        },
+        "customer_test": {
+          "emails": 9660,
+          "mean_tokens": 72,
+          "mean_sentences": 2.5
+        },
+        "agent_test": {
+          "emails": 9660,
+          "mean_tokens": 220,
+          "mean_sentences": 8.0
+        }
+      },
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 201,
+        "line_end": 219,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "training_scope": "LDA topic extraction is reported on training sets; trained word distributions and priors infer silver annotations for training and test documents. Test reply/next-sentence text defines evaluation targets, while the specified predictors use customer-query and, for T2, observed current-sentence context. Inferring a held-out target is not itself evidence that future target text entered predictor features.",
+      "unreported": [
+        "Random versus temporal split construction and seed",
+        "Customer/agent/account disjointness",
+        "Exact sentence counts, preprocessing and duplicate or near-duplicate controls",
+        "Development split and model-selection protocol",
+        "Cross-split canned-template leakage checks"
+      ],
+      "interpretation": "Similar support replies and systematic agent structure make cross-split duplicate/template overlap a plausible, unmeasured risk. Random training distractors define the retrieval protocol; they do not demonstrate leakage. The best topic count is shown on a test-result curve; a separate selection split is not described.",
+      "evidence": [
+        "dataset",
+        "silver",
+        "metrics",
+        "t1_ranking"
+      ]
+    },
+    "metrics": {
+      "dataset_id": "D07-UK-telecom-first-query-reply",
+      "test_split": "9,660 held-out threads, each represented by its first customer query and first agent reply (Table 1). Exact held-out sentence and token counts are not reported.",
+      "definitions": [
+        {
+          "name": "Dominant Topic Accuracy@K (DTA@K)",
+          "task": "T2 next-sentence dominant silver-topic prediction",
+          "definition": "Number of test agent sentences whose single silver argmax topic is in the K highest-ranked predicted topics, divided by all evaluated test agent sentences; not recall over a set of multiple relevant labels.",
+          "denominator": "All test agent sentences irrespective of position, per Section 7.2; exact count not reported. First-sentence handling is described separately in Equation 5. Section 7.2 does not explicitly reconcile that special case with its Equation 4 citation (D07-I02); rounded Table 1 means do not determine an exact sentence denominator.",
+          "evidence": [
+            "metrics",
+            "t2_setting"
+          ]
+        },
+        {
+          "name": "Bhattacharya coefficient (BC)",
+          "task": "T1 reply-topic distribution prediction and T2 next-sentence prediction",
+          "definition": "Similarity of predicted and silver topic probability distributions. Standard mathematical interpretation: sum over topics of sqrt(p_topic*q_topic); the paper names this metric without printing this formula.",
+          "denominator": "Mean over test reply emails for T1; mean over test agent sentences for T2. Each distribution is normalized over the latent topic inventory.",
+          "evidence": [
+            "metrics",
+            "t1_bc",
+            "t2_setting"
+          ]
+        },
+        {
+          "name": "Recall@1",
+          "task": "T1 sampled response identification",
+          "definition": "Fraction of test queries for which the true reply ranks first among k candidates: the true reply plus k-1 randomly introduced training replies. Candidates are ranked by BC to the query-conditioned predicted reply distribution.",
+          "denominator": "All test query/reply pairs, 9,660 from Table 1; sampling repetitions and tie handling not reported.",
+          "evidence": [
+            "dataset",
+            "metrics",
+            "t1_ranking"
+          ]
+        },
+        {
+          "name": "Word-level perplexity",
+          "task": "Auxiliary held-out reply likelihood experiment",
+          "definition": "exp(-sum_i log L(A_i)/sum_i N_A_i) for agent-only LDA; exp(-sum_i log[L(C_i+A_i)/L(C_i)]/sum_i N_A_i) for joint LDA conditioned on C_i. Equations visually checked on PDF p. 4.",
+          "denominator": "Total word count in test agent replies, not customer-plus-agent words; exact count not reported.",
+          "evidence": [
+            "perplexity"
+          ]
+        },
+        {
+          "name": "Peaked sentence-topic percentage",
+          "task": "Descriptive silver-label concentration, not predictive accuracy",
+          "definition": "Fraction of test sentences whose dominant topic probability exceeds 0.5 and is at least twice the second-highest topic probability.",
+          "denominator": "All test agent sentences; exact count not reported.",
+          "evidence": [
+            "peaked"
+          ]
+        }
+      ],
+      "t2_tables": {
+        "setting": "T2; D07-UK-telecom-first-query-reply; held-out test agent sentences, pooled across positions; M=50; silver sentence-LDA argmax target; Table 4 and Table 5.",
+        "feature_notation": "Feature names and printed_features_quote below preserve the printed tables. Plus rows are cumulative within their feature block. The prose explicitly defines tau(x) as a topic-distribution vector; Equation 4 instead specifies the current dominant topic and M separate predictors. D07-I01 leaves their implementation relationship unresolved.",
+        "uniform_baseline": {
+          "DTA_at_1": 0.02,
+          "BC": 0.308,
+          "definition": "Uniform topic distribution / random ranking; identical in every Table 4 row.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 796,
+            "line_end": 803,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "average_baseline": {
+          "DTA_at_1": 0.064,
+          "BC": 0.334,
+          "definition": "Same global topic distribution for every sentence, from normalized LDA alpha learned on training data.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 768,
+            "line_end": 775,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "result_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 796,
+            "line_end": 803,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        "rows": [
+          {
+            "features": "Customer and current-sentence bag-of-words",
+            "DTA_at_1": 0.416,
+            "BC": 0.556,
+            "DTA_at_2": 0.532,
+            "DTA_at_5": 0.722,
+            "DTA_at_10": 0.851,
+            "table4_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 799,
+              "line_end": 799,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "table5_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 844,
+              "line_end": 844,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "printed_features_quote": "ω(Ci), ω(Ai,j)",
+            "feature_description_evidence_type": "reported_method_description_not_verified_implementation",
+            "score_evidence_type": "reported_measured_outcome"
+          },
+          {
+            "features": "Bag-of-words plus position",
+            "DTA_at_1": 0.431,
+            "BC": 0.572,
+            "DTA_at_2": 0.563,
+            "DTA_at_5": 0.735,
+            "DTA_at_10": 0.858,
+            "table4_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 800,
+              "line_end": 800,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "table5_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 845,
+              "line_end": 845,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "printed_features_quote": "+position",
+            "feature_description_evidence_type": "reported_method_description_not_verified_implementation",
+            "score_evidence_type": "reported_measured_outcome"
+          },
+          {
+            "features": "Customer and current-sentence topic features",
+            "DTA_at_1": 0.45,
+            "BC": 0.588,
+            "DTA_at_2": 0.623,
+            "DTA_at_5": 0.795,
+            "DTA_at_10": 0.893,
+            "table4_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 801,
+              "line_end": 801,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "table5_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 846,
+              "line_end": 846,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "printed_features_quote": "τ(Ci), τ(Ai,j)",
+            "feature_description_evidence_type": "reported_method_description_not_verified_implementation",
+            "score_evidence_type": "reported_measured_outcome"
+          },
+          {
+            "features": "Topic features plus both bag-of-words vectors",
+            "DTA_at_1": 0.451,
+            "BC": 0.598,
+            "DTA_at_2": 0.61,
+            "DTA_at_5": 0.794,
+            "DTA_at_10": 0.901,
+            "table4_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 802,
+              "line_end": 802,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "table5_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 847,
+              "line_end": 847,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "printed_features_quote": "+ω(Ci), ω(Ai,j)",
+            "feature_description_evidence_type": "reported_method_description_not_verified_implementation",
+            "score_evidence_type": "reported_measured_outcome"
+          },
+          {
+            "features": "Topic features plus both bag-of-words vectors plus position",
+            "DTA_at_1": 0.471,
+            "BC": 0.614,
+            "DTA_at_2": 0.625,
+            "DTA_at_5": 0.802,
+            "DTA_at_10": 0.901,
+            "table4_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 803,
+              "line_end": 803,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "table5_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+              "line_start": 848,
+              "line_end": 848,
+              "pdf_pages": [
+                8
+              ]
+            },
+            "printed_features_quote": "+position",
+            "feature_description_evidence_type": "reported_method_description_not_verified_implementation",
+            "score_evidence_type": "reported_measured_outcome"
+          }
+        ]
+      },
+      "t1_text_ranking": {
+        "setting": "T1; all held-out query/reply pairs; M=50; k=5 (one true reply plus four random training replies).",
+        "Recall_at_1": 0.525,
+        "random_baseline": 0.2,
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+          "line_start": 719,
+          "line_end": 724,
+          "pdf_pages": [
+            7
+          ]
+        },
+        "selection_note": "Best M reported from a test-set curve; a separate development split or selection protocol is not reported."
+      },
+      "figure_only_results": [
+        {
+          "figure": "1",
+          "pdf_page": 4,
+          "task": "Silver sentence-topic concentration",
+          "setting": "Test agent sentences; separate agent-only, customer-plus-agent, and sentence-trained LDA views; topic counts shown from 2 through 250.",
+          "result": "Sentence-trained LDA exceeds 90% peaked sentences; source prose does not give exact per-setting percentages.",
+          "evidence": [
+            "peaked"
+          ],
+          "image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-04.png"
+        },
+        {
+          "figure": "2",
+          "pdf_page": 5,
+          "task": "Word perplexity",
+          "setting": "Held-out agent replies; agent-only versus joint LDA conditioned on the query; topic counts shown from 2 through 250.",
+          "result": "Conditioned model is lower throughout the plotted settings. Exact point values not tabulated.",
+          "evidence": [
+            "perplexity"
+          ],
+          "image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-05.png"
+        },
+        {
+          "figure": "3",
+          "pdf_page": 7,
+          "task": "T1 reply-topic prediction BC",
+          "setting": "All held-out agent replies, varying M.",
+          "result": "Predictor exceeds customer-distribution-copy baseline; both curves decrease as topic count rises. Exact point values not tabulated.",
+          "evidence": [
+            "t1_bc"
+          ],
+          "image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-07.png"
+        },
+        {
+          "figure": "4",
+          "pdf_page": 7,
+          "task": "T1 sampled response identification",
+          "setting": "All held-out query/reply pairs, k=5, varying M.",
+          "result": "The exact best value is retained in t1_text_ranking; other plotted points are not digitized.",
+          "evidence": [
+            "t1_ranking"
+          ],
+          "image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-07.png"
+        },
+        {
+          "figure": "5",
+          "pdf_page": 7,
+          "task": "T1 sampled response identification",
+          "setting": "M=50; k in {2,3,5,8,10,15,20,25}; all held-out query/reply pairs.",
+          "result": "Proposed curve exceeds random 1/k baseline throughout; exact curve values are not tabulated.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 727,
+            "line_end": 757,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "image": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-07.png"
+        }
+      ],
+      "other_metrics": "KL divergence is stated to correlate with BC results, but no numerical KL results or correlation coefficient are reported (metrics evidence). No Pk, WindowDiff, span F1/IoU, pair/cluster score, multi-label set metric, or work-text preservation metric is evaluated.",
+      "uncertainty_reporting": "No confidence intervals, repeated-seed variance, or statistical significance tests are reported for these results."
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_evidence": "No measurement of preserved conditions, exceptions, evidence, approval/action scope, or reply scope. No related scope-extraction error study is reported either.",
+      "example_only": "Table 3 includes conditional repair/payment, inability to quote before examination, and conditional ticket closure. The paper displays reply-level topic terms, not evidence spans or a scope-fidelity judgment.",
+      "example_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+        "line_start": 484,
+        "line_end": 509,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "interpretation": "A high dominant-topic score can coexist with omitted or broadened conditions; this is an untested risk, not a failure observed in the paper.",
+      "evidence": [
+        "topic_examples",
+        "metrics",
+        "table4",
+        "table5"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Comparative sentence, clause, arbitrary-span, or EDU preservation",
+      "Human concrete-work-matter topic identity and uncertainty",
+      "Exact, overlapping, or discontinuous evidence spans",
+      "Non-sequential clusters across replies, forks, threads, or Sources",
+      "Action, question, response, approval, and exception scope extraction",
+      "Decision-bearing evidence preservation or important-work recall",
+      "Human usefulness, task time, resolved support outcomes, and calibrated abstention",
+      "Incremental update cost, throughput, latency, or Raspberry Pi deployment"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "D07-I01",
+        "kind": "Unresolved method/table feature-description mismatch",
+        "description": "Section 6.2 replaces the current-sentence distribution with its dominant topic in Equation 4 and describes M predictors indexed by that topic. Section 7.2 says Equation 4 was used, but Tables 4–5 label current-sentence features tau(A_i,j), and prose calls them topic-distribution vectors. The paper does not clarify whether table notation abbreviates dominant-topic conditioning or full vectors were also used.",
+        "side_a": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 594,
+            "line_end": 618,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF pp. 6; 6.2; Equation 4"
+        },
+        "side_b": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 776,
+            "line_end": 803,
+            "pdf_pages": [
+              7,
+              8
+            ]
+          },
+          "section": "PDF pp. 7, 8; 7.2; Table 4"
+        },
+        "additional_source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+          "line_start": 810,
+          "line_end": 813,
+          "pdf_pages": [
+            8
+          ]
+        },
+        "visual_check_images": [
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-06.png",
+          "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/pdf-page-08.png"
+        ],
+        "resolution": "Unresolved implementation-description gap after original-PDF xhigh verification. Preserve Equation 4 and the printed table/prose feature descriptions separately. The paper does not reconcile them or specify the role of dominant-topic predictor selection in each ablation row. Do not infer undocumented code, silently substitute one feature description for the other, or treat this as a proven model failure.",
+        "source_evidence_type": "comparison_of_reported_method_descriptions",
+        "output_distribution_clarification": "Section 7.2 explicitly says multiclass logistic regression outputs a probability distribution (raw lines 784–789, PDF pp. 7–8). This explains BC scoring and top-K ranking despite a single dominant target. It does not establish that the input contains the full current-sentence distribution.",
+        "output_distribution_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+          "line_start": 784,
+          "line_end": 789,
+          "pdf_pages": [
+            7,
+            8
+          ]
+        },
+        "table5_source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+          "line_start": 841,
+          "line_end": 850,
+          "pdf_pages": [
+            8
+          ]
+        },
+        "author_intent_status": "Not specified in the frozen manuscript; neither a shorthand explanation nor a different implemented predictor is established.",
+        "xhigh_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/xhigh-review.json"
+      },
+      {
+        "id": "D07-I02",
+        "kind": "First-sentence evaluation description ambiguity",
+        "description": "Section 7.2 reports averaging over all test sentences irrespective of position and cites Equation 4. Section 6.2 explicitly specifies query-only Equation 5 for the first sentence (j=0). The source does not separately report first-sentence results or explain how Equation 5 enters the pooled table rows.",
+        "side_a": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 619,
+            "line_end": 624,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF pp. 6; 6.2; Equation 5"
+        },
+        "side_b": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 776,
+            "line_end": 784,
+            "pdf_pages": [
+              7
+            ]
+          },
+          "section": "PDF pp. 7; 7.2"
+        },
+        "resolution": "Retain the paper-reported all-sentence evaluation population. Equation 5 could serve as the stated first-sentence special case, but its use in the pooled results is not explicitly confirmed. This is a reporting gap, not proof that first sentences were excluded or processed incorrectly. Exact evaluated sentence counts are not reported; multiplying 9,660 emails by the rounded mean of 8.0 sentences does not recover an exact denominator.",
+        "source_evidence_type": "comparison_of_reported_method_and_evaluation_protocol"
+      },
+      {
+        "id": "D07-I03",
+        "kind": "Count precision retained; not a material contradiction",
+        "description": "Prose says 48.3k filtered threads; Table 1 reports 38,650 train and 9,660 test pairs. Their sum is 48,310 (analyst arithmetic). These are compatible with rounded prose and an approximately 80/20 split.",
+        "side_a": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 209,
+            "line_end": 216,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "PDF pp. 3; 3 Dataset"
+        },
+        "side_b": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 201,
+            "line_end": 208,
+            "pdf_pages": [
+              3
+            ]
+          },
+          "section": "PDF pp. 3; Table 1"
+        },
+        "resolution": "Keep prose and table values; use exact table counts for pair denominators.",
+        "source_evidence_type": "reported_dataset_counts_and_analyst_rounding_check"
+      },
+      {
+        "id": "D07-I04",
+        "kind": "Minor notation mismatch",
+        "description": "Immediately after Equation 3, the prose defines omega(A_i) as agent-email words, whereas the equation and preceding text use omega(A_i,j), the current sentence.",
+        "side_a": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 571,
+            "line_end": 588,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF pp. 6; 6.2; Equation 3"
+        },
+        "side_b": {
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+            "line_start": 590,
+            "line_end": 593,
+            "pdf_pages": [
+              6
+            ]
+          },
+          "section": "PDF pp. 6; 6.2"
+        },
+        "resolution": "Describe the main specified predictor as current-sentence-conditioned and retain the notation discrepancy.",
+        "source_evidence_type": "comparison_of_reported_method_notation"
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Limited: sentences are used, but no comparative unit-preservation evidence (lda_views, D07-F05).",
+      "RQ2": "Direct email support for query-conditioned response topics; no concrete-matter clustering or multi-turn interleaving study (tasks, dataset).",
+      "RQ3": "Soft email/sentence distributions and single dominant silver targets are explicit; human cardinality and shared/non-contiguous span membership remain unknown (D07-F01, t2_method).",
+      "RQ4": "No direct overlapping or discontinuous span representation evaluation.",
+      "RQ5": "No measured scope-preservation errors; Table 3 supplies an illustrative conditional message only.",
+      "RQ6": "Useful separation of distribution similarity, sampled response ranking, top-K categorical accuracy, and word perplexity (metrics).",
+      "RQ7": "Useful split and domain counts; silver-only annotation, missing IAA, duplicate controls and detailed model-selection protocol limit external validity.",
+      "RQ8": "Motivates isolated experiments with topic mixtures, dominant labels, context and position; does not approve a representation."
+    },
+    "interpretation": [
+      {
+        "id": "D07-INT01",
+        "statement": "A latent distribution captures uncertainty or mixed lexical content, but does not itself identify concrete work matters or attach exact evidence to them. Topic examples mix support rituals, devices, repairs, and other semantic aspects; the authors explicitly leave disentangling aspects to future work.",
+        "evidence": [
+          "topic_examples",
+          "future"
+        ]
+      },
+      {
+        "id": "D07-INT02",
+        "statement": "The strong top-K silver-label result supports testing topic suggestions for structured support replies. It cannot establish human topic correctness, simultaneous label completeness, or preservation of decision-bearing text.",
+        "finding_refs": [
+          "D07-F01",
+          "D07-F02",
+          "D07-F08"
+        ]
+      },
+      {
+        "id": "D07-INT03",
+        "statement": "Observed current-sentence text supplies context in offline T2 evaluation. No free-running generation or accumulated-error experiment is reported; long-distance dependencies are future work.",
+        "evidence": [
+          "t2_method",
+          "future"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "D07-P01",
+        "status": "untested msgloom research proposal",
+        "proposal": "Annotate a small user-reviewed email set with concrete work matters and complete decision-bearing evidence. Compare sentence, clause, and arbitrary-span units on identical texts; retain multiple and discontinuous memberships in reference annotations.",
+        "measure": "Report unit-specific span coverage and omitted/broadened conditions separately from human topic-label accuracy; measure annotation agreement per unit.",
+        "basis": [
+          "D07-F01",
+          "D07-F05"
+        ]
+      },
+      {
+        "id": "D07-P02",
+        "status": "untested msgloom research proposal",
+        "proposal": "Compare dominant-topic labels, soft topic distributions, and explicit multiple-matter predictions using the same contextual inputs; score top-K suggestion accuracy separately from multi-label set and overlapping/discontinuous span scores.",
+        "measure": "Test whether peaked latent distributions hide secondary work matters; assess calibration and abstention without forcing one membership.",
+        "basis": [
+          "D07-F02",
+          "D07-INT01"
+        ]
+      },
+      {
+        "id": "D07-P03",
+        "status": "untested msgloom research proposal",
+        "proposal": "Compare query-only, immediate-sentence, and longer-context predictors with and without sentence position under thread-, customer-, time-, and template-aware splits.",
+        "measure": "Report topic results and condition/evidence/reply-scope preservation separately; include recurrences within one message and interleaving across replies as distinct strata.",
+        "basis": [
+          "D07-F03",
+          "D07-I01",
+          "D07-INT03"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-email/2015_gella_et_al_assisting_email_responses_topic_prediction.pdf",
+      "pdf_sha256": "ebd99d819a139134a267040ba132a77533de75a99da8d346a56971ae39a74b30",
+      "expected_pdf_sha256": "ebd99d819a139134a267040ba132a77533de75a99da8d346a56971ae39a74b30",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/D07.md",
+      "converted_text_sha256": "07f0bef10be34955d6df8aaf7d1360f8f0474809eee015f54424960b0468b14f",
+      "preferred_fine_conversion": "not present at analysis time",
+      "primary_conversion_read": "Full rough Markdown, including references.",
+      "citation_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+      "citation_text_sha256": "204ae0e83552909ba8fc72b7ee8b7c51a1c3e36989d75bce246684d347767b47",
+      "auxiliary_page_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.pages.md",
+      "auxiliary_page_text_sha256": "3e080584b2b4e404aea6ef44fb84ab5de85b93f180a753e8b37e00c4e1f0dab8",
+      "layout_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.layout.txt",
+      "layout_text_sha256": "9354b2d25daba3a58a3f7dcbfc47be29f6d4eadb7ba0e866f9ec413bebce5dab",
+      "locator_convention": "1-based LF line numbers (text.split(\"\\n\")); form feeds are page markers, not extra lines.",
+      "source_status": "Frozen manuscript/preprint; PDF margin identifies arXiv:1510.02049v1, 7 Oct 2015. No frozen verified publication evidence.",
+      "metadata_note": "Shortlist dates say 2015-01-01; this is not treated as the manuscript date or verified publication date. PDF margin date retained.",
+      "metadata_locator": {
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/D07.raw.txt",
+          "line_start": 90,
+          "line_end": 94,
+          "pdf_pages": [
+            1
+          ]
+        },
+        "section": "PDF pp. 1; arXiv margin"
+      },
+      "visual_inspection": "Original PDF pages 3–8 rendered and inspected locally; numeric tables agree with pdftotext raw. Rough equations and plots are damaged; raw text and page images resolve extraction. Methodological ambiguities remain in the source itself.",
+      "visual_notes_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/visual-inspection.md",
+      "network_used": false,
+      "xhigh_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/xhigh-review.json",
+      "xhigh_visual_inspection": "Fresh renders of original PDF pages 1, 3, 6, 7, 8 inspected; existing page 4–5 renders inspected for context. Fresh raw extraction from the frozen PDF matches the LF-cited raw text byte-for-byte. D07-I01 remains an implementation-description gap, not extraction damage.",
+      "xhigh_visual_notes_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/D07/xhigh-source-check.md"
+    }
+  },
+  "runtime_provenance": {
+    "source": "Current worker environment and matching saved launcher arguments; user identifies this focused runtime as gpt-6-astra xhigh. Parent independently verifies turn_context and execution receipts.",
+    "role": "paper-D07-xhigh",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "launcher_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/workers/paper-D07-xhigh.launch.json",
+    "launcher_sha256": "0d55c374469990fef065880a24b23aa4a4c9367c99a3c91f1c4e28eb199df650",
+    "runtime_identifiers": "No session identifier or successful runner execution receipt fabricated."
+  }
+}

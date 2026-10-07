@@ -1,0 +1,85 @@
+{
+ "paper_id": "manual-2bb76a9136",
+ "title": "IDCR: Information-Directed Conformal Retrieval",
+ "research_question": "Can retrieval choose documents according to their expected reduction in conformal predictive uncertainty while preserving distribution-free coverage and remaining computationally tractable?",
+ "methodology": "IDCR formulates document acquisition as minimizing the volume of a conformal prediction set, modeling each retrieved document as a Bayesian precision update. The resulting objective is shown to be equivalent to maximizing a log-determinant function with monotone submodular structure, enabling greedy document selection with a constant-factor approximation guarantee. A Document Interaction Tensor represents interactions among candidate documents, and a marginal-gain-separation gate sends ambiguous selection steps to limited lookahead search; the accessible abstract reports experiments on MIMIC-IV clinical diagnosis and additional results on SciQ, GoEmotions, and LexGLUE.",
+ "key_findings": [
+  {
+   "finding": "IDCR directly couples retrieval selection to conformal prediction-set volume while preserving the paper's claimed distribution-free predictive coverage.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The conformal-volume objective is reported to be exactly equivalent to a log-determinant maximization objective that is monotone submodular, allowing greedy selection with a 1-1/e approximation guarantee.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "On the reported MIMIC-IV experiment, greedy selection achieved a mean greedy-to-optimal ratio of 0.9999, while conformal ellipsoids were reported as 4.8 times smaller than random retrieval and 5.8 times smaller than cosine retrieval while retaining coverage.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "A marginal-gain-separation gate routes uncertain selection decisions to two-step lookahead, which the abstract reports as closing 77% of the remaining greedy-to-optimal gap.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The abstract reports that gains extend beyond the clinical task to SciQ and GoEmotions and that uncertainty is reduced relative to learned and uncertainty-aware retrieval baselines on GoEmotions and LexGLUE.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The conformal guarantee described in the accessible source controls prediction-set coverage rather than an answer-aware RAG stop-versus-continue decision.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The accessible abstract does not describe temporal/version-aware provenance, source permissions, or an explicit evidence-sufficiency state used for iterative RAG stopping.",
+   "evidence_type": "unsupported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The accessible abstract does not report a dedicated experiment under explicit temporal or non-stationary distribution shift.",
+   "evidence_type": "unsupported",
+   "section": "Abstract"
+  }
+ ],
+ "limitations": [
+  "Only the proceedings abstract was accessible, so full methodological details, assumptions, ablations, and author-stated limitations could not be verified.",
+  "The accessible source describes conformal control of predictive-set coverage, not a unified answer-aware RAG stop/continue controller.",
+  "No temporal/version-aware provenance mechanism is described in the accessible abstract.",
+  "No permission-aware evidence-access mechanism is described in the accessible abstract.",
+  "No explicit retrieval-call or token budget for the selection process is specified in the accessible abstract.",
+  "The abstract's distribution-free coverage claim should not by itself be interpreted as evidence of robustness to arbitrary non-stationary distribution shift.",
+  "Exact preprocessing and data-release details for the reported experimental subsets could not be verified from the abstract alone."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conformal_coverage_control": 0.99,
+  "submodular_greedy_objective": 0.99,
+  "clinical_uncertainty_reduction": 0.99,
+  "lookahead_gate": 0.99,
+  "not_rag_stop_risk_control": 0.9,
+  "no_provenance_or_permission_control_in_abstract": 0.82,
+  "distribution_shift_evaluation_not_verified": 0.82
+ },
+ "raw_claims": [
+  "IDCR selects documents with the goal of reducing the size of a conformal prediction set.",
+  "Each selected document is modeled as contributing a Bayesian precision update.",
+  "The document-selection objective can be expressed as log-determinant maximization.",
+  "The resulting objective has monotone submodular structure.",
+  "Greedy selection therefore has a constant-factor approximation guarantee under the stated formulation.",
+  "A Document Interaction Tensor captures interactions among documents in the candidate corpus.",
+  "A lightweight gate invokes lookahead when marginal retrieval gains are insufficiently separated.",
+  "The reported clinical experiment uses MIMIC-IV admissions together with PubMed abstracts.",
+  "The abstract reports substantially smaller conformal ellipsoids than random and cosine-based retrieval while maintaining coverage.",
+  "The abstract reports additional experiments on SciQ, GoEmotions, and LexGLUE."
+ ],
+ "source_url": "https://proceedings.mlr.press/v337/nanivadekar26a.html",
+ "access": "abstract_only"
+}

@@ -1,0 +1,192 @@
+{
+ "round": 4,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Longitudinal work-item revision relation classification: semantic relations among successive communications about the same work item, including amendments, supersession, correction, contradiction, reopening, and unresolved conflict."
+  },
+  {
+   "id": "F3",
+   "description": "Source attribution, evidentiality, and evidence-based claim verification: distinguish what a source asserts from what independent or source-specific evidence supports, refutes, or fails to establish."
+  },
+  {
+   "id": "F8",
+   "description": "Belief revision and truth-maintenance reasoning under sequential additions, contradictions, retractions, or changed evidence."
+  },
+  {
+   "id": "F9",
+   "description": "Document revision, edit-intent classification, and semantic change across successive versions rather than surface-difference detection alone."
+  },
+  {
+   "id": "F11",
+   "description": "Data provenance, immutable observations, and derived current-state views, preserving lineage as underlying information changes."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "1803.05355",
+   "decision": "REJECT",
+   "reason": "FEVER is strong static evidence-based claim verification, but the abstract does not add longitudinal revision, source-relative lifecycle state, or workplace/operational communication. The corpus already has fact-verification evidence of the supported/refuted/insufficient-evidence pattern, so another generic Wikipedia verification benchmark does not close the current gaps.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-18653-v1-p19-1040",
+   "decision": "REJECT",
+   "reason": "The multi-source trustworthiness and claim-credibility formulation is relevant to F3, but the abstract does not show longitudinal work-item revision, temporal state resolution, or operational communication. Its useful capability overlaps stronger verified F3 candidates in this set, and its identity is UNCHECKED.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "2106.05707",
+   "decision": "REJECT",
+   "reason": "FEVEROUS extends fact verification to sentences and table cells, but its contribution is heterogeneous evidence verification rather than longitudinal state evolution or revision semantics. That structured-evidence extension does not materially close the Topic 06 gaps.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2212.01350",
+   "decision": "REJECT",
+   "reason": "The paper uses edit intentions in an iterative revision system, but its central capability is locating and generating edits. It does not show classification of the semantic relationship between successive operational assertions, and the verified arXivEdits candidate provides more direct F9 evidence for version alignment plus edit-intent classification.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2305.13117",
+   "decision": "REJECT",
+   "reason": "AVeriTeC provides independent web evidence and explicitly reduces temporal leakage, but the abstract still describes static real-world claim verification rather than evolving work-item state, revision relations, or source-relative completion claims across successive communications. It therefore does not materially close the current longitudinal gaps.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "manual-c1d5f8bde7",
+   "decision": "REJECT",
+   "reason": "The factual-versus-fluency edit distinction is too coarse for Topic 06's required semantic effects such as supersession, correction, supplementation, revocation, reopening, and conflict. It is also UNCHECKED and is dominated here by the verified arXivEdits F9 candidate with finer-grained edit intentions and explicit multi-version alignment.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "2103.08541",
+   "decision": "ADMIT",
+   "stream_id": "F3",
+   "role": "TRANSFER",
+   "reason": "The abstract explicitly uses evidence drawn from Wikipedia revisions where small factual changes can flip whether the same claim is supported or refuted. This materially strengthens F3 because it empirically tests verification when evidence itself changes over time, making it directly useful for the distinction between immutable prior observations and later evidence that changes the current assessment.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2606.18037",
+   "decision": "ADMIT",
+   "stream_id": "F3",
+   "role": "TRANSFER",
+   "reason": "The system decomposes outputs into atomic claims, routes them to source-specific evidence, verifies factual support and attribution, retains stable source/tool identifiers, and tests source-attribution perturbations. That is unusually close to gap-5's need to distinguish an assertion from evidence that actually originates from the claimed corroborating source, while also providing provenance-relevant evaluation.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-acl-long-250",
+   "decision": "REJECT",
+   "reason": "The abstract supports F9 through multi-domain iterative revision and edit-intent annotation, but this contribution substantially overlaps the verified arXivEdits candidate, which additionally provides explicit multi-version document/sentence/word alignment. Given the identity is UNCHECKED and no distinct operational-communication capability is shown, it does not justify another reading slot.",
+   "confidence": 0.88
+  },
+  {
+   "paper_id": "2210.15067",
+   "decision": "ADMIT",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "reason": "The paper explicitly represents multiple document versions, aligns content across versions at several granularities, annotates fine-grained edits and edit intentions, and evaluates automatic edit-intention classification. This materially strengthens F9 as an empirical model of semantic change over a revision lineage rather than mere text differencing.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "manual-aa5656bede",
+   "decision": "REJECT",
+   "reason": "This is highly relevant workplace email data, but the modeled capability is utterance-level speech-act classification such as proposing, committing, delivering, and requesting. That belongs primarily to Topic 05's utterance-time action/commitment extraction boundary; the abstract does not show classification of how later messages revise, supersede, contradict, or reopen earlier state.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "manual-f9b48b4c8b",
+   "decision": "REJECT",
+   "reason": "Complete revision histories and edit-intent labels are relevant to F9, but the capability overlaps the verified arXivEdits candidate. The abstract does not add workplace communication or a revision ontology closer to supersession/correction/reopening, and the paper identity is UNCHECKED.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2004.14974",
+   "decision": "REJECT",
+   "reason": "SciFact is a strong evidence-based claim-verification benchmark, but the abstract describes static scientific claims and independently selected evidence rather than longitudinal communication, changing factual state, or revision relations. Its F3 capability is already represented more directly by admitted candidates.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "1804.02472",
+   "decision": "REJECT",
+   "reason": "The paper directly models source-relative event factuality and is relevant to F2, but the stated open gaps already acknowledge that admitted factuality literature establishes textual source commitment. This abstract does not add longitudinal revision, temporal ordering, independent corroboration, or operational-domain evaluation, so it duplicates an already-covered component rather than closing a current gap.",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d18-1003",
+   "decision": "REJECT",
+   "reason": "DeClarE separates claims from external evidence and source trust signals, but the abstract does not show longitudinal state revision or operational communication. Its static evidence-aware credibility capability overlaps verified F3 candidates admitted here, and its identity is UNCHECKED.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2007.14864",
+   "decision": "ADMIT",
+   "stream_id": "F11",
+   "role": "TRANSFER",
+   "reason": "The paper explicitly maintains query-result provenance while a knowledge graph changes through insertions and deletions, preserving explanations of why an answer remains valid or becomes affected by updates. This materially strengthens F11 and is directly transferable to msgloom's requirement that new assessments not erase historical evidence while a separately derived current view changes.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2406.19764",
+   "decision": "ADMIT",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "reason": "The benchmark explicitly evaluates whether conclusions are revised as premises or evidence are supplied sequentially and change over time. Unlike a static NLI task, it empirically tests belief updating under evolving information, making it directly useful transfer evidence for state revision and adversarial update sequences.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "1909.03242",
+   "decision": "REJECT",
+   "reason": "MultiFC provides real-world evidence retrieval and veracity prediction across domains, but the abstract remains a static fact-checking setup. It does not evaluate successive revisions, lifecycle state, temporal ordering, or operational communication, and its F3 contribution is already covered more directly by admitted candidates.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "doi-10-18653-v1-d13-1055",
+   "decision": "PENDING",
+   "reason": "No abstract is supplied, so the admission gate cannot determine whether the work merely labels generic Wikipedia edit categories or actually classifies semantic effects useful to F9 such as factual correction, reversal, supplementation, deletion, or other revision intent. The abstract or equivalent primary-paper summary is required to settle this.",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2110.08222",
+   "decision": "ADMIT",
+   "stream_id": "F3",
+   "role": "TRANSFER",
+   "reason": "DialFact moves evidence-based verification into multi-turn dialogue and explicitly separates a speaker's conversational claim from external corroborating Wikipedia evidence, with claim detection, retrieval, and supported/refuted/insufficient-evidence verification. This materially strengthens gap-5 and gap-4 compared with static fact-checking because assertion and corroboration occur in a conversational setting.",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1016-j-jbi-2015-11-011",
+   "decision": "REJECT",
+   "reason": "The clinical-research email setting is valuable operational-domain evidence, and the taxonomy includes correction, suggestion, task-management, and resolution acts. However, the abstract describes dialog-act classification rather than maintaining a work item's longitudinal state or classifying explicit semantic relations between earlier and later observations. Domain vocabulary matches, but the required F1 capability is not established.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "manual-82aa610b83",
+   "decision": "REJECT",
+   "reason": "MEANTIME supports event identity, temporal relations, and cross-document links, but it is another news-derived event/time corpus rather than an operational longitudinal-state method. The existing gap explicitly identifies over-reliance on news evidence, so this would reinforce an already represented transfer setting without closing the workplace or revision-relation gaps.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "manual-d574dff39d",
+   "decision": "ADMIT",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "reason": "This is the strongest direct candidate: it studies tasks and activities distributed over multiple real-world email messages and jointly models semantic relations among task-related messages, including an Amend category alongside Request, Propose, Commit, and Deliver. That directly strengthens gap-1, gap-2, and gap-4 by providing empirical cross-message task-state evidence in workplace email rather than merely classifying isolated utterances. The identity is UNCHECKED, but no verified candidate in this set provides an equivalent direct cross-message email task-relation capability.",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2023-findings-acl-378",
+   "decision": "REJECT",
+   "reason": "LEDA supplies valuable large-organization mailing-list dialogue and decision-life-cycle acts, but its modeled capability is dialog-act classification of proposals, decisions, agreement, disagreement, information exchange, and clarification. The abstract does not show longitudinal state maintenance or explicit classification of supersession, correction, revocation, reopening, or unresolved conflict, so it is closer to Topic 05 than the missing Topic 06 capability.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "manual-ddcda2d78d",
+   "decision": "REJECT",
+   "reason": "The method gathers external sources and incorporates source reliability, so it is relevant to generic F3 claim verification. The abstract does not show longitudinal revision, source-relative work-item state, or operational communication, and stronger verified F3 candidates in this set cover dialogue verification and source-aware provenance. Its identity is also UNCHECKED.",
+   "confidence": 0.94
+  }
+ ],
+ "notes": "The gate is intentionally strict. Seven papers are admitted: one DIRECT workplace-email relation paper and six TRANSFER papers covering changing evidence, source-specific verification, dialogue corroboration, belief updating, semantic document revision, and provenance maintenance. Generic static fact-verification, news event/time resources, and utterance-level dialog-act classifiers were rejected where they did not add the missing longitudinal state/revision capability. One candidate remains PENDING because no abstract was supplied."
+}

@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-3115-1708376-1708429",
+ "title": "Contrasting the Interaction Structure of an Email and a Telephone Corpus: A Machine Learning Approach to Annotation of Dialogue Function Units",
+ "research_question": "Can a common Dialogue Function Unit annotation scheme represent initiation-response structure in workplace email and telephone dialogue, and how accurately can dialogue acts and response links be predicted in the two modalities?",
+ "methodology": "The authors annotated Dialogue Function Units, dialogue acts, and forward/backward response links in 48 Loqui telephone dialogues and 122 Enron email threads. Their scheme represents requests with forward links, responses with backward links, unanswered requests as dangling forward links, and responses to non-request antecedents through secondary forward links. They compared the distributions of acts and links across the two corpora and evaluated heuristic, regular SVM, and structured SVM models for dialogue-act tagging and response-link prediction. Experiments used five-fold cross-validation while assuming gold DFU segmentation.",
+ "key_findings": [
+  {
+   "finding": "The annotation scheme permits response relations that are non-adjacent and that originate either from explicit requests or from preceding non-request discourse units, making it more general than a strict adjacent question-answer model.",
+   "evidence_type": "supported",
+   "section": "§3 Annotation Scheme"
+  },
+  {
+   "finding": "An explicit request with no matching response is represented as a dangling forward link, providing a direct annotation mechanism for unanswered questions or requests.",
+   "evidence_type": "supported",
+   "section": "§3 Annotation Scheme"
+  },
+  {
+   "finding": "Dangling links were proportionally more common in Enron email than in Loqui telephone dialogue, at 7% versus 2% in the reported link statistics.",
+   "evidence_type": "supported",
+   "section": "§4 Corpora; Table 2"
+  },
+  {
+   "finding": "Only 28% of Enron DFUs participated as first or second parts of links, compared with 63% in Loqui, and Enron links more often involved secondary forward links than overt request-response pairs.",
+   "evidence_type": "supported",
+   "section": "§4 Corpora; Table 2"
+  },
+  {
+   "finding": "Dialogue-act tagging was substantially easier than response-link prediction: structured-SVM dialogue-act accuracy was 88.71% on Enron and 70.26% on Loqui, while paired-link F1 was 34.88% and 49.38% respectively.",
+   "evidence_type": "supported",
+   "section": "§6 Experiments; Tables 4 and 5"
+  },
+  {
+   "finding": "Email was easier than Loqui for dialogue-act classification but harder for link prediction, so the hypothesis that Enron would simply be the harder corpus was only task-dependent.",
+   "evidence_type": "supported",
+   "section": "§6 Experiments and §7 Discussion"
+  },
+  {
+   "finding": "The manual data contain a small number of multiple backward links, but the prediction systems impose at most one forward link of each type and one backward link per DFU and the structured model additionally forbids crossing links.",
+   "evidence_type": "supported",
+   "section": "§4 Table 2; §5.3 Regular SVM; §5.4 Structured SVM"
+  }
+ ],
+ "limitations": [
+  "DFU segmentation is assumed to be given rather than predicted automatically.",
+  "Most of each corpus was annotated by a single annotator after the initial guideline-development stage, limiting direct reliability evidence for the complete annotated collections.",
+  "The link predictors restrict each DFU to at most one link of each modeled type even though the complete manual annotation is not constrained in that way.",
+  "The structured model prohibits crossing links, while the gold annotations are evaluated without that restriction.",
+  "The Enron and Loqui corpora differ simultaneously in modality, domain, participant structure, and communicative goals, so observed differences cannot be attributed purely to email versus telephone modality.",
+  "The Enron link set is relatively small, particularly for some response-link subtypes.",
+  "The paper does not separately model proposition-level partial answers to several propositions bundled inside one DFU."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "nonadjacent_response_links": 0.99,
+  "dangling_links_encode_unanswered_requests": 0.99,
+  "more_dangling_links_in_email": 0.99,
+  "email_has_fewer_linked_dfus": 0.99,
+  "link_prediction_harder_than_da_tagging": 0.99,
+  "email_difficulty_is_task_dependent": 0.98,
+  "model_restricts_multi_links": 0.99
+ },
+ "raw_claims": [
+  "A Dialogue Function Unit is annotated with a dialogue act and can participate in forward or backward response links.",
+  "Requests for information and action receive forward links.",
+  "A response receives a backward link to the discourse unit it answers or otherwise responds to.",
+  "A request that receives no matching response is represented by a dangling forward link.",
+  "Responses can also link to earlier assertions that did not originally carry a request link.",
+  "The study annotates 48 Loqui telephone dialogues and 122 Enron email threads.",
+  "Enron contains a higher proportion of dangling links than Loqui.",
+  "Link prediction performs markedly worse than dialogue-act prediction.",
+  "Response links in email are often structurally distant from the discourse units to which they respond.",
+  "The manual annotation contains a few DFUs with multiple backward links.",
+  "The prediction algorithms constrain the number and configuration of links more strongly than the manual annotation."
+ ],
+ "source_url": "https://aclanthology.org/W09-3953.pdf",
+ "access": "full_text"
+}

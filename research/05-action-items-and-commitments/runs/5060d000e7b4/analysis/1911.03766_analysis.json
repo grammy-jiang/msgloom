@@ -1,0 +1,85 @@
+{
+ "paper_id": "1911.03766",
+ "title": "Multi-Sentence Argument Linking",
+ "research_question": "Can a document-level model reliably link event roles to argument spans across sentence boundaries, and can a new large-scale benchmark support progress on this task?",
+ "methodology": "The authors construct RAMS, a corpus of 9,124 annotated event instances covering 139 event types, from English news documents, with annotators selecting argument spans in a five-sentence window around each event trigger. They formulate multi-sentence argument linking as scoring combinations of an event, a semantic role, and a candidate span, using contextual representations and an explicit null candidate for unattested roles. Experiments compare several baselines and model variants on RAMS, examine sentence-distance effects and decoding constraints, and test transfer to AIDA, BNB, and GVDB datasets.",
+ "key_findings": [
+  {
+   "finding": "RAMS contains 9,124 annotated event instances from 3,993 news documents, with 139 event types, 65 role types, and 21,237 annotated argument links.",
+   "evidence_type": "supported",
+   "section": "RAMS Dataset / Dataset statistics"
+  },
+  {
+   "finding": "Although most RAMS arguments occur in the trigger sentence, arguments in neighboring sentences remain common enough to motivate document-level linking, with 82% of annotated arguments reported as sentence-local.",
+   "evidence_type": "supported",
+   "section": "RAMS Dataset"
+  },
+  {
+   "finding": "With gold trigger and gold argument spans supplied, the main model obtains 68.3 test F1, and type-constrained decoding using gold event types raises test F1 to 73.3.",
+   "evidence_type": "supported",
+   "section": "RAMS experiments / Main results"
+  },
+  {
+   "finding": "When the system must consider all possible spans instead of being given gold argument spans, performance drops to about 6 F1, showing that candidate-span identification is a major unresolved end-to-end difficulty.",
+   "evidence_type": "supported",
+   "section": "RAMS experiments / Main results"
+  },
+  {
+   "finding": "Performance on arguments one or two sentences from the trigger is comparable to performance on local arguments in the reported development-set analysis.",
+   "evidence_type": "supported",
+   "section": "Analysis by argument distance"
+  },
+  {
+   "finding": "Pretraining on RAMS improves downstream AIDA argument-linking performance relative to training only on the smaller AIDA data.",
+   "evidence_type": "supported",
+   "section": "Transfer experiments / AIDA"
+  },
+  {
+   "finding": "Exact annotation boundaries are materially less consistent than coarse agreement about whether a role is present: pairwise exact span-boundary agreement is reported as 55.3%.",
+   "evidence_type": "supported",
+   "section": "Annotation agreement"
+  }
+ ],
+ "limitations": [
+  "RAMS is derived from news articles rather than workplace email or enterprise chat, so its discourse structure and participant roles differ from the target domain.",
+  "The ontology describes event-semantic roles rather than workplace actions, decisions, assignees, deadlines, or action-to-deadline relations.",
+  "Implicit or group assignees are not annotated as dedicated phenomena.",
+  "Condition, negation, and modality scope are outside the annotation scheme.",
+  "The main high-scoring experiments assume gold argument spans and gold trigger spans, substantially simplifying exact evidence-span extraction.",
+  "End-to-end performance when all spans are candidates is very low relative to the gold-span setting.",
+  "Annotators are restricted to a five-sentence window and are instructed to choose the closest argument span for a role, which can exclude other valid discourse mentions.",
+  "Exact span-boundary agreement is only 55.3%, indicating substantial ambiguity for evaluations that demand exact argument evidence.",
+  "The five-sentence context design is based on event extraction in news and may not transfer to long email threads or enterprise-chat conversations."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rams_size_and_ontology": 0.99,
+  "arguments_are_mostly_sentence_local": 0.99,
+  "gold_span_test_f1": 0.99,
+  "all_span_performance_drop": 0.99,
+  "cross_sentence_performance_is_comparable": 0.96,
+  "rams_pretraining_improves_aida": 0.98,
+  "exact_boundary_agreement_is_limited": 0.99
+ },
+ "raw_claims": [
+  "RAMS is designed to study linking an event's semantic roles to argument spans that may occur outside the trigger sentence.",
+  "Each annotation example presents a five-sentence context centered on a typed event trigger.",
+  "Argument annotations are represented by token-level start and end offsets.",
+  "Annotators select the closest available span for each role when more than one mention could fill it.",
+  "The completed RAMS corpus contains 9,124 event instances and more than twenty-one thousand argument annotations.",
+  "Eighty-two percent of the annotated arguments are in the same sentence as their event trigger.",
+  "The model represents a potential link using the event, role, candidate span, and their contextual interactions.",
+  "A null argument option is used for roles that are not explicitly instantiated in the context.",
+  "The strongest main RAMS result relies on gold candidate argument spans and type-constrained decoding.",
+  "Removing the gold-span assumption causes a large performance decline.",
+  "Agreement on exact argument boundaries is markedly lower than agreement on whether an argument exists.",
+  "RAMS pretraining provides useful transfer to the smaller AIDA event-argument dataset.",
+  "The paper makes its RAMS data and implementation available through the project site."
+ ],
+ "source_url": "https://arxiv.org/html/1911.03766",
+ "access": "full_text"
+}

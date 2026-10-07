@@ -1,0 +1,40 @@
+{
+  "status": "accepted_with_issues",
+  "review3_repairs": {
+    "R3-N1": "fixed",
+    "R3-N2": "not_fixed"
+  },
+  "blocking_issues": [],
+  "nonblocking_issues": [
+    {
+      "id": "R4-N1",
+      "location": "engineering-validation/src/topic02_validation/replay.py:3-4",
+      "finding": "The module docstring still describes ContextInput as containing only the step identifier and context IDs. The Review 3 documentation repair is incomplete.",
+      "evidence": "The docstring says 'contains only the step identifier and context IDs currently available.' The actual class contains step_id and available_contexts, including materialized context text. All five intercepted replay calls confirmed this contract. STATUS.md, EV5 prediction_input_contract, and the parent CURRENT_STATUS.md are corrected.",
+      "impact": "This is a documentation inconsistency. It does not affect predictor isolation, predictions, denominators, or current conclusions."
+    }
+  ],
+  "recommended_fixes": [
+    "Update replay.py's module docstring to describe ContextInput(step_id, available_contexts), including only currently available (context_id, text) pairs. Refresh the affected source audit hash."
+  ],
+  "verified_points": [
+    "Ran all 54 tests in an isolated /tmp copy: all passed. Ran the formal 13-mutant gate: every mutant failed its target assertion.",
+    "The formal gate contains and kills the mutant replacing pcase = prediction_case(case) with pcase = case. A separate full-suite run against that mutant also failed the actual-call-site regression.",
+    "Rebuilt from source, tests, and static supporting audit inputs in /tmp/topic02-review04-b1maokfs. metrics.json, RESULTS.md, fixtures/MANIFEST.json, and all 18 gold JSON files matched repository bytes exactly.",
+    "Verified all four Academic Round 2 synthesis/report/gaps/reviewer hashes and all three preserved review-verdict hashes against pre-review-04-audit.json. Source/test manifest hashes and fixture hashes also match.",
+    "Intercepted every actual replay_case -> predict_step call. All five received PredictionCase and ContextInput. Declared and instance fields were exactly case_id/text/topics/spans, span_id/span/text, and step_id/available_contexts. Only current context text reached prediction.",
+    "Hidden-gold removal and unavailable-context removal, replacement, and reordering probes preserved predictions. No active gold or future-context dependency was found. The reference follows abstain -> ATLAS -> BETA; the neighbor remains NORTH.",
+    "Direct comparisons against all 18 static gold files verified IDs, offsets/text, Topic definitions, origin/kind, joint memberships, alternatives, abstention permission, and Topic components across 52 spans.",
+    "Tested 52 pairs of valid contracts differing only in abstention permission. Every pair remained distinguishable through from_gold, canonical JSON, from_dict, and round trip. Additional serialization-loss, decoding-loss, and offset-corruption mutants were killed.",
+    "Formal mutation guards kill assignment-ID collapse, origin/kind loss, alternative loss, abstention-policy loss, and Topic-component collapse. Fixture generation remained unchanged when tested prediction, unit, representation, and preservation functions were replaced with failing functions.",
+    "Independently recounted EV4: 21 annotated spans, 20 scored required spans, and 24 required memberships. The ambiguous deadline is explicitly excluded. All six category populations and TP/FP/FN counts match the artifacts.",
+    "EV4 aggregate TP/FP/FN is 13/0/11 for span-only prediction, 24/12/0 for local-window prediction, 24/5/0 for sentence oracle projection, and 24/0/0 for clause/EDU-like/hybrid projection. Reporting identifies selected stress annotations and gold-span-conditioned membership, without claiming source-complete coverage or decision-span detection.",
+    "Independently recounted all eight end-to-end comparators and verified one-to-one matching. Clause set-valued evaluation contains 39 gold memberships, 39 predictions, 35 matches, four FP, and four FN. Injecting a prediction into the zero-gold chatter case increased FP and the precision denominator by one. Removing all predictions produced 39 FN.",
+    "Gold-span-conditioned membership remains separate from end-to-end evaluation. Oracle unit ceilings remain separate from predicted-unit results. All 346 stored fraction values passed arithmetic checks.",
+    "EV6 uses 200 calibration and 200 holdout examples with disjoint texts and template families. Selection uses calibration only. The coverage floor rejects all-abstain success. Holdout coverage is 120/200 and accepted error is 40/120; target failure remains explicit.",
+    "EV7 remains synthetic-only. Supplied Topic identities/counts are controlled inputs. G10 remains assigned to Topic 03, semantic response scope to Topic 04, and general calibration to Topic 10. External annotation/scorer/split unknowns remain explicit.",
+    "Execution completion and pending independent acceptance remain separate before this verdict. No material production-accuracy, representativeness, architecture-approval, or literature-exhaustion claim was found.",
+    "Used local reads and /tmp writes only. No network, mailbox access, repository edits, commits, or git-state changes were performed. Probe evidence is retained in /tmp/topic02-review04-b1maokfs/probes.json and extra-mutants.json."
+  ],
+  "confidence": 0.98
+}

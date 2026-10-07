@@ -1,0 +1,203 @@
+{
+ "round": 1,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Cross-document event coreference and event identity: determine whether event mentions in different documents refer to the same underlying event and cluster coreferent mentions."
+  },
+  {
+   "id": "F2",
+   "description": "Topic Detection and Tracking: decide whether an incoming story continues an existing event/topic or is a new event, and track later stories about known events."
+  },
+  {
+   "id": "F4",
+   "description": "Record linkage and probabilistic matching: combine multiple noisy or incomplete evidence fields to decide whether records represent the same underlying object."
+  },
+  {
+   "id": "F6",
+   "description": "Open-set recognition, novelty detection, unknown-class detection, and reject option: permit unknown/new outcomes or abstention instead of forcing a known-class assignment."
+  },
+  {
+   "id": "F7",
+   "description": "Dynamic cluster maintenance, merge/split, and correction: revise evolving clusters when later evidence invalidates earlier assignments."
+  },
+  {
+   "id": "F9",
+   "description": "Incremental entity resolution and evolving identity clusters: update entity identity clusters as records arrive rather than recomputing a static batch."
+  },
+  {
+   "id": "F10",
+   "description": "Process-event correlation and case notion discovery: infer which process instance or case events belong to when a reliable case identifier is unavailable."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "manual-5c20fb0229",
+   "decision": "ADMIT",
+   "reason": "F2 DIRECT. The abstract explicitly covers the TDT evaluation framework for tracking, link detection, topic detection, and first-story detection, including operational decisions about whether arriving stories continue an existing event or initiate a new one. That directly supplies evaluation concepts for CONTINUE versus NEW. Identity is UNCHECKED, but no otherwise-equivalent VERIFIED candidate in this set provides the same broad TDT evaluation framework.",
+   "stream_id": "F2",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-c43ffe3135",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. The abstract is specifically about cross-document event identity and dense annotation of full-identity versus closely related quasi-identity cases. Those difficult near-matches directly address msgloom's highest-risk distinction between true continuation and false merging of merely related matters. Identity is UNCHECKED, but its dense treatment of ambiguous identity cases is not duplicated by the VERIFIED candidates.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1002-asi-21264",
+   "decision": "REJECT",
+   "reason": "The capability is relevant to F2, but the abstract largely repeats the new-event-detection and topic-tracking coverage already admitted through the broader TDT evaluation framework and the more focused first-story-detection paper. Its Turkish-language setting does not, from the abstract alone, add a distinct identity or uncertainty mechanism needed badly enough to consume another reading slot. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1145-258533-258657",
+   "decision": "REJECT",
+   "reason": "Topic words match F5, but the abstract only establishes generic incremental maintenance of clusters as points are inserted. It does not show identity semantics, abstention, explicit creation of a new identity versus continuation, or later merge/split correction. Generic dynamic clustering is insufficient for the project's work-matter identity problem. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "manual-f56d02b8f9",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. The abstract explicitly studies a failure mode central to the project: event-coreference datasets can make identity artificially easy when similar documents describe one seminal event, and adding different instances of similar event types exposes false merges. This directly strengthens evaluation of identity versus semantic/type similarity. Identity is UNCHECKED, but the contribution is distinct from the VERIFIED event-coreference datasets and models.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1016-j-jbi-2022-104094",
+   "decision": "REJECT",
+   "reason": "The abstract concerns incremental record linkage, but emphasizes computational efficiency while retaining an existing linkage operation. Stronger candidates in this set address incremental identity with relational evidence or explicit repair of earlier clustering decisions, which are more important to msgloom than avoiding batch recomputation. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2104.05022",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. WEC provides a large-scale cross-document event-coreference benchmark that is not restricted to predefined topic clusters. That materially strengthens evaluation for msgloom because candidate matters must be compared across independently formed groups rather than only within a pre-clustered topic. Its identifier is VERIFIED.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1186-s40537-022-00655-7",
+   "decision": "REJECT",
+   "reason": "The abstract does contain the useful F9 continue-versus-new-cluster decision, but privacy preservation is the paper's distinguishing contribution and the candidate set already contains stronger incremental entity-resolution work with VERIFIED identity or explicit correction mechanisms. Given scarce reading slots, the privacy-specific variant does not materially strengthen the core identity question enough. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "2011.12249",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. The abstract tests cross-document event-coreference methods across multiple corpora and finds that identity cues and model generalization vary across datasets. This directly guards against treating benchmark accuracy as evidence that a method will safely transfer to work communication, a key project constraint. Its identifier is VERIFIED.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-1145-354756-354843",
+   "decision": "ADMIT",
+   "reason": "F2 DIRECT. The paper isolates first-story detection, exactly the streaming decision that an arriving item is the first report of a new event rather than a continuation. The abstract's focus on the intrinsic difficulty of that decision directly informs NEW-versus-CONTINUE evaluation and false-merge risk. Identity is UNCHECKED, but this focused contribution is not replaced by a VERIFIED equivalent in the candidate set.",
+   "stream_id": "F2",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1007-s00778-013-0315-0",
+   "decision": "REJECT",
+   "reason": "The paper is relevant to F9, but the abstract centers on reusing materialized entity-resolution results when data or matching rules change. It does not, from the abstract, provide as direct a contribution to continue/new identity, contradictory-evidence repair, or stable evolving clusters as the stronger incremental entity-resolution candidates admitted here. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1016-j-inffus-2018-06-001",
+   "decision": "REJECT",
+   "reason": "The abstract clearly supports F7 by revisiting prior entity-resolution decisions when new or contradictory evidence arrives, but that contribution substantially overlaps the admitted incremental multi-source entity-resolution paper, whose abstract additionally states explicit repair of erroneous clusters and reduction of insertion-order dependence. With both identities UNCHECKED, the latter is the stronger single reading-slot choice."
+  },
+  {
+   "paper_id": "doi-10-1007-978-3-030-49461-2-23",
+   "decision": "ADMIT",
+   "reason": "F7 TRANSFER. The abstract describes incremental multi-source identity clustering with repair operations that can correct erroneous prior assignments and reduce insertion-order dependence. That directly maps to msgloom's requirement that online assignments remain correctable rather than permanently rewriting history after an early mistake. Identity is UNCHECKED, but the correction capability is unusually well aligned with the project.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "doi-10-1016-j-datak-2018-07-005",
+   "decision": "REJECT",
+   "reason": "The paper concerns F9-related infrastructure, but the abstract's contribution is suffix blocking and reduction of the comparison space. Candidate generation efficiency does not materially answer same-identity, new-identity, abstention, or correction decisions, and therefore is secondary to the project's current research gaps. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "1412.5687",
+   "decision": "ADMIT",
+   "reason": "F6 TRANSFER. The abstract explicitly separates recognition of known classes from detection of unknown classes and subsequent incorporation of newly labelled classes. Although the domain is open-world recognition rather than work communication, this gives a principled mechanism for distinguishing existing identities from genuinely new ones in an evolving system. Its identifier is VERIFIED.",
+   "stream_id": "F6",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "1402.4417",
+   "decision": "ADMIT",
+   "reason": "F9 TRANSFER. The paper directly studies entity resolution as linked documents arrive incrementally and uses inter-document references plus attribute similarity while limiting reconsideration to affected portions of the existing solution. This is closely aligned with incremental cross-document identity using source/reference evidence rather than static batch recomputation. Its identifier is VERIFIED.",
+   "stream_id": "F9",
+   "role": "TRANSFER",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "doi-10-1002-sim-4780140510",
+   "decision": "ADMIT",
+   "reason": "F4 TRANSFER. The abstract operationalizes identity decisions by combining field-level agreements with estimated match and nonmatch probabilities when identifiers are imperfect. This directly strengthens the project's question of how multiple weak signals such as participants, objects, dates, and other attributes can be combined without treating any single shared field as proof of identity. Identity is UNCHECKED, but no VERIFIED candidate here supplies the same classical probabilistic-matching foundation.",
+   "stream_id": "F4",
+   "role": "TRANSFER",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "manual-e988e24127",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. The abstract goes beyond lexical similarity by jointly resolving cross-document entities and events using contextual and predicate-argument relationships. That materially informs msgloom's need to combine participant/object/action structure when assessing whether two mentions represent the same underlying matter. Identity is UNCHECKED, but its relational evidence contribution is distinct enough to admit; the older 2012 joint-model candidate is rejected as overlapping evidence.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.94
+  },
+  {
+   "paper_id": "1705.08500",
+   "decision": "ADMIT",
+   "reason": "F6 TRANSFER. The paper provides selective classification with explicit abstention on difficult observations and a risk-versus-coverage framework. That directly supports the project's principle that low-confidence relationships should remain UNCERTAIN and separate instead of being forced into an existing Topic or declared definitively new. Its identifier is VERIFIED.",
+   "stream_id": "F6",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1007-s10115-019-01430-6",
+   "decision": "ADMIT",
+   "reason": "F10 TRANSFER. The abstract addresses the absence of a fixed case identifier by generating candidate case notions, correlating events into traces, and ranking alternatives. This is directly useful transfer evidence for inferring concrete work-matter membership from multiple attributes and relations when explicit thread or case identifiers cannot be trusted. Identity is UNCHECKED, but no other candidate covers this process-correlation formulation.",
+   "stream_id": "F10",
+   "role": "TRANSFER",
+   "confidence": 0.93
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2022-emnlp-main-58",
+   "decision": "ADMIT",
+   "reason": "F1 DIRECT. The event-coreference-search task requires finding mentions of the same event across a large collection rather than assuming a predefined document cluster. That directly strengthens the project's cross-thread setting and is particularly relevant to Phase 2, where additional historical evidence may need to be retrieved before an identity decision is made. Identity is UNCHECKED, but the retrieval-scale identity formulation is not duplicated by the admitted VERIFIED WEC dataset.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "manual-22a0545b51",
+   "decision": "REJECT",
+   "reason": "The abstract establishes the foundational cross-document event-coreference problem, but that capability is already represented by several admitted modern papers with stronger evidence on dense ambiguity, broad-collection benchmarks, cross-corpus generalization, and retrieval-scale identity. Reading this additional foundational treatment is unlikely to materially strengthen the current streams enough to justify the slot. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "manual-cb939236c2",
+   "decision": "REJECT",
+   "reason": "The paper performs genuine F1 event-identity resolution, but its distinguishing contribution is visual evidence from multimedia news. Msgloom's current target is email and chat communication, and the abstract does not show a transferable identity mechanism beyond adding a modality the product does not currently use. This is therefore out of scope for the present reading round. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "doi-10-1016-b978-012722442-8-50016-1",
+   "decision": "REJECT",
+   "reason": "The paper is a useful general foundation for F5 streaming clustering, but the abstract describes compact summaries and later macro-clustering rather than identity-labelled clusters, continue-versus-new decisions, abstention, or correction of mistaken identity assignments. Topic words match, but the capability is too generic for this project's identity problem. Identity is UNCHECKED."
+  },
+  {
+   "paper_id": "manual-2f54ff1c77",
+   "decision": "REJECT",
+   "reason": "The abstract is directly relevant to F1, but its joint cross-document entity/event clustering and predicate-argument evidence substantially overlap the admitted 2019 joint-model paper. The newer admitted paper is sufficient for this mechanism at the admission stage, so this candidate would duplicate a reading slot rather than materially broaden the stream. Identity is UNCHECKED."
+  }
+ ],
+ "notes": "Admission was intentionally selective. Generic clustering, blocking, efficiency-only incremental methods, modality-specific work, and older overlapping formulations were rejected when their abstracts did not materially strengthen identity-versus-similarity, continue-versus-new, abstention, or correction. VERIFIED identifiers were preferred when otherwise comparable, but UNCHECKED candidates were retained where their abstracts contributed a distinct mechanism or evaluation perspective not supplied by a comparable VERIFIED candidate."
+}

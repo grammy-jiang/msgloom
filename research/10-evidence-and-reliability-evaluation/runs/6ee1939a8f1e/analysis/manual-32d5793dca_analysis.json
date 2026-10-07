@@ -1,0 +1,65 @@
+{
+ "paper_id": "manual-32d5793dca",
+ "title": "Validating LLM-as-a-Judge Systems under Rating Indeterminacy",
+ "research_question": "How should LLM-as-a-judge systems be validated when a rating item can legitimately admit multiple ratings, and how much error can standard forced-choice gold labels introduce?",
+ "methodology": "The paper formalizes rating indeterminacy by distinguishing ordinary forced-choice ratings from multi-label response sets that let a rater mark every option they regard as reasonable. It derives relationships among elicitation schemes, aggregation rules, human-judge agreement metrics, and downstream task performance, including a probabilistic model of how raters translate response sets into forced choices. The empirical study evaluates nine commercial LLM judges on 11 real-world rating tasks, sampling 200 items per task and repeatedly sampling model ratings to estimate rating distributions. It compares categorical, distributional, and response-set-based agreement metrics against downstream evaluation objectives and performs sensitivity and robustness analyses.",
+ "key_findings": [
+  {
+   "finding": "Forced-choice validation can select a substantially worse judge because humans and LLM judges may resolve the same underlying rating indeterminacy differently.",
+   "evidence_type": "supported",
+   "section": "Sections 3-4"
+  },
+  {
+   "finding": "Across the evaluated tasks, response-set-based MSE selects more performant judges than the compared forced-choice metrics once modeled human rating indeterminacy reaches beta_H of at least 0.2.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  },
+  {
+   "finding": "In the Civil Comments toxicity example, Claude Sonnet 3.5 is top-ranked by the standard forced-choice approach but is reported to be 31% less consistent with human downstream decisions than GPT o3-Mini when rating indeterminacy is accounted for.",
+   "evidence_type": "supported",
+   "section": "Introduction, Figure 2"
+  },
+  {
+   "finding": "A response-set metric whose forced-choice translation matrix is estimated from only 100 paired forced-choice and response-set ratings performs almost as well as the corresponding oracle version.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  },
+  {
+   "finding": "When only forced-choice ratings are available, the paper recommends distributional metrics and reports that KL divergence in the human-to-judge direction often performs best among the examined forced-choice alternatives.",
+   "evidence_type": "supported",
+   "section": "Section 5"
+  }
+ ],
+ "limitations": [
+  "The framework is designed for closed-form rating tasks with discrete categorical or ordinal options and does not directly cover continuous rating scales or open-form feedback.",
+  "The forced-choice translation model places a homogeneity assumption on the human rating process that may be violated in practice.",
+  "Response-set elicitation can increase per-item cognitive burden and annotation cost when rating scales contain many options.",
+  "Very small numbers of ratings per item can fail to capture enough information about rating indeterminacy for reliable judge selection."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "forced_choice_bias": 0.99,
+  "response_set_advantage": 0.98,
+  "toxicity_31_percent_gap": 0.99,
+  "small_paired_set_effective": 0.98,
+  "discrete_scope_limit": 0.99
+ },
+ "raw_claims": [
+  "Rating indeterminacy means that more than one rating can reasonably apply to the same item.",
+  "Forced-choice elicitation suppresses intra-rater uncertainty by requiring a single option.",
+  "Response-set elicitation asks a rater to select every option that could reasonably apply.",
+  "The experiments cover 11 real-world rating tasks and nine commercial LLM judges.",
+  "The real-data experiments sample 200 items from each rating task.",
+  "Forced-choice human-judge agreement can mis-rank judge systems under rating indeterminacy.",
+  "Response-set-based MSE becomes more effective for judge selection as indeterminacy increases.",
+  "A small paired forced-choice and response-set corpus can be used to estimate the translation between elicitation formats.",
+  "The paper publicly releases the code and data used in its experiments.",
+  "The framework does not directly handle continuous rating scales."
+ ],
+ "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/file/a309239c11a28c597d050bd4a1752d32-Paper-Conference.pdf",
+ "access": "full_text"
+}

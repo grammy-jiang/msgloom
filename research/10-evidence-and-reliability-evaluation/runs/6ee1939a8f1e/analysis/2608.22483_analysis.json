@@ -1,0 +1,77 @@
+{
+ "paper_id": "2608.22483",
+ "title": "Claim-Level Confidence Calibration for Reliable Decision Making with Large Language Models",
+ "research_question": "Can inference-time claim-level confidence estimation provide better calibrated and more decision-actionable uncertainty than assigning a single confidence value to an entire free-form LLM response?",
+ "methodology": "The approach decomposes a response into atomic claims and computes confidence for each claim from self-verification or model probability signals, optionally combined with cross-sample consistency through a tuned convex mixture. Claims can then be retained or flagged using a confidence threshold, and calibration is evaluated using ECE, smECE, Brier score, AUROC, and selective-risk metrics. Experiments cover TriviaQA and TruthfulQA, seven baseline approaches, and six contemporary open- and closed-box models including reasoning models. Additional analyses examine calibration-mixture sensitivity, claim extraction, reliability diagrams, computational cost, and failure behavior on adversarial inputs.",
+ "key_findings": [
+  {
+   "finding": "Decomposing free-form responses into atomic claims and calibrating confidence at that level produces actionable per-claim uncertainty and reduces expected calibration error in factual-question settings.",
+   "evidence_type": "supported",
+   "section": "Sections 2-4"
+  },
+  {
+   "finding": "Claim-level calibration can match or outperform response-level uncertainty baselines on mixed-correctness factual responses, although the magnitude and best method vary substantially by model and dataset.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "False-premise and other adversarial inputs remain a major failure mode because models can assign high confidence to incorrect claims; the authors therefore recommend active verification or retrieval rather than confidence alone.",
+   "evidence_type": "supported",
+   "section": "Section 3 and Conclusion"
+  },
+  {
+   "finding": "Reasoning-focused models show stronger verbalized uncertainty behavior, but extracting claims from their entire chain of thought can dilute useful final-answer confidence and final-answer-only extraction performs better.",
+   "evidence_type": "supported",
+   "section": "Section 3 and Appendix C.6"
+  },
+  {
+   "finding": "The proposed inference pipeline is materially more expensive than one-call prompting, with the paper estimating roughly six times the API-call cost per query for its full claim extraction and verification workflow.",
+   "evidence_type": "supported",
+   "section": "Appendix C.3"
+  },
+  {
+   "finding": "The experiments do not establish that calibrated claim confidence remains reliable under temporal knowledge change, source version changes, or sustained distribution drift.",
+   "evidence_type": "unsupported",
+   "section": "Experimental scope in Section 3"
+  },
+  {
+   "finding": "Although thresholding permits claims to be retained or flagged, the paper does not directly evaluate whether threshold-based omission causes loss of important evidence or incomplete multi-source answers.",
+   "evidence_type": "unsupported",
+   "section": "Sections 2-3"
+  }
+ ],
+ "limitations": [
+  "Confidence-only signals fail on adversarial false-premise inputs, requiring active verification, cross-examination, or retrieval.",
+  "Claim extraction from long reasoning traces can degrade calibration unless extraction is restricted to the final-answer span.",
+  "The complete method incurs multiple extraction and verification calls and is substantially more expensive than single-call baselines.",
+  "The evaluation is concentrated on TriviaQA and TruthfulQA rather than temporally evolving or explicitly distribution-shifted benchmarks.",
+  "Interdependent claims and hierarchical confidence are left as open research directions.",
+  "The paper does not directly measure evidence completeness or the utility loss caused by selectively suppressing claims."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "claim_level_calibration_value": 0.95,
+  "mixed_correctness_advantage": 0.88,
+  "adversarial_failure": 0.98,
+  "reasoning_model_extraction_issue": 0.96,
+  "inference_cost": 0.99,
+  "no_temporal_shift_evaluation": 0.97,
+  "omission_not_evaluated": 0.91
+ },
+ "raw_claims": [
+  "A single response-level confidence score is too coarse when one answer contains both correct and incorrect claims.",
+  "The proposed pipeline decomposes responses into atomic claims and assigns confidence to each claim.",
+  "Confidence can combine a per-claim verification signal with consistency across independently sampled responses.",
+  "The approach is designed to work in closed-box settings through verbalized confidence as well as in open-box settings using probability information.",
+  "Experiments compare the method with sequence-likelihood, verbalized-confidence, parametric-calibration, HalluMeasure, and LMvsLM baselines.",
+  "Adversarial false-premise questions expose cases where confidence remains high despite incorrect claims.",
+  "Active verification is recommended when adversarial or misleading inputs are plausible.",
+  "The full proposed pipeline requires substantially more inference calls than ordinary few-shot or chain-of-thought prompting."
+ ],
+ "source_url": "https://arxiv.org/html/2608.22483",
+ "access": "full_text"
+}

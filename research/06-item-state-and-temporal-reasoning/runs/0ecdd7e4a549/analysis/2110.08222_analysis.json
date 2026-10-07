@@ -1,0 +1,81 @@
+{
+ "paper_id": "2110.08222",
+ "title": "DialFact: A Benchmark for Fact-Checking in Dialogue",
+ "research_question": "Can dialogue fact-checking be benchmarked as a pipeline of verifiable-claim detection, evidence retrieval, and evidence-grounded claim verification, and can dialogue-adapted training improve over models developed for non-dialogue fact-checking?",
+ "methodology": "The authors construct DialFact from Wizard of Wikipedia dialogues, producing 22,245 annotated claims through both automatic transformations and human writing. Synthetic claims are created with negation, entity or adjective substitution, mask-and-fill, and knowledge-conditioned generation, while crowd workers annotate verifiability, Supported/Refuted/NotEnoughInformation labels, and Wikipedia evidence under quality-control procedures. They evaluate baselines for verifiable-claim detection, document retrieval, evidence-sentence selection, and claim verification, including an Aug-WoW model trained with weakly supervised synthetic data. Performance is reported using accuracy, F1, retrieval recall, and annotation-agreement statistics.",
+ "key_findings": [
+  {
+   "finding": "Dialogue context materially improves evidence-document retrieval: test-set recall rises from 60.8 to 75.0 for the WikiAPI method and from 44.7 to 58.8 for the WoW-fine-tuned DPR method when context is added to the claim.",
+   "evidence_type": "supported",
+   "section": "5.2.1 Document Retrieval"
+  },
+  {
+   "finding": "The Aug-WoW verification model outperforms the evaluated baselines across oracle, Wiki-retrieved, and DPR-retrieved evidence settings; on the test set it reaches 69.2% accuracy and 69.0 macro F1 with oracle evidence.",
+   "evidence_type": "supported",
+   "section": "5.3.2 Results"
+  },
+  {
+   "finding": "Evidence retrieval is a major bottleneck: Aug-WoW falls from 69.2% accuracy with oracle evidence to 51.6% with Wiki evidence and 51.5% with DPR evidence, with analogous degradation for other models.",
+   "evidence_type": "supported",
+   "section": "5.3.2 Results"
+  },
+  {
+   "finding": "Verifiable-claim detection remains especially difficult for non-verifiable conversational content: the best reported Lexical+DNLI baseline has 82.8% overall accuracy but only 39.1 F1 for the Non-Verifiable class.",
+   "evidence_type": "supported",
+   "section": "5.1 Verifiable Claim Detection"
+  },
+  {
+   "finding": "Models frequently confuse Refuted and NEI claims and can be misled by lexical overlap instead of correctly reasoning over the semantics of claims and evidence.",
+   "evidence_type": "supported",
+   "section": "5.3.3 Discussion and Appendix A"
+  },
+  {
+   "finding": "DialFact provides an explicit separation between what a dialogue response claims and independent textual evidence used to classify that claim as Supported, Refuted, or lacking sufficient evidence, which is an empirical analogue of separating assertions from corroboration.",
+   "evidence_type": "supported",
+   "section": "3 Task Background"
+  },
+  {
+   "finding": "The benchmark does not define longitudinal work-item relation labels such as supersession, correction, supplementation, reopening, or conflict, nor does it specifically model claimed task completion versus independently corroborated task completion.",
+   "evidence_type": "unsupported",
+   "section": "3 Task Background"
+  }
+ ],
+ "limitations": [
+  "The underlying conversations come from Wizard of Wikipedia rather than workplace or operational communication, so applicability to longitudinal work-item management is not empirically established.",
+  "The external evidence source is Wikipedia, rather than operational artifacts such as subsequent messages, tickets, logs, approvals, documents, or system events.",
+  "The task evaluates the final conversational utterance as a claim and does not model lineage or revision relations among successive versions of a work item.",
+  "The label set concerns factual support, refutation, insufficient information, and non-verifiability rather than supersession, correction, supplementation, reopening, or other revision-specific relations.",
+  "Inter-annotator agreement is only moderate for claim-category labels and lower for Verifiable versus Non-Verifiable decisions; reported Krippendorff's alpha for the latter is 0.49.",
+  "Annotators can fail to locate refuting Wikipedia evidence and consequently assign NEI, creating potential evidence-coverage label noise.",
+  "Automatically generated claims were deliberately selected partly according to how difficult existing models found them, so that subset is not a natural sample of conversational factual errors.",
+  "The work does not operationalize completion status or distinguish a participant's assertion that work is complete from corroborating evidence of completion."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "context_improves_retrieval": 0.99,
+  "aug_wow_best_verification_baseline": 0.99,
+  "retrieval_is_major_bottleneck": 0.99,
+  "nonverifiable_detection_is_difficult": 0.98,
+  "refuted_nei_and_semantic_reasoning_errors": 0.97,
+  "claim_evidence_separation": 0.99,
+  "no_longitudinal_revision_labels": 0.99
+ },
+ "raw_claims": [
+  "DialFact contains 22,245 annotated conversational claims paired with Wikipedia evidence.",
+  "The benchmark decomposes dialogue fact-checking into verifiable-claim detection, evidence retrieval, and claim verification.",
+  "Verification labels distinguish Supported, Refuted, and NotEnoughInformation claims, while non-verifiable responses contain no factual information suitable for verification.",
+  "Both automatically generated and human-written claims are included in the benchmark.",
+  "Adding recent dialogue context improves both WikiAPI and DPR document retrieval.",
+  "The Aug-WoW model performs better than the evaluated verification baselines across the reported evidence settings.",
+  "Verification performance drops substantially when automatically retrieved evidence replaces oracle evidence.",
+  "Generated claims are harder for the evaluated verification models than human-written claims.",
+  "Models often rely too heavily on lexical overlap and fail on reasoning needed to distinguish support, refutation, and insufficient evidence.",
+  "The paper's evidence architecture verifies conversational factual claims but does not represent typed longitudinal revisions of work items."
+ ],
+ "source_url": "https://arxiv.org/html/2110.08222",
+ "access": "full_text"
+}

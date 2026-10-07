@@ -1,0 +1,69 @@
+{
+ "paper_id": "2510.12839",
+ "title": "FaStfact: Faster, Stronger Long-Form Factuality Evaluations in LLMs",
+ "research_question": "Can long-form LLM factuality evaluation be made substantially more efficient while improving alignment with human judgments about claim coverage and factual correctness?",
+ "methodology": "FaStfact replaces sentence-by-sentence decomposition with configurable chunk-level atomic-claim extraction and combines extraction with confidence-based pre-verification, allowing sufficiently confident claims to bypass external evidence retrieval. Claims requiring further verification trigger web search and document-level page crawling, after which relevant evidence is selectively retrieved for claim classification. The framework introduces F1@K' using a human-annotated response-specific target claim count and a symmetric penalty for both under-extraction and over-extraction. Evaluation uses the 400-example FaStfact-Bench, aggregated from five long-form factuality benchmarks with human annotations of extraction and verification, and compares FaStfact against several existing pipelines using common underlying evaluator models.",
+ "key_findings": [
+  {
+   "finding": "FaStfact produced the closest end-to-end factuality score to human ground truth among the compared pipelines: F1@K' was 0.780 versus a ground-truth value of 0.792, an absolute gap of 0.012.",
+   "evidence_type": "supported",
+   "section": "7.1 Main Results: FaStfact vs. Baselines"
+  },
+  {
+   "finding": "Its extracted claim counts were substantially closer to human annotations than the compared baselines, with an average absolute claim-count difference of 3.35.",
+   "evidence_type": "supported",
+   "section": "7.1 Main Results: FaStfact vs. Baselines"
+  },
+  {
+   "finding": "FaStfact claim verification agreed exactly with human labels on 85.3% of annotations and agreed on the coarser supported, non-supported, or irrelevant type on 92.9%.",
+   "evidence_type": "supported",
+   "section": "4 FaStfact"
+  },
+  {
+   "finding": "Longer extraction chunks did not degrade claim-count alignment in the ablation; strides from 28 sentences through the entire response aligned most closely with human claim counts while also reducing extraction cost.",
+   "evidence_type": "supported",
+   "section": "7.2 Ablations"
+  },
+  {
+   "finding": "FaStfact used 5,615 tokens per sample in the baseline comparison, fewer than ExpertQA, VeriScore, and SAFE but more than FacTool's 4,480 tokens, so its advantage is a combined alignment-efficiency result rather than the lowest token count in isolation.",
+   "evidence_type": "supported",
+   "section": "7.1 Main Results: FaStfact vs. Baselines"
+  },
+  {
+   "finding": "The proposed F1@K' explicitly penalizes both missing expected claims and producing excessive claims, addressing a verbosity blind spot in metrics whose target claim count is derived from the evaluator's own extraction.",
+   "evidence_type": "supported",
+   "section": "4.4 FaStfact Score Metric"
+  }
+ ],
+ "limitations": [
+  "Document-level verification depends on the quality and accessibility of web evidence; scarce, paywalled, inaccessible, or low-quality sources can prevent comprehensive verification.",
+  "The empirical validation is limited to the datasets and long-form generation domains represented in FaStfact-Bench, so broader task and domain generalization remains untested."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "end_to_end_alignment": 0.99,
+  "claim_count_alignment": 0.99,
+  "human_verification_agreement": 0.99,
+  "chunk_ablation": 0.97,
+  "efficiency_comparison": 0.99,
+  "web_evidence_dependency": 0.99
+ },
+ "raw_claims": [
+  "Existing long-form factuality pipelines can extract redundant, unverifiable, or incomplete claim sets.",
+  "Short search-result snippets can provide insufficient context even when the underlying web pages contain adequate evidence.",
+  "FaStfact extracts claims from multi-sentence chunks rather than requiring one extraction call for every sentence.",
+  "Confidence-based pre-verification reduces the number of claims that require external searching and evidence-based verification.",
+  "FaStfact crawls document-level web content to build a richer evidence base for uncertain claims.",
+  "FaStfact-Bench contains 400 long-form question-answer examples drawn equally from five source benchmarks.",
+  "Human annotations cover both the claims that should be extracted and the verification labels assigned to those claims.",
+  "F1@K' uses a response-specific human target for the expected number of claims.",
+  "Increasing the extraction chunk size improved efficiency without the expected deterioration in claim-count alignment.",
+  "The framework and benchmark are released with code and an annotation interface."
+ ],
+ "source_url": "https://arxiv.org/html/2510.12839",
+ "access": "full_text"
+}

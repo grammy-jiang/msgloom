@@ -1,0 +1,67 @@
+{
+ "paper_id": "doi-10-1016-j-knosys-2013-02-015",
+ "title": "Exploiting relevance, coverage, and novelty for query-focused multi-document summarization",
+ "research_question": "Can query-focused multi-document summaries be improved by jointly modeling dependent relevance, content coverage, novelty, and topic balance rather than treating sentence relevance independently?",
+ "methodology": "The paper proposes PRCN, an unsupervised extractive framework built from PLSA and PHITS that uses a query-aware reference topic model to estimate dependent sentence relevance and topic coverage. Relevance and coverage are represented probabilistically, while additional document-side and query-side relevance and novelty features are constructed explicitly; model parameters are estimated with expectation maximization. A greedy sentence-selection procedure imposes topic and query balance while constructing the final summary. The approach is evaluated on the DUC 2005 and DUC 2006 query-focused multi-document summarization benchmarks using ROUGE measures.",
+ "key_findings": [
+  {
+   "finding": "The paper argues that sentence utility is dependent on what has already been selected or seen, and PRCN therefore replaces the usual independent-relevance assumption with probabilistic dependent relevance.",
+   "evidence_type": "supported",
+   "section": "Section 1, Introduction; Section 3, Problem Definition and Solution"
+  },
+  {
+   "finding": "PRCN jointly represents relevance, topic coverage, and novelty rather than optimizing query relevance alone.",
+   "evidence_type": "supported",
+   "section": "Sections 3-5"
+  },
+  {
+   "finding": "The sentence-selection stage uses a greedy balancing procedure intended to preserve suitable proportions of document and query topics while limiting redundancy.",
+   "evidence_type": "supported",
+   "section": "Section 5, Feature Construction and Topic Balance Imposition"
+  },
+  {
+   "finding": "Experiments on DUC 2005 and DUC 2006 report that PRCN outperforms the compared methods on ROUGE-2 and ROUGE-W by a statistically described significant margin.",
+   "evidence_type": "supported",
+   "section": "Section 6, Experimental Evaluation"
+  },
+  {
+   "finding": "The approach is unsupervised and extractive, so its coverage and novelty decisions are made by selecting source sentences rather than generating new text.",
+   "evidence_type": "supported",
+   "section": "Section 2, Query-Focused Multi-Document Summarization"
+  }
+ ],
+ "limitations": [
+  "Evaluation is restricted to the DUC 2005 and DUC 2006 query-focused summarization benchmarks, so generalization beyond those news-oriented datasets is not established by the reported experiments.",
+  "The method operates on a static document collection and does not model temporal state transitions or supersession of previously summarized work items.",
+  "The method is extractive and therefore does not address factual support problems introduced by free-form generation.",
+  "ROUGE-2 and ROUGE-W measure lexical overlap and do not directly evaluate evidence completeness, lifecycle-state correctness, or joint omission and repetition.",
+  "The approach depends on latent-topic and bag-of-words-style preprocessing assumptions, including stopword removal and stemming.",
+  "No publicly released implementation is identified in the article."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "dependent_relevance": 0.98,
+  "joint_relevance_coverage_novelty": 0.99,
+  "topic_balance": 0.98,
+  "duc_improvement": 0.96,
+  "extractive_unsupervised": 0.99
+ },
+ "raw_claims": [
+  "A useful query-focused summary must balance relevance to the query with coverage of the source documents.",
+  "Selecting one sentence can change the utility of selecting another sentence later.",
+  "PRCN models relevance and coverage within a common probabilistic framework.",
+  "The query is incorporated into a reference topic model used to estimate dependent relevance.",
+  "Novelty features are used to discourage redundant information.",
+  "The model includes features defined from both document and query perspectives.",
+  "A greedy selection algorithm is used to maintain topic balance while choosing summary sentences.",
+  "Model estimation uses an expectation-maximization procedure.",
+  "The evaluation uses the DUC 2005 and DUC 2006 query-focused summarization datasets.",
+  "The reported experiments favor PRCN over the compared methods on ROUGE-2 and ROUGE-W."
+ ],
+ "source_url": "https://www.sciencedirect.com/science/article/pii/S0950705113000804",
+ "access": "full_text"
+}

@@ -1,0 +1,82 @@
+{
+ "paper_id": "2203.09056",
+ "title": "Robust Table Detection and Structure Recognition from Heterogeneous Document Images",
+ "research_question": "Can a unified visual pipeline robustly detect tables and recover their row, column, and spanning-cell structure across heterogeneous, distorted, curved, and sparsely ruled document images?",
+ "methodology": "RobusTabNet first detects table regions using a CornerNet-style proposal mechanism that predicts opposing corners and exhaustively groups them, followed by Fast R-CNN classification and box refinement. Its table-structure recognizer uses a split-and-merge strategy: spatial CNN modules predict long-range row and column separator masks, geometric post-processing converts those masks into a cell grid, and a Grid CNN decides which adjacent grid cells should be merged into spanning cells. The models use lightweight ResNet-18/FPN components and are evaluated on public table-detection and structure datasets including cTDaR, PubLayNet, IIIT-AR-13K, SciTSR, and PubTabNet, as well as an in-house dataset containing challenging distorted and curved tables. Evaluation reports detection AP, precision, recall, F1, weighted-average F1, and TEDS-Struct, together with component ablations.",
+ "key_findings": [
+  {
+   "finding": "The CornerNet-plus-Fast-R-CNN detector achieves a weighted-average F1 of 94.9% on cTDaR TrackA, exceeding the comparison methods reported in the table.",
+   "evidence_type": "supported",
+   "section": "Section 4, Table Detection Experiments"
+  },
+  {
+   "finding": "On PubLayNet, the ResNet-18 detector reports AP 97.0 over IoU 0.5:0.95 and AP 92.0 at IoU 0.95, indicating particularly accurate localization at strict overlap thresholds.",
+   "evidence_type": "supported",
+   "section": "Section 4, PubLayNet Detection Results"
+  },
+  {
+   "finding": "The structure recognizer reports F1 99.3% on SciTSR and 98.7% on the more complicated SciTSR-COMP subset.",
+   "evidence_type": "supported",
+   "section": "Section 4, Table Structure Recognition Results"
+  },
+  {
+   "finding": "On PubTabNet, the method reports a TEDS-Struct score of 97.0%, above the listed comparison systems.",
+   "evidence_type": "supported",
+   "section": "Section 4, PubTabNet Results"
+  },
+  {
+   "finding": "On the authors' distorted and curved in-house data, weighted-average F1 rises from 63.8% for SPLERGE to 94.6% for the proposed recognizer.",
+   "evidence_type": "supported",
+   "section": "Section 4, In-house Dataset"
+  },
+  {
+   "finding": "The Grid CNN cell-merging component raises weighted-average F1 from 90.9% without merging to 94.6%, and exceeds the tested relation-network and GCN alternatives.",
+   "evidence_type": "supported",
+   "section": "Section 4, Ablation Study"
+  },
+  {
+   "finding": "The system recognizes geometry and cell structure within individual images but provides no mechanism for associating a detected table or cell with its counterpart in a later revision.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the proposed system"
+  }
+ ],
+ "limitations": [
+  "Nearby tables can be difficult to separate reliably.",
+  "Multi-line cell content can make separation-line estimation difficult.",
+  "Extremely dense tables can fail when masks for adjacent separation lines overlap.",
+  "The authors note that available datasets are dominated by black text on white backgrounds, leaving generalization to different backgrounds, fonts, and line colors insufficiently tested.",
+  "The challenging distorted-table evaluation uses an in-house dataset whose public availability is not established in the paper.",
+  "The method extracts table structure but does not assign durable cross-version table, row, column, or cell identifiers.",
+  "No document-revision provenance model or message-to-table reference-resolution mechanism is included."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "ctdar_detection_result": 0.99,
+  "publaynet_localization_result": 0.99,
+  "scitsr_structure_result": 0.99,
+  "pubtabnet_teds_result": 0.99,
+  "distorted_table_robustness": 0.99,
+  "grid_cnn_ablation": 0.99,
+  "no_cross_version_cell_lineage": 0.98
+ },
+ "raw_claims": [
+  "RobusTabNet separates table processing into table detection and table structure recognition.",
+  "The detector generates table proposals from predicted corner pairs and then uses Fast R-CNN to reject or refine proposals.",
+  "The structure-recognition stage first splits a table into a grid and then merges grid cells when they belong to the same logical cell.",
+  "Spatial CNN propagation is used to capture long-range evidence for row and column separators.",
+  "Grid CNN performs visual reasoning over neighboring cells to recover spanning-cell structure.",
+  "The method is evaluated on several public benchmarks for both table detection and table structure recognition.",
+  "The reported SciTSR F1 is 99.3%, while the complicated subset score is 98.7%.",
+  "The reported PubTabNet TEDS-Struct score is 97.0%.",
+  "Experiments on an in-house dataset show a large advantage over SPLERGE for distorted and curved tables.",
+  "The authors identify very dense tables as a remaining failure mode because separator masks can overlap.",
+  "The system does not address longitudinal matching of cells or regions after a document is revised."
+ ],
+ "source_url": "https://arxiv.org/html/2203.09056",
+ "access": "full_text",
+ "source_citation": "citeturn398672view8turn398672view9turn598373view3turn598373view4turn598373view5"
+}

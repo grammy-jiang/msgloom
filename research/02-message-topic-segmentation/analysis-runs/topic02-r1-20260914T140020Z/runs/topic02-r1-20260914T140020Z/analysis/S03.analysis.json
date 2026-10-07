@@ -1,0 +1,3837 @@
+{
+  "paper_id": "S03",
+  "title": "Discontinuous Named Entity Recognition as Maximal Clique Discovery",
+  "bibliographic_context": {
+    "authors": [
+      "Yucheng Wang",
+      "Bowen Yu",
+      "Hongsong Zhu",
+      "Tingwen Liu",
+      "Nan Yu",
+      "Limin Sun"
+    ],
+    "venue": "ACL-IJCNLP 2021",
+    "paper_pages": "764–774",
+    "source_locator": {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 1,
+      "line_end": 18,
+      "pdf_pages": [
+        1
+      ]
+    }
+  },
+  "research_question": "Can jointly predicted sentence-local segment and boundary-link tags, decoded through maximal cliques, improve discontinuous and overlapping biomedical named entity recognition while avoiding learned sequential-stage dependencies?",
+  "methodology": "Mac shares a domain BERT encoder between segment extraction and edge prediction. Each token-pair representation uses conditional layer normalization; segment representations also include an inner-token LSTM and a length embedding. Type-plus-BIS segment labels and type-specific head/head and tail/tail link labels use independent sigmoids with binary cross-entropy summed across the two tasks. Thresholded tags form a segment graph; both head and tail links are required for an edge, and clique members are concatenated in source order. Evaluation uses CADEC ADE and ShARe disorder mentions, full and discontinuous subsets, dev ablations, overlap/length analyses and V100 prediction throughput. The printed decoding anomalies and representational limitations are retained in S03-I01/I02 and S03-C01/C02.",
+  "methodology_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 282,
+      "line_end": 321,
+      "pdf_pages": [
+        3
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 354,
+      "line_end": 424,
+      "pdf_pages": [
+        4
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 454,
+      "line_end": 599,
+      "pdf_pages": [
+        5
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 601,
+      "line_end": 710,
+      "pdf_pages": [
+        6,
+        7
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 1012,
+      "line_end": 1038,
+      "pdf_pages": [
+        9
+      ]
+    }
+  ],
+  "key_findings": [
+    {
+      "finding_id": "S03-F01",
+      "finding": "Mac predicts sentence-local segment-boundary tags and same-entity boundary links jointly. The segment labels encode entity type and BIS role. Independent sigmoid tag decisions permit multiple tags per token pair; maximal-clique decoding combines ordered fragments into mentions and can reuse a fragment in different cliques. This is a tested NER system, not whole-message Topic classification.",
+      "evidence_type": "supported",
+      "evidence_basis": "Method specification plus benchmark evaluation of the resulting system; unrestricted representability is excluded.",
+      "section": "PDF pp. 3–5, §§3.1–3.4; evaluation pp. 6–7",
+      "quote": "Note that one token pair may have multiple tags according to the pre-defined tag set.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 284,
+        "line_end": 285,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 286,
+          "line_end": 321,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 354,
+          "line_end": 406,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 540,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 707,
+          "line_end": 710,
+          "pdf_pages": [
+            7
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 17,
+          "line_end": 17,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F02",
+      "finding": "The evaluated targets are ADE mentions in preprocessed CADEC patient-forum text and disorder mentions in ShARe 13/14 clinical notes. Gold includes discontinuous and overlapping mentions. The multi-type ADE/POB illustration is not evidence of multi-type benchmark evaluation or Topic membership labels.",
+      "evidence_type": "supported",
+      "evidence_basis": "Dataset descriptions and experimental corpus counts.",
+      "section": "PDF p. 6, §4.1 and Table 1; p. 7, Table 5",
+      "quote": "We use the dataset pre-processed by Dai et al.(2020b) which selected Adverse Drug Event (ADE) annotations from the original dataset because only the ADEs involve discontinuous an- notations.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 618,
+        "line_end": 622,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 601,
+          "line_end": 629,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 750,
+          "line_end": 757,
+          "pdf_pages": [
+            7
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 297,
+          "line_end": 310,
+          "pdf_pages": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F03",
+      "finding": "On the full test sets, Mac reports mention P/R/F1 of 70.5/72.5/71.5 on CADEC, 84.3/78.2/81.2 on ShARe 13, and 78.2/84.7/81.3 on ShARe 14. Trans_E F1 is 69.0/77.7/79.6, respectively. The derived gains are 2.5/3.5/1.7 percentage points. Mac has the highest displayed F1 in each Table 2 column. These scores do not measure Topic or scope preservation.",
+      "evidence_type": "supported",
+      "evidence_basis": "Paper-reported test results; derived differences use the displayed rounded scores.",
+      "section": "PDF p. 6, §4.4 and Table 2",
+      "quote": "Mac 70.5 72.5 71.5 84.3 78.2 81.2 78.2 84.7 81.3",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 656,
+        "line_end": 656,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 648,
+          "line_end": 658,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 630,
+          "line_end": 644,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 675,
+          "line_end": 697,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F04",
+      "finding": "For test mentions in sentences containing at least one discontinuous gold mention, Mac F1 is 69.8/68.1/69.7 on CADEC/ShARe 13/ShARe 14. For discontinuous mentions only, it is 44.4/55.9/54.1. These are different evaluation populations. The latter scores exceed Trans_E 37.9/52.5/49.2. Complete mention outputs, token-pair tags, and Topic assignments must remain separate evaluation targets.",
+      "evidence_type": "supported",
+      "evidence_basis": "Two explicitly defined test subsets; exact matching and averaging rules are not specified in this PDF.",
+      "section": "PDF p. 7, §4.4 and Table 3",
+      "quote": "The former is the score on sentences with at least one discontinuous entity mention. The latter is the score only considering discontinuous entity mentions.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 709,
+        "line_end": 710,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 699,
+          "line_end": 708,
+          "pdf_pages": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F05",
+      "finding": "The ShARe 13 dev ablation reduces overall F1 from 78.7 to 78.2 when BIS roles are collapsed, to 78.1 without length embeddings, to 76.8 with concatenation replacing CLN, and to 72.9 without segment-inner features. The discontinuous-only F1 values are 46.6, 46.1, 46.2, 44.4, and 46.3, respectively. This supports feature usefulness in this setting, not a universal preservation benefit.",
+      "evidence_type": "supported",
+      "evidence_basis": "Single-component dev-set ablation; uncertainty intervals are not reported.",
+      "section": "PDF p. 7, §4.5 and Table 4",
+      "quote": "Table 4: An ablation study on the ShARe 13 dev set.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 717,
+        "line_end": 717,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 711,
+          "line_end": 721,
+          "pdf_pages": [
+            7
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 740,
+          "line_end": 779,
+          "pdf_pages": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F06",
+      "finding": "The claim that Mac outperforms Trans_E on all overlap patterns is too broad. Figure 7 shows higher positive scores in most cells, but both models have zero-height multiple-overlap results on CADEC and ShARe 14. Table 5 reports 14 and 15 discontinuous test mentions in those categories, respectively. These are evaluated difficult cases, not absent evaluation.",
+      "evidence_type": "contradicted",
+      "evidence_basis": "The universal prose claim conflicts with plotted ties. Zero values are explicitly labeled visual readings, not printed bar labels.",
+      "section": "PDF p. 8, §4.6.1 and Figure 7; p. 7, Table 5",
+      "quote": "Mac outperforms TransE on all the overlap- ping patterns.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 845,
+        "line_end": 846,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 7,
+          "line_end": 13,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 750,
+          "line_end": 757,
+          "pdf_pages": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F07",
+      "finding": "Reported prediction throughput on a single Tesla V100 is 193.3/200.2/198.1 sentences per second for Mac, versus 36.3/40.6/40.3 for ELMo-based Trans_E and 29.1/33.4/33.9 for BERT-based Trans_B, in CADEC/ShARe 13/ShARe 14 order. The roughly fivefold comparison is GPU prediction throughput against Trans_E. It is not a linear-time guarantee or a Raspberry Pi measurement.",
+      "evidence_type": "supported",
+      "evidence_basis": "Measured throughput, with missing timing split, batching controls, repetitions, and component timing boundaries.",
+      "section": "PDF p. 9, §4.6.3 and Table 8; p. 4, §3.2",
+      "quote": "Mac 193.3 Sen/s 200.2 Sen/s 198.1 Sen/s",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 1022,
+        "line_end": 1022,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 1012,
+          "line_end": 1038,
+          "pdf_pages": [
+            9
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 630,
+          "line_end": 644,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 665,
+          "line_end": 673,
+          "pdf_pages": [
+            6
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 367,
+          "line_end": 372,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 5,
+          "line_end": 5,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F08",
+      "finding": "Mac avoids conditioning a learned second-stage combiner on gold segments during training and predicted segments at inference. The authors attribute its advantage to avoiding exposure bias. The experiments do not isolate exposure bias as the sole cause, quantify it directly, or show immunity to segment or link errors.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Architectural rationale and author causal interpretation; benchmark and ablation gains do not establish universal immunity.",
+      "section": "PDF p. 2, §1; p. 6, §4.4",
+      "quote": "thus immune from the exposure bias problem.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 130,
+        "line_end": 134,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 118,
+          "line_end": 134,
+          "pdf_pages": [
+            2
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 540,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 683,
+          "line_end": 697,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F09",
+      "finding": "The unrestricted equivalence between discontinuous NER and maximal-clique recovery lacks a lossless-representation proof. Analyst stress case S03-C01 gives different same-type complete fragment sets with identical BIS and H2H/T2T unions. No printed decoder constraint distinguishes them. This limits the universal claim; it is not an observed corpus failure or a finding about inspected code.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Paper claim assessed by a separately labeled analyst representation proof, not by an experiment in the paper.",
+      "section": "PDF p. 3, §3 and §§3.1.1–3.1.2; p. 4, Algorithm 1",
+      "quote": "discontinuous NER can be equivalently interpreted as discovering maximal cliques from a segment graph,",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 243,
+        "line_end": 245,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 234,
+          "line_end": 248,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 297,
+          "line_end": 321,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 381,
+          "line_end": 406,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F10",
+      "finding": "Algorithm 2 literally recurses with R union N(v). This differs from extending the current clique with v, and a literal reading fails the isolated-vertex case. The original PDF confirms the printed argument. Whether it is a typesetting error or differs from the experimental code is unresolved; no implementation was inspected or tested.",
+      "evidence_type": "unsupported",
+      "evidence_basis": "Original-PDF verification and analyst reasoning about the printed algorithm; not experimental evidence of a code defect.",
+      "section": "PDF p. 4, Algorithm 2, line 9",
+      "quote": "9: BRONKER( R ∪ N(v), P ∩ N(v), X ∩ N(v))",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 418,
+        "line_end": 418,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 407,
+          "line_end": 424,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 3,
+          "line_end": 4,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "finding_id": "S03-F11",
+      "finding": "Length-stratified test analysis reports weaker performance for short-gap discontinuous mentions and an exception where Trans_E exceeds Mac on CADEC envelope span length 8 (10 test mentions). The suggested confusion with continuous mentions is a hypothesis, not a counted error audit. There is no evaluation of retained conditions, evidence, approval scope, action scope, or reply scope.",
+      "evidence_type": "supported",
+      "evidence_basis": "Reported subgroup result and plotted trend; causal explanation and msgloom preservation risks remain interpretation.",
+      "section": "PDF pp. 8–9, §4.6.2, Table 7 and Figure 8",
+      "quote": "For example, on CADEC, TransE outper- forms Mac when span length is 8, but the sample number in the test set is only 10.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 994,
+        "line_end": 996,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "additional_source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 885,
+          "line_end": 900,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 997,
+          "line_end": 1011,
+          "pdf_pages": [
+            9
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 16,
+          "line_end": 16,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Sentence-local biomedical NER offers representation transfer only; none of the ten Topic02 work-matter tasks or preservation objectives is evaluated.",
+    "Universal lossless equivalence is unsupported for arbitrary mention families; analyst C01/C02 survives the printed BIS/type constraints. Corpus prevalence and benchmark impact are unknown.",
+    "The original Algorithm 2 recursion and maximal/maximum terminology are inconsistent; tested-code behavior is unknown.",
+    "Exact matching, metric averaging, IAA, annotation procedure, split-assignment units and leakage controls are not detailed in this paper.",
+    "Reported results use a median-dev-selected run, without dispersion or per-run scores. Wilcoxon test details are incomplete.",
+    "A small dev ablation and cross-architecture comparisons do not isolate exposure bias or establish condition/evidence/scope preservation.",
+    "Sparse overlap/length subsets include plotted ties and losses; preserve S03-I03–I06 rather than repeating universal superiority claims.",
+    "GPU prediction throughput does not establish graph-search complexity, long-message latency, CPU/arm64 performance, or safe incremental updates."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "Frozen paper-reported only. code_available means the paper announces a source-code URL. dataset_available means it identifies and uses existing named benchmarks, not that unrestricted access, licensing, present reachability or local dataset possession was verified.",
+    "paper_reported_code_url": "https://github.com/131250208/InfExtraction",
+    "code_source_locator": {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 59,
+      "line_end": 61,
+      "pdf_pages": [
+        1
+      ]
+    },
+    "dataset_source_locator": {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "line_start": 613,
+      "line_end": 629,
+      "pdf_pages": [
+        6
+      ]
+    },
+    "code_inspected": false,
+    "code_executed": false,
+    "network_verification": false,
+    "implementation_settings_ref": "topic02.implementation_protocol",
+    "missing_details": [
+      "Code commit/version and dependency versions",
+      "Threshold candidate values and random seeds",
+      "Strict entity match and averaging implementation",
+      "Annotation and leakage audit",
+      "Timing split, inference batch controls and component timing boundaries"
+    ]
+  },
+  "confidence_scores": {
+    "S03-F01": 0.98,
+    "S03-F02": 0.99,
+    "S03-F03": 0.99,
+    "S03-F04": 0.99,
+    "S03-F05": 0.98,
+    "S03-F06": 0.97,
+    "S03-F07": 0.98,
+    "S03-F08": 0.7,
+    "S03-F09": 0.99,
+    "S03-F10": 0.99,
+    "S03-F11": 0.93
+  },
+  "confidence_scope": "Confidence is in the qualified finding as written, not probability that an unqualified author claim is true. Unsupported includes method/causal claims without experimental support, as required by the installed contract.",
+  "raw_claims": [
+    "The batch size is fixed to 12.",
+    "All the hyper-parameters are tuned on the dev set.",
+    "The same logic goes for other tags in the matrix.",
+    "We leave this problem to our future work."
+  ],
+  "raw_claim_source_locators": [
+    {
+      "raw_claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 636,
+        "line_end": 637,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 638,
+        "line_end": 639,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 352,
+        "line_end": 353,
+        "pdf_pages": [
+          4
+        ]
+      }
+    },
+    {
+      "raw_claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 1010,
+        "line_end": 1011,
+        "pdf_pages": [
+          9
+        ]
+      }
+    }
+  ],
+  "topic02": {
+    "evidence_family": "TRANSFER_SPAN",
+    "evaluated_tasks": [
+      "Biomedical entity mention detection within sentences, including contiguous mentions, overlapping spans, and discontinuous mentions assembled from several contiguous fragments. Type-aware formulation; target categories in the experiments are ADE (CADEC) and disorder (ShARe).",
+      "Subgroup mention recognition by discontinuity, overlap pattern, gap length and envelope length; dev ablation; sentence prediction throughput."
+    ],
+    "annotation_unit": {
+      "statement": "Gold semantic object: a typed entity mention; discontinuous mentions consist of multiple contiguous word/token spans. Sentence is the processing context, not the only allowable entity unit. No EDU, clause, work-matter or email annotation comparison is performed.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 234,
+          "line_end": 248,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 286,
+          "line_end": 321,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 613,
+          "line_end": 629,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "prediction_unit": {
+      "statement": "Intermediate predictions are tag sets at token pairs. SE predicts X-B/X-I/X-S on upper-triangular boundary pairs; EP predicts X-H2H/X-T2T on token pairs. Final output is a set of typed mentions assembled from ordered clique fragments. Sigmoid multi-tag prediction is actual model behavior, not only a gold representational permission.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 282,
+          "line_end": 321,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 381,
+          "line_end": 406,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 540,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        }
+      ]
+    },
+    "contiguity": {
+      "statement": "Each graph node covers a contiguous span. A mention may contain a non-contiguous ordered set of spans within one sentence. This is not contiguous Topic segmentation or non-sequential clustering of sentences/messages across a conversation.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 234,
+          "line_end": 248,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 354,
+          "line_end": 372,
+          "pdf_pages": [
+            4
+          ]
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "statement": "Benchmark task categories are ADE only for selected CADEC annotations and disorder mentions for ShARe 13/14; the paper does not report subtype inventory or per-span multi-type frequencies. A token or span can participate in several overlapping gold mentions. Gold maximum/mean mention memberships per span and fragments per mention are not reported. ADE and POB in Figure 2 illustrate type-aware encoding, not a multi-label Topic benchmark.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 297,
+            "line_end": 310,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 613,
+            "line_end": 629,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 750,
+            "line_end": 757,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      "prediction": {
+        "statement": "No one-tag-per-token-pair softmax constraint: multiple independent sigmoid outputs are thresholded. Per type X, the printed scheme defines three SE role tags and two EP link tags; this count is derived from the named tags. Multiple clique memberships can reuse a segment. A single mention receives one entity type; neither arbitrary higher-order object membership nor its cardinality is guaranteed by these local tag sets. No fixed final mention-count cap is specified.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 282,
+            "line_end": 321,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 381,
+            "line_end": 406,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 540,
+            "line_end": 599,
+            "pdf_pages": [
+              5
+            ]
+          }
+        ]
+      },
+      "complete_fragment_set_recovery": "Gold mention identity is a complete fragment collection. Local pair/role capability does not guarantee that the set of such collections survives union encoding: see S03-C01 and S03-C02."
+    },
+    "discontinuity": {
+      "gold": {
+        "statement": "Present as several separated spans for one biomedical mention; counts per split appear in Table 1. Maximum number of fragments per mention and cross-sentence prevalence are not reported.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 601,
+            "line_end": 629,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ]
+      },
+      "prediction": {
+        "statement": "Explicit within-sentence discontinuous mention recovery by ordered concatenation of clique members; measured in Table 3 discontinuous-only setting.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 354,
+            "line_end": 372,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 699,
+            "line_end": 710,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      "within_one_message": "Sentence-local representation is a transfer candidate for part of one message. Actual within-email or within-chat-message performance is not evaluated.",
+      "thread_level": "Not modeled or evaluated; no thread-level Topic identity or cross-message merging."
+    },
+    "overlap": {
+      "gold": {
+        "statement": "Overlapping mentions and shared fragments are present in benchmark annotations. Table 5 distinguishes no, left, right and multiple overlap; its counts are discontinuous mention counts by arithmetic comparison with Table 1. It does not report total token/span membership-cardinality distributions.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 750,
+            "line_end": 757,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 601,
+            "line_end": 610,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 18,
+            "line_end": 18,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      "prediction": {
+        "statement": "Model supports overlapping segment boundaries and shared nodes across maximal cliques, and overlap-conditioned scores are reported. This establishes measured support in these sentence-local NER subsets. It does not establish arbitrary work-matter overlaps or complete representability; see S03-F06, S03-C01 and S03-C02.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 286,
+            "line_end": 321,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 354,
+            "line_end": 406,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        ]
+      },
+      "scope": "Within-sentence mentions only; no email/thread Topic overlap evaluation."
+    },
+    "dataset_domain": {
+      "statement": "CADEC: patient medication-experience posts from AskaPatient, using the preprocessed ADE selection of Dai et al. (2020b). ShARe 13/14: clinical disorder mentions in discharge summaries, electrocardiogram, echocardiogram and radiology reports. Transfer to business email is unmeasured.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 613,
+          "line_end": 629,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "annotation_process": {
+      "statement": "Reuses preexisting benchmark annotations and prior preprocessing. This paper does not give new annotation instructions, annotator counts/qualifications, adjudication rules, fragment-boundary guidelines, or a gold audit of representational collisions.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 613,
+          "line_end": 629,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported in this paper",
+      "metric": null,
+      "population": null,
+      "source_scope": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 612,
+        "line_end": 629,
+        "pdf_pages": [
+          6
+        ]
+      }
+    },
+    "split_and_leakage": {
+      "count_unit": "Table 1 provides sentence, mention, discontinuous-mention counts and percentage of mentions that are discontinuous; these are not document or thread counts.",
+      "counts": {
+        "CADEC": {
+          "train": {
+            "sentences": 5340,
+            "mentions": 4430,
+            "discontinuous_mentions": 491,
+            "discontinuous_percent": 11.1
+          },
+          "dev": {
+            "sentences": 1097,
+            "mentions": 898,
+            "discontinuous_mentions": 94,
+            "discontinuous_percent": 10.5
+          },
+          "test": {
+            "sentences": 1160,
+            "mentions": 990,
+            "discontinuous_mentions": 94,
+            "discontinuous_percent": 9.5
+          }
+        },
+        "ShARe 13": {
+          "train": {
+            "sentences": 8508,
+            "mentions": 5146,
+            "discontinuous_mentions": 581,
+            "discontinuous_percent": 11.3
+          },
+          "dev": {
+            "sentences": 1250,
+            "mentions": 669,
+            "discontinuous_mentions": 71,
+            "discontinuous_percent": 10.6
+          },
+          "test": {
+            "sentences": 9009,
+            "mentions": 5333,
+            "discontinuous_mentions": 436,
+            "discontinuous_percent": 8.2
+          }
+        },
+        "ShARe 14": {
+          "train": {
+            "sentences": 17407,
+            "mentions": 10354,
+            "discontinuous_mentions": 1004,
+            "discontinuous_percent": 9.7
+          },
+          "dev": {
+            "sentences": 1361,
+            "mentions": 771,
+            "discontinuous_mentions": 80,
+            "discontinuous_percent": 10.4
+          },
+          "test": {
+            "sentences": 15850,
+            "mentions": 7922,
+            "discontinuous_mentions": 566,
+            "discontinuous_percent": 7.1
+          }
+        }
+      },
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+        "line_start": 601,
+        "line_end": 610,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "split_assignment_unit": "Not reported: the PDF does not establish whether split assignment is by patient, document, post or sentence.",
+      "split_procedure": "Uses prior preprocessed datasets; train/dev/test counts are given but sampling/partition-generation procedure is not detailed.",
+      "duplicate_controls": "Not reported: within-split near duplicates, cross-split patient/document leakage, ShARe 13/14 overlap, and pretraining contamination controls.",
+      "overlap_pattern_counts": [
+        {
+          "dataset": "CADEC",
+          "category": "no",
+          "counts": {
+            "train": 57,
+            "dev": 9,
+            "test": 16
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 753,
+            "line_end": 753,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "no",
+          "counts": {
+            "train": 348,
+            "dev": 41,
+            "test": 193
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 753,
+            "line_end": 753,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "no",
+          "counts": {
+            "train": 535,
+            "dev": 39,
+            "test": 246
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 753,
+            "line_end": 753,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "left",
+          "counts": {
+            "train": 270,
+            "dev": 54,
+            "test": 41
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 754,
+            "line_end": 754,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "left",
+          "counts": {
+            "train": 167,
+            "dev": 11,
+            "test": 200
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 754,
+            "line_end": 754,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "left",
+          "counts": {
+            "train": 352,
+            "dev": 30,
+            "test": 238
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 754,
+            "line_end": 754,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "right",
+          "counts": {
+            "train": 113,
+            "dev": 16,
+            "test": 23
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 755,
+            "line_end": 755,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "right",
+          "counts": {
+            "train": 48,
+            "dev": 19,
+            "test": 35
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 755,
+            "line_end": 755,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "right",
+          "counts": {
+            "train": 97,
+            "dev": 5,
+            "test": 67
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 755,
+            "line_end": 755,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "multiple",
+          "counts": {
+            "train": 51,
+            "dev": 15,
+            "test": 14
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 756,
+            "line_end": 756,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "multiple",
+          "counts": {
+            "train": 18,
+            "dev": 0,
+            "test": 8
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 756,
+            "line_end": 756,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "multiple",
+          "counts": {
+            "train": 20,
+            "dev": 6,
+            "test": 15
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 756,
+            "line_end": 756,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "interval_length_counts": [
+        {
+          "dataset": "CADEC",
+          "category": "1",
+          "counts": {
+            "train": 36,
+            "dev": 8,
+            "test": 8
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 874,
+            "line_end": 874,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "1",
+          "counts": {
+            "train": 96,
+            "dev": 15,
+            "test": 125
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 874,
+            "line_end": 874,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "1",
+          "counts": {
+            "train": 227,
+            "dev": 10,
+            "test": 107
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 874,
+            "line_end": 874,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "2",
+          "counts": {
+            "train": 217,
+            "dev": 42,
+            "test": 54
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 875,
+            "line_end": 875,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "2",
+          "counts": {
+            "train": 215,
+            "dev": 26,
+            "test": 118
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 875,
+            "line_end": 875,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "2",
+          "counts": {
+            "train": 322,
+            "dev": 33,
+            "test": 146
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 875,
+            "line_end": 875,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "3",
+          "counts": {
+            "train": 56,
+            "dev": 14,
+            "test": 12
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 876,
+            "line_end": 876,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "3",
+          "counts": {
+            "train": 102,
+            "dev": 12,
+            "test": 91
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 876,
+            "line_end": 876,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "3",
+          "counts": {
+            "train": 184,
+            "dev": 20,
+            "test": 120
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 876,
+            "line_end": 876,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "4",
+          "counts": {
+            "train": 68,
+            "dev": 14,
+            "test": 8
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 877,
+            "line_end": 877,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "4",
+          "counts": {
+            "train": 46,
+            "dev": 3,
+            "test": 16
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 877,
+            "line_end": 877,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "4",
+          "counts": {
+            "train": 61,
+            "dev": 3,
+            "test": 43
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 877,
+            "line_end": 877,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "5",
+          "counts": {
+            "train": 36,
+            "dev": 4,
+            "test": 4
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 878,
+            "line_end": 878,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "5",
+          "counts": {
+            "train": 48,
+            "dev": 4,
+            "test": 46
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 878,
+            "line_end": 878,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "5",
+          "counts": {
+            "train": 92,
+            "dev": 6,
+            "test": 61
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 878,
+            "line_end": 878,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "6",
+          "counts": {
+            "train": 30,
+            "dev": 3,
+            "test": 3
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 879,
+            "line_end": 879,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "6",
+          "counts": {
+            "train": 25,
+            "dev": 3,
+            "test": 12
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 879,
+            "line_end": 879,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "6",
+          "counts": {
+            "train": 38,
+            "dev": 2,
+            "test": 31
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 879,
+            "line_end": 879,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": ">=7",
+          "counts": {
+            "train": 48,
+            "dev": 9,
+            "test": 5
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 880,
+            "line_end": 880,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": ">=7",
+          "counts": {
+            "train": 49,
+            "dev": 8,
+            "test": 28
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 880,
+            "line_end": 880,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": ">=7",
+          "counts": {
+            "train": 80,
+            "dev": 6,
+            "test": 58
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 880,
+            "line_end": 880,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "envelope_span_length_counts": [
+        {
+          "dataset": "CADEC",
+          "category": "3",
+          "counts": {
+            "train": 10,
+            "dev": 3,
+            "test": 4
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 885,
+            "line_end": 885,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "3",
+          "counts": {
+            "train": 30,
+            "dev": 7,
+            "test": 93
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 885,
+            "line_end": 885,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "3",
+          "counts": {
+            "train": 124,
+            "dev": 6,
+            "test": 74
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 885,
+            "line_end": 885,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "4",
+          "counts": {
+            "train": 95,
+            "dev": 23,
+            "test": 24
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 886,
+            "line_end": 886,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "4",
+          "counts": {
+            "train": 108,
+            "dev": 25,
+            "test": 71
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 886,
+            "line_end": 886,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "4",
+          "counts": {
+            "train": 190,
+            "dev": 15,
+            "test": 113
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 886,
+            "line_end": 886,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "5",
+          "counts": {
+            "train": 67,
+            "dev": 13,
+            "test": 15
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 887,
+            "line_end": 887,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "5",
+          "counts": {
+            "train": 157,
+            "dev": 17,
+            "test": 115
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 887,
+            "line_end": 887,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "5",
+          "counts": {
+            "train": 259,
+            "dev": 27,
+            "test": 140
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 887,
+            "line_end": 887,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "6",
+          "counts": {
+            "train": 91,
+            "dev": 13,
+            "test": 16
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 888,
+            "line_end": 888,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "6",
+          "counts": {
+            "train": 125,
+            "dev": 3,
+            "test": 51
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 888,
+            "line_end": 888,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "6",
+          "counts": {
+            "train": 165,
+            "dev": 12,
+            "test": 65
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 888,
+            "line_end": 888,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "7",
+          "counts": {
+            "train": 57,
+            "dev": 15,
+            "test": 9
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 889,
+            "line_end": 889,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "7",
+          "counts": {
+            "train": 65,
+            "dev": 5,
+            "test": 61
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 889,
+            "line_end": 889,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "7",
+          "counts": {
+            "train": 120,
+            "dev": 10,
+            "test": 76
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 889,
+            "line_end": 889,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": "8",
+          "counts": {
+            "train": 53,
+            "dev": 9,
+            "test": 10
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 890,
+            "line_end": 890,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": "8",
+          "counts": {
+            "train": 27,
+            "dev": 4,
+            "test": 14
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 890,
+            "line_end": 890,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": "8",
+          "counts": {
+            "train": 42,
+            "dev": 3,
+            "test": 33
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 890,
+            "line_end": 890,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "category": ">=9",
+          "counts": {
+            "train": 118,
+            "dev": 18,
+            "test": 16
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 891,
+            "line_end": 891,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "category": ">=9",
+          "counts": {
+            "train": 69,
+            "dev": 10,
+            "test": 31
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 891,
+            "line_end": 891,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "category": ">=9",
+          "counts": {
+            "train": 104,
+            "dev": 7,
+            "test": 65
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 891,
+            "line_end": 891,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "metrics": {
+      "task": "Sentence-local biomedical named entity mention recognition, including discontinuous and overlapping mentions.",
+      "unit": "P, R, and F1 are displayed on a 0–100 scale; throughput is sentences per second.",
+      "definitions": {
+        "statement": "The PDF reports mention precision, recall and F1, but does not explicitly define strict boundary/type matching, exact recovery of every fragment, token-versus-character offset matching, micro/macro averaging, or raw TP/FP/FN denominators. Standard P=TP/predicted, R=TP/gold, F1=2PR/(P+R) is an analyst explanation of the metric names, not a verified implementation rule. Exact complete-fragment matching must not be claimed as specified here.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 648,
+            "line_end": 658,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 699,
+            "line_end": 721,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      "populations": {
+        "statement": "Table 2: full test set. Table 3 first slash value: all mentions in sentences containing at least one discontinuous mention, not a discontinuous-only score. Second slash value: discontinuous mentions only. Table 4 repeats these three populations on ShARe 13 dev. Counts of gold mentions in the first slash subset, predicted mentions and true positives are not reported.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 699,
+            "line_end": 739,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      "main_test_results": [
+        {
+          "model": "BIOE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 68.7,
+          "recall": 66.1,
+          "f1": 67.4,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 651,
+            "line_end": 651,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 77.0,
+          "recall": 72.9,
+          "f1": 74.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 651,
+            "line_end": 651,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 74.9,
+          "recall": 78.5,
+          "f1": 76.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 651,
+            "line_end": 651,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 72.1,
+          "recall": 48.4,
+          "f1": 58.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 652,
+            "line_end": 652,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 83.9,
+          "recall": 60.4,
+          "f1": 70.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 652,
+            "line_end": 652,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 79.1,
+          "recall": 70.7,
+          "f1": 74.7,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 652,
+            "line_end": 652,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 69.8,
+          "recall": 68.7,
+          "f1": 69.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 653,
+            "line_end": 653,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 80.1,
+          "recall": 73.9,
+          "f1": 76.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 653,
+            "line_end": 653,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 76.5,
+          "recall": 82.3,
+          "f1": 79.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 653,
+            "line_end": 653,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 68.9,
+          "recall": 69.0,
+          "f1": 69.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 654,
+            "line_end": 654,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 80.5,
+          "recall": 75.0,
+          "f1": 77.7,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 654,
+            "line_end": 654,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 78.1,
+          "recall": 81.2,
+          "f1": 79.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 654,
+            "line_end": 654,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 68.8,
+          "recall": 67.3,
+          "f1": 68.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 655,
+            "line_end": 655,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 77.3,
+          "recall": 72.9,
+          "f1": 75.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 655,
+            "line_end": 655,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 76.0,
+          "recall": 78.6,
+          "f1": 77.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 655,
+            "line_end": 655,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 70.5,
+          "recall": 72.5,
+          "f1": 71.5,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 656,
+            "line_end": 656,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 84.3,
+          "recall": 78.2,
+          "f1": 81.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 656,
+            "line_end": 656,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions",
+          "precision": 78.2,
+          "recall": 84.7,
+          "f1": 81.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 656,
+            "line_end": 656,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "discontinuity_test_results": [
+        {
+          "model": "BIOE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 68.3,
+          "recall": 52.0,
+          "f1": 57.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 5.8,
+          "recall": 1.0,
+          "f1": 1.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 51.8,
+          "recall": 39.5,
+          "f1": 44.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 39.7,
+          "recall": 12.3,
+          "f1": 18.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 37.5,
+          "recall": 38.4,
+          "f1": 37.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "BIOE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 8.8,
+          "recall": 4.5,
+          "f1": 6.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 702,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 69.5,
+          "recall": 43.2,
+          "f1": 53.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 60.8,
+          "recall": 14.8,
+          "f1": 23.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 82.3,
+          "recall": 47.4,
+          "f1": 60.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 78.4,
+          "recall": 36.6,
+          "f1": 50.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 60.0,
+          "recall": 52.8,
+          "f1": 56.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Graph",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 42.7,
+          "recall": 39.5,
+          "f1": 41.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 703,
+            "line_end": 703,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 63.9,
+          "recall": 57.8,
+          "f1": 60.7,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 44.0,
+          "recall": 23.4,
+          "f1": 30.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 59.7,
+          "recall": 49.8,
+          "f1": 54.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 65.5,
+          "recall": 29.6,
+          "f1": 40.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 52.9,
+          "recall": 52.8,
+          "f1": 52.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "CombB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 51.2,
+          "recall": 35.0,
+          "f1": 41.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 704,
+            "line_end": 704,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 66.5,
+          "recall": 64.3,
+          "f1": 65.4,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 41.2,
+          "recall": 35.1,
+          "f1": 37.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 70.5,
+          "recall": 56.8,
+          "f1": 62.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 78.5,
+          "recall": 39.4,
+          "f1": 52.5,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 61.9,
+          "recall": 64.5,
+          "f1": 63.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 56.1,
+          "recall": 43.8,
+          "f1": 49.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 705,
+            "line_end": 705,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 69.1,
+          "recall": 64.4,
+          "f1": 66.7,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 39.5,
+          "recall": 34.0,
+          "f1": 36.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 68.2,
+          "recall": 55.4,
+          "f1": 61.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 65.9,
+          "recall": 39.0,
+          "f1": 49.0,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 55.5,
+          "recall": 55.6,
+          "f1": 55.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "TransB",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 52.0,
+          "recall": 37.8,
+          "f1": 43.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 706,
+            "line_end": 706,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 74.7,
+          "recall": 65.5,
+          "f1": 69.8,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 52.9,
+          "recall": 38.3,
+          "f1": 44.4,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 77.9,
+          "recall": 60.5,
+          "f1": 68.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 66.1,
+          "recall": 48.4,
+          "f1": 55.9,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "all mentions in sentences containing at least one discontinuous gold mention",
+          "precision": 69.3,
+          "recall": 70.2,
+          "f1": 69.7,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions only",
+          "precision": 51.0,
+          "recall": 57.6,
+          "f1": 54.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 707,
+            "line_end": 707,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "dev_ablation": [
+        {
+          "model": "Mac",
+          "dataset": "ShARe 13",
+          "split": "dev",
+          "overall_f1": 78.7,
+          "discontinuous_sentence_f1": 56.4,
+          "discontinuous_only_f1": 46.6,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 712,
+            "line_end": 712,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "collapse BIS roles (table label: – Tag B and S)",
+          "dataset": "ShARe 13",
+          "split": "dev",
+          "overall_f1": 78.2,
+          "discontinuous_sentence_f1": 55.8,
+          "discontinuous_only_f1": 46.1,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 713,
+            "line_end": 713,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "remove segment length embedding",
+          "dataset": "ShARe 13",
+          "split": "dev",
+          "overall_f1": 78.1,
+          "discontinuous_sentence_f1": 55.7,
+          "discontinuous_only_f1": 46.2,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 714,
+            "line_end": 714,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "replace CLN by concatenation",
+          "dataset": "ShARe 13",
+          "split": "dev",
+          "overall_f1": 76.8,
+          "discontinuous_sentence_f1": 52.7,
+          "discontinuous_only_f1": 44.4,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 715,
+            "line_end": 715,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "model": "remove segment inner representation",
+          "dataset": "ShARe 13",
+          "split": "dev",
+          "overall_f1": 72.9,
+          "discontinuous_sentence_f1": 55.6,
+          "discontinuous_only_f1": 46.3,
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 716,
+            "line_end": 716,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "overlap_pattern_test_results": [
+        {
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "no",
+          "Trans_E_f1": 0,
+          "Mac_f1": 7.69,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "left",
+          "Trans_E_f1": 36.59,
+          "Mac_f1": 42.86,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "right",
+          "Trans_E_f1": 48.0,
+          "Mac_f1": 62.22,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "CADEC",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "multiple",
+          "Trans_E_f1": 0,
+          "Mac_f1": 0,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "no",
+          "Trans_E_f1": 44.8,
+          "Mac_f1": 48.26,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "left",
+          "Trans_E_f1": 59.33,
+          "Mac_f1": 64.07,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "right",
+          "Trans_E_f1": 0,
+          "Mac_f1": 13.04,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 13",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "multiple",
+          "Trans_E_f1": 0,
+          "Mac_f1": 29.63,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "no",
+          "Trans_E_f1": 29.59,
+          "Mac_f1": 40.32,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "left",
+          "Trans_E_f1": 59.71,
+          "Mac_f1": 66.15,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "right",
+          "Trans_E_f1": 28.89,
+          "Mac_f1": 45.8,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        },
+        {
+          "dataset": "ShARe 14",
+          "split": "test",
+          "population": "discontinuous mentions grouped by overlap pattern",
+          "category": "multiple",
+          "Trans_E_f1": 0,
+          "Mac_f1": 0,
+          "zero_value_status": "Zero denotes visual baseline/no positive-height bar, not a printed numeric bar label.",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ],
+      "overlap_population_caution": "Table 5 category counts sum exactly to Table 1 discontinuous mention counts. Thus the pattern tally concerns discontinuous mentions, not all sentences or all mentions. This denominator identification is an analyst arithmetic inference. Figure 6 includes a continuous no-overlap illustration and is not itself the tally definition.",
+      "length_analysis": {
+        "statement": "Interval length counts gap words across separated fragments; span length is the full envelope including gaps. The printed example uses interval 5 and span 8; tokenization details (including punctuation counting) are not supplied. Figure 8 has unlabelled point values, so exact curve scores are not transcribed. No hard maximum segment or mention span length is reported.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 860,
+            "line_end": 908,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 994,
+            "line_end": 1018,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      },
+      "statistical_test": {
+        "statement": "The paper reports Wilcoxon p < 0.05 for Mac versus Trans_E. It does not provide exact p-values, tested sample units, paired observations, sidedness, or correction details. The reported mean improvement of 2.6 percentage points across datasets agrees with rounding (2.5+3.5+1.7)/3. This cross-dataset mean is distinct from averaging random runs.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 683,
+            "line_end": 697,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ]
+      },
+      "timing_results": [
+        {
+          "model": "TransB",
+          "sentences_per_second": {
+            "CADEC": 29.1,
+            "ShARe 13": 33.4,
+            "ShARe 14": 33.9
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 1020,
+            "line_end": 1020,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "model": "TransE",
+          "sentences_per_second": {
+            "CADEC": 36.3,
+            "ShARe 13": 40.6,
+            "ShARe 14": 40.3
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 1021,
+            "line_end": 1021,
+            "pdf_pages": [
+              9
+            ]
+          }
+        },
+        {
+          "model": "Mac",
+          "sentences_per_second": {
+            "CADEC": 193.3,
+            "ShARe 13": 200.2,
+            "ShARe 14": 198.1
+          },
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 1022,
+            "line_end": 1022,
+            "pdf_pages": [
+              9
+            ]
+          }
+        }
+      ],
+      "timing_protocol": {
+        "statement": "Prediction speed for PyTorch models on one Tesla V100; Mac uses domain-specific BERT, Trans_E uses ELMo, and Trans_B uses domain-specific BERT. The authors contrast batched Mac with token-at-a-time Trans_E. The timing split, matched inference batch sizes, sequence-length distribution, preprocessing/transfer/graph-search inclusion, repetitions, variance, and CPU details are not reported. Table 8 is not an isolated clique-decoder benchmark.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 630,
+            "line_end": 644,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 665,
+            "line_end": 673,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 1012,
+            "line_end": 1038,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      }
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measured_evidence": null,
+      "related_extraction_evidence": "S03-F11 reports NER length-stratified performance. The proposed confusion between short-gap discontinuous and continuous mentions is an author hypothesis, with no scope-loss error counts.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 860,
+          "line_end": 908,
+          "pdf_pages": [
+            8
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 994,
+          "line_end": 1011,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ],
+      "meaning": "No evaluation does not mean the model had a negative preservation result."
+    },
+    "not_evaluated_for_msgloom": [
+      "Topic-boundary detection",
+      "Contiguous Topic segmentation",
+      "Segment Topic labeling",
+      "Whole-message multi-label Topic classification",
+      "Exact span-to-Topic assignment",
+      "Overlapping span-to-Topic assignment",
+      "Non-contiguous evidence assignment to one Topic within a message or across messages",
+      "Discourse/EDU segmentation",
+      "Action, question, approval and reply-scope extraction",
+      "Preservation of decision-bearing conditions, evidence, exceptions and scope",
+      "Business-email annotation-unit comparisons, uncertainty calibration/abstention, incremental Topic updates, Raspberry Pi throughput or memory use"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "S03-I01",
+        "kind": "terminology",
+        "detail": "Section 2 defines maximal clique discovery as finding a clique of maximum size and says all maximum cliques. Section 3 instead correctly defines maximal as not extendable. Algorithm 1 asks for all maximal cliques. These are different objectives: maximal cliques need not have equal or globally largest size. The intended reading is maximal enumeration, but the conflicting printed wording is retained.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 191,
+            "line_end": 202,
+            "pdf_pages": [
+              2
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 234,
+            "line_end": 248,
+            "pdf_pages": [
+              3
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 400,
+            "line_end": 406,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S03-I02",
+        "kind": "printed algorithm anomaly",
+        "detail": "S03-F10: Algorithm 2 line 9 prints R ∪ N(v), whereas clique extension would use R ∪ {v}. Literal single-isolated-vertex reasoning: N(v) is empty, recursive P and X are empty, and R remains empty, so the algorithm adds the empty set rather than the singleton clique promised in §3.2. This is analyst reasoning, not an execution of paper code. The source discrepancy remains unresolved.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 363,
+            "line_end": 372,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 407,
+            "line_end": 424,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 3,
+            "line_end": 4,
+            "pdf_pages": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S03-I03",
+        "kind": "prose versus plotted results",
+        "detail": "S03-F06: all-pattern superiority conflicts with plotted zero-height ties for multiple overlap in CADEC and ShARe 14. Test category counts are 14 and 15, respectively. Preserve both the claim and the plot; do not call these categories unevaluated.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 845,
+            "line_end": 846,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 7,
+            "line_end": 13,
+            "pdf_pages": [
+              8
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 756,
+            "line_end": 756,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S03-I04",
+        "kind": "table emphasis versus numeric ordering",
+        "detail": "Table 2 says bold marks the highest number. CADEC precision is bold for Mac 70.5 despite Graph 72.1. The numerical F1 ranking is unaffected.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 652,
+            "line_end": 658,
+            "pdf_pages": [
+              6
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 14,
+            "line_end": 14,
+            "pdf_pages": [
+              6
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S03-I05",
+        "kind": "unexplained metric arithmetic",
+        "detail": "Table 3 BIOE on CADEC sentences containing a discontinuous mention reports precision 68.3, recall 52.0, F1 57.3. The harmonic mean of the displayed P and R is 59.0457 (analyst calculation), not 57.3. Rounding does not explain the difference. The PDF does not specify an averaging convention that resolves it; retain all printed values rather than substitute a calculated F1.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 702,
+            "line_end": 710,
+            "pdf_pages": [
+              7
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 15,
+            "line_end": 15,
+            "pdf_pages": [
+              7
+            ]
+          }
+        ]
+      },
+      {
+        "id": "S03-I06",
+        "kind": "figure caption scope",
+        "detail": "Figure 8 caption names interval length, but the six labeled panels include both interval length and span length. The §4.6.2 prose also discusses both. Preserve panel-specific interpretation.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 901,
+            "line_end": 910,
+            "pdf_pages": [
+              8,
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 925,
+            "line_end": 939,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 954,
+            "line_end": 968,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 982,
+            "line_end": 993,
+            "pdf_pages": [
+              9
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 16,
+            "line_end": 16,
+            "pdf_pages": [
+              9
+            ]
+          }
+        ]
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Indirect representation transfer only: arbitrary contiguous fragments can be combined, but sentence/clause/span/EDU/hybrid units are not compared.",
+      "RQ2": "No direct evidence about email clusters or asynchronous interleaving.",
+      "RQ3": "Relevant for gold/predicted overlap and discontinuity; tag cardinality differs from complete semantic-object memberships. S03-F01/F02/F04 and C01/C02.",
+      "RQ4": "TRANSFER_SPAN only: explicit sentence-local overlapping and discontinuous NER representation and evaluation; no direct email evidence.",
+      "RQ5": "No measured work-scope preservation; short-gap NER confusion suggests an untested risk, S03-F11.",
+      "RQ6": "Keep Table 2/3/4 populations, Figure 7 categories, and timing units separate. Matching rule omissions and material inconsistencies limit comparison.",
+      "RQ7": "Biomedical benchmark domains and counts are reported; IAA, annotation details and leakage controls are not.",
+      "RQ8": "Supports proposing lossless-encoding checks and complete-fragment evaluation before testing any Topic method; no architecture approval."
+    },
+    "interpretation": {
+      "status": "analyst interpretation, distinct from paper findings",
+      "representation": "A graph plus exact source offsets can represent some shared discontinuous evidence patterns. Pairwise same-object links encode a projection of membership collections, so a maximal-clique decoder needs an admissibility restriction or richer membership information for arbitrary work matters.",
+      "stress_cases": [
+        {
+          "case_id": "S03-C01",
+          "status": "analyst proof about the printed representation; not a measured paper result",
+          "setup": "Four nonempty single-token fragments at positions d=0, a=2, b=4, c=6 in one sentence, with nonentity gap tokens at 1,3,5. All mentions have type X. Gold family A is {d,a,b}, {d,a,c}, {d,b,c}; gold family B is {d,a,b,c}.",
+          "encoding": "Both families yield precisely d:X-B and a,b,c:X-I in the segment table. Every distinct fragment pair co-occurs in some family-A mention, so both H2H and T2T tags are present for every pair, just as for family B. Reverse links, if encoded as in Figure 4, also agree. All other cells agree.",
+          "decoding": "Both produce the same complete four-node typed graph. Its only maximal clique contains all four fragments. No printed BIS, type, original-order, or H2H-plus-T2T condition distinguishes the gold families: both contain one B and only following I fragments. A deterministic decoder receiving these tables cannot recover both distinct gold families.",
+          "scope": "A restriction on admissible mention families or additional higher-order membership information is required for universal lossless equivalence. A naive AB/AC/BC triangle is insufficient because B/I role tags can differ; the common initial d removes that issue. This does not establish corpus frequency, benchmark impact, or behavior of uninspected implementation.",
+          "source_locators": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+              "line_start": 282,
+              "line_end": 321,
+              "pdf_pages": [
+                3
+              ]
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+              "line_start": 381,
+              "line_end": 406,
+              "pdf_pages": [
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "S03-C02",
+          "status": "analyst corollary about nonmaximal objects; not a measured paper result",
+          "setup": "Same-type, separated fragments with gold mentions {d,a} and {d,a,b}, both beginning at d.",
+          "encoding": "Their union of BIS tags and pair links equals the encoding of {d,a,b} alone: d is B; a and b are I; pair links form a triangle.",
+          "decoding": "Maximal-only recovery omits the shorter gold object {d,a}. Type distinctions or a separate S node may rescue some other nesting patterns; they do not rescue this common-B case. Do not generalize this to all nested or overlapping mentions.",
+          "source_locators": [
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+              "line_start": 297,
+              "line_end": 321,
+              "pdf_pages": [
+                3
+              ]
+            },
+            {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+              "line_start": 388,
+              "line_end": 406,
+              "pdf_pages": [
+                4
+              ]
+            }
+          ]
+        }
+      ],
+      "algorithm": "S03-I02 is independent of the representation collision. Correcting the printed recursion would not restore information already lost by the encoder.",
+      "printed_decoder_detail": {
+        "statement": "Algorithm 1 requires head and tail link tags but does not explicitly specify a same-type equality test, a B-first/I-after constraint, or special S-node handling. Figure 2 depicts typed role nodes. These omitted details are not silently supplied as tested implementation behavior. C01 is robust even to same-type and one-leading-B constraints because both gold families satisfy them.",
+        "source_locators": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+            "line_start": 381,
+            "line_end": 406,
+            "pdf_pages": [
+              4
+            ]
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+            "line_start": 17,
+            "line_end": 17,
+            "pdf_pages": [
+              3
+            ]
+          }
+        ]
+      },
+      "scope_risk": "Joining fragments because all pairs are linked can broaden a work matter or lose a narrower condition-bearing object. This is a plausible msgloom failure mechanism, not measured NER-to-email evidence.",
+      "uncertainty": "Thresholded local scores are not calibrated uncertainty over complete Topics. The paper does not evaluate abstention or retaining incompatible candidate memberships."
+    },
+    "proposed_experiments": [
+      {
+        "id": "S03-P01",
+        "status": "untested proposal",
+        "proposal": "Enumerate small same-type fragment families with separated offsets; test whether complete gold fragment sets round-trip through the printed BIS/link representation. Include C01/C02, shared starts/ends, nested subsets, S/B/I collisions and multiple types. Report collisions and missing/spurious objects separately from neural accuracy."
+      },
+      {
+        "id": "S03-P02",
+        "status": "untested proposal",
+        "proposal": "On synthetic and user-reviewed business-message examples, compare candidate sentence, clause, arbitrary-span, EDU and hybrid annotation units without selecting an architecture. Annotate complete Topic evidence sets and shared evidence, with conditions, evidence, exceptions, action, approval and reply scope retained."
+      },
+      {
+        "id": "S03-P03",
+        "status": "untested proposal",
+        "proposal": "Evaluate span boundaries, multi-membership assignments and exact complete-fragment sets separately. Add user-reviewed condition/evidence/scope omission and broadening measures. Include one-message discontinuity and thread-level identity as separate settings. NER F1 is not a proxy for these measures."
+      },
+      {
+        "id": "S03-P04",
+        "status": "untested proposal",
+        "proposal": "If a graph candidate passes representability tests, compare gold versus predicted segments/links to measure error propagation. Sweep thresholds only on held-out development data and assess calibrated uncertainty over complete objects. Measure graph size/density, clique count, worst-case latency, peak memory and end-to-end throughput on the target arm64 Raspberry Pi using reviewed message lengths."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2021_wang_et_al_discontinuous_ner_maximal_clique.pdf",
+      "pdf_sha256": "1e0d0b073ec1755300e12c2958e4d2d351d06cd307ada50a6c4c7fe3d011814a",
+      "expected_pdf_sha256": "1e0d0b073ec1755300e12c2958e4d2d351d06cd307ada50a6c4c7fe3d011814a",
+      "pdf_hash_verified": true,
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S03.md",
+      "converted_text_sha256": "9bcbb385b0557162eba2089b17a380367115f463398ef63cc837e45771f27bc6",
+      "fine_conversion_available": false,
+      "locator_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+      "locator_text_sha256": "1eb6bba2db91a439ff3825b4c7a95a3e9ba567552955b115b8d07128e5c56ad7",
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-span/2021_wang_et_al_discontinuous_ner_maximal_clique.pdf",
+          "sha256": "1e0d0b073ec1755300e12c2958e4d2d351d06cd307ada50a6c4c7fe3d011814a",
+          "read_scope": "Original immutable paper; all 11 pages read in converted text, pages 1–9 visually inspected."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/S03.md",
+          "sha256": "9bcbb385b0557162eba2089b17a380367115f463398ef63cc837e45771f27bc6",
+          "read_scope": "Primary pipeline rough conversion; full text read. convert_fine/S03.md was absent."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "sha256": "1eb6bba2db91a439ff3825b4c7a95a3e9ba567552955b115b8d07128e5c56ad7",
+          "read_scope": "Independent pdftotext raw; full text read; principal quotation locator source."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.layout.txt",
+          "sha256": "4317ecf4e6a3e6b8f436a962a68253aa36fb90807fbf3c81df739a65a74e379f",
+          "read_scope": "Independent pdftotext layout; selected source/table cross-checks, lines 1–528."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.pages.md",
+          "sha256": "7bbe95d3a101b4b9a0d3362826c41549aed8aa3c6a8df94e87df0ff247a5cbd6",
+          "read_scope": "Auxiliary page-indexed conversion; selected page, table and equation checks, including lines 300–520."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "S03 record read for metadata/selection. Other paper conclusions not used."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "Read fully; mandatory Topic02 semantics, fields and locator convention."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "Installed skill instructions read; no pipeline stage run."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "Read fully."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "Read fully; installed JSON schema used for validation."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "Read fully."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "Read shared product context; current explicit S03 authorization controls older batch scope. Did not follow Topic01 links."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "Read fully; Topic-local docs path was absent, resolved to repository docs."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "Read fully; draft design context only."
+        }
+      ],
+      "line_convention": "LF-only line boundaries: text.split(\"\\n\"); 1-based inclusive. Form feeds do not create extra lines. Quotes normalize whitespace only and preserve line-break hyphens.",
+      "visual_verification": {
+        "pdf_pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "images": [
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-01.png",
+            "sha256": "c3c6b3dcb8c5f2948c52bab99d6848726f2128a7c9c153804533113ce15d65b5"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-02.png",
+            "sha256": "b632da0ab4c13fddafc5a2fa0ef7753b5ffe9883ce4a392ed0e565a83fce12d5"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-03.png",
+            "sha256": "0e4e9e20d5dc65bcd08b4c45174479d3df355ecc831f9cd650a19518d8811329"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-04.png",
+            "sha256": "2f4d28f879da0bf84782bbac27b042c72bfa25c500e606bed842256205083895"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-05.png",
+            "sha256": "6656bad5a946e1c19bc262b6f25068d0fd2733785d8c0836230dd71aa44bc7c1"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-06.png",
+            "sha256": "58b3a69793be87fa99bfd87695247c62a218cb2494bb874b5a2a67a6ea4883af"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-07.png",
+            "sha256": "47b0435c10dee027cb18c26569b4eb4e3b08a669483b60acba9380dd347cd4d3"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-08.png",
+            "sha256": "9f056bf6a1c243cee79cad29e0ba782c07cc1401d6ea2fd46a577f2c9b287c27"
+          },
+          {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/pdf-page-09.png",
+            "sha256": "e4ed3d781df416b2dcd179c6a0c79056ea615ea44ede138d664c8f11d204b6f2"
+          }
+        ],
+        "transcription_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+        "transcription_sha256": "ccc55d8acfb324f71140198916d98adaa8ab08235beae05add2c4d0cfc859cb2"
+      },
+      "extraction_limitations": "Rough conversion damages equations/figures; auxiliary text interleaves columns; Poppler Figure 7 labels have font-encoding damage. Original page images resolve the relevant symbols, table values and graph labels. Figure 8 does not print exact point labels. No online acquisition or OCR.",
+      "runtime": {
+        "model": "gpt-6-astra",
+        "effort": "xhigh",
+        "role": "paper-S03",
+        "provenance": "Launcher-reported MSGLOOM_WORKER_* environment values; parent independently verifies actual turn_context and process exit receipts.",
+        "runtime_identifiers": "Not fabricated; no session or process identifier asserted by this worker."
+      }
+    },
+    "computational_complexity": {
+      "statement": "Section 3.2 prints O(3^(m/3)) for clique discovery, with m equal to the number of graph nodes. This is an exponential expression, not a linear runtime guarantee; this worker does not prove that bound for the anomalous Algorithm 2 as printed. The SE grid has n(n+1)/2 candidate boundary pairs for an n-token sentence; EP is a full n-by-n grid. Those are representation sizes, not measured end-to-end latency. Figure 7/8 and Table 8 do not measure worst-case graph size or density, and the V100 throughput result cannot establish Raspberry Pi performance.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 282,
+          "line_end": 301,
+          "pdf_pages": [
+            3
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 367,
+          "line_end": 372,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 582,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/S03/visual-transcription.txt",
+          "line_start": 5,
+          "line_end": 5,
+          "pdf_pages": [
+            4
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 1019,
+          "line_end": 1038,
+          "pdf_pages": [
+            9
+          ]
+        }
+      ]
+    },
+    "implementation_protocol": {
+      "statement": "Domain BERT: Yelp Bert for CADEC; Clinical BERT for ShARe 13/14. Adam learning rate 1e-5, batch size 12, at most 300 epochs on Tesla V100. Best-dev checkpoint within each run; report test score from the run with median dev score among 5 random initializations. This is not the mean of five test runs. §3.4 describes threshold search in (0,1) on dev; §4.2 gives final threshold 0.5. Candidate threshold grid, seeds and uncertainty across runs are not supplied. Maximum span length 12 is not stated in this PDF; 12 explicitly denotes batch size. No conclusion about S02 reporting is imported.",
+      "source_locators": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 594,
+          "line_end": 599,
+          "pdf_pages": [
+            5
+          ]
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/S03.raw.txt",
+          "line_start": 630,
+          "line_end": 644,
+          "pdf_pages": [
+            6
+          ]
+        }
+      ]
+    },
+    "diagnostic_checks": {
+      "max_span_length_12": "Not verified in this S03 PDF. Full converted-text reading, local term searches and visual inspection of §§3.3–4.2 show no such bound. The printed batch size is 12.",
+      "strict_exact_matching": "Not explicitly specified. Do not promote a screening expectation into paper evidence.",
+      "higher_order_constraint": "No printed BIS/decoding constraint resolves C01. Uninspected code could add undocumented constraints, but none are assumed."
+    }
+  }
+}

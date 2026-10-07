@@ -1,0 +1,80 @@
+{
+ "paper_id": "2312.09300",
+ "title": "Self-Evaluation Improves Selective Generation in Large Language Models",
+ "research_question": "Can an LLM's token-level self-evaluation of its own free-form answers provide better confidence signals for selective generation and abstention than ordinary sequence likelihood?",
+ "methodology": "The authors transform free-form generation into token-level evaluation tasks using Sample and Select, which presents sampled responses as multiple-choice alternatives, and Sample and Eval, which asks whether an individual answer is correct. A hybrid method first selects an answer comparatively and then estimates its pointwise correctness, optionally subtracting confidence assigned to a 'None of the above' option. Confidence methods are evaluated with accuracy, Calibration-AUC, and Selective-AUC, where low-confidence outputs are increasingly abstained. Experiments use PaLM-2 Large and, where API log-probabilities permit, GPT-3 on TruthfulQA and a 1,000-example sample of TL;DR.",
+ "key_findings": [
+  {
+   "finding": "Raw sequence likelihood was a poor confidence signal for free-form generation and was negatively correlated with correctness on TruthfulQA in several settings.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Recasting answer assessment as token-level self-evaluation substantially improved confidence-quality ranking compared with sequence likelihood.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "On PaLM-2 TruthfulQA, the hybrid method with a 'None of the above' option achieved a Calibration-AUC of 75.34 compared with 39.80 for raw sequence likelihood.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Allowing 'None of the above' gave the model an explicit signal for cases in which none of the sampled answers appeared correct and generally improved calibration without a large accuracy penalty.",
+   "evidence_type": "supported",
+   "section": "2.1 Sample and Select; 4.2 Results"
+  },
+  {
+   "finding": "The advantage of self-evaluation over sequence-level confidence also appeared on TL;DR summarization, although the improvements were smaller than on TruthfulQA.",
+   "evidence_type": "supported",
+   "section": "4.3 Self-evaluation improves calibration on TL;DR summarization"
+  },
+  {
+   "finding": "Self-evaluation remained useful after a self-critique-and-revision stage, indicating that confidence estimation and answer revision supplied complementary benefits.",
+   "evidence_type": "supported",
+   "section": "4.2 Results"
+  },
+  {
+   "finding": "Self-evaluation increases inference cost because the model must perform one or two additional evaluation passes after generation.",
+   "evidence_type": "supported",
+   "section": "6 Discussion"
+  }
+ ],
+ "limitations": [
+  "The principal experiments rely on PaLM-2 Large, while GPT-3 results are incomplete because its API exposed only limited token log-probabilities.",
+  "GPT-3.5 and GPT-4 could not be evaluated because their APIs did not expose the required output log-probabilities at the time of the study.",
+  "TruthfulQA correctness is approximated by GPT-judge rather than newly collected human labels, and TL;DR quality is approximated by a reward model whose reported human-rating prediction accuracy is 71.34%.",
+  "Only 1,000 examples from the 15,240-example TL;DR test split were evaluated to reduce inference cost.",
+  "The method increases inference time by roughly one additional evaluation pass, or two for the hybrid procedure.",
+  "The confidence scores are evaluated primarily as ranking signals through AUC rather than as numerically calibrated probabilities.",
+  "The study does not directly evaluate robustness under temporal change, explicit out-of-distribution shifts, or changing evidence sources.",
+  "No paper-specific source-code release is identified in the full text."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "sequence_likelihood_poor": 0.99,
+  "self_evaluation_improves_ranking": 0.99,
+  "truthfulqa_calibration_gain": 0.99,
+  "none_of_above_helps": 0.97,
+  "tldr_transfer": 0.98,
+  "revision_complementarity": 0.96,
+  "inference_cost": 0.99
+ },
+ "raw_claims": [
+  "The method converts free-form generation into token-level self-evaluation tasks.",
+  "Sample and Select asks the model to choose among several independently sampled answers.",
+  "Sample and Eval asks the model to judge whether a particular candidate answer is correct.",
+  "A 'None of the above' choice is used to expose uncertainty when all sampled answers may be wrong.",
+  "Sequence likelihood performed poorly as a predictor of free-form answer quality.",
+  "Self-evaluation confidence was more predictive of answer quality than sequence likelihood on TruthfulQA.",
+  "The same general calibration pattern was observed on TL;DR summarization.",
+  "Selective-AUC measures answer quality as increasingly low-confidence outputs are abstained.",
+  "The hybrid self-evaluation procedure requires additional model inference."
+ ],
+ "source_url": "https://arxiv.org/html/2312.09300",
+ "access": "full_text"
+}

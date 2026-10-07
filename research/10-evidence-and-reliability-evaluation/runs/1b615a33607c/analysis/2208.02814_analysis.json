@@ -1,0 +1,73 @@
+{
+ "paper_id": "2208.02814",
+ "title": "Conformal Risk Control",
+ "research_question": "Can conformal prediction be generalized from miscoverage control to finite-sample control of the expected value of a broad class of bounded monotone losses?",
+ "methodology": "The paper defines conformal risk control for a family of set-valued or otherwise nested predictors whose losses are bounded and non-increasing as a tuning parameter increases. It derives a finite-sample calibration rule and proves expected-risk guarantees under exchangeability, then studies lower bounds, distribution-shift extensions, multiple-risk variants, and failure modes for non-monotone losses. The method is evaluated over repeated random calibration/test splits on tumor segmentation, multilabel classification, hierarchical ImageNet classification, and Natural Questions retrieval and reading.",
+ "key_findings": [
+  {
+   "finding": "For exchangeable examples and bounded, right-continuous, non-increasing loss functions, the proposed calibration rule controls the expected test loss at the target level in finite samples.",
+   "evidence_type": "supported",
+   "section": "Section 2.1"
+  },
+  {
+   "finding": "Ordinary split conformal prediction is recovered as a special case when the loss is the indicator of prediction-set miscoverage.",
+   "evidence_type": "supported",
+   "section": "Section 2.3"
+  },
+  {
+   "finding": "Under additional regularity assumptions, the attainable expected risk is within order 1/n of the requested risk level, although the authors note that the constant in their lower bound may not be tight.",
+   "evidence_type": "supported",
+   "section": "Section 2.2"
+  },
+  {
+   "finding": "Across the four empirical application domains, average held-out risk was close to the requested risk level over repeated calibration/test splits.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "The basic conformal-risk-control rule does not provide a general finite-sample guarantee for arbitrary non-monotone losses; the paper gives examples where it can fail badly.",
+   "evidence_type": "supported",
+   "section": "Section 2.4"
+  },
+  {
+   "finding": "The framework provides extensions for certain distribution shifts, including density-ratio weighting and bounds whose degradation depends on total-variation differences between calibration and test distributions.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  }
+ ],
+ "limitations": [
+  "The central finite-sample result relies on exchangeability in its base setting.",
+  "The principal theorem requires losses to be bounded, non-increasing, and right-continuous in the calibration parameter.",
+  "General finite-sample control is not established for arbitrary non-monotone losses.",
+  "Distribution-shift extensions require additional assumptions such as known or suitably handled density ratios; estimating covariate-shift weights is not solved by the core method.",
+  "The guarantee is primarily marginal expected-risk control rather than an instance-wise conditional guarantee.",
+  "The framework controls a supplied loss but does not itself define evidence completeness, longitudinal state transitions, or omission of superseded work items."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "finite_sample_expected_risk_control": 0.99,
+  "conformal_prediction_as_special_case": 0.99,
+  "order_one_over_n_tightness": 0.97,
+  "empirical_target_tracking": 0.98,
+  "nonmonotone_failure": 0.99,
+  "distribution_shift_extensions": 0.97
+ },
+ "raw_claims": [
+  "Conformal risk control extends conformal calibration from binary miscoverage to more general bounded losses.",
+  "The finite-sample guarantee applies to exchangeable calibration and test examples.",
+  "The loss must become no worse as the predictor is made more conservative through the calibration parameter.",
+  "Classical conformal prediction fits the framework by using a miscoverage indicator as the loss.",
+  "The expected risk can approach the desired level at an order-1/n rate under additional assumptions.",
+  "Non-monotone losses can invalidate the basic finite-sample guarantee.",
+  "The experiments include segmentation, multilabel classification, hierarchical classification, and question answering.",
+  "Repeated-split experiments show held-out risks close to their specified targets.",
+  "Distribution-shift variants can use importance weighting when the relevant density ratio is available.",
+  "Total-variation distance can be used to quantify deterioration of the risk bound under arbitrary marginal shifts."
+ ],
+ "source_url": "https://arxiv.org/html/2208.02814",
+ "access": "full_text"
+}

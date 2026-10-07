@@ -1,0 +1,387 @@
+{
+ "analyses": [
+  {
+   "paper_id": "1301.6707",
+   "title": "Attention-Sensitive Alerting",
+   "research_question": "How can a notification system decide when and how to alert users about incoming email by balancing the expected value of timely information against context-sensitive interruption costs?",
+   "methodology": "The paper develops Bayesian models of user attentional state and a decision-theoretic net expected value of alerting (NEVA) framework that compares the cost of delayed information with the cost of interruption. It extends the framework to compound alerts containing multiple messages and implements email criticality prediction with a linear support-vector-machine classifier. The classifier was trained on approximately 1,500 labeled messages and evaluated on 250 high-priority and 250 low-priority messages selected from a user's inbox. A separate validation compared automated expected criticality with one author's 1-to-100 judgments on 200 messages received over three days, and the resulting classifier was incorporated into the PRIORITIES prototypes for real-time use.",
+   "key_findings": [
+    {
+     "finding": "A linear SVM trained on approximately 1,500 labeled messages discriminated between high- and low-criticality email on a held-out set of 500 hand-selected messages, with performance reported as an ROC tradeoff rather than a single accuracy value.",
+     "evidence_type": "supported",
+     "section": "5 Assigning Criticality to Messages"
+    },
+    {
+     "finding": "Automated expected-criticality scores correlated 0.9 with one author's manual criticality ratings for 200 messages received over three days.",
+     "evidence_type": "supported",
+     "section": "5 Assigning Criticality to Messages"
+    },
+    {
+     "finding": "The PRIORITIES prototypes personalized criticality prediction using examples from a user's own email and applied the learned classifier to incoming messages in real time while also observing activity, acoustics, and calendar information.",
+     "evidence_type": "supported",
+     "section": "6 PRIORITIES Prototypes"
+    },
+    {
+     "finding": "The compound-alert formulation explicitly models grouping several newly arrived messages into one interruption and increases interruption cost with informational complexity, but it assumes message values are independent and the authors warn that this can overestimate value when messages concern related content.",
+     "evidence_type": "supported",
+     "section": "4.3 Chunking Messages and the Value of Alerting"
+    },
+    {
+     "finding": "The proposed NEVA rule says an alert should be sent when its expected informational value exceeds its expected interruption cost, but this paper does not report a controlled user-outcome experiment comparing that alerting policy with alternatives.",
+     "evidence_type": "unsupported",
+     "section": "4.2-4.3 and 6-7"
+    }
+   ],
+   "limitations": [
+    "The primary classifier test messages were selected by one user, limiting evidence about cross-user generalization.",
+    "The 200-message criticality validation used ratings from one of the authors rather than independent or multiple assessors.",
+    "The paper reports prototype deployment for real-world testing but does not report a controlled longitudinal evaluation of whether NEVA-based alert decisions improve user productivity or reduce interruption cost.",
+    "The compound-alert model assumes independence among message values even though related messages can violate that assumption.",
+    "The work prioritizes individual incoming messages rather than tracking persistent work items through new, open, resolved, or superseded states.",
+    "It does not jointly evaluate omission, repeated-alert, and false-alert errors over repeated briefing cycles."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "criticality_classifier_evaluated": 0.97,
+    "criticality_correlation_0_9": 0.99,
+    "personalized_realtime_prototype": 0.96,
+    "compound_alert_model": 0.98,
+    "no_controlled_alert_policy_outcome_test": 0.94
+   },
+   "raw_claims": [
+    "The alerting framework weighs delayed-information costs against interruption costs.",
+    "User attention is inferred from evidence such as calendar state, application activity, keyboard and mouse behavior, and room acoustics.",
+    "An alert is favored when its net expected value is positive.",
+    "The model can combine information from several new messages into one compound alert.",
+    "The authors note that correlated email content can invalidate the independence assumption used for compound alerts.",
+    "The implemented email criticality classifier uses a linear support vector machine.",
+    "Approximately 1,500 messages were used to train the criticality classifier.",
+    "The held-out criticality test contained 250 high-priority and 250 low-priority messages.",
+    "One author rated 200 messages over three days, yielding a 0.9 correlation with automated expected criticality.",
+    "PRIORITIES can use a custom classifier learned from a user's own email and apply it to new mail in real time."
+   ],
+   "source_url": "https://arxiv.org/pdf/1301.6707",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-bdce973227",
+   "title": "Success of an Agent-Assisted System that Reduces Email Overload",
+   "research_question": "Does combining automatic email task extraction with learned task-ordering advice improve novice performance under simulated email overload, and how do users respond to agent errors and critical-task recommendations?",
+   "methodology": "RADAR was evaluated in a between-subjects conference-planning simulation with three conditions: no learned assistance (None), task-centric email assistance without ordering advice (TC), and task-centric assistance plus Multi-task Coordination Assistant ordering advice (TCO). There were 23, 28, and 28 usable participants respectively, and each participant completed a two-hour test after training. The test inbox contained 123 emails, including 83 emails containing 153 task instances and 40 distracter emails; the classifier operated on 102 task-type labels. Evaluation combined an externally designed objective task-performance score, logged task outcomes and classifier errors, critical-task behavior, and post-test ratings.",
+   "key_findings": [
+    {
+     "finding": "Participants receiving both task extraction and ordering assistance achieved a mean overall score of 0.754 versus 0.706 with task-centric assistance alone and 0.550 with no learned assistance; the condition effect was significant and the paper summarizes the TCO-versus-None improvement as 37%.",
+     "evidence_type": "supported",
+     "section": "Evaluation Score"
+    },
+    {
+     "finding": "The email classifier was deliberately tuned toward precision and achieved precision 0.887 and recall 0.461, correctly identifying 47 of 102 task labels while producing six false positives.",
+     "evidence_type": "supported",
+     "section": "Email Classification and the Task-Centric Action List"
+    },
+    {
+     "finding": "TCO users incorrectly completed an average of 2.6 false-positive or true-negative tasks, compared with 10.3 incorrectly completed tasks in the no-assistance condition, which the authors describe as up to a fourfold reduction in mistakes.",
+     "evidence_type": "supported",
+     "section": "Email Classification and the Task-Centric Action List"
+    },
+    {
+     "finding": "TCO participants completed fewer total and fewer non-critical tasks than TC participants but achieved higher overall scores, consistent with the ordering agent steering limited effort toward higher-value obligations and away from overflow work.",
+     "evidence_type": "supported",
+     "section": "Effects of the MCA's Task Strategy Recommendations"
+    },
+    {
+     "finding": "The Action List explicitly represented incomplete, overflow, completed, and deleted tasks and allowed users to add missed tasks or delete false positives, providing within-session work-state and correction mechanisms.",
+     "evidence_type": "supported",
+     "section": "Task-Centric Email Processing"
+    },
+    {
+     "finding": "Participants complied with 97 of 112 issued critical-task warnings overall, although compliance differed substantially by warning type and users varied widely in how much agent advice they followed.",
+     "evidence_type": "supported",
+     "section": "Effects of the MCA's Task Strategy Recommendations"
+    },
+    {
+     "finding": "The authors state that a real deployment could use online learning to continuously adapt to users' choices, but the reported experiment used models learned beforehand from expert demonstrations and did not empirically evaluate preference drift or online personalization.",
+     "evidence_type": "unsupported",
+     "section": "Training the MCA"
+    }
+   ],
+   "limitations": [
+    "The study used a simulated two-hour conference-planning task rather than longitudinal everyday workplace use.",
+    "Participants were novices recruited from universities and the general population rather than established teams managing their own ongoing work.",
+    "The evaluated task-ordering policy was learned from experts before the study; proposed continuous online adaptation was not tested.",
+    "The classifier favored precision at the cost of low recall, leaving many task labels undetected.",
+    "Although the interface tracked incomplete, overflow, completed, and deleted tasks, the experiment did not evaluate repeated briefing cycles or explicit superseded-state transitions.",
+    "The scenario contained only one briefing-request email, and briefing quality was one component of the final score rather than a repeatedly generated cross-thread briefing.",
+    "The study did not measure repetition of already-reported work items across briefings.",
+    "No-shows, dropouts, poor-faith participation, software crashes, and configuration problems caused unequal usable sample sizes across conditions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "overall_performance_gain": 0.99,
+    "classifier_precision_recall": 0.99,
+    "error_reduction": 0.98,
+    "critical_task_selection_effect": 0.96,
+    "within_session_task_states": 0.98,
+    "warning_compliance": 0.98,
+    "online_adaptation_not_tested": 0.99
+   },
+   "raw_claims": [
+    "RADAR converts task-bearing email into a task-centric Action List.",
+    "The MCA learns task-performance strategies from demonstrations by expert users.",
+    "The evaluated study compared None, TC, and TCO assistance conditions.",
+    "The usable samples were 23 participants in None and 28 participants in each assisted condition.",
+    "The test inbox contained 123 emails, including 40 unrelated distracter emails.",
+    "The classifier found 47 of 102 task labels and produced six false positives.",
+    "TCO achieved the highest mean objective evaluation score of the three conditions.",
+    "TCO participants completed fewer non-critical tasks than TC participants while scoring better overall.",
+    "The interface separated incomplete, overflow, completed, and deleted tasks.",
+    "Users could correct classifier false positives and false negatives through the interface.",
+    "The MCA identified five critical task types, including sending a briefing.",
+    "The paper proposes continuous online adaptation for real deployment but does not test it in the reported experiment."
+   ],
+   "source_url": "https://www.cs.cmu.edu/~faulring/papers/radar-ui-iui09-workshop.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2208.03828",
+   "title": "How Do Viewers Synthesize Conflicting Information from Data Visualizations?",
+   "research_question": "How do people combine sequentially presented, potentially conflicting graphical evidence, and how are their synthesized judgments affected by the direction, magnitude, context, and presentation order of the evidence?",
+   "methodology": "The authors conducted four experiments with 1,166 participants who sequentially viewed pairs of line charts and then produced a synthesized estimate of the relationship represented by the charts. Experiment 1 used context-free variables, Experiments 2A and 2B introduced real-world contextual scenarios, and Experiment 3 added accompanying article-like text. Chart-pair slope direction, magnitude, discrepancy, and order were manipulated, while synthesis was measured through a line-drawing widget and additional numerical and decision questions. The study also collected free-text explanations and analyzed them using inductive thematic coding.",
+   "key_findings": [
+    {
+     "finding": "Across experiments, when both line-chart slopes pointed in the same direction, participants placed greater weight on the weaker, less steep relationship.",
+     "evidence_type": "supported",
+     "section": "Experiments 1-3, Direction of the presented stimuli"
+    },
+    {
+     "finding": "When the two slopes pointed in opposite directions, participants consistently weighted the positive relationship more strongly than the negative relationship.",
+     "evidence_type": "supported",
+     "section": "Experiments 1-3, Direction of the presented stimuli"
+    },
+    {
+     "finding": "As disagreement between the two slopes increased, synthesized judgments tended to move away from their arithmetic average and toward the stronger slope.",
+     "evidence_type": "supported",
+     "section": "Experiments 1-3, Discrepancy between the presented stimuli"
+    },
+    {
+     "finding": "The authors found no significant effect of whether the stronger slope was presented first or second in Experiment 1, Experiments 2A and 2B, or Experiment 3.",
+     "evidence_type": "supported",
+     "section": "Experiments 1-3, Order"
+    },
+    {
+     "finding": "Different elicitation methods were generally consistent but not identical; some statistically significant differences appeared between line-drawing and text-box responses, showing that measured synthesis can depend on response modality.",
+     "evidence_type": "supported",
+     "section": "4.4.1 Triangulation"
+    },
+    {
+     "finding": "The experiments provide evidence about human synthesis of two sequential conflicting information sources, but they do not test longitudinal workplace briefing, persistent work-item state, omission, repeated alerts, or false-alert decisions.",
+     "evidence_type": "unsupported",
+     "section": "Scope of Experiments 1-3 and Limitations"
+    }
+   ],
+   "limitations": [
+    "Participants synthesized only two pieces of information at a time rather than long, evolving multi-source streams.",
+    "The stimuli were restricted primarily to similar line-chart designs, limiting generalization to other visualization and document forms.",
+    "The experiments did not vary the number of underlying data points or sample sizes across the evidence sources.",
+    "Several scenarios were fictional or controlled for experimental purposes and may not reproduce real professional decision contexts.",
+    "The task studied synthesis of relationships, not tracking persistent obligations or work-item lifecycle states.",
+    "No repeated briefing cycles were generated, so omission, repetition, and false-alert rates were not jointly evaluated.",
+    "The authors caution that the study is an initial examination and is insufficient for firm design prescriptions."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "same_direction_weaker_weight": 0.99,
+    "opposite_direction_positive_weight": 0.99,
+    "discrepancy_favors_stronger": 0.98,
+    "no_order_effect": 0.99,
+    "measurement_modality_difference": 0.95,
+    "not_longitudinal_workplace_briefing": 0.99
+   },
+   "raw_claims": [
+    "Four experiments involved a combined 1,166 participants.",
+    "Each participant synthesized evidence from two line charts shown sequentially.",
+    "The experiments varied whether the two slopes agreed or opposed each other in direction.",
+    "Same-direction evidence was generally synthesized with more weight on the weaker slope.",
+    "Opposite-direction evidence was generally synthesized with more weight on the positive slope.",
+    "Larger discrepancies shifted synthesized estimates toward the stronger slope.",
+    "No significant presentation-order effect was detected in the reported experiments.",
+    "The authors triangulated synthesis using graphical, numerical, and decision responses.",
+    "Qualitative responses were coded to characterize participants' synthesis strategies.",
+    "Experimental stimuli, analysis materials, and data are linked through the paper's supplementary OSF resource."
+   ],
+   "source_url": "https://arxiv.org/html/2208.03828",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1109-access-2022-3182390",
+   "title": "An End-to-End Personalized Preference Drift Aware Sequential Recommender System With Optimal Item Utilization",
+   "research_question": "Can a sequential recommender improve next-item prediction by detecting personalized preference drift, soft-clustering item characteristics, and selecting only historical interactions relevant to the user's current preference?",
+   "methodology": "The proposed PPD+ model soft-clusters latent item representations with Fuzzy c-Means, detects personalized drift from changes in consecutive soft-label distributions, divides user histories into subsequences, and retrieves past subsequences similar to the latest preference segment. Experiments used three public datasets: MovieLens 1M, Goodreads Spoiler, and Taobao UserBehavior, with users and items having fewer than ten interactions removed and maximum sequence lengths set to 200, 100, and 100 respectively. The first 70% of interactions were used for training, the next 10% for validation, and the remainder for testing, with next-item prediction evaluated by holding out the last interaction as ground truth. PPD+ was compared with multiple sequential and efficient-Transformer baselines using MRR, NDCG@K, and HR@K, plus equal-item-utilization, noise, threshold, and illustrative case analyses.",
+   "key_findings": [
+    {
+     "finding": "PPD+ consistently outperformed most evaluated baselines across the three benchmark datasets on NDCG, hit rate, and mean reciprocal rank.",
+     "evidence_type": "supported",
+     "section": "IV.E.3 Evaluation Results"
+    },
+    {
+     "finding": "When competing models were constrained to use equal percentages of historical items, PPD+ still outperformed the baselines on most metrics across all three datasets, supporting the value of its history-selection and grouping mechanism rather than merely the amount of history consumed.",
+     "evidence_type": "supported",
+     "section": "V.A Equal Item Utilization Experiment"
+    },
+    {
+     "finding": "Using more historical interactions was not uniformly beneficial: the highest NDCG@10 usually did not occur at the largest utilization percentage, and PPD+ showed negative, flat, or positive utilization trends depending on the dataset.",
+     "evidence_type": "supported",
+     "section": "V.A.3 Impact of Noises"
+    },
+    {
+     "finding": "A zero cosine-similarity threshold for retaining past subsequences outperformed variants based on the mean similarity or mean plus standard deviation on most validation metrics across the datasets.",
+     "evidence_type": "supported",
+     "section": "V Threshold Experiment"
+    },
+    {
+     "finding": "The experiments demonstrate better offline next-item prediction from a mechanism intended to respond to changing preferences, but they do not directly validate detected drift points against independently labeled ground-truth preference changes.",
+     "evidence_type": "unsupported",
+     "section": "IV-VI"
+    },
+    {
+     "finding": "The system adapts selection to behavioral preference history, but the paper does not evaluate workplace obligations, preference-versus-obligation tradeoffs, repeated briefings, or omission/repetition/false-alert errors.",
+     "evidence_type": "unsupported",
+     "section": "Problem formulation and evaluation scope"
+    }
+   ],
+   "limitations": [
+    "Evaluation is entirely offline on recommender-system interaction datasets rather than a human-in-the-loop longitudinal deployment.",
+    "Preference drift is inferred from changes in item representations rather than evaluated against explicit human annotations of when a user's preference actually changed.",
+    "Users and items with fewer than ten interactions were removed, so cold-start behavior is outside the evaluated population.",
+    "Historical sequences were truncated to fixed maximum lengths determined from approximate average sequence lengths.",
+    "Next-item ranking metrics assess recommendation accuracy but do not directly measure user satisfaction with adaptation under real preference drift.",
+    "The model treats behavioral preference as the selection objective and does not represent mandatory obligations separately from optional preferences.",
+    "There is no workplace communication, work-item lifecycle, briefing-cycle, omission, repetition, or false-alert evaluation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "ppd_plus_outperforms_most_baselines": 0.97,
+    "equal_utilization_advantage": 0.96,
+    "more_history_not_always_better": 0.99,
+    "zero_threshold_variant_result": 0.97,
+    "no_ground_truth_drift_validation": 0.93,
+    "outside_workplace_briefing_scope": 0.99
+   },
+   "raw_claims": [
+    "PPD+ is designed to model personalized changes in sequential user preference.",
+    "The model uses Fuzzy c-Means to give items soft cluster memberships.",
+    "Changes between consecutive soft-label distributions are used to identify preference-drift points.",
+    "Detected drift points partition a user's history into preference subsequences.",
+    "Past subsequences are selected according to similarity with the latest subsequence.",
+    "The evaluation uses MovieLens, Goodreads, and UserBehavior datasets.",
+    "The next-item task ranks candidate items with the user's final interaction serving as ground truth.",
+    "Performance is reported with MRR, NDCG, and hit-rate metrics.",
+    "PPD+ outperforms most baselines across the reported benchmark results.",
+    "Experiments show that retaining the largest possible fraction of history does not consistently produce the best NDCG.",
+    "The paper does not provide independently annotated ground-truth preference-drift events."
+   ],
+   "source_url": "https://www.researchgate.net/publication/361279980_An_End-to-End_Personalized_Preference_Drift_Aware_Sequential_Recommender_System_With_Optimal_Item_Utilization",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1145-383952-383954",
+   "title": "Temporal Summaries of News Topics",
+   "research_question": "How can an online system repeatedly summarize a developing news topic so that each update covers useful new events while avoiding previously reported, redundant, and off-event information?",
+   "methodology": "The paper formalizes temporal summarization as ranking sentences incrementally as stories arrive, before subsequent stories can be processed, with the intended usage model producing revised summaries at regular intervals that report only what has changed. The authors built an evaluation corpus from 22 medium-sized TDT-2 topics, manually identifying events and assigning sentences to zero or more events; 11 topics were used for training and 11 were held out for testing. The corpus contains 944 stories, 343 annotated events, and 17,049 sentences, approximately 71% of which are off-event. Probabilistic language-model methods for usefulness and novelty were compared with random, natural-order, round-robin, and worst-case baselines using recall- and precision-like metrics for usefulness, event novelty, off-event inclusion, and their combination.",
+   "key_findings": [
+    {
+     "finding": "The evaluation explicitly separates useful content, novel event coverage, and off-event material, with recall measuring coverage of relevant events and precision penalizing redundant or non-useful selections; this provides a direct laboratory analogue of jointly measuring omission, repetition, and irrelevant-update errors.",
+     "evidence_type": "supported",
+     "section": "3.1 Measures"
+    },
+    {
+     "finding": "The corpus contains 22 TDT-2 topics split evenly into training and test sets, with 343 annotated events across 17,049 sentences, enabling event-level temporal-summary evaluation.",
+     "evidence_type": "supported",
+     "section": "3.3 Evaluation corpus"
+    },
+    {
+     "finding": "For usefulness ranking on the test topics, the probabilistic usefulness methods and the simple round-robin baseline performed similarly, and the authors conclude that the probabilistic approaches did not clearly outperform round robin.",
+     "evidence_type": "supported",
+     "section": "4.2 Capturing Usefulness and 5 Summary and Future Work"
+    },
+    {
+     "finding": "Novelty models looked better than several baselines under a novelty-only measure, but once off-event sentences were accounted for their performance degraded and round robin became the strongest comparator, leading the authors to state that the novelty models were inadequate for the task.",
+     "evidence_type": "supported",
+     "section": "4.3 Capturing Novelty"
+    },
+    {
+     "finding": "The expected superiority of combining the strongest usefulness and novelty variants was not observed; on held-out topics the combined variants had nearly identical exact average nu-precision and were roughly comparable to round robin.",
+     "evidence_type": "contradicted",
+     "section": "4.4 Useful novelty"
+    },
+    {
+     "finding": "When roughly 10% of the original sentences were selected, almost 80% of the 162 training events were already represented, but substantial redundancy remained; the authors judged about 10% extraction to be the best operating region under their measures.",
+     "evidence_type": "supported",
+     "section": "4.5 Summary size"
+    },
+    {
+     "finding": "The authors identify score normalization over time as unresolved because model estimates change as more evidence accumulates, and explicitly propose story-by-story or day-by-day evaluation as future work.",
+     "evidence_type": "supported",
+     "section": "5 Summary and Future Work"
+    }
+   ],
+   "limitations": [
+    "The domain is news-topic monitoring rather than workplace communication or cross-thread task management.",
+    "Events are treated as newly covered or already covered; there are no explicit open, resolved, reopened, or superseded work-item lifecycle states.",
+    "The experiments use a clean stream in which every story is already known to be on-topic, so topic-detection errors are excluded.",
+    "The paper notes that scores are not stable over time because later predictions have more accumulated evidence, making cross-time threshold normalization problematic.",
+    "The evaluation is laboratory and annotation based rather than a longitudinal user study of whether repeated summaries improve awareness or decision making.",
+    "The useful/novel combination assumes independence even though the authors acknowledge that usefulness and novelty may not be independent.",
+    "The custom event and sentence annotations are described but no public code or directly downloadable release of those annotations is provided in the paper."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "joint_usefulness_novelty_metrics": 0.99,
+    "annotated_temporal_corpus": 0.99,
+    "usefulness_no_clear_round_robin_gain": 0.98,
+    "novelty_model_weakness": 0.98,
+    "combined_model_expected_gain_absent": 0.96,
+    "ten_percent_operating_region": 0.98,
+    "time_normalization_limitation": 0.99
+   },
+   "raw_claims": [
+    "The intended system periodically produces a revised summary containing only changes not already reported to the user.",
+    "Stories are processed incrementally, with sentence scores emitted before the next story is considered.",
+    "A useful sentence discusses an event in the topic.",
+    "A novel sentence introduces an event not covered by earlier selected sentences.",
+    "The evaluation corpus contains 22 TDT-2 topics divided into 11 training and 11 test topics.",
+    "Annotators identified events and assigned individual sentences to zero, one, or multiple events.",
+    "The corpus contains 343 events and 17,049 sentences.",
+    "About 71% of the annotated sentences are off-event.",
+    "Recall- and precision-like measures separately evaluate usefulness, novelty, and their combination.",
+    "The probabilistic usefulness methods do not clearly beat a simple round-robin ordering on held-out topics.",
+    "The paper finds that its novelty models remain inadequate when off-event material is properly considered.",
+    "Selecting around 10% of the sentences covers most training-set events but still leaves substantial redundancy.",
+    "The authors identify time-dependent score normalization as an unresolved evaluation issue."
+   ],
+   "source_url": "https://ciir-publications.cs.umass.edu/getpdf.php?id=226",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

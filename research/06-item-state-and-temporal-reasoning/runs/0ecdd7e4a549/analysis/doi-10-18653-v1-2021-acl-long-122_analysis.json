@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-18653-v1-2021-acl-long-122",
+ "title": "Factuality Assessment as Modal Dependency Parsing",
+ "research_question": "Can factuality assessment be formulated as modal dependency parsing that jointly identifies events and information sources, links them hierarchically, and predicts the degree of certainty each source asserts toward each event?",
+ "methodology": "The authors crowdsource modal dependency structures for 353 COVID-19 news articles from 11 media sources, yielding 24,016 event mentions and 2,938 conceivers, with expert comparison and adjudication used for quality assessment. Modal dependencies encode an event's or conceiver's parent source together with a four-way modal-strength label after two rare negative categories were merged. A BERT-large-cased joint model shares representations between event/conceiver mention extraction and parent-plus-label prediction, considering candidate parents within a five-sentence window; it is compared with a non-joint pipeline on a 289/32/32 train/dev/test split. citeturn991644view3turn420993view2turn420993view3",
+ "key_findings": [
+  {
+   "finding": "The resulting corpus contains 353 documents, 24,016 events, and 2,938 conceivers; crowd-worker versus expert agreement is 78.6% for unlabeled attachment and 72.1% for labeled attachment.",
+   "evidence_type": "supported",
+   "section": "2.4-2.5 Quality Control and Corpus Statistics citeturn991644view3"
+  },
+  {
+   "finding": "Joint learning does not materially improve event extraction: test F1 is 90.8 for the joint model versus 90.9 for the pipeline.",
+   "evidence_type": "supported",
+   "section": "3.2 Experiments and Discussion citeturn380153view0turn380153view1"
+  },
+  {
+   "finding": "Joint learning significantly improves test conceiver extraction from 67.5 F1 to 70.4 F1.",
+   "evidence_type": "supported",
+   "section": "3.2 Experiments and Discussion citeturn380153view1"
+  },
+  {
+   "finding": "With gold mentions, the pipeline has slightly higher test labeled attachment performance, 80.6 versus 80.1 for the joint model.",
+   "evidence_type": "supported",
+   "section": "3.2 Experiments and Discussion citeturn380153view1"
+  },
+  {
+   "finding": "With automatically extracted mentions, the joint model significantly improves test labeled attachment from 67.5 to 69.0, indicating reduced pipeline error propagation.",
+   "evidence_type": "supported",
+   "section": "3.2 Experiments and Discussion citeturn380153view1"
+  },
+  {
+   "finding": "Cross-sentence source attachment remains difficult: for the 59 evaluated cases whose conceiver is in another sentence, the system disagrees with the expert in 52.5% of cases versus 30.5% for crowd workers.",
+   "evidence_type": "supported",
+   "section": "3.3 Error Analysis citeturn380153view1"
+  }
+ ],
+ "limitations": [
+  "The corpus is restricted to English COVID-19 news from 11 sources, so transfer to workplace communication, dialogue, or other domains is untested. citeturn991644view3",
+  "Partial-negative and neutral-negative modal strengths each occur rarely and are merged into a single negative category, reducing factuality granularity. citeturn420993view2",
+  "The parser restricts candidate parents to a five-sentence window and at most 16 candidates, while its error analysis specifically shows difficulty with distant conceivers. citeturn420993view3turn380153view1",
+  "Only 11 test documents have both expert and crowd-worker annotations for the comparative error analysis. citeturn380153view0",
+  "The formalism models the certainty or commitment that a source asserts about an event, not independently verified truth; therefore an asserted completion and an independently confirmed completion remain conceptually distinct and require additional evidence modeling. citeturn380153view1"
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "corpus_scale_and_agreement": 0.99,
+  "joint_conceiver_gain": 0.99,
+  "event_extraction_no_gain": 0.99,
+  "automatic_parsing_gain": 0.99,
+  "distant_conceiver_weakness": 0.99,
+  "source_commitment_not_external_truth": 0.97
+ },
+ "raw_claims": [
+  "Modal dependency parsing represents events together with the sources responsible for their asserted factuality.",
+  "The dataset contains more than twenty-four thousand event mentions across 353 COVID-19 news articles.",
+  "Most events attach either to the document author or to an explicitly represented conceiver.",
+  "Rare negative modal-strength categories were collapsed to simplify crowdsourcing.",
+  "The joint parser shares BERT representations between mention extraction and dependency construction.",
+  "Joint training helps conceiver extraction but not event extraction.",
+  "Pipeline parsing is slightly stronger when gold mentions are supplied.",
+  "Joint parsing is stronger when it must operate on automatically extracted mentions.",
+  "Attaching an event to a conceiver in another sentence is a substantial system error source.",
+  "The annotations characterize source-specific certainty rather than independently establishing whether an event actually occurred."
+ ],
+ "source_url": "https://aclanthology.org/2021.acl-long.122.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,83 @@
+{
+ "paper_id": "2608.11238",
+ "title": "Towards Query-Agnostic RAG Evaluation via Query Coverage and Claim Verifiability",
+ "research_question": "Can a reference-free RAG evaluation framework provide consistent fine-grained retrieval and generation diagnostics for both close-ended and open-ended queries by combining query coverage with claim verifiability?",
+ "methodology": "Q-CARE decomposes each query into atomic sub-queries and each generated answer into atomic claims, then performs alignment checks between sub-queries, retrieved chunks, and answer claims. These alignments define coverage-aware retrieval metrics C-Prec@k and C-nDCG@k and generator metrics for Completeness, Conciseness, and Verifiableness without requiring gold answers or gold evidence chunks. The authors construct a human-annotated evaluation set spanning eight datasets, sample 160 close-ended and 160 open-ended queries for correlation analysis, retrieve top-10 chunks with BM25, generate answers using eight LLMs, and compare Q-CARE with existing RAG metrics using correlation with human judgments; they also test conversational RAG and perform decomposition ablations.",
+ "key_findings": [
+  {
+   "finding": "Q-CARE produces fine-grained retrieval and generation measurements without requiring gold answers or gold evidence chunks, enabling the same framework to operate on both close-ended and open-ended queries.",
+   "evidence_type": "supported",
+   "section": "3 Q-CARE"
+  },
+  {
+   "finding": "Across the constructed benchmark, Q-CARE reports higher agreement with human judgments than the four compared RAG evaluation frameworks on the reported retrieval and generation dimensions.",
+   "evidence_type": "supported",
+   "section": "5.1 Main Results"
+  },
+  {
+   "finding": "The human-annotation study shows strong task-level agreement, with Fleiss' kappa between 0.801 and 0.891 for the three alignment tasks and over 97% agreement for decomposition verification.",
+   "evidence_type": "supported",
+   "section": "4 Benchmark Construction"
+  },
+  {
+   "finding": "Q-CARE's coverage and verifiability formulation transfers to conversational RAG, where it achieves the highest reported correlation on three of four datasets in both evaluated dimensions without changing the framework.",
+   "evidence_type": "supported",
+   "section": "6 Benchmarking with Q-CARE"
+  },
+  {
+   "finding": "Query decomposition significantly improves Completeness across both close- and open-ended settings and both tested Qwen backbones, with reported gains from 0.056 to 0.473.",
+   "evidence_type": "supported",
+   "section": "6 Ablation on Query Decomposition"
+  },
+  {
+   "finding": "Decomposition does not uniformly improve every metric: for open-ended queries with the Qwen3-30B backbone, C-Prec@10 falls by 0.167 relative to the no-decomposition variant.",
+   "evidence_type": "contradicted",
+   "section": "6 Ablation on Query Decomposition"
+  },
+  {
+   "finding": "Using a stronger 80B evaluation backbone improves conversational correlation on six of eight dataset-dimension combinations, showing that evaluator quality remains dependent on the backbone model.",
+   "evidence_type": "supported",
+   "section": "6 Benchmarking with Q-CARE"
+  }
+ ],
+ "limitations": [
+  "The evaluation pipeline still depends on strong LLMs for decomposition and alignment judgments, and results vary with evaluator backbone strength.",
+  "The principal human-correlation benchmark samples 160 close-ended and 160 open-ended queries, limiting the empirical coverage of the much larger space of possible RAG interactions.",
+  "The framework evaluates evidence coverage and verifiability but does not itself establish whether retrieved evidence is temporally current or drawn from the correct document version.",
+  "No calibrated abstention or selective-prediction risk guarantee is provided; the metrics diagnose quality rather than determine a statistically controlled stopping or refusal threshold.",
+  "The reported robustness studies span query types and conversational settings but do not directly test non-stationary temporal distribution shift.",
+  "Some experiments depend on proprietary API models, which can complicate exact long-term reproduction despite documented configurations and prompts."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "reference_free_query_agnostic_evaluation": 0.99,
+  "higher_human_agreement_than_compared_RAG_metrics": 0.98,
+  "human_annotation_reliability": 0.99,
+  "conversational_generalization": 0.96,
+  "decomposition_improves_completeness": 0.99,
+  "decomposition_not_uniformly_beneficial": 0.99,
+  "backbone_strength_affects_reliability": 0.97
+ },
+ "raw_claims": [
+  "Q-CARE is designed to evaluate RAG without gold answers or gold evidence chunks.",
+  "Queries are decomposed into sub-queries and generated answers into atomic claims.",
+  "C-Prec@k measures how much query-relevant information appears in retrieved chunks.",
+  "C-nDCG@k incorporates both sub-query coverage and retrieval rank.",
+  "Completeness measures the proportion of sub-queries addressed by the generated answer.",
+  "Conciseness measures how many answer claims are relevant to covered sub-queries.",
+  "Verifiableness measures how many answer claims can be checked against retrieved evidence.",
+  "The benchmark includes both close-ended and open-ended queries from eight datasets.",
+  "Human alignment labels show high inter-annotator agreement.",
+  "Q-CARE correlates more strongly with human judgments than the compared RAG metrics on the primary benchmark.",
+  "The framework can also be applied to conversational RAG evaluation.",
+  "Query decomposition materially improves completeness correlations in the ablation experiments.",
+  "Evaluator performance improves in several settings when the backbone is scaled from 30B to 80B.",
+  "The paper publicly releases its code and data."
+ ],
+ "source_url": "https://arxiv.org/html/2608.11238",
+ "access": "full_text"
+}

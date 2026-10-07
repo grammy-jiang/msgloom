@@ -1,0 +1,71 @@
+{
+ "paper_id": "doi-10-18653-v1-2020-acl-main-398",
+ "title": "TaPas: Weakly Supervised Table Parsing via Pre-training",
+ "research_question": "Can a pretrained transformer answer questions over tables from weak denotation supervision by directly selecting supporting cells and aggregation operations instead of generating explicit logical forms?",
+ "methodology": "TAPAS extends BERT-style encoding with table-aware row, column, and numeric information so that flattened cells retain structural relationships. It is pretrained with masked-language modeling on millions of Wikipedia tables and associated text. During downstream training, the model predicts a subset of table cells and, when necessary, an aggregation operator such as SUM, COUNT, or AVERAGE using only answer denotations rather than gold logical forms. Numeric aggregation is incorporated through a differentiable objective that permits learning aggregation decisions from weak supervision.",
+ "key_findings": [
+  {
+   "finding": "On weakly supervised WikiSQL, TAPAS reached 83.6 test accuracy, close to the 83.9 result of the then state-of-the-art system despite not requiring logical-form supervision.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "On SQA, TAPAS reached 67.2 overall accuracy and 40.4 sequence accuracy, compared with 55.1 and 28.1 respectively for the prior comparison system reported by the paper.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Transferring a TAPAS model pretrained on related table-QA data substantially improved WikiTableQuestions results, reaching 48.7 after WikiSQL transfer and 48.8 after SQA transfer.",
+   "evidence_type": "supported",
+   "section": "5.3 Results"
+  },
+  {
+   "finding": "Table-specific pretraining was important: removing it reduced development performance from 39.0 to 26.5 SQA sequence accuracy, from 84.7 to 80.8 on WikiSQL, and from 29.0 to 17.9 on WikiTableQuestions in the reported ablation.",
+   "evidence_type": "supported",
+   "section": "5.3 Model Ablations"
+  },
+  {
+   "finding": "The predicted answer is explicitly tied to selected table cells, providing cell-level evidence localization before any optional aggregation is applied.",
+   "evidence_type": "supported",
+   "section": "2 Model and 4 Fine-tuning"
+  },
+  {
+   "finding": "The model's reasoning language is intentionally restricted: it selects cells and performs at most one supported aggregation rather than representing arbitrary compositional programs.",
+   "evidence_type": "supported",
+   "section": "4 Fine-tuning and 5.4 Error Analysis"
+  }
+ ],
+ "limitations": [
+  "The model handles a single table at a time and requires the relevant table content to fit its input constraints, so very large tables and multi-table databases are outside its design.",
+  "Its arithmetic expressivity is limited to selecting cells followed by one simple aggregation, and it cannot directly represent nested or multi-step aggregations.",
+  "The reported WikiTableQuestions error analysis includes failures on temporal comparisons, string operations, and tables that exceed the 512-token input limit.",
+  "Cell selection supplies useful within-table provenance, but the model does not represent document pages, attachments, attachment identities, or attachment-version lineage."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "weak_wikisql_performance": 0.99,
+  "sqa_improvement": 0.99,
+  "wikitablequestions_transfer": 0.98,
+  "pretraining_ablation": 0.99,
+  "cell_level_grounding": 0.98,
+  "restricted_reasoning_language": 0.99
+ },
+ "raw_claims": [
+  "TAPAS answers table questions without requiring annotated logical forms.",
+  "The model jointly predicts answer cells and an optional aggregation operator.",
+  "Table-aware embeddings preserve row and column structure after the table is serialized for transformer processing.",
+  "Pretraining uses Wikipedia tables together with related natural-language text.",
+  "Weak supervision is provided by final answer denotations.",
+  "Differentiable aggregation allows numeric operators to be learned without explicit operator labels.",
+  "Table-specific pretraining materially improves performance on all three evaluated downstream datasets.",
+  "Transfer from WikiSQL or SQA substantially improves performance on WikiTableQuestions.",
+  "Selected cells constitute an explicit intermediate localization of the evidence used for the answer.",
+  "The model cannot directly express arbitrary nested or compositional table operations."
+ ],
+ "source_url": "https://aclanthology.org/2020.acl-main.398.pdf",
+ "access": "full_text"
+}

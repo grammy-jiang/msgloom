@@ -1,0 +1,76 @@
+{
+ "paper_id": "doi-10-18653-v1-d16-1078",
+ "title": "Speculation and Negation Scope Detection via Convolutional Neural Networks",
+ "research_question": "Can convolutional neural networks using syntactic-path and positional features accurately identify the token-level scope of speculation and negation cues and generalize across biomedical text genres?",
+ "methodology": "The paper recasts scope detection as token classification relative to a known speculation or negation cue, assigning tokens labels that distinguish material before the cue, material at or after the cue, and tokens outside the scope. CNNs learn representations from constituency-tree or dependency-tree paths between the cue and each candidate token, combine them with relative-position features, and apply post-processing to enforce continuous scopes. Models are evaluated on the BioScope Abstracts, Clinical Records, and Full Papers subcorpora using token precision, recall and F1 as well as exact Percentage of Correct Scopes and boundary metrics; Abstracts use ten-fold cross-validation and also serve as the training domain for cross-domain experiments.",
+ "key_findings": [
+  {
+   "finding": "On BioScope Abstracts, the strongest reported configuration reaches 85.75% exact-scope accuracy for speculation and 77.14% for negation, outperforming the cited prior result for speculation and ranking second among the compared systems for negation.",
+   "evidence_type": "supported",
+   "section": "4.3 Experimental Results on Abstracts and 4.5 Comparison with the State-of-the-Art"
+  },
+  {
+   "finding": "Constituency-path features perform better for speculation on Abstracts, whereas dependency-path features perform better for negation, indicating that the two phenomena benefit from different syntactic representations.",
+   "evidence_type": "supported",
+   "section": "4.3 Experimental Results on Abstracts"
+  },
+  {
+   "finding": "The CNN models improve negation right-boundary detection markedly relative to the feature-based baseline, which accounts for an important part of the overall gain.",
+   "evidence_type": "supported",
+   "section": "4.3 Experimental Results on Abstracts"
+  },
+  {
+   "finding": "Models trained on Abstracts transfer comparatively well to Clinical Records, obtaining exact-scope scores of 73.92% for speculation and 89.66% for negation with the best reported configurations.",
+   "evidence_type": "supported",
+   "section": "4.4 Experimental Results on Clinical Records and Full Papers"
+  },
+  {
+   "finding": "Cross-domain performance is substantially worse on Full Papers, where the best reported exact-scope scores are 59.82% for speculation and 55.32% for negation.",
+   "evidence_type": "supported",
+   "section": "4.4 Experimental Results on Clinical Records and Full Papers"
+  },
+  {
+   "finding": "Longer and structurally more complex sentences, class imbalance, and difficulty determining right boundaries are identified as important sources of scope errors.",
+   "evidence_type": "supported",
+   "section": "4.3-4.4 Experimental Results"
+  },
+  {
+   "finding": "The authors conclude that token-level modeling is less effective at capturing long-distance syntactic dependencies than stronger tree-level approaches may be.",
+   "evidence_type": "supported",
+   "section": "4.5 Comparison with the State-of-the-Art and 5 Conclusion"
+  }
+ ],
+ "limitations": [
+  "The experiments are entirely in the biomedical BioScope domain and provide no evidence for workplace email or enterprise chat.",
+  "The task assumes a speculation or negation cue and focuses on its scope rather than jointly discovering cues and scopes end to end.",
+  "The method models speculation and grammatical negation, not broader business-action modality such as obligation, permission, commitment, conditional execution, or deadline semantics.",
+  "The system depends on automatically produced constituency and dependency parses and therefore inherits parser errors and domain-transfer weaknesses.",
+  "A heuristic post-processing stage forces scope continuity and cue inclusion, limiting the representation of genuinely discontinuous scope phenomena.",
+  "Cross-domain results degrade strongly on full scientific papers.",
+  "The annotations identify scope tokens but do not relate modal or negative scope to structured workplace action arguments, assignees, deadlines, or decisions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "abstracts_scope_accuracy": 0.99,
+  "syntax_representation_difference": 0.96,
+  "clinical_transfer": 0.98,
+  "full_paper_degradation": 0.99,
+  "long_distance_limitation": 0.95
+ },
+ "raw_claims": [
+  "Scope detection is formulated as deciding, for every token, whether it belongs to the scope of a specified cue.",
+  "The model uses syntactic paths between each candidate token and its cue together with relative-position information.",
+  "Both constituency-tree and dependency-tree variants are evaluated.",
+  "BioScope provides annotated speculation and negation cues and scopes in biomedical texts.",
+  "Abstracts are used for in-domain cross-validation and as training data for cross-domain tests.",
+  "The constituency variant is strongest for speculation on Abstracts, while the dependency variant is strongest for negation there.",
+  "Transfer to Clinical Records is considerably better than transfer to Full Papers.",
+  "The authors identify long-distance dependency modeling as an important direction for improvement."
+ ],
+ "source_url": "https://aclanthology.org/D16-1078.pdf",
+ "access": "full_text"
+}

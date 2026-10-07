@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1609-aaai-v39i14-33670",
+ "title": "Temporal Conjunctive Query Answering via Rewriting",
+ "research_question": "Can temporal conjunctive queries over description-logic knowledge bases be answered more efficiently by rewriting temporal formulas into combinations of ordinary conjunctive and union-of-conjunctive queries instead of constructing finite automata?",
+ "methodology": "The paper develops a temporal-query rewriting procedure based on temporal-logic expansion laws and distribution rules, producing a normal form whose answers can be computed inductively with existing CQ and UCQ answering procedures. The approach is presented for ALC temporal knowledge bases but applies whenever the underlying description logic provides an appropriate UCQ-answering procedure, and the authors establish correctness and worst-case complexity results. They also identify a syntactic fragment, TCQ_CQ*, whose membership can be checked in polynomial time and whose queries can be answered using only a CQ oracle. The implementation is integrated with Openllet and compared with a previous finite-automaton-based temporal query-answering implementation over 70 benchmark knowledge-base/query combinations.",
+ "key_findings": [
+  {
+   "finding": "The rewriting algorithm is sound and complete for the temporal conjunctive-query answering problem addressed by the paper and avoids constructing the finite automata required by the previous approach.",
+   "evidence_type": "supported",
+   "section": "Rewriting and Correctness"
+  },
+  {
+   "finding": "Across benchmark cases completed by both systems, the rewriting implementation reports an average speedup of 19.09 with standard deviation 45.79 relative to the finite-automaton baseline.",
+   "evidence_type": "supported",
+   "section": "Experimental Evaluation"
+  },
+  {
+   "finding": "The previous finite-automaton system times out on three benchmark instances under the ten-hour limit, whereas the rewriting system completes those instances in approximately 3.52, 5.72, and 7.88 hours.",
+   "evidence_type": "supported",
+   "section": "Experimental Evaluation"
+  },
+  {
+   "finding": "For several temporal formulas, rewriting eliminates expensive UCQ entailment checks entirely, and the evaluation attributes much of the observed speedup on the largest benchmarks to reducing UCQ-answering work.",
+   "evidence_type": "supported",
+   "section": "Analysis of CQ and UCQ Calls"
+  },
+  {
+   "finding": "The paper defines the proper syntactic subclass TCQ_CQ*, proves that membership in this fragment is decidable in polynomial time, and shows that members can be handled using only a CQ-answering oracle.",
+   "evidence_type": "supported",
+   "section": "CQ-Only Fragment"
+  },
+  {
+   "finding": "The evaluation artifacts, benchmark data, and reproducibility instructions are publicly archived, including a referenced Zenodo release.",
+   "evidence_type": "supported",
+   "section": "Experimental Evaluation / References"
+  }
+ ],
+ "limitations": [
+  "The temporal semantics and implementation are evaluated over finite traces rather than unrestricted infinite temporal data.",
+  "The current implementation restricts evaluated conjunctive queries to tree-shaped query structures.",
+  "The empirical comparison uses Openllet as the available UCQ reasoning engine, so performance conclusions may depend on that engine's implementation characteristics.",
+  "The experimental ecosystem is relatively small, consisting of two benchmark families and 70 knowledge-base/query combinations.",
+  "Past-time temporal operators are not supported and are left as future work.",
+  "TCQ_CQ* is a sufficient syntactic fragment for CQ-only answering but is not complete for every temporal conjunctive query that might admit a CQ-only treatment.",
+  "Worst-case reasoning for expressive description logics remains exponential even with rewriting, although the paper shows this is complexity-theoretically optimal for the considered setting.",
+  "The work is a symbolic temporal knowledge-base query-answering method rather than an adaptive RAG controller and does not address calibrated stopping or distribution shift."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rewriting_correctness": 0.98,
+  "average_speedup": 0.99,
+  "timeout_recovery": 0.99,
+  "reduced_ucq_work": 0.98,
+  "cq_only_fragment": 0.98,
+  "public_reproducibility_artifacts": 0.99
+ },
+ "raw_claims": [
+  "The proposed method rewrites temporal conjunctive queries instead of translating them into finite automata.",
+  "The rewritten normal form can be evaluated by combining answers from ordinary CQ and UCQ reasoning procedures.",
+  "The implementation is built on Openllet and uses the same underlying CQ and UCQ reasoning machinery as the earlier comparison system.",
+  "The empirical study covers 70 temporal knowledge-base and query combinations.",
+  "The rewriting implementation completes three cases for which the prior finite-automaton system exceeds the ten-hour timeout.",
+  "The mean reported speedup on mutually completed benchmark cases is 19.09.",
+  "Some rewritten queries require no UCQ entailment checks at all.",
+  "Membership in the TCQ_CQ* fragment can be decided in polynomial time.",
+  "Queries in TCQ_CQ* can be answered using a CQ oracle without requiring a UCQ oracle.",
+  "The authors provide archived code, benchmark data, and reproducibility material."
+ ],
+ "source_url": "https://ojs.aaai.org/index.php/AAAI/article/download/33670/35825",
+ "access": "full_text"
+}

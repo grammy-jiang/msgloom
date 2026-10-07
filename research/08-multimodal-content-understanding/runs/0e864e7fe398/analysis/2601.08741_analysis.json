@@ -1,0 +1,70 @@
+{
+ "paper_id": "2601.08741",
+ "title": "From Rows to Reasoning: A Retrieval-Augmented Multimodal Framework for Spreadsheet Understanding",
+ "research_question": "Can a retrieval-first multimodal architecture reason accurately and audibly over large multi-sheet spreadsheets by indexing and retrieving fine-grained spreadsheet evidence instead of placing an entire workbook into the model context?",
+ "methodology": "The framework, FRTR, decomposes workbooks into multiple retrieval units including rows, columns, sliding windows, and embedded images, then serializes and embeds those units for hybrid lexical and dense retrieval. Reciprocal Rank Fusion combines lexical and semantic rankings, after which the selected spreadsheet units and associated metadata are supplied to an LLM that returns an answer and reasoning information. The authors introduce FRTR-Bench, consisting of 30 synthetic enterprise-style Excel workbooks with large tables, multiple sheets, cross-sheet formulas, and embedded images, and questions annotated with explicit provenance such as cells, formulas, or image identifiers. Experiments compare FRTR with SpreadsheetLLM and full-context baselines and include retrieval-method and indexing-granularity ablations.",
+ "key_findings": [
+  {
+   "finding": "On FRTR-Bench, hybrid Reciprocal Rank Fusion retrieval reaches 0.74 answer accuracy compared with 0.59 for vector-only retrieval and 0.42 for lexical-only retrieval.",
+   "evidence_type": "supported",
+   "section": "§5.3.1 Retrieval Method Ablation"
+  },
+  {
+   "finding": "Combining row, column, window, and image retrieval units reaches 0.74 accuracy, compared with 0.52 for rows only, 0.18 for columns only, and 0.58 for windows only, supporting the value of multi-granular spreadsheet indexing.",
+   "evidence_type": "supported",
+   "section": "§5.3.2 Unit Granularity Ablation"
+  },
+  {
+   "finding": "On FRTR-Bench, the reported FRTR configuration reaches 0.74 accuracy while the paper's SpreadsheetLLM comparison reaches 0.24, although this comparison reflects the authors' adaptation and benchmark setup rather than SpreadsheetLLM's own original benchmark conditions.",
+   "evidence_type": "supported",
+   "section": "§5.1 and §5.3"
+  },
+  {
+   "finding": "On the SpreadsheetLLM benchmark, FRTR is competitive but does not exceed SpreadsheetLLM in raw accuracy for the strongest models; for example, the reported GPT-5 results are 0.87 for FRTR and 0.90 for SpreadsheetLLM.",
+   "evidence_type": "supported",
+   "section": "§5.2 SpreadsheetLLM Benchmark Evaluation"
+  },
+  {
+   "finding": "The benchmark and retrieval pipeline retain explicit within-workbook provenance through sheet locations, cell references, formulas, and image identifiers, but this provenance addresses a particular workbook state rather than lineage across workbook revisions.",
+   "evidence_type": "supported",
+   "section": "§4 FRTR-Bench and §5 Discussion"
+  }
+ ],
+ "limitations": [
+  "FRTR-Bench contains synthetic enterprise-style workbooks rather than naturally evolving production workbooks.",
+  "The benchmark is English-only.",
+  "The benchmark contains 30 workbooks and 157 questions, limiting the diversity of revision patterns and real organizational spreadsheet practices it can represent.",
+  "The system generates formulas and cell references but does not execute formulas or modify workbooks.",
+  "Initial workbook indexing has a one-time cost even though subsequent retrieval is reported to be fast.",
+  "Image-dependent question accuracy is reported at 65%, leaving substantial multimodal headroom.",
+  "Sheet names, A1-style cell addresses, and image identifiers provide provenance inside one workbook version but do not establish stable identities when rows, columns, sheets, formulas, or images are inserted, deleted, moved, or renamed.",
+  "The paper does not model revised-workbook provenance or correspondences between elements in successive workbook versions."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "hybrid_retrieval_ablation": 1.0,
+  "multigranular_ablation": 1.0,
+  "frtr_bench_gain": 0.99,
+  "spreadsheetllm_parity_nuance": 1.0,
+  "within_workbook_provenance": 0.97,
+  "no_revision_lineage": 0.98
+ },
+ "raw_claims": [
+  "FRTR indexes spreadsheet rows, columns, localized windows, and embedded images as separate retrieval units.",
+  "The retrieval stage combines lexical and dense rankings using Reciprocal Rank Fusion.",
+  "FRTR-Bench contains 30 synthetic enterprise-style workbooks with 155 sheets and more than 3.9 million cells.",
+  "Benchmark questions include provenance annotations that can identify supporting cells, formulas, or images.",
+  "Hybrid retrieval outperforms either dense-only or lexical-only retrieval in the reported ablation.",
+  "Using all indexing granularities outperforms each single-granularity alternative in the reported ablation.",
+  "FRTR is roughly comparable to SpreadsheetLLM on SpreadsheetLLM's own benchmark but has lower raw accuracy for several high-capacity models.",
+  "The framework retrieves evidence rather than compressing an entire workbook into one context.",
+  "The paper reports 65% accuracy on image-dependent FRTR-Bench questions.",
+  "The framework does not provide persistent spreadsheet-element identities across different revisions of a workbook."
+ ],
+ "source_url": "https://arxiv.org/html/2601.08741",
+ "access": "full_text"
+}

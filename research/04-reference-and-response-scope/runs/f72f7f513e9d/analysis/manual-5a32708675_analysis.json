@@ -1,0 +1,76 @@
+{
+ "paper_id": "manual-5a32708675",
+ "title": "Overview of the NTCIR-16 QA Lab-PoliInfo-3 Task",
+ "research_question": "How should real-world Japanese political-information tasks, including the alignment of batched assembly questions with their corresponding answers, be operationalized, benchmarked, and evaluated in the NTCIR-16 QA Lab-PoliInfo-3 shared task?",
+ "methodology": "The paper defines four shared subtasks and reports their datasets, evaluation procedures, baselines, submissions, and formal-run results; the analysis here focuses on QA Alignment. QA Alignment uses Tokyo Metropolitan Assembly minutes, with 143,798 training utterances from 2011-2016, 24,302 dry-run test utterances from 2019, and 27,187 formal-run test utterances from 2020, while the rearranged Main Meeting Net Report supplies gold question-answer correspondence. Gold and system QAID groups are converted into sentence-level alignment pairs by taking every question-sentence and answer-sentence combination within each corresponding group, after which precision, recall, and F-measure are computed. The organizer baseline segments question and answer speeches with cue-phrase regular expressions, represents segments with character unigrams and bigrams, and iteratively pairs mutually most-similar question and answer segments.",
+ "key_findings": [
+  {
+   "finding": "The task is explicitly motivated by assembly sessions in which one member asks several questions together and officials subsequently answer them, leaving the original transcript without direct adjacency between each question and its answer.",
+   "evidence_type": "supported",
+   "section": "Section 3.1.1"
+  },
+  {
+   "finding": "The gold representation groups potentially multiple question sentences and multiple answer sentences under a common correspondence identifier, and evaluation expands each group into all cross-product question-answer sentence pairs.",
+   "evidence_type": "supported",
+   "section": "Section 3.1.3, Tables 2 and 3"
+  },
+  {
+   "finding": "Formal-run submission 314 from ditlab obtained F-measure 0.8329, precision 0.8703, and recall 0.8037, whereas the organizer baseline obtained F-measure 0.6166, precision 0.5991, and recall 0.6437.",
+   "evidence_type": "supported",
+   "section": "Section 7, Table 11"
+  },
+  {
+   "finding": "The formal run received 54 on-time QA Alignment submissions plus one late submission from three participating teams, providing substantial system-level comparison on the same benchmark.",
+   "evidence_type": "supported",
+   "section": "Section 6, Table 10"
+  },
+  {
+   "finding": "Participating systems used materially different alignment strategies: AKBL combined semantic segmentation with BM25 similarity and Hungarian matching, ditlab used heuristic paragraph construction and matching features, and Forst used clue-expression segmentation followed by similarity-based mapping.",
+   "evidence_type": "supported",
+   "section": "Section 8"
+  },
+  {
+   "finding": "The evaluation is span-sensitive rather than dependent on arbitrary QAID numbering: two systems can use different identifiers yet receive credit for the same underlying question-sentence to answer-sentence links.",
+   "evidence_type": "supported",
+   "section": "Section 3.1.3"
+  }
+ ],
+ "limitations": [
+  "The QA Alignment benchmark is restricted to Tokyo Metropolitan Assembly minutes, so its results do not establish robustness across assemblies with different discourse conventions.",
+  "The gold standard is derived from an externally rearranged Main Meeting Net Report, meaning the target correspondence structure incorporates that publication's editorial organization.",
+  "Expanding each QAID group into the full cross-product of its question and answer sentences does not identify finer proposition-to-proposition relations inside a multi-sentence group.",
+  "Consequently, a response that addresses only part of a multi-proposition question is not explicitly represented as a partial reply at proposition level by the evaluation scheme.",
+  "Although the example gold data contain sentences outside correspondence groups, the overview does not analyze these specifically as unanswered questions, non-answer material, or other discourse phenomena.",
+  "The task evaluates correspondence and span recovery rather than whether an answer completely satisfies every informational obligation in its antecedent.",
+  "The overview paper does not provide organizer or participant implementation code as part of the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "batch_question_structure_motivates_task": 0.99,
+  "multi_sentence_groups_use_cross_product_evaluation": 0.99,
+  "formal_run_scores": 0.99,
+  "many_shared_task_submissions": 0.99,
+  "systems_use_diverse_alignment_methods": 0.98,
+  "evaluation_ignores_identifier_names": 0.99
+ },
+ "raw_claims": [
+  "QA Alignment is intended to associate each assembly question with its corresponding answer.",
+  "Assembly members can ask several questions in a batch before officials provide their answers.",
+  "The benchmark uses Tokyo Metropolitan Assembly minutes and an official rearranged report as its correspondence gold standard.",
+  "Training data cover assembly minutes from 2011 through 2016.",
+  "The formal-run test data use 2020 assembly minutes.",
+  "Corresponding question and answer material receives the same QAID in the gold representation.",
+  "A multi-sentence question group and multi-sentence answer group are evaluated as all pairwise sentence alignments between the two groups.",
+  "Precision, recall, and F-measure are computed over those sentence-level alignment pairs.",
+  "The leaderboard metric for QA Alignment is F-measure.",
+  "The organizer baseline combines rule-based segmentation with character n-gram similarity.",
+  "Formal-run systems substantially exceeded the organizer baseline on the benchmark.",
+  "The benchmark does not provide proposition-level labels for which part of a multi-proposition question is addressed by which part of an answer."
+ ],
+ "source_url": "https://research.nii.ac.jp/ntcir/workshop/OnlineProceedings16/pdf/ntcir/01-NTCIR16-OV-QALAB-KimuraY.pdf",
+ "access": "full_text"
+}

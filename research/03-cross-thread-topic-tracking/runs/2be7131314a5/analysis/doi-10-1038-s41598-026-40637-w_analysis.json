@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-1038-s41598-026-40637-w",
+ "title": "Conformal selective prediction with cost aware deferral for safe clinical triage under distribution shift",
+ "research_question": "Can calibrated prediction, conformal uncertainty sets, and cost-aware deferral be combined to make early-sepsis triage safer under both in-distribution and shifted clinical data?",
+ "methodology": "The study builds an early-sepsis prediction pipeline on the PhysioNet 2019 data using a neural classifier followed by probability calibration. Split conformal prediction, gender-stratified Mondrian conformal prediction, and an importance-weighted conformal variant are used to construct uncertainty-aware predictions under different assumptions about distribution shift. A selective prediction rule defers uncertain cases according to a threshold chosen to minimize an explicit clinical cost function. Performance is evaluated on an in-distribution test set and a later-admission out-of-distribution test set using discrimination, calibration, conformal coverage, selective error, subgroup coverage, and expected-cost measures.",
+ "key_findings": [
+  {
+   "finding": "At 80% prediction coverage, selective prediction is reported to reduce error on retained cases by 49.6% in-distribution and 46.7% out-of-distribution.",
+   "evidence_type": "supported",
+   "section": "Experimental setup and results"
+  },
+  {
+   "finding": "Nominal 90% conformal coverage remains close to target in-distribution but degrades under distribution shift, with the importance-weighted variant reported as the most robust of the tested conformal strategies.",
+   "evidence_type": "supported",
+   "section": "Experimental setup and results"
+  },
+  {
+   "finding": "Gender-stratified Mondrian conformal prediction reduces the reported subgroup coverage gap to 1.4 percentage points.",
+   "evidence_type": "supported",
+   "section": "Experimental setup and results"
+  },
+  {
+   "finding": "The reported expected clinical cost is 0.5640 in-distribution and 0.7053 out-of-distribution under the evaluated decision setup.",
+   "evidence_type": "supported",
+   "section": "Conclusion"
+  },
+  {
+   "finding": "The calibrated model reports expected calibration error of 0.016 in-distribution and 0.030 out-of-distribution, indicating deterioration but still relatively small measured calibration error after temporal shift.",
+   "evidence_type": "supported",
+   "section": "Conclusion"
+  },
+  {
+   "finding": "The paper argues that explicit deferral can improve safety metrics but also creates an operational burden because deferred cases must be handled by clinical staff or another downstream process.",
+   "evidence_type": "supported",
+   "section": "Limitations and clinical implications"
+  }
+ ],
+ "limitations": [
+  "This paper is outside the requested substantive domain: it studies clinical triage, not event coreference, conversation linking, enterprise communication, or organizational workflow continuity.",
+  "The evaluation uses a public sepsis dataset and a temporal split rather than prospective deployment across independent hospitals.",
+  "Selective deferral can transfer workload to clinicians and may delay care if the receiving workflow is not adequately resourced.",
+  "The authors state that the public implementation is not a substitute for site-specific validation.",
+  "Broader evaluation across institutions, data modalities, and base learners remains necessary.",
+  "Prospective decision-curve analysis and user studies are identified as further validation needs."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "selective_error_reduction": 0.99,
+  "weighted_conformal_robustness": 0.98,
+  "subgroup_coverage_gap": 0.99,
+  "reported_expected_cost": 0.99,
+  "calibration_under_shift": 0.99,
+  "deferral_operational_burden": 0.98,
+  "topic_mismatch": 1.0
+ },
+ "raw_claims": [
+  "The framework combines calibrated probabilistic prediction, conformal prediction, and selective deferral.",
+  "The application is early detection and triage of sepsis rather than communication-event identity.",
+  "The study uses the PhysioNet 2019 sepsis dataset.",
+  "The analytic sample contains 2,155 patients with a reported sepsis prevalence of 7.0%.",
+  "Later-admitted patients are used to create an out-of-distribution evaluation split.",
+  "Split conformal, Mondrian conformal, and importance-weighted conformal variants are compared.",
+  "Selective prediction allows the system to defer cases judged too uncertain for automatic handling.",
+  "At a fixed 80% retained coverage, the reported prediction error falls substantially in both evaluated distributions.",
+  "Distribution shift weakens ordinary conformal coverage, while importance weighting improves robustness in the reported experiment.",
+  "Deferral safety gains depend on an operational pathway capable of handling deferred patients.",
+  "The paper provides public code and uses a publicly available dataset."
+ ],
+ "source_url": "https://www.nature.com/articles/s41598-026-40637-w",
+ "access": "full_text"
+}

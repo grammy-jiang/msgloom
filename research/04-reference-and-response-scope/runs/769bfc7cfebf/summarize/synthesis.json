@@ -1,0 +1,342 @@
+{
+ "topic": "reference resolution to propositions and the semantic scope of replies in work communication",
+ "paper_count": 13,
+ "executive_summary": "The reviewed literature supports treating proposition-, event-, and discourse-level reference as a problem distinct from ordinary entity coreference. Empirical systems successfully use mention ranking, cluster ranking, pairwise candidate comparison, discourse-specific features, and combinations of syntactic and contextual evidence, but no single formulation is established as universally superior. Dialogue discourse deixis is often local, yet other event-reference tasks contain longer-distance antecedents, so proximity is not universally adequate. Exact antecedent boundaries, discontinuous or composite antecedents, and pronominal abstract reference remain difficult. Formal question work supports partial-answer and subordinate-question relevance, principally through the QUD framework, but the corpus does not directly establish semantic scope for approvals or multi-question replies in workplace communication. Engineering recommendations therefore require validation rather than being treated as empirical findings.",
+ "themes": [
+  "Abstract, propositional, event, fact, situation, and discourse-deictic reference requires semantic treatment beyond ordinary nominal/entity coreference [doi-10-1162-coli-a-00327] [doi-10-18653-v1-2022-emnlp-main-778].",
+  "Several successful computational approaches explicitly compare or rank antecedent candidates rather than resolving reference through one uniform modeling recipe [1706.02256] [doi-10-18653-v1-2021-naacl-main-329] [manual-555fa5b6e8] [manual-5c0971730d].",
+  "Antecedent locality varies by reference type and domain: strong recency patterns occur in dialogue discourse deixis, while other event-reference tasks contain materially longer-distance links [doi-10-18653-v1-2022-emnlp-main-778] [manual-555fa5b6e8] [manual-5c0971730d].",
+  "Abstract antecedents can be difficult to delimit and can sometimes involve multi-sentence, discontinuous, or semantically composite discourse material [doi-10-1162-coli-a-00327] [manual-8b8a394daa].",
+  "Question structure provides a basis for modeling partial answers and strategically subordinate questions, but the supplied corpus does not directly validate workplace approval or multi-question reply scope [doi-10-3765-sp-5-6] [doi-10-1007-bf00351935] [doi-10-1007-bf00983299].",
+  "Syntactic information is useful but defeasible: its contribution depends on construction, dataset, representation, and task [doi-10-3115-v1-d14-1056] [1706.02256] [manual-555fa5b6e8] [manual-5c0971730d].",
+  "End-to-end reference quality depends substantially on candidate generation, mention detection, antecedent selection, and upstream representations rather than on a single isolated resolution classifier [doi-10-18653-v1-2021-naacl-main-329] [doi-10-18653-v1-2022-emnlp-main-778] [doi-10-18653-v1-p17-1009]."
+ ],
+ "findings": [
+  {
+   "statement": "Non-nominal reference introduces difficulties not captured by ordinary entity coreference: candidate antecedents may denote events, propositions, facts, situations, descriptions, or speech acts; their textual boundaries can be unclear; and the same antecedent material can support different abstract interpretations depending on context.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 3.2.1, 4.1, 4.3, 5, and 6"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "Introduction and limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Several successful systems in the reviewed corpus formulate antecedent resolution through explicit comparison among candidates: mention ranking for abstract anaphora and event coreference, cluster ranking for split antecedents, and pairwise candidate comparison for event-reference tasks. The reviewed studies do not establish that these formulations are superior to every possible whole-message classification formulation.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1706.02256",
+     "section": "Model and experiments"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-p17-1009",
+     "section": "Model"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Model"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Twin-Candidate Resolution"
+    },
+    {
+     "paper_id": "manual-5c0971730d",
+     "section": "Experiments: Twin-Candidate Resolution"
+    }
+   ]
+  },
+  {
+   "statement": "Proximity is a strong cue in some dialogue discourse-deixis data but is not a universally adequate antecedent-selection heuristic across the reviewed reference types and domains. More than 90 percent of discourse-deictic antecedents in one dialogue evaluation occurred within four utterances, while event-NP reference exhibited substantially longer distances and a most-recent-verb baseline performed poorly for event pronouns.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "5.1 Analysis by Distance and 5.2 Ablation Experiments"
+    },
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Data Analysis"
+    },
+    {
+     "paper_id": "manual-5c0971730d",
+     "section": "Experiments: Baselines"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+     "section": "Section 8.1"
+    }
+   ]
+  },
+  {
+   "statement": "Abstract-reference antecedents are not always reducible to one simple contiguous local span. The survey reports discontinuous and multi-sentence antecedents as under-modeled, while the Spanish theoretical analysis allows coherent sums of multiple propositions to function as abstract discourse referents. Split-antecedent entity-coreference work provides only analogous transfer evidence that computational representations can associate one anaphor with multiple antecedent clusters; it does not directly establish multi-proposition abstract-reference or workplace reply-scope behavior.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Section 6"
+    },
+    {
+     "paper_id": "manual-8b8a394daa",
+     "section": "Proposed resolution procedure, rhetorical structure analysis, and discourse-topic analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Model and experiments"
+    }
+   ]
+  },
+  {
+   "statement": "The clearest direct support in this corpus for partial-answer scope comes from the QUD framework: an assertion can be relevant by supplying a partial answer, and a subordinate question can be relevant because answering it contributes to a strategy for answering a broader question. Karttunen supplies a compositional semantics of questions in terms of answer propositions, while Resolving questions, II distinguishes questions, propositions, and facts and treats resolution as context-sensitive; neither analysis by itself directly demonstrates partial workplace reply scope.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-3765-sp-5-6",
+     "section": "Relevance and Questions and discourse strategies"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00351935",
+     "section": "Question semantics and Alternative Questions and Wh-questions"
+    },
+    {
+     "paper_id": "doi-10-1007-bf00983299",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "Exact antecedent boundaries remain a material modeling and annotation problem. The survey reports low or moderate agreement in several annotation efforts, and the dialogue discourse-deixis system deliberately links to whole utterances even though the true antecedent can be a clause or other sub-utterance span. Whether exact span recovery is necessary depends on the downstream application.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 4.1, 4.3, and 6"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "Limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Syntactic information is useful but not uniformly beneficial. Structured syntactic representations substantially improved the reviewed event-reference systems, and shell-noun-specific cues helped some nouns, but stricter syntactic constraints harmed versatile shell nouns and removing or disrupting syntactic information improved performance on the broader ARRAU abstract-anaphora evaluation.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-555fa5b6e8",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "paper_id": "manual-5c0971730d",
+     "section": "Experiments: Composite Kernel"
+    },
+    {
+     "paper_id": "doi-10-3115-v1-d14-1056",
+     "section": "Evaluation and Results"
+    },
+    {
+     "paper_id": "1706.02256",
+     "section": "Ablation analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Joint modeling can improve related reference decisions, but the benefit is architecture- and task-dependent. Joint event trigger, anaphoricity, and antecedent learning improved all three evaluated event tasks, whereas joint optimization in the split-antecedent system did not improve the ordinary single-antecedent and non-referring components and was generally weaker overall than its pre-trained configuration.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-p17-1009",
+     "section": "Sections 4.2 and 4.3"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+     "section": "Experiments: predicted setting"
+    }
+   ]
+  },
+  {
+   "statement": "The empirical base is insufficient to infer production behavior for workplace approval scope, multi-question email replies, or resulting work-state transitions. The dialogue benchmarks contain useful discourse-deixis evidence but have limited training data, genre variation, annotation limitations, and no direct evaluation of the msgloom workplace decisions described in the project context.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2021-codi-sharedtask-1",
+     "section": "Sections 3.4 and 8.4 and limitations"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2022-emnlp-main-778",
+     "section": "Limitations"
+    },
+    {
+     "paper_id": "doi-10-1162-coli-a-00327",
+     "section": "Sections 4.3 and 6"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Locality of antecedents",
+   "papers": [
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "manual-555fa5b6e8",
+    "manual-5c0971730d"
+   ],
+   "note": "Dialogue discourse deixis is strongly local in the evaluated CODI-CRAC data, and a recency-window ablation materially affects performance. In contrast, event-NP reference can span substantially longer distances, while a most-recent-verb baseline is poor for event-pronoun resolution. These results concern different reference types and domains, so they support conditional rather than universal locality assumptions."
+  },
+  {
+   "topic": "Value of syntactic constraints",
+   "papers": [
+    "1706.02256",
+    "doi-10-3115-v1-d14-1056",
+    "manual-555fa5b6e8",
+    "manual-5c0971730d"
+   ],
+   "note": "Structured syntactic representations strongly improve the two reviewed event-reference systems, and family-specific shell-noun cues help some nouns. However, strict family constraints hurt syntactically versatile shell nouns, and explicit syntax can reduce performance on unrestricted ARRAU abstract anaphora. Syntax is therefore useful evidence but not a universally reliable hard constraint."
+  },
+  {
+   "topic": "Benefits of joint learning",
+   "papers": [
+    "doi-10-18653-v1-p17-1009",
+    "doi-10-18653-v1-2021-naacl-main-329"
+   ],
+   "note": "Joint learning improves trigger detection, anaphoricity, and event coreference in the TAC KBP study, whereas joint optimization in the split-antecedent system does not improve the ordinary components and performs less well overall than the pre-trained variant. The evidence does not support a general rule that tighter joint optimization is always preferable."
+  },
+  {
+   "topic": "Semantic ontology of questions",
+   "papers": [
+    "doi-10-1007-bf00351935",
+    "doi-10-1007-bf00983299"
+   ],
+   "note": "Karttunen analyzes questions through sets of propositions corresponding to true answers. Resolving questions, II explicitly distinguishes questions from propositions and facts and rejects simply reducing questions to their answers. Both support structured question semantics, but their ontological commitments differ. The latter evidence is abstract-only in the supplied analysis."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G1",
+   "description": "Direct empirical evidence is still missing for proposition-level agreement, rejection, approval, clarification, and answer scope in authentic workplace email or enterprise chat, especially cases where one short response applies to only part of a preceding message.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"agreement scope\" email dialogue proposition OR \"partial agreement\" workplace communication OR \"reply scope\" email approval"
+  },
+  {
+   "id": "G2",
+   "description": "The corpus does not establish a validated annotation and evaluation scheme for mapping workplace responses to exact proposition or span targets while representing exact, partial, ambiguous, unsupported, discontinuous, and potentially multiple antecedents.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G3",
+   "description": "Direct evidence remains insufficient for aligning replies to one or more questions when a preceding workplace message contains multiple questions, requests, or alternatives, including detection of questions that remain unanswered.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"multiple questions\" dialogue answer alignment OR \"partial answer detection\" dialogue OR email \"question answer alignment\""
+  },
+  {
+   "id": "G4",
+   "description": "It remains open whether and how a workplace response should be modeled as targeting a composite or multi-proposition antecedent. The corpus supports composite abstract discourse referents theoretically and multi-antecedent entity reference analogically, but provides no direct evaluation of multi-proposition reply scope in work communication.",
+   "classification": "ACADEMIC",
+   "priority": "MEDIUM",
+   "suggested_query": "\"abstract anaphora\" multiple antecedents dialogue OR \"propositional anaphora\" composite antecedent OR \"agreement target\" multiple propositions"
+  },
+  {
+   "id": "G5",
+   "description": "The appropriate abstention, ambiguity, and missing-antecedent policy for msgloom has not been validated. In particular, the relative cost of an over-broad approval or commitment link versus leaving a link unresolved is a product-risk assumption that requires an explicit cost model and dedicated benchmark rather than being inferred from these papers.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G6",
+   "description": "The corpus does not establish how reference-scope errors propagate into downstream work-state transitions such as approved, rejected, revoked, completed, or still-open status. That validation belongs primarily to Topic 06 after Topic 04 produces scoped reference relations.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH"
+  }
+ ],
+ "actionable_insights": [
+  "Design recommendation, not an evidence-established mandate: represent antecedent candidates explicitly as spans or structured propositions and evaluate ranking or candidate-comparison baselines, because several successful reviewed systems use mention ranking, cluster ranking, or pairwise comparison [1706.02256] [doi-10-18653-v1-2021-naacl-main-329] [manual-555fa5b6e8] [manual-5c0971730d].",
+  "Use Topic 01 quote/source-span evidence and Topic 02 Topic-span evidence as candidate-generation constraints rather than asking Topic 04 to rediscover those structures; then evaluate semantic antecedent selection separately. This is a project design recommendation consistent with evidence that candidate generation and upstream representations materially affect end-to-end resolution [doi-10-18653-v1-2021-naacl-main-329] [doi-10-18653-v1-p17-1009].",
+  "Treat recency as a strong feature and possible efficiency optimization, but validate any hard window against msgloom data or adversarial fixtures. Proximity alone is not a universally adequate antecedent-selection heuristic across the reviewed reference types and domains [doi-10-18653-v1-2022-emnlp-main-778] [manual-555fa5b6e8] [manual-5c0971730d].",
+  "Prefer proposition- or sub-message-level targets when the product decision requires that granularity, while allowing coarser targets only where their loss of precision is demonstrably harmless. Exact boundary recovery is difficult, so evaluation should score both target identity and boundary quality [doi-10-1162-coli-a-00327] [doi-10-18653-v1-2022-emnlp-main-778].",
+  "Evaluate a representation capable of multiple, discontinuous, or composite antecedent propositions, but treat multi-proposition reply scope as a msgloom hypothesis rather than an established response model. Direct workplace evidence is absent; support comes from abstract-reference theory and survey evidence, with split-antecedent entity reference only as analogous transfer evidence [doi-10-1162-coli-a-00327] [manual-8b8a394daa] [doi-10-18653-v1-2021-naacl-main-329].",
+  "Represent response relation and response scope as separate fields so that answer, agreement, rejection, clarification, or condition labels do not by themselves imply which proposition was affected. The QUD literature supports partial-answer structure but does not validate this exact msgloom schema [doi-10-3765-sp-5-6].",
+  "Preserving ambiguity, multiple candidates, or an unresolved outcome when evidence is insufficient is a design recommendation motivated by the observed difficulty of antecedent boundaries and candidate selection, not an experimentally established operational policy of these studies [doi-10-1162-coli-a-00327] [doi-10-18653-v1-2022-emnlp-main-778]. Missing-context cases should be handed to Topic 07 rather than silently guessed.",
+  "Do not assume that over-broad approval or commitment links are empirically more costly than abstention. Define that asymmetry from product requirements and measure both false broadening and false non-resolution in a dedicated decision-oriented benchmark; the reviewed papers do not establish the cost ordering [doi-10-18653-v1-2021-codi-sharedtask-1] [doi-10-1162-coli-a-00327].",
+  "Build engineering fixtures that separately test wrong antecedent, wrong span boundary, wrong semantic relation, partial-scope broadening, unresolved-but-supported reference, unsupported antecedent, and multiple-question coverage. Existing evaluations show substantial effects from candidate and mention errors, but do not provide this workplace-specific benchmark [doi-10-18653-v1-2021-naacl-main-329] [doi-10-18653-v1-2022-emnlp-main-778]."
+ ],
+ "confidence_summary": "Confidence is HIGH that proposition/event/discourse reference is materially different from ordinary nominal coreference; that antecedent selection and boundary identification are central difficulties; that several successful systems explicitly rank or compare antecedent candidates; that locality and syntactic cues are task-dependent; and that the QUD account directly licenses partial answers and strategically subordinate questions. Confidence is MEDIUM for transferring composite-antecedent representations to msgloom because the direct evidence is theoretical or comes from adjacent reference tasks. Confidence is LOW for any claim about production workplace behavior. The reviewed evidence does not establish production accuracy or failure costs for approval scope, multi-question email replies, or downstream work-state transitions.",
+ "limitations": [
+  "None of the reviewed studies directly evaluates msgloom's full target: proposition-level reply scope for approvals, agreements, rejections, conditions, and unanswered work items in high-volume Outlook or Teams communication [doi-10-18653-v1-2021-codi-sharedtask-1] [doi-10-18653-v1-2022-emnlp-main-778].",
+  "Several empirical datasets are small, sparse in the target phenomenon, out of domain, or heterogeneous in annotation and evaluation, limiting cross-paper numerical comparison [1706.02256] [doi-10-1162-coli-a-00327] [doi-10-18653-v1-2021-naacl-main-329] [doi-10-18653-v1-2021-codi-sharedtask-1].",
+  "The formal question-semantics and QUD papers provide conceptual structure rather than quantitative validation of workplace reply interpretation [doi-10-1007-bf00351935] [doi-10-1007-bf00983299] [doi-10-3765-sp-5-6].",
+  "The evidence for composite abstract referents in manual-8b8a394daa is qualitative and theoretical, and its proposed processing sequence is explicitly hypothetical [manual-8b8a394daa].",
+  "The split-antecedent results concern entity reference and are only analogous transfer evidence for multi-target or composite proposition representations [doi-10-18653-v1-2021-naacl-main-329].",
+  "The strongest dialogue discourse-deixis results resolve to utterances even though some true antecedents are smaller spans, so reported resolution performance does not directly measure the proposition-level granularity required by msgloom [doi-10-18653-v1-2022-emnlp-main-778].",
+  "One question-semantics paper is available only through its abstract in the supplied analysis, limiting confidence in detailed comparison of its formal claims [doi-10-1007-bf00983299].",
+  "The corpus cannot determine the business cost asymmetry between false broadening and abstention; that must be established through product requirements or dedicated evaluation rather than inferred from reference-resolution accuracy [doi-10-1162-coli-a-00327]."
+ ],
+ "gap_status": [
+  {
+   "id": "G1",
+   "status": "open",
+   "note": "The corpus contains dialogue discourse-deixis and formal question work but no direct workplace evaluation of proposition-level agreement, approval, rejection, or clarification scope.",
+   "evidence": [
+    "doi-10-18653-v1-2021-codi-sharedtask-1",
+    "doi-10-18653-v1-2022-emnlp-main-778",
+    "doi-10-3765-sp-5-6"
+   ]
+  },
+  {
+   "id": "G2",
+   "status": "open",
+   "note": "The corpus documents antecedent-boundary difficulty and coarse utterance-level resolution but does not provide a validated msgloom annotation/evaluation scheme covering exact, partial, ambiguous, unsupported, discontinuous, and multiple targets.",
+   "evidence": [
+    "doi-10-1162-coli-a-00327",
+    "doi-10-18653-v1-2022-emnlp-main-778"
+   ]
+  },
+  {
+   "id": "G3",
+   "status": "open",
+   "note": "The QUD literature establishes partial-answer relevance conceptually, but direct empirical evidence for multi-question workplace replies and detection of questions left unanswered is absent.",
+   "evidence": [
+    "doi-10-3765-sp-5-6",
+    "doi-10-1007-bf00351935",
+    "doi-10-1007-bf00983299"
+   ]
+  },
+  {
+   "id": "G4",
+   "status": "open",
+   "note": "Composite abstract referents are supported theoretically and multi-antecedent entity reference is demonstrated computationally, but no reviewed paper directly evaluates one workplace response against multiple or composite proposition targets.",
+   "evidence": [
+    "doi-10-1162-coli-a-00327",
+    "manual-8b8a394daa",
+    "doi-10-18653-v1-2021-naacl-main-329"
+   ]
+  },
+  {
+   "id": "G5",
+   "status": "open",
+   "note": "No reviewed study establishes the required abstention policy, calibration threshold, missing-context behavior, or relative cost of false broadening versus unresolved output for msgloom.",
+   "evidence": [
+    "doi-10-1162-coli-a-00327",
+    "doi-10-18653-v1-2021-codi-sharedtask-1",
+    "doi-10-18653-v1-2022-emnlp-main-778"
+   ]
+  },
+  {
+   "id": "G6",
+   "status": "open",
+   "note": "The corpus does not evaluate how reference-scope decisions cause or prevent downstream work-state changes. This remains a Topic 06 handoff rather than a resolved Topic 04 literature question.",
+   "evidence": [
+    "doi-10-3765-sp-5-6",
+    "doi-10-1162-coli-a-00327"
+   ]
+  }
+ ]
+}

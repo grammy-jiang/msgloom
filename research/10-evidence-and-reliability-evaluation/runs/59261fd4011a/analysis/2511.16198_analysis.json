@@ -1,0 +1,68 @@
+{
+ "paper_id": "2511.16198",
+ "title": "SemanticCite: Citation Verification with AI-Powered Full-Text Analysis and Evidence-Based Reasoning",
+ "research_question": "Can full-text retrieval and multi-class evidence reasoning provide scalable, interpretable verification of whether scholarly citations actually support the claims attributed to them?",
+ "methodology": "SemanticCite parses full-text papers, chunks their text, and combines dense semantic retrieval with BM25 lexical retrieval before neural reranking selects the strongest evidence passages. An LLM then produces structured outputs assigning one of four evidence states—Supported, Partially Supported, Unsupported, or Uncertain—along with confidence, reasoning, and evidence. The authors construct a citation dataset spanning eight disciplines and fine-tune Qwen3 1.7B, 4B, and 8B models with QLoRA. Evaluation on a stratified 112-example test set reports ordinary and ordinally weighted classification metrics as well as output-format and text-generation metrics.",
+ "key_findings": [
+  {
+   "finding": "The 4B model achieved 66.36% standard accuracy and 83.64% weighted accuracy, while the 8B model achieved 66.07% and 83.93%, respectively, showing that many errors were close to the correct category in the ordinal four-class scheme.",
+   "evidence_type": "supported",
+   "section": "4.5.3 Classification Task Performance"
+  },
+  {
+   "finding": "All three fine-tuned models generated valid preprocessing outputs for all 112 test examples and exceeded 93% character similarity to preprocessing references.",
+   "evidence_type": "supported",
+   "section": "4.5.2 Preprocessing Task Performance"
+  },
+  {
+   "finding": "The 4B model provided the strongest reported balance of classification and generated-output behavior, with 90.01% character similarity and a mean output-length difference of minus 0.7 words while remaining close to the 8B model in weighted accuracy.",
+   "evidence_type": "supported",
+   "section": "4.5.4 Key Findings"
+  },
+  {
+   "finding": "The four-class scheme explicitly distinguishes complete support from support that omits qualifications or context and provides an Uncertain state instead of forcing ambiguous evidence into a binary decision.",
+   "evidence_type": "supported",
+   "section": "3.2 Classification Scheme"
+  },
+  {
+   "finding": "The paper reports that untuned base Qwen3 models performed substantially worse, produced poorly calibrated output lengths, and frequently failed to satisfy the required structured JSON format, supporting the value of task-specific fine-tuning.",
+   "evidence_type": "supported",
+   "section": "4.5.5 Implications"
+  }
+ ],
+ "limitations": [
+  "Ground-truth labels are generated exclusively with GPT-4.1 rather than independent human experts, creating potential systematic annotation bias and leaving inter-annotator reliability unmeasured.",
+  "The dataset is restricted to English-language, open-access publications and focuses on papers from 2019 through 2023.",
+  "Multi-reference citations are evaluated source by source rather than by jointly reasoning over the collective evidence, so complementary sources can be misclassified as only partially supportive.",
+  "When full text is unavailable the system falls back to abstracts, which can omit supporting, qualifying, or contradictory evidence.",
+  "The current verifier is text-only and does not evaluate support conveyed through figures, tables, or mathematical expressions.",
+  "Large-scale full-document processing remains computationally demanding even with the smaller fine-tuned models."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "classification_results": 0.99,
+  "preprocessing_results": 0.99,
+  "four_class_evidence_scheme": 0.99,
+  "fine_tuning_effect": 0.97,
+  "multi_reference_limitation": 0.99,
+  "annotation_bias_limitation": 0.99
+ },
+ "raw_claims": [
+  "SemanticCite verifies a citation against retrieved passages from the full referenced document when full text is available.",
+  "Dense retrieval and BM25 each contribute candidate passages before a neural reranker selects a small evidence set.",
+  "The four verification labels separate full support, partial support, unsupported claims, and unresolved cases.",
+  "Partially Supported is intended to capture claims whose main assertion is present but whose qualifications or context are incomplete.",
+  "Uncertain cases are explicitly surfaced for further human review rather than automatically forced into a positive or negative class.",
+  "The released citation corpus contains more than one thousand citations drawn from eight academic disciplines.",
+  "The evaluation test set contains 112 stratified examples.",
+  "Weighted accuracy assigns smaller penalties to mistakes between semantically adjacent support categories than to distant mistakes.",
+  "The 4B and 8B fine-tuned models have similar classification accuracy despite their different parameter counts.",
+  "The software repository and model-and-data resources are publicly linked from the paper."
+ ],
+ "source_url": "https://arxiv.org/html/2511.16198",
+ "access": "full_text"
+}

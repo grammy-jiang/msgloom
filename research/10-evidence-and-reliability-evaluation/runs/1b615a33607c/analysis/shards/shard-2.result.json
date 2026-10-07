@@ -1,0 +1,384 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2208.02814",
+   "title": "Conformal Risk Control",
+   "research_question": "Can conformal prediction be generalized from miscoverage control to finite-sample control of the expected value of a broad class of bounded monotone losses?",
+   "methodology": "The paper defines conformal risk control for a family of set-valued or otherwise nested predictors whose losses are bounded and non-increasing as a tuning parameter increases. It derives a finite-sample calibration rule and proves expected-risk guarantees under exchangeability, then studies lower bounds, distribution-shift extensions, multiple-risk variants, and failure modes for non-monotone losses. The method is evaluated over repeated random calibration/test splits on tumor segmentation, multilabel classification, hierarchical ImageNet classification, and Natural Questions retrieval and reading.",
+   "key_findings": [
+    {
+     "finding": "For exchangeable examples and bounded, right-continuous, non-increasing loss functions, the proposed calibration rule controls the expected test loss at the target level in finite samples.",
+     "evidence_type": "supported",
+     "section": "Section 2.1"
+    },
+    {
+     "finding": "Ordinary split conformal prediction is recovered as a special case when the loss is the indicator of prediction-set miscoverage.",
+     "evidence_type": "supported",
+     "section": "Section 2.3"
+    },
+    {
+     "finding": "Under additional regularity assumptions, the attainable expected risk is within order 1/n of the requested risk level, although the authors note that the constant in their lower bound may not be tight.",
+     "evidence_type": "supported",
+     "section": "Section 2.2"
+    },
+    {
+     "finding": "Across the four empirical application domains, average held-out risk was close to the requested risk level over repeated calibration/test splits.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "The basic conformal-risk-control rule does not provide a general finite-sample guarantee for arbitrary non-monotone losses; the paper gives examples where it can fail badly.",
+     "evidence_type": "supported",
+     "section": "Section 2.4"
+    },
+    {
+     "finding": "The framework provides extensions for certain distribution shifts, including density-ratio weighting and bounds whose degradation depends on total-variation differences between calibration and test distributions.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    }
+   ],
+   "limitations": [
+    "The central finite-sample result relies on exchangeability in its base setting.",
+    "The principal theorem requires losses to be bounded, non-increasing, and right-continuous in the calibration parameter.",
+    "General finite-sample control is not established for arbitrary non-monotone losses.",
+    "Distribution-shift extensions require additional assumptions such as known or suitably handled density ratios; estimating covariate-shift weights is not solved by the core method.",
+    "The guarantee is primarily marginal expected-risk control rather than an instance-wise conditional guarantee.",
+    "The framework controls a supplied loss but does not itself define evidence completeness, longitudinal state transitions, or omission of superseded work items."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "finite_sample_expected_risk_control": 0.99,
+    "conformal_prediction_as_special_case": 0.99,
+    "order_one_over_n_tightness": 0.97,
+    "empirical_target_tracking": 0.98,
+    "nonmonotone_failure": 0.99,
+    "distribution_shift_extensions": 0.97
+   },
+   "raw_claims": [
+    "Conformal risk control extends conformal calibration from binary miscoverage to more general bounded losses.",
+    "The finite-sample guarantee applies to exchangeable calibration and test examples.",
+    "The loss must become no worse as the predictor is made more conservative through the calibration parameter.",
+    "Classical conformal prediction fits the framework by using a miscoverage indicator as the loss.",
+    "The expected risk can approach the desired level at an order-1/n rate under additional assumptions.",
+    "Non-monotone losses can invalidate the basic finite-sample guarantee.",
+    "The experiments include segmentation, multilabel classification, hierarchical classification, and question answering.",
+    "Repeated-split experiments show held-out risks close to their specified targets.",
+    "Distribution-shift variants can use importance weighting when the relevant density ratio is available.",
+    "Total-variation distance can be used to quantify deterioration of the risk bound under arbitrary marginal shifts."
+   ],
+   "source_url": "https://arxiv.org/html/2208.02814",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2606.27736",
+   "title": "ToE: A Hierarchical and Explainable Claim Verification Framework with Dynamic Multi-source Evidence Retrieval and Aggregation",
+   "research_question": "Can automated claim verification be improved by dynamically retrieving heterogeneous evidence, decomposing uncertain claims, and aggregating evidence through an explainable hierarchical argument tree?",
+   "methodology": "ToE builds a Tree of Evidence in which a retrieval agent searches multiple source types, an evidence evaluator assigns stance and reliability information, and low-reliability nodes can be decomposed into smaller subclaims. Evidence is aggregated bottom-up, with pruning and stopping based on reliability, convergence, or iteration limits. The retrieval policy is trained with reliability gain as its reward, which the paper connects approximately to conditional information gain and analyzes under a submodularity assumption. Evaluation uses LIAR, PolitiFact, Check-COVID, a constructed adversarial set, two language-model backbones, and source-tool ablations.",
+   "key_findings": [
+    {
+     "finding": "ToE obtains higher reported accuracy than the direct-prediction baseline for every displayed combination of the four evaluation datasets and two model backbones.",
+     "evidence_type": "supported",
+     "section": "Section IV-B, Table II"
+    },
+    {
+     "finding": "On the constructed adversarial benchmark, ToE retains substantially higher accuracy than direct prediction for both evaluated backbones.",
+     "evidence_type": "supported",
+     "section": "Section IV-B, Table II"
+    },
+    {
+     "finding": "Removing any tested source-tool category reduces overall accuracy in the source ablation, indicating that heterogeneous retrieval sources contribute complementary evidence in that experiment.",
+     "evidence_type": "supported",
+     "section": "Section IV-C, Table III"
+    },
+    {
+     "finding": "Removing fact-checking sources causes the largest overall accuracy decrease among the displayed source-tool ablations.",
+     "evidence_type": "supported",
+     "section": "Section IV-C, Table III"
+    },
+    {
+     "finding": "When the ideal reliability objective is submodular, the paper derives the standard greedy 1-1/e approximation relationship for its retrieval formulation.",
+     "evidence_type": "supported",
+     "section": "Section III-A"
+    },
+    {
+     "finding": "If the learned reliability estimator is uniformly close to the ideal reliability function, the paper bounds the per-step discrepancy between estimated reliability gain and its ideal counterpart, subject to the paper's information-gain approximation.",
+     "evidence_type": "supported",
+     "section": "Section III-A"
+    }
+   ],
+   "limitations": [
+    "The theoretical retrieval guarantee depends on a submodularity assumption for the ideal reliability objective.",
+    "The interpretation of reliability gain as conditional information gain is an approximation rather than an identity established for arbitrary evaluators.",
+    "Verification quality depends on LLM-based evidence evaluation and decomposition, which can themselves introduce errors.",
+    "External web, social, fact-checking, and academic sources can change over time, making reproducibility of retrieved evidence difficult.",
+    "The main benchmark protocol evaluates limited sampled subsets rather than exhaustively evaluating every item in each source corpus.",
+    "The adversarial benchmark contains constructed false examples and is not a balanced natural distribution of true, false, and uncertain claims.",
+    "The source-tool ablation is based on a small manually collected set, limiting confidence in fine-grained tool-importance conclusions.",
+    "Collapsing original fact-checking label schemes into true, false, and uncertain removes distinctions present in the source datasets.",
+    "A public code release was not reported in the paper text examined, and availability of the constructed adversarial benchmark was not established.",
+    "The framework performs iterative evidence gathering within a claim-verification episode but does not evaluate longitudinal tracking of due, resolved, superseded, or reopened workplace work-item states."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "better_than_direct_baseline": 0.98,
+    "adversarial_robustness_gain": 0.98,
+    "multi_source_ablation_effect": 0.97,
+    "factcheck_source_ablation": 0.97,
+    "greedy_submodular_bound": 0.96,
+    "reliability_estimation_bound": 0.94
+   },
+   "raw_claims": [
+    "ToE represents verification as a dynamically expanded hierarchy of claims and supporting or refuting evidence.",
+    "The retrieval component can choose among several evidence-source categories rather than relying on a single corpus.",
+    "Evidence objects include stance and source-reliability information.",
+    "Low-confidence claims can be decomposed into multiple more specific subclaims.",
+    "The tree is aggregated from child evidence toward the root claim.",
+    "Retrieval can stop when evidence becomes decisive, convergence is reached, or a configured limit is exhausted.",
+    "The retrieval reward is based on the increase in estimated reliability produced by a search action.",
+    "The theoretical analysis assumes a submodular ideal reliability objective.",
+    "The evaluation covers LIAR, PolitiFact, Check-COVID, and a constructed adversarial benchmark.",
+    "The reported ablations indicate that no single tested source category accounts for all of the framework's gains."
+   ],
+   "source_url": "https://arxiv.org/html/2606.27736",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1016-j-jisa-2025-104120",
+   "title": "Conformal prediction for labelling and updating online models in the presence of concept drift in cybersecurity",
+   "research_question": "Can conformal prediction supply sufficiently reliable pseudo-labels to update online cybersecurity classifiers when true labels are scarce and the data distribution undergoes concept drift?",
+   "methodology": "The study evaluates Adaptive Hoeffding Tree, Adaptive Random Forest, and Logistic Regression online learners on three public cybersecurity datasets covering Android malware, network intrusion, and malicious IP detection. A chronological initial segment is used for training and conformal calibration, while later examples arrive as a stream; high-confidence and high-credibility conformal predictions can be used immediately as pseudo-labels, with varying proportions of delayed true labels also supplied. The authors vary class imbalance and label availability, estimate marginal and conditional drift with total-variation-based measures, and report F1, Matthews correlation coefficient, sensitivity, specificity, and non-parametric statistical tests.",
+   "key_findings": [
+    {
+     "finding": "Conformal pseudo-label updates improve online classification in a substantial subset of dataset-model-labeling configurations, but the gains are not consistent across all conditions.",
+     "evidence_type": "supported",
+     "section": "Results and Discussion"
+    },
+    {
+     "finding": "On the malicious-IP dataset, Adaptive Random Forest with conformal updates shows statistically significant improvements across the reported metrics for all evaluated true-label proportions.",
+     "evidence_type": "supported",
+     "section": "Results, malicious-IP experiment"
+    },
+    {
+     "finding": "On CICIDS 2018, the conformal-update strategy is especially beneficial for Adaptive Random Forest and Logistic Regression in the reported comparisons.",
+     "evidence_type": "supported",
+     "section": "Results, CICIDS 2018 experiment"
+    },
+    {
+     "finding": "The effect of conformal pseudo-labeling is model- and dataset-dependent, and some configurations obtain little benefit or deteriorate.",
+     "evidence_type": "supported",
+     "section": "Results and Discussion"
+    },
+    {
+     "finding": "Larger concept drift is associated with smaller expected gains from the conformal-update mechanism in the authors' experiments.",
+     "evidence_type": "supported",
+     "section": "Discussion of RQ2(d)"
+    },
+    {
+     "finding": "Concept drift can make a previously calibrated conformal mechanism stale because the exchangeability conditions underlying conventional conformal validity no longer hold for the evolving stream.",
+     "evidence_type": "supported",
+     "section": "Discussion"
+    }
+   ],
+   "limitations": [
+    "Classical conformal validity relies on exchangeability, an assumption explicitly challenged by concept drift in the deployment stream.",
+    "The confidence and credibility thresholds used to accept pseudo-labels are experimentally chosen and can become inappropriate after distributional change.",
+    "The study covers three cybersecurity datasets and three online-learning algorithms, so conclusions may not transfer to other domains or model families.",
+    "Incorrect pseudo-labels can feed back into subsequent online updates and therefore propagate errors.",
+    "Improvements in F1 or MCC do not imply uniformly improved sensitivity and specificity; the paper reports inconsistent behavior for these operational metrics.",
+    "The experiments do not establish instance-wise selective-prediction guarantees after arbitrary non-stationary drift.",
+    "A public implementation repository was not identified in the paper material examined."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "conditional_benefit_of_pseudolabel_updates": 0.98,
+    "adaptive_random_forest_ip_gain": 0.98,
+    "cicids_model_specific_gain": 0.97,
+    "model_dataset_dependence": 0.99,
+    "larger_drift_smaller_gain": 0.96,
+    "exchangeability_problem_under_drift": 0.99
+   },
+   "raw_claims": [
+    "The proposed online update strategy uses conformal confidence and credibility to decide whether an unlabeled observation can be pseudo-labeled.",
+    "Only pseudo-labels passing high confidence and credibility thresholds are used for immediate model updates.",
+    "The experiments use three public cybersecurity datasets with chronological ordering.",
+    "The evaluated online learners are Adaptive Hoeffding Tree, Adaptive Random Forest, and Logistic Regression.",
+    "The study varies how many delayed ground-truth labels are eventually made available.",
+    "Evaluation includes F1, MCC, sensitivity, and specificity.",
+    "Conformal pseudo-labeling is beneficial in some but not all model and dataset configurations.",
+    "Adaptive Random Forest shows strong gains on the malicious-IP task.",
+    "Greater measured drift is associated with reduced improvement from conformal updating.",
+    "Concept drift weakens the exchangeability premise used by conventional conformal calibration."
+   ],
+   "source_url": "https://www.sciencedirect.com/science/article/pii/S2214212625001577",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2208.08401",
+   "title": "Conformal Inference for Online Prediction with Arbitrary Distribution Shifts",
+   "research_question": "How can online conformal prediction adapt its calibration rate to distribution shifts of unknown and changing magnitude while retaining meaningful local coverage guarantees?",
+   "methodology": "The paper reinterprets Adaptive Conformal Inference as an online optimization procedure and introduces a dynamically tuned variant that combines multiple candidate learning rates through exponential weighting. It derives local dynamic-regret bounds and, under regularity conditions linking calibration levels to coverage, converts them into local coverage-control statements. The approach is tested in stationary, gradual-drift, and abrupt-shift simulations, followed by stock-volatility forecasting and county-level COVID-19 case forecasting.",
+   "key_findings": [
+    {
+     "finding": "The dynamically tuned method obtains local dynamic-regret guarantees that adapt to temporal variation in the optimal calibration level rather than requiring a fixed known shift magnitude.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "Under a lower-density condition and a smooth relationship between the calibration level and coverage, the regret bounds imply control of average local coverage error.",
+     "evidence_type": "supported",
+     "section": "Section 3"
+    },
+    {
+     "finding": "Relative to earlier ACI analyses, the method does not require prior knowledge of the size of the distribution shift and permits the conformity score or underlying predictive model to evolve.",
+     "evidence_type": "supported",
+     "section": "Section 3.2"
+    },
+    {
+     "finding": "In abrupt-shift simulations, dynamic tuning adjusts more effectively to changes in shift magnitude than a method whose aggregation weights adapt more slowly.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "In stock-volatility experiments, local coverage-gap behavior is reported as close to the variability expected from correctly calibrated Bernoulli coverage indicators.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "In the COVID-19 forecasting experiment, dynamically adaptive conformal methods correct coverage changes that produce substantial bias or fluctuation for the fixed-calibration baseline.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    }
+   ],
+   "limitations": [
+    "The theoretical translation from dynamic regret to local coverage control requires regularity assumptions including a lower-bound condition on the score distribution and smoothness of coverage as a function of the calibration level.",
+    "The guarantees concern local averages or regret over intervals rather than exact conditional coverage for every individual time point.",
+    "The algorithm still requires a candidate grid of adaptation step sizes and other tuning choices.",
+    "The stock-analysis bootstrap intervals are presented as diagnostics and are not claimed to possess formal coverage guarantees under distribution shift.",
+    "The real-data experiments cover selected forecasting settings and do not establish performance for all kinds of non-stationary streams.",
+    "The method calibrates prediction-set coverage rather than directly evaluating evidence completeness, compound-claim support, or longitudinal omission of superseded states."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "local_dynamic_regret": 0.99,
+    "local_coverage_under_regular_conditions": 0.98,
+    "unknown_shift_adaptation": 0.99,
+    "abrupt_shift_empirical_adaptation": 0.97,
+    "stock_local_coverage": 0.96,
+    "covid_adaptive_coverage": 0.97
+   },
+   "raw_claims": [
+    "The method maintains several candidate ACI adaptation rates and changes their weights online.",
+    "Its objective is to remain calibrated when the data distribution changes by an unknown amount over time.",
+    "The analysis uses local dynamic regret to quantify adaptation over arbitrary time intervals.",
+    "Coverage-error guarantees require additional smoothness assumptions beyond the regret statement itself.",
+    "The predictive model and conformity-score construction may be updated as new data arrive.",
+    "Simulations consider stationary, smoothly drifting, and abruptly changing distributions.",
+    "Abrupt changes expose the cost of adapting an aggregation rule too slowly.",
+    "The stock-volatility study examines local rather than only global empirical coverage.",
+    "The COVID-19 experiment uses geographically resolved forecasting data.",
+    "The method targets online coverage adaptation rather than per-example conditional validity."
+   ],
+   "source_url": "https://arxiv.org/html/2208.08401",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2204.02007",
+   "title": "Fact Checking with Insufficient Evidence",
+   "research_question": "Can fact-checking systems learn to abstain with an insufficient-evidence decision when the available evidence has been partially removed or is otherwise inadequate to determine a claim's truth?",
+   "methodology": "The paper constructs fluent insufficient-evidence examples by deleting selected syntactic constituents or complete evidence sentences from gold evidence in FEVER, VitaminC, and HoVer. Human annotators determine whether the remaining evidence is still sufficient, producing the SufficientFacts diagnostic resource, and BERT, RoBERTa, and ALBERT fact-checkers are evaluated on these cases. The authors then train models with omission-based counterfactual data augmentation and contrastive objectives, and additionally test robustness to incorrect evidence and claim-only shortcuts.",
+   "key_findings": [
+    {
+     "finding": "When all three baseline models agree that the remaining evidence is sufficient, human annotators still label 430 of 1000 examined cases as insufficient, showing a substantial false-sufficiency problem.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "When all three baseline models agree that evidence is insufficient, their consensus matches the human insufficiency judgment in 972 of 1000 examined cases.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "Sensitivity to evidence omission depends strongly on what is removed: adverbial modifiers are among the hardest omissions for the models, while date-related omissions are substantially easier.",
+     "evidence_type": "supported",
+     "section": "Section 4.3"
+    },
+    {
+     "finding": "Omission-driven counterfactual and contrastive training improves performance on the SufficientFacts diagnostic set, with Section 6.2 reporting gains of up to 17.2 F1 points.",
+     "evidence_type": "supported",
+     "section": "Section 6.2"
+    },
+    {
+     "finding": "The same training approaches can preserve or improve ordinary fact-checking performance, with Section 6.2 reporting gains of up to 3.6 F1 points on the original test sets.",
+     "evidence_type": "supported",
+     "section": "Section 6.2"
+    },
+    {
+     "finding": "The proposed training methods also improve robustness when the supplied evidence is incorrect, with reported accuracy gains reaching 27 points in the evaluated settings.",
+     "evidence_type": "supported",
+     "section": "Section 6.4"
+    },
+    {
+     "finding": "For HoVer claim-only inputs, omission-aware training reduces the reported rate of non-NEI predictions to below one percent for the evaluated models, substantially reducing the observed claim-only shortcut.",
+     "evidence_type": "supported",
+     "section": "Section 6.5"
+    }
+   ],
+   "limitations": [
+    "The principal experiments manipulate gold evidence rather than jointly evaluating retrieval and verification in an end-to-end system.",
+    "The insufficient-evidence cases are synthetically created through controlled omissions and may not capture all naturally occurring forms of partial or contradictory evidence.",
+    "SufficientFacts is primarily a diagnostic test resource rather than a naturally matched training distribution.",
+    "Pretrained language models may still exploit factual knowledge acquired during pretraining instead of relying exclusively on the supplied evidence.",
+    "Annotators were instructed to judge only from the provided evidence, and the paper notes that avoiding outside world knowledge can be difficult.",
+    "The experiments focus on English-language datasets and three Transformer model families.",
+    "The task is static per claim and does not evaluate temporally evolving evidence, superseded facts, deadlines, or longitudinal work-item state transitions.",
+    "The paper's abstract and Section 6.2 report different headline maximum improvements, so exact summary gains should be tied to the section from which they are taken."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "false_sufficiency_under_model_consensus": 0.99,
+    "insufficiency_consensus_accuracy": 0.99,
+    "omission_type_sensitivity": 0.98,
+    "sufficientfacts_training_gain": 0.97,
+    "original_test_gain": 0.97,
+    "incorrect_evidence_robustness": 0.98,
+    "claim_only_bias_reduction": 0.98
+   },
+   "raw_claims": [
+    "A fact checker should return an insufficient-evidence decision when the available evidence cannot justify a veracity label.",
+    "The paper creates incomplete evidence by removing syntactic constituents or entire evidence sentences while attempting to preserve fluency.",
+    "Human judgments are used to determine whether the evidence remaining after an omission is still sufficient.",
+    "Baseline Transformer fact checkers frequently treat partially informative evidence as sufficient when human annotators do not.",
+    "Agreement among the models is much more reliable when all of them predict that evidence is insufficient.",
+    "Different omitted linguistic components produce substantially different error rates.",
+    "Counterfactual augmentation trains models on paired sufficient and insufficient variants of evidence.",
+    "Contrastive learning is used to separate representations of sufficient and insufficient evidence conditions.",
+    "Omission-aware training improves the diagnostic insufficient-evidence task without necessarily sacrificing standard fact-checking accuracy.",
+    "The same training strategies improve resistance to misleading or incorrect evidence.",
+    "Claim-only tests reveal shortcut behavior that is sharply reduced after omission-aware training."
+   ],
+   "source_url": "https://arxiv.org/html/2204.02007",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

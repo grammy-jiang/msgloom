@@ -1,0 +1,76 @@
+{
+ "paper_id": "2412.15540",
+ "title": "MRAG: A Modular Retrieval Framework for Time-Sensitive Question Answering",
+ "research_question": "Can explicitly separating semantic relevance from temporal reasoning improve retrieval and downstream answering for questions whose evidence must satisfy a temporal constraint?",
+ "methodology": "The authors construct TempRAGEval by adapting TimeQA and SituatedQA with manually designed temporal perturbations and gold evidence annotations, thereby reducing direct date overlap between questions and relevant passages. MRAG is a training-free three-stage framework: question processing separates topical content from temporal constraints, retrieval and LLM summarization reduce retrieved passages to fine-grained evidence, and semantic-temporal hybrid ranking combines semantic similarity with symbolic temporal scoring. The framework is evaluated against sparse, dense, reranking, and generation baselines using answer recall, evidence recall, exact match, and F1, with additional ablations, controlled temporal tests, case studies, and a 200-example human retrieval evaluation.",
+ "key_findings": [
+  {
+   "finding": "Temporal perturbations expose substantial brittleness in conventional retrievers; for example, the Gemma baseline's top-1 answer recall on perturbed SituatedQA falls from 85.8% to 54.7%, while evidence recall falls from 45.0% to 20.3%.",
+   "evidence_type": "supported",
+   "section": "3.3 Preliminary Evaluation on TempRAGEval"
+  },
+  {
+   "finding": "Controlled experiments indicate that conventional retrieval methods tend to favor exact date matching rather than correctly modeling relations such as before, after, and as-of.",
+   "evidence_type": "supported",
+   "section": "3.3 Preliminary Evaluation on TempRAGEval"
+  },
+  {
+   "finding": "MRAG outperforms retrieve-then-rerank baselines on both TempRAGEval subsets; against Contriever plus Gemma it improves top-5 evidence recall by 7.7 points on TimeQA and 13.9 points on SituatedQA.",
+   "evidence_type": "supported",
+   "section": "5.2 Main Results"
+  },
+  {
+   "finding": "Improved temporal retrieval propagates to end-to-end QA: for Llama-3.1-8B, MRAG-Concat improves TimeQA EM/F1 from 44.0/52.8 with standard RAG-Concat to 49.2/59.2, and Self-MRAG reaches 54.2/65.6.",
+   "evidence_type": "supported",
+   "section": "5.2 Main Results"
+  },
+  {
+   "finding": "The modular filtering and ranking stages offer an adjustable efficiency-accuracy trade-off, but the complete MRAG pipeline is reported to require roughly twice the computational overhead of standard RAG.",
+   "evidence_type": "supported",
+   "section": "6.1 Ablation Study"
+  },
+  {
+   "finding": "Human evaluation on 200 sampled examples supports the reported retrieval advantage of MRAG over the Gemma baseline and addresses known imperfections in automatic answer-recall and evidence-recall metrics.",
+   "evidence_type": "supported",
+   "section": "6.2 Human Evaluation"
+  }
+ ],
+ "limitations": [
+  "TempRAGEval focuses on questions with explicit temporal constraints; implicit temporal constraints are left for future work.",
+  "The benchmark does not target questions whose relevant facts occur beyond the underlying model knowledge cutoff.",
+  "Multi-hop and recursive temporal reasoning are not addressed by the primary framework.",
+  "MRAG introduces additional retrieval, summarization, and reranking computation, reported as approximately twice the overhead of standard RAG.",
+  "The work studies conflicts between model knowledge and retrieved passages but leaves conflicts among retrieved passages for future work.",
+  "The framework does not model document permissions, access-control policy, or version histories.",
+  "It improves ranking of temporally relevant evidence but does not provide a calibrated bounded-risk stopping rule for deciding whether further retrieval is necessary."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "temporal_perturbations_hurt_baselines": 0.99,
+  "retrievers_use_date_matching_shortcuts": 0.97,
+  "MRAG_improves_evidence_recall": 0.99,
+  "retrieval_gain_improves_QA": 0.99,
+  "MRAG_has_extra_compute_overhead": 0.99,
+  "human_evaluation_supports_retrieval_gain": 0.96
+ },
+ "raw_claims": [
+  "TempRAGEval augments existing temporal QA datasets with harder temporal perturbations and gold evidence annotations.",
+  "The perturbations are designed to remove simple timestamp overlap between the query and relevant evidence.",
+  "Existing retrieval methods lose substantial recall when temporal matching requires reasoning rather than literal date overlap.",
+  "Controlled tests suggest that baseline retrievers over-rely on exact date similarity.",
+  "MRAG separates the topical content of a question from its temporal constraint.",
+  "Retrieved passages are split and summarized into finer-grained evidence before final ranking.",
+  "MRAG scores semantic relevance and temporal relevance separately and then combines them.",
+  "MRAG improves evidence retrieval over tested reranking baselines on both TempRAGEval subsets.",
+  "Using MRAG evidence improves downstream exact-match and F1 scores for several answer-generation configurations.",
+  "The authors report an adjustable trade-off between the number of processed candidates and retrieval performance.",
+  "The complete MRAG pipeline has about twice the computational overhead of a standard RAG pipeline.",
+  "The authors make code and TempRAGEval data available."
+ ],
+ "source_url": "https://arxiv.org/html/2412.15540",
+ "access": "full_text"
+}

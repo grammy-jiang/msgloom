@@ -1,0 +1,26 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/06-item-state-and-temporal-reasoning/runs/95d3525d59e7/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Executive summary: the sentence \"Factuality studies consistently model what a source presents as true, uncertain, or false rather than independently verified truth\" is broader than the supplied analyses establish. FactBank, modal-dependency parsing, generative factuality prediction, and CommitmentBank explicitly support source-relative commitment/presentation, but the supplied analyses for doi-10-1007-s11390-024-2655-1 and doi-10-1016-j-ipm-2021-102836 do not independently establish that every factuality model in the corpus has that source-relative interpretation. Replace \"consistently\" with wording such as \"multiple source-aware factuality and speaker-commitment studies\" or otherwise restrict the statement to the cited studies.",
+  "Finding on HeterMV (doi-10-1016-j-ipm-2026-104709): \"reports gains from preserving heterogeneous source roles and reasoning views\" slightly overstates causal support. The supplied abstract/preview-level analysis establishes that HeterMV uses source-aware heterogeneous roles and four reasoning views, that the full model improves Micro-F1 on two benchmarks, and that the preview reports ablations validating major components. It does not provide enough detailed ablation evidence to attribute the reported benchmark gains specifically to preservation of source roles and reasoning views. Rephrase as \"HeterMV, which preserves heterogeneous source roles and uses multiple reasoning views, reports gains...\".",
+  "Finding on dialogue/truth maintenance: the wording that earlier commitments \"remain historically represented\" is somewhat stronger than all three cited analyses support. doi-10-1023-a-1010318403544 establishes that the historical utterance is not erased by retraction; doi-10-1016-0004-3702-86-90080-9 explicitly preserves alternative assumption environments; doi-10-1093-jos-ffn013 preserves undenied commitments and can restore earlier material after a correction-of-correction, but its supplied analysis does not establish a general persistent history store. The finding is directionally correct but should distinguish preservation of prior information/alternatives from explicit historical persistence.",
+  "Theme stating that \"correction, retraction, cancellation, contradiction, and reopening can preserve portions of earlier state\" groups cancellation with phenomena for which historical-information preservation is more directly demonstrated. doi-10-1007-s10458-012-9202-0 establishes cancellation as a distinct lifecycle operation and incremental event monitoring, but the supplied analysis does not explicitly establish persistent retention of the pre-cancellation state. The theme should be narrowed to say that revision or conflict need not imply wholesale deletion of prior information, without claiming identical history-preservation semantics for every listed operation."
+ ],
+ "unsupported_claims": [
+  "The executive-summary universal/near-universal wording that factuality studies \"consistently\" model source-relative presentation is not fully supported by every factuality analysis supplied.",
+  "The phrase that HeterMV's reported gains are \"from preserving heterogeneous source roles and reasoning views\" is causally stronger than the abstract/preview-level evidence supplied.",
+  "The unqualified implication that all cited dialogue/truth-maintenance mechanisms explicitly keep earlier commitments \"historically represented\" exceeds what doi-10-1093-jos-ffn013 alone establishes.",
+  "The theme-level implication that cancellation itself is demonstrated to preserve portions of an earlier state is not directly established by the supplied analysis of doi-10-1007-s10458-012-9202-0."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.99,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the 31 supplied analyses. All paper_id values used in findings, contradictions, and gap-status evidence belong to the permitted identifier set. The important cross-paper disagreements are explicitly named rather than averaged away, including the differing contribution of transitivity constraints, mixed joint-learning results, the direct-versus-indirect timeline reversal, and two within-paper prose/table inconsistencies. All eight stated gaps remain explicitly open; none is improperly presented as solved by transfer-domain, formal, synthetic, abstract-only, or component-level evidence. The synthesis also repeatedly marks workplace transfer as unvalidated and does not make a production-accuracy claim from adjacent-domain evidence. The issues above are wording/attribution overreach rather than evidence failures that would invalidate the synthesis, so they warrant accepted_with_issues rather than rejection."
+}

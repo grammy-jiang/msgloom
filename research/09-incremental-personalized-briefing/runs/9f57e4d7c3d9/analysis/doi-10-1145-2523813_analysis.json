@@ -1,0 +1,80 @@
+{
+ "paper_id": "doi-10-1145-2523813",
+ "title": "A Survey on Concept Drift Adaptation",
+ "research_question": "How can online supervised learning systems characterize, detect, adapt to, and evaluate changes in the relationship between inputs and targets over evolving data streams?",
+ "methodology": "This is a comprehensive survey rather than a new controlled experiment. It organizes concept-drift research into an adaptive-learning framework containing memory, change detection, learning, and loss-estimation components, and reviews representative algorithms within those categories. It also analyzes forgetting strategies, fixed and variable windows, explicit drift detectors, adaptation mechanisms, and evaluation procedures for time-ordered data. The survey discusses application examples and proposes evaluation criteria for both predictive performance and change-detection quality.",
+ "key_findings": [
+  {
+   "finding": "Concept drift includes changes in the target distribution conditional on observed inputs, and changing user interests in a news stream are presented as a canonical example.",
+   "evidence_type": "supported",
+   "section": "2.1 Setting and definitions"
+  },
+  {
+   "finding": "Adaptive learning can be decomposed into memory, change detection, learning, and loss-estimation modules, allowing different adaptation strategies to be combined modularly.",
+   "evidence_type": "supported",
+   "section": "2.4 and 3 Taxonomy"
+  },
+  {
+   "finding": "Shorter recent-data windows react faster to changes but can be less stable, whereas larger windows improve stability in stationary periods while adapting more slowly.",
+   "evidence_type": "supported",
+   "section": "3.1 Memory"
+  },
+  {
+   "finding": "Recency alone is not a reliable proxy for relevance when data are noisy or concepts recur, so simple window-based forgetting can discard useful older information.",
+   "evidence_type": "supported",
+   "section": "3.1 Memory"
+  },
+  {
+   "finding": "Explicit change detection provides information about when and how a process changes beyond the implicit adaptation obtained from continuously updating an online model.",
+   "evidence_type": "supported",
+   "section": "3.2 Change Detection"
+  },
+  {
+   "finding": "Drift detectors should be evaluated not only by downstream predictive accuracy but also by true-change detection, false alarms, detection delay, and change-point localization accuracy.",
+   "evidence_type": "supported",
+   "section": "4.1 Performance evaluation metrics"
+  },
+  {
+   "finding": "Ordinary randomized cross-validation is inappropriate for evolving streams because it destroys temporal order; holdout and prequential test-then-train procedures are presented as alternatives.",
+   "evidence_type": "supported",
+   "section": "4.2 Experimental design"
+  }
+ ],
+ "limitations": [
+  "The survey focuses primarily on online supervised learning where labels or delayed feedback are available, not on unsupervised semantic state tracking in workplace communication.",
+  "As a 2014 survey, it cannot cover later developments in drift detection, continual learning, modern recommender systems, or language-model-based personalization.",
+  "The work synthesizes heterogeneous prior algorithms rather than conducting a uniform empirical benchmark across all reviewed methods.",
+  "Many drift-handling techniques assume a stream of labeled instances and do not directly specify symbolic work-item transitions such as new, open, resolved, or superseded.",
+  "The survey does not address briefing-specific omission, repetition, evidence attribution, or obligation-versus-preference ranking."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "user_interest_as_concept_drift": 0.99,
+  "four_module_adaptation_framework": 0.99,
+  "window_reactivity_stability_tradeoff": 0.99,
+  "recency_not_always_relevance": 0.99,
+  "explicit_change_detection_value": 0.98,
+  "drift_detection_metrics": 0.99,
+  "time_ordered_evaluation_required": 0.99
+ },
+ "raw_claims": [
+  "Concept drift occurs when the data-generating relationship changes over time.",
+  "A user's evolving interest in incoming news is an example of real concept drift.",
+  "Adaptive models may update continuously or retrain on recent batches.",
+  "Adaptive-learning systems can be understood through memory, change detection, learning, and loss-estimation components.",
+  "Fixed and variable sliding windows are common ways to emphasize recent data.",
+  "Small windows favor reactivity while large windows favor stability.",
+  "Recency-based forgetting can fail when concepts recur or observations are noisy.",
+  "Explicit drift detectors can identify change points or intervals of change.",
+  "Change detection should be assessed for missed changes, false alarms, delay, and localization error.",
+  "Temporal ordering must be preserved when evaluating adaptive stream learners.",
+  "Prequential evaluation tests each new observation before using it for learning."
+ ],
+ "source_url": "https://eprints.bournemouth.ac.uk/22491/1/ACM%20computing%20surveys.pdf",
+ "access": "full_text",
+ "source_citation": "citeturn186187view0turn939709view3turn532115view0"
+}

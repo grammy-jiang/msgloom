@@ -1,0 +1,1407 @@
+{
+  "paper_id": "T05",
+  "title": "Automatic Topic Segmentation and Labeling in Multiparty Dialogue",
+  "research_question": "Can lexical-cohesion and conversational-feature methods identify agenda-based topic boundaries in scenario-driven AMI meetings, and can lexical Maximum Entropy models label supplied topic segments more accurately through feature selection?",
+  "methodology": "Compare unsupervised LCSeg with C4.5 boundary classifiers combining lexical cohesion, LCSeg-derived signals, overlapping speech, silence, speaker activity, and cue phrases; evaluate TOP and flattened SUB segmentation with Pk/WindowDiff. Separately train per-topic binary MaxEnt classifiers from segment transcript N-grams; compare unigram/bigram/trigram models and LL, X2, PMI, and DICE feature quartiles using segment-label F1. The claimed cross-validation protocol and printed metrics have the qualifications recorded in topic02.",
+  "methodology_source_refs": [
+    "E03",
+    "E04",
+    "E05",
+    "E07",
+    "E09",
+    "E12",
+    "E15"
+  ],
+  "key_findings": [
+    {
+      "finding_id": "T05-F01",
+      "finding": "On two multiply coded AMI meetings, the paper reports average intercoder kappa of 0.66 for top-level segmentation and 0.59 for subtopic segmentation. Gold subordination is flattened into two segmentation targets for the experiments.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §4.1 Annotation",
+      "quote": "reliability of the procedure, we have calculated the intercoder agreement (kappa) on the two meetings that have multiple codings, achieving in average 0.66 and 0.59 at the top-level and subtopic level.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 201,
+        "line_end": 204,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "E06",
+        "E07"
+      ],
+      "qualification": "The kappa variant, annotation decision universe, coder count, and uncertainty estimates are not reported; this is not span-overlap agreement.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F02",
+      "finding": "For AMI scenario-meeting boundary segmentation, CM (C4.5 with lexical cohesion and conversational features) has lower Pk/WindowDiff than LCSeg with unknown segment count: top level 0.33/0.33 versus 0.41/0.51; subtopic level 0.36/0.36 versus 0.41/0.49. Against known-count LCSeg, CM ties Pk at each level and lowers WindowDiff.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §5.1, Table 1",
+      "quote": "AMI (TOP) 0.33/0.49 0.41/0.51 0.33/0.33 AMI (SUB) 0.36/0.47 0.41/0.49 0.36/0.36",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 249,
+        "line_end": 250,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "E03",
+        "E09",
+        "E11"
+      ],
+      "qualification": "Test-set results under the ambiguous five-fold/six-train-series protocol; no confidence intervals or significance tests. This does not establish email or overlapping-span performance.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F03",
+      "finding": "For AMI segment-topic labeling, Table 2 reports category-average F1 for all unigrams versus LL-Q1 as Functional 0.57→0.62, Top-Level 0.45→0.53, and Sub-Topic 0.40→0.44. The labeling experiment operates on supplied topic segments, without reported propagation of predicted boundary errors.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §5.2, Table 2",
+      "quote": "TOP-LEVEL (average) 0.45 0.53 0.48",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 274,
+        "line_end": 274,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "E04",
+        "E12",
+        "E13",
+        "E17"
+      ],
+      "qualification": "Treat as oracle/provided-segment labeling, inferred from separate experiments and future joint modeling; the paper does not explicitly use the word oracle. F1 averaging is unspecified; denominator names and one per-class cell are problematic.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F04",
+      "finding": "In the unigram feature-quartile experiment, Table 3 reports its highest average F1 for LL-Q1 (0.58), followed by DICE-Q1 (0.55) and X2-Q1 (0.51); PMI-Q1 is 0.00. Within LL and DICE, Q1 outperforms lower-ranked quartiles.",
+      "evidence_type": "supported",
+      "section": "PDF p. 4, §5.3, Table 3",
+      "quote": "Q1 Q2 Q3 Q4 LL 0.58 0.26 0.21 0.08 X2 0.51 0.39 0.41 0.08 DICE 0.55 0.24 0.00 0.00 PMI 0.00 0.09 0.28 0.29",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 314,
+        "line_end": 318,
+        "pdf_pages": [
+          4
+        ]
+      },
+      "source_refs": [
+        "E15",
+        "E16"
+      ],
+      "qualification": "These are supplied-segment labeling scores with unspecified averaging population. Table 3 averages cannot be assumed identical to averages over Table 2 categories; DICE Q3 and Q4 tie.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F05",
+      "finding": "For the AMI topic-labeling experiment, the authors report that their bigram and trigram models did not outperform unigram-only models.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, §5.2 Experiment 2",
+      "quote": "We also trained models using bi-gram and tri-gram features. However, none of these models work better than models using unigram features alone.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 266,
+        "line_end": 268,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "E12"
+      ],
+      "qualification": "Qualitative experimental report only: per-model scores, combination details, and uncertainty are not supplied.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F06",
+      "finding": "The abstract claims that LL feature selection improves topic-classification results by 13.3%, but it gives no aggregate baseline, averaging weights, or denominator that identifies this percentage from the reported tables.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 1, Abstract",
+      "quote": "Train- ing with features selected using the Log Likelihood ratio im- proves the results by 13.3%.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 20,
+        "line_end": 22,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "source_refs": [
+        "E13",
+        "E15",
+        "E16"
+      ],
+      "qualification": "Confidence is high in the reporting gap, not in the unexplained improvement. This does not negate the category-average gains in T05-F03.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    },
+    {
+      "finding_id": "T05-F07",
+      "finding": "The paper motivates topic hierarchies as a way for managers to locate critical product-design decisions, but does not evaluate decision-bearing text preservation or a downstream decision-retrieval outcome.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 1, §1 Introduction",
+      "quote": "For example, upper management can efficiently locate critical deicsions made in a product de- sign meeting by browsing the topic hierarchies.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 30,
+        "line_end": 32,
+        "pdf_pages": [
+          1
+        ]
+      },
+      "source_refs": [
+        "E02",
+        "E08",
+        "E11",
+        "E13",
+        "E16"
+      ],
+      "qualification": "This is a motivating benefit without a direct evaluation, not a negative preservation result.",
+      "confidence_basis": "Confidence concerns the stated, scoped finding; it does not validate the paper's implementation or resolve its printed ambiguities."
+    }
+  ],
+  "limitations": [
+    "DIRECT_WORK meeting evidence has qualified transfer to asynchronous business email; no direct email experiment (E06).",
+    "T05-I01–I08 retain all material printed ambiguities and noncomparability; no intended correction is inferred.",
+    "Labeling uses supplied segments; a joint boundary-and-label model and ASR testing are future work (E04, E12, E17).",
+    "Only two meetings underpin reported kappa; annotation details, exact folds, class supports, uncertainty, and duplicate controls are missing (E07, E09, E12).",
+    "Gold containment and one-vs-rest binary models do not establish evaluated multilabel, overlapping, or discontinuous Topic assignments (E04, E06, E07).",
+    "There is no scope-preservation, extraction-error, downstream decision-retrieval, or runtime evaluation (T05-F07; E08, E11, E13, E16)."
+  ],
+  "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true,
+    "availability_boolean_semantics": "False means availability is not established by the frozen paper; it does not mean confirmed unavailable today.",
+    "code_availability_status": "not_reported: no code repository, release, license, or implementation artifact location supplied.",
+    "dataset_availability_status": "not_reported: AMI and ICSI are named and used, but this paper does not establish a downloadable annotated release, access terms, or an exact version/subset.",
+    "dataset_identified": true,
+    "implementation_details": "C4.5, LCSeg, MaxEnt, N-grams, feature families, and selection equations are described; package versions, seeds, key hyperparameters, vocabulary preprocessing, and exact fold membership are not supplied.",
+    "source_refs": [
+      "E03",
+      "E04",
+      "E06",
+      "E09",
+      "E12",
+      "E15",
+      "E17"
+    ]
+  },
+  "confidence_scores": {
+    "T05-F01": 0.95,
+    "T05-F02": 0.95,
+    "T05-F03": 0.95,
+    "T05-F04": 0.95,
+    "T05-F05": 0.82,
+    "T05-F06": 0.98,
+    "T05-F07": 0.97
+  },
+  "raw_claims": [
+    "The second approach employs the supervised classifica- tion framework, in which each potential topic boundary is labelled as either boundary (POS) or non-boundary (NEG).",
+    "To study the effect of lexical cohesion on the performance of the combined model, this study also includes the lexical cohesion score, the estimated posterior probability, and the prediction of LCseg in the feature set.",
+    "Annotators have the freedom to mark a topic as subordinated (down to two levels) wherever appro- priate.",
+    "Therefore, they are given a standard set of topic descriptions that can be used as labels for each iden- tified topic segment."
+  ],
+  "raw_claim_source_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 88,
+      "line_end": 90,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 97,
+      "line_end": 100,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 164,
+      "line_end": 166,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 167,
+      "line_end": 170,
+      "pdf_pages": [
+        2
+      ]
+    }
+  ],
+  "source_index": {
+    "E01": {
+      "section": "PDF p. 1, Abstract",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 7,
+      "line_end": 22,
+      "pdf_pages": [
+        1
+      ]
+    },
+    "E02": {
+      "section": "PDF p. 1, §1 Introduction",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 24,
+      "line_end": 37,
+      "pdf_pages": [
+        1
+      ]
+    },
+    "E03": {
+      "section": "PDF pp. 1–2, §3.1 Topic Segmentation",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 76,
+      "line_end": 100,
+      "pdf_pages": [
+        1,
+        2
+      ]
+    },
+    "E04": {
+      "section": "PDF p. 2, §3.2 Topic Labeling",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 102,
+      "line_end": 128,
+      "pdf_pages": [
+        2
+      ]
+    },
+    "E05": {
+      "section": "PDF p. 2, §3.2 Equations (1)–(4)",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 129,
+      "line_end": 156,
+      "pdf_pages": [
+        2
+      ]
+    },
+    "E06": {
+      "section": "PDF p. 2, §4.1 Annotation",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 159,
+      "line_end": 182,
+      "pdf_pages": [
+        2
+      ]
+    },
+    "E07": {
+      "section": "PDF p. 3, §4.1 Annotation continued",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 189,
+      "line_end": 204,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E08": {
+      "section": "PDF p. 3, §4.2 Evaluation Metrics",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 206,
+      "line_end": 216,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E09": {
+      "section": "PDF p. 3, §5.1 Experiment 1",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 220,
+      "line_end": 233,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E10": {
+      "section": "PDF p. 3, footnotes 3–4",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 234,
+      "line_end": 240,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E11": {
+      "section": "PDF p. 3, §5.1 and Table 1",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 241,
+      "line_end": 254,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E12": {
+      "section": "PDF p. 3, §5.2 Experiment 2",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 257,
+      "line_end": 268,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E13": {
+      "section": "PDF p. 3, Table 2",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 269,
+      "line_end": 282,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E14": {
+      "section": "PDF p. 3, footnote 5",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 283,
+      "line_end": 285,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "E15": {
+      "section": "PDF p. 4, §5.3 Experiment 3",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 288,
+      "line_end": 313,
+      "pdf_pages": [
+        4
+      ]
+    },
+    "E16": {
+      "section": "PDF p. 4, Table 3",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 314,
+      "line_end": 322,
+      "pdf_pages": [
+        4
+      ]
+    },
+    "E17": {
+      "section": "PDF p. 4, §6 Conclusions and Future Work",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "line_start": 324,
+      "line_end": 343,
+      "pdf_pages": [
+        4
+      ]
+    },
+    "E18": {
+      "section": "PDF p. 2, §3.2, manually verified equations",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/visual-verification.md",
+      "line_start": 7,
+      "line_end": 10,
+      "pdf_pages": [
+        2
+      ],
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-2.png"
+    },
+    "E19": {
+      "section": "PDF p. 3, Table 2, manually verified anomalous cells",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/visual-verification.md",
+      "line_start": 15,
+      "line_end": 18,
+      "pdf_pages": [
+        3
+      ],
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-3.png"
+    }
+  },
+  "topic02": {
+    "evidence_family": {
+      "code": "DIRECT_WORK",
+      "scope": "Scenario-driven multiparty design-meeting dialogue; qualified transfer to business email only. No direct email evaluation.",
+      "source_refs": [
+        "E01",
+        "E06"
+      ]
+    },
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated",
+        "detail": "POS/NEG at potential utterance boundaries; judged via segmentation error rates.",
+        "source_refs": [
+          "E03",
+          "E11"
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "evaluated",
+        "detail": "Separate TOP and flattened SUB targets, with known/unknown segment count LCSeg and CM.",
+        "source_refs": [
+          "E07",
+          "E11"
+        ]
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "evaluated",
+        "detail": "Provided-segment, per-class MaxEnt classification; no joint system score.",
+        "source_refs": [
+          "E04",
+          "E12",
+          "E17"
+        ]
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not_evaluated"
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not_evaluated"
+      }
+    ],
+    "annotation_unit": {
+      "unit": "Human-identified meeting topic segment, with optional subordinated segments and a topic description.",
+      "boundary_resolution": "Algorithm examines utterance boundaries; the paper does not specify the annotation timestamp/token alignment rules or compare sentence, clause, arbitrary span, EDU, and hybrid annotation.",
+      "source_refs": [
+        "E03",
+        "E06",
+        "E07"
+      ]
+    },
+    "prediction_unit": {
+      "segmentation": "Utterance-boundary POS/NEG decision or lexical-cohesion boundary hypothesis, inducing contiguous transcript segments.",
+      "labeling": "N-gram vector for a supplied segment, classified by topic-class binary MaxEnt models.",
+      "source_refs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "contiguity": {
+      "gold": "Local contiguous topic segments can be subordinated in a hierarchy. Recurrent descriptions across segments are expected, but recurrent class labels do not identify a single concrete work matter.",
+      "prediction": "Contiguous linear segmentation at each evaluated granularity; no non-sequential Topic clustering evaluated.",
+      "source_refs": [
+        "E04",
+        "E06",
+        "E07"
+      ]
+    },
+    "label_cardinality": {
+      "gold": "Standard description for each identified segment, with optional new label if no match; framed as multiclass. Exact per-segment cardinality distribution is not reported. Nested parent/child descriptions must not be counted as evaluated peer multilabel membership.",
+      "prediction": "One-vs-rest-style multiple binary topic models are described. The paper gives no decision thresholds, conflict resolution, cardinality distribution, or set-valued multilabel evaluation. Multiple binary models alone do not establish evaluated multilabel output.",
+      "source_refs": [
+        "E04",
+        "E06",
+        "E12"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Not reported; the input is meeting speech, not an email message. No disconnected span set is annotated as one work matter.",
+        "meeting_or_thread_level": "Recurring topic descriptions are anticipated, but shared concrete-matter identities across separate segments or meetings are not defined. Email-thread discontinuity is not evaluated."
+      },
+      "prediction": {
+        "within_one_message": "Not represented or evaluated.",
+        "meeting_or_thread_level": "No explicit discontinuous Topic object, asynchronous interleaving, reply branch linking, or cross-meeting clustering is evaluated."
+      },
+      "source_refs": [
+        "E04",
+        "E06",
+        "E07"
+      ]
+    },
+    "overlap": {
+      "gold": "Hierarchy permits containment between parent and child topics (gold-only structural scope); arbitrary crossing overlaps or multiple peer Topic assignments to the same text span are not specified. Exact overlap counts are not reported.",
+      "prediction": "Separate flattened segmentation targets; overlapping span or multilabel Topic output is unsupported by the reported evaluation.",
+      "speech_overlap_distinction": "Amount of overlapping speech is a segmentation input feature, not evidence that text spans can belong to multiple Topics.",
+      "source_refs": [
+        "E03",
+        "E06",
+        "E07",
+        "E12"
+      ]
+    },
+    "dataset_domain": {
+      "dataset": "AMI scenario-driven product-design meetings",
+      "corpus_context": {
+        "scenario_meetings": 138,
+        "total_AMI_meetings": 170,
+        "participants_per_scenario": 4,
+        "roles": [
+          "project manager",
+          "marketing expert",
+          "industrial designer",
+          "user interface designer"
+        ],
+        "mean_top_level_segments": 8,
+        "mean_additional_subtopic_segments": 3,
+        "approximate_meeting_minutes": 30
+      },
+      "separate_ICSI_context": {
+        "approximate_mean_meeting_minutes": 60,
+        "mean_top_level_segments": 7,
+        "mean_additional_subtopic_segments": 10,
+        "use": "Background/comparator only; procedure not comparable with AMI."
+      },
+      "transcript_condition": "Human transcripts; ASR testing is future work.",
+      "transfer_limits": "Predetermined agendas, recurrent descriptions, shared design-task vocabulary, and speech timing features differ from asynchronous email and concrete work-matter identity.",
+      "source_refs": [
+        "E06",
+        "E07",
+        "E10",
+        "E14",
+        "E17"
+      ]
+    },
+    "annotation_process": {
+      "reported": "Annotators may subordinate a topic down to two levels, select a standardized description, and add a label only when none matches. Descriptions are grouped as Top-Level, Sub-Topic, and Functional; Functional includes opening/closing/agenda/chitchat. The experiment flattens the subtopic hierarchy.",
+      "not_reported": [
+        "Total coder count",
+        "Coder recruitment/training",
+        "Adjudication process",
+        "Exact complete label inventory and class supports",
+        "Precise boundary placement rules",
+        "Annotation time or cost"
+      ],
+      "source_refs": [
+        "E06",
+        "E07"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "metric_as_printed": "intercoder agreement (kappa)",
+      "population": "Two AMI meetings with multiple codings; identities and coder counts not reported.",
+      "results": {
+        "average_top_level_kappa": 0.66,
+        "average_subtopic_kappa": 0.59
+      },
+      "not_reported": "Kappa variant, decision denominator, averaging computation, confidence intervals, and topic-label-specific agreement.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+        "line_start": 201,
+        "line_end": 204,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "source_refs": [
+        "E07"
+      ]
+    },
+    "split_and_leakage": {
+      "segmentation": "AMI scenario meetings; §5.1 says five-fold cross validation, with six training series of four meetings each and one unseen test series per fold; fold roster and reconciliation are not reported.",
+      "labeling": "AMI scenario-meeting supplied-segment topic labeling; §5.2 says five-fold cross validation but does not restate fold membership or counts; §5.3 does not separately restate its split.",
+      "split_unit": "Meeting series explicitly held out for segmentation.",
+      "counts": "24 training meetings per fold follows from 6×4 (analyst calculation); exact unique meeting/series roster, number of test meetings, and linkage to corpus-level 138 scenario meetings are not established.",
+      "duplicate_controls": "Duplicate/near-duplicate transcript controls, repeated-scenario similarity checks, participant overlap checks, and temporal leakage checks are not reported.",
+      "feature_selection_leakage": "§5.3 ranks N-grams before describing subset training, but does not state that vocabulary, frequency estimates, and discriminability ranking are fitted within training folds only. This is an unresolved leakage risk, not proof of observed leakage.",
+      "other_missing": "Hyperparameter tuning, validation partition, random seeds, and exact train/test class supports are not reported.",
+      "source_refs": [
+        "E06",
+        "E09",
+        "E12",
+        "E15"
+      ],
+      "inconsistency_ref": "T05-I04"
+    },
+    "metrics": {
+      "boundary_segmentation": {
+        "dataset_task": "AMI and separately reported ICSI meeting transcript boundary segmentation at TOP/SUB granularities",
+        "metrics": [
+          "Pk",
+          "WindowDiff (Wd)"
+        ],
+        "direction": "lower is better; Table 1 labels them error rates",
+        "paper_definition": "Footnote 4 describes Pk as the probability that a randomly drawn utterance pair is incorrectly predicted as from the same segment, and WindowDiff as the probability that predicted and reference boundary counts differ within a window.",
+        "definition_limits": "The Pk prose is abbreviated and does not specify distance k or fully describe same/different disagreement. Window width, pair/window counts, endpoint handling, and fold aggregation are not reported. These scores are not boundary F1, exact-span F1, IoU, or preservation scores. Known segment count k in Table 1 is a separate notation from Pk.",
+        "source_refs": [
+          "E08",
+          "E10",
+          "E11"
+        ],
+        "results": [
+          {
+            "dataset": "ICSI",
+            "task": "contiguous topic segmentation via boundary detection",
+            "granularity": "TOP",
+            "split": "ICSI comparator results; different procedure explicitly stated; exact split not reported here.",
+            "scores": {
+              "LCSeg_known_segment_count": {
+                "Pk": 0.26,
+                "WindowDiff": 0.29
+              },
+              "LCSeg_unknown_segment_count": {
+                "Pk": 0.36,
+                "WindowDiff": 0.47
+              },
+              "CM_c4.5": {
+                "Pk": 0.28,
+                "WindowDiff": 0.3
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 247,
+              "line_end": 247,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "source_refs": [
+              "E11",
+              "E14"
+            ]
+          },
+          {
+            "dataset": "ICSI",
+            "task": "contiguous topic segmentation via boundary detection",
+            "granularity": "SUB",
+            "split": "ICSI comparator results; different procedure explicitly stated; exact split not reported here.",
+            "scores": {
+              "LCSeg_known_segment_count": {
+                "Pk": 0.32,
+                "WindowDiff": 0.36
+              },
+              "LCSeg_unknown_segment_count": {
+                "Pk": 0.32,
+                "WindowDiff": 0.38
+              },
+              "CM_c4.5": {
+                "Pk": 0.37,
+                "WindowDiff": 0.39
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 248,
+              "line_end": 248,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "source_refs": [
+              "E11",
+              "E14"
+            ]
+          },
+          {
+            "dataset": "AMI",
+            "task": "contiguous topic segmentation via boundary detection",
+            "granularity": "TOP",
+            "split": "AMI scenario meetings; §5.1 says five-fold cross validation, with six training series of four meetings each and one unseen test series per fold; fold roster and reconciliation are not reported.",
+            "scores": {
+              "LCSeg_known_segment_count": {
+                "Pk": 0.33,
+                "WindowDiff": 0.49
+              },
+              "LCSeg_unknown_segment_count": {
+                "Pk": 0.41,
+                "WindowDiff": 0.51
+              },
+              "CM_c4.5": {
+                "Pk": 0.33,
+                "WindowDiff": 0.33
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 249,
+              "line_end": 249,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "source_refs": [
+              "E11",
+              "E14"
+            ]
+          },
+          {
+            "dataset": "AMI",
+            "task": "contiguous topic segmentation via boundary detection",
+            "granularity": "SUB",
+            "split": "AMI scenario meetings; §5.1 says five-fold cross validation, with six training series of four meetings each and one unseen test series per fold; fold roster and reconciliation are not reported.",
+            "scores": {
+              "LCSeg_known_segment_count": {
+                "Pk": 0.36,
+                "WindowDiff": 0.47
+              },
+              "LCSeg_unknown_segment_count": {
+                "Pk": 0.41,
+                "WindowDiff": 0.49
+              },
+              "CM_c4.5": {
+                "Pk": 0.36,
+                "WindowDiff": 0.36
+              }
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 250,
+              "line_end": 250,
+              "pdf_pages": [
+                3
+              ]
+            },
+            "source_refs": [
+              "E11",
+              "E14"
+            ]
+          }
+        ]
+      },
+      "segment_topic_labeling_table2": {
+        "dataset": "AMI scenario meetings",
+        "task": "topic-label classification of supplied annotated segments, treated as oracle-boundary labeling; end-to-end predicted-boundary evaluation not reported",
+        "split": "AMI scenario-meeting supplied-segment topic labeling; §5.2 says five-fold cross validation but does not restate fold membership or counts; §5.3 does not separately restate its split.",
+        "model": "Per-topic binary conditional Maximum Entropy models",
+        "metric_as_printed": "Accuracy (F1)",
+        "metric_denominators": "Correct/reference is named precision; correct/hypothesized is named recall in §4.2. Retain reversal (T05-I01). No separate precision or recall results are printed.",
+        "averaging": "Category averages reported; class counts, support, weighting, macro/micro convention, and fold pooling are not reported. Displayed example labels are not established as the complete class inventory.",
+        "feature_conditions": [
+          "all unigrams",
+          "top discriminability quartile (Q1) under LL",
+          "top discriminability quartile (Q1) under DICE"
+        ],
+        "source_refs": [
+          "E04",
+          "E08",
+          "E12",
+          "E13",
+          "E15"
+        ],
+        "results": [
+          {
+            "category": "FUNCTIONAL",
+            "label_as_printed": "average",
+            "F1_printed": {
+              "1gram_ALL": "0.57",
+              "1gram_LL_Q1": "0.62",
+              "1gram_DICE_Q1": "0.54"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 271,
+              "line_end": 271,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "FUNCTIONAL",
+            "label_as_printed": "Closing",
+            "F1_printed": {
+              "1gram_ALL": "0.56",
+              "1gram_LL_Q1": "0.67",
+              "1gram_DICE_Q1": "0.53"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 272,
+              "line_end": 272,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "FUNCTIONAL",
+            "label_as_printed": "Agenda",
+            "F1_printed": {
+              "1gram_ALL": "0.58",
+              "1gram_LL_Q1": "0.58",
+              "1gram_DICE_Q1": "0.55"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 273,
+              "line_end": 273,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "TOP-LEVEL",
+            "label_as_printed": "average",
+            "F1_printed": {
+              "1gram_ALL": "0.45",
+              "1gram_LL_Q1": "0.53",
+              "1gram_DICE_Q1": "0.48"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 274,
+              "line_end": 274,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "TOP-LEVEL",
+            "label_as_printed": "Target Group",
+            "F1_printed": {
+              "1gram_ALL": "0.36",
+              "1gram_LL_Q1": "0.63",
+              "1gram_DICE_Q1": "0.38"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 275,
+              "line_end": 275,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "TOP-LEVEL",
+            "label_as_printed": "Project Spec",
+            "F1_printed": {
+              "1gram_ALL": "9.52",
+              "1gram_LL_Q1": "0.44",
+              "1gram_DICE_Q1": "0.50"
+            },
+            "validity": "1gram_ALL=9.52 is outside the F1 unit interval; retain as source anomaly, exclude from valid-score calculations; intended value unknown.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 276,
+              "line_end": 276,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "TOP-LEVEL",
+            "label_as_printed": "Evlauation",
+            "F1_printed": {
+              "1gram_ALL": "0",
+              "1gram_LL_Q1": ".67",
+              "1gram_DICE_Q1": "0"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 277,
+              "line_end": 277,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "SUB-TOPIC",
+            "label_as_printed": "average",
+            "F1_printed": {
+              "1gram_ALL": "0.40",
+              "1gram_LL_Q1": "0.44",
+              "1gram_DICE_Q1": "0.40"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 278,
+              "line_end": 278,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "SUB-TOPIC",
+            "label_as_printed": "Budget",
+            "F1_printed": {
+              "1gram_ALL": "0.50",
+              "1gram_LL_Q1": "0.71",
+              "1gram_DICE_Q1": "0.57"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 279,
+              "line_end": 279,
+              "pdf_pages": [
+                3
+              ]
+            }
+          },
+          {
+            "category": "SUB-TOPIC",
+            "label_as_printed": "Trend",
+            "F1_printed": {
+              "1gram_ALL": "0.50",
+              "1gram_LL_Q1": "0.55",
+              "1gram_DICE_Q1": "0.50"
+            },
+            "validity": "Retained as printed; averaging and denominator-name caveats apply.",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 280,
+              "line_end": 280,
+              "pdf_pages": [
+                3
+              ]
+            }
+          }
+        ]
+      },
+      "feature_selection_table3": {
+        "dataset": "AMI scenario meetings",
+        "task": "supplied-segment topic labeling with unigram feature subsets",
+        "split": "AMI scenario-meeting supplied-segment topic labeling; §5.2 says five-fold cross validation but does not restate fold membership or counts; §5.3 does not separately restate its split.",
+        "metric": "average classification F1",
+        "denominators_and_averaging": "Per-class segment-count definitions inherit T05-I01; averaging population, weights, and relation to Table 2 are not reported (T05-I07).",
+        "quartiles": "Each feature subset is 25% of N-grams sorted by a selected discriminability measure: Q1 highest, Q2 mildly discriminative, Q3 mildly indiscriminative, Q4 lowest; feature selection within training folds is not specified.",
+        "source_refs": [
+          "E15",
+          "E16"
+        ],
+        "results": [
+          {
+            "selection_measure": "LL",
+            "average_F1": {
+              "Q1": 0.58,
+              "Q2": 0.26,
+              "Q3": 0.21,
+              "Q4": 0.08
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 315,
+              "line_end": 315,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "selection_measure": "X2",
+            "average_F1": {
+              "Q1": 0.51,
+              "Q2": 0.39,
+              "Q3": 0.41,
+              "Q4": 0.08
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 316,
+              "line_end": 316,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "selection_measure": "DICE",
+            "average_F1": {
+              "Q1": 0.55,
+              "Q2": 0.24,
+              "Q3": 0.0,
+              "Q4": 0.0
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 317,
+              "line_end": 317,
+              "pdf_pages": [
+                4
+              ]
+            }
+          },
+          {
+            "selection_measure": "PMI",
+            "average_F1": {
+              "Q1": 0.0,
+              "Q2": 0.09,
+              "Q3": 0.28,
+              "Q4": 0.29
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+              "line_start": 318,
+              "line_end": 318,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        ]
+      },
+      "uncertainty": "No confidence intervals, significance tests, per-fold dispersion, class support counts, or exact evaluation pair/window/segment denominators are reported for these tables."
+    },
+    "measured_work_text_preservation": {
+      "status": "no_such_evaluation",
+      "detail": "No direct test of retention/loss/broadening of conditions, evidence, exceptions, action scope, approval scope, or reply scope. No related extraction-error analysis is supplied. Decision access is motivation (T05-F07), not a measured preservation result.",
+      "source_refs": [
+        "E02",
+        "E08",
+        "E11",
+        "E13",
+        "E16"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Concrete work-matter identity versus generic agenda/topic class",
+      "Direct email or asynchronous reply/thread structure",
+      "Comparative sentence/clause/span/EDU/hybrid units",
+      "Whole-message multiple labels or overlapping/disconnected spans",
+      "End-to-end labeling after model boundary errors",
+      "Condition, exception, evidence, action, approval, question, or reply scope preservation",
+      "Calibrated uncertainty, abstention, or user review",
+      "ASR robustness, incremental updates, latency, memory, or thousands-of-messages throughput"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T05-I01",
+        "type": "printed_metric_definition_ambiguity",
+        "issue": "§4.2 names correct/reference as precision and correct/hypothesized as recall. These denominator names are reversed relative to conventional per-class precision and recall.",
+        "source_refs": [
+          "E08"
+        ],
+        "retained_values": {
+          "paper_precision_denominator": "reference segments of the topic class",
+          "paper_recall_denominator": "hypothesized segments of the topic class"
+        },
+        "interpretation": "Could be a prose naming error; implementation cannot be established. A standard harmonic F1 would be invariant to exchanging precision and recall, but no implemented formula is documented."
+      },
+      {
+        "id": "T05-I02",
+        "type": "printed_invalid_score",
+        "issue": "Table 2 prints 9.52 for TOP-LEVEL (Project Spec), 1gram ALL, under Accuracy (F1).",
+        "source_refs": [
+          "E13",
+          "E19"
+        ],
+        "retained_values": {
+          "ALL": "9.52",
+          "LL_Q1": "0.44",
+          "DICE_Q1": "0.50"
+        },
+        "interpretation": "Confirmed in the PDF image; not an extraction-only error. It is not a valid unit-interval F1. A value of 0.52 would be a guess and is not substituted. No alternative intended value is known."
+      },
+      {
+        "id": "T05-I03",
+        "type": "printed_equation_ambiguity",
+        "issue": "Eq. (2) prints X2(ng) = ∑ ((O − E)/E)², rather than the conventional Pearson form ∑ (O − E)²/E. Eq. (1) prints LL(ng) = ∑ O log(O/E), without a leading factor of two.",
+        "source_refs": [
+          "E05",
+          "E18"
+        ],
+        "interpretation": "The PDF fixes what was printed, not which statistic the implementation used. Do not silently repair Eq. (2). The omitted constant in Eq. (1) would not change a ranking if applied uniformly; this is mathematical interpretation, not a verified implementation fact."
+      },
+      {
+        "id": "T05-I04",
+        "type": "split_protocol_under_specification",
+        "issue": "§5.1 calls the evaluation five-fold, while describing six training series of four meetings plus one unseen test series in each fold. §4.1 describes 138 scenario meetings out of 170 in AMI.",
+        "source_refs": [
+          "E06",
+          "E09",
+          "E12"
+        ],
+        "retained_values": {
+          "claimed_folds": 5,
+          "training_series_per_fold": 6,
+          "meetings_per_training_series": 4,
+          "test_series_per_fold": 1,
+          "scenario_meetings_corpus_context": 138,
+          "total_meetings_corpus_context": 170
+        },
+        "interpretation": "Six times four gives 24 training meetings per fold (analyst arithmetic). Four test meetings would follow only if the unseen series has the same size. The exact evaluated unique set and whether folds are repeated holdouts or a selected subset are not given. Do not turn the corpus-wide 138 into the test population or relabel the run seven-fold."
+      },
+      {
+        "id": "T05-I05",
+        "type": "improvement_metric_ambiguity",
+        "issue": "The abstract reports 20%/12% segmentation improvements; §5.1 uses 20% in a sentence referring to top-level and subtopic boundaries. Neither supplies the improvement metric and denominator.",
+        "source_refs": [
+          "E01",
+          "E09",
+          "E11"
+        ],
+        "analyst_calculations_from_printed_AMI_unknown_count_baseline": {
+          "TOP_Pk": {
+            "formula": "100*(0.41-0.33)/0.41",
+            "relative_error_reduction_percent": 19.51219512195122,
+            "absolute_error_reduction": 0.08
+          },
+          "SUB_Pk": {
+            "formula": "100*(0.41-0.36)/0.41",
+            "relative_error_reduction_percent": 12.19512195121951,
+            "absolute_error_reduction": 0.05
+          },
+          "TOP_WindowDiff": {
+            "formula": "100*(0.51-0.33)/0.51",
+            "relative_error_reduction_percent": 35.294117647058826,
+            "absolute_error_reduction": 0.18
+          },
+          "SUB_WindowDiff": {
+            "formula": "100*(0.49-0.36)/0.49",
+            "relative_error_reduction_percent": 26.53061224489796,
+            "absolute_error_reduction": 0.13
+          }
+        },
+        "interpretation": "The abstract is approximately consistent with relative Pk error reduction against unknown-count LCSeg. It is not a WindowDiff improvement statement. §5.1 wording is broader and remains ambiguous; inferred denominator is not attributed to the authors."
+      },
+      {
+        "id": "T05-I06",
+        "type": "classification_improvement_denominator_ambiguity",
+        "issue": "§5.3 reports Functional/Top-Level/Sub-Topic gains of 8.1%/17.8%/10%, while the abstract reports an unexplained overall 13.3%.",
+        "source_refs": [
+          "E01",
+          "E13",
+          "E15"
+        ],
+        "analyst_calculations_from_Table2_category_means": {
+          "baseline_relative_percent": {
+            "Functional": 8.771929824561413,
+            "Top_Level": 17.777777777777782,
+            "Sub_Topic": 10.0
+          },
+          "absolute_F1_gains": {
+            "Functional": 0.05,
+            "Top_Level": 0.08,
+            "Sub_Topic": 0.04
+          },
+          "Functional_new_value_denominator_percent": 8.064516129032265,
+          "relative_gain_of_equal_category_mean_percent": 11.971830985915505,
+          "mean_of_category_relative_gains_percent": 12.183235867446397
+        },
+        "interpretation": "From rounded means, 8.1% is reproduced by dividing the Functional gain by 0.62, whereas 17.8% and 10% use the baselines 0.45 and 0.40. Rounding or another computation could also matter. Neither illustrated aggregate produces 13.3%. No undocumented averaging or intended denominator is imposed."
+      },
+      {
+        "id": "T05-I07",
+        "type": "cross_table_aggregation_ambiguity",
+        "issue": "Table 3 LL-Q1/DICE-Q1 averages are 0.58/0.55. Equal averages of the three corresponding Table 2 category means are 0.53/0.4733333333. Table 3 averaging populations and weights are not explained.",
+        "source_refs": [
+          "E13",
+          "E16"
+        ],
+        "interpretation": "This is an unresolved aggregation difference, not proof that the same statistic was computed incorrectly. Do not pool Table 2 and Table 3 as interchangeable outcomes. Table 3 also ties DICE Q3 and Q4 at 0.00; prose ordering is not strict there."
+      },
+      {
+        "id": "T05-I08",
+        "type": "explicit_noncomparability",
+        "issue": "Footnote 5 explicitly states that ICSI and AMI results use different procedures and are not directly comparable.",
+        "source_refs": [
+          "E14",
+          "E11"
+        ],
+        "interpretation": "Retain ICSI as separately contextualized table data. No AMI-versus-ICSI performance ranking or pooled effect is supported."
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "contribution": "Utterance-boundary segmentation and hierarchical topic segments are candidate transfer units; no comparison establishes the best email scope-preserving unit.",
+        "source_refs": [
+          "E03",
+          "E06",
+          "E07"
+        ]
+      },
+      "RQ2": {
+        "contribution": "No direct email clustering/interleaving result; recurrent agenda labels are not thread-independent work-matter identity.",
+        "source_refs": [
+          "E04",
+          "E06"
+        ]
+      },
+      "RQ3": {
+        "contribution": "Separates gold hierarchy, flattened boundary targets, and binary segment labeling. No evaluated multi-topic-message or multiple-membership span result.",
+        "source_refs": [
+          "E04",
+          "E06",
+          "E07",
+          "E12"
+        ]
+      },
+      "RQ4": {
+        "contribution": "Gold nesting is structural containment only. Arbitrary overlap and disconnected-span representations are unsupported; meeting transfer only.",
+        "source_refs": [
+          "E06",
+          "E07"
+        ]
+      },
+      "RQ5": {
+        "contribution": "Decision location is motivation, with no direct preservation or scope-error measurement.",
+        "finding_refs": [
+          "T05-F07"
+        ]
+      },
+      "RQ6": {
+        "contribution": "Provides separate Pk/WindowDiff segmentation and segment F1 labeling evidence, with the recorded metric/table/denominator ambiguities.",
+        "finding_refs": [
+          "T05-F02",
+          "T05-F03",
+          "T05-F04",
+          "T05-F06"
+        ],
+        "inconsistency_refs": [
+          "T05-I01",
+          "T05-I02",
+          "T05-I03",
+          "T05-I04",
+          "T05-I05",
+          "T05-I06",
+          "T05-I07",
+          "T05-I08"
+        ]
+      },
+      "RQ7": {
+        "contribution": "Small IAA population, scenario-driven domain, held-out-series claim, underspecified folds, missing duplicate controls and train-only feature selection details.",
+        "finding_refs": [
+          "T05-F01"
+        ],
+        "source_refs": [
+          "E06",
+          "E09",
+          "E12",
+          "E15"
+        ]
+      },
+      "RQ8": {
+        "contribution": "Motivates controlled boundary-versus-labeling and scope-preservation experiments; the paper does not select msgloom architecture.",
+        "proposal_refs": [
+          "T05-P01",
+          "T05-P02",
+          "T05-P03"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "id": "T05-A01",
+        "statement": "A generic agenda label such as evaluation or budget can recur for unrelated work matters. Classification into this label inventory cannot establish msgloom Topic identity across Sources.",
+        "source_refs": [
+          "E04",
+          "E06"
+        ]
+      },
+      {
+        "id": "T05-A02",
+        "statement": "Gold nesting, flattened segmentation, oracle/provided-segment labeling, and future joint segmentation/labeling are distinct conditions. Keep their performance claims separate.",
+        "source_refs": [
+          "E04",
+          "E07",
+          "E12",
+          "E17"
+        ]
+      },
+      {
+        "id": "T05-A03",
+        "statement": "Using lexical features and discarding lower-ranked N-grams may affect decision-bearing conditions or exceptions in a downstream system, but the paper neither measures such loss nor removes source evidence as a product operation. Treat this as a research risk, not an observed failure.",
+        "source_refs": [
+          "E15",
+          "E17"
+        ]
+      },
+      {
+        "id": "T05-A04",
+        "statement": "Timing, silence, speaker activity, and overlapping-speech features require adaptation to email. No evidence here establishes that an email substitute will retain the AMI benefit.",
+        "source_refs": [
+          "E03"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T05-P01",
+        "status": "untested_msgloom_research_proposal",
+        "proposal": "On a user-reviewed business-email set, compare sentence, clause, arbitrary-span, and hybrid units while retaining original offsets and all text. Annotate conditions, evidence, exceptions, action/approval/reply scope, and uncertain Topic links. Measure scope omission and broadening separately from boundary error and span F1.",
+        "motivation_refs": [
+          "T05-F07",
+          "T05-A03"
+        ]
+      },
+      {
+        "id": "T05-P02",
+        "status": "untested_msgloom_research_proposal",
+        "proposal": "Evaluate lexical-cohesion and text-appropriate supervised boundary baselines at fixed candidate units. Report known-boundary segment labeling separately from labeling predicted segments. Fit vocabulary and feature selection within training data, split by concrete work matter with duplicate controls, and report exact metric denominators.",
+        "motivation_refs": [
+          "T05-F02",
+          "T05-F03",
+          "T05-I04"
+        ]
+      },
+      {
+        "id": "T05-P03",
+        "status": "untested_msgloom_research_proposal",
+        "proposal": "Create explicit gold tests for one message supporting several Topics, a shared span supporting multiple Topics, and disconnected spans supporting one Topic. Separate these from thread-level recurrence and parent/child containment. Compare single-membership segmentation with set-valued span assignment using assignment, overlap, discontinuity, and scope-preservation metrics as separate outcomes.",
+        "motivation_refs": [
+          "T05-A01",
+          "T05-A02"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2006_hsueh_moore_automatic_topic_segmentation_labeling_multiparty_dialogue.pdf",
+      "pdf_sha256": "7ee2c57268e7b3a2170e4c93c006ee76dc3bedae5143ea80c64fb05dc37f9296",
+      "expected_pdf_sha256": "7ee2c57268e7b3a2170e4c93c006ee76dc3bedae5143ea80c64fb05dc37f9296",
+      "pdf_hash_matches_expected": true,
+      "primary_converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T05.md",
+      "primary_converted_text_sha256": "03dc19f7a730f4cef54d919cfd42ae78600dcd43af96ac1799d2490459b624ed",
+      "fine_conversion_status": "Not present at the supplied convert_fine/T05.md path.",
+      "canonical_locator_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T05.raw.txt",
+      "canonical_locator_text_sha256": "ed0f9d6b9c32ca5836eb297fe65a749d07aeaf08434357955d09f09cab6f1020",
+      "line_numbering": "LF only: text.split('\\n'); form feeds do not add line numbers. Whitespace-only quote normalization; line-break hyphens preserved.",
+      "reading": "Full primary rough conversion and full raw text read, including references; all four original PDF page renders visually inspected. Auxiliary page/layout conversions used for cross-checks; they interleave columns.",
+      "visual_verification_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/visual-verification.md",
+      "visual_verification_sha256": "623b2544b30d634e318b7e16322d92547038a33465e821adca9a596b77923a1d",
+      "image_paths": [
+        "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-1.png",
+        "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-2.png",
+        "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-3.png",
+        "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T05/pdf-page-4.png"
+      ],
+      "source_repairs": "No immutable source modified. Visual verification supplements missing/misordered rough-conversion equations and tables. Intended source corrections remain unknown.",
+      "network_access": "None; frozen local source only."
+    }
+  },
+  "runtime_provenance": {
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "launcher_reported": {
+      "MSGLOOM_WORKER_ROLE": "paper-T05",
+      "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+      "MSGLOOM_WORKER_EFFORT": "xhigh"
+    },
+    "provenance_scope": "Launcher-reported values from this process environment, supplied from the invocation arguments. Parent independently verifies actual turn_context and exit receipts. No CLI process ID, session ID, or turn identifier is inferred.",
+    "escalation": {
+      "requested": false,
+      "reason": null,
+      "handling": "Launched at xhigh for known material printed ambiguities. All source glyphs were readable; author intent and protocol/denominator uncertainty remain explicit."
+    }
+  }
+}

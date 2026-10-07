@@ -1,0 +1,380 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1016-j-eswa-2021-114890",
+   "title": "A case study of batch and incremental recommender systems in supermarket data under concept drifts and cold start",
+   "research_question": "How do batch and streaming collaborative-filtering recommender systems compare on real supermarket interaction data affected by concept drift and cold-start conditions?",
+   "methodology": "The authors construct and release a real positive-only supermarket interaction dataset, SMDI, together with two preprocessed variants intended to expose concept-drift and cold-start behavior. They temporally split four months of data into the first two months for training and the remaining two months for testing, comparing batch models such as SVD, BPRMF, GMF, MLP and NeuMF with incremental ISGD and IBPRMF. Streaming models preserve event order and use test-then-train evaluation, while performance is measured with RECALL@1, @5, @10 and @20, supplemented by window-based prequential analysis and Friedman/Nemenyi statistical testing over repeated runs.",
+   "key_findings": [
+    {
+     "finding": "Streaming recommenders achieved improvements of up to 21% over corresponding batch approaches in the studied supermarket data.",
+     "evidence_type": "supported",
+     "section": "Abstract; Section 6.1"
+    },
+    {
+     "finding": "ISGD significantly outperformed its batch SVD counterpart on RECALL@10 across all three dataset variants at the reported 95% confidence level.",
+     "evidence_type": "supported",
+     "section": "Section 6.1 Basic evaluation"
+    },
+    {
+     "finding": "IBPRMF improved RECALL@10 by as much as 21% over BPRMF in the preprocessed datasets, where abrupt changes and cold-start effects were more visible.",
+     "evidence_type": "supported",
+     "section": "Section 6.1 Basic evaluation"
+    },
+    {
+     "finding": "In the original dataset, IBPRMF's decreases at RECALL@10 and RECALL@20 were not statistically significant and were associated with volatile runs in which the model did not always converge.",
+     "evidence_type": "supported",
+     "section": "Section 6.1 Basic evaluation"
+    },
+    {
+     "finding": "Windowed prequential evaluation showed that incrementally updated models adapted more effectively when abrupt distribution changes occurred, supporting the value of continual updating under drift and cold start.",
+     "evidence_type": "supported",
+     "section": "Section 6.2 Window-based evaluation; Section 7 Conclusion"
+    },
+    {
+     "finding": "The authors report that streaming recommenders were especially beneficial under cold start and could outperform the evaluated neural approaches during recurrent concept drift.",
+     "evidence_type": "supported",
+     "section": "Section 7 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The empirical study uses a single supermarket domain, limiting external validity to other recommendation settings.",
+    "Only roughly four months of transaction history were available, and the authors explicitly state that a longer multi-year timespan would be preferable for concept-drift analysis.",
+    "Available item content such as price, section and brand was not used in the evaluated collaborative-filtering models.",
+    "The study does not integrate an explicit drift-detection mechanism; this is identified as future work.",
+    "The interaction data are positive-only purchases, so the experiments do not evaluate richer explicit preference signals or negative feedback."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "streaming_up_to_21_percent": 0.99,
+    "isgd_beats_svd_recall10": 0.99,
+    "ibprmf_preprocessed_gain": 0.99,
+    "ibprmf_original_instability": 0.98,
+    "streaming_adapts_to_drift": 0.97,
+    "cold_start_recovery": 0.97
+   },
+   "raw_claims": [
+    "The study compares batch and incremental recommendation algorithms on real supermarket purchase data.",
+    "The supermarket data exhibit both changing user-item behavior and cold-start events.",
+    "The first two months are used for training and the remaining two months for testing.",
+    "Streaming evaluation preserves temporal order and applies a test-then-train protocol.",
+    "RECALL at several cutoff values is the principal predictive-performance measure.",
+    "ISGD has significantly higher RECALL@10 than SVD across the evaluated dataset variants.",
+    "IBPRMF reaches substantially higher RECALL@10 than BPRMF on the preprocessed variants.",
+    "Incremental models can recover more rapidly when new users or changing interaction patterns appear.",
+    "The authors make both the supermarket dataset and experiment source code available.",
+    "The authors identify longer historical coverage, content-aware modeling and explicit drift detection as future work."
+   ],
+   "source_url": "https://jpbarddal.github.io/assets/pdf/2021_ESWA_case_study_recsys.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-6028-nist-sp-500-302-tempsumm-overview",
+   "title": "TREC 2013 Temporal Summarization",
+   "research_question": "How should systems that continuously monitor developing events be evaluated for timely, novel and comprehensive updates and for accurate tracking of changing event attributes?",
+   "methodology": "The TREC track defines two online tasks: Sequential Update Summarization, in which systems emit sentence-length relevant and novel updates from a time-ordered corpus, and Value Tracking, in which systems update estimates of event attributes and identify supporting sentences. Events are retrospectively annotated into timestamped information nuggets, and submitted updates are manually matched to those nuggets. Evaluation separates precision-like expected gain, recall-like comprehensiveness, latency and verbosity, while value tracking uses expected estimation error. For judging, the organizers depth-pool the top 60 updates per query and run according to participant-provided confidence scores and augment coverage using near-duplicate detection.",
+   "key_findings": [
+    {
+     "finding": "The evaluation framework explicitly separates update usefulness from coverage by measuring expected gain and comprehensiveness, while also discounting latency and unnecessary verbosity.",
+     "evidence_type": "supported",
+     "section": "Section 3.1 Temporal Summarization"
+    },
+    {
+     "finding": "Gain-based performance tended to be anti-correlated with comprehensiveness, analogous to the precision-recall tradeoff.",
+     "evidence_type": "supported",
+     "section": "Section 5.1 Sequential Update Summarization"
+    },
+    {
+     "finding": "Runs with higher gain generally emitted fewer updates, whereas runs with greater comprehensiveness emitted more, leading the authors to suggest reconciling or prioritizing the two objectives according to user intent.",
+     "evidence_type": "supported",
+     "section": "Section 5.1 Sequential Update Summarization"
+    },
+    {
+     "finding": "Performance varied substantially across event queries even when aggregate averages remained useful for overall run comparison.",
+     "evidence_type": "supported",
+     "section": "Section 5.1 Sequential Update Summarization"
+    },
+    {
+     "finding": "No Value Tracking system performed consistently well across all attributes, and some runs omitted entire attributes.",
+     "evidence_type": "supported",
+     "section": "Section 5.2 Value Tracking"
+    },
+    {
+     "finding": "The expected-error measure for Value Tracking was highly sensitive to occasional extreme extraction errors, so a few outliers could dominate an otherwise reasonable run.",
+     "evidence_type": "supported",
+     "section": "Section 5.2 Value Tracking"
+    }
+   ],
+   "limitations": [
+    "Gold nuggets and their timestamps are created retrospectively, and the authors note that timestamp precision can be imperfect.",
+    "Only the top 60 updates per query and run, ordered by submitted confidence, were depth-pooled, so valid lower-ranked material could be absent from manual matching.",
+    "Participant confidence scores were used primarily for pooling order rather than evaluated as calibrated user-facing uncertainty estimates.",
+    "There was substantial performance variance across individual event queries.",
+    "The Value Tracking expected-error measure is vulnerable to domination by extreme extraction mistakes.",
+    "The framework discusses prioritization according to user intent but does not model adaptive user-specific preferences over repeated interactions."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "multi_objective_temporal_metrics": 0.99,
+    "gain_comprehensiveness_tradeoff": 0.99,
+    "update_volume_tradeoff": 0.98,
+    "query_variance": 0.97,
+    "value_tracking_omissions": 0.99,
+    "outlier_sensitive_error": 0.99
+   },
+   "raw_claims": [
+    "The track targets systems that monitor information about a developing event over time.",
+    "Sequential systems emit short relevant and novel updates as documents arrive in temporal order.",
+    "Value Tracking systems return a new attribute estimate and supporting sentence when their estimate changes.",
+    "Temporal summarization is evaluated for precision-like gain, recall-like coverage, latency and novelty-related redundancy.",
+    "The latency function uses a six-hour scale parameter.",
+    "Assessors retrospectively construct timestamped gold information nuggets.",
+    "The judging pool uses the highest-confidence submitted updates and near-duplicate detection.",
+    "Gain-oriented and comprehensiveness-oriented performance tend to trade off against each other.",
+    "Several Value Tracking runs omit predictions for some attributes.",
+    "Large extraction mistakes can disproportionately affect expected-error scores."
+   ],
+   "source_url": "https://trec.nist.gov/pubs/trec22/papers/TS.OVERVIEW.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1609-icwsm-v12i1-15014",
+   "title": "Can You Verifi This? Studying Uncertainty and Decision-Making About Misinformation Using Visual Analytics",
+   "research_question": "How do confirmation-bias instructions and uncertainty from conflicting information cues affect people's judgments of misinformation when using a visual-analytics system?",
+   "methodology": "The authors built Verifi, a visual-analytics interface combining multiple signals about Twitter news accounts, and conducted a controlled laboratory experiment with 60 participants evenly divided among Control, Confirm and Disconfirm conditions. Participants inspected eight anonymized accounts spanning different cue-consistency and difficulty levels, classified each account as real or fake and reported confidence. The analysis used one-way ANOVA with Tukey HSD for treatment effects, two logistic regressions for accuracy and fake-account judgments, and thematic analysis of 95 optional participant comments.",
+   "key_findings": [
+    {
+     "finding": "The three confirmation-bias treatment conditions did not differ significantly in overall classification accuracy, real-versus-fake labeling rates or time spent interacting with the interface.",
+     "evidence_type": "supported",
+     "section": "RQ1: Testing the Effects of Confirmation Bias"
+    },
+    {
+     "finding": "Cue values and account identity were important predictors of participant decisions, indicating that the evidence configuration mattered more than the experimental instruction condition.",
+     "evidence_type": "supported",
+     "section": "RQ2: Measuring the Impact of Uncertainty"
+    },
+    {
+     "finding": "Opinionated-language, fear and social-network cues were among the strongest cues associated with correct decisions when used consistently.",
+     "evidence_type": "supported",
+     "section": "RQ2: Regression Analysis"
+    },
+    {
+     "finding": "Self-reported confidence had no significant relationship with accuracy or fake-account decisions after the other regression variables were considered.",
+     "evidence_type": "supported",
+     "section": "RQ2: Regression Analysis"
+    },
+    {
+     "finding": "Accounts with cues pointing in conflicting directions produced greater uncertainty and more inaccurate judgments than easier accounts with mutually reinforcing cues.",
+     "evidence_type": "supported",
+     "section": "RQ2: Thematic Analysis of Comments; Conclusion"
+    },
+    {
+     "finding": "Among comments about difficult accounts, decisions drawing on both qualitative and quantitative cues were less often wrong than comments relying on only one cue type, although this is observational rather than a randomized causal comparison.",
+     "evidence_type": "supported",
+     "section": "RQ2: Thematic Analysis of Comments"
+    }
+   ],
+   "limitations": [
+    "Participants evaluated only eight accounts because the laboratory session was limited to roughly one hour, which restricts generalizability.",
+    "The participant pool was drawn from an institutional study population and may not represent the broader population of social-media users.",
+    "The experiment supplied the hypothesis that all eight accounts were fake, and the authors suggest this framing may not have generated strong participant commitment.",
+    "The Verifi interface itself may have encouraged slower and broader evidence inspection, potentially reducing observable differences between confirmation-bias treatments.",
+    "Account identities were masked for institutional reasons, and the complete experimental dataset is not presented as a released reproducibility artifact.",
+    "The authors identify explicit visualization of cue uncertainty and evaluation over a larger randomized account set as future work."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "no_overall_treatment_effect": 0.99,
+    "cue_and_account_effects": 0.98,
+    "important_cues": 0.97,
+    "confidence_not_predictive": 0.98,
+    "conflicting_cues_raise_error": 0.98,
+    "mixed_evidence_comment_pattern": 0.94
+   },
+   "raw_claims": [
+    "Verifi presents users with multiple quantitative and qualitative signals about news accounts.",
+    "Sixty participants were divided evenly across Control, Confirm and Disconfirm conditions.",
+    "Each participant evaluated eight accounts selected to span different levels of cue uncertainty.",
+    "Overall accuracy did not differ significantly among the three experimental conditions.",
+    "Interaction time also did not differ significantly among conditions.",
+    "Cue variables and account identity explained meaningful variation in user decisions.",
+    "Reported confidence was not a significant multivariate predictor of either accuracy or fake-account judgments.",
+    "Difficult accounts were characterized by cues that pointed in contradictory directions.",
+    "Participants made more mistakes when evidence cues conflicted.",
+    "The qualitative analysis suggests that combining multiple forms of evidence can help users resolve difficult cases."
+   ],
+   "source_url": "https://ojs.aaai.org/index.php/ICWSM/article/download/15014/14864/18533",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-4cb48c423e",
+   "title": "Interactive Multi-Objective Probabilistic Preference Learning with Soft and Hard Bounds",
+   "research_question": "Can an interactive probabilistic preference-learning framework using editable soft and hard bounds, active querying and global sensitivity analysis efficiently identify preferred Pareto-optimal solutions while improving decision-maker confidence?",
+   "methodology": "The paper proposes Active-MoSH, which maintains probabilistic beliefs over objective preferences and soft-hard bounds and actively chooses queries intended to refine those beliefs, together with C-MoSH, a global sensitivity component intended to expose potentially overlooked high-value alternatives. The framework is evaluated through simulated multi-objective optimization experiments and ablations, a human study with 21 Amazon Mechanical Turk participants selecting AI-generated magazine-cover images, and a retrospective cervical-cancer brachytherapy case study using three patient datasets and a domain expert. Comparisons include pairwise feedback, full ranking and partial ranking, with utility, convergence, Iteration Stop Efficiency, Likert-scale trust, cognitive effort and expressiveness among the reported measures.",
+   "key_findings": [
+    {
+     "finding": "Active-C-MoSH reached higher second-iteration utility than pairwise feedback and full ranking in the user study, while its difference from partial ranking was not statistically significant.",
+     "evidence_type": "supported",
+     "section": "Section 7.2 User Study Results"
+    },
+    {
+     "finding": "Participants rated Active-C-MoSH as providing significantly greater decision confidence or trust than full ranking, partial ranking and pairwise feedback.",
+     "evidence_type": "supported",
+     "section": "Section 7.2 User Study Results; Appendix E.3"
+    },
+    {
+     "finding": "The initial comparative ISE result was not statistically significant, but in the four-trial longitudinal study the final Active-C-MoSH trial reached a mean ISE of 0.82 and was reported as significantly higher than the baseline feedback mechanisms.",
+     "evidence_type": "supported",
+     "section": "Section 7.2 User Study Results"
+    },
+    {
+     "finding": "An ablation comparing Active-C-MoSH with Active-MoSH produced higher ISE for the version including C-MoSH, supporting the sensitivity-analysis component as a contributor to decision confidence.",
+     "evidence_type": "supported",
+     "section": "Section 7.2 User Study Results"
+    },
+    {
+     "finding": "Active-C-MoSH was rated as more cognitively demanding than the simpler feedback mechanisms but also more expressive than full ranking and pairwise feedback.",
+     "evidence_type": "supported",
+     "section": "Section 7.2 User Study Results"
+    },
+    {
+     "finding": "In the three-case retrospective cervical-cancer study, Active-MoSH obtained a reported mean utility of 1.11 plus or minus 0.02, compared with approximately 0.80 to 0.82 for the ranking and pairwise baselines.",
+     "evidence_type": "supported",
+     "section": "Section 8 Case Study: Cervical Cancer"
+    },
+    {
+     "finding": "Simulation ablations showed lower average utility and often greater variance when probabilistic preference modeling was replaced by a uniform preference distribution or when active query selection was replaced by random sampling.",
+     "evidence_type": "supported",
+     "section": "Appendix D.5 Additional Experiments and Ablation Studies"
+    }
+   ],
+   "limitations": [
+    "Maintaining Gaussian-process models, preference posteriors, acquisition optimization and sensitivity analysis can become computationally expensive as the number of objectives or interaction rounds grows.",
+    "The method depends on decision-makers being able to express meaningful soft and hard bounds; fatigue, inconsistency and difficulty articulating preferences can degrade performance.",
+    "The assumption that only one bound is modified per iteration may be restrictive for users who want to express several preference changes at once.",
+    "The authors note that simulated decision-maker behavior cannot fully reproduce complex human feedback, particularly for the C-MoSH mechanism.",
+    "The human study contains only 21 MTurk participants and uses a specific image-selection task.",
+    "The high-stakes case study uses only three retrospective patient datasets and one domain-expert workflow, limiting clinical generalizability.",
+    "The retrospective clinical datasets are not identified as a publicly released dataset."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "faster_convergence_vs_two_baselines": 0.99,
+    "higher_reported_trust": 0.99,
+    "longitudinal_ise_improvement": 0.98,
+    "cmosh_ablation_confidence": 0.98,
+    "cognitive_load_and_expressiveness": 0.99,
+    "clinical_case_utility": 0.98,
+    "preference_and_sampling_ablations": 0.97
+   },
+   "raw_claims": [
+    "Active-MoSH represents preferences and soft-hard bounds probabilistically and updates them from interactive feedback.",
+    "Soft bounds represent aspirational targets while hard bounds represent non-negotiable feasibility limits.",
+    "C-MoSH uses multi-objective sensitivity analysis to expose potentially overlooked high-value alternatives.",
+    "The user study recruited 21 Mechanical Turk participants.",
+    "The primary user study compares Active-C-MoSH with pairwise, full-ranking and partial-ranking feedback.",
+    "Active-C-MoSH produced significantly higher second-iteration utility than pairwise and full-ranking feedback.",
+    "Participants rated Active-C-MoSH as more trustworthy than each of the three comparison mechanisms.",
+    "Repeated exposure to Active-C-MoSH was associated with higher Iteration Stop Efficiency by the fourth longitudinal trial.",
+    "The soft-hard-bounds interaction required more reported mental effort than the simpler comparison mechanisms.",
+    "The cervical-cancer case study used three retrospective patient datasets and a strict decision-time budget.",
+    "The authors report that their implementation details are included in provided code.",
+    "The authors identify computational scaling, cognitive load and limits of simulated feedback as important constraints."
+   ],
+   "source_url": "https://arxiv.org/html/2506.21887",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "manual-39435af3dd",
+   "title": "Overview of the TAC 2008 Update Summarization Task",
+   "research_question": "How well can automatic summarizers produce concise summaries of new information from a later document batch when the reader is assumed to already know the information in an earlier batch?",
+   "methodology": "TAC 2008 defines 48 news topics, each with 20 relevant AQUAINT-2 documents ordered chronologically and divided into ten-document Set A and later ten-document Set B. Systems generate a maximum 100-word initial Summary A and a 100-word update Summary B under the assumption that the reader already knows Set A, while NIST assessors also create human model summaries. Seventy-one automatic runs were scored with ROUGE-2, ROUGE-SU4 and BE-HM, and 57 runs received manual readability, Pyramid-content and overall-responsiveness evaluation, followed by statistical comparisons and correlation analysis.",
+   "key_findings": [
+    {
+     "finding": "Manual evaluation showed a significant quality gap between human and automatic summarizers in readability, Pyramid content and overall responsiveness.",
+     "evidence_type": "supported",
+     "section": "Section 4 Evaluation; Section 5 Conclusions"
+    },
+    {
+     "finding": "Automatic systems performed worse on the later update summaries than on initial summaries, while human summarizers were approximately equally effective on both.",
+     "evidence_type": "supported",
+     "section": "Section 4 Evaluation; Section 5 Conclusions"
+    },
+    {
+     "finding": "ROUGE-2 and ROUGE-SU4 detected the initial-versus-update performance difference for automatic systems, whereas BE-HM did not distinguish the two summary types at the reported 95% confidence level.",
+     "evidence_type": "supported",
+     "section": "Section 4.2 Automatic Evaluation"
+    },
+    {
+     "finding": "Differences among ROUGE-2, ROUGE-SU4 and BE-HM in Pearson and Spearman correlation with the manual measures were not statistically significant at the 95% level.",
+     "evidence_type": "supported",
+     "section": "Section 4.2.1 Correlation"
+    },
+    {
+     "finding": "Despite high correlations on automatic peers, the automatic metrics did not reproduce the clear manual-evaluation separation between human and machine summaries.",
+     "evidence_type": "supported",
+     "section": "Section 4.2 Automatic Evaluation; Section 5 Conclusions"
+    },
+    {
+     "finding": "The paper attributes part of this evaluation mismatch to string-matching metrics penalizing valid summaries that paraphrase reference content.",
+     "evidence_type": "supported",
+     "section": "Section 4.2 Automatic Evaluation"
+    }
+   ],
+   "limitations": [
+    "The benchmark has only two temporal batches, so it does not test state maintenance over many recurring briefing cycles.",
+    "The evaluation uses 48 newswire topics rather than workplace communication, limiting domain generalization.",
+    "Only 57 of the 71 submitted runs received the full manual evaluation.",
+    "ROUGE and BE rely heavily on surface overlap and can penalize semantically adequate paraphrases.",
+    "There were only eight human peers compared with many more automatic peers, making correlations for the human group statistically sparse.",
+    "The underlying AQUAINT-2 documents and TAC test materials are obtainable through the TAC/LDC access process rather than as an unrestricted open corpus."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "human_system_manual_gap": 0.99,
+    "update_harder_for_automatic_systems": 0.99,
+    "rouge_detects_update_gap": 0.99,
+    "metric_correlations_not_different": 0.99,
+    "automatic_metrics_miss_human_gap": 0.98,
+    "paraphrase_penalty": 0.98
+   },
+   "raw_claims": [
+    "The TAC task models an information need that is revisited after a later batch of documents arrives.",
+    "Each of the 48 topics contains 20 chronologically ordered AQUAINT-2 documents split into two sets of ten.",
+    "Summary B is written under the assumption that the reader is already familiar with Set A.",
+    "Both initial and update summaries are limited to 100 words.",
+    "Seventy-one automatic runs were submitted and all received automatic scoring.",
+    "Fifty-seven runs were manually evaluated for readability, content and overall responsiveness.",
+    "Manual assessment places human summaries substantially above automatic summaries.",
+    "Automatic systems have greater difficulty with update summaries than with initial summaries.",
+    "Human summarizers do not show the same degradation on the later document set.",
+    "ROUGE-2 and ROUGE-SU4 reflect the automatic-system update penalty, whereas BE-HM does not at the reported significance level.",
+    "The three automatic metrics have statistically indistinguishable correlations with the manual measures.",
+    "Surface-overlap evaluation can undervalue a good summary that expresses reference information using different wording."
+   ],
+   "source_url": "https://tac.nist.gov/publications/2008/additional.papers/update_summ_overview08.proceedings.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

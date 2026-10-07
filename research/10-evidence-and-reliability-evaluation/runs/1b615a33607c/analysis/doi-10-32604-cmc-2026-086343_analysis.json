@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-32604-cmc-2026-086343",
+ "title": "Do LLMs Know When Evidence is Insufficient? An Evidence Sufficiency Benchmark for Answer-Abstention Calibration in Retrieval-Augmented Generation",
+ "research_question": "Can current LLMs reliably recognize when retrieved evidence is sufficient to justify an answer and abstain when evidence is irrelevant, absent, incomplete, or contradictory?",
+ "methodology": "The authors construct the Evidence Sufficiency Benchmark from 200 seed questions, split evenly between SQuAD and HotpotQA, and transform each question into five controlled evidence conditions ranging from full support to conflicting evidence. Seven LLMs from five model families are evaluated with three prompting strategies, producing about 29,400 model calls, and outputs are categorized as answers, abstentions, or invalid responses. Evaluation uses accuracy on answerable conditions, abstention and over-answer rates on insufficient-evidence conditions, wrong-answer rate under conflicts, a Behavioral Expected Calibration Error, bootstrap confidence intervals, and position-randomization experiments. The authors also manually validate 200 stratified examples.",
+ "key_findings": [
+  {
+   "finding": "All seven evaluated models substantially over-answer when presented with conflicting evidence, with L5 over-answer rates above 65%.",
+   "evidence_type": "supported",
+   "section": "6.2 Cross-family Results under Conflicting Evidence"
+  },
+  {
+   "finding": "Models generally recognize complete evidence absence more reliably than internal contradiction between plausible evidence passages.",
+   "evidence_type": "supported",
+   "section": "6.1 Evidence Sufficiency Curve / 7.1 Why is Conflicting Evidence Harder than No Context?"
+  },
+  {
+   "finding": "Abstention prompting and chain-of-thought prompting can improve behavior, but gains vary sharply across model families and do not eliminate conflict-driven over-answering.",
+   "evidence_type": "supported",
+   "section": "6.3 Prompt Sensitivity / 7.3 Prompting Helps but Does Not Solve Over-Answering"
+  },
+  {
+   "finding": "Six of seven models exhibit significant sensitivity to the order in which conflicting passages are presented.",
+   "evidence_type": "supported",
+   "section": "6.4 Position Bias under Conflicting Evidence"
+  },
+  {
+   "finding": "High answer accuracy under well-supported evidence does not imply reliable evidence-sufficiency behavior under insufficient or contradictory evidence.",
+   "evidence_type": "supported",
+   "section": "6.5 Helpfulness-Safety Trade-off"
+  },
+  {
+   "finding": "Manual checking of 200 stratified samples found 89% agreement with the automatic behavior classifier overall, but only 75% agreement under the conflicting-evidence condition.",
+   "evidence_type": "supported",
+   "section": "7.7 Human Validation"
+  }
+ ],
+ "limitations": [
+  "The benchmark is based on only 200 underlying questions from two general open-domain QA datasets.",
+  "Medical, legal, financial, educational, multilingual, and workplace communication domains were not evaluated.",
+  "Automatic abstention detection relies on explicit refusal phrases and may misclassify implicit or mixed abstention behavior.",
+  "Human validation was performed internally by the authors rather than by multiple independent annotators, and no inter-rater reliability statistic was reported.",
+  "The study evaluates inference-time prompting only and does not test fine-tuning, preference optimization, or dedicated contradiction-verification modules.",
+  "The benchmark data and code are promised for public release upon acceptance, but the full-text page read for this analysis does not provide a repository URL from which availability can be verified."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "conflict_over_answering": 0.99,
+  "absence_easier_than_conflict": 0.98,
+  "prompting_model_dependent": 0.98,
+  "position_bias": 0.97,
+  "accuracy_not_sufficient": 0.97,
+  "human_validation": 0.98
+ },
+ "raw_claims": [
+  "The benchmark defines five evidence levels from full support through conflicting evidence.",
+  "L1 and L2 are treated as answerable, while L3 through L5 are treated as conditions in which the model should abstain.",
+  "The experiments use 100 SQuAD questions and 100 HotpotQA questions.",
+  "Seven LLMs from five model families are tested under three prompting strategies.",
+  "All tested models over-answer more than 65% of the time under conflicting evidence.",
+  "Abstention rises when evidence is irrelevant or absent but falls again when the context contains conflicting answer-bearing passages.",
+  "Six of the seven models show significant position bias under conflicting evidence.",
+  "Prompt engineering improves abstention for some models but produces much smaller gains for others.",
+  "The automatic response classifier agrees with manual review on 89% of the 200 validation examples.",
+  "The authors argue that RAG systems need explicit evidence-quality and contradiction checks rather than relying on answer accuracy alone."
+ ],
+ "source_url": "https://www.techscience.com/cmc/v89n1/68467/html",
+ "access": "full_text"
+}

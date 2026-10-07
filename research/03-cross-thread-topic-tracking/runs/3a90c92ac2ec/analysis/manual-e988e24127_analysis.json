@@ -1,0 +1,73 @@
+{
+ "paper_id": "manual-e988e24127",
+ "title": "Revisiting Joint Modeling of Cross-document Entity and Event Coreference Resolution",
+ "research_question": "Can cross-document entity and event coreference be improved by jointly and iteratively modeling the dependencies between event mentions and their entity arguments rather than resolving the two tasks independently?",
+ "methodology": "The authors build an iterative neural coreference architecture that alternates between entity and event clustering, updating each mention representation using the current clusters of semantically related mentions of the other type. Mention representations combine lexical span features, ELMo context, and predicate-argument information, and separate neural pairwise scorers drive agglomerative clustering. The system is trained and evaluated on ECB+, using gold mentions, document topic clustering, and standard MUC, B3, CEAF-e, and CoNLL F1 metrics. Joint and disjoint variants, prior systems, deterministic baselines, ablations, and manual error analysis are compared.",
+ "key_findings": [
+  {
+   "finding": "The joint model achieved 79.5 CoNLL F1 for event coreference, 10.5 points above the previously published KCP result and 1.0 point above the authors' disjoint model.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "For entity coreference, the joint system obtained 71.2 CoNLL F1, compared with 70.0 for the disjoint variant and 67.4 for the Cluster+Lemma baseline.",
+   "evidence_type": "supported",
+   "section": "4 Experimental Setup / Table 2"
+  },
+  {
+   "finding": "Joint modeling improved both entity and event coreference over the disjoint architecture, with the reported differences significant under bootstrap and permutation testing at p<0.001.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "Document topic pre-clustering was itself highly consequential: adding the authors' clustering stage to KCP improved its event-coreference CoNLL F1 by 4.6 points.",
+   "evidence_type": "supported",
+   "section": "6 Results"
+  },
+  {
+   "finding": "Ablation experiments showed that representations of semantically dependent mentions contributed more than the simple pairwise binary joint features, while removing both joint components reduced event CoNLL F1 from 79.5 to 78.5.",
+   "evidence_type": "supported",
+   "section": "6 Results / Table 4"
+  },
+  {
+   "finding": "Error analysis showed that the same cross-type dependencies that improve performance can propagate mistakes, including errors originating from predicate-argument extraction or incorrect entity/event clusters.",
+   "evidence_type": "supported",
+   "section": "7.1 Error Analysis"
+  }
+ ],
+ "limitations": [
+  "Evaluation is restricted to ECB+, a relatively small news-domain corpus whose annotations cover only selected salient mentions.",
+  "The experimental setup uses gold entity and event mentions rather than performing end-to-end mention detection.",
+  "Training uses gold topic clusters and gold within-document entity clusters, whereas inference relies on predicted document clusters and an external within-document entity-coreference system.",
+  "Predicate-argument information depends on semantic-role labeling and heuristics, and extraction errors can propagate through the joint iterative clustering process.",
+  "There were no previously published ECB+ entity-coreference results under the same setup, limiting direct comparison for the entity task.",
+  "Strong performance partly depends on unusually effective topic clustering on the ECB+ test set, so gains may not transfer unchanged to less clearly separated document collections."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "event_joint_improvement": 0.99,
+  "entity_joint_improvement": 0.99,
+  "topic_clustering_effect": 0.98,
+  "joint_feature_ablation": 0.99,
+  "error_propagation": 0.95
+ },
+ "raw_claims": [
+  "The model alternates between entity and event clustering instead of resolving them independently.",
+  "Event representations can use information from current entity clusters, and entity representations can analogously use event clusters.",
+  "Mention representations combine lexical span, contextual, and semantic-dependency information.",
+  "The disjoint architecture already substantially improves over the previously published ECB+ event-coreference result.",
+  "The joint architecture adds a smaller but statistically significant improvement over the disjoint architecture.",
+  "Topic clustering makes a strong contribution to event-coreference performance on ECB+.",
+  "Continuous representations of semantically related mentions contribute more than the binary joint features alone.",
+  "Incorrect cross-type clustering decisions can propagate between entity and event resolution.",
+  "Predicate-argument extraction errors are one source of downstream clustering errors.",
+  "The implementation was released publicly by the authors."
+ ],
+ "source_url": "https://arxiv.org/html/1906.01753",
+ "access": "full_text",
+ "source_citation": "citeturn375153view0turn915401view1turn915401view3"
+}

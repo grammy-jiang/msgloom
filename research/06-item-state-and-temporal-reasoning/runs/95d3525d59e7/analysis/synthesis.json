@@ -1,0 +1,399 @@
+{
+ "topic": "Natural-language longitudinal work-item revision in workplace and operational communication: distinguishing supersession, correction, supplementation, contradiction, reopening, unresolved conflict, and claimed versus independently confirmed completion.",
+ "paper_count": 31,
+ "executive_summary": "This 31-paper corpus provides strong component-level evidence but no direct solution to longitudinal workplace work-item revision. Factuality studies consistently model what a source presents as true, uncertain, or false rather than independently verified truth. Temporal and state-tracking studies show that nonlocal context, structured inference, and explicit state trajectories can improve performance, although gains vary by dataset and constraint. Formal dialogue, commitment, truth-maintenance, and belief-revision work distinguishes correction, retraction, cancellation, persistence, reopening, and incompatible alternatives while retaining historical information. Provenance and event-sourcing work supplies complementary history-preservation concepts. Evidence-retrieval and conflict-arbitration studies expose further difficulty when evidence is distributed or inconsistent. However, no admitted paper jointly evaluates these dimensions in successive workplace communications, and none establishes claimed-versus-independently-confirmed completion. All eight previously identified gaps therefore remain open.",
+ "themes": [
+  "Source-relative factuality and speaker commitment are distinct from independently established truth.",
+  "Temporal ordering, lifecycle state, and revision semantics are separate representational problems.",
+  "Longitudinal and global context can improve state or temporal inference, but the magnitude and source of gains are dataset- and architecture-dependent.",
+  "Correction, retraction, cancellation, contradiction, and reopening can preserve portions of earlier state rather than simply replacing all history.",
+  "Explicit provenance and retained historical observations support reasoning about changing assessments without implying that immutability is universal in deployed systems.",
+  "Evidence retrieval, source attribution, and conflict arbitration remain difficult when evidence is distributed, heterogeneous, distant, or inconsistent.",
+  "Rare factuality, temporal, and uncertainty labels remain substantially harder than dominant states, and multiple reviewed benchmarks are strongly imbalanced.",
+  "Most empirical evidence comes from news, procedural narratives, scientific revision, fact verification, or synthetic conflict tasks rather than workplace email or enterprise chat."
+ ],
+ "findings": [
+  {
+   "statement": "Across factuality and speaker-commitment studies, the predicted quantity is generally the commitment or presentation of an event by a particular source, not independent determination that the event occurred; the reviewed work therefore empirically and formally separates source-relative assertion from objective verification.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s10579-009-9089-9",
+     "section": "Sections 2.2 and 5"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-acl-long-122",
+     "section": "Sections 2-3 and error analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2023-findings-acl-44",
+     "section": "Section 1 Introduction"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-p19-1412",
+     "section": "Sections 4-6"
+    }
+   ]
+  },
+  {
+   "statement": "In procedural state tracking, modeling the broader trajectory rather than only sentence-local transitions improves aggregate state-tracking performance, and canonicalizing referents plus completing missing transitions reduces important evaluation ambiguities; these results are demonstrated on process narratives rather than workplace communication.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1805.06975",
+     "section": "Section 5, Table 3 and error analysis"
+    },
+    {
+     "paper_id": "manual-2362cbe877",
+     "section": "Sections 3-5 and 7"
+    }
+   ]
+  },
+  {
+   "statement": "Multiple temporal-relation studies report improvements from representations or inference that encode relationships among several temporal decisions rather than treating every pair independently, but the contribution of individual global constraints is inconsistent across systems and datasets.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1804.06020",
+     "section": "Section 4.2.2"
+    },
+    {
+     "paper_id": "1909.05360",
+     "section": "Sections 6.1 and 6.4"
+    },
+    {
+     "paper_id": "doi-10-1162-tacl-a-00182",
+     "section": "Sections 5-6"
+    },
+    {
+     "paper_id": "manual-b3703967d3",
+     "section": "Section 5.3"
+    },
+    {
+     "paper_id": "manual-eef7a0219f",
+     "section": "Sections 5-6"
+    }
+   ]
+  },
+  {
+   "statement": "Formal dialogue and truth-maintenance accounts allow earlier commitments or alternative hypotheses to remain historically represented when a correction, retraction, or contradiction changes what is currently supported; they do not equate revision with deletion of every earlier record.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1023-a-1010318403544",
+     "section": "Sections 1-3"
+    },
+    {
+     "paper_id": "doi-10-1093-jos-ffn013",
+     "section": "Sections 2-6"
+    },
+    {
+     "paper_id": "doi-10-1016-0004-3702-86-90080-9",
+     "section": "Sections 4-5"
+    }
+   ]
+  },
+  {
+   "statement": "The Event Calculus commitment model distinguishes lifecycle outcomes including satisfaction, cancellation, violation, release, replacement, detachment, and expiration and supports incremental monitoring as events arrive; its implementation deliberately leaves simultaneous conflicting operations unresolved rather than imposing a universal precedence rule.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s10458-012-9202-0",
+     "section": "Sections 2.2, 2.4, 3, 4 and limitations discussion"
+    }
+   ]
+  },
+  {
+   "statement": "Collaborative scientific-document revision data shows that one review request can be realized by multiple edits, that not every explicit suggestion is implemented, and that generated revision summaries can omit a substantial portion of observed edits; the dataset does not test authentic author completion claims against those edits.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2406.00197",
+     "section": "Sections 3, 5, 6 and Limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Database provenance formally distinguishes why an output exists from where particular values originated, while the industrial event-sourcing study documents several schema-evolution strategies and shows that complete event immutability was not universal among the systems studied.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-3-540-44503-x-20",
+     "section": "Sections 4-6"
+    },
+    {
+     "paper_id": "2104.01146",
+     "section": "Sections 4, 6 and 7"
+    }
+   ]
+  },
+  {
+   "statement": "Distributed evidence substantially complicates verification: HoVer retrieval success falls sharply as required evidence hops increase, while HeterMV reports gains from preserving heterogeneous source roles and reasoning views on two fact-verification benchmarks; these studies concern fact verification rather than longitudinal work-item revision.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2011.03088",
+     "section": "Sections 5.2-5.6"
+    },
+    {
+     "paper_id": "doi-10-1016-j-ipm-2026-104709",
+     "section": "Abstract, Methodology and Experiments"
+    }
+   ]
+  },
+  {
+   "statement": "Speaker-commitment and source-attachment models remain sensitive to linguistic environment and discourse distance: conditionals, no-commitment cases, neg-raising, and cross-sentence source attachment produce especially weak results in the reviewed evaluations.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-p19-1412",
+     "section": "Section 5 Analysis"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2021-acl-long-122",
+     "section": "Section 3.3 Error Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "In the controlled synthetic evidence-conflict benchmark, model decisions are materially affected by evidence order, modality, recency, and tool forecasts; recency was more consistently influential than an explicit unreliability cue, and larger model size did not eliminate systematic arbitration errors.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2608.20116",
+     "section": "Sections 4-5"
+    }
+   ]
+  },
+  {
+   "statement": "A formal temporal-database analysis distinguishes event time, valid time, and transaction time and argues that all three are needed in its model to preserve histories involving retroactive updates, proactive updates, delayed updates, and corrections; only abstract-level evidence was available in this review.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-0020-0255-94-90059-0",
+     "section": "Abstract"
+    }
+   ]
+  },
+  {
+   "statement": "Formal belief-change work distinguishes update, where the represented world changes, from revision, where new information changes beliefs about a world treated as static; the reviewed paper argues that one uniform set of revision postulates does not cover both operations.",
+   "confidence": "MEDIUM",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1017-cbo9780511526664-007",
+     "section": "Summary / Introduction"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Contribution of temporal transitivity constraints",
+   "papers": [
+    "doi-10-1162-tacl-a-00182",
+    "1909.05360"
+   ],
+   "note": "CAEVO reports transitive inference as a major contributor to dense temporal-ordering performance, whereas the structured joint model reports no gain from its added transitivity constraint on TB-Dense and only 0.1 F1 on MATRES. The results should not be averaged into a universal claim because the architectures, inference procedures, and interaction with NONE predictions differ."
+  },
+  {
+   "topic": "Benefit of joint or multi-task learning",
+   "papers": [
+    "doi-10-1016-j-ipm-2021-102836",
+    "doi-10-18653-v1-2021-acl-long-122",
+    "1909.05360"
+   ],
+   "note": "DLGRN reports degradation when multi-task learning is removed, and structured joint event/relation inference improves end-to-end temporal extraction. In modal-dependency parsing, however, joint learning gives essentially no event-extraction gain and is slightly worse than the pipeline for labeled attachment when gold mentions are supplied, although it helps with automatically extracted mentions. Joint learning is therefore task- and error-regime-dependent in this corpus."
+  },
+  {
+   "topic": "Direct timeline prediction versus pairwise-relation conversion",
+   "papers": [
+    "doi-10-18653-v1-d18-1155"
+   ],
+   "note": "Within the same study, contextual direct timeline prediction outperforms the indirect TL2RTL approach on the TempEval-derived evaluation, while TL2RTL outperforms the direct model on the smaller TimeBank-Dense-derived split. The paper attributes part of this reversal to data availability, so neither representation has uniform empirical dominance."
+  },
+  {
+   "topic": "DLGRN parameter-count claim",
+   "papers": [
+    "doi-10-1016-j-ipm-2021-102836"
+   ],
+   "note": "The paper's narrative statement that DLGRN has fewer parameters than all baselines conflicts with its reported tables, which list BERT at 109.5M parameters and DLGRN at 119.7M. The tabulated values should therefore not be summarized as supporting the narrative parameter-count claim."
+  },
+  {
+   "topic": "CRTS claim of improvement across evaluation settings",
+   "papers": [
+    "manual-2362cbe877"
+   ],
+   "note": "The paper broadly states that CRTS improves F1 in all settings except GPT-4o-mini sentence-level evaluation, but Table 2 also shows GPT-4o direct prompting with document-level F1 58.8 on CRTS versus 59.6 on original ProPara. The broad prose claim is therefore not fully supported by the table."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "No admitted paper directly evaluates longitudinal state tracking across workplace messages in which one work item moves among requested, proposed, planned, approved, completed, revoked, superseded, disputed, conditional, and unresolved states while retaining historical assessments.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "workplace email dialogue longitudinal work item state tracking requested proposed planned approved completed revoked superseded disputed conditional unresolved"
+  },
+  {
+   "id": "gap-2",
+   "description": "The corpus provides formal treatments of correction, retraction, persistence, and reopening, but does not establish a natural-language method evaluated across successive operational communications for distinguishing supersession, correction, supplementation, contradiction, reopening, and unresolved conflict.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "natural language longitudinal dialogue supersession correction supplementation contradiction reopening unresolved conflict classification"
+  },
+  {
+   "id": "gap-3",
+   "description": "No admitted paper jointly evaluates source-relative factuality, temporal ordering, lifecycle state, contradiction, and provenance as one longitudinal model; the papers validate separate components and their combination remains untested.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"event factuality\" temporal relation contradiction provenance lifecycle longitudinal model"
+  },
+  {
+   "id": "gap-4",
+   "description": "Direct evidence for workplace email, Teams-like dialogue, or comparable operational communication is absent; the empirical NLP evidence is predominantly news-derived, while the commitment and belief-revision papers use formal, modeled, argumentative-dialogue, or adjacent-domain settings.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "workplace email enterprise chat operational communication event state tracking factuality temporal revision commitment"
+  },
+  {
+   "id": "gap-5",
+   "description": "The admitted factuality literature models textual source commitment, and the fact-verification literature models corroborating evidence, but no admitted paper establishes how to distinguish an author's assertion that work is complete from independent confirmation or stronger evidential verification of completion in longitudinal operational communication.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "event factuality evidentiality source attribution independent confirmation corroboration completion dialogue longitudinal"
+  },
+  {
+   "id": "gap-6",
+   "description": "Evaluation is still needed on adversarial longitudinal sequences such as plan-to-cancel, approve-to-revoke, deadline changes, contradictory same-time updates, out-of-order ingestion, stale messages arriving late, and completion claims later corrected.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-7",
+   "description": "The combined representation of message time, event/effective time, deadline or constraint time, and observed collection/version time has not been benchmarked for this product's state-resolution tasks; the temporal-database paper provides a related three-time formal account rather than such an evaluation.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "gap-8",
+   "description": "The corpus does not evaluate a provenance-preserving implementation for this state-resolution task that stores immutable source observations and successive assessments while exposing a separately derived current-state view.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent source observations and later assessments as separate records so that changing assessments can be derived without deleting the observation history.",
+  "Synthesis-derived recommendation: represent a source's assertion of completion separately from any independent corroboration or verification status; do not map the former directly to the latter.",
+  "Synthesis-derived recommendation: model supersession, correction, supplementation, contradiction, reopening, and unresolved conflict as explicit relations or state-transition evidence rather than implementing a generic latest-message-wins rule.",
+  "Synthesis-derived recommendation: keep message or utterance time, event or effective time, deadline or constraint time, and collection/version time separately addressable in the state representation.",
+  "Synthesis-derived recommendation: allow unresolved competing assessments to coexist until evidence supports a resolution, while preserving which observations support each assessment.",
+  "Synthesis-derived recommendation: make evidence completeness a separate concern from state-resolution reasoning so that an unresolved state caused by missing evidence is not silently converted into a negative or completed state.",
+  "Synthesis-derived recommendation: build an adversarial longitudinal evaluation set containing cancellation, revocation, correction-of-correction, reopening, deadline replacement, out-of-order arrival, stale evidence, partial supplementation, contradictory same-time updates, and corrected completion claims.",
+  "Synthesis-derived recommendation: evaluate rare and safety-relevant revision states explicitly with per-class and macro metrics instead of relying only on aggregate accuracy dominated by common states.",
+  "Synthesis-derived recommendation: test any combined factuality-temporal-provenance-state scheme as a combined system; component-level success in separate papers should not be treated as validation of the composition."
+ ],
+ "confidence_summary": "The corpus provides well-supported design principles at the component level: factuality is source-relative; temporal relations and state trajectories benefit in several benchmarks from nonlocal or structured reasoning; correction and retraction can preserve historical or undenied information; and provenance can retain derivational history. Confidence is high for those claims within their demonstrated domains. Confidence is only medium for transferring them to longitudinal workplace communication because the empirical datasets are mainly news, procedural narratives, scientific revision, fact verification, and synthetic conflicts. Confidence is low that the corpus validates any unified production scheme: no paper jointly tests factuality, temporal ordering, work-item lifecycle, revision relation, contradiction, provenance, and independent completion verification. The evidence therefore supports separate mechanisms and research directions, not a validated combined architecture.",
+ "limitations": [
+  "No supplied empirical study directly evaluates the target problem on longitudinal workplace email, Teams-like chat, or comparable operational communication.",
+  "The strongest NLP evidence is primarily transfer evidence from news, process narratives, scientific-paper revision, fact verification, and synthetic conflict tasks; none establishes production-email accuracy.",
+  "Several influential contributions are formal or conceptual rather than corpus-scale empirical evaluations, including truth maintenance, belief revision, dialogue commitment, provenance, and temporal-database work.",
+  "Two papers were available only at abstract or preview level for the relevant analysis, limiting inspection of detailed methods and failure cases: doi-10-1016-0020-0255-94-90059-0 and doi-10-1016-j-ipm-2026-104709; doi-10-1017-cbo9780511526664-007 was also analyzed from summary/introduction-level material.",
+  "Several benchmarks have severe class imbalance or weak performance on rare states, including FactBank-derived factuality, ExDLEF, temporal minority relations, and CommitmentBank's no-commitment class.",
+  "The corpus validates factuality, temporal ordering, state tracking, provenance, revision, commitment, and evidence verification mostly as separate problems; their combination is untested and has not been treated here as jointly validated.",
+  "Some apparently conflicting results arise under different datasets or model formulations and therefore cannot be interpreted as direct replications of one another.",
+  "The project context and Topic 05 handoff were treated only as scoping and inherited context. They were not used as evidence for findings and were not used to close any gap.",
+  "The supplied analyses omit raw claims, so this synthesis relies on the provided per-paper findings, methodologies, limitations, and section references rather than independently rechecking underlying source passages.",
+  "The paper count is 31 because the supplied corpus contains 31 analyzed paper identifiers with distinct titles; no same-title duplicate record was apparent in the supplied analyses."
+ ],
+ "gap_status": [
+  {
+   "id": "gap-1",
+   "status": "open",
+   "note": "ProPara, CRTS, commitment-monitoring, and dialogue-state formalisms cover portions of longitudinal state change, but none evaluates the specified work-item lifecycle across successive workplace communications.",
+   "evidence": [
+    "1805.06975",
+    "manual-2362cbe877",
+    "doi-10-1007-s10458-012-9202-0",
+    "doi-10-1093-jos-ffn013"
+   ]
+  },
+  {
+   "id": "gap-2",
+   "status": "open",
+   "note": "Correction, retraction, persistence, and reopening have formal accounts, and Re3 evaluates revision alignment, but no admitted natural-language system is evaluated on the full requested relation set across successive operational communications.",
+   "evidence": [
+    "doi-10-1093-jos-ffn013",
+    "doi-10-1023-a-1010318403544",
+    "doi-10-1016-0004-3702-86-90080-9",
+    "2406.00197"
+   ]
+  },
+  {
+   "id": "gap-3",
+   "status": "open",
+   "note": "Factuality, temporal ordering, contradiction handling, provenance, and lifecycle reasoning are each represented in different papers, but no admitted study evaluates them jointly as one longitudinal model.",
+   "evidence": [
+    "doi-10-1007-s10579-009-9089-9",
+    "1909.05360",
+    "doi-10-1016-0004-3702-86-90080-9",
+    "doi-10-1007-3-540-44503-x-20",
+    "doi-10-1007-s10458-012-9202-0"
+   ]
+  },
+  {
+   "id": "gap-4",
+   "status": "open",
+   "note": "The corpus adds adjacent-domain evidence from dialogue, scientific revision, industry event sourcing, and synthetic conflict arbitration, but it still contains no direct evaluation on workplace email or enterprise-chat work-item histories.",
+   "evidence": [
+    "doi-10-18653-v1-p19-1412",
+    "2406.00197",
+    "2104.01146",
+    "2608.20116"
+   ]
+  },
+  {
+   "id": "gap-5",
+   "status": "open",
+   "note": "Factuality papers explicitly model source commitment rather than objective truth, while fact-verification papers evaluate corroborating evidence; Re3 also lacks authentic author-response claims. None evaluates claimed completion versus independently confirmed completion in longitudinal operational communication.",
+   "evidence": [
+    "doi-10-1007-s10579-009-9089-9",
+    "doi-10-18653-v1-2021-acl-long-122",
+    "doi-10-18653-v1-2023-findings-acl-44",
+    "2011.03088",
+    "doi-10-1016-j-ipm-2026-104709",
+    "2406.00197"
+   ]
+  },
+  {
+   "id": "gap-6",
+   "status": "open",
+   "note": "The corpus contains isolated conflict, cancellation, correction, temporal, and synthetic arbitration tests, but no admitted benchmark covers the specified adversarial longitudinal sequence set end to end.",
+   "evidence": [
+    "2608.20116",
+    "doi-10-1007-s10458-012-9202-0",
+    "doi-10-1093-jos-ffn013",
+    "doi-10-1016-0020-0255-94-90059-0"
+   ]
+  },
+  {
+   "id": "gap-7",
+   "status": "open",
+   "note": "The temporal-database analysis distinguishes event, valid, and transaction time, and temporal NLP papers evaluate ordering or relative timelines, but no admitted study benchmarks the requested four-time representation for this state-resolution task.",
+   "evidence": [
+    "doi-10-1016-0020-0255-94-90059-0",
+    "doi-10-18653-v1-d18-1155",
+    "1804.06020"
+   ]
+  },
+  {
+   "id": "gap-8",
+   "status": "open",
+   "note": "Provenance, ATMS, and event-sourcing work provide relevant mechanisms for historical support and retained events, but the corpus does not evaluate the specified provenance-preserving implementation for natural-language state resolution.",
+   "evidence": [
+    "doi-10-1007-3-540-44503-x-20",
+    "doi-10-1016-0004-3702-86-90080-9",
+    "2104.01146"
+   ]
+  }
+ ]
+}

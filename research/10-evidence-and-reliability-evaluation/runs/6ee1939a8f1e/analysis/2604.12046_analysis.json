@@ -1,0 +1,73 @@
+{
+ "paper_id": "2604.12046",
+ "title": "Think Through Uncertainty: Improving Long-Form Generation Factuality via Reasoning Calibration",
+ "research_question": "Can modeling and calibrating uncertainty at the atomic-claim level improve long-form factuality while preserving factual recall and enabling selective abstention?",
+ "methodology": "The paper proposes CURE, a structured generation protocol in which a model reasons about a response, decomposes it into atomic claims, and assigns each claim an explicit confidence score. Training is split into feasibility induction, DPO-based calibration optimization, and a separate factuality-optimization stage using claim-level masked rewards instead of optimizing calibration and factuality jointly. Experiments use Llama3.1-8B-Instruct as the main base model, with additional generalization tests on Qwen3-4B, and evaluate on FactBench, LongFact, Biography, and FactRBench. Factual accuracy is measured with VeriScore, calibration with ECE, Brier score, and AUROC, and FactRBench is used to measure factual recall and accuracy-recall trade-offs under confidence-based selective prediction.",
+ "key_findings": [
+  {
+   "finding": "CURE achieves the highest reported claim-level factual accuracy among the compared methods on FactBench, LongFact, and Biography, reaching 84.4, 90.2, and 65.9 respectively.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Relative to the L2RF reinforcement-learning baseline, CURE improves factual accuracy by 9.4% on FactBench, 13.6% on LongFact, and 39.9% on Biography.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 4.2"
+  },
+  {
+   "finding": "CURE reports strong discriminative calibration, including AUROC values of 0.667 on FactBench and 0.669 on LongFact.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Confidence-thresholded selective prediction provides an adjustable accuracy-recall trade-off, and the reported Pareto analysis shows viable CURE configurations dominating the base LLM and L2RF in accuracy versus factual recall.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  },
+  {
+   "finding": "Joint GRPO optimization of factuality and calibration collapses toward overconfidence, with approximately 95% of predicted claim-confidence scores exceeding 0.9 during training.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "Replacing GRPO-based calibration with a separate DPO calibration stage substantially improves AUROC, and applying the staged framework to Qwen3-4B also improves factuality and calibration.",
+   "evidence_type": "supported",
+   "section": "Sections 4.3 and 4.5"
+  }
+ ],
+ "limitations": [
+  "The evaluation uses four static factuality benchmarks and two model families, so robustness to temporal change or broader distribution shifts is not directly tested.",
+  "Factual correctness and recall rely on automatic evaluators, including VeriScore and an LLM-based recall judge, so measured performance depends partly on evaluator reliability.",
+  "Selective prediction filters low-confidence claims and therefore manages an accuracy-versus-recall trade-off rather than guaranteeing evidence completeness.",
+  "The study does not directly measure omission of required evidence in free-form multi-source synthesis.",
+  "No explicit public code or processed experimental-data release was verified in the accessed paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "accuracy_gains": 0.99,
+  "calibration_gains": 0.99,
+  "selective_prediction_tradeoff": 0.98,
+  "joint_grpo_overconfidence": 0.99,
+  "decoupled_training_advantage": 0.98,
+  "qwen_generalization": 0.97
+ },
+ "raw_claims": [
+  "CURE models uncertainty at the level of individual atomic claims.",
+  "The claim-aware reasoning protocol pairs decomposed claims with explicit confidence estimates.",
+  "Calibration optimization is separated from factuality optimization.",
+  "The experiments evaluate FactBench, LongFact, Biography, and FactRBench.",
+  "CURE reaches 84.4 accuracy on FactBench, 90.2 on LongFact, and 65.9 on Biography.",
+  "CURE reaches AUROC 0.667 on FactBench and 0.669 on LongFact.",
+  "FactRBench supplies reference claims for evaluating factual recall.",
+  "At inference time, a confidence threshold can filter uncertain claims.",
+  "Approximately 95% of confidence predictions exceed 0.9 under the failed joint GRPO setup.",
+  "DPO produces stronger calibration than the tested GRPO-based calibration variants.",
+  "The staged method is also evaluated on Qwen3-4B."
+ ],
+ "source_url": "https://arxiv.org/html/2604.12046",
+ "access": "full_text"
+}

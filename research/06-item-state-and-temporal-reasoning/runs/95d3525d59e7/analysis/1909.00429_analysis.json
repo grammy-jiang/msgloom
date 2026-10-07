@@ -1,0 +1,69 @@
+{
+ "paper_id": "1909.00429",
+ "title": "An Improved Neural Baseline for Temporal Relation Extraction",
+ "research_question": "Can a comparatively standard neural architecture become a substantially stronger temporal-relation baseline when paired with higher-quality temporal annotations, contextual embeddings, temporal commonsense knowledge, and global consistency inference?",
+ "methodology": "The paper builds an LSTM temporal-relation classifier that assumes event positions are known and compares position-indicator markup with direct concatenation of the two event representations. It evaluates conventional and contextualized word embeddings and adds a Siamese Common Sense Encoder trained on the TemProb temporal-commonsense resource, while integer linear programming enforces global temporal consistency. Models are trained on MATRES and evaluated on its Platinum test section, with an additional evaluation on TCR. Accuracy, F1, temporal-awareness F1, and their average are reported.",
+ "key_findings": [
+  {
+   "finding": "The best Concat+CSE variants improve over CogCompTime on MATRES by roughly ten absolute points in accuracy and F1, about five points in temporal-awareness score, and about eight points in the average of the three metrics.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Discussion"
+  },
+  {
+   "finding": "Adding the TemProb-based Common Sense Encoder improves the Concat model under every reported metric for both ELMo and BERT, with the paper reporting statistical significance for the CSE improvement.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Discussion / Appendix B"
+  },
+  {
+   "finding": "Direct concatenation of the two event-position hidden states is significantly better overall than the position-indicator approach across the embedding and metric comparisons.",
+   "evidence_type": "supported",
+   "section": "3.1 Handling Event Positions / Appendix B"
+  },
+  {
+   "finding": "Contextualized ELMo and BERT representations significantly outperform conventional embeddings, while the difference between ELMo and BERT is not statistically significant in these experiments.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Discussion / Appendix B"
+  },
+  {
+   "finding": "The advantage generalizes to the separate TCR test set: Concat+CSE reaches a three-metric average of 76.4 with ELMo and 74.9 with BERT versus 66.8 for CogCompTime.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Discussion"
+  }
+ ],
+ "limitations": [
+  "The model assumes that event positions are already known, so the reported system is not an end-to-end raw-text event and relation extractor.",
+  "MATRES and TCR are relatively small datasets dominated by news-style text, leaving workplace-domain transfer untested.",
+  "The relation inventory focuses on temporal ordering such as before, after, equal, and vague rather than event factuality or lifecycle states.",
+  "The approach therefore cannot by itself distinguish whether a workplace event is merely planned, confirmed, revoked, completed, or contradicted by a later message.",
+  "The reported gains depend partly on high-quality event annotations and an external temporal-commonsense resource."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "large_gain_over_cogcomptime": 0.99,
+  "cse_improves_results": 0.99,
+  "concat_beats_position_indicator": 0.98,
+  "contextual_embeddings_help": 0.99,
+  "elmo_bert_not_significantly_different": 0.99,
+  "tcr_transfer_gain": 0.99
+ },
+ "raw_claims": [
+  "The neural temporal-relation model assumes the locations of both events are supplied.",
+  "Global integer-linear-programming inference is used to enforce temporal transitivity.",
+  "Simple concatenation generally performs better than explicit position-indicator markup.",
+  "Contextualized embeddings outperform the conventional embeddings tested in the paper.",
+  "The Common Sense Encoder learns from temporal tendencies represented in TemProb.",
+  "Adding the Common Sense Encoder improves both ELMo- and BERT-based models.",
+  "On MATRES, Concat+CSE with ELMo reaches 71.7 accuracy and 76.7 F1.",
+  "On MATRES, Concat+CSE with BERT reaches 71.3 accuracy and 76.3 F1.",
+  "CogCompTime obtains 61.6 accuracy and 66.6 F1 in the paper's MATRES comparison.",
+  "No statistically significant performance difference is reported between ELMo and BERT.",
+  "The proposed system also substantially outperforms CogCompTime on the TCR test set.",
+  "The paper argues that improved temporal annotation quality makes standard neural models much more effective."
+ ],
+ "source_url": "https://arxiv.org/html/1909.00429",
+ "access": "full_text"
+}

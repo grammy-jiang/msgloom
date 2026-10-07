@@ -1,0 +1,79 @@
+{
+ "paper_id": "doi-10-1162-coli-a-00110",
+ "title": "Semantic Role Labeling of Implicit Arguments for Nominal Predicates",
+ "research_question": "Can implicit semantic arguments of nominal predicates be identified and linked to discourse constituents using supervised features derived from lexical, syntactic, semantic, and discourse resources?",
+ "methodology": "The authors manually annotate implicit arguments for ten frequent NomBank nominal predicates in Penn Treebank Wall Street Journal documents, producing annotations for 1,247 predicate instances. Candidate fillers are drawn primarily from gold PropBank and NomBank arguments within a two-sentence preceding window, and a LibLinear classifier ranks candidates using a large collection of lexical, semantic, syntactic, distance, and discourse features. Performance is evaluated with randomized ten-fold cross-validation using overlap-based precision, recall, and F1, and is compared with a nearest-candidate baseline, an oracle, and a limited human annotation study.",
+ "key_findings": [
+  {
+   "finding": "Adding manually identified implicit arguments increases semantic-role coverage for the ten studied nominal predicates by roughly 20 absolute percentage points, corresponding to a reported 71% relative increase over NomBank's explicit-role coverage.",
+   "evidence_type": "supported",
+   "section": "Corpus analysis"
+  },
+  {
+   "finding": "The discriminative system achieves 57.9 precision, 44.5 recall, and 50.3 F1 on filled implicit arguments, compared with 28.9 F1 for the baseline.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Table 5"
+  },
+  {
+   "finding": "The oracle reaches 87.6 F1, indicating that a substantial portion of remaining error comes from candidate generation and search-window restrictions rather than only candidate ranking.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Table 5 and Error Analysis"
+  },
+  {
+   "finding": "Approximately 31% of analyzed system errors arise because the true filler is either absent from the candidate set despite being in the window or lies outside the two-sentence window.",
+   "evidence_type": "supported",
+   "section": "Error Analysis / Table 6"
+  },
+  {
+   "finding": "Semantic-role compatibility is among the strongest predictive feature classes, while sentence distance also contributes strongly to filler selection.",
+   "evidence_type": "supported",
+   "section": "Feature analysis"
+  },
+  {
+   "finding": "The paper's manually created implicit-argument annotations are stated to be freely available for research use.",
+   "evidence_type": "supported",
+   "section": "Conclusion / Resource availability"
+  }
+ ],
+ "limitations": [
+  "The annotated corpus covers only ten nominal predicates, and several model features are lexicalized to those predicates, limiting generalization to unseen predicates.",
+  "The source documents are Wall Street Journal newswire rather than workplace email or enterprise chat.",
+  "The task models semantic arguments of nominal predicates, not explicit workplace action items, decisions, assignees, group assignees, deadlines, or action-to-deadline bindings.",
+  "Condition, negation, and modality scope are not target annotations.",
+  "Evaluation uses a Dice-style span-overlap measure rather than strict exact-span matching, making the reported scores unsuitable as direct evidence for exact argument-evidence extraction.",
+  "The system uses gold PropBank and NomBank annotations for candidate generation and feature computation, which is a strong assumption for deployment on raw text.",
+  "Candidate search is mainly restricted to two sentences before the nominal predicate and has an estimated recall ceiling below complete discourse coverage.",
+  "Predicate instances are randomized for ten-fold cross-validation rather than split by document, so instances from the same document can potentially occur in different folds.",
+  "Annotation disagreement is concentrated in deciding whether an implicit filler exists, showing that even the existence of some roles can be ambiguous.",
+  "Joint interactions among several implicit roles are handled only indirectly rather than by a globally structured prediction model."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "implicit_arguments_expand_role_coverage": 0.98,
+  "discriminative_model_outperforms_baseline": 0.99,
+  "oracle_reveals_candidate_bottleneck": 0.98,
+  "candidate_and_window_errors_are_substantial": 0.98,
+  "semantic_role_and_distance_features_help": 0.95,
+  "annotations_are_available": 0.98
+ },
+ "raw_claims": [
+  "The study extends semantic role labeling to arguments of nominal predicates that are not locally expressed in the nominal's syntactic structure.",
+  "The manually annotated corpus is based on Wall Street Journal sections of the Penn Treebank and focuses on ten NomBank nominal predicates.",
+  "The corpus contains 1,247 studied predicate instances and hundreds of implicit argument fillers.",
+  "Annotators search surrounding discourse for constituents that fill semantic roles missing from the original NomBank annotation.",
+  "Most system candidates are existing gold PropBank or NomBank argument constituents.",
+  "The classifier uses lexical, syntactic, semantic, salience, distance, and discourse-related features to rank candidate fillers.",
+  "The candidate search window is limited primarily to the two sentences preceding a target predicate.",
+  "The discriminative model reaches 50.3 F1 and clearly outperforms the nearest-candidate baseline.",
+  "The oracle score is much higher than the learned system's score, leaving substantial room for better candidate generation and ranking.",
+  "A sizeable fraction of errors occurs because the correct argument is outside the candidate set or outside the search window.",
+  "The authors note that lexicalized feature design and the limited predicate inventory constrain generalization.",
+  "The manually created annotations are made available for research use."
+ ],
+ "source_url": "https://aclanthology.org/J12-4003.pdf",
+ "access": "full_text"
+}

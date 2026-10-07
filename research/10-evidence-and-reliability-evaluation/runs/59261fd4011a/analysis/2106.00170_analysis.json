@@ -1,0 +1,79 @@
+{
+ "paper_id": "2106.00170",
+ "title": "Adaptive Conformal Inference Under Distribution Shift",
+ "research_question": "Can conformal prediction be adapted online to retain a target long-run coverage frequency when the data distribution changes unpredictably over time without relying on exchangeability?",
+ "methodology": "The paper introduces an online conformal update that adjusts the conformal miscoverage parameter after each observed prediction error, increasing or decreasing it according to whether recent errors are above or below the target. It proves a distribution-free bound on long-run average miscoverage and develops additional results under a hidden Markov model for changing distributions. The method is compared with fixed conformal inference on stock-market volatility and U.S. election forecasting, using local coverage over time to expose distribution-shift failures. Additional experiments and analysis study the role of conformity-score design and the step-size parameter.",
+ "key_findings": [
+  {
+   "finding": "The adaptive update has a distribution-free long-run guarantee: the time-average error rate converges almost surely to the target miscoverage level, with a finite-time deviation bound proportional to 1 divided by T times the step size.",
+   "evidence_type": "supported",
+   "section": "4.1 Distribution-free results, Proposition 4.1"
+  },
+  {
+   "finding": "Adaptation speed and stability are controlled by the step size, creating a trade-off between rapidly tracking distribution changes and producing more volatile parameter updates.",
+   "evidence_type": "supported",
+   "section": "2.1 Adaptive conformal inference"
+  },
+  {
+   "finding": "In the election-night experiment, fixed conformal inference suffered large local-coverage troughs around time-zone changes, whereas adaptive conformal inference maintained approximately 90% local coverage across the sequence.",
+   "evidence_type": "supported",
+   "section": "6 Real data example: election night predictions"
+  },
+  {
+   "finding": "Coverage behavior depends strongly on the conformity score: an unnormalized volatility score produced substantially wider deviations from the 90% coverage target than the normalized score.",
+   "evidence_type": "supported",
+   "section": "5 Impact of the conformity score on performance"
+  },
+  {
+   "finding": "The strongest general guarantee concerns long-run average coverage rather than uniform finite-window conditional coverage during every local distribution shift.",
+   "evidence_type": "supported",
+   "section": "4.1 Distribution-free results"
+  },
+  {
+   "finding": "The method requires outcome feedback after predictions and therefore does not directly cover delayed or batched-feedback settings.",
+   "evidence_type": "supported",
+   "section": "7 Discussion"
+  },
+  {
+   "finding": "The paper does not evaluate LLM generation, evidence completeness, or semantic abstention; its relevance to those settings is through the general problem of adapting statistical coverage guarantees under temporal distribution shift.",
+   "evidence_type": "supported",
+   "section": "Scope of the paper"
+  }
+ ],
+ "limitations": [
+  "The proposed online method assumes that the true response is revealed after each prediction.",
+  "Delayed and batch feedback are left as open problems.",
+  "The more detailed distribution-shift theory is developed only for a particular data-generating model and a fixed quantile function.",
+  "The step size is selected using heuristic knowledge about expected distribution change rather than learned fully adaptively.",
+  "Empirical evaluation is limited to stock-market volatility and election forecasting.",
+  "Prediction-set quality still depends on the underlying regression or forecasting model and the choice of conformity score.",
+  "The paper does not study free-form language generation or multi-source evidence completeness."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "long_run_coverage_guarantee": 1.0,
+  "step_size_tradeoff": 0.98,
+  "election_shift_adaptation": 0.99,
+  "conformity_score_sensitivity": 0.99,
+  "feedback_requirement": 0.99,
+  "llm_scope_limit": 1.0
+ },
+ "raw_claims": [
+  "Adaptive conformal inference updates its target parameter using observed online coverage errors.",
+  "Its basic long-run coverage result does not require a stationary or exchangeable data sequence.",
+  "Average miscoverage converges to the requested target over sufficiently long horizons.",
+  "A larger update step allows faster reaction to changes but can make the adaptive trajectory less stable.",
+  "Election-night geography creates a sequence with meaningful distribution drift.",
+  "Adaptive intervals tracked the desired election coverage much better than the fixed alternative around distribution changes.",
+  "Conformity-score normalization materially affected local coverage stability in the volatility experiment.",
+  "The theory does not guarantee that every short time window has exact target coverage.",
+  "The algorithm assumes that prediction outcomes become available for subsequent updates.",
+  "The accompanying implementation includes the core method and the election prediction procedure."
+ ],
+ "source_url": "https://arxiv.org/html/2106.00170",
+ "access": "full_text"
+}

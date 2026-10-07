@@ -1,0 +1,329 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2407.01523",
+   "title": "MMLongBench-Doc: Benchmarking Long-context Document Understanding with Visualizations",
+   "research_question": "How well can current vision-language and language models understand long multimodal documents when answering questions that require evidence localization, cross-page reasoning, multiple document modalities, and resistance to hallucination?",
+   "methodology": "The authors construct MMLongBench-Doc from 135 PDF documents spanning seven document types and annotate 1,082 question-answer pairs with reference answers, evidence pages, evidence-source modalities, and answer formats. Questions cover text, layout, tables, charts, and images, and include single-page, cross-page, and deliberately unanswerable cases. Fourteen LVLMs are evaluated from page screenshots and ten LLMs from OCR-parsed text, using response generation followed by GPT-4o answer extraction and rule-based scoring with generalized accuracy and F1. A subset is also evaluated by humans for comparison.",
+   "key_findings": [
+    {
+     "finding": "The benchmark explicitly preserves page-level provenance and evidence-source type for answers, covering text, layout, tables, charts, and images.",
+     "evidence_type": "supported",
+     "section": "3.2 Question and Answer Collection; 3.4 Dataset Overview and Analysis"
+    },
+    {
+     "finding": "Long-document understanding remains difficult: the best evaluated LVLM, GPT-4o, achieves 44.9% overall F1, compared with a 66.0% human F1 baseline.",
+     "evidence_type": "supported",
+     "section": "4.3 Main Results"
+    },
+    {
+     "finding": "Cross-page questions are substantially represented and models generally perform worse on cross-page than single-page questions, demonstrating difficulty gathering and reasoning over evidence distributed across pages.",
+     "evidence_type": "supported",
+     "section": "3.4 Dataset Overview and Analysis; 4.4 Fine-grained Results"
+    },
+    {
+     "finding": "Most evaluated LVLMs perform worse than LLM counterparts supplied with lossy OCR text, although GPT-4o and GPT-4V are exceptions.",
+     "evidence_type": "supported",
+     "section": "4.3 Main Results"
+    },
+    {
+     "finding": "OCR-based LLM pipelines are competitive on text and table questions but comparatively weak on chart- and image-dependent questions, showing that flattening documents to text can discard important multimodal evidence.",
+     "evidence_type": "supported",
+     "section": "4.4 Fine-grained Results"
+    },
+    {
+     "finding": "Model performance generally declines as answer evidence occurs later in a document, indicating that evidence location within a long context materially affects retrieval and answering performance.",
+     "evidence_type": "supported",
+     "section": "4.4 Fine-grained Results"
+    },
+    {
+     "finding": "The inclusion of unanswerable questions allows the benchmark to evaluate whether models produce unsupported answers when no evidence exists in the document.",
+     "evidence_type": "supported",
+     "section": "3.4 Dataset Overview and Analysis"
+    }
+   ],
+   "limitations": [
+    "The benchmark is relatively small, containing 135 documents and 1,082 questions, because expert annotation of long documents is expensive.",
+    "The benchmark uses only a coarse single-page, cross-page, and unanswerable taxonomy rather than a detailed taxonomy of perception and reasoning capabilities.",
+    "Evidence localization is primarily represented at page level plus evidence-source category; it does not generally provide cell-, bounding-region-, or object-level provenance suitable for precise source reconstruction.",
+    "The automatic evaluation pipeline depends on GPT-4o to extract short answers from model responses before rule-based scoring, introducing an additional model-dependent evaluation stage.",
+    "The benchmark evaluates documents as a static collection and does not model attachment revisions or version-relative provenance."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "page_level_evidence_metadata": 0.99,
+    "long_document_models_remain_weak": 0.99,
+    "cross_page_reasoning_is_harder": 0.98,
+    "ocr_can_lose_multimodal_information": 0.97,
+    "later_evidence_is_harder": 0.97,
+    "unanswerable_questions_test_hallucination": 0.99
+   },
+   "raw_claims": [
+    "MMLongBench-Doc contains 135 lengthy PDF documents and 1,082 annotated questions.",
+    "The documents average about 47.5 pages and roughly 21,214 textual tokens.",
+    "Answer evidence is annotated across text, layout, table, chart, and image sources.",
+    "There are 365 cross-page questions and 223 unanswerable questions in the reported benchmark version.",
+    "Each answerable question is associated with one or more evidence pages.",
+    "GPT-4o obtains 44.9% overall F1 in the reported evaluation.",
+    "The human evaluation produces an overall F1 of 66.0%.",
+    "Most LVLMs evaluated on document images perform worse than LLM counterparts using OCR text.",
+    "Models tend to perform better when evidence appears near the beginning of a document.",
+    "Cross-page questions are consistently more difficult than single-page questions for the evaluated models."
+   ],
+   "source_url": "https://arxiv.org/html/2407.01523",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2412.18424",
+   "title": "LongDocURL: a Comprehensive Multimodal Long Document Benchmark Integrating Understanding, Reasoning, and Locating",
+   "research_question": "Can a long-document benchmark jointly evaluate multimodal understanding, numerical reasoning, and cross-element evidence locating across structurally complex documents and long contexts?",
+   "methodology": "LongDocURL organizes evaluation into three primary tasks—understanding, reasoning, and locating—and twenty sub-tasks based on evidence type and evidence distribution. Its semi-automated construction pipeline uses extraction and filtering, QA generation, automated verification, and human verification to produce 2,325 QA samples from 396 documents covering more than 33,000 pages. Evidence is categorized as text, layout, figure, or table, while samples are additionally classified by single- versus multi-page and single- versus cross-element evidence. The authors evaluate open and proprietary models in 26 configurations using image and OCR/text input paradigms and generalized accuracy, with additional input-format ablations and human evaluation.",
+   "key_findings": [
+    {
+     "finding": "LongDocURL explicitly evaluates locating relationships among document elements in addition to conventional understanding and numerical reasoning.",
+     "evidence_type": "supported",
+     "section": "3.1 Overview"
+    },
+    {
+     "finding": "The benchmark contains substantial distributed evidence: 52.9% of questions use multiple evidence pages and 37.1% use more than one document-element type.",
+     "evidence_type": "supported",
+     "section": "3.4 Dataset Statistics"
+    },
+    {
+     "finding": "Current models remain well below the human baseline, with GPT-4o scoring 64.5 generalized accuracy overall versus 84.8 for human experts on the sampled human evaluation.",
+     "evidence_type": "supported",
+     "section": "4.3 Main Results"
+    },
+    {
+     "finding": "Table questions are particularly difficult, which the authors identify as evidence of deficiencies in document-structure parsing.",
+     "evidence_type": "supported",
+     "section": "4.3.1 Fine-Grained Analysis"
+    },
+    {
+     "finding": "Preserving table structure during document parsing has a large effect on downstream QA performance: text parsed with the structure-preserving Docmind representation substantially outperforms PyMuPDF text for both proprietary and open-source models.",
+     "evidence_type": "supported",
+     "section": "4.4 Ablation of Input Paradigms"
+    },
+    {
+     "finding": "In the reported input ablation, proprietary models gain at least 25 points and open-source models about 15 points when using the more structure-preserving text representation instead of PyMuPDF output.",
+     "evidence_type": "supported",
+     "section": "4.4 Ablation of Input Paradigms"
+    },
+    {
+     "finding": "Perceptual errors are the largest category in the GPT-4o error sample, including failures to recognize or associate tables, figures, formulas, headings, and related text correctly.",
+     "evidence_type": "supported",
+     "section": "5 Error Analysis and Model Insights"
+    },
+    {
+     "finding": "Models perform relatively poorly on document types such as meeting minutes and work summaries, although the authors note that these categories also have less data.",
+     "evidence_type": "supported",
+     "section": "4.3.1 Fine-Grained Analysis"
+    }
+   ],
+   "limitations": [
+    "The authors explicitly state that the range of document sources remains limited and should be broadened to cover more layouts and document elements.",
+    "Many evaluated models cannot process the full 50-150 page inputs because of GPU-memory or API limitations, so the evaluation uses cut-off or merge input strategies rather than always presenting the original document intact.",
+    "The scoring pipeline uses GPT-4o for answer extraction before rule-based scoring.",
+    "The authors' error analysis shows that formatting differences can be scored as wrong even when the semantic value is essentially correct, demonstrating limitations of the rule-based evaluation stage.",
+    "Although the benchmark models cross-element locating, its annotations are oriented toward QA evidence relationships rather than a universal provenance representation containing exact cells, regions, coordinates, or attachment-version identifiers."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "integrates_understanding_reasoning_locating": 0.99,
+    "multi_page_and_cross_element_coverage": 0.99,
+    "models_below_human_baseline": 0.98,
+    "table_structure_preservation_matters": 0.99,
+    "table_questions_are_difficult": 0.97,
+    "perceptual_errors_are_major": 0.98,
+    "workplace_document_types_are_challenging": 0.94
+   },
+   "raw_claims": [
+    "LongDocURL defines understanding, reasoning, and locating as its three primary task categories.",
+    "The benchmark contains 20 sub-tasks based on task and evidence characteristics.",
+    "It contains 396 documents and 2,325 question-answer samples.",
+    "The documents collectively cover more than 33,000 pages.",
+    "Evidence elements are categorized as text, layout, figure, and table.",
+    "More than half of the questions use evidence from multiple pages.",
+    "About 37.1% of the questions require evidence from more than one element type.",
+    "GPT-4o has the highest reported model score at 64.5 generalized accuracy.",
+    "The reported human baseline has an overall score of 84.8.",
+    "Preserving table structure in parsed text substantially improves model performance.",
+    "Perceptual failures involving complex document elements are the most frequent error category in the sampled GPT-4o errors."
+   ],
+   "source_url": "https://arxiv.org/html/2412.18424",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2106.11539",
+   "title": "DocFormer: End-to-End Transformer for Document Understanding",
+   "research_question": "Can an end-to-end transformer that jointly represents textual, visual, and spatial information learn stronger document representations than text-only or less-integrated multimodal architectures?",
+   "methodology": "DocFormer is an encoder-only transformer with a ResNet-50 visual backbone that consumes document images, OCR text, and spatial features. It introduces multimodal self-attention and shares spatial embeddings between visual and textual modalities so that corresponding content can interact through a common coordinate representation. The model is unsupervisedly pre-trained with multimodal language and image-text objectives and then fine-tuned on FUNSD, RVL-CDIP, CORD, and Kleister-NDA. The authors compare against contemporary document models and perform ablations on modalities, shared spatial embeddings, pre-training, and architectural components.",
+   "key_findings": [
+    {
+     "finding": "Combining image, text, and spatial features improves document entity extraction relative to text-plus-spatial variants on FUNSD and CORD.",
+     "evidence_type": "supported",
+     "section": "4.1 Sequence Labeling Task; 4.3 Entity Extraction Task"
+    },
+    {
+     "finding": "Shared spatial embeddings improve FUNSD and CORD performance compared with assigning independent spatial embeddings to language and vision.",
+     "evidence_type": "supported",
+     "section": "4.4 More Experiments"
+    },
+    {
+     "finding": "The component ablation shows a large gain from adding spatial features to a text model and an additional gain from multimodal self-attention.",
+     "evidence_type": "supported",
+     "section": "4.4 More Experiments"
+    },
+    {
+     "finding": "Pre-training is especially important in low-data document tasks, with very large degradation on FUNSD and CORD when pre-training is removed.",
+     "evidence_type": "supported",
+     "section": "4.4 More Experiments"
+    },
+    {
+     "finding": "DocFormer matches or exceeds the compared state of the art across the four evaluated datasets while often using fewer parameters than large competing models.",
+     "evidence_type": "supported",
+     "section": "4 Experiments; 5 Conclusion"
+    },
+    {
+     "finding": "On CORD, DocFormer-large reports 96.99% entity-level F1, while DocFormer-base reports 96.33%.",
+     "evidence_type": "supported",
+     "section": "4.3 Entity Extraction Task"
+    },
+    {
+     "finding": "The architecture preserves token-to-layout correspondence through OCR bounding boxes and shared spatial representations, but it does not produce an explicit evidence-provenance object identifying the source region responsible for a prediction.",
+     "evidence_type": "supported",
+     "section": "3.1 Model Architecture; 4 Experiments"
+    }
+   ],
+   "limitations": [
+    "DocFormer requires OCR text and associated spatial information, so OCR failures or incorrect bounding boxes can propagate into document understanding.",
+    "The evaluated tasks are predominantly classification and entity extraction on individual document images rather than long multi-page question answering.",
+    "The paper does not evaluate longitudinal attachments, document-version identity, or provenance across revisions.",
+    "Spatial coordinates are model inputs, but the reported downstream outputs do not provide a standardized evidence-grounding record such as a cell, bounding region, or source span for each prediction.",
+    "The authors identify multilingual generalization and coverage of document types such as infographics, maps, and web pages as future work.",
+    "The arXiv paper provides detailed implementation information and pseudocode but does not link an official executable implementation repository."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "multimodal_features_improve_results": 0.99,
+    "shared_spatial_embeddings_help": 0.98,
+    "pretraining_is_important": 0.99,
+    "strong_results_on_four_benchmarks": 0.98,
+    "cord_result": 0.99,
+    "no_explicit_provenance_output": 0.91
+   },
+   "raw_claims": [
+    "DocFormer combines textual, visual, and spatial document features in a transformer architecture.",
+    "A ResNet-50 backbone is used to extract visual features from document images.",
+    "Text and visual modalities share learned spatial embeddings.",
+    "The model is pre-trained using objectives designed to require interaction between visual and language information.",
+    "The authors evaluate DocFormer on four document-understanding datasets.",
+    "Adding spatial features substantially improves over the text-only ablation on FUNSD and CORD.",
+    "Adding multimodal self-attention produces further gains over text plus spatial features.",
+    "Shared spatial embeddings outperform separate spatial embeddings in the reported ablation.",
+    "Pre-training is especially important on the smaller FUNSD and CORD training sets.",
+    "DocFormer-large achieves 96.99% F1 on CORD in the reported experiments."
+   ],
+   "source_url": "https://arxiv.org/html/2106.11539",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2104.12756",
+   "title": "InfographicVQA",
+   "research_question": "How effectively can visual-question-answering systems understand infographics that require joint reasoning over embedded text, document layout, graphics, tables, visualizations, and elementary numerical operations?",
+   "methodology": "The authors construct InfographicVQA with 30,035 questions over 5,485 infographic images collected from 2,594 web domains. Questions and answers are manually annotated, with an additional answer collected for validation and test questions, and the dataset emphasizes evidence from text, tables, figures, and visualizations as well as elementary operations such as counting, sorting, and arithmetic. The paper adapts M4C and LayoutLM-based baselines using OCR and different visual-region representations and evaluates them with ANLS and exact accuracy. Human performance, heuristic baselines, answer-source upper bounds, detector behavior, and multiple model ablations are also reported.",
+   "key_findings": [
+    {
+     "finding": "InfographicVQA exposes a large gap between humans and contemporary VQA/document models, with human test performance of 0.980 ANLS and 95.70% accuracy while the evaluated learned baselines are much lower.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "finding": "More than three quarters of questions have an answer available either in the common-answer vocabulary or as an OCR span, but locating and reasoning over the relevant content remains difficult for the evaluated models.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "In-domain pre-training substantially improves the LayoutLM-based baseline.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "Generic natural-image and document-layout object detectors produce relatively few useful detections on infographic images.",
+     "evidence_type": "supported",
+     "section": "5 Experiments and Results"
+    },
+    {
+     "finding": "For the M4C experiments, using no detected objects or one full-image feature performs better than using bottom-up object regions.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "Adding visual features for OCR tokens does not improve the LayoutLM-based model in the reported experiments.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "The authors attribute weak visual-feature gains partly to a mismatch between available object detectors and the unusual graphical structure of infographics.",
+     "evidence_type": "supported",
+     "section": "5.2 Results"
+    },
+    {
+     "finding": "The benchmark requires reasoning over complex visual-layout relationships, but it does not annotate precise provenance locations such as table cells or bounding regions for answers.",
+     "evidence_type": "supported",
+     "section": "3 InfographicVQA; 5 Experiments and Results"
+    }
+   ],
+   "limitations": [
+    "InfographicVQA contains single infographic images rather than long or multi-page workplace documents.",
+    "Questions that annotators judged unanswerable from the image were removed, so the benchmark does not directly test abstention or hallucination when supporting evidence is absent.",
+    "The benchmark does not provide a standardized cell-, region-, or coordinate-level evidence annotation for each answer, limiting its usefulness for precise provenance reconstruction.",
+    "The baseline visual detectors were designed for natural images or conventional document layouts and are poorly matched to infographic structure.",
+    "The dataset does not model attachments, document revisions, or evidence relative to a particular attachment version.",
+    "Although the paper states that dataset, code, and leaderboard would be made available through DocVQA, the accessible dataset page confirms the dataset release but an official implementation code release was not verified."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "large_human_model_gap": 0.99,
+    "answers_often_exist_in_ocr_or_vocab": 0.98,
+    "in_domain_pretraining_helps": 0.98,
+    "generic_detectors_are_poor_fit": 0.98,
+    "object_features_do_not_help": 0.97,
+    "no_precise_answer_provenance_annotations": 0.91
+   },
+   "raw_claims": [
+    "InfographicVQA contains 30,035 questions over 5,485 infographic images.",
+    "The images originate from 2,594 distinct web domains.",
+    "Questions can depend on text, tables, figures, visualizations, and combinations of multiple cues.",
+    "The dataset includes questions requiring counting, sorting, and arithmetic.",
+    "Validation and test questions receive an additional independently collected answer.",
+    "Human test performance is reported as 0.980 ANLS and 95.70% exact accuracy.",
+    "More than 75% of questions have an answer available in the common-answer vocabulary or in serialized OCR tokens.",
+    "The evaluated object detectors identify relatively few useful objects in infographic images.",
+    "M4C variants using no object features or a full-image feature outperform variants using detected object regions.",
+    "The LayoutLM experiments show a strong benefit from in-domain pre-training.",
+    "Adding visual features to OCR tokens does not improve the reported LayoutLM results.",
+    "Questions judged impossible to answer from the image are removed from the dataset."
+   ],
+   "source_url": "https://arxiv.org/html/2104.12756",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

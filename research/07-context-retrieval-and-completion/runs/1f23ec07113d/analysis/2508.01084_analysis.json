@@ -1,0 +1,90 @@
+{
+ "paper_id": "2508.01084",
+ "title": "Provably Secure Retrieval-Augmented Generation",
+ "research_question": "Can a RAG architecture protect private textual content and embeddings against leakage and poisoning while providing formal confidentiality and integrity guarantees and retaining practical retrieval functionality?",
+ "methodology": "The paper proposes SAG, a RAG architecture that encrypts both textual chunks and their embeddings before server-side storage and separates private user knowledge from public knowledge. Its main design uses chained dynamic key derivation, per-node encryption, hash-based chain validation, an authorization record called Authdoor, and integrity checks; an Isolated AES scheme is also provided as a lower-overhead alternative. The authors formalize security games and reduction arguments for confidentiality, forward security, chain integrity, and Authdoor privacy under assumptions about AES-CBC, HKDF, hashes, and related cryptographic primitives. They evaluate the implementation on Enron, HealthCareMagic, BillSum, and Fnspid against multiple leakage, membership-inference, embedding-inversion, and knowledge-base-poisoning attacks, and separately measure encryption, organization, and decryption overhead.",
+ "key_findings": [
+  {
+   "finding": "The proposed architecture explicitly protects both stored text and stored embeddings rather than leaving vector representations exposed while encrypting only document content.",
+   "evidence_type": "supported",
+   "section": "3 Methodology"
+  },
+  {
+   "finding": "Under the stated computational assumptions, the chained design provides formal reduction-based arguments for confidentiality, forward security, chain integrity, and privacy of the Authdoor authorization record.",
+   "evidence_type": "supported",
+   "section": "3.3.3 Security Proof and Appendix B"
+  },
+  {
+   "finding": "The system enforces user-level isolation by associating private encrypted data with authenticated users and decrypting it only after the validator establishes authorized access.",
+   "evidence_type": "supported",
+   "section": "3.3 System Component Realization and Appendix D.2"
+  },
+  {
+   "finding": "Across the reported four-dataset evaluation, all tested leakage attacks have a reported zero attack-success rate and zero leaked-private-knowledge measurements under SAG.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "Across the evaluated poisoning attacks and datasets, the paper reports zero PASR, recall, and F1 values because injected adversarial content is prevented from entering the effective retrieval path.",
+   "evidence_type": "supported",
+   "section": "4.2 Results and Analysis"
+  },
+  {
+   "finding": "The stronger chained dynamic-key scheme incurs substantially greater processing overhead than the isolated AES alternative as the number of chunks grows.",
+   "evidence_type": "supported",
+   "section": "Appendix E.4 Time Comsuming"
+  },
+  {
+   "finding": "The paper's security guarantees are conditional on cryptographic assumptions and trusted components, including authentication and a trusted server execution environment for relevant decryption operations.",
+   "evidence_type": "supported",
+   "section": "3.3.3 Security Proof and Appendix D.2"
+  }
+ ],
+ "limitations": [
+  "The framework addresses confidentiality, integrity, and user-level authorization but does not implement an adaptive evidence-gap-driven retrieval controller.",
+  "It does not model whether retrieved evidence is temporally valid, stale, superseded, or associated with a particular source version.",
+  "It does not provide version-aware provenance linking generated statements to changing document revisions.",
+  "It does not address calibrated abstention, bounded-risk stopping, or an uncertainty-driven criterion for deciding that enough evidence has been retrieved.",
+  "The access-control model depends on existing authentication mechanisms and assumes trusted execution for server-side decryption, so its formal protection does not eliminate all trust assumptions.",
+  "The authors explicitly state that strict per-user isolation can be unsuitable for open-domain recommendation settings that require cross-user similarity computation over a shared index.",
+  "The paper explicitly excludes knowledge-augmented generation systems with graph reasoning and multi-hop entity traversal from its current formal security boundary.",
+  "The chained dynamic-key design incurs increasing encryption and key-management overhead; in the reported 10-chunk timing experiment its total processing time is much higher than the isolated AES scheme.",
+  "The attack experiments use 100 sampled question-answer pairs per domain for the detailed leakage evaluation, with 90 public and 10 private entries, so the empirical attack surface is much smaller than a large production knowledge base.",
+  "The empirical result of zero success for all evaluated attacks establishes robustness only against the tested attacks and configurations, not against every possible adaptive adversary.",
+  "The full-text page states that code and reproduction scripts will be included in supplementary materials but does not provide a directly accessible code repository URL, so current code availability cannot be independently confirmed from the source read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "encrypts_content_and_embeddings": 0.99,
+  "formal_security_under_stated_assumptions": 0.97,
+  "permission_aware_user_isolation": 0.98,
+  "reported_zero_leakage_for_tested_attacks": 0.99,
+  "reported_zero_poisoning_success_for_tested_attacks": 0.99,
+  "chained_scheme_has_higher_overhead": 0.99,
+  "no_temporal_or_version_aware_provenance": 0.97,
+  "no_calibrated_retrieval_stopping": 0.98,
+  "code_currently_confirmable_from_paper": 0.75
+ },
+ "raw_claims": [
+  "SAG encrypts both document content and vector embeddings before they are stored.",
+  "The design separates user-private knowledge from system-managed public knowledge.",
+  "Authenticated users obtain access to their own private data through validator-controlled key and address information.",
+  "The chained scheme derives per-node keys and links encrypted private nodes into a verifiable sequence.",
+  "The security analysis provides reductions for confidentiality, forward security, chain integrity, and Authdoor privacy.",
+  "The experiments use Enron, HealthCareMagic, BillSum, and Fnspid as four application-domain datasets.",
+  "The evaluation includes prompt-based extraction, membership inference, embedding inversion, and multiple knowledge-base-poisoning attacks.",
+  "The paper reports no successful private-data leakage under the evaluated leakage attacks.",
+  "The paper reports no successful poisoning behavior under the evaluated poisoning attacks.",
+  "The timing experiments repeat measurements 50 times for documents containing one through ten chunks.",
+  "The isolated AES alternative has lower processing overhead than chained dynamic key derivation as the data size increases.",
+  "The framework assumes existing user authentication and a trusted environment for relevant server-side operations.",
+  "Strict user isolation creates difficulties for applications that require cross-user retrieval over a shared index.",
+  "The current framework does not extend its formal guarantees to graph-oriented knowledge-augmented generation."
+ ],
+ "source_url": "https://arxiv.org/html/2508.01084",
+ "access": "full_text"
+}

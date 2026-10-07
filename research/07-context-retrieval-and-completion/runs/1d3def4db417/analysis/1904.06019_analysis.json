@@ -1,0 +1,82 @@
+{
+ "paper_id": "1904.06019",
+ "title": "Conformal Prediction Under Covariate Shift",
+ "research_question": "Can conformal prediction retain distribution-free marginal coverage when training and test covariate distributions differ while the conditional outcome distribution given covariates remains unchanged?",
+ "methodology": "The paper develops weighted conformal prediction by replacing ordinary empirical quantiles of nonconformity scores with importance-weighted quantiles derived from the likelihood ratio between test and training covariate distributions. It formalizes a broader notion of weighted exchangeability and proves coverage guarantees, then derives a computationally simple split-conformal specialization for covariate shift. An empirical study uses the UCI Airfoil dataset over 5,000 random trials, comparing unweighted, oracle-weighted, and estimated-weight procedures; reproduction code is provided.",
+ "key_findings": [
+  {
+   "finding": "When the covariate likelihood ratio is known, weighted conformal prediction restores finite-sample marginal coverage under covariate shift while ordinary conformal prediction need not retain its nominal coverage.",
+   "evidence_type": "supported",
+   "section": "Sections 2.1-2.2"
+  },
+  {
+   "finding": "The method is derived from a more general weighted-exchangeability framework that includes ordinary exchangeability and certain independent non-identically distributed settings as special cases.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "In the Airfoil experiment at 90% nominal coverage, ordinary split conformal averaged 90.2% without shift but only 82.2% on the shifted test distribution.",
+   "evidence_type": "supported",
+   "section": "Section 2.3"
+  },
+  {
+   "finding": "Using the oracle covariate-shift weights raised average coverage on the shifted Airfoil test distribution to 90.8%.",
+   "evidence_type": "supported",
+   "section": "Section 2.3"
+  },
+  {
+   "finding": "Importance weighting increases coverage variability because highly uneven weights reduce the effective calibration sample size.",
+   "evidence_type": "supported",
+   "section": "Section 2.3"
+  },
+  {
+   "finding": "The needed density ratio can be estimated from unlabeled test covariates by training a classifier to distinguish training from test inputs, although correctness then depends on estimation quality rather than the exact oracle-weight theorem.",
+   "evidence_type": "supported",
+   "section": "Section 2.3"
+  },
+  {
+   "finding": "General weighted conformal quantiles can be combinatorially difficult, but the covariate-shift structure yields a computationally tractable specialization comparable in complexity to ordinary conformal prediction.",
+   "evidence_type": "supported",
+   "section": "Section 4"
+  }
+ ],
+ "limitations": [
+  "The covariate-shift result assumes that the conditional distribution of the response given covariates remains unchanged between training and test populations.",
+  "Exact finite-sample validity in the principal covariate-shift result relies on knowing the likelihood ratio between test and training covariate distributions.",
+  "When the likelihood ratio is estimated, practical validity depends on the accuracy and stability of density-ratio estimation.",
+  "Highly variable importance weights reduce effective sample size and make intervals and empirical coverage more variable.",
+  "The main empirical demonstration uses one relatively small, five-dimensional Airfoil dataset with synthetically induced exponential tilting.",
+  "The paper provides marginal rather than exact pointwise conditional coverage; exact distribution-free conditional coverage is discussed as generally unattainable without uninformative intervals.",
+  "The fully general weighted-exchangeability construction can be computationally difficult."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "weighted_coverage_under_shift": 0.99,
+  "weighted_exchangeability_generalization": 0.98,
+  "unweighted_airfoil_undercoverage": 0.99,
+  "oracle_weight_airfoil_coverage": 0.99,
+  "effective_sample_size_penalty": 0.97,
+  "estimated_density_ratio": 0.97,
+  "computational_specialization": 0.98
+ },
+ "raw_claims": [
+  "Ordinary conformal validity follows from exchangeability and can fail when the test covariate distribution changes.",
+  "The weighted method assigns calibration observations influence according to their relevance to the test covariate distribution.",
+  "Covariate-shift weights are proportional to the density ratio between test and training covariate distributions.",
+  "The covariate-shift setting keeps the conditional response distribution given the covariates fixed.",
+  "Weighted conformal prediction achieves the required marginal coverage when the shift weights are known.",
+  "The Airfoil experiment used 5,000 random trials and a nominal coverage target of 90%.",
+  "Ordinary split conformal substantially undercovered the synthetically shifted Airfoil population.",
+  "Oracle weighting brought the shifted-population coverage back close to the target.",
+  "Uneven importance weights effectively reduce the usable calibration sample size.",
+  "A probabilistic classifier can estimate the training-to-test density ratio using unlabeled test covariates.",
+  "The authors released R code for the Airfoil simulations.",
+  "Weighted conformal prediction extends beyond covariate shift to other weighted-exchangeable settings."
+ ],
+ "source_url": "https://arxiv.org/html/1904.06019",
+ "access": "full_text"
+}

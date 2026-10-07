@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-18653-v1-2023-findings-acl-44",
+ "title": "Towards Generative Event Factuality Prediction",
+ "research_question": "Can an end-to-end generative model predict source-relative event factuality, including factuality holders, target events, and factuality values, and can output design and multi-task learning improve that prediction?",
+ "methodology": "The authors construct usable projections of FactBank for source-and-target factuality and author-only factuality and formulate prediction as text generation of structured factuality tuples or triplets. They fine-tune Flan-T5-base and compare alternative output representations, text normalization, and multi-task mixtures involving FactBank and other factuality or cognitive-state corpora. Source-and-target performance is evaluated primarily with exact-match triplet F1 plus source and target F1 measures, while author-only experiments use exact-match and macro-F1 evaluations. Experimental results are averaged across three fixed random seeds with reported standard deviations.",
+ "key_findings": [
+  {
+   "finding": "Event factuality is modeled as the factuality presentation or judgment attributed to an author or other source, rather than as direct determination of objective real-world truth.",
+   "evidence_type": "supported",
+   "section": "1 Introduction"
+  },
+  {
+   "finding": "Text normalization increased the source-and-target FactBank baseline exact-match triplet F1 from 0.472 to 0.512, with much of the improvement attributed to morphology and orthography corrections.",
+   "evidence_type": "supported",
+   "section": "6.2 Results: Baseline and Target Output Restructuring"
+  },
+  {
+   "finding": "Multi-task learning with the author-only FactBank projection substantially improved source-and-target prediction, with the FBST plus FBAO* configuration reaching an exact-match triplet F1 of 0.684 compared with 0.535 for the reported Table 4 baseline.",
+   "evidence_type": "supported",
+   "section": "6.3 Multi-task Learning / Table 4"
+  },
+  {
+   "finding": "For author-only FactBank prediction, the multi-task FBAO* plus FBST configuration achieved exact-match F1 of 0.897, compared with 0.866 for the basic FBAO configuration.",
+   "evidence_type": "supported",
+   "section": "7.2 FBAO: Exact Match Evaluation / Table 6"
+  },
+  {
+   "finding": "The structure of generated output materially affects results; in the author-only exact-match evaluation, inline annotation generation performed worse than tuple or triplet generation.",
+   "evidence_type": "supported",
+   "section": "7.2 FBAO: Exact Match Evaluation"
+  },
+  {
+   "finding": "Source identification was consistently easier than target identification in the source-and-target baseline experiments, showing that correctly pairing a factuality holder with its target event remains difficult.",
+   "evidence_type": "supported",
+   "section": "6.2 Results: Baseline and Target Output Restructuring"
+  }
+ ],
+ "limitations": [
+  "The machine-learning experiments do not represent the complete hierarchy of nested factuality sources; they focus on the last nested source.",
+  "All reported experiments use Flan-T5-base, so conclusions about the generative formulation are not demonstrated across substantially different model families.",
+  "The authors characterize the FactBank source-and-target projection and results as preliminary.",
+  "Potential biases introduced or amplified during language-model fine-tuning were not experimentally analyzed."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "source_relative_factuality": 0.99,
+  "normalization_gain": 0.99,
+  "multitask_stf_gain": 0.99,
+  "multitask_aof_gain": 0.99,
+  "output_format_matters": 0.98,
+  "source_easier_than_target": 0.98
+ },
+ "raw_claims": [
+  "The task represents factuality as a source's presentation of whether an event is factual rather than as an objective truth label.",
+  "The source-and-target task generates a source, target event, and factuality label together.",
+  "FactBank contains nested sources whose factuality judgments can differ from the author's judgment.",
+  "The authors created a database representation of FactBank and made the FactBank database available through a public GitHub repository.",
+  "All reported model experiments use Flan-T5-base.",
+  "Normalization improved the basic source-and-target exact-match triplet score.",
+  "The authors report that source spans are generally easier to generate correctly than target spans.",
+  "Multi-task learning with author-only FactBank data produced the strongest reported source-and-target triplet result.",
+  "Author-only factuality prediction benefited from combining its training data with source-and-target FactBank data.",
+  "Inline output annotation was less effective than structured tuple generation under the author-only exact-match evaluation.",
+  "The experiments retain only the final nested source instead of reconstructing the complete chain of embedded sources."
+ ],
+ "source_url": "https://aclanthology.org/2023.findings-acl.44.pdf",
+ "access": "full_text"
+}

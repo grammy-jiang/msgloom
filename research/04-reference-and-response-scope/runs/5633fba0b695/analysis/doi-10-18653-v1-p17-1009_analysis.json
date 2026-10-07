@@ -1,0 +1,74 @@
+{
+ "paper_id": "doi-10-18653-v1-p17-1009",
+ "title": "Joint Learning for Event Coreference Resolution",
+ "research_question": "Can event coreference resolution be improved by jointly learning trigger detection, event anaphoricity, and antecedent selection instead of treating these interdependent tasks as a pipeline?",
+ "methodology": "The authors formulate document-level event analysis as a structured conditional random field that jointly predicts event subtype, event anaphoricity, and an antecedent for each candidate event mention. Unary factors encode task-specific features, while binary and ternary factors model interactions among trigger detection, coreference, and anaphoricity, with approximate inference performed using belief propagation. The system is trained and evaluated on the TAC KBP 2016 English and Chinese corpora and compared with independently trained versions and the strongest official KBP 2016 systems. Ablation experiments and an error analysis are used to identify which task interactions help and where the model fails.",
+ "key_findings": [
+  {
+   "finding": "Joint learning improves event coreference over the independently trained model by 1.80 AVG-F points on English and 1.95 AVG-F points on Chinese.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Table 2"
+  },
+  {
+   "finding": "Joint learning yields particularly large improvements in event anaphoricity determination, increasing F-score by 4.59 points on English and 4.02 points on Chinese relative to independent models.",
+   "evidence_type": "supported",
+   "section": "Section 4.2, Table 2"
+  },
+  {
+   "finding": "On English, the joint model exceeds the strongest KBP 2016 system by 3.00 points in average event-coreference F-score and by 2.31 points in trigger-detection F-score.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "On Chinese, the joint model exceeds the strongest KBP 2016 system by 1.36 points in average event-coreference F-score and by 0.52 points in trigger-detection F-score.",
+   "evidence_type": "supported",
+   "section": "Section 4.2"
+  },
+  {
+   "finding": "Coreference-trigger interaction factors make the largest contribution to event-coreference performance among the three modeled interaction types and are also the most effective for improving trigger detection.",
+   "evidence_type": "supported",
+   "section": "Section 4.3"
+  },
+  {
+   "finding": "Major remaining errors arise from mistyped or missing triggers, inadequate argument extraction, absence of entity-coreference information, and insufficient context beyond the sentence containing the event mention.",
+   "evidence_type": "supported",
+   "section": "Section 4.4"
+  }
+ ],
+ "limitations": [
+  "Evaluation is confined to the TAC KBP 2016 English and Chinese Event Nugget Detection and Coreference setting and its 18 event subtypes.",
+  "The candidate representation effectively prevents one word occurrence from straightforwardly triggering multiple event mentions, although the appendix provides a partial workaround.",
+  "The model does not exploit annotated event arguments and instead relies on dependency-based heuristics that the error analysis finds inadequate, especially for noun triggers and arguments outside the trigger sentence.",
+  "Entity-coreference information is not incorporated, which weakens event comparison when corresponding arguments are expressed differently or pronominally.",
+  "Contextual features are drawn primarily from the sentence containing an event mention, and the authors identify missing neighboring-sentence context as a source of recall errors.",
+  "The paper does not provide a public implementation link for the proposed joint model."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "joint_model_improves_coreference": 0.99,
+  "joint_model_improves_anaphoricity": 0.99,
+  "english_outperforms_kbp_system": 0.99,
+  "chinese_outperforms_kbp_system": 0.98,
+  "coreference_trigger_interaction_most_useful": 0.98,
+  "context_and_argument_errors_remain": 0.99
+ },
+ "raw_claims": [
+  "The model jointly predicts trigger subtype, event anaphoricity, and an antecedent for every candidate event mention.",
+  "Event anaphoricity is defined by whether an event mention corefers with an earlier mention in the document.",
+  "The coreference component uses a mention-ranking formulation in which a mention selects a preceding antecedent or starts a new cluster.",
+  "Cross-task factors encourage compatible combinations of trigger, anaphoricity, and coreference decisions.",
+  "The joint model improves all three tasks over the corresponding independent models on both evaluation languages.",
+  "Coreference-trigger interactions contribute the most to event-coreference gains in the ablation experiments.",
+  "Mistyped triggers can induce incorrect event-coreference links.",
+  "Missing triggers prevent otherwise valid event-coreference links from being established.",
+  "Dependency-based argument extraction misses information needed to reject false coreference links.",
+  "Lack of entity-coreference information is especially problematic when event arguments are pronouns or otherwise lexically different.",
+  "Using only sentence-local contextual features limits the system when coreferent events are described differently across neighboring sentences."
+ ],
+ "source_url": "https://aclanthology.org/P17-1009.pdf",
+ "access": "full_text"
+}

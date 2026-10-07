@@ -1,0 +1,75 @@
+{
+ "paper_id": "manual-39435af3dd",
+ "title": "Overview of the TAC 2008 Update Summarization Task",
+ "research_question": "How well can automatic summarizers produce concise summaries of new information from a later document batch when the reader is assumed to already know the information in an earlier batch?",
+ "methodology": "TAC 2008 defines 48 news topics, each with 20 relevant AQUAINT-2 documents ordered chronologically and divided into ten-document Set A and later ten-document Set B. Systems generate a maximum 100-word initial Summary A and a 100-word update Summary B under the assumption that the reader already knows Set A, while NIST assessors also create human model summaries. Seventy-one automatic runs were scored with ROUGE-2, ROUGE-SU4 and BE-HM, and 57 runs received manual readability, Pyramid-content and overall-responsiveness evaluation, followed by statistical comparisons and correlation analysis.",
+ "key_findings": [
+  {
+   "finding": "Manual evaluation showed a significant quality gap between human and automatic summarizers in readability, Pyramid content and overall responsiveness.",
+   "evidence_type": "supported",
+   "section": "Section 4 Evaluation; Section 5 Conclusions"
+  },
+  {
+   "finding": "Automatic systems performed worse on the later update summaries than on initial summaries, while human summarizers were approximately equally effective on both.",
+   "evidence_type": "supported",
+   "section": "Section 4 Evaluation; Section 5 Conclusions"
+  },
+  {
+   "finding": "ROUGE-2 and ROUGE-SU4 detected the initial-versus-update performance difference for automatic systems, whereas BE-HM did not distinguish the two summary types at the reported 95% confidence level.",
+   "evidence_type": "supported",
+   "section": "Section 4.2 Automatic Evaluation"
+  },
+  {
+   "finding": "Differences among ROUGE-2, ROUGE-SU4 and BE-HM in Pearson and Spearman correlation with the manual measures were not statistically significant at the 95% level.",
+   "evidence_type": "supported",
+   "section": "Section 4.2.1 Correlation"
+  },
+  {
+   "finding": "Despite high correlations on automatic peers, the automatic metrics did not reproduce the clear manual-evaluation separation between human and machine summaries.",
+   "evidence_type": "supported",
+   "section": "Section 4.2 Automatic Evaluation; Section 5 Conclusions"
+  },
+  {
+   "finding": "The paper attributes part of this evaluation mismatch to string-matching metrics penalizing valid summaries that paraphrase reference content.",
+   "evidence_type": "supported",
+   "section": "Section 4.2 Automatic Evaluation"
+  }
+ ],
+ "limitations": [
+  "The benchmark has only two temporal batches, so it does not test state maintenance over many recurring briefing cycles.",
+  "The evaluation uses 48 newswire topics rather than workplace communication, limiting domain generalization.",
+  "Only 57 of the 71 submitted runs received the full manual evaluation.",
+  "ROUGE and BE rely heavily on surface overlap and can penalize semantically adequate paraphrases.",
+  "There were only eight human peers compared with many more automatic peers, making correlations for the human group statistically sparse.",
+  "The underlying AQUAINT-2 documents and TAC test materials are obtainable through the TAC/LDC access process rather than as an unrestricted open corpus."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "human_system_manual_gap": 0.99,
+  "update_harder_for_automatic_systems": 0.99,
+  "rouge_detects_update_gap": 0.99,
+  "metric_correlations_not_different": 0.99,
+  "automatic_metrics_miss_human_gap": 0.98,
+  "paraphrase_penalty": 0.98
+ },
+ "raw_claims": [
+  "The TAC task models an information need that is revisited after a later batch of documents arrives.",
+  "Each of the 48 topics contains 20 chronologically ordered AQUAINT-2 documents split into two sets of ten.",
+  "Summary B is written under the assumption that the reader is already familiar with Set A.",
+  "Both initial and update summaries are limited to 100 words.",
+  "Seventy-one automatic runs were submitted and all received automatic scoring.",
+  "Fifty-seven runs were manually evaluated for readability, content and overall responsiveness.",
+  "Manual assessment places human summaries substantially above automatic summaries.",
+  "Automatic systems have greater difficulty with update summaries than with initial summaries.",
+  "Human summarizers do not show the same degradation on the later document set.",
+  "ROUGE-2 and ROUGE-SU4 reflect the automatic-system update penalty, whereas BE-HM does not at the reported significance level.",
+  "The three automatic metrics have statistically indistinguishable correlations with the manual measures.",
+  "Surface-overlap evaluation can undervalue a good summary that expresses reference information using different wording."
+ ],
+ "source_url": "https://tac.nist.gov/publications/2008/additional.papers/update_summ_overview08.proceedings.pdf",
+ "access": "full_text"
+}

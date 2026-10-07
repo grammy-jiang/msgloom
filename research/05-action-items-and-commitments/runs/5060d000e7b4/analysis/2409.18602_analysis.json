@@ -1,0 +1,85 @@
+{
+ "paper_id": "2409.18602",
+ "title": "Do LLMs suffer from Multi-Party Hangover? A Diagnostic Approach to Addressee Recognition and Response Selection in Conversations",
+ "research_question": "How do textual content, interaction structure, prompt formulation, and structural conversation complexity affect zero-shot LLM performance on response selection and addressee recognition in multi-party conversations?",
+ "methodology": "The authors derive four diagnostic subsets from the authentic Ubuntu Internet Relay Chat corpus, fixing conversations at 15 turns and separating cases with three, four, five, and six participants while retaining structurally varied connected interaction graphs. Llama2-13b-chat is evaluated zero-shot on response selection and addressee recognition using combinations of raw conversation transcripts, speaker-addressee interaction transcripts, generated conversation summaries, and generated descriptions of the next speaker. Three prompt-verbosity variants are tested, candidate choices are scored with conditional perplexity, and results are related to interaction-graph measures including the next speaker's degree centrality and average outgoing edge weight.",
+ "key_findings": [
+  {
+   "finding": "Addressee recognition benefits strongly from explicit interaction structure: combinations containing the speaker-addressee interaction transcript consistently outperform the text-only conversation baseline.",
+   "evidence_type": "supported",
+   "section": "7 Results / Classification Performance"
+  },
+  {
+   "finding": "Response selection depends more strongly on linguistic content: the raw conversation transcript, alone or combined with structure, consistently gives the strongest results across the diagnostic subsets.",
+   "evidence_type": "supported",
+   "section": "7 Results / Classification Performance"
+  },
+  {
+   "finding": "Generated conversation summaries preserve substantially more useful information than speaker-description-only representations and can approach the strongest configurations in some higher-participant settings.",
+   "evidence_type": "supported",
+   "section": "7 Results / Classification Performance"
+  },
+  {
+   "finding": "Addressee recognition is more sensitive to prompt formulation than response selection, with verbose prompts frequently giving the best addressee results while no consistent verbosity benefit appears for response selection.",
+   "evidence_type": "supported",
+   "section": "7 Results / Prompt Sensitivity"
+  },
+  {
+   "finding": "As the next speaker's degree centrality increases, addressee-recognition performance generally falls across input combinations, revealing weaknesses that are obscured by aggregate macro accuracy.",
+   "evidence_type": "supported",
+   "section": "8 Discussion / Structural Complexity"
+  },
+  {
+   "finding": "The strongest configurations perform particularly well on simpler interaction structures but generalize less effectively to structurally more complex conversations.",
+   "evidence_type": "supported",
+   "section": "8 Discussion / Structural Complexity"
+  },
+  {
+   "finding": "Replacing original text with minimized representations such as summaries can come close to the best input in some structurally complex addressee cases, but the authors conclude that the data-minimization direction is not yet fully satisfactory.",
+   "evidence_type": "supported",
+   "section": "8-9 Discussion and Conclusions"
+  },
+  {
+   "finding": "The software and processed diagnostic data are released in the authors' GitHub repository.",
+   "evidence_type": "supported",
+   "section": "1 Introduction"
+  }
+ ],
+ "limitations": [
+  "All experiments are derived from one source, Ubuntu IRC, rather than multiple enterprise-chat platforms or workplace domains.",
+  "Every diagnostic conversation is fixed at 15 turns, so the study intentionally removes conversation length as a variable and does not test long workplace threads.",
+  "Only one instruction-tuned LLM, Llama2-13b-chat, is evaluated in zero-shot mode.",
+  "The paper analyzes the best prompt run for combinations and explicitly cautions against generalizing model capability from these experiments.",
+  "Addressee candidates are individual conversation participants plus a dummy unseen-user label; there is no annotation for a collective group, team, distribution list, or implicit organizational assignee.",
+  "The underlying corpus provides explicit addressee relations, so the task does not directly test extraction of implicit assignees from action language.",
+  "The study does not extract actions, decisions, deadlines, conditions, negation or modality attachment, nor exact evidence spans for such arguments.",
+  "Ubuntu IRC is authentic technical multi-party conversation but is not equivalent to private enterprise chat and does not establish workplace-specific decision or accountability semantics."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structure_for_addressee": 0.99,
+  "text_for_response_selection": 0.99,
+  "prompt_sensitivity_difference": 0.98,
+  "complexity_degradation": 0.98,
+  "summary_data_minimization": 0.94
+ },
+ "raw_claims": [
+  "The study treats response selection as primarily linguistic and addressee recognition as primarily structural proxy tasks for multi-party conversation understanding.",
+  "Four Ubuntu IRC subsets are created for conversations containing three through six participants.",
+  "All selected diagnostic conversations contain fifteen turns and connected interaction graphs.",
+  "The model is given the identity of the next speaker and must select either the next response or the next addressee.",
+  "Conversation transcripts contain speaker-message pairs, while interaction transcripts contain only speaker-addressee pairs.",
+  "Llama2-13b-chat is evaluated without task-specific training.",
+  "Structural information is critical for the strongest addressee-recognition results.",
+  "Raw conversational text is critical for the strongest response-selection results.",
+  "Addressee recognition changes more under alternative prompt formulations than response selection.",
+  "Addressee performance declines as interaction structure becomes more complex by speaker-degree measures.",
+  "The experiment code and processed data are publicly released."
+ ],
+ "source_url": "https://arxiv.org/pdf/2409.18602",
+ "access": "full_text"
+}

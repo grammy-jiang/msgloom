@@ -1,0 +1,381 @@
+{
+ "analyses": [
+  {
+   "paper_id": "doi-10-1007-s00778-010-0203-9",
+   "title": "Event correlation for process discovery from Web service interaction logs",
+   "research_question": "How can events scattered across Web-service interaction logs be correlated, partly automatically and with user guidance, so that useful business-process executions and process views can be discovered?",
+   "methodology": "The paper formulates event correlation as identifying relationships among service-interaction events that belong to the same business-process execution instance. It introduces process views for individual ways of correlating events and a process space for the alternative views that can be generated from a log. The authors propose algorithms and heuristics for prioritizing potentially interesting correlations and an interactive discovery process in which users guide exploration and navigate discovered views through a process map. The approach is evaluated on synthetic and real-world datasets.",
+   "key_findings": [
+    {
+     "finding": "A single collection of enterprise service-interaction events can admit multiple plausible correlations and therefore multiple process views rather than one uniquely determined process reconstruction.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "The paper represents alternative event-correlation interpretations explicitly through the concepts of process views and process space.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Exhaustively exploring possible event correlations is computationally expensive, motivating heuristics that concentrate on correlated event sets likely to yield interesting process views.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Because event correlation can be subjective, the proposed discovery workflow incorporates interactive user guidance instead of relying entirely on automatic inference.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    },
+    {
+     "finding": "Experiments on both synthetic and real-world data are reported as showing the viability and efficiency of the proposed approach.",
+     "evidence_type": "supported",
+     "section": "Abstract"
+    }
+   ],
+   "limitations": [
+    "The accessible source provides only the abstract, so algorithmic details, experimental measurements, and dataset identities could not be independently inspected.",
+    "The study concerns machine-generated Web-service interaction logs rather than human email or chat conversations.",
+    "The paper explicitly treats event correlation as potentially subjective, so there may be no single uniquely correct process interpretation.",
+    "The process space can be computationally expensive to explore exhaustively, requiring heuristic pruning or prioritization.",
+    "Interactive guidance means discovered views can depend on users' interests and choices."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": false
+   },
+   "confidence_scores": {
+    "multiple_plausible_correlations": 0.98,
+    "process_view_and_space": 0.99,
+    "exhaustive_search_cost": 0.99,
+    "interactive_guidance": 0.99,
+    "experimental_viability": 0.93
+   },
+   "raw_claims": [
+    "Enterprise process-execution information can be scattered across multiple applications, Web services, and data sources.",
+    "Event correlation links events judged to belong to the same process-execution instance.",
+    "The paper studies event correlation using Web-service interaction logs.",
+    "Different plausible event correlations can produce different process views over the same underlying events.",
+    "The process space denotes the set of possible process views over process events.",
+    "Exploring every possible correlation can be computationally expensive.",
+    "The proposed workflow lets users guide correlation discovery toward process views that interest them.",
+    "The authors report experiments using synthetic as well as real-world datasets."
+   ],
+   "source_url": "https://www.vldb.org/vldb_journal/index.php/component/article_manager/article/1156",
+   "access": "abstract_only"
+  },
+  {
+   "paper_id": "doi-10-3115-v1-w14-2910",
+   "title": "Evaluation for Partial Event Coreference",
+   "research_question": "How should systems that predict partial, hierarchical relationships among event mentions be evaluated when ordinary event-coreference metrics assume flat equivalence clusters?",
+   "methodology": "The paper represents partial event coreference through conceptual event hierarchies, modeled as forests of unordered trees whose conceptual nodes group fully coreferential event mentions. It extends or adapts three evaluation approaches—MUC, BLANC, and Simple Tree Matching—to this hierarchical setting. The proposed metrics are examined against formal desiderata including identity, symmetry, zero behavior, monotonicity, and linearity using systematically varied response structures. The resulting behavior of the metrics is compared to determine which are suitable for partial-event-coreference evaluation.",
+   "key_findings": [
+    {
+     "finding": "Grouping fully coreferential mentions into conceptual event nodes provides a representation in which partial coreference can be evaluated as hierarchical relations between events rather than only as flat mention clusters.",
+     "evidence_type": "supported",
+     "section": "3 Evaluation Scheme"
+    },
+    {
+     "finding": "Extensions of MUC and BLANC satisfy the paper's evaluation desiderata more adequately than the normalized Simple Tree Matching approach examined by the authors.",
+     "evidence_type": "supported",
+     "section": "5 Experiments; 6 Discussion"
+    },
+    {
+     "finding": "The normalized Simple Tree Matching metric fails some monotonicity or linearity requirements in the tested response configurations.",
+     "evidence_type": "supported",
+     "section": "5 Experiments"
+    },
+    {
+     "finding": "The partial-coreference extension of MUC is described as flexible but retains known MUC weaknesses, including preferences associated with larger coreference groups and poor treatment of singleton recall.",
+     "evidence_type": "supported",
+     "section": "6 Discussion"
+    },
+    {
+     "finding": "The partial-coreference extension of BLANC is presented as an attractive alternative when true event mentions are supplied, while mention-detection mismatches complicate its use.",
+     "evidence_type": "supported",
+     "section": "6 Discussion"
+    },
+    {
+     "finding": "The authors conclude that extended MUC and BLANC are more appropriate for evaluating partial event coreference than the examined tree-matching alternative.",
+     "evidence_type": "supported",
+     "section": "7 Conclusion"
+    }
+   ],
+   "limitations": [
+    "The work evaluates metrics rather than proposing or testing a complete partial-event-coreference resolver.",
+    "The evaluation relies heavily on constructed hierarchical response cases rather than evidence from enterprise communication streams.",
+    "The formalization assumes directed partial-coreference relationships and makes structural assumptions about how full and partial links propagate.",
+    "MUC-based evaluation inherits known biases of the original MUC metric, particularly around singleton events and differently sized coreference groups.",
+    "BLANC-based evaluation is easier to interpret when gold event mentions are already available, limiting what it says about end-to-end mention detection plus coreference.",
+    "The paper does not address email-thread linking, chat conversations, or organizational workflow identity directly."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "conceptual_event_hierarchy": 0.99,
+    "muc_blanc_outperform_tree_matching": 0.99,
+    "tree_matching_desiderata_failures": 0.97,
+    "muc_limitations": 0.98,
+    "blanc_with_gold_mentions": 0.95,
+    "metric_recommendation": 0.99
+   },
+   "raw_claims": [
+    "Partial event coreference includes relations such as subevent and membership rather than only full event identity.",
+    "Partial event coreference is directional and naturally induces hierarchical structure.",
+    "Conceptual event nodes can collapse fully coreferential mentions before partial links are evaluated.",
+    "The proposed representation treats partial-event structure as a forest of unordered trees.",
+    "The evaluation desiderata include identity, symmetry, zero behavior, monotonicity, and linearity.",
+    "Standard cluster-oriented metrics such as B-CUBED and CEAF are not directly suited to the hierarchical representation considered here.",
+    "The paper adapts MUC and BLANC to score partial-event links.",
+    "MUC-based and BLANC-based extensions behave more appropriately than the tested Simple Tree Matching variant on the paper's desiderata.",
+    "MUC's established shortcomings remain present after adaptation to partial event coreference.",
+    "The authors identify evaluation of broader structural consistency as future work."
+   ],
+   "source_url": "https://aclanthology.org/W14-2910.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2109.06417",
+   "title": "Cross-document Event Identity via Dense Annotation",
+   "research_question": "How can cross-document event identity be densely annotated when events may be only partially identical because their participants, time, location, or evolving real-world state overlap incompletely?",
+   "methodology": "The authors construct CDEC-WN, a densely annotated cross-document event-coreference dataset by considering event mentions across document pairs and asking crowd workers about identity together with overlap in time, location, participants, and event inclusion. They represent annotation primarily as mention-pair links rather than forcing all links into equivalence clusters, because quasi-identity relations need not obey transitivity. Expert validation is used to estimate annotation quality, and qualitative analysis is used to characterize partial-identity phenomena. The paper also evaluates a lemma-matching baseline and a BERT-based cross-encoder on a train/dev versus test subtopic split.",
+   "key_findings": [
+    {
+     "finding": "Dense cross-document annotation reveals substantial partial or quasi-identity phenomena that would be obscured by a binary notion of exact event identity.",
+     "evidence_type": "supported",
+     "section": "4 Dataset Collection; 5 Quasi-Identity"
+    },
+    {
+     "finding": "About 32% of annotated coreference links are identified as candidates for partial identity based on annotators' responses about contextual overlap.",
+     "evidence_type": "supported",
+     "section": "5 Quasi-Identity"
+    },
+    {
+     "finding": "The authors identify membership, subevent relations, and spatiotemporal continuity as recurring forms of partial event identity, with spatiotemporal continuity capturing events that evolve across time or space.",
+     "evidence_type": "supported",
+     "section": "5 Quasi-Identity"
+    },
+    {
+     "finding": "Partial event identity can violate transitivity, so the dataset preserves pairwise judgments rather than imposing transitive closure over all coreference links.",
+     "evidence_type": "supported",
+     "section": "4.3 Annotation Aggregation; 5 Quasi-Identity"
+    },
+    {
+     "finding": "Crowd agreement is substantially more difficult for partial identity than for clear full identity: perfect three-annotator agreement is reported for 31% of full-coreference links versus 13% of partial-coreference links.",
+     "evidence_type": "supported",
+     "section": "4.3 Annotation Aggregation"
+    },
+    {
+     "finding": "Expert inspection of a test subset reports 97.5% precision for the resulting links while also uncovering evidence that some valid links were missed, making recall harder to establish.",
+     "evidence_type": "supported",
+     "section": "4.4 Validation"
+    },
+    {
+     "finding": "The BERT cross-encoder reaches a reported test F1 of 57.6, compared with 48.2 for lemma matching, but error analysis indicates that partial identity and limited sentence-level context remain challenging.",
+     "evidence_type": "supported",
+     "section": "6 Baselines and Analysis"
+    }
+   ],
+   "limitations": [
+    "The corpus is English-only.",
+    "The corpus is restricted to the disaster-and-accidents domain rather than enterprise communication.",
+    "The dataset omits within-document coreference links because its focus is cross-document identity.",
+    "Crowd annotation has only moderate overall agreement, reflecting ambiguity in the task.",
+    "Expert validation indicates that the resulting link set can still contain missed coreference relations, so recall is difficult to quantify reliably.",
+    "The boundary among full identity, partial identity, and non-coreference can be intrinsically fuzzy.",
+    "The baseline cross-encoder uses limited local context and performs particularly poorly on some partial-identity cases.",
+    "The evidence comes from news documents rather than email threads, chat channels, or business workflow records."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "partial_identity_prevalence": 0.98,
+    "three_quasi_identity_types": 0.99,
+    "nontransitive_pairwise_identity": 0.99,
+    "annotation_agreement_gap": 0.99,
+    "expert_precision": 0.99,
+    "cross_encoder_improvement": 0.99,
+    "partial_identity_remains_hard": 0.96
+   },
+   "raw_claims": [
+    "Cross-document event identity requires reasoning beyond lexical similarity because event arguments and document context can differ.",
+    "CDEC-WN densely annotates event relationships across document pairs instead of sampling only a small subset of candidate mention pairs.",
+    "The released corpus contains 176 documents, 7,220 event mentions, and 4,282 annotated cross-document coreference links.",
+    "Of the 4,282 links, 2,914 are labeled full identity and 1,368 partial identity.",
+    "Annotators answer follow-up questions about time, location, participants, and event inclusion to characterize relationships between mentions.",
+    "The dataset does not impose transitive closure because quasi-identity links can be non-transitive.",
+    "Membership and subevent relations are two observed varieties of partial event identity.",
+    "Spatiotemporal continuity describes an event whose real-world state evolves across time or space while retaining meaningful continuity.",
+    "Human judgments show that the line between full identity, partial identity, and non-coreference is not always sharp.",
+    "Expert validation reports high precision but also indicates that dense annotation can still miss valid links.",
+    "A BERT cross-encoder outperforms a lemma-matching baseline but does not solve the partial-identity problem.",
+    "The authors release the dataset and supporting toolkit publicly."
+   ],
+   "source_url": "https://arxiv.org/html/2109.06417",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1038-s41598-026-40637-w",
+   "title": "Conformal selective prediction with cost aware deferral for safe clinical triage under distribution shift",
+   "research_question": "Can calibrated prediction, conformal uncertainty sets, and cost-aware deferral be combined to make early-sepsis triage safer under both in-distribution and shifted clinical data?",
+   "methodology": "The study builds an early-sepsis prediction pipeline on the PhysioNet 2019 data using a neural classifier followed by probability calibration. Split conformal prediction, gender-stratified Mondrian conformal prediction, and an importance-weighted conformal variant are used to construct uncertainty-aware predictions under different assumptions about distribution shift. A selective prediction rule defers uncertain cases according to a threshold chosen to minimize an explicit clinical cost function. Performance is evaluated on an in-distribution test set and a later-admission out-of-distribution test set using discrimination, calibration, conformal coverage, selective error, subgroup coverage, and expected-cost measures.",
+   "key_findings": [
+    {
+     "finding": "At 80% prediction coverage, selective prediction is reported to reduce error on retained cases by 49.6% in-distribution and 46.7% out-of-distribution.",
+     "evidence_type": "supported",
+     "section": "Experimental setup and results"
+    },
+    {
+     "finding": "Nominal 90% conformal coverage remains close to target in-distribution but degrades under distribution shift, with the importance-weighted variant reported as the most robust of the tested conformal strategies.",
+     "evidence_type": "supported",
+     "section": "Experimental setup and results"
+    },
+    {
+     "finding": "Gender-stratified Mondrian conformal prediction reduces the reported subgroup coverage gap to 1.4 percentage points.",
+     "evidence_type": "supported",
+     "section": "Experimental setup and results"
+    },
+    {
+     "finding": "The reported expected clinical cost is 0.5640 in-distribution and 0.7053 out-of-distribution under the evaluated decision setup.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    },
+    {
+     "finding": "The calibrated model reports expected calibration error of 0.016 in-distribution and 0.030 out-of-distribution, indicating deterioration but still relatively small measured calibration error after temporal shift.",
+     "evidence_type": "supported",
+     "section": "Conclusion"
+    },
+    {
+     "finding": "The paper argues that explicit deferral can improve safety metrics but also creates an operational burden because deferred cases must be handled by clinical staff or another downstream process.",
+     "evidence_type": "supported",
+     "section": "Limitations and clinical implications"
+    }
+   ],
+   "limitations": [
+    "This paper is outside the requested substantive domain: it studies clinical triage, not event coreference, conversation linking, enterprise communication, or organizational workflow continuity.",
+    "The evaluation uses a public sepsis dataset and a temporal split rather than prospective deployment across independent hospitals.",
+    "Selective deferral can transfer workload to clinicians and may delay care if the receiving workflow is not adequately resourced.",
+    "The authors state that the public implementation is not a substitute for site-specific validation.",
+    "Broader evaluation across institutions, data modalities, and base learners remains necessary.",
+    "Prospective decision-curve analysis and user studies are identified as further validation needs."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "selective_error_reduction": 0.99,
+    "weighted_conformal_robustness": 0.98,
+    "subgroup_coverage_gap": 0.99,
+    "reported_expected_cost": 0.99,
+    "calibration_under_shift": 0.99,
+    "deferral_operational_burden": 0.98,
+    "topic_mismatch": 1.0
+   },
+   "raw_claims": [
+    "The framework combines calibrated probabilistic prediction, conformal prediction, and selective deferral.",
+    "The application is early detection and triage of sepsis rather than communication-event identity.",
+    "The study uses the PhysioNet 2019 sepsis dataset.",
+    "The analytic sample contains 2,155 patients with a reported sepsis prevalence of 7.0%.",
+    "Later-admitted patients are used to create an out-of-distribution evaluation split.",
+    "Split conformal, Mondrian conformal, and importance-weighted conformal variants are compared.",
+    "Selective prediction allows the system to defer cases judged too uncertain for automatic handling.",
+    "At a fixed 80% retained coverage, the reported prediction error falls substantially in both evaluated distributions.",
+    "Distribution shift weakens ordinary conformal coverage, while importance weighting improves robustness in the reported experiment.",
+    "Deferral safety gains depend on an operational pathway capable of handling deferred patients.",
+    "The paper provides public code and uses a publicly available dataset."
+   ],
+   "source_url": "https://www.nature.com/articles/s41598-026-40637-w",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2020-coling-main-275",
+   "title": "Event Coreference Resolution with their Paraphrases and Argument-aware Embeddings",
+   "research_question": "Can event-coreference resolution be improved by jointly modeling event-centered paraphrase evidence and argument-aware semantic representations instead of relying mainly on lexical matching or fixed argument slots?",
+   "methodology": "The paper proposes EPASE, which combines event-specific paraphrase representations with argument-aware semantic embeddings for pairwise event-coreference decisions. Event-specific paraphrase representations use marked target events so that sentence-pair encoding emphasizes whether the contexts paraphrase the same event, while argument-aware representations incorporate semantic-role information into token-level contextual embeddings without forcing arguments into fixed slots. Candidate documents are first grouped using TF-IDF-based document clustering, and mention pairs within clusters are scored by the learned model. The system is evaluated on the ECB+ benchmark for both within-document and combined within- plus cross-document event coreference using MUC, B-CUBED, CEAF_e, and CoNLL F1, with ablation experiments measuring component contributions.",
+   "key_findings": [
+    {
+     "finding": "EPASE reaches a reported CoNLL F1 of 84.3 on the combined within-document and cross-document ECB+ evaluation.",
+     "evidence_type": "supported",
+     "section": "4 Experiments"
+    },
+    {
+     "finding": "The paper reports a 4.3-point CoNLL F1 improvement over the compared Joint+Chirps system on the combined evaluation.",
+     "evidence_type": "supported",
+     "section": "4 Experiments"
+    },
+    {
+     "finding": "For within-document coreference, EPASE reports a CoNLL F1 of 88.3, 4.2 points above the compared Joint model result reported in the paper.",
+     "evidence_type": "supported",
+     "section": "4 Experiments"
+    },
+    {
+     "finding": "Ablation of the argument-aware semantic component lowers combined CoNLL F1 from 84.3 to 82.1, indicating that the semantic representation supplies substantial predictive value.",
+     "evidence_type": "supported",
+     "section": "5 Analysis"
+    },
+    {
+     "finding": "Ablation of the event-specific paraphrase component lowers combined CoNLL F1 from 84.3 to 82.7, supporting the usefulness of paraphrase information beyond the other model components.",
+     "evidence_type": "supported",
+     "section": "5 Analysis"
+    },
+    {
+     "finding": "Removing the handcrafted binary features produces only a small reduction, from 84.3 to 84.1 CoNLL F1, suggesting that most of the reported gain comes from learned paraphrase and semantic representations.",
+     "evidence_type": "supported",
+     "section": "5 Analysis"
+    },
+    {
+     "finding": "The authors identify incomplete semantic-role coverage as a remaining weakness because the SRL system handles verbal predicates more effectively than nominal, pronominal, or adjectival event mentions.",
+     "evidence_type": "supported",
+     "section": "5 Analysis; 6 Conclusion"
+    }
+   ],
+   "limitations": [
+    "Evaluation is confined to ECB+, a news-oriented event-coreference benchmark rather than enterprise email or chat.",
+    "The method assumes event mentions are already supplied and is therefore not an end-to-end event detection and coreference system.",
+    "Candidate generation depends on document clustering, so coreferential events placed in different clusters cannot subsequently be linked by the pairwise resolver.",
+    "The semantic-role labeling component covers only about 60% of event mentions according to the paper's analysis, leaving many non-verbal events without useful argument-role information.",
+    "The study does not model partial or evolving event identity explicitly; ECB+ evaluation primarily targets conventional full coreference.",
+    "No public implementation was identified in the paper text inspected for this analysis."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "combined_conll_result": 0.99,
+    "improvement_over_joint_chirps": 0.98,
+    "within_document_result": 0.98,
+    "semantic_ablation": 0.99,
+    "paraphrase_ablation": 0.99,
+    "binary_feature_ablation": 0.99,
+    "srl_coverage_limitation": 0.98
+   },
+   "raw_claims": [
+    "EPASE combines event-specific paraphrase evidence with argument-aware semantic representations.",
+    "Target event mentions are specially marked when constructing paraphrase-oriented sentence-pair representations.",
+    "The argument-aware component injects semantic-role information without assigning arguments to a fixed set of event slots.",
+    "Documents are clustered before event-pair scoring so that candidate comparisons are restricted to related documents.",
+    "The experiments use the ECB+ event-coreference benchmark.",
+    "The evaluated ECB+ split contains 43 topics divided into training, development, and test topics.",
+    "Performance is measured with MUC, B-CUBED, CEAF_e, and their CoNLL average.",
+    "The full EPASE model reports a combined CoNLL F1 of 84.3.",
+    "Both learned semantic representations and event-specific paraphrase representations contribute materially according to ablation results.",
+    "Handcrafted binary features contribute much less than either of the two learned representation components in the reported ablation.",
+    "The semantic-role system leaves many non-verbal event mentions without argument-role information.",
+    "The authors identify stronger semantic-role handling and end-to-end event processing as directions for further work."
+   ],
+   "source_url": "https://aclanthology.org/2020.coling-main.275.pdf",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

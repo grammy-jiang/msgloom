@@ -1,0 +1,57 @@
+{
+  "status": "accepted_with_issues",
+  "first_review_repairs": {
+    "B1": "fixed",
+    "B2": "fixed",
+    "N1": "fixed",
+    "N2": "fixed",
+    "N3": "fixed",
+    "N4": "fixed",
+    "N5": "not_fixed"
+  },
+  "blocking_issues": [],
+  "nonblocking_issues": [
+    {
+      "id": "N5-remaining",
+      "location": "engineering-validation/tests/test_metrics.py:11; tests/test_experiments.py:63",
+      "finding": "Validity regressions are substantially improved, but they do not enforce one-to-one occurrence matching.",
+      "evidence": "An in-memory mutation removed the used-prediction guard from match_spans. The mutated matcher assigned one prediction to two gold occurrences, yet all 51 tests still passed. The current unmodified implementation correctly enforces one-to-one matching.",
+      "impact": "This is a regression-protection gap. It does not invalidate the current scores."
+    },
+    {
+      "id": "R2-N1",
+      "location": "engineering-validation/src/topic01_validation/experiments.py:518; results/metrics.json:2544",
+      "finding": "E4 retains a stale finding that claims one incorrect near-collision acceptance.",
+      "evidence": "The current held-out near_collision stratum has 40 abstentions, zero acceptances, and zero incorrect acceptances. Recomputed aggregate accepted error is 0/80.",
+      "impact": "The machine-readable narrative contradicts the valid numerical results. RESULTS.md reports the current numbers correctly."
+    },
+    {
+      "id": "R2-N2",
+      "location": "engineering-validation/RESULTS.md:5; src/topic01_validation/experiments.py:545",
+      "finding": "Generated completion labels do not clearly distinguish completed experiment execution from independent review acceptance.",
+      "evidence": "RESULTS.md and metrics.json use COMPLETED_SYNTHETIC labels. RESULTS.md:108, STATUS.md, and CURRENT_STATUS.md explicitly retain the review gate.",
+      "impact": "The explicit gate prevents a material false closure decision, but the headline and machine-readable status remain ambiguous when read alone."
+    }
+  ],
+  "recommended_fixes": [
+    "Add regression tests with competing gold spans and duplicate predictions. Require unique gold and prediction indices in matched_pairs. Add targeted replay tests for a dropped inline occurrence and unexpected parent/ancestry predictions.",
+    "Generate E4 findings from the measured counts. Remove the historical near-collision error claim from current outputs.",
+    "Separate experiment execution status from review acceptance status. Make the RESULTS.md headline consistent with that distinction."
+  ],
+  "verified_points": [
+    "Read all requested documents, current Python modules, tests, metrics, audit, and first-review verdict locally. No repository files, product design, commits, or remote state were changed. Generated files were confined to temporary directories.",
+    "All 51 current tests passed with python -B. A fresh temporary-directory run reproduced metrics.json exactly, including SHA-256 7ae9517f8c5c3bbc2bbad7702f94ab2934cf824a0a160339e3885e278898e84b. RESULTS.md and all 59 generated fixture files matched the repository artifacts.",
+    "Fixture expected bodies and gold spans are independent of extract_body. Deleting the deadline in memory reduced exact extraction from 40/40 to 39/40 and decision-relevant preservation from 12/12 to 11/12. Deleting labeled new content reduced its preservation from 4/4 to 3/4.",
+    "Strict E2 evaluates every predicted occurrence through one-to-one gold assignment. Structural accepted attribution error is 0/12. Reuse-augmented accepted attribution error is 4/18; all four errors are accepted attributions on unmatched predictions.",
+    "Both strict E2 detection and matching use prior-arrival source context. Every recorded candidate belongs to the independently checked prior-arrival source set. Corrupting all gold marker-style labels left both strict end-to-end result objects unchanged.",
+    "Gold-conditioned final-context source and boundary diagnostics are explicitly separated from arrival-time end-to-end results.",
+    "E4 uses different authored calibration and holdout templates. Independent comparisons found zero overlapping complete inputs, quote strings, or source-text strings. The threshold of 0.90 is selected using calibration examples only.",
+    "E3 assessments retain occurrence spans. Dropping one inline prediction reduced occurrence recall from 26/30 to 25/30 and source-policy recall from 24/30 to 23/30. Duplicating a prediction reduced occurrence precision to 26/27 and produced one false resolved unmatched prediction.",
+    "Unexpected parent and ancestry assessments reduced their respective precision to 21/22 and 2/3. Removed-relation history is detectable. Direct parent and indirect ancestry remain separate. A duplicate-ID replay changed a parent assessment from resolved to ambiguous when the conflicting identifier arrived.",
+    "Composite multiple-parent quotation gold now consists of two source-specific occurrences. Only the boilerplate alternative-source case is counted as ambiguous.",
+    "The duplicate Message-ID comparator claim is supported for the tested orders: final-state agreement is 2/3 for the unsafe comparator and 1 for the ambiguity-preserving comparator. Strict E2 directly records two reverse-provenance errors and two repeated-boilerplate false attributions.",
+    "Production accuracy, production representativeness, architecture approval, and literature exhaustion are not claimed. A2 and A7 remain open with bounded non-trigger decisions. Topic 03/04/10 and E5/E6 handoffs remain consistent with the Round 2 decision and design boundaries.",
+    "No current headline numerical result was found materially invalid. Acceptance is limited to the stated synthetic engineering-validation scope."
+  ],
+  "confidence": 0.98
+}

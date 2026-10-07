@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-1145-3289600-3290984",
+ "title": "Domain Adaptation for Commitment Detection in Email",
+ "research_question": "How strongly does email-domain variation degrade sentence-level commitment detection, and can domain-adaptation methods learn commitment models that transfer more reliably between email corpora?",
+ "methodology": "The study constructs sentence-level commitment datasets from Enron and Avocado emails, with crowdworkers labeling whether a highlighted sentence contains a specific action that the sender must or promises to complete; majority voting is used and reported inter-annotator agreement is Krippendorff's alpha of 0.73. The resulting datasets contain 65,398 Enron samples with 3,337 positives and 13,021 Avocado samples with 4,484 positives, with Avocado deliberately enriched for likely positive examples. Logistic-regression commitment classifiers using word or POS n-grams establish same-domain and cross-domain baselines, after which feature selection, linear feature mapping, importance sampling, and a neural autoencoder with task/domain-related objectives are evaluated for transfer. Precision, recall, F1, and AUC are reported with cross-validation.",
+ "key_findings": [
+  {
+   "finding": "Commitments can be detected reasonably well when training and testing within the same corpus, with word-ngram LR F1 of 0.81 on Avocado and 0.78 on Enron.",
+   "evidence_type": "supported",
+   "section": "6.1 In-Domain Results"
+  },
+  {
+   "finding": "Cross-domain transfer without adaptation degraded performance: Avocado-to-Enron F1 fell to 0.73 and Enron-to-Avocado F1 to 0.76, with particularly large AUC deterioration.",
+   "evidence_type": "supported",
+   "section": "6.2 Cross-Domain Results"
+  },
+  {
+   "finding": "A classifier could distinguish Avocado from Enron sentences with F1 of 0.85, empirically demonstrating substantial corpus-specific lexical structure.",
+   "evidence_type": "supported",
+   "section": "6.3 Characterizing Inter-Domain Differences"
+  },
+  {
+   "finding": "Sample-level importance weighting significantly improved transfer in both directions, and the tested feature-level adaptation methods also produced improvements in at least some transfer settings.",
+   "evidence_type": "supported",
+   "section": "6.3 Characterizing Inter-Domain Differences"
+  },
+  {
+   "finding": "The proposed autoencoder benefited from its multiple loss components, and the variant using all available objectives achieved the strongest reported autoencoder performance.",
+   "evidence_type": "supported",
+   "section": "6.4 Transfer Learning Results"
+  },
+  {
+   "finding": "The commitment label implicitly assigns responsibility to the email sender because a positive sentence is defined as an action the sender must or promises to complete, rather than performing open-ended owner extraction.",
+   "evidence_type": "supported",
+   "section": "3.1 Detecting Commitments in Email"
+  },
+  {
+   "finding": "The study does not annotate or evaluate deadline-to-action links, conditional antecedents, obligation negation, or a separate evidence-span extraction task.",
+   "evidence_type": "unsupported",
+   "section": "3 Task and Data"
+  }
+ ],
+ "limitations": [
+  "The task is binary sentence classification rather than structured commitment extraction.",
+  "Responsibility is effectively fixed to the sender by the annotation definition, so the work does not evaluate owner resolution for third parties, delegated owners, or multiple actors.",
+  "Avocado was deliberately sampled using an existing classifier to increase positive examples, so its positive/negative distribution does not reflect the natural base rate.",
+  "The Enron and Avocado commitment datasets have substantially different class distributions and sampling procedures, which complicates interpretation of transfer results.",
+  "The authors report additional proprietary-corpus experiments but cannot provide the data or detailed results because of privacy and nondisclosure restrictions.",
+  "Several adaptation approaches require labeled target-domain samples.",
+  "The deep autoencoder is substantially more expensive to train than importance sampling.",
+  "Deadline, condition, negation, and evidence-span relations are outside the evaluated label schema."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "same_domain_commitment_detection_is_viable": 0.99,
+  "domain_shift_hurts": 0.99,
+  "domains_are_lexically_distinguishable": 0.99,
+  "adaptation_improves_transfer": 0.98,
+  "autoencoder_losses_help": 0.96,
+  "owner_is_implicitly_sender": 0.99,
+  "no_deadline_condition_polarity_schema": 0.98
+ },
+ "raw_claims": [
+  "A commitment is modeled as a sentence containing a specific action the sender must or promises to perform.",
+  "Crowdworkers provide binary commitment labels at sentence level.",
+  "The annotation protocol uses majority agreement among annotators.",
+  "Enron contains many more annotated samples but a much lower positive rate than Avocado.",
+  "Avocado was enriched with candidate positives using a previously trained classifier.",
+  "Within-domain commitment classification performs substantially better than unadapted cross-domain use.",
+  "A domain classifier can accurately distinguish Enron from Avocado sentences.",
+  "Importance sampling improves commitment transfer in both tested directions.",
+  "The proposed autoencoder aims to learn a more domain-independent sentence representation.",
+  "Most transfer configurations requiring neural adaptation use some target-domain supervision.",
+  "The paper does not extract deadlines or conditions associated with commitments."
+ ],
+ "source_url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/AzarbonyadWSDM2019.pdf",
+ "access": "full_text"
+}

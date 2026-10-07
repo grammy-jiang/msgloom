@@ -1,0 +1,212 @@
+{
+ "round": 3,
+ "streams": [
+  {
+   "id": "F1",
+   "description": "Structured compositional information needs and query decomposition: explicit subquestions, constraints, entities, relations, temporal predicates, intermediate evidence requirements, and decomposition into retrievable operations."
+  },
+  {
+   "id": "F3",
+   "description": "Evidence sufficiency, answerability, unanswerability, and abstention: determining whether available evidence supports an answer and abstaining when evidence or confidence is inadequate."
+  },
+  {
+   "id": "F4",
+   "description": "Temporal information retrieval and temporal question answering: retrieval whose relevance depends on historical state, event or document time, and explicit temporal constraints."
+  },
+  {
+   "id": "F5",
+   "description": "Document-version lineage, temporal databases, and data provenance: preserving source versions, temporal validity, and provenance so evidence is associated with the correct source state."
+  },
+  {
+   "id": "F7",
+   "description": "Selective prediction and calibrated risk control under distribution shift: abstention, coverage-risk control, and calibration methods intended to remain reliable as deployment distributions change."
+  },
+  {
+   "id": "F8",
+   "description": "Budgeted information acquisition and resource-rational stopping: policies that trade expected information benefit against retrieval, computation, latency, token, or monetary costs."
+  },
+  {
+   "id": "F12",
+   "description": "Bounded information-seeking tool planning: planning sequences of external information-seeking actions where later operations depend on evidence observed from earlier ones."
+  },
+  {
+   "id": "F13",
+   "description": "Joint adaptive retrieval controllers: integrated policies combining multiple retrieval-control functions such as decomposition, iterative acquisition, sufficiency assessment, stopping, and resource constraints."
+  }
+ ],
+ "decisions": [
+  {
+   "paper_id": "2604.01413",
+   "decision": "ADMIT",
+   "reason": "The abstract directly addresses gap-3: it allocates conformal error budgets across sequential reasoning steps and permits early stopping while maintaining an overall coverage target, explicitly including adaptive RAG and ReAct settings. This materially strengthens the missing bounded-risk account of stopping in a sequential retrieval/reasoning process rather than merely supplying another heuristic sufficiency score.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1793",
+   "decision": "REJECT",
+   "reason": "The abstract establishes an adaptive retrieval-policy controller, but it does not show explicit evidence-gap representation, evidence sufficiency or abstention, temporal/version constraints, calibrated stopping, or resource-bounded completion. Its marginal contribution to the open gaps is weaker than the verified candidates that combine decomposition with iterative bounded evaluation. The identifier is also UNCHECKED, so there is no reason to prefer it over stronger verified evidence at this gate.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-findings-eacl-298",
+   "decision": "REJECT",
+   "reason": "This is a survey taxonomy of test-time retrieval feedback. It may be useful for orientation, but the abstract does not itself validate a structured evidence-gap controller, stopping criterion, provenance mechanism, or risk guarantee and therefore does not materially close an open research stream in this round. The identity is UNCHECKED as well.",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2606.05658",
+   "decision": "ADMIT",
+   "reason": "The abstract combines dynamic query decomposition, iterative retrieval, and a bounded self-reflective evaluation loop, with structured and multi-hop retrieval experiments. That is unusually close to the Topic 07 control loop and materially strengthens F13 by testing several controller functions jointly rather than treating decomposition or retrieval as isolated components. It also supplies direct evidence relevant to gap-1 and partial evidence toward gap-8.",
+   "stream_id": "F13",
+   "role": "DIRECT",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2606.29054",
+   "decision": "ADMIT",
+   "reason": "The abstract supplies theoretical limits and adaptation results for conformal risk control in structured generation, including conditions under which abstention is required and experiments under cross-dataset distribution shift. This directly strengthens the unresolved calibration-and-shift side of gap-3 and complements sequential stopping work by identifying when a claimed risk guarantee is impossible or must force rejection.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2607.07380",
+   "decision": "REJECT",
+   "reason": "Separating knowledge insufficiency from ambiguity or conflict is relevant, but the abstract only shows that different uncertainty types trigger retrieval versus reasoning. It does not demonstrate calibrated answerability, bounded-risk stopping, explicit terminal-state semantics, or provenance/time handling. The current round has more direct candidates for both evidence-sufficiency evaluation and risk-controlled stopping, so this does not add enough marginal evidence for a reading slot.",
+   "confidence": 0.87
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2025-acl-long-319",
+   "decision": "REJECT",
+   "reason": "The systematic comparison of uncertainty signals is relevant to adaptive retrieval, but the abstract evaluates retrieval decisions, self-knowledge, and efficiency rather than the open questions about structured gaps, iterative sufficiency, calibrated stopping under shift, temporal/version provenance, or terminal-state discrimination. It is therefore supportive background rather than a gap-closing contribution. The identifier is UNCHECKED.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-32604-cmc-2026-086343",
+   "decision": "ADMIT",
+   "reason": "The benchmark explicitly distinguishes full, partial, irrelevant, absent, and conflicting evidence and evaluates whether RAG systems answer or abstain appropriately. This materially strengthens F3 and is directly useful to gap-5 because it tests evidence insufficiency as a first-class condition instead of conflating missing or conflicting support with ordinary answer accuracy. It does not cover authorization, source unavailability, or budget exhaustion, so those parts of gap-5 remain open. Identity is UNCHECKED and should be canonically verified before citation.",
+   "stream_id": "F3",
+   "role": "DIRECT",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2504.05312",
+   "decision": "REJECT",
+   "reason": "The abstract describes evolving retrieval queries and termination when the system judges that enough knowledge has been collected, but it does not expose a calibrated sufficiency criterion, a bounded-risk guarantee, temporal/version provenance, explicit failure states, or cost-aware stopping. This is another heuristic adaptive-collection loop, whereas the unresolved gaps now concern reliability and composition beyond that capability.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2510.13590",
+   "decision": "ADMIT",
+   "reason": "Temporal GraphRAG explicitly represents timestamped relations so the same fact at different times remains distinct, supports incremental corpus updates, and constrains retrieval jointly by semantic and temporal scope. That materially strengthens F4 and directly attacks the temporal-state portion of gap-1 and gap-2. It does not by itself establish document-version lineage plus iterative sufficiency, so gap-2 is only partially addressed.",
+   "stream_id": "F4",
+   "role": "DIRECT",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2603.28444",
+   "decision": "ADMIT",
+   "reason": "The method performs sequential evidence selection using expected uncertainty reduction and stops at an explicit epistemic-sufficiency condition. This is a direct value-of-information style acquisition-and-stopping mechanism and materially strengthens F8 by linking what evidence to fetch next with when further acquisition ceases to be justified.",
+   "stream_id": "F8",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "2405.05160",
+   "decision": "REJECT",
+   "reason": "Selective classification under covariate, label, and out-of-distribution shifts is valid transfer evidence for F7, but it is generic classification rather than sequential retrieval or structured generation. The current candidate set contains substantially closer conformal and selective-prediction papers that address structured outputs, adaptive stopping, and prompt/domain shift, so this paper has insufficient marginal value for this reading round.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2511.17908",
+   "decision": "REJECT",
+   "reason": "Conformal coverage for selecting retrieved context is relevant to reliable context construction, but the abstract does not establish answerability, abstention, iterative stopping, distribution-shift adaptation, or version-aware evidence sufficiency. Guaranteeing that selected context covers relevant evidence is not the same as deciding that accumulated evidence is sufficient to answer or that retrieval should stop.",
+   "confidence": 0.91
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1562",
+   "decision": "ADMIT",
+   "reason": "The abstract combines per-hop adaptive resource decisions, a cost-aware objective, confidence-based termination, an explicit hop bound, and out-of-domain evaluation. This materially strengthens F13 because it jointly evaluates adaptive retrieval control, resource limits, and stopping, while also providing unusually direct evidence for gap-3 and gap-6. It still lacks permissions, provenance, and version validity, so it does not close gap-8. Identity is UNCHECKED and should be verified before citation.",
+   "stream_id": "F13",
+   "role": "DIRECT",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2409.16146",
+   "decision": "REJECT",
+   "reason": "The paper treats refusal as RAG risk control and evaluates retrieval quality and evidence use, which is relevant to F3, but the abstract does not show iterative retrieval stopping, distribution-shift robustness, structured sufficiency, or the terminal-state distinctions now open. The evidence-sufficiency benchmark and conformal stopping candidates provide more direct marginal value for the present gaps.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2606.15964",
+   "decision": "ADMIT",
+   "reason": "The abstract directly studies calibration degradation under prompt and domain shift and adapts conformal risk control using drift detection, reweighting, recentering, and online risk updates. This materially strengthens the distribution-shift half of gap-3, where static sufficiency or confidence signals are specifically known to drift.",
+   "stream_id": "F7",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2403.14403",
+   "decision": "REJECT",
+   "reason": "Routing questions among no-retrieval, single-step retrieval, and iterative retrieval is an important adaptive-RAG baseline, but the abstract bases the decision on predicted question complexity rather than explicit evidence state and does not provide iterative sufficiency assessment, risk-controlled stopping, temporal/version handling, or resource-aware terminal semantics. It does not materially close the remaining gaps.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2607.27726",
+   "decision": "ADMIT",
+   "reason": "Baikal converts investigation over heterogeneous data lakes into budgeted search over semantic evidence regions, generates region-grounded subquestions, and adapts exploration versus exploitation using value estimates under a fixed budget. This materially strengthens F12 by providing a bounded multi-step information-seeking policy in which later search decisions depend on observed evidence. It also offers useful transfer evidence for gap-1, gap-6, and the heterogeneous-source portion of gap-7 without claiming workplace-email representativeness.",
+   "stream_id": "F12",
+   "role": "TRANSFER",
+   "confidence": 0.98
+  },
+  {
+   "paper_id": "doi-10-1609-aaai-v39i14-33670",
+   "decision": "ADMIT",
+   "reason": "The abstract formalizes temporal conjunctive questions and rewrites structured conjunctions into temporal-logic queries, explicitly supporting multi-entity joins together with temporal constraints. That directly targets the specific unresolved representational limitation in gap-1 rather than merely sharing temporal or retrieval vocabulary. Identity is UNCHECKED, so canonical verification is required before relying on the citation.",
+   "stream_id": "F1",
+   "role": "DIRECT",
+   "confidence": 0.97
+  },
+  {
+   "paper_id": "2407.21712",
+   "decision": "REJECT",
+   "reason": "RAGate predicts whether a conversational turn needs external retrieval, but this is a one-stage retrieval-necessity gate. The abstract does not show multi-round evidence acquisition, reassessment after retrieval, structured missing-information representation, stopping reliability, or provenance constraints, so it does not materially advance the open Topic 07 gaps.",
+   "confidence": 0.96
+  },
+  {
+   "paper_id": "2609.11572",
+   "decision": "ADMIT",
+   "reason": "The paper directly addresses highly overlapping evolving document versions, such as amended laws and policies, and combines semantic with temporal ranking to retrieve evidence appropriate to the requested version or time rather than simply the closest text. This materially strengthens F5 and is one of the closest candidates to gap-2's freshness/effective-time requirement. It does not include iterative sufficiency reassessment, so the full gap remains open.",
+   "stream_id": "F5",
+   "role": "TRANSFER",
+   "confidence": 0.99
+  },
+  {
+   "paper_id": "2006.09462",
+   "decision": "REJECT",
+   "reason": "Selective QA under mixed in-domain and out-of-domain deployment is relevant transfer evidence for calibration under shift, but it does not concern iterative retrieval or evidence acquisition. Newer admitted candidates directly address structured generation, drift adaptation, and sequential stopping, leaving this older QA result with insufficient marginal value for the current reading round.",
+   "confidence": 0.95
+  },
+  {
+   "paper_id": "2604.26649",
+   "decision": "REJECT",
+   "reason": "Detecting step-level knowledge gaps and deciding when to retrieve is directly relevant to F2, but the abstract does not show a structured representation of the missing evidence, post-retrieval sufficiency reassessment, calibrated stopping, temporal/version provenance, or budget-aware terminal conditions. Generic adaptive retrieval timing is no longer the principal unresolved capability in this round.",
+   "confidence": 0.9
+  },
+  {
+   "paper_id": "2405.18727",
+   "decision": "REJECT",
+   "reason": "CtrlA uses internal honesty and confidence representations to decide when to retrieve and how to formulate queries, but the abstract does not demonstrate iterative evidence-state updates, explicit sufficiency or abstention semantics, calibrated risk under shift, provenance, or resource-bounded stopping. It therefore adds little to the specific unresolved gaps beyond established adaptive-retrieval gating.",
+   "confidence": 0.92
+  },
+  {
+   "paper_id": "2505.02811",
+   "decision": "REJECT",
+   "reason": "A learned information-sufficiency critic for deciding whether multi-round RAG should continue is directly relevant, but the round's remaining stopping gap is specifically about calibration drift, unsafe early stopping, conservative over-retrieval, and bounded-risk behavior under distribution shift. The abstract provides no calibration guarantee, shift evaluation, provenance constraint, or differentiated terminal-state model, so it mainly reinforces a capability the gap statement already treats as established.",
+   "confidence": 0.95
+  }
+ ],
+ "notes": "Eleven candidates are admitted. The strongest additions target the still-open academic gaps rather than generic adaptive-RAG coverage: temporal conjunctive structure for gap-1; evolving/version-sensitive retrieval for gap-2; sequential conformal stopping and drift-aware risk control for gap-3; evidence-condition-aware abstention for part of gap-5; and cost/budget-aware adaptive controllers for gap-6 and partial gap-8 evidence. No candidate abstract closes gap-4's native-IAM replenishment loop, gap-7's workplace-communication evaluation, or gap-8's full joint controller spanning permissions, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting. No PENDING decision is necessary because the supplied abstracts are sufficient to determine admission relevance; UNCHECKED identifiers on admitted papers should be canonically verified before the reading round treats their bibliographic identity as established."
+}

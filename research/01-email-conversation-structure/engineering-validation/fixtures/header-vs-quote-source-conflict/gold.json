@@ -1,0 +1,88 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "header-vs-quote-source-conflict",
+  "description": "Reply-parent metadata and quotation provenance point to different messages and must remain separate relation types.",
+  "family": "evidence_conflict",
+  "messages": [
+    {
+      "message_id": "conflict-parent",
+      "expected_text": "Parent metadata message only.",
+      "arrival_rank": 1,
+      "internet_message_id": "<conflict-parent@synthetic.invalid>",
+      "subject": "Conflict",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "conflict-quoted",
+      "expected_text": "Quoted evidence belongs here.",
+      "arrival_rank": 2,
+      "internet_message_id": "<conflict-quoted@synthetic.invalid>",
+      "subject": "Conflict",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "conflict-reply",
+      "expected_text": "> Quoted evidence belongs here.\n\nReply text.",
+      "arrival_rank": 3,
+      "internet_message_id": "<conflict-reply@synthetic.invalid>",
+      "subject": "Re: Conflict",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "conflict-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "conflict-parent"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": false,
+      "notes": ""
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "conflict-q1",
+      "message_id": "conflict-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 31
+      },
+      "source_candidates": [
+        {
+          "message_id": "conflict-quoted",
+          "span": {
+            "start": 0,
+            "end": 29
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "conflict-parent",
+      "conflict-quoted",
+      "conflict-reply"
+    ],
+    [
+      "conflict-reply",
+      "conflict-parent",
+      "conflict-quoted"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3",
+    "conflicting-evidence"
+  ]
+}

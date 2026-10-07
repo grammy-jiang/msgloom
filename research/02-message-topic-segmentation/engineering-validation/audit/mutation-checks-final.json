@@ -1,0 +1,123 @@
+{
+  "status": "PASS",
+  "mutation_count": 13,
+  "rows": [
+    {
+      "mutation": "allow_one_prediction_to_match_multiple_gold_spans",
+      "file": "end_to_end.py",
+      "target_test": "test_end_to_end.EndToEndTests.test_greedy_match_never_reuses_prediction",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "F\n======================================================================\nFAIL: test_greedy_match_never_reuses_prediction (test_end_to_end.EndToEndTests.test_greedy_match_never_reuses_prediction)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_end_to_end.py\", line 11, in test_greedy_match_never_reuses_prediction\n    self.assertEqual(len(m),1);self.assertEqual(len({pi for _,pi,_ in m}),1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^\nAssertionError: 2 != 1\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "allow_one_gold_span_to_match_multiple_predictions",
+      "file": "end_to_end.py",
+      "target_test": "test_end_to_end.EndToEndTests.test_greedy_match_never_reuses_gold",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "F\n======================================================================\nFAIL: test_greedy_match_never_reuses_gold (test_end_to_end.EndToEndTests.test_greedy_match_never_reuses_gold)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_end_to_end.py\", line 16, in test_greedy_match_never_reuses_gold\n    self.assertEqual(len(m),1);self.assertEqual(len({gi for gi,_,_ in m}),1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^\nAssertionError: 2 != 1\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "hide_false_positive_membership_from_precision_denominator",
+      "file": "metrics.py",
+      "target_test": "test_assignment.AssignmentTests.test_pair_prf_counts_extra_prediction",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "F\n======================================================================\nFAIL: test_pair_prf_counts_extra_prediction (test_assignment.AssignmentTests.test_pair_prf_counts_extra_prediction)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_assignment.py\", line 23, in test_pair_prf_counts_extra_prediction\n    m=pair_prf({('c','s','A')},{('c','s','A'),('c','s','B')});self.assertEqual(m['false_positive'],1);self.assertEqual(m['precision']['denominator'],2)\n                                                                                                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 1 != 2\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "leak_future_context_texts_into_prediction_input",
+      "file": "replay.py",
+      "target_test": "test_replay.ReplayTests.test_context_input_contains_only_current_materialized_context",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "==============================\nFAIL: test_context_input_contains_only_current_materialized_context (test_replay.ReplayTests.test_context_input_contains_only_current_materialized_context)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_replay.py\", line 18, in test_context_input_contains_only_current_materialized_context\n    self.assertEqual(prediction_input(c,c.context_steps[0]).available_contexts,())\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (('ctx1', 'Earlier note: the approval limi[117 chars]s.\")) != ()\n\nFirst tuple contains 2 additional elements.\nFirst extra element 0:\n('ctx1', 'Earlier note: the approval limit discussion concerned Atlas.')\n\n+ ()\n- (('ctx1', 'Earlier note: the approval limit discussion concerned Atlas.'),\n-  ('ctx2',\n-   \"Correction: 'same approval limit' in this message refers to Beta, not \"\n-   'Atlas.'))\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "pass_gold_evidence_span_kind_origin_to_predictor",
+      "file": "replay.py",
+      "target_test": "test_replay.ReplayTests.test_prediction_case_ignores_case_gold_and_span_kind_origin_changes",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "F\n======================================================================\nFAIL: test_prediction_case_ignores_case_gold_and_span_kind_origin_changes (test_replay.ReplayTests.test_prediction_case_ignores_case_gold_and_span_kind_origin_changes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_replay.py\", line 27, in test_prediction_case_ignores_case_gold_and_span_kind_origin_changes\n    self.assertEqual(p,prediction_case(changed))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Predi[471 chars]ind='deadline'), EvidenceSpan(span_id='a1', sp[91 chars]n'))) != Predi[471 chars]ind='topic_evidence'), EvidenceSpan(span_id='a[103 chars]e')))\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "collapse_all_assignment_ids_to_constant",
+      "file": "representation.py",
+      "target_test": "test_representation.RepresentationTests.test_from_gold_matches_independent_fixture_fields",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "========\nFAIL: test_from_gold_matches_independent_fixture_fields (test_representation.RepresentationTests.test_from_gold_matches_independent_fixture_fields)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 20, in test_from_gold_matches_independent_fixture_fields\n    for c in canonical_cases():self._assert_matches_gold(c,from_gold(c))\n                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 9, in _assert_matches_gold\n    self.assertEqual(len(r.assignments),len(c.memberships));self.assertEqual(len({a.assignment_id for a in r.assignments}),len(r.assignments))\n                                                            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 1 != 3\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "erase_span_origin_and_kind_during_gold_conversion",
+      "file": "representation.py",
+      "target_test": "test_representation.RepresentationTests.test_from_gold_matches_independent_fixture_fields",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "for c in canonical_cases():self._assert_matches_gold(c,from_gold(c))\n                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 8, in _assert_matches_gold\n    self.assertEqual(r.case_id,c.case_id);self.assertEqual(r.text,c.text);self.assertEqual(r.topics,c.topics);self.assertEqual(r.spans,c.spans);self.assertEqual(r.topic_objects,c.topic_objects)\n                                                                                                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (Evid[236 chars]ind='topic_evidence'), EvidenceSpan(span_id='a[102 chars]ce')) != (Evid[236 chars]ind='deadline'), EvidenceSpan(span_id='a1', sp[90 chars]on'))\n\nFirst differing element 1:\nEvide[44 chars]d=41), text='Friday', origin='authored', kind='topic_evidence')\nEvide[44 chars]d=41), text='Friday', origin='authored', kind='deadline')\n\nDiff is 799 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "bypass_prediction_case_sanitizer_at_replay_call_site",
+      "file": "replay.py",
+      "target_test": "test_replay.ReplayTests.test_replay_call_site_passes_only_sanitized_prediction_objects",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "notes='Control span must remain NORTH through correction.')), topic_objects=(TopicObjectGold(topic_id='NORTH', span_ids=('neighbor',)),), context_texts=(('ctx1', 'Earlier note: the approval limit discussion concerned Atlas.'), ('ctx2', \"Correction: 'same approval limit' in this message refers to Beta, not Atlas.\")), context_steps=(ContextStepGold(step_id='no-context', available_context_ids=(), expected_span_topic_sets=(('neighbor', ('NORTH',)),), expected_abstentions=('ref',), notes=''), ContextStepGold(step_id='initial-context', available_context_ids=('ctx1',), expected_span_topic_sets=(('ref', ('ATLAS',)), ('neighbor', ('NORTH',))), expected_abstentions=(), notes=''), ContextStepGold(step_id='corrected-context', available_context_ids=('ctx1', 'ctx2'), expected_span_topic_sets=(('ref', ('BETA',)), ('neighbor', ('NORTH',))), expected_abstentions=(), notes='Later explicit correction supersedes only the ambiguous reference; neighboring explicit matter stays unchanged.')), tags=('EV5', 'correction')) is not an instance of <class 'topic02_validation.replay.PredictionCase'>\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "expose_gold_context_steps_on_prediction_case",
+      "file": "replay.py",
+      "target_test": "test_replay.ReplayTests.test_prediction_case_contains_no_gold_or_context_fields",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "\n======================================================================\nFAIL: test_prediction_case_contains_no_gold_or_context_fields (test_replay.ReplayTests.test_prediction_case_contains_no_gold_or_context_fields)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_replay.py\", line 12, in test_prediction_case_contains_no_gold_or_context_fields\n    self.assertEqual([f.name for f in fields(PredictionCase)],['case_id','text','topics','spans'])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: ['case_id', 'text', 'topics', 'spans', 'context_steps'] != ['case_id', 'text', 'topics', 'spans']\n\nFirst list contains 1 additional elements.\nFirst extra element 4:\n'context_steps'\n\n- ['case_id', 'text', 'topics', 'spans', 'context_steps']\n?                                      -----------------\n\n+ ['case_id', 'text', 'topics', 'spans']\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "drop_ambiguous_abstention_permission",
+      "file": "representation.py",
+      "target_test": "test_representation.RepresentationTests.test_abstention_permission_changes_canonical_representation",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "e_terms\":[\"atlas\",\"budget\"],\"topic_id\":\"ATLAS\"},{\"description\":\"Beta release change\",\"signature_terms\":[\"beta\",\"release\"],\"topic_id\":\"BETA\"}]}' == '{\"assignments\":[{\"abstention_allowed\":false,\"alternative_topic_sets\":[[\"ATLAS\"],[\"BETA\"]],\"assignment_id\":\"assign:ambiguous-reference:amb\",\"span_id\":\"amb\",\"status\":\"ambiguous\",\"topic_ids\":[]},{\"abstention_allowed\":false,\"alternative_topic_sets\":[[\"ATLAS\"],[\"BETA\"]],\"assignment_id\":\"assign:ambiguous-reference:deadline\",\"span_id\":\"deadline\",\"status\":\"ambiguous\",\"topic_ids\":[]}],\"case_id\":\"ambiguous-reference\",\"spans\":[{\"kind\":\"topic_evidence\",\"origin\":\"authored\",\"span\":{\"end\":41,\"start\":0},\"span_id\":\"amb\",\"text\":\"This change needs approval before Friday.\"},{\"kind\":\"deadline\",\"origin\":\"authored\",\"span\":{\"end\":40,\"start\":34},\"span_id\":\"deadline\",\"text\":\"Friday\"}],\"text\":\"This change needs approval before Friday.\",\"topic_objects\":[],\"topics\":[{\"description\":\"Atlas budget change\",\"signature_terms\":[\"atlas\",\"budget\"],\"topic_id\":\"ATLAS\"},{\"description\":\"Beta release change\",\"signature_terms\":[\"beta\",\"release\"],\"topic_id\":\"BETA\"}]}'\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "strip_all_but_first_alternative_set",
+      "file": "representation.py",
+      "target_test": "test_representation.RepresentationTests.test_from_gold_matches_independent_fixture_fields",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "ack (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 20, in test_from_gold_matches_independent_fixture_fields\n    for c in canonical_cases():self._assert_matches_gold(c,from_gold(c))\n                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 16, in _assert_matches_gold\n    self.assertEqual(a.status,'ambiguous');self.assertFalse(a.topic_ids);self.assertEqual(a.alternative_topic_sets,tuple(tuple(sorted(x)) for x in m.alternative_topic_sets))\n                                                                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (('ATLAS',),) != (('ATLAS',), ('BETA',))\n\nSecond tuple contains 1 additional elements.\nFirst extra element 1:\n('BETA',)\n\n- (('ATLAS',),)\n+ (('ATLAS',), ('BETA',))\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "collapse_topic_objects_to_first_component",
+      "file": "representation.py",
+      "target_test": "test_representation.RepresentationTests.test_from_gold_matches_independent_fixture_fields",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_representation.py\", line 8, in _assert_matches_gold\n    self.assertEqual(r.case_id,c.case_id);self.assertEqual(r.text,c.text);self.assertEqual(r.topics,c.topics);self.assertEqual(r.spans,c.spans);self.assertEqual(r.topic_objects,c.topic_objects)\n                                                                                                                                                ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (Topi[40 chars]'a1',)), TopicObjectGold(topic_id='BETA', span_ids=('b1',))) != (Topi[40 chars]'a1', 'a2')), TopicObjectGold(topic_id='BETA',[14 chars]',)))\n\nFirst differing element 0:\nTopicObjectGold(topic_id='ATLAS', span_ids=('a1',))\nTopicObjectGold(topic_id='ATLAS', span_ids=('a1', 'a2'))\n\n- (TopicObjectGold(topic_id='ATLAS', span_ids=('a1',)),\n+ (TopicObjectGold(topic_id='ATLAS', span_ids=('a1', 'a2')),\n?                                                   +++++\n\n   TopicObjectGold(topic_id='BETA', span_ids=('b1',)))\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "remove_coverage_floor_from_threshold_selection",
+      "file": "uncertainty.py",
+      "target_test": "test_uncertainty.UncertaintyTests.test_no_all_abstain_threshold_can_satisfy_coverage_floor",
+      "killed": true,
+      "test_exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "F\n======================================================================\nFAIL: test_no_all_abstain_threshold_can_satisfy_coverage_floor (test_uncertainty.UncertaintyTests.test_no_all_abstain_threshold_can_satisfy_coverage_floor)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/engineering-validation/tests/test_uncertainty.py\", line 10, in test_no_all_abstain_threshold_can_satisfy_coverage_floor\n    self.assertFalse(s['target_met']);self.assertIsNone(s['selected_threshold']);self.assertIsNotNone(s['fallback_threshold'])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.030s\n\nFAILED (failures=1)\n"
+    }
+  ]
+}

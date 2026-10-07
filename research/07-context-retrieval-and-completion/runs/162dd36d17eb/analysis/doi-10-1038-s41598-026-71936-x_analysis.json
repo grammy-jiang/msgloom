@@ -1,0 +1,66 @@
+{
+ "paper_id": "doi-10-1038-s41598-026-71936-x",
+ "title": "Privacy-provisioned-permission-aware RAG in cloud using identity and access management, trust and large-language models (PPPARITL)",
+ "research_question": "Can a cloud-based RAG architecture combine identity and access management, dynamic trust assessment, encrypted embeddings, and malicious-query controls to reduce unauthorized information access while retaining useful LLM-assisted retrieval?",
+ "methodology": "The paper proposes PPPARITL, a two-stage permission-aware RAG architecture in which an IAM-controlled Role-Resource-Action-Condition gate first filters access according to administrator-defined ACL rules. Document and query embeddings are protected at rest with CKKS homomorphic encryption, and only authorized candidates are decrypted before similarity ranking; a subsequent trust score uses contextual, behavioral, and historical user interactions to govern permission-aware retrieval. A sanitization and monitoring layer detects malicious query patterns and supports revocation. The accessible abstract reports simulation experiments against baseline access-control approaches on a synthetic enterprise dataset.",
+ "key_findings": [
+  {
+   "finding": "PPPARITL places authorization filtering before similarity ranking, so only candidates passing the RRAC access-control gate are eligible for decryption and retrieval.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The framework combines static IAM policy enforcement with a second-stage trust score derived from contextual, behavioral, and historical interactions.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "Document and query embeddings are protected at rest using CKKS homomorphic encryption, with the decryption key held by an administrator.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "The architecture includes query sanitization and continuous malicious-query monitoring intended to mitigate denial-of-service and insider threats and to support user revocation.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  },
+  {
+   "finding": "On the reported synthetic enterprise evaluation, the proposed approach reaches 95.84% authorization accuracy and reduces the False Access Rate relative to baseline access-control approaches.",
+   "evidence_type": "supported",
+   "section": "Abstract"
+  }
+ ],
+ "limitations": [
+  "Only the abstract and publisher metadata were accessible through the available web interface, so implementation details, baseline definitions, statistical analysis, and ablations could not be independently inspected.",
+  "The reported experiment uses a synthetic enterprise dataset, leaving performance on real organizational identities, policies, documents, and adversarial workloads unestablished in the accessible text.",
+  "The accessible abstract does not report retrieval-quality or answer-quality metrics alongside authorization metrics.",
+  "The accessible text does not evaluate temporal validity, document-version provenance, explicit evidence-gap tracking, or calibrated retrieval stopping.",
+  "The architecture relies on an administrator-held secret key for candidate decryption, creating a centralized trust dependency that is not evaluated in the accessible abstract."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "authorization_before_ranking": 0.99,
+  "two_stage_IAM_and_trust": 0.99,
+  "CKKS_embedding_protection": 0.99,
+  "malicious_query_controls": 0.97,
+  "95.84_percent_authorization_accuracy": 0.99
+ },
+ "raw_claims": [
+  "The proposed system adds privacy and permission controls to a RAG pipeline used in a cloud setting.",
+  "An RRAC policy gate checks each request against administrator-configured access-control rules.",
+  "Only candidates that pass authorization are decrypted for similarity ranking.",
+  "CKKS encryption is used to protect document and query embeddings at rest.",
+  "A trust score incorporates contextual, behavioral, and historical information about service-user interactions.",
+  "The trust score influences permission-aware retrieval after the initial access-control gate.",
+  "A sanitization layer is intended to reject malicious query patterns and mitigate denial-of-service behavior.",
+  "The system continuously monitors requests and can revoke users when malicious behavior is detected.",
+  "The reported synthetic-enterprise experiment reaches 95.84% authorization accuracy.",
+  "The paper reports a reduction in False Access Rate compared with its baseline access-control approaches."
+ ],
+ "source_url": "https://www.nature.com/articles/s41598-026-71936-x",
+ "access": "abstract_only"
+}

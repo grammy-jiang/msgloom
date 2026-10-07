@@ -1,0 +1,77 @@
+{
+ "paper_id": "2606.27736",
+ "title": "ToE: A Hierarchical and Explainable Claim Verification Framework with Dynamic Multi-source Evidence Retrieval and Aggregation",
+ "research_question": "Can automated claim verification be improved by dynamically retrieving heterogeneous evidence, decomposing uncertain claims, and aggregating evidence through an explainable hierarchical argument tree?",
+ "methodology": "ToE builds a Tree of Evidence in which a retrieval agent searches multiple source types, an evidence evaluator assigns stance and reliability information, and low-reliability nodes can be decomposed into smaller subclaims. Evidence is aggregated bottom-up, with pruning and stopping based on reliability, convergence, or iteration limits. The retrieval policy is trained with reliability gain as its reward, which the paper connects approximately to conditional information gain and analyzes under a submodularity assumption. Evaluation uses LIAR, PolitiFact, Check-COVID, a constructed adversarial set, two language-model backbones, and source-tool ablations.",
+ "key_findings": [
+  {
+   "finding": "ToE obtains higher reported accuracy than the direct-prediction baseline for every displayed combination of the four evaluation datasets and two model backbones.",
+   "evidence_type": "supported",
+   "section": "Section IV-B, Table II"
+  },
+  {
+   "finding": "On the constructed adversarial benchmark, ToE retains substantially higher accuracy than direct prediction for both evaluated backbones.",
+   "evidence_type": "supported",
+   "section": "Section IV-B, Table II"
+  },
+  {
+   "finding": "Removing any tested source-tool category reduces overall accuracy in the source ablation, indicating that heterogeneous retrieval sources contribute complementary evidence in that experiment.",
+   "evidence_type": "supported",
+   "section": "Section IV-C, Table III"
+  },
+  {
+   "finding": "Removing fact-checking sources causes the largest overall accuracy decrease among the displayed source-tool ablations.",
+   "evidence_type": "supported",
+   "section": "Section IV-C, Table III"
+  },
+  {
+   "finding": "When the ideal reliability objective is submodular, the paper derives the standard greedy 1-1/e approximation relationship for its retrieval formulation.",
+   "evidence_type": "supported",
+   "section": "Section III-A"
+  },
+  {
+   "finding": "If the learned reliability estimator is uniformly close to the ideal reliability function, the paper bounds the per-step discrepancy between estimated reliability gain and its ideal counterpart, subject to the paper's information-gain approximation.",
+   "evidence_type": "supported",
+   "section": "Section III-A"
+  }
+ ],
+ "limitations": [
+  "The theoretical retrieval guarantee depends on a submodularity assumption for the ideal reliability objective.",
+  "The interpretation of reliability gain as conditional information gain is an approximation rather than an identity established for arbitrary evaluators.",
+  "Verification quality depends on LLM-based evidence evaluation and decomposition, which can themselves introduce errors.",
+  "External web, social, fact-checking, and academic sources can change over time, making reproducibility of retrieved evidence difficult.",
+  "The main benchmark protocol evaluates limited sampled subsets rather than exhaustively evaluating every item in each source corpus.",
+  "The adversarial benchmark contains constructed false examples and is not a balanced natural distribution of true, false, and uncertain claims.",
+  "The source-tool ablation is based on a small manually collected set, limiting confidence in fine-grained tool-importance conclusions.",
+  "Collapsing original fact-checking label schemes into true, false, and uncertain removes distinctions present in the source datasets.",
+  "A public code release was not reported in the paper text examined, and availability of the constructed adversarial benchmark was not established.",
+  "The framework performs iterative evidence gathering within a claim-verification episode but does not evaluate longitudinal tracking of due, resolved, superseded, or reopened workplace work-item states."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "better_than_direct_baseline": 0.98,
+  "adversarial_robustness_gain": 0.98,
+  "multi_source_ablation_effect": 0.97,
+  "factcheck_source_ablation": 0.97,
+  "greedy_submodular_bound": 0.96,
+  "reliability_estimation_bound": 0.94
+ },
+ "raw_claims": [
+  "ToE represents verification as a dynamically expanded hierarchy of claims and supporting or refuting evidence.",
+  "The retrieval component can choose among several evidence-source categories rather than relying on a single corpus.",
+  "Evidence objects include stance and source-reliability information.",
+  "Low-confidence claims can be decomposed into multiple more specific subclaims.",
+  "The tree is aggregated from child evidence toward the root claim.",
+  "Retrieval can stop when evidence becomes decisive, convergence is reached, or a configured limit is exhausted.",
+  "The retrieval reward is based on the increase in estimated reliability produced by a search action.",
+  "The theoretical analysis assumes a submodular ideal reliability objective.",
+  "The evaluation covers LIAR, PolitiFact, Check-COVID, and a constructed adversarial benchmark.",
+  "The reported ablations indicate that no single tested source category accounts for all of the framework's gains."
+ ],
+ "source_url": "https://arxiv.org/html/2606.27736",
+ "access": "full_text"
+}

@@ -1,0 +1,34 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/03-cross-thread-topic-tracking/runs/2be7131314a5/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 2 overstates what its cited evidence set directly supports. The statement says the multi-evidence conclusion holds across event coreference, record linkage, process mining, and enterprise email, but none of its cited papers is a direct enterprise-email study. doi-10-1145-1111449-1111471 would support that part. The same finding lists document structure as an evidence dimension, while the cited analyses primarily support entity/participant arguments, action semantics, temporal/location information, data attributes, control-flow constraints, topic grouping, names, and lexical/semantic context; document/discourse structure would require a more appropriate citation such as doi-10-18653-v1-2023-emnlp-main-294.",
+  "The persistent-ID actionable insight goes beyond doi-10-3390-industries1010003 when it recommends preserving aliases and superseded assessments and making Topic IDs independent of generated titles and thread IDs. StableID supports retaining a dominant historical identifier through evolving graph components and making identifier evolution auditable, but it does not establish msgloom-specific alias, supersession, generated-title, or thread-ID policies. This also overlaps gap-3, which correctly says those history semantics remain open.",
+  "The Phase 2 actionable insight prescribes retrieving bounded historical evidence only for ambiguous candidates. The cited retrieval/coreference papers support the usefulness of additional cross-document context, but they do not establish that retrieval should be restricted to ambiguous cases, nor what bounded-history policy or stopping rule is optimal. Gap-6 correctly identifies those choices as unresolved, so the actionable statement should be framed as an engineering hypothesis to test rather than an evidence-backed prescription.",
+  "The contradiction note about forced case assignment versus abstention ends with the project-specific judgment that the reject/uncertain model is the safer analogue because a false merge can hide work. The cited analyses establish exact-one-case assignment on one side and possible-link/reject regions on the other, but they do not establish msgloom's relative false-merge cost or that the abstaining policy is safer for this application. Gap-2 correctly leaves that loss function open.",
+  "The adversarial-fixture actionable insight combines several sensible test cases, but some examples are not directly supported by the three citations attached to that sentence. In particular, same-subject/different-matter and same-participants/different-matter are better grounded by the enterprise-email analyses, especially doi-10-1145-1111449-1111471 and doi-10-1145-1111449-1111473, than by the cited event-coreference/process papers."
+ ],
+ "unsupported_claims": [
+  "Finding 2: the phrase \"Across event coreference, record linkage, process mining, and enterprise email\" is not fully supported by the finding's cited papers because no direct enterprise-email paper is cited there.",
+  "Finding 2: \"document structure\" is not clearly established by the cited analyses in that finding.",
+  "Actionable insight on persistent Topic IDs: preserving aliases/superseded assessments and independence from generated titles/thread IDs is a msgloom engineering proposal, not a result established by doi-10-3390-industries1010003.",
+  "Actionable insight on Phase 2 retrieval: \"retrieve bounded historical evidence only for ambiguous candidates\" is not established by doi-10-18653-v1-2022-emnlp-main-58 or doi-10-18653-v1-2023-emnlp-main-294.",
+  "Contradiction on forced assignment versus abstention: calling the reject/uncertain model \"the safer analogue\" for msgloom depends on an application-specific false-merge cost that the synthesis itself correctly identifies as unresolved."
+ ],
+ "required_fixes": [
+  "For Finding 2, either add doi-10-1145-1111449-1111471 to support the enterprise-email part and an appropriate discourse/document-structure paper for the document-structure part, or narrow the wording to the evidence dimensions actually supported by the current citations.",
+  "Rephrase the persistent-ID actionable insight so StableID-supported conclusions are separated from proposed msgloom history semantics. Mark aliases, supersession records, generated-label independence, and thread-ID independence as engineering design choices to validate under gap-3.",
+  "Rephrase the Phase 2 retrieval recommendation as a hypothesis or evaluation plan, for example testing bounded retrieval for ambiguous candidates, rather than presenting that particular policy as established by the literature.",
+  "Remove or qualify the \"safer analogue\" judgment in the forced-assignment contradiction. State instead that abstention provides a mechanism for handling uncertain assignments and that msgloom must determine whether its false-merge/false-split costs justify using it.",
+  "Add the direct enterprise-email papers to the adversarial-fixture recommendation where examples depend on subjects, participants, or concurrent workplace matters, or explicitly label those fixtures as project-derived tests rather than literature-established failure modes."
+ ],
+ "confidence": 0.98,
+ "scores": {
+  "faithfulness": 0.91,
+  "coherence": 0.97,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The core synthesis is well supported. Its principal conclusions about cross-thread workplace activity identity, multi-signal reasoning, abstention precedent, incremental repair, partial/non-transitive event relations, benchmark dependence, and lack of direct Outlook-plus-Teams validation are traceable to the supplied analyses. All cited paper_ids are members of the permitted identifier set. The synthesis also does a strong job of keeping the major target-domain gaps open and explicitly distinguishing transfer-domain evidence from production-accuracy evidence. The issues are localized mainly to a few citations whose scope is narrower than the associated wording and to engineering recommendations that are stated more prescriptively than the literature justifies. These do not invalidate the cross-paper synthesis, but they should be corrected before the recommendations are treated as evidence-backed design requirements."
+}

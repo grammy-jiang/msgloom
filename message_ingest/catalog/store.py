@@ -1,0 +1,139 @@
+"""
+Shared SQLite engine and session lifecycle for the local acquisition catalog.
+"""
+
+from __future__ import annotations
+
+import os
+import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+from typing import cast
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import QueuePool
+
+from message_ingest.catalog.schema import initialize_schema
+from message_ingest.catalog.stores.evidence import RawEvidenceStore
+
+
+class Catalog:
+    """
+    Own one SQLite engine/session factory shared by domain persistence stores.
+    """
+
+    def __init__(self, database_url: str) -> None:
+        """Create the SQLite schema and restrict local file permissions."""
+        self.database_url = database_url
+        url = make_url(database_url)
+        if url.get_backend_name() != "sqlite":
+            raise ValueError("The current local catalog implementation requires SQLite")
+        database = url.database
+        in_memory = not database or database == ":memory:"
+        if database and not in_memory:
+            path = Path(database)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            os.chmod(path.parent, 0o700)
+
+        schema_image = initialize_schema(database_url, in_memory=in_memory)
+        self.engine = create_engine(
+            database_url,
+            connect_args={
+                "autocommit": False,
+                "timeout": 30.0,
+                **({"check_same_thread": False} if in_memory else {}),
+            },
+            **({"poolclass": QueuePool} if in_memory else {}),
+            pool_size=1,
+            max_overflow=0,
+            pool_timeout=30.0,
+        )
+        if schema_image is not None:
+            try:
+                with self.engine.connect() as connection:
+                    driver = cast(
+                        sqlite3.Connection,
+                        connection.connection.driver_connection,
+                    )
+                    driver.deserialize(schema_image)
+            except BaseException:
+                self.engine.dispose()
+                raise
+        self.Session: sessionmaker[Session] = sessionmaker(
+            bind=self.engine,
+            expire_on_commit=False,
+        )
+        self.evidence = RawEvidenceStore(self)
+        if database and not in_memory:
+            os.chmod(Path(database), 0o600)
+
+    @contextmanager
+    def writer_session(self) -> Iterator[Session]:
+        """
+        Yield a session after acquiring SQLite writer intent before any reads.
+
+        Runtime connections normally use ``autocommit=False``. Temporarily
+        delegate transaction control to this checked-out driver connection so
+        ``BEGIN IMMEDIATE`` can acquire SQLite's database writer reservation
+        before a read-modify-write transaction observes state. Independent
+        :class:`Catalog` instances targeting one file therefore wait at the
+        database boundary instead of deadlocking during a deferred lock
+        upgrade. Commit and rollback remain owned by this context.
+
+        Cleanup only touches the original surviving driver. SQLAlchemy
+        invalidation closes that driver, so rollback then clears transaction
+        bookkeeping without reconnecting or replacing the initiating error.
+        Invalidation can destroy an in-memory database; cleanup does not
+        restore it. A failure after a completed ``COMMIT`` cannot undo it.
+        """
+        with self.engine.connect() as connection:
+            pool_connection = connection.connection
+            driver = cast(
+                sqlite3.Connection,
+                pool_connection.driver_connection,
+            )
+            previous_autocommit = driver.autocommit
+            driver.autocommit = True
+            try:
+                try:
+                    connection.exec_driver_sql("BEGIN IMMEDIATE")
+                    with (
+                        Session(
+                            bind=connection,
+                            expire_on_commit=False,
+                        ) as session,
+                        session.begin(),
+                    ):
+                        yield session
+                    connection.exec_driver_sql("COMMIT")
+                except BaseException:
+                    if (
+                        not connection.closed
+                        and pool_connection.is_valid
+                        and pool_connection.driver_connection is driver
+                        and driver.in_transaction
+                    ):
+                        connection.exec_driver_sql("ROLLBACK")
+                    raise
+                finally:
+                    if connection.in_transaction():
+                        connection.rollback()
+            finally:
+                if connection.in_transaction():
+                    connection.rollback()
+                if (
+                    not connection.closed
+                    and pool_connection.is_valid
+                    and pool_connection.driver_connection is driver
+                ):
+                    driver.autocommit = previous_autocommit
+
+    def close(self) -> None:
+        """Dispose the engine after outstanding pipeline work finishes."""
+        self.engine.dispose()
+
+
+__all__ = ["Catalog"]

@@ -1,0 +1,75 @@
+{
+ "paper_id": "doi-10-18653-v1-2025-acl-long-547",
+ "title": "Disambiguating Reference in Visually Grounded Dialogues through Joint Modeling of Textual and Multimodal Semantic Structures",
+ "research_question": "Does jointly modeling textual reference relations such as coreference and predicate-argument structure with multimodal mention-to-object grounding improve the resolution of ambiguous and indirect references in visually grounded dialogue?",
+ "methodology": "The approach jointly trains textual reference resolution and multimodal reference resolution components that share a text encoder while computing relation-specific similarities between textual mentions and between mentions and detected visual objects. Multimodal grounding uses a frozen Detic detector plus a trainable textual and cross-attention representation, while textual relations include coreference and predicate-argument relations that can supply additional semantic structure for ambiguous mentions. The authors evaluate phrase grounding and multimodal reference resolution on J-CRe3 and Flickr30k-Ent-JP, with additional Japanese textual-reference data used for the textual component. Recall@1, Recall@5, and Recall@10 are reported with an IoU threshold of 0.5, and experiments are repeated with three random seeds.",
+ "key_findings": [
+  {
+   "finding": "Adding the proposed textual-reference model substantially improved grounding of pronouns in J-CRe3: the coreference-enhanced model achieved Recall@1/5/10 of 0.361/0.683/0.772 versus 0.277/0.527/0.641 for the baseline.",
+   "evidence_type": "supported",
+   "section": "Phrase Grounding Results; Table 3"
+  },
+  {
+   "finding": "For pronoun grounding, the coreference-enhanced model outperformed both GLIP and MDETR in the reported J-CRe3 comparison, even though GLIP remained stronger on overall phrase grounding at lower recall cutoffs.",
+   "evidence_type": "supported",
+   "section": "Phrase Grounding Results; Table 3"
+  },
+  {
+   "finding": "Ablation experiments show that introducing textual reference relations improves pronoun grounding, with coreference providing the strongest individual benefit and combining relation types helping noun grounding.",
+   "evidence_type": "supported",
+   "section": "Textual Relation Ablation"
+  },
+  {
+   "finding": "The proposed multimodal-reference model consistently improves Recall@10 over the model without the added textual-reference information and can represent zero-reference cases that the GLIP-plus-parser comparison cannot directly handle.",
+   "evidence_type": "supported",
+   "section": "Multimodal Reference Resolution Results"
+  },
+  {
+   "finding": "Textual reference structure increases model confidence for relationships linking mentions, pronouns, predicates, and visually grounded objects in the qualitative analyses.",
+   "evidence_type": "supported",
+   "section": "Qualitative Analysis"
+  },
+  {
+   "finding": "The results do not establish comparable behavior for non-Japanese dialogue, conversations with more than two participants, or grounding that requires consistent object identity across multiple images or document versions.",
+   "evidence_type": "unsupported",
+   "section": "Limitations"
+  }
+ ],
+ "limitations": [
+  "The experiments are limited primarily to Japanese-language data and do not establish multilingual generalization.",
+  "The visually grounded dialogue setting contains two-party interactions, so more complex participant structures remain untested.",
+  "Some indirect nominative and dative references in J-CRe3 tend to resolve to the master or robot, creating dataset-specific regularities.",
+  "The frozen Detic object detector can constrain noun grounding and contributes to weaker noun performance than stronger detection-grounding systems in some comparisons.",
+  "Grounding is performed from a single image at a time, making object consistency across changing visual contexts difficult.",
+  "The relationship between textual-reference-resolution quality and multimodal-reference-resolution quality requires more repeated and controlled analysis.",
+  "The study addresses conversational reference ambiguity but not longitudinal attachment revision, cross-version visual-region identity, or spreadsheet-specific references."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "coreference_improves_pronoun_grounding": 0.99,
+  "pronoun_advantage_over_glip_mdetr": 0.98,
+  "textual_relation_ablation": 0.97,
+  "multimodal_recall10_improvement": 0.96,
+  "zero_reference_support": 0.97,
+  "cross_language_generalization_unestablished": 0.99
+ },
+ "raw_claims": [
+  "The model treats textual reference resolution and multimodal reference resolution as related tasks rather than independent problems.",
+  "The textual and multimodal components share a textual encoder.",
+  "Coreference, predicate-argument relations, and other textual links provide signals for disambiguating visually grounded mentions.",
+  "J-CRe3 contains visually grounded Japanese dialogue collected from interactions between a human master and an assistive robot.",
+  "The proposed textual-reference component provides especially large gains for pronoun grounding.",
+  "GLIP remains stronger on some overall phrase-grounding measures even though the proposed method is stronger for pronouns.",
+  "Different textual relation types make different contributions to noun and pronoun grounding.",
+  "The multimodal model can model references in which a predicate has no corresponding visual object.",
+  "Object detection is frozen during the multimodal-reference experiments.",
+  "The approach reasons from individual images and does not solve persistent object identity across multiple visual contexts.",
+  "The implementation and relevant datasets are publicly linked by the paper."
+ ],
+ "source_url": "https://arxiv.org/html/2505.11726",
+ "access": "full_text"
+}

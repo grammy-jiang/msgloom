@@ -1,0 +1,94 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "duplicate-message-id",
+  "description": "Two distinct observed messages share one Message-ID; a later reference cannot justify a unique parent from the identifier alone.",
+  "family": "duplicate_id",
+  "messages": [
+    {
+      "message_id": "dup-a",
+      "expected_text": "Alpha decision is approved.",
+      "arrival_rank": 1,
+      "internet_message_id": "<duplicate@synthetic.invalid>",
+      "subject": "Duplicate",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "dup-b",
+      "expected_text": "Beta decision is rejected.",
+      "arrival_rank": 2,
+      "internet_message_id": "<duplicate@synthetic.invalid>",
+      "subject": "Duplicate",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "dup-reply",
+      "expected_text": "> Alpha decision is approved.\n\nNoted.",
+      "arrival_rank": 3,
+      "internet_message_id": "<dup-reply@synthetic.invalid>",
+      "subject": "Re: Duplicate",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [
+    {
+      "message_id": "dup-reply",
+      "relation_type": "reply_parent",
+      "target_ids": [
+        "dup-a",
+        "dup-b"
+      ],
+      "missing_target_ids": [],
+      "ambiguous": true,
+      "notes": "Identifier collision; do not force a unique parent."
+    }
+  ],
+  "quotes": [
+    {
+      "occurrence_id": "dup-q1",
+      "message_id": "dup-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 29
+      },
+      "source_candidates": [
+        {
+          "message_id": "dup-a",
+          "span": {
+            "start": 0,
+            "end": 27
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "plain_gt",
+      "notes": ""
+    }
+  ],
+  "spans": [],
+  "replay_orders": [
+    [
+      "dup-a",
+      "dup-b",
+      "dup-reply"
+    ],
+    [
+      "dup-b",
+      "dup-a",
+      "dup-reply"
+    ],
+    [
+      "dup-reply",
+      "dup-a",
+      "dup-b"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E3",
+    "duplicate-id"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+ "paper_id": "doi-10-18653-v1-s15-1035",
+ "title": "Resolving Discourse-Deictic Pronouns: A Two-Stage Approach to Do It",
+ "research_question": "Can discourse-deictic uses of 'it', 'this', and 'that' first be identified and then resolved to verbal or clausal antecedents well enough to improve general-purpose coreference resolution?",
+ "methodology": "The authors derive discourse-deictic instances from the English CoNLL-2012/OntoNotes coreference annotations and train two separate maximum-entropy components: a classifier for deciding whether a pronoun is discourse deictic and a resolver for selecting a verbal antecedent. Linguistically motivated local, syntactic, lexical-association, and selectional-preference features are used, with feature selection and pronoun-specific thresholds tuned on development data. Classification and resolution are first evaluated separately using precision, recall, and F1, including an oracle-classification condition, and then stacked on the Berkeley and HOTCoref NP-coreference systems. The authors additionally manually analyze 50 development-set decisions to diagnose system and annotation errors.",
+ "key_findings": [
+  {
+   "finding": "The test data contain 252 discourse-deictic instances among 2,075 occurrences of 'it', 'that', and 'this', with large differences in prevalence by pronoun and especially strong class imbalance for 'it'.",
+   "evidence_type": "supported",
+   "section": "4.1 Dataset"
+  },
+  {
+   "finding": "The discourse-deixis classifier achieved 35.2 precision, 42.9 recall, and 38.6 F1 overall, versus 34.8 F1 for the stronger naive classification baseline, although performance remained low because of class imbalance and limited discourse-level features.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "With gold discourse-deixis classification, the resolver achieved 48.2 overall F1, compared with 39.3 for the nearest-verb baseline and 41.0 for the Müller-style model.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Using predicted rather than oracle classifications greatly reduced resolution performance to 22.2 overall F1, but the two-stage resolver still outperformed both comparison resolvers under the same condition.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Adding the two-stage predictions to Berkeley and HOTCoref produced small increases in their overall CoNLL scores, from 61.71 to 61.73 and from 61.64 to 61.69 respectively; most tested differences were statistically significant, though the attainable improvement with oracle discourse-deixis information was much larger.",
+   "evidence_type": "supported",
+   "section": "5 Results"
+  },
+  {
+   "finding": "Manual error analysis exposed substantial gold-standard problems: among categorized non-matching cases, 11.4% were attributed to missing annotations, 20% to multiple acceptable antecedents, and another 20% to cases where system and gold decisions were both debatable.",
+   "evidence_type": "supported",
+   "section": "6 Error Analysis"
+  },
+  {
+   "finding": "The authors found cases where a pronoun packages a fragment or set of preceding clauses and where more than one elaborating clause is an acceptable antecedent, directly challenging annotation guidelines and metrics that require one unique verbal antecedent.",
+   "evidence_type": "supported",
+   "section": "6 Error Analysis"
+  },
+  {
+   "finding": "Because multiple, overlapping, or debatable antecedents are frequent enough to affect evaluation, the authors argue for a more flexible evaluation measure rather than exact agreement with one gold antecedent.",
+   "evidence_type": "supported",
+   "section": "6 Error Analysis and 7 Conclusion"
+  }
+ ],
+ "limitations": [
+  "Classification performance is low, especially for discourse-deictic 'it', whose positive examples are highly imbalanced.",
+  "Most features use relatively local context and the authors acknowledge that important discourse-level cues are not modeled.",
+  "The CoNLL/OntoNotes annotations were not designed specifically for discourse deixis and contain missing, partial, ambiguous, and sometimes questionable antecedent annotations.",
+  "The evaluation assumes one exact antecedent even though the error analysis finds multiple acceptable or overlapping antecedents and pronouns that package sets of clauses.",
+  "The manual error analysis covers only 50 system decisions on the development set.",
+  "The exact subset of resolution features selected for one reported model is omitted for brevity, reducing exact reproducibility from the paper alone.",
+  "The system is limited to English and to the pronouns 'it', 'this', and 'that'.",
+  "The task concerns discourse deixis rather than reply-to-question alignment, so it does not directly identify which questions or propositions in a multi-question turn receive answers.",
+  "No implementation release is identified in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "test_set_discourse_deixis_distribution": 0.99,
+  "classification_improves_baseline_modestly": 0.99,
+  "oracle_resolution_gain": 0.99,
+  "predicted_classification_bottleneck": 0.99,
+  "small_end_to_end_coreference_gain": 0.99,
+  "gold_annotation_errors_are_substantial": 0.99,
+  "multiple_antecedents_challenge_unique_gold": 0.99,
+  "flexible_evaluation_needed": 0.99
+ },
+ "raw_claims": [
+  "The system separates discourse-deixis recognition from antecedent resolution instead of solving both in one decision.",
+  "The CoNLL-2012 test set supplies hundreds of discourse-deictic examples for 'it', 'this', and 'that', but their class distributions differ sharply.",
+  "The learned classifier only modestly improves over a simple pronoun-specific classification baseline.",
+  "Resolution is substantially easier when the system is told which pronouns are discourse deictic.",
+  "Classification errors therefore impose a major bottleneck on end-to-end antecedent resolution.",
+  "Adding discourse-deictic links gives small but measurable improvements to two general coreference systems.",
+  "Manual inspection shows that some apparent model errors are actually absent or incomplete gold annotations.",
+  "Several inspected cases permit more than one reasonable clausal antecedent.",
+  "Some pronouns summarize or package a sequence of related clauses rather than referring cleanly to one proposition.",
+  "A strict single-antecedent scorer can penalize linguistically reasonable system predictions.",
+  "The authors conclude that discourse-deixis corpora and evaluation methods need to represent ambiguity more faithfully."
+ ],
+ "source_url": "https://aclanthology.org/S15-1035.pdf",
+ "access": "full_text"
+}

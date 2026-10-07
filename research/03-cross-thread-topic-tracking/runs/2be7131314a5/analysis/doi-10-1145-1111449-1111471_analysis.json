@@ -1,0 +1,90 @@
+{
+ "paper_id": "doi-10-1145-1111449-1111471",
+ "title": "Automatically classifying emails into activities",
+ "research_question": "Can incoming email be incrementally associated with the user's evolving work activities more accurately than by relying on conventional email threads alone?",
+ "methodology": "The paper frames an activity as a unit of collaborative work and evaluates online classification of incoming email into previously created activities or a null non-activity class. Its corpus contains 1,146 messages from one user's mailbox over 90 days, including 149 messages assigned to 27 activities; messages are processed chronologically so each prediction precedes learning from that message. The authors compare thread-based, person-based, and content-based classifiers and combine them with a voting method, while randomized activity orderings preserve within-activity temporal order. The first observed message of an activity is assumed to be manually assigned because the classifier cannot predict an activity before it exists.",
+ "key_findings": [
+  {
+   "finding": "Email-thread membership alone is insufficient to recover work-activity identity because an activity can span messages that are not in one reply thread.",
+   "evidence_type": "supported",
+   "section": "Evaluation / Threading Baseline"
+  },
+  {
+   "finding": "Content-based retrieval provides substantially stronger activity recommendations than the threading baseline, with the best reported top-three recommendation accuracy around 94% versus about 58% for threading.",
+   "evidence_type": "supported",
+   "section": "Results / Recommendation"
+  },
+  {
+   "finding": "Combining threading, people, and content evidence by voting achieves approximately 93% recognition accuracy and an F-measure of 0.81, compared with an F-measure around 0.60 for threading alone.",
+   "evidence_type": "supported",
+   "section": "Results / Voting Classifier"
+  },
+  {
+   "finding": "The study directly demonstrates longitudinal cross-thread email-to-work-activity linking in an online setting where the set of activities evolves over time.",
+   "evidence_type": "supported",
+   "section": "Problem Definition and Online Evaluation"
+  },
+  {
+   "finding": "Participant identity alone is unreliable for work-item linking because the same people may participate in several simultaneous activities and the participant set of one activity can change over time.",
+   "evidence_type": "supported",
+   "section": "Results / Person-Based Classification"
+  },
+  {
+   "finding": "The paper conceptually describes activities as potentially related by composition or dependency, but it does not experimentally model or evaluate those inter-activity relationships.",
+   "evidence_type": "unsupported",
+   "section": "Introduction / Activity-Centric Computing"
+  },
+  {
+   "finding": "Although a message could in principle belong to more than one activity, the implemented evaluation uses a single activity assignment and explicitly leaves multiple-activity membership for future work.",
+   "evidence_type": "contradicted",
+   "section": "Activity Classification / Experimental Setup"
+  },
+  {
+   "finding": "The experiment does not establish organization-wide generality because all evaluated email comes from a single user's mailbox and only a small subset of messages is activity-labeled.",
+   "evidence_type": "supported",
+   "section": "Conclusion / Future Work"
+  }
+ ],
+ "limitations": [
+  "The corpus contains email from only one user, limiting organizational and cross-user generalizability.",
+  "Only 149 of 1,146 messages are labeled as activity-related across 27 activities.",
+  "Activity annotations are described as correct but incomplete, while unlabeled messages are treated as non-activity messages, which can introduce false negatives.",
+  "The first message in each activity is assumed to be manually classified, so fully automatic creation and identity discovery of new work items is not evaluated.",
+  "The implemented task assigns each message to a single activity even though the paper acknowledges that messages may belong to multiple activities.",
+  "Composition and dependency between activities are discussed conceptually but are not represented or measured in the classifier.",
+  "The empirical dataset is email only; chat transcripts are discussed as possible activity artifacts but are not evaluated.",
+  "No evidence is provided for explicitly graded, subevent, asymmetric, or non-transitive continuity relations.",
+  "The private one-user mailbox dataset is not reported as publicly available."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "cross_thread_activity_linking": 1.0,
+  "content_beats_threading_for_recommendation": 0.99,
+  "voting_improves_recognition": 0.99,
+  "participants_change_and_overlap": 0.98,
+  "single_label_multiple_activity_limitation": 1.0,
+  "composition_dependency_not_empirically_tested": 0.99,
+  "enterprise_generalization_limited": 0.99
+ },
+ "raw_claims": [
+  "The paper treats activities as collaborative units of work that may gather email and other related artifacts.",
+  "Incoming messages are assigned to one of the activities that already exist or to a null class.",
+  "The evaluated mailbox contains 1,146 messages collected over 90 days.",
+  "There are 149 activity-related messages distributed among 27 labeled activities.",
+  "Messages are evaluated in temporal order to approximate an activity-management system operating as work unfolds.",
+  "A conventional reply thread is only one signal for activity membership and misses many activity-related messages.",
+  "Content similarity is useful for associating messages that belong to the same work activity even when they are not directly threaded.",
+  "People-based similarity becomes ambiguous when the same participants are involved in multiple concurrent activities.",
+  "Participants associated with an activity can change during the activity's lifetime.",
+  "The combined voting classifier improves the balance of precision and recall relative to the individual methods.",
+  "The system assumes a user manually creates a new activity from its first message.",
+  "The authors acknowledge possible membership of one message in multiple activities but do not implement that case.",
+  "Activities may conceptually have composition or dependency relationships, but those relationships are not part of the evaluated classifier."
+ ],
+ "source_url": "https://www.cs.jhu.edu/~mdredze/publications/iui06-dredze.pdf",
+ "access": "full_text"
+}

@@ -1,0 +1,81 @@
+{
+ "paper_id": "doi-10-3233-aic-2012-0516",
+ "title": "Detection of imperative and declarative question–answer pairs in email conversations",
+ "research_question": "Can interrogative and non-interrogative questions in email be detected and linked to their answers accurately and efficiently at sentence level by exploiting textual, contextual, and thread-structural information?",
+ "methodology": "The authors used the Enron and CSpace email corpora and created human annotations for both question detection and question–answer linkage. For question detection, 350 questions were collected from randomly sampled email sentences and balanced with 350 non-questions; the questions were labeled as interrogative, imperative, declarative, or other, and three detection algorithms were compared. For question–answer pairing, four annotators labeled questions and corresponding answers in randomly selected threads, and sentence-level heuristic, classifier, and linear-regression variants were evaluated with 5-fold cross-validation repeated 50 times. Evaluation used precision, recall, and F1 under both a paragraph-oriented metric and a stricter longest-common-substring matching criterion.",
+ "key_findings": [
+  {
+   "finding": "Non-interrogative questions form a substantial minority of email questions: about 11% of the annotated questions were imperative, 5% declarative, and 4% other, so punctuation-only question detection misses meaningful requests.",
+   "evidence_type": "supported",
+   "section": "4.2 Question detection"
+  },
+  {
+   "finding": "The hand-crafted Regex detector achieved 0.959 precision, 0.860 recall, and 0.907 F1 when interrogative and non-interrogative questions were evaluated together, outperforming the tested Naive and S&M methods on F1.",
+   "evidence_type": "supported",
+   "section": "4.2 Question detection"
+  },
+  {
+   "finding": "The sentence-level heuristic pairing variants substantially outperformed the S&M and Naive baselines; on the union annotation set, Heuristic-LR obtained 0.5935 LCS F1 compared with 0.5108 for the strongest S&M variant and 0.1544 for Naive.",
+   "evidence_type": "supported",
+   "section": "4.3 Answer detection and Q-A pairing"
+  },
+  {
+   "finding": "Human agreement was imperfect but reasonably strong: Fleiss kappa was 0.69 for identifying question paragraphs and 0.77 for linking answers to questions, while the two most prolific annotators reached 0.74 and 0.83 respectively.",
+   "evidence_type": "supported",
+   "section": "4.3 Answer detection and Q-A pairing"
+  },
+  {
+   "finding": "A single answer sentence can correspond to several preceding questions; varying the maximum number of questions assigned to an answer modestly improved F1, with three questions per answer performing best on the authors' data.",
+   "evidence_type": "supported",
+   "section": "4.3 Answer detection and Q-A pairing"
+  },
+  {
+   "finding": "Sentence-only extraction did not match annotations well when annotators selected longer answer spans, and the authors explicitly identify multi-sentence answer extraction as future work.",
+   "evidence_type": "supported",
+   "section": "4.3 Answer detection and Q-A pairing"
+  },
+  {
+   "finding": "Restricting candidates to each person's first reply reduces the search space, but allowing later replies sometimes improves results at a substantial runtime cost.",
+   "evidence_type": "supported",
+   "section": "4.3 Answer detection and Q-A pairing"
+  }
+ ],
+ "limitations": [
+  "The question-detection test set was artificially balanced at 50% questions and 50% non-questions, whereas natural email contains many more non-questions, so reported precision is not directly representative of deployment prevalence.",
+  "The exact human-created question–answer annotations used in the experiments are not reported as a released benchmark, limiting exact replication despite use of established source corpora.",
+  "The pairing model operates on individual sentences and therefore cannot adequately represent answers spanning multiple sentences or larger discourse segments.",
+  "Candidate answers are restricted to subsequent messages, to another sender, and normally to that person's first reply; this can exclude delayed or self-follow-up answers.",
+  "Detected question sentences are prohibited from serving as answers, excluding question-as-response phenomena.",
+  "The model ultimately chooses at most one answer candidate for a given question rather than representing a distributed answer across several propositions.",
+  "Although one answer may be attached to multiple questions, the study does not explicitly annotate or evaluate partial replies, which subset of a multi-question message was answered, or rates of unanswered questions.",
+  "Question-form labels and question–answer pairing annotations were produced in separate annotation exercises, preventing direct analysis of pairing behavior by interrogative versus imperative/declarative form."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "non_interrogative_questions_are_common": 0.99,
+  "regex_question_detection": 0.99,
+  "heuristic_pairing_improves_f1": 0.99,
+  "human_pairing_agreement": 0.99,
+  "one_answer_can_cover_multiple_questions": 0.99,
+  "sentence_level_span_limitation": 0.99,
+  "later_replies_trade_accuracy_for_runtime": 0.97
+ },
+ "raw_claims": [
+  "About one fifth of the annotated email questions were not conventional interrogative sentences.",
+  "A regex system using punctuation, interrogative patterns, and hand-written non-interrogative patterns achieved above 0.9 F1 over all annotated question forms.",
+  "The pairing heuristics combine lexical similarity, thread structure, semantic information, entities, and expected answer-type features.",
+  "A candidate answer is normally restricted to a content sentence in another person's first subsequent reply to the question email.",
+  "The pairing algorithm can leave a question unmatched when no candidate exceeds its score threshold.",
+  "The implementation limits how many questions one answer can satisfy, and a limit of three worked best in the reported experiments.",
+  "Human annotators did not agree perfectly on either question boundaries or question–answer links.",
+  "The learned linear-regression heuristic produced the strongest result on the union annotation set.",
+  "Different annotators sometimes selected different answer-span lengths, exposing a mismatch with sentence-only extraction.",
+  "The experiments do not provide a direct empirical accounting of unanswered questions or explicitly labeled partial replies."
+ ],
+ "source_url": "https://starlab.ewi.tudelft.nl/papers/n99.pdf",
+ "access": "full_text"
+}

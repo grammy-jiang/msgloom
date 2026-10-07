@@ -1,0 +1,166 @@
+# Topic 01 run-local copy. See CONFIG_NOTES.md.
+# research-pipeline configuration
+#
+# Config is loaded (highest precedence first) from:
+#   1. --config <path> passed to any command
+#   2. the RESEARCH_PIPELINE_CONFIG environment variable
+#   3. ./config.toml in the current working directory
+# There is no automatic ~/.claude/config.toml lookup: pass --config <path>
+# (or set RESEARCH_PIPELINE_CONFIG) when this file lives elsewhere. An
+# explicit --config/env path that does not exist is now an error, not a
+# silent fall back to defaults.
+#
+# Fill in your API keys below for the online backends you want to use.
+# Leave unused backends empty — they won't be called.
+workspace = "/home/grammy-jiang/Projects/msgloom/research/01-email-conversation-structure/runs"
+
+[arxiv]
+min_interval_seconds = 15.0
+default_page_size = 100
+daily_query_cache = true
+
+[cache]
+enabled = true
+search_snapshot_ttl_hours = 24
+cache_dir = "/home/grammy-jiang/Projects/msgloom/research/01-email-conversation-structure/cache"
+
+# ─── Conversion ──────────────────────────────────────────────────────────────
+# Primary backend: docling (local, MIT, no API key needed)
+# To use an online backend as primary, change "backend" below.
+# To add fallback services, list them in "fallback_backends".
+
+[conversion]
+backend = "docling"
+fallback_backends = []                  # e.g. ["datalab", "mistral_ocr", "openai_vision"]
+timeout_seconds = 300
+
+# ─── Local backends ──────────────────────────────────────────────────────────
+
+[conversion.marker]
+force_ocr = false
+use_llm = false
+llm_service = ""
+llm_api_key = ""
+
+# ─── Online backends (fill in your API keys) ─────────────────────────────────
+
+# Mathpix — best LaTeX, 1K free pages/mo
+# Sign up: https://mathpix.com
+# [conversion.mathpix]
+# app_id = ""
+# app_key = ""
+# Multi-account example:
+# [[conversion.mathpix.accounts]]
+# app_id = "account-1-id"
+# app_key = "account-1-key"
+# [[conversion.mathpix.accounts]]
+# app_id = "account-2-id"
+# app_key = "account-2-key"
+
+# Datalab — hosted Marker, $5 free credit
+# Sign up: https://www.datalab.to
+# [conversion.datalab]
+# api_key = ""
+# mode = "balanced"                       # fast, balanced, or accurate
+# [[conversion.datalab.accounts]]
+# api_key = "key-1"
+# mode = "fast"
+# [[conversion.datalab.accounts]]
+# api_key = "key-2"
+# mode = "accurate"
+
+# LlamaParse — 1K free pages/day
+# Sign up: https://cloud.llamaindex.ai
+[conversion.llamaparse]
+api_key = ""
+# [[conversion.llamaparse.accounts]]
+# api_key = "key-1"
+# [[conversion.llamaparse.accounts]]
+# api_key = "key-2"
+
+# Mistral OCR — per-token pricing, free credits
+# Sign up: https://console.mistral.ai
+# [conversion.mistral_ocr]
+# api_key = ""
+# model = "mistral-ocr-latest"
+# [[conversion.mistral_ocr.accounts]]
+# api_key = "key-1"
+# [[conversion.mistral_ocr.accounts]]
+# api_key = "key-2"
+
+# OpenAI Vision — per-token pricing
+# Sign up: https://platform.openai.com
+# [conversion.openai_vision]
+# api_key = ""
+# model = "gpt-4o"
+# [[conversion.openai_vision.accounts]]
+# api_key = "key-1"
+# [[conversion.openai_vision.accounts]]
+# api_key = "key-2"
+# model = "gpt-4o-mini"
+
+# ─── Other stages ────────────────────────────────────────────────────────────
+
+[download]
+max_per_run = 20
+
+[llm]
+enabled = false
+temperature = 0
+profile = "default"
+# Model used by sub-agents (paper-screener, paper-analyzer, paper-synthesizer,
+# gap-classifier, synthesis-reviewer).  Update here when upgrading model versions.
+analysis_model = "gpt-6-astra"
+model = "gpt-6-astra"
+
+[screen]
+cheap_top_k = 50
+download_top_n = 20
+final_score_threshold = 0.70
+llm_score_threshold = 0.60
+use_semantic_reranking = false        # Enable SPECTER2 semantic re-ranking
+embedding_model = "allenai/specter2"
+embedding_batch_size = 32
+
+[search]
+primary_months = 480
+fallback_months = 600
+max_query_variants = 12
+min_candidates = 40
+min_highscore = 10
+min_downloads = 5
+
+# ─── New v0.3.0 features ────────────────────────────────────────────────────
+
+# Multi-source search
+[sources]
+# arxiv is always included.  Additional free sources (no API key required):
+# semantic_scholar, openalex, dblp, huggingface.
+# Add "scholar" only if scholarly or SerpAPI is installed.
+enabled = ["arxiv", "semantic_scholar", "openalex", "dblp", "huggingface"]
+scholar_backend = "scholarly"   # scholarly or serpapi
+scholar_min_interval = 10.0
+serpapi_key = ""
+serpapi_min_interval = 5.0
+semantic_scholar_api_key = ""
+semantic_scholar_min_interval = 5.0
+openalex_api_key = ""
+openalex_min_interval = 0.1
+dblp_min_interval = 1.0
+huggingface_enabled = true
+huggingface_min_interval = 0.5
+huggingface_limit = 100
+
+# Quality evaluation (citations, venue, author, recency)
+[quality]
+enabled = false
+citation_weight = 0.35
+venue_weight = 0.25
+author_weight = 0.25
+recency_weight = 0.15
+
+# Incremental runs — dedup against previous runs
+[incremental]
+enabled = false
+global_index_path = "/home/grammy-jiang/Projects/msgloom/research/01-email-conversation-structure/cache/paper-index.sqlite"          # SQLite path (empty = default cache dir)
+reuse_artifacts = true

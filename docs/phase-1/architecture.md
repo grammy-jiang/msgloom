@@ -1,0 +1,235 @@
+# msgloom Phase 1 Architecture
+
+**Scope:** Phase 1 only. **Status:** Draft for review.
+
+Selects components from the [complete-product Architecture Design](../architecture.md) and implements [Phase 1 Logical Design](design.md). Dependency choices are owned by [Technology Stack](../tech-stack.md).
+
+## 1. Deployment
+
+Deployment installs Prefect 3 as the [External scheduler](../architecture.md#2-shared-components) and the msgloom Python package independently in Docker. In the execution container, the Prefect runner launches the installed msgloom executable. Prefer separate Python environments so scheduler dependencies do not constrain the package. Prefect's server and state may be separate deployment services; their layout is not a package requirement.
+
+```mermaid
+flowchart TD
+    S[External scheduler: Prefect] -->|Launch subcommand| C[Installed msgloom CLI process]
+    C --> A[Async Application operation]
+    A --> D[(Application database)]
+    A --> F[Persistent files]
+    C -->|Exit status and result references| S
+```
+
+The package does not poll Prefect, register schedules or host a Prefect runner. Deployment owns the thin Prefect job definition and configured executable path. No Docker socket is needed to launch a command in the execution container.
+
+Use persistent storage for the Application database, source bytes, results and isolated AI session storage. Mount selected daily-work memory paths read-only. The external operational web interface is not the future Report website; expose it locally by default.
+
+## 2. Invocation lifecycle
+
+```mermaid
+flowchart TD
+    I[Parse subcommand request] --> C[Load Configuration]
+    C --> V[Validate required inputs]
+    V --> O[Open async resources]
+    O --> A[Await requested operation]
+    A --> R[Save outcome]
+    R --> X[Close resources and exit]
+```
+
+Validate only resources required by the requested operation. Help or configuration inspection must not launch Claude Code or require source credentials. Bind one Configuration version per run.
+
+Processing, reporting and replay may have different external triggers. Each invocation consumes eligible saved work according to its request, not merely information newer than the last timer tick. The implemented incremental A2 command is `prepare-scheduled`; other stage
+commands keep their explicit saved-input contracts.
+
+The scheduler waits for process completion and inspects its status. Use an argument list, never message content interpolated into shell commands. Disable blind retry of operations with possible external effects: a nonzero exit after partial delivery is not permission to resend every part.
+
+Enforce the [async execution contract](../architecture.md#async-execution). The CLI starts one event loop, and worker calls and stage results are awaited. There is no in-package scheduling daemon or queue between stages.
+
+## 3. Collection writes
+
+Microsoft collection uses the implemented Graph-over-Scrapy adapter described
+in [component layout](../component-layout.md). Spiders own traversal, downloader
+middleware owns transport policy, pipelines await persistence, and extensions
+own lifecycle gates. The sequence below describes logical ordering; it does
+not replace native Scrapy lifecycle or JOBDIR callback contracts with an SDK.
+
+```mermaid
+sequenceDiagram
+    participant C as A1 Collection
+    participant S as Source adapters
+    participant F as Persistent files
+    participant D as Application database
+    C->>D: Claim scope and read checkpoint
+    C->>S: Request next page
+    S->>F: Save received payload before parsing
+    F-->>C: Verified file reference
+    C->>D: Commit reference, pending work and progress
+    D-->>C: Saved continuation
+```
+
+Keep page continuation separate from a completed collection round. Follow all pages and required reply reads. Supplementary MIME or attachment requests have recorded work and outcomes of their own.
+
+A raw page that cannot be parsed remains durable pending work. It must not vanish because collection advanced. An invalid continuation starts explicit recovery using the source-specific strategy in Technology Stack.
+
+File writes use a temporary file, verification and atomic replacement on the same filesystem before the ORM transaction records completion. Interruption may leave an unreferenced file; it must not create a successful result pointing at missing content.
+
+### Durable incremental handoff
+
+The integrated handoff implementation extends collection with immutable
+acquisition facts, release groups, and ordered release entries in the A1
+catalog. Source stores record facts with effective state changes. Lifecycle
+and workflow gates publish eligible entries. Authority checkpoint promotion,
+lifecycle changes, and the corresponding release commit atomically. A2 does
+not infer new work by scanning mutable current rows or comparing timestamps.
+
+`ReleaseSourceReader` reconstructs exact committed source versions and verifies
+their evidence. `PreparationIntakeService` captures a finite release cutoff.
+Entries published after that cutoff wait for another intake. It saves exact
+selection results before a short transaction commits the immutable workset,
+pending index, and cursor together in the separate Phase 1 store. The cursor
+binds catalog, source, stream, consumer, entry sequence, and entry digest.
+
+A scheduled invocation first attempts pending work within configured bounds,
+then admits one bounded release page per target. It uses exact saved selections
+in REPLAY mode. Pending discovery rotates durably so one failed workset cannot
+consume every later invocation. New admission can progress even when an older
+workset still needs preparation. A failed or cancelled attempt does not rewind
+the committed intake cursor or discard the pending workset.
+
+Workset completion requires accepted preparation receipts for the exact saved
+inputs. Scoped removals and context changes produce `prepared_transitions`
+results with the original entry, fact, resource, and scope identities. These
+results prepare facts for downstream use; they do not perform global deletion
+or retirement. Missing or corrupt evidence receives a durable held disposition
+instead of a fabricated selection. Later valid entries can still advance.
+
+`HistoricalBaselineService.run` provides explicit historical admission for a
+new consumer scope. It accepts caller-approved bounded exact versions, verifies
+saved evidence, saves selections, and commits one immutable starting workset
+with its pending state and release cutoff. Incremental intake then continues
+after that cutoff. It does not discover historical records or create release
+entries. See [historical baseline operation](../notes/operator-configuration.md#explicit-historical-baseline)
+for the service API and retry limits.
+
+The `prepare-scheduled` CLI runs one finite invocation and awaits writes,
+worker cleanup, and reader closure. The external scheduler owns timing and
+repeated invocation. Manual `prepare` and explicit preparation replay remain
+available. See [operator configuration](../notes/operator-configuration.md#scheduled-preparation)
+for exact command syntax, stable consumer identity, limits, and recovery.
+The handoff runtime is implemented and qualified. Final documentation review
+and independent acceptance remain pending; see the
+[qualification record](../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+This does not qualify an external scheduler deployment.
+
+## 4. Preparation and AI execution
+
+### Preparation and deterministic triage
+
+```mermaid
+flowchart TD
+    B[Saved message and attachment bytes] --> P[Parse]
+    P --> F[Filter]
+    F --> G[Group]
+    G --> D[Deterministic triage rules]
+    D --> I[Save AI input]
+```
+
+Each step saves a stage result through Persistence. Exclusions stop the semantic path but remain inspectable. Use stored identities and rule versions to prevent the Application's own reports from repeatedly entering triage.
+
+A2 routes collected files through the [parser selection](../tech-stack.md#parser-selection). Await Parser worker completion before accepting content or starting A3. Workers write only to isolated temporary storage; the Application verifies returned output before committing its reference. Heavy document parsing runs in bounded processes, not on the event-loop thread.
+
+```mermaid
+sequenceDiagram
+    participant A as A2 Preparation
+    participant W as Parser worker
+    participant P as Persistence
+    A->>W: Await parsing of saved bytes
+    W-->>A: Content, source locations and limitations
+    A->>A: Validate parser output
+    A->>P: Await saved stage result
+```
+
+Enforce time, memory, decompression and output limits. A stopped worker cannot later mark its attempt complete. On timeout, terminate and reap it; partial or unsupported content remains explicit. Process isolation alone is not a complete security sandbox.
+
+### AI execution
+
+```mermaid
+sequenceDiagram
+    participant A as Application
+    participant C as Working context reader
+    participant R as AI runner
+    participant P as Persistence
+    A->>C: Select configured memory
+    C->>P: Save working-context snapshot
+    A->>R: Saved input and snapshot references
+    R->>R: Open fresh SDK-managed Claude Code session
+    R->>P: Save exposed SDK messages and diagnostics
+    R->>R: Close the session
+    A->>A: Validate and reconcile results
+    A->>P: Save accepted triage result or failure
+```
+
+Each analysis attempt opens its own SDK-managed session; it never attaches to a daily interactive session or resumes a previous attempt. The AI runner has separate settings, session storage and a work directory. It must not inherit daily-session hooks, plugins or MCP connections. Only the existing model credentials are supplied to the Claude Code process; source credentials remain with adapters.
+
+Phase 1 disables source discovery, shell execution, file editing and report sending in the AI process. Verify effective SDK, CLI and managed settings rather than rely on a prompt restriction. A fresh process is not, by itself, a security sandbox. On failure or cancellation, close the SDK session and preserve its exposed output and unfinished work.
+
+Split large input before execution and preserve the complete input mapping. Stop or retry failed parts under configured limits; retain every attempt. Unprocessed parts remain visible even if other parts succeed.
+
+## 5. Report submission
+
+```mermaid
+flowchart TD
+    S[Freeze selected triage results] --> R[Build and validate Report]
+    R --> O[Render and save outputs]
+    O --> C[Check rendered coverage]
+    C --> D[Record Delivery attempt]
+    D --> P[Submit exact output]
+    P --> A{Provider outcome}
+    A -->|Accepted| V[Save accepted submission]
+    A -->|Rejected| F[Save failure]
+    A -->|Unknown| U[Hold for reconciliation]
+```
+
+The diagram applies to each required output part. The report is not fully submitted until all parts have an accepted submission. Acceptance is distinct from observable recipient delivery.
+
+A retry reuses the saved output and report identity. It does not rerun triage. Reconcile an unknown result through available provider evidence; when that evidence is insufficient, leave the attempt unresolved for the operator.
+
+## 6. Recovery and replay
+
+The accepted [persistence boundary](../notes/phase1-persistence-spike.md) uses
+short SQLAlchemy transactions behind bounded, awaited thread calls. A1 keeps
+its existing catalog. Provider-neutral Phase 1 results use a separate SQLite
+file with one schema owner. Cancellation drains an accepted write before the
+caller releases claims or closes resources.
+
+| Situation | Application response |
+| --- | --- |
+| Competing collection or reporting runs | Acquire a per-scope or per-policy claim through the ORM; only the claim holder advances progress. |
+| Temporary database contention | Acquire writer ownership before reading mutable state and await the bounded transaction. Never share an active session across workers or blindly repeat an external effect. |
+| Failed parse or AI output | Restart from the selected saved input with a new attempt identity. |
+| External scheduler restart or missed trigger | A later command resumes saved pending work. Manual invocation remains available without the scheduler. |
+| Missing file or disk exhaustion | Mark dependent work unavailable and stop progress; restore or explicitly recollect where permitted. |
+| Backup or restore | Pause writers and preserve the Application database with its referenced files; verify integrity before resuming. |
+
+Replay is an Operator CLI operation on a selected stage result. It creates new downstream results without advancing collection checkpoints or submitting reports unless separately requested. Close async clients, SDK sessions, database sessions and parser workers on normal exit and cancellation. Independent invocations enforce the same claims and external-effect rules.
+
+## 7. Qualification boundary
+
+Before production use, exercise the concrete deployment against the logical acceptance cases and [technical qualification](../tech-stack.md#9-qualification). Test the actual container architecture, Python 3.12, 3.13 and 3.14, sequential stage completion and event-loop responsiveness during attachment parsing. Verify command execution without Prefect or FastMCP installed. This document specifies a deployment; it does not claim one has been installed or tested.
+
+## 8. Extension interface preparation
+
+Bind the [extension interfaces](../architecture.md#8-extension-interfaces) with explicit typed dependencies. Implement only the Evidence, Result and Report interface paths needed by current operations. The Action interface has no live provider in Phase 1; capability admission rejects it before any write client is created.
+
+```mermaid
+flowchart TD
+    R[Operation request from CLI or test caller] --> G[Application capability and authority check]
+    G -->|Phase 1 capability| A[Bound async operation]
+    G -->|Later capability| B[Saved blocked outcome]
+    A --> P[Versioned Persistence and adapter interfaces]
+```
+
+Use Python protocols or equivalent typed interfaces, not FastMCP, Prefect or SDK classes, in shared contracts. The CLI converts arguments to an Operation request and presents the Operation outcome. A future MCP adapter awaits the same Application interface in its existing loop; the scheduler stays outside the package.
+
+Store result kind and schema version with input references in the existing Persistence model. Validate a registered kind before accepting it; do not add unused provider tables or unvalidated arbitrary JSON fields. A later schema migration must retain existing references and older report snapshots. Unknown required schema versions produce a visible failure rather than partial success.
+
+Contract tests use a fake evidence reader, a fake optional result producer and a recording action adapter that must never be called. Exercise cancellation and resource cleanup through a non-CLI async caller. Demonstrate that adding a test implementation requires no change to the CLI, source identity rules or report renderer. Actual later-phase tools remain disabled.
+
+Run these tests in every required interpreter environment from Technology Stack, including Python 3.14. The separate FastMCP 4 compatibility environments test the dependency boundary; they do not start a production server or certify client interoperability.

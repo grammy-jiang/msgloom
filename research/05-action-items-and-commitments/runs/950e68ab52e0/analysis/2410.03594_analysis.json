@@ -1,0 +1,92 @@
+{
+ "paper_id": "2410.03594",
+ "title": "Explicit, Implicit, and Scattered: Revisiting Event Extraction to Capture Complex Arguments",
+ "research_question": "How should event argument extraction be reformulated and benchmarked when important event arguments may be implicit in context or distributed across multiple discontinuous parts of a discourse rather than appearing as one explicit span?",
+ "methodology": "The authors create DiscourseEE from Reddit discussions about medications for opioid use disorder, selecting three event types and defining 41 argument roles across core, type-specific, subject-specific, and effect-specific categories. They annotate 396 post-comment pairs with 7,464 argument annotations using eight locally recruited annotators who received four weeks of training; at least two annotators produced arguments for each sample and a third reviewer resolved disagreements, yielding mean relaxed-match inter-annotator F1 of 0.811. Event argument extraction is reformulated as natural-text generation rather than span extraction, and extractive QA, generative FLAN-T5 models, and several zero-shot LLMs are benchmarked using relaxed-match and exact-match F1 measures on train/validation/test splits of 246/50/100 samples. citeturn945402view0turn945402view1turn945402view2",
+ "key_findings": [
+  {
+   "finding": "A majority of annotated event arguments require more than ordinary contiguous-span extraction: 51.2% are implicit and 17.4% are scattered, so 68.6% are either inferred or distributed across the discourse. citeturn326926view0turn568280view2",
+   "evidence_type": "supported",
+   "section": "Abstract; 4.4 DiscourseEE Summary Statistics"
+  },
+  {
+   "finding": "The paper demonstrates a fundamental limitation of exact evidence-span assumptions: implicit arguments have no directly stated source span, while scattered arguments are assembled from discontinuous information distributed through the document. citeturn568280view1turn945402view3",
+   "evidence_type": "supported",
+   "section": "2 Event Extraction via Text Generation; 7 Related Work"
+  },
+  {
+   "finding": "Because the dataset stores generated natural-text argument values rather than start/end text spans, it supports semantic event reconstruction but does not itself provide strict provenance spans for every extracted argument. citeturn945402view0turn945402view2",
+   "evidence_type": "supported",
+   "section": "2 Event Extraction via Text Generation; 5.2 Argument Extraction Models"
+  },
+  {
+   "finding": "Traditional extractive QA performs substantially worse on complex arguments, with mean relaxed-match F1 of 17.13 and recall of only 9.40% for implicit and 13.44% for scattered arguments. citeturn568280view2turn326926view3",
+   "evidence_type": "supported",
+   "section": "6 Results and Discussion"
+  },
+  {
+   "finding": "Even the strongest evaluated generative system remains far from solving the task: GPT-4 with question-guided prompting reaches mean relaxed-match F1 of 41.98, while its best reported recall for implicit arguments is 36.53% and for scattered arguments is 54.12%. citeturn326926view3turn945402view3",
+   "evidence_type": "supported",
+   "section": "6 Results and Discussion"
+  },
+  {
+   "finding": "Exact-match scoring can mark semantically correct generated arguments as wrong, and the authors' qualitative analysis indicates that exact-match evaluation therefore underestimates generative extraction quality. citeturn568280view4turn945402view3",
+   "evidence_type": "supported",
+   "section": "6 Results and Discussion"
+  },
+  {
+   "finding": "The annotation process itself shows that scattered and implicit arguments create substantial human difficulty, including missed distributed evidence and the need for deeper contextual inference. citeturn326926view5",
+   "evidence_type": "supported",
+   "section": "Appendix C Annotation complexity"
+  },
+  {
+   "finding": "For the workplace-action research question, the paper contributes a useful representation of implicit and scattered arguments but does not study workplace communication or explicitly model action owners, deadline-to-action binding, conditional obligations, or negated obligations. Its ontology instead concerns health-advice events. citeturn945402view0turn945402view1",
+   "evidence_type": "supported",
+   "section": "3 Event Ontology Design"
+  }
+ ],
+ "limitations": [
+  "DiscourseEE is based on health-advice discourse from Reddit rather than workplace email or enterprise chat, so transfer to organizational action and decision extraction is untested. citeturn945402view0turn945402view1",
+  "Only 396 post-comment pairs were fully argument-annotated, although they contain 7,464 argument annotations. citeturn568280view5",
+  "Annotation is expensive and difficult to scale because annotators must generate argument values rather than select spans and because implicit and scattered arguments require substantial contextual reasoning. citeturn568280view5turn326926view5",
+  "Relaxed-match F1 depends on a manually selected semantic-similarity threshold, while exact-match F1 substantially underestimates semantically equivalent generations; the paper therefore lacks a fully satisfactory evaluation metric. citeturn945402view0turn568280view5",
+  "The benchmark assumes the ground-truth event type for the event-argument extraction experiments, simplifying the end-to-end extraction problem. citeturn945402view2",
+  "Models were evaluated with common zero-shot prompts rather than individually optimized prompts, so the reported LLM results are benchmarks rather than model-specific upper bounds. citeturn945402view2turn945402view3",
+  "Because the annotations are natural-text values rather than source offsets, the dataset is not directly suitable for applications requiring exact evidence-span provenance without an additional grounding layer. citeturn945402view2",
+  "The ontology does not contain explicit workplace constructs for owner assignment, deadlines attached to actions, conditional duties, or negated obligations."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "implicit_and_scattered_prevalence": 0.99,
+  "span_extraction_limitation": 0.99,
+  "no_strict_span_provenance": 0.98,
+  "extractive_baseline_weakness": 0.99,
+  "generative_models_still_challenged": 0.99,
+  "exact_match_underestimates_generation": 0.98,
+  "annotation_complexity": 0.99,
+  "workplace_action_relevance_is_indirect": 0.99
+ },
+ "raw_claims": [
+  "DiscourseEE contains 7,464 annotated event arguments from online health discourse. citeturn326926view0",
+  "The fully annotated portion contains 396 post-comment pairs. citeturn945402view1",
+  "About 51.2% of the arguments are implicit and 17.4% are scattered. citeturn326926view0",
+  "The authors define implicit arguments as information not directly mentioned but inferable from context. citeturn568280view0turn945402view3",
+  "Scattered arguments combine information appearing in multiple parts of a discourse rather than one contiguous span. citeturn568280view0turn945402view3",
+  "The dataset uses natural-text argument annotations instead of start and end offsets for argument spans. citeturn945402view2",
+  "Eight annotators received four weeks of training for the complex argument-annotation task. citeturn326926view2turn945402view1",
+  "Each annotated sample was handled by at least two annotators and reviewed by a third annotator. citeturn326926view2",
+  "Mean relaxed-match inter-annotator F1 was 0.811. citeturn568280view2",
+  "The extractive QA baseline obtained a mean relaxed-match F1 of 17.13. citeturn568280view2turn326926view3",
+  "GPT-4 with question-guided prompting achieved the highest reported mean relaxed-match F1 of 41.98. citeturn326926view3",
+  "Implicit arguments remained particularly difficult, with the strongest reported implicit recall reaching 36.53%. citeturn326926view3",
+  "Exact matching substantially reduces measured performance for scattered arguments because generated wording and structure can differ from the reference while retaining the same meaning. citeturn326926view6turn945402view3",
+  "The authors publicly provide the dataset, evaluation resources, and code. citeturn568280view6",
+  "The study does not directly address workplace owner assignment, action deadlines, or obligation polarity."
+ ],
+ "source_url": "https://arxiv.org/html/2410.03594",
+ "access": "full_text"
+}

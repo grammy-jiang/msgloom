@@ -1,0 +1,79 @@
+{
+ "paper_id": "2004.14974",
+ "title": "Fact or Fiction: Verifying Scientific Claims",
+ "research_question": "How can a system retrieve scientific evidence, identify the exact rationale sentences supporting a decision, and determine whether an individual scientific source supports or refutes a claim?",
+ "methodology": "The authors introduce SciFact, containing 1,409 expert-written scientific claims evaluated against a corpus of 5,183 scientific abstracts, with supporting or refuting abstracts annotated at sentence-level rationale granularity. They develop VeriSci, a three-stage pipeline consisting of TF-IDF abstract retrieval, a BERT-based rationale selector, and a BERT-based Supports/Refutes/NoInfo classifier. Models are evaluated in both oracle-evidence and open-retrieval settings using sentence- and abstract-level precision, recall, and F1, with 10,000 bootstrap resamples for uncertainty analysis. A separate case study applies the system to COVID-19 claims against CORD-19.",
+ "key_findings": [
+  {
+   "finding": "SciFact links claim-verification decisions to minimal sentence-level rationales, enabling evaluation of whether the predicted verdict is supported by identifiable source evidence.",
+   "evidence_type": "supported",
+   "section": "2 Background and task definition / 3 The SciFact dataset"
+  },
+  {
+   "finding": "Training on in-domain SciFact data substantially improves evidence selection and end-to-end verification compared with zero-shot transfer from general fact-checking datasets.",
+   "evidence_type": "supported",
+   "section": "6.1 Pipeline components / 6.2 Full task"
+  },
+  {
+   "finding": "In the open-retrieval setting, VeriSci reaches 39.5 sentence-level Selection+Label F1 and 46.5 abstract-level Label+Rationale F1, leaving large room for improvement.",
+   "evidence_type": "supported",
+   "section": "6.2 Full task"
+  },
+  {
+   "finding": "Oracle experiments show that both document retrieval and rationale selection make substantial contributions to total verification error.",
+   "evidence_type": "supported",
+   "section": "6.2 Full task"
+  },
+  {
+   "finding": "Independent re-annotation yields Cohen's kappa of 0.75 for claim-abstract labels and 0.71 for sentence-level rationale membership.",
+   "evidence_type": "supported",
+   "section": "3.3 Claim verification"
+  },
+  {
+   "finding": "Errors frequently require scientific background knowledge, directionality reasoning, numerical interpretation, causal reasoning, or coreference resolution.",
+   "evidence_type": "supported",
+   "section": "6.4 Error analysis"
+  },
+  {
+   "finding": "The task does not establish a global truth label for a scientific claim; it predicts whether particular abstracts support or refute that claim.",
+   "evidence_type": "supported",
+   "section": "2 Background and task definition"
+  }
+ ],
+ "limitations": [
+  "Claims are verified against abstracts rather than full papers, so evidence that appears only in methods, results, appendices, tables, or other full-text sections is unavailable.",
+  "SciFact evaluates support and refutation relationships between a claim and individual abstracts rather than determining globally whether a scientific claim is true.",
+  "Although real scientific claims may have both supporting and refuting literature, this situation does not occur among the annotated SciFact claims.",
+  "The dataset is relatively small and concentrates heavily on biomedical and scientific literature.",
+  "The COVID-19 demonstration contains only 36 claims and is a research prototype rather than a validated decision-support system.",
+  "Successful verification still depends on background scientific knowledge and reasoning capabilities that are not explicitly represented in the evidence sentences."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rationale_grounding": 0.99,
+  "in_domain_training": 0.98,
+  "open_setting_performance": 0.99,
+  "pipeline_error_sources": 0.98,
+  "annotation_agreement": 0.99,
+  "reasoning_error_types": 0.97,
+  "not_global_truth": 0.99
+ },
+ "raw_claims": [
+  "SciFact contains 1,409 scientific claims and a corpus of 5,183 abstracts.",
+  "Evidence-bearing abstracts are annotated as supporting or refuting a claim and include sentence-level rationales.",
+  "A rationale is intended to contain the minimal collection of sentences needed to justify a support or refutation decision.",
+  "Independent annotation produces substantial agreement for both labels and rationale sentences.",
+  "VeriSci first retrieves abstracts, then selects rationale sentences, and finally predicts the evidence relation.",
+  "Training on SciFact improves performance relative to models transferred directly from general-domain fact verification.",
+  "Providing oracle rationales substantially improves verification performance.",
+  "Providing oracle evidence abstracts produces an additional large improvement, showing that retrieval remains a major error source.",
+  "Some verification errors require scientific background knowledge that is not stated directly in the selected evidence.",
+  "The paper releases both SciFact data and VeriSci code."
+ ],
+ "source_url": "https://arxiv.org/html/2004.14974",
+ "access": "full_text"
+}

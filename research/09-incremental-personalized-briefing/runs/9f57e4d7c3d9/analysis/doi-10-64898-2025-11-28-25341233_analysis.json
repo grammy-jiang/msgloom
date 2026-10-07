@@ -1,0 +1,85 @@
+{
+ "paper_id": "doi-10-64898-2025-11-28-25341233",
+ "title": "CLIN-SUMM: Incremental Longitudinal Summarization of Clinical Notes Enables Scalable Representation and Early Disease Prediction",
+ "research_question": "Can incremental, temporally faithful summarization of only newly documented clinical information produce a compact reusable longitudinal patient representation that preserves clinical content and supports scalable downstream prediction and trajectory extraction?",
+ "methodology": "CLIN-SUMM incrementally builds categorized, date-partitioned patient representations, using separate prompts for initial summarization and subsequent change-focused updates, Jaccard-based redundancy filtering, and bounded historical context to avoid repeatedly processing an entire record. The expanded study evaluates more than 2.5 million notes from 12,356 Massachusetts General Hospital patients, with clinician review of summary fidelity and token-compression analysis. The summaries are additionally used to train Clinical ModernBERT models for dementia diagnosis and three-year risk prediction, and to extract longitudinal medication events for comparison with structured EHR medication data.",
+ "key_findings": [
+  {
+   "finding": "CLIN-SUMM reduced the longitudinal note representation by about 70% in tokens across the expanded cohort while retaining high clinician-rated correctness and completeness.",
+   "evidence_type": "supported",
+   "section": "Abstract / Compression Efficiency"
+  },
+  {
+   "finding": "The framework processes new encounter information incrementally and preserves dated longitudinal structure without using future documentation.",
+   "evidence_type": "supported",
+   "section": "Abstract / Summarization Workflow"
+  },
+  {
+   "finding": "Clinical ModernBERT trained on CLIN-SUMM representations achieved AUROC 0.86 for dementia diagnosis and 0.81 for three-year risk prediction in the reported expanded study.",
+   "evidence_type": "supported",
+   "section": "Abstract / Results"
+  },
+  {
+   "finding": "Risk separation emerged longitudinally before formal dementia diagnosis rather than appearing only immediately before diagnosis.",
+   "evidence_type": "supported",
+   "section": "Abstract / Longitudinal evaluation"
+  },
+  {
+   "finding": "Summary-based extraction found substantially more Donepezil medication instances than the compared structured tables, with 2,725 versus 1,312 instances in the dementia cohort.",
+   "evidence_type": "supported",
+   "section": "Medication Extraction"
+  },
+  {
+   "finding": "For matched medication events, exact dosage agreement between summary-derived and structured records was reported as 96.2%.",
+   "evidence_type": "supported",
+   "section": "Medication Extraction"
+  },
+  {
+   "finding": "Clinician review found hallucinations in fewer than 4% of evaluated summaries, with errors including inferred diagnoses, value-format misinterpretation, and unsupported causal interpretations.",
+   "evidence_type": "supported",
+   "section": "Clinical validation / Error analysis"
+  }
+ ],
+ "limitations": [
+  "The manuscript is a preprint and had not been certified by journal peer review in the accessed version.",
+  "The source EHR data come from Massachusetts General Brigham and are not publicly available because they contain protected health information.",
+  "The code availability statement says implementation code will be released through a public repository upon publication rather than being available at the time of the accessed version.",
+  "The main predictive validation centers on dementia, so generalization to other diseases remains to be established systematically.",
+  "Broader external validation across healthcare systems, populations, note styles, and institutions remains future work.",
+  "The summaries can still hallucinate or omit clinically relevant details, including treatment adherence and pertinent negatives.",
+  "Model performance, cost, and scalability depend partly on LLM choice, redundancy filtering, and context-window strategy.",
+  "Further work is needed on bias correction, comorbidity adjustment, fairness, robustness, and clinical integration."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "incremental_temporal_representation": 0.99,
+  "token_reduction": 0.99,
+  "dementia_diagnosis_auroc": 0.99,
+  "three_year_prediction_auroc": 0.99,
+  "medication_capture_gain": 0.98,
+  "dosage_agreement": 0.99,
+  "low_but_nonzero_hallucination": 0.96
+ },
+ "raw_claims": [
+  "CLIN-SUMM represents patient history as a sequence of dated, structured summaries rather than one static summary.",
+  "Only newly documented information is summarized at each incremental encounter.",
+  "The design separates narrative processing from downstream prediction so the representation can be reused.",
+  "The expanded cohort contains 12,356 patients and more than 2.5 million notes.",
+  "The system achieved roughly 70% token reduction in the expanded evaluation.",
+  "Clinicians rated the generated summaries highly for correctness and completeness.",
+  "A Clinical ModernBERT model using the summaries achieved AUROC 0.86 for dementia diagnosis.",
+  "The reported three-year dementia risk-prediction AUROC was 0.81.",
+  "Longitudinal analysis showed increasing separation of dementia risk before formal diagnosis.",
+  "Summary-derived medication histories captured more Donepezil events than the compared structured medication tables.",
+  "Exact dose agreement for matched medication events was reported as 96.2%.",
+  "A small minority of reviewed summaries contained hallucinated or unsupported content.",
+  "The underlying EHR dataset cannot be released publicly because of patient privacy constraints.",
+  "Implementation code was promised for public release upon publication rather than provided with the accessed preprint."
+ ],
+ "source_url": "https://www.medrxiv.org/content/10.64898/2025.11.28.25341233v2.full",
+ "access": "full_text"
+}

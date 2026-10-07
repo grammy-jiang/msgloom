@@ -1,0 +1,389 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2105.04166",
+   "title": "Few-Shot Conversational Dense Retrieval",
+   "research_question": "Can a conversational dense retriever learn robust contextual query embeddings from very little conversational relevance supervision by distilling an ad-hoc dense retriever, and thereby outperform query-rewriting retrieval pipelines?",
+   "methodology": "The paper introduces ConvDR, a dual-encoder conversational dense retriever whose query encoder consumes the current utterance together with conversation history. In the few-shot setting, it distills embeddings from an ANCE teacher applied to manually reformulated oracle queries, using a mean-squared-error knowledge-distillation objective and optionally a ranking loss. The authors evaluate on TREC CAsT 2019 and 2020 and on the more fully supervised OR-QuAC benchmark, and additionally analyze conversational-context sensitivity and retrieval latency.",
+   "key_findings": [
+    {
+     "finding": "ConvDR substantially improves first-stage retrieval over sparse retrieval and automatic query-rewriting baselines on the CAsT conversational-search benchmarks, while approaching retrieval based on manually rewritten queries in the strongest reported setting.",
+     "evidence_type": "supported",
+     "section": "Section 5.1"
+    },
+    {
+     "finding": "Under the highly limited CAsT supervision regime, knowledge distillation from the ad-hoc retriever is the training signal that successfully adapts ConvDR, whereas sparse conversational ranking supervision alone can perform worse than the zero-shot alternatives.",
+     "evidence_type": "supported",
+     "section": "Section 5.2"
+    },
+    {
+     "finding": "With substantially more supervision on OR-QuAC, ranking supervision becomes effective and combining ranking with knowledge distillation gives the strongest ConvDR training result reported there.",
+     "evidence_type": "supported",
+     "section": "Section 5.2"
+    },
+    {
+     "finding": "Turn-by-turn and context-intrusion analyses indicate that ConvDR retains useful earlier conversational information and is more sensitive to removal of relevant history than to removal of relatively unimportant history.",
+     "evidence_type": "supported",
+     "section": "Section 5.4"
+    },
+    {
+     "finding": "Direct contextual query encoding avoids the separate query-rewriting stage and reduces measured query-processing latency relative to the evaluated rewrite-then-retrieve pipelines.",
+     "evidence_type": "supported",
+     "section": "Section 5.1, Table 3"
+    },
+    {
+     "finding": "The very large supervised gains on OR-QuAC should be interpreted cautiously because the authors identify structural artifacts in that synthetic conversational benchmark, including concentration of a dialogue's relevant passages on the same Wikipedia page.",
+     "evidence_type": "supported",
+     "section": "Section 5.1"
+    }
+   ],
+   "limitations": [
+    "The method retrieves for a conversational query but does not explicitly represent an evidence gap that must be closed before answering.",
+    "It does not implement an iterative within-turn retrieve-judge-retrieve loop or an evidence-sufficiency stopping criterion.",
+    "The OR-QuAC benchmark contains synthetic structural artifacts that can make conversational retrieval easier than realistic settings.",
+    "The experiments do not model workplace access permissions or authorization-aware retrieval.",
+    "Document versions, temporal validity, freshness, and source-version lineage are not represented.",
+    "The efficiency analysis primarily measures latency rather than monetary cost, retrieval budget, or calibrated uncertainty."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_quality": 0.98,
+    "few_shot_distillation": 0.99,
+    "context_robustness": 0.96,
+    "latency_reduction": 0.98,
+    "benchmark_artifact_caveat": 0.98
+   },
+   "raw_claims": [
+    "ConvDR encodes the current conversational query jointly with previous conversational turns into a dense retrieval representation.",
+    "The few-shot training method asks ConvDR to imitate representations produced by an ANCE teacher from manually reformulated queries.",
+    "Knowledge distillation is markedly more effective than limited ranking supervision for the few-shot CAsT experiments.",
+    "ConvDR outperforms the evaluated automatic query-rewriting retrieval systems on the CAsT first-stage retrieval task.",
+    "The model remains comparatively robust as conversations progress to later turns.",
+    "Removing a context turn that carries more useful retrieval information changes ConvDR's representation more strongly than removing a less useful turn.",
+    "ConvDR eliminates the latency of running a separate neural query rewriter before retrieval.",
+    "The authors caution that OR-QuAC contains synthetic properties that simplify the retrieval problem.",
+    "The paper evaluates conversational context utilization but does not perform explicit evidence-completeness judging."
+   ],
+   "source_url": "https://arxiv.org/html/2105.04166",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2406.19215",
+   "title": "SeaKR: Self-aware Knowledge Retrieval for Adaptive Retrieval Augmented Generation",
+   "research_question": "Can uncertainty derived from an LLM's internal states be used to decide when to retrieve external knowledge, which retrieved evidence to use, and how to reason, thereby improving adaptive retrieval-augmented generation without task-specific fine-tuning?",
+   "methodology": "SeaKR estimates model uncertainty from internal hidden-state representations obtained over multiple sampled generations, using a Gram-matrix-based measure. During iterative reasoning, high uncertainty triggers retrieval; an uncertainty-focused provisional rationale is transformed into a retrieval query, and candidate snippets are reranked according to how much they reduce model uncertainty. The system also uses uncertainty to choose between reasoning from accumulated rationales and reasoning with retrieved knowledge, and it is evaluated on multi-hop and single-hop QA benchmarks using LLaMA-family models and BM25 retrieval.",
+   "key_findings": [
+    {
+     "finding": "SeaKR achieves the highest reported F1 among the compared systems on all three complex-QA evaluations, reaching 36.0 on 2WikiMultiHopQA, 39.7 on HotpotQA, and 23.5 on answerable IIRC.",
+     "evidence_type": "supported",
+     "section": "Section 4.2.1"
+    },
+    {
+     "finding": "Compared with the strongest reported baseline for each complex-QA benchmark, the corresponding SeaKR F1 improvements are 6.0, 5.5, and 0.6 percentage points.",
+     "evidence_type": "supported",
+     "section": "Section 4.2.1"
+    },
+    {
+     "finding": "Ablating adaptive retrieval and retrieving at every generation step reduces performance, supporting the paper's claim that unnecessary retrieval can introduce misleading information rather than uniformly helping.",
+     "evidence_type": "supported",
+     "section": "Section 5.1"
+    },
+    {
+     "finding": "Removing uncertainty-based reranking causes a substantial degradation, and in the reported ablation it has a larger effect than removing the adaptive retrieval trigger.",
+     "evidence_type": "supported",
+     "section": "Section 5.1"
+    },
+    {
+     "finding": "The retrieval loop is explicitly bounded: iterative reasoning stops when the model emits its final-answer preface or when the configured maximum number of retrievals is reached.",
+     "evidence_type": "supported",
+     "section": "Section 3.3"
+    },
+    {
+     "finding": "The internal-state uncertainty estimator outperforms several alternative uncertainty signals in the paper's comparison, although it requires multiple pseudo-generations and access to model internals.",
+     "evidence_type": "supported",
+     "section": "Section 5.3 and Limitations"
+    }
+   ],
+   "limitations": [
+    "The uncertainty estimator depends on access to internal LLM hidden states, which restricts direct use with closed models that expose only an API.",
+    "The main evaluation is short-form question answering rather than long-form synthesis or workplace communication.",
+    "The uncertainty calculation uses multiple pseudo-generations, increasing compute even though batching can reduce wall-clock latency.",
+    "The reported model-scale experiments are limited to models up to approximately 8B parameters because of compute constraints.",
+    "The external corpus is a fixed Wikipedia snapshot, so the system does not evaluate source freshness or temporal validity.",
+    "The method does not model workplace authorization, per-document permissions, or access-control changes.",
+    "Document versions and source lineage are not first-class retrieval constraints.",
+    "Its stop condition is tied to answer-generation state or a retrieval cap rather than an explicit audit that every required evidence gap has been resolved."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "complex_qa_gain": 0.99,
+    "adaptive_retrieval_value": 0.97,
+    "uncertainty_reranking_value": 0.97,
+    "bounded_stopping": 0.99,
+    "uncertainty_compute_cost": 0.98
+   },
+   "raw_claims": [
+    "SeaKR uses an LLM's internal-state uncertainty to decide whether another retrieval operation is needed.",
+    "When uncertainty is high, the method generates a provisional rationale and converts its uncertain content into a retrieval query.",
+    "Retrieved candidates are compared by measuring how much each candidate reduces the model's uncertainty.",
+    "The system accumulates reasoning and retrieved knowledge over multiple steps.",
+    "SeaKR outperforms the compared methods on the paper's three complex question-answering benchmarks.",
+    "Always retrieving at every step performs worse than the adaptive retrieval policy in the reported ablation.",
+    "Uncertainty-based reranking is an important contributor to the system's performance.",
+    "The iterative process terminates either when a final answer is initiated or when the retrieval limit is reached.",
+    "The uncertainty estimator requires repeated model sampling and access to internal representations.",
+    "The experiments do not enforce temporal freshness, source-version constraints, or enterprise permission policies."
+   ],
+   "source_url": "https://arxiv.org/html/2406.19215",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2604.23783",
+   "title": "S2G-RAG: Structured Sufficiency and Gap Judging for Iterative Retrieval-Augmented QA",
+   "research_question": "Can iterative retrieval-augmented QA be improved by explicitly judging whether current evidence is sufficient, representing unresolved information needs as structured gaps, using those gaps to choose the next bounded retrieval, and stopping once adequate evidence has been accumulated?",
+   "methodology": "S2G-RAG introduces a controller called S2G-Judge that reads only the question and currently accumulated evidence and predicts both a binary sufficiency decision and structured unresolved gaps. When evidence is insufficient, the gap representation is converted into a new query, top-ranked documents are retrieved, and a sentence-level extractor appends a compact set of evidence to the retained context; when evidence is sufficient, or the maximum retrieval budget is reached, the answer reasoner is invoked. The judge is trained with process supervision distilled from multi-turn execution trajectories, and the system is evaluated on TriviaQA, HotpotQA, and 2WikiMultiHopQA with both BM25 and dense E5 retrieval.",
+   "key_findings": [
+    {
+     "finding": "The controller makes retrieval explicitly evidence-gap-driven: insufficiency produces typed gap items containing fields such as target, slot, and description, and those items are converted into the next retrieval query.",
+     "evidence_type": "supported",
+     "section": "Sections 3.1, 3.2 and 3.3"
+    },
+    {
+     "finding": "The retrieval process is bounded by a maximum number of turns and a fixed top-k per turn; the principal experiments use at most four retrieval turns and retrieve six documents per turn.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "S2G-RAG reports the strongest EM and F1 among the compared systems across the BM25 and E5 settings, with particularly large gains on HotpotQA and 2WikiMultiHopQA.",
+     "evidence_type": "supported",
+     "section": "Section 4.4"
+    },
+    {
+     "finding": "On HotpotQA with BM25, removing S2G-Judge causes the largest reported ablation loss, reducing EM from 43.3 to 27.5 and F1 from 56.5 to 37.6.",
+     "evidence_type": "supported",
+     "section": "Section 4.5.1"
+    },
+    {
+     "finding": "Against a sufficiency proxy based on whether all gold supporting titles have been retrieved, the judge has a reported false-positive rate of 6.44 percent but judges 31.60 percent of proxy-sufficient cases as still insufficient, indicating conservative stopping behavior.",
+     "evidence_type": "supported",
+     "section": "Section 4.5.2"
+    },
+    {
+     "finding": "Sentence-level evidence extraction reduces final accumulated context by approximately 4.5 to 6.4 times relative to raw document concatenation while retaining similar downstream effectiveness, and it lowers latency relative to the same iterative pipeline without extraction.",
+     "evidence_type": "supported",
+     "section": "Section 4.5.3"
+    },
+    {
+     "finding": "Increasing the permitted retrieval turns yields diminishing gains after important supporting evidence has been accumulated, and the learned judge's budget-performance trend closely follows the teacher used for supervision.",
+     "evidence_type": "supported",
+     "section": "Section 4.5.5"
+    },
+    {
+     "finding": "The authors explicitly identify temporal constraints and more complex compositional evidence requirements as cases that the current structured gap schema may fail to represent adequately.",
+     "evidence_type": "supported",
+     "section": "Section 5"
+    }
+   ],
+   "limitations": [
+    "The gap schema deliberately trades expressiveness for stable control and may not adequately represent multi-entity joins, temporal constraints, or complex compositional relations.",
+    "Sentence-level extraction can omit surrounding context needed for disambiguation or evidence that spans several sentences.",
+    "The sufficiency judge is conservative and still requires better calibration.",
+    "The learning procedure uses trajectory distillation rather than jointly optimizing retrieval and stopping decisions with reinforcement-learning or actor-critic objectives.",
+    "The experiments use QA benchmarks rather than workplace email, messaging, document, or meeting communication.",
+    "Authorization and source-level permission checks are not part of the retrieval controller.",
+    "Document-version lineage and freshness-validity policies are not modeled.",
+    "Although latency and retrieval budgets are measured, monetary cost and organization-specific retrieval costs are not incorporated into the decision objective."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "structured_gap_control": 0.99,
+    "multi_hop_qa_gain": 0.99,
+    "judge_ablation": 0.99,
+    "sufficiency_calibration": 0.99,
+    "evidence_compression": 0.98,
+    "budget_saturation": 0.97,
+    "temporal_schema_limitation": 0.99
+   },
+   "raw_claims": [
+    "S2G-Judge decides from the question and accumulated evidence whether the evidence is sufficient to answer.",
+    "When evidence is insufficient, the judge emits structured descriptions of the unresolved information gaps.",
+    "Gap items are transformed into retrieval queries rather than asking the retriever to search again with an unchanged question.",
+    "The judge is constrained to evaluate supplied evidence instead of relying on the language model's parametric knowledge.",
+    "Retrieved documents are reduced to selected evidence sentences before being added to the accumulated context.",
+    "The iterative process stops when the judge declares the context sufficient or when the retrieval-turn budget is exhausted.",
+    "Removing the sufficiency-and-gap judge produces the largest performance loss among the reported component ablations.",
+    "The sufficiency judge has relatively few false declarations of sufficiency under the paper's supporting-title proxy but frequently continues retrieval after that proxy is satisfied.",
+    "Compact evidence extraction substantially reduces the amount of text carried through later retrieval turns.",
+    "Additional retrieval turns provide diminishing returns as the evidence set becomes more complete.",
+    "The current gap representation is acknowledged to be weak for temporal constraints and some complex relations.",
+    "The experiments do not incorporate enterprise permissions, changing document versions, or source-expiration rules."
+   ],
+   "source_url": "https://arxiv.org/html/2604.23783",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2411.06037",
+   "title": "Sufficient Context: A New Lens on Retrieval Augmented Generation Systems",
+   "research_question": "Can retrieval-augmented generation failures be decomposed according to whether the retrieved context is sufficient to answer the question, and can this sufficiency signal improve abstention decisions beyond model confidence alone?",
+   "methodology": "The paper defines a binary notion of sufficient context and constructs a 115-instance human-labeled evaluation set spanning several QA datasets to evaluate automatic sufficiency raters. It then applies a high-performing LLM-based autorater to retrieved contexts from FreshQA, MuSiQue, and HotpotQA and measures how answer correctness, hallucination, and abstention vary with context sufficiency across multiple language models. Finally, it combines the sufficiency prediction with model confidence in a selective-generation classifier that decides whether to answer or abstain.",
+   "key_findings": [
+    {
+     "finding": "A one-shot Gemini 1.5 Pro sufficiency autorater achieves 0.930 accuracy and 0.935 F1 on the paper's 115-instance human-labeled sufficiency set.",
+     "evidence_type": "supported",
+     "section": "Section 3.2"
+    },
+    {
+     "finding": "For the evaluated retrieval setup, increasing retained context from 6,000 to 10,000 tokens produced little or no additional sufficiency benefit, motivating the authors' use of a 6,000-token context cutoff.",
+     "evidence_type": "supported",
+     "section": "Section 4.1"
+    },
+    {
+     "finding": "Context sufficiency separates two distinct failure sources: retrieval can fail to provide enough information, while an LLM can still fail even when the retrieved context contains enough information.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Large models frequently answer rather than abstain when the provided context is insufficient, while models can also answer some insufficient-context cases correctly using parametric knowledge, guessing, or partial evidence.",
+     "evidence_type": "supported",
+     "section": "Section 4.2"
+    },
+    {
+     "finding": "Combining context sufficiency with answer confidence improves selective generation over confidence alone, with reported accuracy gains exceeding 10 percentage points for Gemma 27B in part of the HotpotQA coverage range and exceeding 5 points for Gemini 1.5 Pro around 70 percent coverage.",
+     "evidence_type": "supported",
+     "section": "Section 5.1"
+    },
+    {
+     "finding": "The paper does not implement an iterative controller that converts insufficiency into a specific next retrieval action; the authors identify iterative use of the sufficiency evaluator to retrieve more context as a direction for future work.",
+     "evidence_type": "supported",
+     "section": "Limitations and Future Work"
+    }
+   ],
+   "limitations": [
+    "The manually labeled sufficiency validation set contains only 115 instances.",
+    "The main scope is question answering rather than summarization or broader workplace communication tasks.",
+    "The paper evaluates whether context is sufficient but does not compare retrieval methods by how efficiently they achieve sufficiency.",
+    "Insufficiency is binary rather than decomposed into explicit missing evidence slots or structured gaps.",
+    "The paper does not implement a next-fetch policy or an iterative retrieve-until-sufficient loop.",
+    "Automatic sufficiency evaluation itself depends on an LLM and can therefore make classification errors.",
+    "Workplace permissions, source authorization, and access-control changes are outside the evaluation.",
+    "FreshQA introduces time-sensitive questions, but the framework does not manage document versions, freshness policies, or temporal validity as retrieval constraints.",
+    "Source authority and provenance quality are not incorporated into the binary sufficiency label."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "autorater_accuracy": 0.99,
+    "sufficiency_failure_decomposition": 0.98,
+    "selective_generation_gain": 0.98,
+    "insufficient_context_behavior": 0.97,
+    "iterative_retrieval_not_implemented": 0.99
+   },
+   "raw_claims": [
+    "The paper defines context as sufficient when it contains the information needed to produce a plausible definitive answer.",
+    "Incomplete, inconclusive, contradictory, or unresolved ambiguous context can be classified as insufficient.",
+    "The authors construct a small human-labeled benchmark to validate automatic context-sufficiency judgments.",
+    "A one-shot Gemini 1.5 Pro evaluator closely matches the human sufficiency labels on that benchmark.",
+    "Providing sufficient retrieved context does not guarantee that a language model will answer correctly.",
+    "A language model can sometimes answer correctly even when the retrieved context is insufficient.",
+    "Larger evaluated models often hallucinate an answer instead of abstaining when contextual evidence is insufficient.",
+    "Combining a sufficiency judgment with model confidence improves the answer-versus-abstain tradeoff.",
+    "The study does not use insufficiency judgments to formulate the next retrieval query.",
+    "The authors identify iterative retrieval based on sufficiency judgments as a natural extension of the framework."
+   ],
+   "source_url": "https://arxiv.org/html/2411.06037",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2305.06983",
+   "title": "Active Retrieval Augmented Generation",
+   "research_question": "Can long-form generation be improved by actively deciding when external retrieval is needed and formulating retrieval queries from anticipated future text rather than relying on one-shot retrieval or fixed retrieval intervals?",
+   "methodology": "The paper presents FLARE, which repeatedly predicts a tentative next sentence and uses low token probabilities in that future sentence as a signal that retrieval is needed. The tentative sentence, optionally with uncertain tokens masked or converted into an explicit question, becomes the retrieval query; retrieved documents are then used to regenerate the sentence with external evidence. The authors evaluate several active-retrieval variants against no-retrieval, one-shot, previous-context, and question-decomposition baselines on multi-hop QA and long-form generation tasks using Wikipedia BM25 or Bing retrieval.",
+   "key_findings": [
+    {
+     "finding": "FLARE's direct active-retrieval variant reaches 51.0 EM and 59.7 F1 on 2WikiMultiHopQA, outperforming the reported no-retrieval, single-retrieval, previous-context, and question-decomposition baselines.",
+     "evidence_type": "supported",
+     "section": "Section 6.1"
+    },
+    {
+     "finding": "Using a predicted next sentence as the retrieval query outperforms retrieving from the previous sentence in the reported comparison, including 48.8 versus 39.0 EM on 2WikiMultiHopQA and 45.9 versus 42.5 EM on ASQA with hints.",
+     "evidence_type": "supported",
+     "section": "Section 6.2"
+    },
+    {
+     "finding": "Performance does not monotonically improve as retrieval becomes more frequent: it plateaus on 2WikiMultiHopQA and degrades on StrategyQA when retrieval is triggered too often, indicating that irrelevant retrieval can add harmful noise.",
+     "evidence_type": "supported",
+     "section": "Section 6.2"
+    },
+    {
+     "finding": "FLARE operationalizes the 'when to fetch' decision with a token-probability threshold and the 'what to fetch' decision with anticipated future content, masking or reformulating uncertain spans when constructing queries.",
+     "evidence_type": "supported",
+     "section": "Sections 3.2.1 and 3.2.2"
+    },
+    {
+     "finding": "The method does not show significant improvements on all tested generation tasks, with the paper specifically discussing weak results on Wizard of Wikipedia and ELI5.",
+     "evidence_type": "supported",
+     "section": "Section 9"
+    },
+    {
+     "finding": "Interleaving generation and retrieval increases inference overhead because generation is repeatedly interrupted, provisional text may be regenerated, and additional language-model calls are required.",
+     "evidence_type": "supported",
+     "section": "Sections 8 and 9"
+    }
+   ],
+   "limitations": [
+    "The retrieval trigger is based on token confidence rather than a structured representation of which evidence proposition or slot is missing.",
+    "Generation terminates normally rather than using an explicit evidence-completeness stopping judgment.",
+    "Retrieved documents from earlier retrieval iterations are discarded in the described FLARE procedure, which limits persistent evidence accumulation and auditability.",
+    "Interleaving provisional generation, retrieval, and regeneration adds computational and monetary overhead.",
+    "The method does not improve every evaluated task, particularly tasks with very short outputs or settings where retrieval is less useful.",
+    "Enterprise permissions and authorization-aware retrieval are not considered.",
+    "Document versions, source lineage, and freshness guarantees are not represented.",
+    "Open-web retrieval can change over time, but temporal validity and reproducibility of retrieved evidence are not explicitly controlled."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "forward_looking_retrieval": 0.99,
+    "active_trigger_effectiveness": 0.98,
+    "multi_hop_gain": 0.99,
+    "over_retrieval_noise": 0.97,
+    "inference_overhead": 0.99
+   },
+   "raw_claims": [
+    "FLARE interleaves text generation with retrieval instead of retrieving only once before generation.",
+    "The direct FLARE method tentatively generates the next sentence before deciding whether external information is needed.",
+    "Low-probability tokens in that tentative sentence trigger retrieval.",
+    "The anticipated future sentence is used to construct a retrieval query.",
+    "Low-confidence parts of the provisional sentence can be masked or converted into explicit information-seeking questions.",
+    "The retrieved documents are used to regenerate the next sentence with external evidence.",
+    "Forward-looking retrieval performs better than querying with the already generated previous sentence in the reported comparison.",
+    "Retrieving at every possible opportunity is not optimal on the evaluated tasks.",
+    "FLARE reports strong gains on 2WikiMultiHopQA but does not yield significant improvements on every generation benchmark.",
+    "Repeated retrieval and regeneration increase inference overhead.",
+    "The method does not maintain an explicit structured ledger of unresolved evidence gaps.",
+    "The method does not enforce permission, version, or temporal-validity constraints on retrieved sources."
+   ],
+   "source_url": "https://arxiv.org/html/2305.06983",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

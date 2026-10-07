@@ -1,0 +1,83 @@
+{
+ "paper_id": "doi-10-1145-383952-383954",
+ "title": "Temporal Summaries of News Topics",
+ "research_question": "How can an online system repeatedly summarize a developing news topic so that each update covers useful new events while avoiding previously reported, redundant, and off-event information?",
+ "methodology": "The paper formalizes temporal summarization as ranking sentences incrementally as stories arrive, before subsequent stories can be processed, with the intended usage model producing revised summaries at regular intervals that report only what has changed. The authors built an evaluation corpus from 22 medium-sized TDT-2 topics, manually identifying events and assigning sentences to zero or more events; 11 topics were used for training and 11 were held out for testing. The corpus contains 944 stories, 343 annotated events, and 17,049 sentences, approximately 71% of which are off-event. Probabilistic language-model methods for usefulness and novelty were compared with random, natural-order, round-robin, and worst-case baselines using recall- and precision-like metrics for usefulness, event novelty, off-event inclusion, and their combination.",
+ "key_findings": [
+  {
+   "finding": "The evaluation explicitly separates useful content, novel event coverage, and off-event material, with recall measuring coverage of relevant events and precision penalizing redundant or non-useful selections; this provides a direct laboratory analogue of jointly measuring omission, repetition, and irrelevant-update errors.",
+   "evidence_type": "supported",
+   "section": "3.1 Measures"
+  },
+  {
+   "finding": "The corpus contains 22 TDT-2 topics split evenly into training and test sets, with 343 annotated events across 17,049 sentences, enabling event-level temporal-summary evaluation.",
+   "evidence_type": "supported",
+   "section": "3.3 Evaluation corpus"
+  },
+  {
+   "finding": "For usefulness ranking on the test topics, the probabilistic usefulness methods and the simple round-robin baseline performed similarly, and the authors conclude that the probabilistic approaches did not clearly outperform round robin.",
+   "evidence_type": "supported",
+   "section": "4.2 Capturing Usefulness and 5 Summary and Future Work"
+  },
+  {
+   "finding": "Novelty models looked better than several baselines under a novelty-only measure, but once off-event sentences were accounted for their performance degraded and round robin became the strongest comparator, leading the authors to state that the novelty models were inadequate for the task.",
+   "evidence_type": "supported",
+   "section": "4.3 Capturing Novelty"
+  },
+  {
+   "finding": "The expected superiority of combining the strongest usefulness and novelty variants was not observed; on held-out topics the combined variants had nearly identical exact average nu-precision and were roughly comparable to round robin.",
+   "evidence_type": "contradicted",
+   "section": "4.4 Useful novelty"
+  },
+  {
+   "finding": "When roughly 10% of the original sentences were selected, almost 80% of the 162 training events were already represented, but substantial redundancy remained; the authors judged about 10% extraction to be the best operating region under their measures.",
+   "evidence_type": "supported",
+   "section": "4.5 Summary size"
+  },
+  {
+   "finding": "The authors identify score normalization over time as unresolved because model estimates change as more evidence accumulates, and explicitly propose story-by-story or day-by-day evaluation as future work.",
+   "evidence_type": "supported",
+   "section": "5 Summary and Future Work"
+  }
+ ],
+ "limitations": [
+  "The domain is news-topic monitoring rather than workplace communication or cross-thread task management.",
+  "Events are treated as newly covered or already covered; there are no explicit open, resolved, reopened, or superseded work-item lifecycle states.",
+  "The experiments use a clean stream in which every story is already known to be on-topic, so topic-detection errors are excluded.",
+  "The paper notes that scores are not stable over time because later predictions have more accumulated evidence, making cross-time threshold normalization problematic.",
+  "The evaluation is laboratory and annotation based rather than a longitudinal user study of whether repeated summaries improve awareness or decision making.",
+  "The useful/novel combination assumes independence even though the authors acknowledge that usefulness and novelty may not be independent.",
+  "The custom event and sentence annotations are described but no public code or directly downloadable release of those annotations is provided in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "joint_usefulness_novelty_metrics": 0.99,
+  "annotated_temporal_corpus": 0.99,
+  "usefulness_no_clear_round_robin_gain": 0.98,
+  "novelty_model_weakness": 0.98,
+  "combined_model_expected_gain_absent": 0.96,
+  "ten_percent_operating_region": 0.98,
+  "time_normalization_limitation": 0.99
+ },
+ "raw_claims": [
+  "The intended system periodically produces a revised summary containing only changes not already reported to the user.",
+  "Stories are processed incrementally, with sentence scores emitted before the next story is considered.",
+  "A useful sentence discusses an event in the topic.",
+  "A novel sentence introduces an event not covered by earlier selected sentences.",
+  "The evaluation corpus contains 22 TDT-2 topics divided into 11 training and 11 test topics.",
+  "Annotators identified events and assigned individual sentences to zero, one, or multiple events.",
+  "The corpus contains 343 events and 17,049 sentences.",
+  "About 71% of the annotated sentences are off-event.",
+  "Recall- and precision-like measures separately evaluate usefulness, novelty, and their combination.",
+  "The probabilistic usefulness methods do not clearly beat a simple round-robin ordering on held-out topics.",
+  "The paper finds that its novelty models remain inadequate when off-event material is properly considered.",
+  "Selecting around 10% of the sentences covers most training-set events but still leaves substantial redundancy.",
+  "The authors identify time-dependent score normalization as an unresolved evaluation issue."
+ ],
+ "source_url": "https://ciir-publications.cs.umass.edu/getpdf.php?id=226",
+ "access": "full_text"
+}

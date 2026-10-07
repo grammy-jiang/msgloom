@@ -1,0 +1,93 @@
+{
+ "paper_id": "1804.06020",
+ "title": "Improving Temporal Relation Extraction with a Globally Acquired Statistical Resource",
+ "research_question": "Can large-scale corpus-derived prior knowledge about the temporal ordering of event types improve local and globally constrained temporal-relation extraction?",
+ "methodology": "The authors build TemProb by extracting verb-frame events and temporal relations from more than one million New York Times articles spanning 1987–2007, using semantic role labeling, learned temporal classifiers, and greedy transitive-closure inference. The resulting counts define prior distributions over temporal relations between pairs of semantic verb frames. They validate these priors against TimeBank-Dense and an EventCausality dataset, then inject the priors as features into local averaged-perceptron classifiers and as regularization terms in an ILP global inference model. Performance is evaluated using precision, recall, F1, temporal-awareness F-score, significance tests, and additional bootstrap stability analysis.",
+ "key_findings": [
+  {
+   "finding": "TemProb contains approximately 51,000 distinct verb semantic frames, 9.2 million verb-pair-relation entries, and up to about 80 million extracted temporal relations from the NYT corpus.",
+   "evidence_type": "supported",
+   "section": "3 TemProb"
+  },
+  {
+   "finding": "TemProb's before/after probabilities behave as meaningful confidence estimates on TimeBank-Dense: increasing the probability threshold raises precision while reducing recall.",
+   "evidence_type": "supported",
+   "section": "4.1 Quality Analysis of TemProb"
+  },
+  {
+   "finding": "On the converted EventCausality evaluation, using TemProb priors achieved 66.2% accuracy, an 11.5-point improvement over the majority T-Before baseline.",
+   "evidence_type": "supported",
+   "section": "4.1 Quality Analysis of TemProb"
+  },
+  {
+   "finding": "Adding the full TemProb prior distribution as local classifier features improved F1 by 2.7 points for same-sentence relations and 6.5 points for adjacent-sentence relations relative to the original local features.",
+   "evidence_type": "supported",
+   "section": "4.2.1 Improving Local Methods"
+  },
+  {
+   "finding": "Combining TemProb features and ILP regularization increased global TimeBank-Dense F1 from 46.2 to 52.1 and temporal-awareness F-score from 42.5 to 49.6, with the reported comparison significant at p<0.0005.",
+   "evidence_type": "supported",
+   "section": "4.2.2 Improving Global Methods"
+  },
+  {
+   "finding": "On the paper's partial TimeBank-Dense evaluation restricted to SRL-extracted verb events, the proposed system achieved F1=55.5 and temporal-awareness F=52.8, exceeding the two compared prior systems.",
+   "evidence_type": "supported",
+   "section": "4.2.2 Improving Global Methods"
+  },
+  {
+   "finding": "The resource is restricted to verb semantic-frame events and therefore does not directly cover nominal events or all events in complete TimeBank-Dense.",
+   "evidence_type": "supported",
+   "section": "3.1 Event Extraction; 4.2.2 Improving Global Methods"
+  },
+  {
+   "finding": "The automatically induced resource contains erroneous or context-sensitive event-pair statistics, particularly because event arguments and richer context are not represented in the pairwise priors.",
+   "evidence_type": "supported",
+   "section": "3.4.2 Distribution of Following Events"
+  }
+ ],
+ "limitations": [
+  "TemProb is derived from New York Times news, so its event-order priors may be domain-specific and may not transfer directly to workplace email, chat, or operational logs.",
+  "Only verb semantic frames are modeled; nominal and other event types are omitted.",
+  "The event-pair statistics ignore arguments, which can make apparently anomalous temporal associations difficult to distinguish from extraction errors or special contexts.",
+  "TemProb is automatically generated using an imperfect temporal-relation extraction system, so extraction errors are propagated into the resource.",
+  "The training annotations and generated relations primarily cover same-sentence or adjacent-sentence event pairs, limiting direct modeling of longer-range relations.",
+  "The main comparison focuses on a partial TimeBank-Dense subset that matches SRL-extracted verb events rather than the complete benchmark.",
+  "The global regularization weight was heuristically fixed at 0.5 rather than selected through a reported systematic optimization.",
+  "Evaluation of EventCausality as temporal data assumes that causes temporally precede their effects.",
+  "The resource models typical temporal order, not event factuality, cancellation, revision, source authority, or contradiction states."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "TemProb_scale": 0.99,
+  "prior_probabilities_are_informative": 0.98,
+  "EventCausality_accuracy_gain": 0.99,
+  "local_feature_improvement": 0.99,
+  "global_ILP_improvement": 0.99,
+  "partial_TBDense_improvement": 0.99,
+  "verb_only_scope": 0.99,
+  "automatic_resource_noise": 0.96
+ },
+ "raw_claims": [
+  "Temporal-relation decisions often require knowledge about the order in which event types usually occur.",
+  "TemProb was induced automatically from more than one million New York Times documents covering roughly twenty years.",
+  "Events are represented as disambiguated verb semantic frames extracted with semantic role labeling.",
+  "The temporal label set contains before, after, includes, included, equal, and vague.",
+  "Two temporal classifiers are trained separately for same-sentence and neighboring-sentence event pairs.",
+  "Greedy graph inference applies transitive closure whenever a new temporal relation is added.",
+  "The induced resource contains around 51,000 unique verb frames and roughly 80 million extracted relations.",
+  "Some verb pairs have highly stable tendencies to occur in one temporal order across the corpus.",
+  "Higher TemProb before-or-after confidence thresholds yield higher precision on TimeBank-Dense at the cost of recall.",
+  "The TemProb prior improved accuracy over a majority-label baseline on the EventCausality-derived temporal task.",
+  "Prior-distribution features produced larger gains for adjacent-sentence pairs than for same-sentence pairs.",
+  "Adding TemProb priors to both local classification and global ILP inference improved F1 and temporal-awareness scores.",
+  "The global model enforces uniqueness, symmetry, and transitivity constraints while rewarding agreement with TemProb.",
+  "TemProb does not cover all TimeBank-Dense events because it is restricted to events identified through verb SRL.",
+  "The authors made both the reported system and the TemProb resource publicly available."
+ ],
+ "source_url": "https://arxiv.org/html/1804.06020",
+ "access": "full_text"
+}

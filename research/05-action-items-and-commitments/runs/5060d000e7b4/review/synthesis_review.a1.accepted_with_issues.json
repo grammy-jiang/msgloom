@@ -1,0 +1,23 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/05-action-items-and-commitments/runs/5060d000e7b4/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 10 (commitment-detection corpus dependence) is mostly supported, but the clause that \"adaptation and weak-supervision methods recover some of the lost performance\" combines results from doi-10-1145-3289600-3290984 and 2005.13084 that were obtained under different experimental setups. The domain-adaptation paper directly supports recovery of cross-corpus loss through adaptation; 2005.13084 supports successful weak-supervision transfer from Avocado to Enron, but its reported zero-shot result does not directly establish recovery of the same measured cross-corpus loss.",
+  "Gap 2 is substantively correct only when read as a gap in structured-argument extraction. doi-10-18653-v1-2023-findings-acl-378 directly provides empirical workplace-email evidence for ProposeAction and StateDecision labels, and 2312.05471 provides workplace-Slack evidence for proposal and rejection acts. The wording should continue to make explicit that what remains missing is structured extraction of their arguments, not direct empirical detection evidence for these act categories.",
+  "Finding 6 uses the comparative wording \"the strongest scope evaluations\" across biomedical and general event-processing studies whose tasks and metrics are not directly comparable. The supplied analyses support that the most explicit quantitative scope-resolution evaluations are largely outside the workplace domain, but not a rigorous cross-paper ranking of which evaluations are strongest."
+ ],
+ "unsupported_claims": [
+  "The statement in Finding 10 that weak-supervision methods \"recover some of the lost performance\" is not directly demonstrated on the same cross-corpus comparison used to establish the loss; 2005.13084 instead demonstrates a separate Avocado-to-Enron zero-shot weak-supervision result.",
+  "The phrase \"strongest scope evaluations\" in Finding 6 is broader than the supplied analyses establish because no common evaluation basis is provided for ranking the biomedical and general event-processing scope studies against the rest of the corpus."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.95,
+  "coherence": 0.98,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "All cited paper_ids appearing in the synthesis are members of the allowed identifier set. The major findings are traceable to the supplied per-paper analyses, transfer-domain evidence is generally identified as transfer evidence rather than workplace validation, and the synthesis explicitly preserves the central unresolved gaps around joint structured annotation, implicit/group ownership, action-to-deadline binding, condition/negation/modality attachment, and exact provenance. The context-related tensions are named rather than averaged away, including both beneficial and harmful context effects and the differing sentence-versus-message annotation findings. No gap that the supplied corpus clearly leaves unresolved is incorrectly presented as closed, and no production-accuracy claim rests on biomedical, news, meeting, contract, or other transfer-domain evidence. The identified issues are wording/comparability problems rather than failures that invalidate the synthesis."
+}

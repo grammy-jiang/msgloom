@@ -1,0 +1,76 @@
+{
+ "paper_id": "2305.06983",
+ "title": "Active Retrieval Augmented Generation",
+ "research_question": "Can long-form generation be improved by actively deciding when external retrieval is needed and formulating retrieval queries from anticipated future text rather than relying on one-shot retrieval or fixed retrieval intervals?",
+ "methodology": "The paper presents FLARE, which repeatedly predicts a tentative next sentence and uses low token probabilities in that future sentence as a signal that retrieval is needed. The tentative sentence, optionally with uncertain tokens masked or converted into an explicit question, becomes the retrieval query; retrieved documents are then used to regenerate the sentence with external evidence. The authors evaluate several active-retrieval variants against no-retrieval, one-shot, previous-context, and question-decomposition baselines on multi-hop QA and long-form generation tasks using Wikipedia BM25 or Bing retrieval.",
+ "key_findings": [
+  {
+   "finding": "FLARE's direct active-retrieval variant reaches 51.0 EM and 59.7 F1 on 2WikiMultiHopQA, outperforming the reported no-retrieval, single-retrieval, previous-context, and question-decomposition baselines.",
+   "evidence_type": "supported",
+   "section": "Section 6.1"
+  },
+  {
+   "finding": "Using a predicted next sentence as the retrieval query outperforms retrieving from the previous sentence in the reported comparison, including 48.8 versus 39.0 EM on 2WikiMultiHopQA and 45.9 versus 42.5 EM on ASQA with hints.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "Performance does not monotonically improve as retrieval becomes more frequent: it plateaus on 2WikiMultiHopQA and degrades on StrategyQA when retrieval is triggered too often, indicating that irrelevant retrieval can add harmful noise.",
+   "evidence_type": "supported",
+   "section": "Section 6.2"
+  },
+  {
+   "finding": "FLARE operationalizes the 'when to fetch' decision with a token-probability threshold and the 'what to fetch' decision with anticipated future content, masking or reformulating uncertain spans when constructing queries.",
+   "evidence_type": "supported",
+   "section": "Sections 3.2.1 and 3.2.2"
+  },
+  {
+   "finding": "The method does not show significant improvements on all tested generation tasks, with the paper specifically discussing weak results on Wizard of Wikipedia and ELI5.",
+   "evidence_type": "supported",
+   "section": "Section 9"
+  },
+  {
+   "finding": "Interleaving generation and retrieval increases inference overhead because generation is repeatedly interrupted, provisional text may be regenerated, and additional language-model calls are required.",
+   "evidence_type": "supported",
+   "section": "Sections 8 and 9"
+  }
+ ],
+ "limitations": [
+  "The retrieval trigger is based on token confidence rather than a structured representation of which evidence proposition or slot is missing.",
+  "Generation terminates normally rather than using an explicit evidence-completeness stopping judgment.",
+  "Retrieved documents from earlier retrieval iterations are discarded in the described FLARE procedure, which limits persistent evidence accumulation and auditability.",
+  "Interleaving provisional generation, retrieval, and regeneration adds computational and monetary overhead.",
+  "The method does not improve every evaluated task, particularly tasks with very short outputs or settings where retrieval is less useful.",
+  "Enterprise permissions and authorization-aware retrieval are not considered.",
+  "Document versions, source lineage, and freshness guarantees are not represented.",
+  "Open-web retrieval can change over time, but temporal validity and reproducibility of retrieved evidence are not explicitly controlled."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "forward_looking_retrieval": 0.99,
+  "active_trigger_effectiveness": 0.98,
+  "multi_hop_gain": 0.99,
+  "over_retrieval_noise": 0.97,
+  "inference_overhead": 0.99
+ },
+ "raw_claims": [
+  "FLARE interleaves text generation with retrieval instead of retrieving only once before generation.",
+  "The direct FLARE method tentatively generates the next sentence before deciding whether external information is needed.",
+  "Low-probability tokens in that tentative sentence trigger retrieval.",
+  "The anticipated future sentence is used to construct a retrieval query.",
+  "Low-confidence parts of the provisional sentence can be masked or converted into explicit information-seeking questions.",
+  "The retrieved documents are used to regenerate the next sentence with external evidence.",
+  "Forward-looking retrieval performs better than querying with the already generated previous sentence in the reported comparison.",
+  "Retrieving at every possible opportunity is not optimal on the evaluated tasks.",
+  "FLARE reports strong gains on 2WikiMultiHopQA but does not yield significant improvements on every generation benchmark.",
+  "Repeated retrieval and regeneration increase inference overhead.",
+  "The method does not maintain an explicit structured ledger of unresolved evidence gaps.",
+  "The method does not enforce permission, version, or temporal-validity constraints on retrieved sources."
+ ],
+ "source_url": "https://arxiv.org/html/2305.06983",
+ "access": "full_text"
+}

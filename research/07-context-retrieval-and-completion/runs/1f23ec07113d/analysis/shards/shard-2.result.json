@@ -1,0 +1,383 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2603.28444",
+   "title": "Entropic Claim Resolution: Uncertainty-Driven Evidence Selection for RAG",
+   "research_question": "Can a RAG system select evidence adaptively according to its expected reduction of uncertainty over competing answer hypotheses and stop once the remaining epistemic uncertainty is sufficiently small?",
+   "methodology": "The paper introduces Entropic Claim Resolution (ECR), an inference-time controller that operates over a finite set of atomic evidence claims produced by an upstream high-recall retrieval stage. It maintains a probability distribution over competing answer hypotheses, ranks unevaluated claims by an approximation to expected entropy reduction augmented with contradiction-aware coherence signals, updates the hypothesis posterior after claim evaluation, and stops when entropy falls below a specified threshold or a maximum evaluation budget is reached. The method is integrated into a broader CSGR++/HyRAG-style system containing structured provenance, temporal normalization, multi-strategy retrieval, verification, and abstention components. Evaluation includes a controlled six-table business-data harness, HotpotQA-style end-to-end experiments, random-noise corruption, and explicit contradiction-injection experiments.",
+   "key_findings": [
+    {
+     "finding": "In the controlled three-hypothesis experiment, ECR reduced final entropy from about 1.585 bits to 0.2129 bits using five evaluated claims, whereas fixed retrieval-only selection left entropy unchanged after fifteen claims and random five-claim selection left substantially higher entropy.",
+     "evidence_type": "supported",
+     "section": "Controlled Evaluation / Main Results"
+    },
+    {
+     "finding": "Across multiple random seeds in the controlled setting, ECR consistently reached the same low final entropy and five-claim collapse point, while random selection retained much larger residual uncertainty.",
+     "evidence_type": "supported",
+     "section": "Multi-Seed Robustness"
+    },
+    {
+     "finding": "On the 300-question HotpotQA-style evaluation, ECR used slightly fewer claims than relevance-ranked RAG and achieved comparable but slightly lower exact-match, F1, and faithfulness scores, while clearly outperforming random evidence selection.",
+     "evidence_type": "supported",
+     "section": "End-to-End Evaluation"
+    },
+    {
+     "finding": "Under explicit contradiction injection, ECR exposed ambiguity rather than collapsing to an overconfident answer, with the reported contradiction conditions producing zero overconfident-error rate and full ambiguity exposure.",
+     "evidence_type": "supported",
+     "section": "Contradiction Injection Evaluation"
+    },
+    {
+     "finding": "The surrounding system records structural support and contradiction links for claims and includes explicit normalization of temporal expressions such as years, quarters, halves, LTM, and TTM, providing structured provenance signals beyond ordinary similarity retrieval.",
+     "evidence_type": "supported",
+     "section": "System Integration / Topological Provenance"
+    },
+    {
+     "finding": "The paper motivates applications in high-stakes domains such as medicine, law, and finance, but it does not provide domain-specific empirical evaluations in those settings.",
+     "evidence_type": "unsupported",
+     "section": "Introduction and Conclusion"
+    }
+   ],
+   "limitations": [
+    "ECR assumes that upstream retrieval has already produced a high-recall candidate set, so evidence absent from that set cannot be recovered by the evidence-selection controller.",
+    "Expected entropy reduction is implemented through a computational proxy rather than exact marginalization over all possible evidence outcomes.",
+    "The principal controlled experiment uses only 80 templated queries over six business CSV tables and a fixed three-hypothesis setup.",
+    "HotpotQA primarily contains singular factual answers and therefore does not strongly exercise the contradiction and genuine-ambiguity cases that motivate ECR.",
+    "ECR is slightly below the relevance-ranked RAG baseline on exact match, F1, and faithfulness in the reported HotpotQA-style evaluation.",
+    "The 40% corruption experiment can remove useful or gold evidence, so it combines distractor robustness with partial evidence loss rather than isolating distractor accumulation.",
+    "Contradiction handling depends on the quality of explicit contradiction relations, claim extraction, and verification signals.",
+    "The paper does not state a public release location for the implementation or for the controlled business-data harness."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "entropy_based_controller": 0.99,
+    "controlled_entropy_reduction": 0.99,
+    "hotpotqa_comparison": 0.98,
+    "contradiction_ambiguity_exposure": 0.99,
+    "temporal_and_structural_provenance": 0.94,
+    "high_stakes_generalization_not_tested": 0.98
+   },
+   "raw_claims": [
+    "ECR chooses the next evidence claim according to its estimated ability to reduce uncertainty over competing hypotheses.",
+    "The controller can terminate when hypothesis entropy falls below a configured epistemic-sufficiency threshold.",
+    "A contradiction-aware term gives additional priority to claims that complete an explicit contradiction pair.",
+    "The controlled experiments start with three competing answer hypotheses and an initial entropy of approximately 1.585 bits.",
+    "ECR reaches approximately 0.2129 bits of final entropy after evaluating five claims in the controlled experiment.",
+    "The end-to-end HotpotQA-style experiment holds the retriever, language model, candidate evidence, and decoding setup constant while changing the selection policy.",
+    "The paper reports that HotpotQA does not strongly test the contradiction and ambiguity behavior for which ECR was designed.",
+    "The integrated system stores structural support and contradiction information for claims and normalizes several common temporal expressions.",
+    "The finite-candidate formulation guarantees termination after at most the candidate-set size or the configured evaluation budget.",
+    "No bespoke model fine-tuning is required for ECR itself."
+   ],
+   "source_url": "https://arxiv.org/html/2603.28444",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-acl-long-1562",
+   "title": "RAG-on-a-Diet: A Reinforcement Learning-Based Dynamic Resource Optimization Framework for RAG",
+   "research_question": "Can a lightweight reinforcement-learning controller dynamically choose the least expensive adequate language model at each multi-hop RAG step while preserving answer quality and terminating unnecessary reasoning early?",
+   "methodology": "RAG-on-a-Diet formulates each multi-hop RAG step as a model-routing decision among Qwen3-4B, Qwen3-30B, and DeepSeek-R1-671B using entity-aware, relation-aware, and confidence-related state features. Training proceeds from rule-based expert demonstrations to behavior cloning and then PPO with a reward combining final-answer quality, cumulative reasoning quality, step-level retrieval progress, model cost, and quality-per-compute balance. Reasoning uses a two-tier stopping mechanism consisting of a five-hop hard cap and a validation-tuned confidence threshold of 0.3. Experiments cover HotpotQA, MuSiQue, 2WikiMultiHopQA, CRAG subsets, and Bamboogle, with ablations for rewards, features, and stopping behavior.",
+   "key_findings": [
+    {
+     "finding": "On HotpotQA, the proposed controller obtained F1 0.7387 at reported cost 17.35, reducing cost by 60.07% relative to the DeepSeek-R1 IRCoT configuration while accepting a 3.70% F1 decrease.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "Relative to Adaptive-RAG, the method reports both a small F1 improvement and a 37.30% cost reduction on HotpotQA.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "Adding step-wise, cumulative, cost, and balance components to the reward progressively improves the quality-cost tradeoff; the full reward reaches F1 0.7387, cost 17.35, and 3.2 average hops versus F1 0.6985, cost 23.72, and 4.1 hops for terminal-only reward.",
+     "evidence_type": "supported",
+     "section": "Reward Ablation"
+    },
+    {
+     "finding": "The dual stopping mechanism outperforms both a ten-hop no-termination configuration and a five-hop hard-cap-only configuration, producing F1 0.7387 with 3.2 average hops and cost 17.35.",
+     "evidence_type": "supported",
+     "section": "Explicit Heuristic Termination Mechanism"
+    },
+    {
+     "finding": "The routing agent is reported to contain about 150,000 parameters and to add roughly 9.05 milliseconds of decision latency per hop, corresponding to about 0.11% of the DeepSeek-R1 inference latency used for comparison.",
+     "evidence_type": "supported",
+     "section": "Efficiency and Agent Overhead"
+    },
+    {
+     "finding": "On the Bamboogle zero-shot challenge set, RAG-on-a-Diet reports F1 0.6589 at cost 17.34; higher raw F1 is obtained by GlobalRAG, but at substantially greater reported cost.",
+     "evidence_type": "supported",
+     "section": "Out-of-Distribution Evaluation"
+    },
+    {
+     "finding": "The stopping rule is a heuristic confidence gate tuned on validation data plus a hard hop limit rather than a statistically calibrated risk-control guarantee.",
+     "evidence_type": "supported",
+     "section": "Explicit Heuristic Termination Mechanism"
+    }
+   ],
+   "limitations": [
+    "The evaluation is limited to static multi-hop question answering and does not establish behavior in dynamic conversational or multimodal retrieval environments.",
+    "The authors note that generated answers may still hallucinate and therefore require external validation in safety-critical applications.",
+    "The cost model assumes an idealized single-user setting and does not account for high-concurrency scheduling, batching effects, or hardware power consumption.",
+    "The confidence stopping threshold is fixed at 0.3 after validation tuning and is not accompanied by a conformal or other statistical risk guarantee.",
+    "The tested routing action space contains three particular model scales, so transfer to different providers or rapidly changing model portfolios is not directly established.",
+    "The paper does not provide a public implementation link in the examined full text."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "hotpotqa_cost_quality_tradeoff": 0.99,
+    "reward_ablation": 0.99,
+    "dual_termination_benefit": 0.99,
+    "router_overhead": 0.97,
+    "out_of_distribution_results": 0.96,
+    "stopping_not_risk_calibrated": 0.99
+   },
+   "raw_claims": [
+    "The routing controller selects among three language models independently at each reasoning hop.",
+    "Behavior cloning is used before PPO optimization.",
+    "The reward contains final, cumulative, step-wise, cost, and balance components.",
+    "The system has a five-hop hard reasoning limit.",
+    "A confidence threshold of 0.3 can terminate the process before the hard limit.",
+    "The full reward configuration averages 3.2 reasoning hops on the reported HotpotQA experiment.",
+    "Removing explicit termination and allowing up to ten hops substantially increases average cost and reduces F1.",
+    "The controller uses entity, relation, retrieval-quality, and confidence information as routing features.",
+    "The paper evaluates generalization on CRAG subsets and Bamboogle in addition to its principal multi-hop QA benchmarks.",
+    "The authors characterize the stopping mechanism as heuristic rather than as a formal statistical calibration procedure."
+   ],
+   "source_url": "https://aclanthology.org/2026.acl-long.1562.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2606.15964",
+   "title": "PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift",
+   "research_question": "Can conformal risk control for foundation-model outputs remain approximately calibrated under changing prompt and domain distributions by explicitly detecting representation drift and adapting how historical calibration examples are weighted?",
+   "methodology": "PromptShift-CRC embeds prompt-response interactions into a representation containing model, verifier, retrieval, uncertainty, or metadata features and initially weights past calibration examples by similarity to the current window. It measures drift between the current window and the similarity-weighted calibration distribution using a transport-based discrepancy, then uses an exponential drift gate to interpolate between representation-matched historical examples and a recent calibration window. A weighted empirical risk distribution yields a conformal threshold, while an optional online update adjusts the target risk after delayed labels, verifier outcomes, or human feedback. The paper develops an approximate conditional risk bound and evaluates the method on synthetic shifts, LLM-style task prototypes, and transformed public datasets including TruthfulQA, RealToxicityPrompts, SummEval, and LongHalQA.",
+   "key_findings": [
+    {
+     "finding": "The theoretical result bounds deployment-time exceedance risk by the nominal target plus terms for representation drift, representation mismatch, and finite effective calibration size, making the cost of distribution shift explicit rather than assuming exchangeability is unchanged.",
+     "evidence_type": "supported",
+     "section": "Theory / Approximate Risk Control"
+    },
+    {
+     "finding": "In three prototype shifts for QA topic, summarization domain, and safety intent, PromptShift-CRC achieves reported coverages of 0.895, 0.893, and 0.897 respectively for a 0.90 target, while static calibration collapses to roughly 0.31 to 0.32.",
+     "evidence_type": "supported",
+     "section": "LLM-Style Prototype Experiments"
+    },
+    {
+     "finding": "On LongHalQA, static calibration reaches coverage 0.585, rolling calibration 0.784, adaptive CRC 0.875, representation weighting 0.854, and PromptShift-CRC 0.901 against a target of 0.90.",
+     "evidence_type": "supported",
+     "section": "Public Benchmark Stress Tests"
+    },
+    {
+     "finding": "PromptShift-CRC is not uniformly the closest method to the target on every public benchmark; for example, adaptive CRC is closer on the TruthfulQA-derived experiment, where PromptShift-CRC obtains 0.907 and adaptive CRC obtains 0.904 for a 0.90 target.",
+     "evidence_type": "supported",
+     "section": "TruthfulQA Stress Test"
+    },
+    {
+     "finding": "The ablation study indicates that the online risk-target update and the recent-data fallback are particularly important under sustained drift, with their removal degrading target coverage more than several other component removals.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "The empirical study is primarily a calibration-layer stress test rather than an end-to-end evaluation of one deployed foundation model's factual correctness, safety, or task utility.",
+     "evidence_type": "supported",
+     "section": "Limitations and Experimental Scope"
+    }
+   ],
+   "limitations": [
+    "The experiments evaluate the calibration layer and controlled risk streams rather than a complete production foundation-model system.",
+    "Several evaluations are synthetic or prototype stress tests designed to isolate distribution shift.",
+    "The TruthfulQA experiment constructs a proxy risk signal from dataset and question characteristics rather than directly measuring one model's truthfulness errors.",
+    "The LongHalQA experiment does not involve running a new multimodal model and instead uses the benchmark to construct a shift-sensitive risk stream.",
+    "Deployment requires a pre-specified risk definition and feedback such as correctness labels, verifier outcomes, or human review.",
+    "The theoretical guarantee relies on a representation-stability condition; unobserved shifts that are not captured by the representation can remain in the residual mismatch term.",
+    "Heavy drift adaptation can reduce the effective calibration sample size, increasing the finite-sample uncertainty term.",
+    "The paper does not establish a universal distribution-free guarantee under arbitrary non-stationary shift."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "risk_bound_under_drift": 0.99,
+    "prototype_coverage": 0.99,
+    "longhalqa_recovery": 0.99,
+    "not_uniformly_best": 0.99,
+    "ablation_recent_fallback_and_online_update": 0.98,
+    "calibration_layer_scope": 0.98
+   },
+   "raw_claims": [
+    "PromptShift-CRC reweights historical calibration examples according to their similarity to the current prompt-response regime.",
+    "A transport-based drift statistic controls how strongly the method trusts similarity-matched historical calibration data.",
+    "Under larger estimated drift, the calibration distribution places more emphasis on recent observations.",
+    "The method computes an effective calibration size from the final nonuniform weights.",
+    "The conformal threshold is obtained from a weighted empirical distribution of risk scores.",
+    "The theoretical risk bound contains additive penalties for measured drift, residual representation mismatch, and finite effective sample size.",
+    "The method can use a threshold to choose among actions such as answering, abstaining, retrieving additional evidence, escalating, or flagging uncertainty.",
+    "PromptShift-CRC reaches coverage close to 0.90 in the reported QA, summarization, and safety prototype shifts.",
+    "Adaptive CRC is slightly closer than PromptShift-CRC to the nominal target in the TruthfulQA-derived experiment.",
+    "The paper provides scripts and experiment artifacts intended to reproduce its prototype tables and figures."
+   ],
+   "source_url": "https://arxiv.org/html/2606.15964",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2607.27726",
+   "title": "Baikal: Structured Search for Deep Research over Data Lakes",
+   "research_question": "Can deep research over large heterogeneous data lakes be improved by partitioning evidence into semantic regions and adaptively allocating a limited search budget across those regions instead of repeatedly following locally promising retrieval results?",
+   "methodology": "Baikal embeds tables and passages and clusters them into semantic regions, retaining regions activated by query-conditioned retrieval hits. During research, a controller chooses a region, generates region-answerable subquestions, and invokes a region-restricted agent that searches structured tables with SQL and associated passages while returning source identifiers. Findings are graded for groundedness, relevance, distinctness, and utility, and those rewards update region-selection policies including random, LLM-based, Bayesian epsilon-greedy, and Bayesian-UCB policies. Experiments use HybridQA and TAT-QA data lakes with a fixed finding budget, GPT-5-mini as the main backbone, comparisons against deep-research baselines, component ablations, longer-budget experiments, model scaling tests, and cross-LLM evaluation of the finding-scoring rubric.",
+   "key_findings": [
+    {
+     "finding": "The strongest reported Baikal configurations reach report scores of 0.46 on HybridQA and 0.45 on TAT-QA, corresponding to improvements of 28% and 36% over the strongest compared baselines according to the paper.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "Three of the four Baikal region-selection policies outperform every reported baseline on both data lakes, while the LLM-only region policy underperforms on HybridQA because it concentrates too heavily on apparently safe regions and loses evidence coverage.",
+     "evidence_type": "supported",
+     "section": "Main Results / Policy Comparison"
+    },
+    {
+     "finding": "Baikal recovers substantially more gold evidence than the compared OpenCode and DeepSearcher baselines, including approximately 0.32 to 0.35 gold-table recall on HybridQA versus lower values for those baselines.",
+     "evidence_type": "supported",
+     "section": "Evidence Coverage Analysis"
+    },
+    {
+     "finding": "At the default budget of 50 findings, policy differences are difficult to separate because the available budget is close to the number of candidate semantic regions; in a 200-finding experiment on three HybridQA queries, Bayesian-UCB gains 5.61 cumulative finding-score points, or 8.8%, over random search.",
+     "evidence_type": "supported",
+     "section": "Long-Budget Policy Analysis"
+    },
+    {
+     "finding": "Ablations show that both the region-restricted research agent and semantic region expansion materially contribute to report quality, while LLM subquestion selection adds a smaller further gain.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "Cross-model agreement for the automatic finding rubric is high for distinctness but much weaker for utility, with reported Gwet agreement coefficients of 0.91 and 0.33 respectively, indicating substantial evaluator subjectivity for the utility dimension.",
+     "evidence_type": "supported",
+     "section": "Evaluation Reliability"
+    }
+   ],
+   "limitations": [
+    "The principal evaluation contains only 15 deep-research queries per data lake.",
+    "Each main configuration is run once per query with a fixed seed, so reported confidence intervals represent variation across queries rather than repeated stochastic executions.",
+    "Report and finding quality depend heavily on automatic LLM judging, and the low inter-model agreement on utility indicates that this component is subjective.",
+    "Evidence that is not reachable through the initial query-conditioned region activation cannot be recovered by subsequent policy decisions.",
+    "The default 50-finding budget is too small to cleanly distinguish the adaptive region-selection policies, while the stronger 200-finding comparison uses only three HybridQA queries.",
+    "The approach requires sufficiently capable instruction following and coding behavior; at least one smaller evaluated model fails to produce valid outputs.",
+    "Baikal uses source identifiers for evidence grounding, but it does not introduce explicit temporal-validity or document-version semantics.",
+    "The search process uses a fixed finding budget rather than a calibrated uncertainty or risk-controlled stopping guarantee."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "report_score_improvement": 0.99,
+    "gold_evidence_recovery": 0.98,
+    "long_budget_bayesian_ucb_gain": 0.97,
+    "component_ablation": 0.99,
+    "evaluation_rubric_subjectivity": 0.98,
+    "fixed_budget_not_calibrated_stopping": 0.98
+   },
+   "raw_claims": [
+    "Baikal organizes a heterogeneous data lake into semantic regions before allocating research effort.",
+    "A query activates every semantic region that contains at least one of its top retrieved items.",
+    "Subquestions are answered by an agent restricted to the selected region's tables and passages.",
+    "The research agent is required to cite table or passage identifiers in its findings.",
+    "Finding rewards combine groundedness, relevance, distinctness, and utility.",
+    "The principal experiments use HybridQA and TAT-QA data lakes.",
+    "The default search budget is 50 findings.",
+    "Bayesian-UCB becomes more clearly advantageous over random region selection when the search budget is expanded in the reported longer-budget experiment.",
+    "Automatic evaluator agreement is markedly weaker for utility than for distinctness.",
+    "The authors publish an implementation repository for Baikal."
+   ],
+   "source_url": "https://arxiv.org/html/2607.27726",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-1609-aaai-v39i14-33670",
+   "title": "Temporal Conjunctive Query Answering via Rewriting",
+   "research_question": "Can temporal conjunctive queries over description-logic knowledge bases be answered more efficiently by rewriting temporal formulas into combinations of ordinary conjunctive and union-of-conjunctive queries instead of constructing finite automata?",
+   "methodology": "The paper develops a temporal-query rewriting procedure based on temporal-logic expansion laws and distribution rules, producing a normal form whose answers can be computed inductively with existing CQ and UCQ answering procedures. The approach is presented for ALC temporal knowledge bases but applies whenever the underlying description logic provides an appropriate UCQ-answering procedure, and the authors establish correctness and worst-case complexity results. They also identify a syntactic fragment, TCQ_CQ*, whose membership can be checked in polynomial time and whose queries can be answered using only a CQ oracle. The implementation is integrated with Openllet and compared with a previous finite-automaton-based temporal query-answering implementation over 70 benchmark knowledge-base/query combinations.",
+   "key_findings": [
+    {
+     "finding": "The rewriting algorithm is sound and complete for the temporal conjunctive-query answering problem addressed by the paper and avoids constructing the finite automata required by the previous approach.",
+     "evidence_type": "supported",
+     "section": "Rewriting and Correctness"
+    },
+    {
+     "finding": "Across benchmark cases completed by both systems, the rewriting implementation reports an average speedup of 19.09 with standard deviation 45.79 relative to the finite-automaton baseline.",
+     "evidence_type": "supported",
+     "section": "Experimental Evaluation"
+    },
+    {
+     "finding": "The previous finite-automaton system times out on three benchmark instances under the ten-hour limit, whereas the rewriting system completes those instances in approximately 3.52, 5.72, and 7.88 hours.",
+     "evidence_type": "supported",
+     "section": "Experimental Evaluation"
+    },
+    {
+     "finding": "For several temporal formulas, rewriting eliminates expensive UCQ entailment checks entirely, and the evaluation attributes much of the observed speedup on the largest benchmarks to reducing UCQ-answering work.",
+     "evidence_type": "supported",
+     "section": "Analysis of CQ and UCQ Calls"
+    },
+    {
+     "finding": "The paper defines the proper syntactic subclass TCQ_CQ*, proves that membership in this fragment is decidable in polynomial time, and shows that members can be handled using only a CQ-answering oracle.",
+     "evidence_type": "supported",
+     "section": "CQ-Only Fragment"
+    },
+    {
+     "finding": "The evaluation artifacts, benchmark data, and reproducibility instructions are publicly archived, including a referenced Zenodo release.",
+     "evidence_type": "supported",
+     "section": "Experimental Evaluation / References"
+    }
+   ],
+   "limitations": [
+    "The temporal semantics and implementation are evaluated over finite traces rather than unrestricted infinite temporal data.",
+    "The current implementation restricts evaluated conjunctive queries to tree-shaped query structures.",
+    "The empirical comparison uses Openllet as the available UCQ reasoning engine, so performance conclusions may depend on that engine's implementation characteristics.",
+    "The experimental ecosystem is relatively small, consisting of two benchmark families and 70 knowledge-base/query combinations.",
+    "Past-time temporal operators are not supported and are left as future work.",
+    "TCQ_CQ* is a sufficient syntactic fragment for CQ-only answering but is not complete for every temporal conjunctive query that might admit a CQ-only treatment.",
+    "Worst-case reasoning for expressive description logics remains exponential even with rewriting, although the paper shows this is complexity-theoretically optimal for the considered setting.",
+    "The work is a symbolic temporal knowledge-base query-answering method rather than an adaptive RAG controller and does not address calibrated stopping or distribution shift."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "rewriting_correctness": 0.98,
+    "average_speedup": 0.99,
+    "timeout_recovery": 0.99,
+    "reduced_ucq_work": 0.98,
+    "cq_only_fragment": 0.98,
+    "public_reproducibility_artifacts": 0.99
+   },
+   "raw_claims": [
+    "The proposed method rewrites temporal conjunctive queries instead of translating them into finite automata.",
+    "The rewritten normal form can be evaluated by combining answers from ordinary CQ and UCQ reasoning procedures.",
+    "The implementation is built on Openllet and uses the same underlying CQ and UCQ reasoning machinery as the earlier comparison system.",
+    "The empirical study covers 70 temporal knowledge-base and query combinations.",
+    "The rewriting implementation completes three cases for which the prior finite-automaton system exceeds the ten-hour timeout.",
+    "The mean reported speedup on mutually completed benchmark cases is 19.09.",
+    "Some rewritten queries require no UCQ entailment checks at all.",
+    "Membership in the TCQ_CQ* fragment can be decided in polynomial time.",
+    "Queries in TCQ_CQ* can be answered using a CQ oracle without requiring a UCQ oracle.",
+    "The authors provide archived code, benchmark data, and reproducibility material."
+   ],
+   "source_url": "https://ojs.aaai.org/index.php/AAAI/article/download/33670/35825",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

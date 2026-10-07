@@ -1,0 +1,73 @@
+{
+ "paper_id": "manual-8444bbc95c",
+ "title": "Performance Evaluation and Error Analysis for Multimodal Reference Resolution in a Conversation System",
+ "research_question": "How well does a graph-matching multimodal reference resolver perform in real-time speech-and-gesture conversation, what causes its failures, and what design strategies can make reference resolution more robust?",
+ "methodology": "The authors evaluate a deployed multimodal conversation system in a map-based real-estate domain where users communicate through speech and pointing or circling gestures. Referring expressions and candidate referents are represented as graphs containing semantic, temporal, conversational, and visual information, and reference resolution is performed by graph matching. Eleven users each performed five tasks, producing 219 evaluated inputs, and the authors conducted quantitative error analysis together with analysis of speech-gesture timing. Speech recognizers were individually trained for the participants to reduce recognition errors before the study.",
+ "key_findings": [
+  {
+   "finding": "The resolver correctly identified the intended referents for 137 of 219 evaluated user inputs.",
+   "evidence_type": "supported",
+   "section": "3.2 Error Analysis"
+  },
+  {
+   "finding": "Thirty-one of the 219 inputs, about 14%, were complex inputs containing multiple referring expressions that all had to be resolved correctly.",
+   "evidence_type": "supported",
+   "section": "3.1 Performance Evaluation"
+  },
+  {
+   "finding": "Speech-recognition errors were the largest observed error source, accounting for 55% of the reference-resolution errors.",
+   "evidence_type": "supported",
+   "section": "3.2 Error Analysis"
+  },
+  {
+   "finding": "Among 90 inputs in which referring expressions were not correctly recognized by speech recognition, multimodal information still allowed 26 references to be resolved correctly.",
+   "evidence_type": "supported",
+   "section": "3.2 Error Analysis"
+  },
+  {
+   "finding": "Gesture and speech order was not fixed: gestures preceded referring expressions in most cases, but users also produced overlapping and speech-before-gesture patterns, motivating relative temporal proximity rather than a rigid ordering rule.",
+   "evidence_type": "supported",
+   "section": "3.3 Implications"
+  },
+  {
+   "finding": "The authors argue that robustness improves when temporal constraints are combined with semantic and contextual constraints and when uncertain intermediate interpretations are retained rather than discarded prematurely.",
+   "evidence_type": "supported",
+   "section": "3.3 Implications"
+  }
+ ],
+ "limitations": [
+  "The empirical study involved only 11 users and one map-based real-estate application, limiting evidence about generalization to other interfaces and document types.",
+  "The interaction model used manual pointing and circling gestures rather than references into hierarchical document structures such as pages, regions, tables, and cells.",
+  "A two-second idle interval was used to synchronize multimodal input boundaries, and synchronization itself contributed to observed errors.",
+  "The implemented referent graph represented objects introduced through gestures, conversation history, and visual focus rather than exhaustively representing every visible object, which limited some proper-name-only references.",
+  "More than half of the participants were non-native English speakers, while speech recognition remained a major source of error despite individual recognizer training.",
+  "No public code or evaluation dataset release was reported in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "overall_reference_resolution_result": 0.99,
+  "complex_input_frequency": 0.99,
+  "speech_recognition_dominant_error_source": 0.99,
+  "multimodal_recovery_from_asr_errors": 0.99,
+  "variable_cross_modal_timing": 0.98,
+  "multi_constraint_robustness_strategy": 0.95
+ },
+ "raw_claims": [
+  "The system resolves references by matching a graph of referring expressions against a graph of possible referents.",
+  "The referent representation incorporates information from gestures, conversational history, and visual context.",
+  "The evaluation contained 219 multimodal user inputs collected from 11 participants performing five tasks each.",
+  "The intended referents were correctly identified for 137 evaluated inputs.",
+  "About 14% of the evaluated inputs contained multiple referring expressions.",
+  "Speech-recognition failures were responsible for the largest share of observed resolution errors.",
+  "Multimodal evidence recovered some references even when their spoken referring expressions had been recognized incorrectly.",
+  "Most gestures began before their corresponding referring expressions, but this ordering was not universal.",
+  "Users could change their speech-gesture timing pattern during the same interaction.",
+  "The authors recommend combining temporal, semantic, and contextual evidence rather than treating temporal order as an absolute constraint."
+ ],
+ "source_url": "https://aclanthology.org/N04-4011.pdf",
+ "access": "full_text"
+}

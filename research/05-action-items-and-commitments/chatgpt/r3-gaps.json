@@ -1,0 +1,97 @@
+{
+ "run_id": "950e68ab52e0",
+ "round": 3,
+ "topic": "authentic workplace email and enterprise-chat extraction of structured action and decision arguments, with emphasis on implicit or group assignees, deadline-to-action relations, condition/negation/modality attachment, and exact evidence-span annotation",
+ "gaps": [
+  {
+   "id": "gap-1",
+   "description": "There is no direct modern workplace email/chat benchmark in this corpus that jointly annotates speech-act type, owner/assignee, action object, deadline, conditions/exceptions, and exact evidence spans.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "\"action item extraction\" (email OR Slack OR \"workplace chat\" OR \"enterprise chat\") assignee deadline condition \"evidence span\" corpus",
+   "resolution_notes": "Still open after rounds 1-2 and the current synthesis. Existing admitted workplace papers cover subsets such as acts, owners, semantic roles, or conversational context, but no paper identified so far supplies a modern authentic workplace email/chat benchmark jointly annotating all target arguments plus exact evidence spans."
+  },
+  {
+   "id": "gap-2",
+   "description": "Direct empirical evidence for extracting decisions, approvals, rejections, and proposals with structured arguments from authentic workplace email or chat is still missing from this corpus.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"decision extraction\" OR \"decision detection\" OR \"proposal extraction\") (\"workplace email\" OR \"enterprise chat\" OR Slack) approval rejection proposal \"argument extraction\"",
+   "resolution_notes": "Still open after rounds 1-2 and the current synthesis. The corpus contains work distinguishing action proposals or decisions and work on decision-related discourse, but it does not yet provide direct empirical structured-argument extraction for decisions, approvals, rejections, and proposals in authentic workplace email or enterprise chat."
+  },
+  {
+   "id": "gap-3",
+   "description": "Owner/assignee extraction remains weakly evidenced, especially for implicit owners, group ownership, multiple actions with different owners, and owners recoverable only from organizational or conversation context.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"assignee prediction\" OR \"assignee extraction\" OR \"responsibility extraction\" OR \"action owner\") (email OR Slack OR \"workplace chat\") implicit owner group owner context",
+   "resolution_notes": "Still open after rounds 1-2 and the current synthesis. Existing evidence establishes that responsibility may be plural, implicit, recipient-external, or role-dependent, but does not close extraction for implicit owners, group assignees, separately owned actions in the same message, or owners requiring organizational/thread context."
+  },
+  {
+   "id": "gap-4",
+   "description": "The corpus does not establish reliable deadline binding in workplace communication: distinguishing a deadline for a particular action from a merely mentioned date, shared date, scheduling expression, or conditional future time remains open.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"deadline extraction\" OR \"due date extraction\" OR \"deadline detection\") (email OR \"workplace communication\" OR Slack) \"action item\" temporal relation event argument",
+   "resolution_notes": "Still open after rounds 1-2 and the current synthesis. Temporal-relation research indicates that semantic and relational context matters, but no admitted direct workplace study evaluates attachment of a deadline to the correct action against distractor dates, shared dates, scheduling expressions, and conditional future times."
+  },
+  {
+   "id": "gap-5",
+   "description": "Direct workplace evidence is insufficient for attaching conditions, exceptions, negation, and modality to the correct action when several actions or clauses occur together.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "status": "open",
+   "suggested_search_query": "(\"conditional commitment\" OR \"deontic modality\" OR \"negation scope\" OR \"condition extraction\") (email OR \"workplace communication\" OR Slack) action attachment obligation",
+   "resolution_notes": "Still open after rounds 1-2 and the current synthesis. Workplace studies establish that conditional commitments and implicit obligations are difficult, while adjacent-domain work supplies scope mechanisms, but the corpus lacks a direct workplace benchmark for correct condition, exception, negation, and modality attachment across multiple actions or clauses."
+  },
+  {
+   "id": "gap-6",
+   "description": "Build an independent argument-level benchmark and adversarial fixture suite covering implicit owners, multiple actions in one sentence, shared deadlines, conditional and negated actions, overlapping request/commitment labels, quoted-history contamination, and attachment references; score false positives, false negatives, and each argument separately.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by constructing a project-owned gold benchmark with an explicit annotation schema for act type, action span, owner, deadline, condition, negation/modality, provenance, and uncertainty. Create targeted adversarial fixtures for every listed failure mode, double-annotate a representative subset to measure agreement, adjudicate disagreements, and implement per-field precision/recall/F1 plus exact-span and whole-structure metrics. Existing papers can seed fixture categories, but resolution requires benchmark construction and execution rather than additional literature."
+  },
+  {
+   "id": "gap-7",
+   "description": "Compare sentence-local, message-level, and selectively expanded thread-context extraction with controlled ablations, because the literature shows both context gains and context-induced degradation.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve with a controlled benchmark experiment using identical examples, extraction model, prompt/schema, decoding settings, and scoring while varying only available context: target sentence, full message, fixed neighboring messages, and selectively retrieved thread context. Report argument-level and whole-structure accuracy, false-positive/false-negative changes, latency/token cost, and stratified results for cases that genuinely require prior context versus locally resolvable cases."
+  },
+  {
+   "id": "gap-8",
+   "description": "Test author/quoted/forwarded content zoning while preserving provenance, and measure whether zoning improves act and argument extraction without losing obligations whose interpretation depends on prior-message context.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by implementing deterministic or model-assisted segmentation of authored text, quoted history, forwarded blocks, signatures, and attachment-reference regions while retaining source-message and span provenance. Run paired evaluation with zoning disabled, zoning used as a hard filter, and zoning retained as tagged context. Measure extraction precision/recall and specifically audit obligations whose correct interpretation depends on quoted or prior-message material."
+  },
+  {
+   "id": "gap-9",
+   "description": "Evaluate an uncertainty-preserving structured output in which owner, deadline, condition, or act subtype can remain unresolved, and measure whether this reduces false obligations and wrong argument assignments without unacceptable recall loss.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "Resolve by extending the output schema with explicit unresolved/unknown states and, if supported, calibrated confidence per argument. Compare forced-completion and uncertainty-preserving extraction on the same benchmark. Measure false obligation creation, incorrect owner/deadline/condition attachment, abstention rate, retained recall, calibration, and selective-risk curves across confidence thresholds."
+  },
+  {
+   "id": "gap-10",
+   "description": "Exact proposition-level scope for approvals, rejections, agreement, clarification, and answers in authentic workplace email or enterprise chat remains an inherited Topic 04 research gap; Topic 05 act extraction does not resolve that antecedent-scope question.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH",
+   "status": "open",
+   "resolution_notes": "This gap concerns antecedent/proposition alignment: identifying exactly which prior proposition an approval, rejection, agreement, clarification, or answer targets. That is a distinct research problem inherited from Topic 04. The present topic is scoped to extracting structured action and decision arguments from workplace communication, so proposition-level reply-to-antecedent scope should remain tracked under Topic 04 rather than expanding this search round."
+  }
+ ],
+ "convergence": {
+  "should_continue": true,
+  "reason": "open_gaps_remain",
+  "next_round_topic": "authentic workplace email and enterprise-chat benchmarks for structured action/decision extraction, focusing specifically on implicit and group assignees, action-to-deadline binding, condition/negation/modality scope, and exact argument evidence spans"
+ }
+}

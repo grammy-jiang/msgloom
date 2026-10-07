@@ -1,0 +1,721 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "TerminologyAnalysis",
+ "description": "Academic terminology refinement performed before bulk discovery: each seed keyword is audited, the product problem is translated into academic task families, and query families are built with an explicit DIRECT or TRANSFER role.",
+ "topic": "authentic workplace email and enterprise-chat extraction of structured action and decision arguments, with emphasis on implicit or group assignees, deadline-to-action relations, condition/negation/modality attachment, and exact evidence-span annotation",
+ "seed_audit": [
+  {
+   "seed": "action item extraction",
+   "academic_meaning": "Extraction of task-like follow-up commitments or assignments from discourse, often with some structured properties such as task description, responsible party, or timeframe. The term is especially established in meeting-analysis literature.",
+   "fit": "STRONG",
+   "main_risk": "Many papers called action-item extraction actually perform only utterance or sentence detection and do not extract owner, object, deadline, conditions, or evidence spans.",
+   "false_positive_literature": "Meeting summarization systems, commercial productivity tools, rule-based to-do generators, and binary action-item classifiers without structured argument annotation."
+  },
+  {
+   "seed": "action item detection",
+   "academic_meaning": "Classification or segmentation of discourse regions that establish or discuss action items, especially in multi-party meeting transcripts.",
+   "fit": "STRONG",
+   "main_risk": "Detection is frequently only a binary label over an utterance or turn, so it cannot by itself close the project's structured-argument gaps.",
+   "false_positive_literature": "Binary meeting-turn classifiers, action-item summarization, keyword detection, and systems evaluated only on whether an action-bearing utterance was found."
+  },
+  {
+   "seed": "task extraction",
+   "academic_meaning": "A broad phrase used for extracting tasks, procedures, work steps, instructions, or task descriptions from text.",
+   "fit": "MODERATE",
+   "main_risk": "The word task is heavily overloaded and often refers to procedural instructions, job-task analysis, workflow mining, or machine-learning tasks rather than assigned workplace actions.",
+   "false_positive_literature": "Instruction extraction, process mining, job-description mining, task-oriented dialogue, task decomposition, and software issue mining."
+  },
+  {
+   "seed": "to-do extraction",
+   "academic_meaning": "Informal term for identifying actionable items that could populate a user's to-do list.",
+   "fit": "WEAK",
+   "main_risk": "It is not a stable academic task name and retrieves product demonstrations and personal productivity systems more readily than benchmarked NLP research.",
+   "false_positive_literature": "Consumer productivity applications, note-taking systems, LLM demos, calendar assistants, and task-management software."
+  },
+  {
+   "seed": "task-oriented information extraction",
+   "academic_meaning": "Not a stable name for workplace task extraction; task-oriented in NLP usually modifies dialogue systems designed to accomplish predefined user goals and slot-filling tasks.",
+   "fit": "REJECT",
+   "main_risk": "It conflates extracting workplace tasks with task-oriented dialogue and slot-filling for assistants.",
+   "false_positive_literature": "Task-oriented dialogue, intent classification, dialogue state tracking, restaurant/travel slot filling, and conversational agents."
+  },
+  {
+   "seed": "email speech act classification",
+   "academic_meaning": "Classification of email messages or segments according to communicative acts such as request, commitment, proposal, information delivery, or meeting-related acts.",
+   "fit": "STRONG",
+   "main_risk": "Classic email-act work often labels whole messages and may allow multiple act labels without extracting actor, object, deadline, condition, or exact supporting span.",
+   "false_positive_literature": "Message-level email intent classification, spam classification, sentiment analysis, urgency prediction, and customer-service routing."
+  },
+  {
+   "seed": "dialogue act classification",
+   "academic_meaning": "Assignment of communicative-function labels such as question, statement, request, answer, agreement, or backchannel to dialogue utterances.",
+   "fit": "MODERATE",
+   "main_risk": "The literature is much broader than workplace action extraction and normally predicts an act label rather than semantic arguments.",
+   "false_positive_literature": "Switchboard-style conversational tagging, chatbot dialogue management, conversational speech recognition features, and generic social dialogue classification."
+  },
+  {
+   "seed": "request detection",
+   "academic_meaning": "Identification of utterances or messages that perform directive/request speech acts, including direct and sometimes indirect requests.",
+   "fit": "STRONG",
+   "main_risk": "Request presence does not establish who is responsible, what exact action is requested, or whether a nearby date or condition belongs to it.",
+   "false_positive_literature": "Customer-support request classification, information-request detection, question detection, service-request routing, and request-for-information mining."
+  },
+  {
+   "seed": "request identification",
+   "academic_meaning": "Near-synonym of request detection, usually locating or classifying linguistic realizations of requests.",
+   "fit": "STRONG",
+   "main_risk": "The phrase may retrieve request-type or intent identification rather than structured request extraction.",
+   "false_positive_literature": "Question identification, help-desk intent routing, web/API request classification, and customer-request taxonomy work."
+  },
+  {
+   "seed": "commissive speech acts",
+   "academic_meaning": "Speech acts in which the speaker commits to a future course of action, including promises, offers, and related commitments.",
+   "fit": "STRONG",
+   "main_risk": "A large part of the literature is theoretical linguistics or pragmatics rather than computational extraction, and broad commissive categories can include offers that are not accepted obligations.",
+   "false_positive_literature": "Non-computational speech-act theory, philosophical pragmatics, language-learning studies, and discourse analyses without automatic extraction."
+  },
+  {
+   "seed": "commitment extraction",
+   "academic_meaning": "Extraction of linguistic commitments, typically identifying that a participant has committed to a future action and sometimes extracting the action or participants.",
+   "fit": "STRONG",
+   "main_risk": "Commitment may be defined as discourse or social commitment rather than a concrete workplace action item, and structured slots are not guaranteed.",
+   "false_positive_literature": "Commitment stores in dialogue systems, social commitment theory, commitment management protocols, and document-level commitment classification."
+  },
+  {
+   "seed": "commitment detection",
+   "academic_meaning": "Classification of text or dialogue as containing a commitment, promise, offer, or future-action undertaking.",
+   "fit": "STRONG",
+   "main_risk": "Detection commonly stops at the act label and may not distinguish conditional, tentative, proposed, or already-completed actions.",
+   "false_positive_literature": "Binary speech-act classification, organizational commitment psychology, relationship commitment studies, and commitment protocols."
+  },
+  {
+   "seed": "promise detection",
+   "academic_meaning": "Detection of promise-like commissive speech acts in which a speaker undertakes future action.",
+   "fit": "MODERATE",
+   "main_risk": "Promise is narrower than the project's commitment concept and may miss routine workplace commitments expressed without explicit promissory language.",
+   "false_positive_literature": "Political promise tracking, promise-keeping analysis, deception studies, and philosophical work on promises."
+  },
+  {
+   "seed": "obligation detection",
+   "academic_meaning": "Identification of propositions expressing duties, requirements, prohibitions, or other obligatory states, commonly studied in legal, regulatory, requirements, and policy text.",
+   "fit": "MODERATE",
+   "main_risk": "Most obligation-extraction literature concerns normative documents rather than conversationally created interpersonal obligations.",
+   "false_positive_literature": "Legal contract mining, regulatory compliance, requirements engineering, policy-rule extraction, and access-control obligations."
+  },
+  {
+   "seed": "deontic modality",
+   "academic_meaning": "Linguistic modality expressing obligation, permission, prohibition, or related normative force.",
+   "fit": "MODERATE",
+   "main_risk": "It captures semantic force but not necessarily an actual assigned action; deontic expressions may describe general policy rather than create a workplace commitment.",
+   "false_positive_literature": "Legal modality analysis, formal logic, regulatory text classification, theoretical linguistics, and policy-document mining."
+  },
+  {
+   "seed": "intention detection",
+   "academic_meaning": "Identification of a speaker's or author's intention, often operationalized as generic intent classification.",
+   "fit": "WEAK",
+   "main_risk": "The standard NLP meaning of intent is usually user-intent classification, not extraction of future workplace action commitments.",
+   "false_positive_literature": "Chatbot intent classification, purchase intention, behavioral intention, search intent, and social-media intent prediction."
+  },
+  {
+   "seed": "intent-to-act",
+   "academic_meaning": "Not a stable core NLP task term; it can refer to behavioral intention, legal intent, or predicted propensity to perform an action.",
+   "fit": "REJECT",
+   "main_risk": "It is terminologically unstable and likely to produce psychology, marketing, legal, or security literature instead of workplace commitment extraction.",
+   "false_positive_literature": "Behavioral-intention modeling, purchase intention, criminal/legal intent, cybersecurity intent prediction, and human-factors studies."
+  },
+  {
+   "seed": "decision extraction",
+   "academic_meaning": "Extraction of decisions or decision records from discourse or documents, potentially including the decided proposition and related participants or rationale.",
+   "fit": "STRONG",
+   "main_risk": "Decision extraction is inconsistently defined; some work extracts decision-related regions or summaries rather than the decision act and its structured arguments.",
+   "false_positive_literature": "Decision-support systems, management decision mining from structured data, decision-tree extraction, summarization, and business-intelligence analytics."
+  },
+  {
+   "seed": "decision detection",
+   "academic_meaning": "Identification of utterances, dialogue acts, segments, or passages associated with decisions or decision-making.",
+   "fit": "MODERATE",
+   "main_risk": "Detection of a decision-related segment does not distinguish proposal, approval, rejection, agreement, or the precise proposition acted upon.",
+   "false_positive_literature": "Decision-point segmentation, meeting summarization, decision-support analytics, and classifiers that label discussion regions without structured decision records."
+  },
+  {
+   "seed": "meeting decision detection",
+   "academic_meaning": "Detection of decision-related dialogue acts or segments in multi-party meeting transcripts.",
+   "fit": "STRONG",
+   "main_risk": "It is close semantic transfer evidence but not direct email or enterprise-chat evidence, and many systems identify decision regions rather than approval/rejection/proposal arguments.",
+   "false_positive_literature": "Meeting summarization, topic segmentation, extractive highlight selection, and multimodal decision-point detection without structured arguments."
+  },
+  {
+   "seed": "event extraction",
+   "academic_meaning": "Identification of event mentions, usually with event type, trigger, and sometimes participants or attributes.",
+   "fit": "MODERATE",
+   "main_risk": "Generic event extraction overwhelmingly targets news, biomedical, or other factual events and does not encode speech-act force or assigned responsibility.",
+   "false_positive_literature": "News event extraction, biomedical events, crisis-event mining, social-media events, and event coreference."
+  },
+  {
+   "seed": "event argument extraction",
+   "academic_meaning": "Extraction of semantic participants and attributes associated with an event, such as agent, patient, place, time, or other typed roles.",
+   "fit": "STRONG",
+   "main_risk": "Role inventories are domain-specific and usually omit pragmatic roles such as request recipient, assignee provenance, conditionality, or decision status.",
+   "false_positive_literature": "ACE-style news events, biomedical relation/event extraction, open-domain event arguments, and knowledge-base population without workplace acts."
+  },
+  {
+   "seed": "semantic role labeling",
+   "academic_meaning": "Identification of predicate-argument structure, commonly PropBank-style roles such as agent-like and patient-like arguments.",
+   "fit": "MODERATE",
+   "main_risk": "Syntactic-semantic roles do not by themselves establish who is assigned work; imperative addressees, discourse-inferred owners, modality, and deadlines require additional pragmatic interpretation.",
+   "false_positive_literature": "Generic PropBank SRL benchmarks, frame-semantic parsing, syntactic dependency parsing, and sentence-local predicate analysis."
+  },
+  {
+   "seed": "implicit argument resolution",
+   "academic_meaning": "Recovery or resolution of semantic arguments not overtly realized with a predicate but inferable from discourse context.",
+   "fit": "STRONG",
+   "main_risk": "Most datasets concern nominal predicates or general semantic roles rather than pragmatic task assignees, and recovery may assume an answer exists rather than preserving unresolved fields.",
+   "false_positive_literature": "Nominal implicit-role filling, literary discourse arguments, semantic-frame completion, and knowledge-base argument completion."
+  },
+  {
+   "seed": "zero anaphora",
+   "academic_meaning": "Resolution of omitted pronominal arguments, especially in pro-drop languages where an argument has no overt surface form.",
+   "fit": "WEAK",
+   "main_risk": "English workplace implicit ownership is often pragmatic addressee inference or omitted imperative subject rather than canonical zero anaphora.",
+   "false_positive_literature": "Japanese, Chinese, Korean, and other pro-drop-language zero-pronoun resolution unrelated to task assignment."
+  },
+  {
+   "seed": "omitted argument recovery",
+   "academic_meaning": "Broad description of recovering unexpressed predicate arguments from linguistic or discourse context.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is less standardized than implicit argument resolution and can retrieve parsing or ellipsis work with little connection to workplace responsibility.",
+   "false_positive_literature": "Ellipsis resolution, gapping, syntactic argument omission, machine translation, and nominal-predicate completion."
+  },
+  {
+   "seed": "conditionality detection",
+   "academic_meaning": "Identification of conditional constructions or whether a proposition is conditioned on another circumstance.",
+   "fit": "MODERATE",
+   "main_risk": "It is not a single standardized task, and sentence-level detection does not guarantee attachment of the condition to the correct action among several actions.",
+   "false_positive_literature": "Conditional sentence classification, causal relation extraction, medical conditionals, legal condition detection, and grammar studies."
+  },
+  {
+   "seed": "hedge detection",
+   "academic_meaning": "Detection of linguistic cues that weaken, qualify, or express uncertainty about a proposition.",
+   "fit": "WEAK",
+   "main_risk": "Hedges are only one source of uncertainty and do not directly model obligation, conditions, negation, or action ownership.",
+   "false_positive_literature": "Scientific-writing hedge detection, biomedical uncertainty cues, politeness analysis, and authorship/style studies."
+  },
+  {
+   "seed": "speculation detection",
+   "academic_meaning": "Identification of speculative or uncertain propositions, often with cue and scope annotation.",
+   "fit": "WEAK",
+   "main_risk": "Much of the literature is biomedical or scientific factuality, and speculation is not equivalent to proposal, conditional commitment, or workplace uncertainty.",
+   "false_positive_literature": "BioNLP speculation, factuality classification, scientific-claim uncertainty, and rumor detection."
+  },
+  {
+   "seed": "modality detection",
+   "academic_meaning": "Identification or classification of linguistic modality such as possibility, necessity, obligation, permission, or intention.",
+   "fit": "WEAK",
+   "main_risk": "As an unqualified phrase it is highly ambiguous and may even retrieve multimodal machine-learning literature; even linguistic modality labels do not ensure scope attachment.",
+   "false_positive_literature": "Multimodal learning, medical imaging modalities, generic factuality, document-level modality classification, and theoretical linguistics."
+  },
+  {
+   "seed": "temporal expression extraction",
+   "academic_meaning": "Identification of explicit or implicit time expressions such as dates, times, durations, and relative temporal phrases.",
+   "fit": "MODERATE",
+   "main_risk": "Finding a date does not determine whether it is a deadline, scheduling reference, historical date, shared deadline, or time attached to another event.",
+   "false_positive_literature": "TIMEX tagging without event links, calendar extraction, news chronology, clinical temporal expressions, and date recognizers."
+  },
+  {
+   "seed": "temporal expression normalization",
+   "academic_meaning": "Conversion of temporal phrases to normalized values or intervals relative to a temporal anchor.",
+   "fit": "MODERATE",
+   "main_risk": "Normalization solves the value of a time expression, not its semantic relationship to a particular workplace action.",
+   "false_positive_literature": "Date parsers, temporal normalization benchmarks, clinical timelines, and calendar assistants without action-time relations."
+  },
+  {
+   "seed": "deadline extraction",
+   "academic_meaning": "Extraction of due dates or deadline expressions and, in stronger formulations, association of those deadlines with tasks or obligations.",
+   "fit": "STRONG",
+   "main_risk": "Many systems call any future date near a task a deadline and do not evaluate action-to-time relation binding.",
+   "false_positive_literature": "Calendar event extraction, due-date fields from structured tickets, contract deadlines, academic assignment dates, and simple date regex systems."
+  },
+  {
+   "seed": "responsibility assignment",
+   "academic_meaning": "A broad phrase for determining which person or organizational unit is responsible for an activity.",
+   "fit": "MODERATE",
+   "main_risk": "It frequently denotes management frameworks, organizational design, causal blame attribution, or workflow allocation rather than extracting responsibility from language.",
+   "false_positive_literature": "RACI matrices, organizational responsibility models, legal blame assignment, workflow scheduling, access control, and project-management allocation."
+  },
+  {
+   "seed": "owner assignment",
+   "academic_meaning": "Informal phrase for assigning ownership of a task, issue, component, or resource.",
+   "fit": "WEAK",
+   "main_risk": "Owner has many technical meanings and the phrase is not a stable NLP extraction task name.",
+   "false_positive_literature": "Code ownership, data ownership, process ownership, ticket assignment, resource allocation, and access-control ownership."
+  },
+  {
+   "seed": "assignee extraction",
+   "academic_meaning": "Extraction of the person or group assigned to perform a task, issue, or action.",
+   "fit": "MODERATE",
+   "main_risk": "Most searchable work may concern software issue trackers, where the assignee is metadata or is predicted from code history rather than linguistically extracted from communication.",
+   "false_positive_literature": "Bug triage, issue-assignee recommendation, developer recommendation, ticket routing, and project-management metadata prediction."
+  },
+  {
+   "seed": "email action-item corpora",
+   "academic_meaning": "A useful discovery phrase for corpora of email annotated with tasks or action items, but not a standardized task name.",
+   "fit": "STRONG",
+   "main_risk": "The phrase may find datasets that only annotate actionable messages or message-level acts rather than structured action arguments and exact evidence spans.",
+   "false_positive_literature": "Email intent corpora, synthetic productivity datasets, commercial benchmarks, and message-level actionable/non-actionable labels."
+  },
+  {
+   "seed": "request-response corpora",
+   "academic_meaning": "Corpora pairing requests, questions, or preceding turns with responses, spanning dialogue, email, customer support, and response-selection research.",
+   "fit": "MODERATE",
+   "main_risk": "The dominant literature often studies response generation, retrieval, or adjacency rather than extracting requests, commitments, owners, or action arguments.",
+   "false_positive_literature": "Dialogue response selection, next-response prediction, QA corpora, customer-support response generation, and conversational recommendation."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "F1",
+   "name": "Structured action-item and task-assignment extraction from workplace email or enterprise chat",
+   "description": "Direct extraction of work actions from authentic email, enterprise messaging, or organizational chat, ideally representing action type, actor or assignee, action object, recipient, deadline, conditions, and source spans.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest academic formulation of gap-1 and is the only family that could directly establish a modern target-domain benchmark with the complete argument structure required by msgloom.",
+   "seed_papers": []
+  },
+  {
+   "id": "F2",
+   "name": "Email acts and workplace speech-act classification",
+   "description": "Classification of communicative functions in business email or workplace messaging, particularly requests, commitments, proposals, agreements, approvals, and related acts.",
+   "role": "DIRECT",
+   "why_it_matters": "It directly supports the request-versus-commitment and proposal-versus-decision distinctions, while exposing whether thread context improves or degrades act recognition. It cannot by itself satisfy structured argument extraction.",
+   "seed_papers": [
+    "Vitor R. Carvalho and William W. Cohen (2005), On the Collective Classification of Email \"Speech Acts\"."
+   ]
+  },
+  {
+   "id": "F3",
+   "name": "Decision, approval, rejection, and proposal extraction from workplace communication",
+   "description": "Identification and structured extraction of decision-like acts in authentic workplace email or enterprise chat, distinguishing proposals from accepted decisions and approvals from rejections.",
+   "role": "DIRECT",
+   "why_it_matters": "This family is targeted at gap-2. Admission must require actual workplace communication and evidence about decision-related acts, not generic decision-support or meeting summarization.",
+   "seed_papers": []
+  },
+  {
+   "id": "F4",
+   "name": "Meeting action-item detection and assignment modeling",
+   "description": "Detection and annotation of action items in multi-party meetings, including discourse regions that establish an assignment and, in stronger work, task, responsible party, or timeframe.",
+   "role": "TRANSFER",
+   "why_it_matters": "Meeting research is the closest mature transfer literature for action-item formation in organizational discourse and can inform representation, context modeling, and annotation. It cannot establish email or enterprise-chat accuracy.",
+   "seed_papers": [
+    "Matthew Purver, Patrick Ehlen, and John Niekrasz (2006), Detecting Action Items in Multi-party Meetings: Annotation and Initial Experiments.",
+    "Matthew Purver, Patrick Ehlen, and John Niekrasz (2006), Shallow Discourse Structure for Action Item Detection.",
+    "Yun-Nung Chen, Dilek Hakkani-Tür, and Xiaodong He (2015), Detecting Actionable Items in Meetings by Convolutional Deep Structured Semantic Models.",
+    "Jiaqing Liu, Chong Deng, Qinglin Zhang, Qian Chen, and Wen Wang (2023), Meeting Action Item Detection with Regularized Context Modeling."
+   ]
+  },
+  {
+   "id": "F5",
+   "name": "Meeting decision and decision-related dialogue-act detection",
+   "description": "Detection of decision-related dialogue acts or decision segments in organizational meeting transcripts.",
+   "role": "TRANSFER",
+   "why_it_matters": "It is strong adjacent evidence for how decisions emerge across multiple turns and for separating decision-bearing utterances from surrounding discussion, but usually does not provide the email/chat domain or all semantic arguments required by gap-2.",
+   "seed_papers": [
+    "Pei-Yun Hsueh and Johanna D. Moore (2007), What Decisions Have You Made?: Automatic Decision Detection in Meeting Conversations.",
+    "Pei-Yun Hsueh and Johanna D. Moore (2008), Automatic Decision Detection in Meeting Speech."
+   ]
+  },
+  {
+   "id": "F6",
+   "name": "Assignee, responsible-party, and addressee extraction in workplace communication",
+   "description": "Identification of the participant or group expected to perform a requested or assigned action, including explicit assignees and, where supported, implicit or collective addressees.",
+   "role": "DIRECT",
+   "why_it_matters": "This directly targets gap-3. The key distinction is between extracting an explicitly stated person and resolving an implicit owner from conversation or organizational context.",
+   "seed_papers": []
+  },
+  {
+   "id": "F7",
+   "name": "Addressee recognition and implicit participant resolution in multi-party discourse",
+   "description": "Recognition of who an utterance is directed to, together with recovery of implicit semantic or discourse participants not overtly realized in the local clause.",
+   "role": "TRANSFER",
+   "why_it_matters": "Implicit task ownership is often a pragmatic addressee problem rather than ordinary named-entity extraction. This family supplies mechanisms for omitted owners and group-directed requests, but transfer must be validated separately on workplace email/chat.",
+   "seed_papers": []
+  },
+  {
+   "id": "F8",
+   "name": "Deadline binding and event-time temporal relation extraction",
+   "description": "Extraction of deadlines together with the semantic relation linking a time expression to the specific action, commitment, request, or decision it constrains.",
+   "role": "DIRECT",
+   "why_it_matters": "This formulation targets gap-4 more precisely than date extraction. The relevant capability is relation binding: a date must be attached to the correct action rather than merely detected in the same message.",
+   "seed_papers": []
+  },
+  {
+   "id": "F9",
+   "name": "Temporal expression normalization and event-time relation modeling",
+   "description": "Identification and normalization of temporal expressions and extraction or classification of temporal links between events and times, including TimeML-style event/TIMEX relations.",
+   "role": "TRANSFER",
+   "why_it_matters": "It supplies mature representations and algorithms for deadline normalization and action-time linking, but generic temporal corpora do not establish that a time is a workplace deadline.",
+   "seed_papers": [
+    "James Pustejovsky et al. (2003), TimeML: Robust Specification of Event and Temporal Expressions in Text."
+   ]
+  },
+  {
+   "id": "F10",
+   "name": "Condition, exception, negation, and modality scope attachment",
+   "description": "Detection of conditional, exceptional, negated, tentative, obligatory, permitted, or uncertain semantics together with the scope or target proposition to which those operators apply.",
+   "role": "TRANSFER",
+   "why_it_matters": "Gap-5 is fundamentally an attachment and scope problem. Sentence-level cue detection is insufficient when several actions occur together; the useful transfer literature must annotate cue-to-scope or condition-to-event relations.",
+   "seed_papers": []
+  },
+  {
+   "id": "F11",
+   "name": "Event and semantic-argument extraction with implicit or cross-sentence arguments",
+   "description": "Extraction of event triggers and semantic arguments, including participants located outside the trigger sentence or omitted from surface syntax.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is the closest general information-extraction machinery for owner, object, recipient, and time slots, especially when arguments are implicit or distributed across context. Speech-act semantics must still be layered on top.",
+   "seed_papers": []
+  },
+  {
+   "id": "F12",
+   "name": "Span-based structured information extraction and evidence annotation",
+   "description": "Extraction frameworks and corpora in which triggers, argument mentions, and supporting evidence are represented as exact text spans rather than only document or sentence labels.",
+   "role": "TRANSFER",
+   "why_it_matters": "Gap-1 requires exact provenance. Span-based event extraction and argument annotation provide evaluation patterns for source spans even when their source domains differ.",
+   "seed_papers": []
+  },
+  {
+   "id": "F13",
+   "name": "Workplace email and enterprise-chat corpora with act or action annotations",
+   "description": "Authentic organizational communication corpora annotated for requests, commitments, decisions, actionability, assignments, deadlines, or related speech acts.",
+   "role": "DIRECT",
+   "why_it_matters": "Corpus discovery is necessary because a useful benchmark may be described by its annotation scheme or corpus name rather than by the phrase action-item extraction. This is the principal benchmark-search family for gaps 1 through 5.",
+   "seed_papers": [
+    "Vitor R. Carvalho and William W. Cohen (2005), On the Collective Classification of Email \"Speech Acts\"."
+   ]
+  },
+  {
+   "id": "F14",
+   "name": "Thread-context and discourse-context modeling for workplace act extraction",
+   "description": "Use of preceding and following turns, thread structure, participant metadata, or conversational dependencies to classify or extract requests, commitments, decisions, and assignments.",
+   "role": "DIRECT",
+   "why_it_matters": "This supports the controlled context-ablation work in gap-7 and can reveal both context gains and context-induced errors. Context must not be assumed to be beneficial.",
+   "seed_papers": [
+    "Vitor R. Carvalho and William W. Cohen (2005), On the Collective Classification of Email \"Speech Acts\"."
+   ]
+  },
+  {
+   "id": "F15",
+   "name": "Email quotation, authorship-zone, and forwarded-content segmentation",
+   "description": "Identification of newly authored text versus quoted or forwarded historical content in email and threaded workplace communication.",
+   "role": "DIRECT",
+   "why_it_matters": "This is supporting literature for gap-8. It can help prevent old requests or commitments from being extracted as new obligations while preserving provenance and contextual dependencies.",
+   "seed_papers": []
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "F1",
+   "role": "DIRECT",
+   "queries": [
+    "\"action item extraction\" (email OR \"business email\" OR \"workplace email\") assignee deadline condition corpus",
+    "\"action item extraction\" (\"enterprise chat\" OR \"workplace chat\" OR Slack OR \"Microsoft Teams\") assignee deadline",
+    "\"task assignment extraction\" email assignee deadline",
+    "\"task extraction\" \"business email\" request commitment assignee",
+    "\"action item\" email annotation \"responsible party\" timeframe",
+    "\"structured action item\" workplace communication owner deadline condition",
+    "\"action item extraction\" email \"evidence span\"",
+    "\"action item\" email corpus owner deadline condition"
+   ]
+  },
+  {
+   "family_id": "F2",
+   "role": "DIRECT",
+   "queries": [
+    "email \"speech act classification\" request commitment proposal",
+    "\"email act\" classification request commitment corpus",
+    "\"business email\" \"speech act\" request commitment",
+    "\"workplace email\" request commitment classification",
+    "\"request detection\" email commitment corpus",
+    "\"commissive\" email NLP commitment",
+    "\"speech act\" Slack request commitment workplace",
+    "\"dialogue act\" \"enterprise chat\" request commitment"
+   ]
+  },
+  {
+   "family_id": "F3",
+   "role": "DIRECT",
+   "queries": [
+    "\"decision extraction\" (email OR \"workplace email\") approval rejection proposal",
+    "\"decision detection\" (\"enterprise chat\" OR Slack OR \"Microsoft Teams\") approval rejection",
+    "\"approval detection\" email NLP decision",
+    "\"rejection detection\" email proposal approval",
+    "\"proposal detection\" email \"speech act\"",
+    "\"agreement\" rejection approval email \"speech act\" corpus",
+    "\"decision\" \"business email\" corpus annotation",
+    "\"decision extraction\" workplace communication argument"
+   ]
+  },
+  {
+   "family_id": "F4",
+   "role": "TRANSFER",
+   "queries": [
+    "\"Detecting Action Items in Multi-party Meetings\"",
+    "\"action item detection\" meeting annotation responsible party timeframe",
+    "\"action item extraction\" meeting assignee deadline",
+    "\"actionable item\" meeting task assignee",
+    "\"action item assignment\" meeting discourse",
+    "\"meeting action item\" corpus annotation owner deadline",
+    "\"action item detection\" AMI corpus",
+    "\"multiple action items\" meeting assignee"
+   ]
+  },
+  {
+   "family_id": "F5",
+   "role": "TRANSFER",
+   "queries": [
+    "\"decision detection\" meeting dialogue act",
+    "\"decision-related dialogue act\" meeting",
+    "\"decision extraction\" meeting proposal agreement",
+    "\"Automatic Decision Detection\" meeting speech",
+    "\"meeting decision\" corpus annotation dialogue act",
+    "\"decision point\" meeting dialogue act classification"
+   ]
+  },
+  {
+   "family_id": "F6",
+   "role": "DIRECT",
+   "queries": [
+    "\"assignee extraction\" email NLP",
+    "\"responsible party\" extraction email action",
+    "\"responsibility extraction\" email action item",
+    "\"task assignment\" extraction \"workplace communication\"",
+    "\"implicit assignee\" action item",
+    "\"implicit owner\" action item email",
+    "\"group assignee\" action item",
+    "\"group owner\" workplace request",
+    "\"assignee\" \"enterprise chat\" task extraction",
+    "\"responsible person\" email request extraction"
+   ]
+  },
+  {
+   "family_id": "F7",
+   "role": "TRANSFER",
+   "queries": [
+    "\"addressee identification\" multi-party dialogue request",
+    "\"addressee recognition\" multiparty conversation",
+    "\"addressee detection\" group chat request",
+    "\"implicit argument resolution\" agent discourse",
+    "\"implicit semantic role labeling\" discourse argument",
+    "\"omitted argument\" recovery discourse agent",
+    "\"implicit participant\" event extraction discourse",
+    "\"collective addressee\" dialogue"
+   ]
+  },
+  {
+   "family_id": "F8",
+   "role": "DIRECT",
+   "queries": [
+    "\"deadline extraction\" email action item",
+    "\"due date extraction\" email task",
+    "\"deadline\" \"action item\" corpus annotation",
+    "\"deadline extraction\" \"workplace communication\"",
+    "\"event-time relation\" email task deadline",
+    "\"temporal relation\" email action item deadline",
+    "\"shared deadline\" action item extraction",
+    "\"deadline binding\" action extraction"
+   ]
+  },
+  {
+   "family_id": "F9",
+   "role": "TRANSFER",
+   "queries": [
+    "\"event-time relation extraction\" NLP",
+    "\"temporal relation extraction\" event time",
+    "TimeML event TIMEX relation extraction",
+    "TIMEX3 TLINK event time relation",
+    "\"temporal expression normalization\" event relation",
+    "\"time expression\" event argument extraction",
+    "\"temporal relation classification\" event time"
+   ]
+  },
+  {
+   "family_id": "F10",
+   "role": "TRANSFER",
+   "queries": [
+    "\"conditional commitment\" NLP",
+    "\"conditional request\" NLP",
+    "\"condition extraction\" event argument NLP",
+    "\"conditional clause\" scope NLP",
+    "\"negation scope\" request obligation",
+    "\"negation scope resolution\" event extraction",
+    "\"modality scope\" commitment NLP",
+    "\"deontic modality\" obligation NLP annotation",
+    "\"exception extraction\" obligation NLP",
+    "\"if clause\" action commitment NLP",
+    "\"unless\" obligation extraction NLP",
+    "condition negation modality \"event argument\" extraction"
+   ]
+  },
+  {
+   "family_id": "F11",
+   "role": "TRANSFER",
+   "queries": [
+    "\"event argument extraction\" implicit argument",
+    "\"cross-sentence event argument extraction\"",
+    "\"document-level event extraction\" argument",
+    "\"implicit argument resolution\" event extraction",
+    "\"semantic role labeling\" implicit argument discourse",
+    "\"cross-sentence argument extraction\" NLP",
+    "\"event argument\" temporal condition agent extraction",
+    "\"document-level event argument extraction\""
+   ]
+  },
+  {
+   "family_id": "F12",
+   "role": "TRANSFER",
+   "queries": [
+    "\"span-based event extraction\" trigger argument",
+    "\"argument span extraction\" event NLP",
+    "\"trigger span\" \"argument span\" event extraction",
+    "\"span-level annotation\" event argument corpus",
+    "\"evidence span\" information extraction event",
+    "\"source span\" information extraction annotation",
+    "\"exact span\" event argument extraction"
+   ]
+  },
+  {
+   "family_id": "F13",
+   "role": "DIRECT",
+   "queries": [
+    "\"email speech act\" corpus request commitment",
+    "\"email act\" corpus request commitment",
+    "Enron email request commitment speech act corpus",
+    "Enron \"action item\" annotation",
+    "\"business email corpus\" request commitment decision",
+    "\"workplace email corpus\" action request commitment",
+    "\"enterprise chat corpus\" request commitment decision",
+    "Slack workplace corpus request commitment action",
+    "\"instant messaging\" workplace corpus speech act",
+    "\"organizational chat\" corpus dialogue act"
+   ]
+  },
+  {
+   "family_id": "F14",
+   "role": "DIRECT",
+   "queries": [
+    "email speech act thread context classification",
+    "\"email act\" collective classification thread",
+    "\"conversation context\" email request commitment classification",
+    "\"thread context\" action item extraction email",
+    "\"context modeling\" workplace chat request commitment",
+    "\"message context\" enterprise chat speech act",
+    "\"conversation history\" request detection workplace"
+   ]
+  },
+  {
+   "family_id": "F15",
+   "role": "DIRECT",
+   "queries": [
+    "\"quoted text\" email segmentation NLP",
+    "\"email quotation\" extraction authorship",
+    "\"quoted text identification\" email thread",
+    "\"reply text\" quotation email segmentation",
+    "\"forwarded content\" email segmentation NLP",
+    "\"authored text\" quoted email classification",
+    "\"email thread\" quotation attribution",
+    "\"quoted history\" email classification speech act"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "email act classification",
+  "workplace speech-act classification",
+  "structured action-item extraction",
+  "action-item argument extraction",
+  "action-item assignment",
+  "task-assignment extraction",
+  "request extraction",
+  "commitment extraction",
+  "commissive act detection",
+  "decision-related dialogue act",
+  "approval detection",
+  "rejection detection",
+  "proposal detection",
+  "assignee identification",
+  "responsible-party extraction",
+  "addressee identification",
+  "addressee recognition",
+  "implicit argument resolution",
+  "implicit semantic role labeling",
+  "cross-sentence argument extraction",
+  "document-level event argument extraction",
+  "event-time relation extraction",
+  "temporal relation extraction",
+  "deadline binding",
+  "deadline-to-action relation",
+  "negation scope resolution",
+  "modality scope",
+  "deontic modality annotation",
+  "conditional clause scope",
+  "condition-to-event attachment",
+  "span-based event extraction",
+  "argument span extraction",
+  "trigger and argument span annotation",
+  "thread-context classification",
+  "collective classification of email acts",
+  "quoted-text identification in email",
+  "workplace messaging corpus",
+  "enterprise instant messaging corpus"
+ ],
+ "demoted_terms": [
+  "task-oriented information extraction",
+  "intent-to-act",
+  "to-do extraction",
+  "task extraction as a standalone query",
+  "intention detection as a standalone query",
+  "dialogue act classification as a standalone query",
+  "event extraction as a standalone query",
+  "semantic role labeling as a standalone query",
+  "zero anaphora for English assignee recovery",
+  "hedge detection as a standalone query",
+  "speculation detection as a standalone query",
+  "modality detection as a standalone query",
+  "temporal expression extraction without event-time relations",
+  "temporal expression normalization without event-time relations",
+  "owner assignment",
+  "responsibility assignment as a standalone query",
+  "request-response corpora as a standalone query",
+  "argument extraction without the qualifier semantic/event argument"
+ ],
+ "downgrade_rules": [
+  "Do not treat message-level or utterance-level actionability classification as structured action extraction unless the paper separately evaluates the required arguments.",
+  "Do not let an action-item benchmark close gap-1 unless it jointly annotates, or provides independently evaluable labels for, act/action type, owner or assignee, action object, deadline when present, conditions or exceptions when present, and source evidence at a sufficiently precise span or discourse-region level.",
+  "A corpus that labels request or commitment at whole-message level is relevant DIRECT evidence for speech-act classification but does not establish argument extraction.",
+  "Meeting action-item and meeting decision studies are TRANSFER evidence, even when the meetings are organizational and authentic; they do not establish performance on asynchronous workplace email or enterprise chat.",
+  "Customer-service chat, social-media conversation, open-domain dialogue, task-oriented dialogue, and human-assistant dialogue are not direct enterprise-communication evidence unless the study explicitly evaluates authentic peer-to-peer workplace communication.",
+  "Synthetic, scripted, generated, or researcher-authored workplace messages may support engineering evaluation or method development but must not be presented as authentic-domain benchmark evidence.",
+  "Issue-tracker assignee recommendation is not assignee extraction when the assignee is predicted from developer history, code ownership, labels, or ticket metadata rather than the linguistic content of workplace communication.",
+  "Named-entity recognition of person names does not establish responsibility extraction; the method must link the person or group to the relevant action or request.",
+  "Explicit @mention or recipient-field identification alone does not close the implicit-owner gap; it is useful only as a baseline or partial mechanism.",
+  "Addressee recognition is transfer evidence for owner inference unless the study explicitly demonstrates that the addressee is the responsible performer of the action.",
+  "Zero-anaphora results from pro-drop languages should be treated as linguistic transfer rather than evidence for English email ownership unless the omitted-role phenomenon is shown to match the target case.",
+  "Date or temporal-expression extraction does not close the deadline gap. The study must distinguish deadline semantics or explicitly evaluate the relation between a time expression and the action it constrains.",
+  "Temporal normalization alone cannot establish deadline binding; normalization answers when a phrase refers to, not what event it modifies.",
+  "Calendar-event extraction and meeting-scheduling extraction are false friends unless they evaluate whether a date is a deadline for a specific requested or committed action.",
+  "Sentence-level negation, hedge, speculation, conditionality, or modality classification does not close gap-5 unless cue scope or attachment to the correct action/proposition is evaluated.",
+  "Legal or regulatory obligation extraction is TRANSFER evidence for deontic representation, not direct evidence for conversational workplace obligations.",
+  "Generic event extraction, semantic role labeling, and event argument extraction from news, biomedical, or knowledge-base domains are TRANSFER mechanisms only.",
+  "Do not conflate rhetorical argument mining with semantic argument extraction. Papers extracting claims, premises, or persuasive arguments do not satisfy actor/object/deadline/condition slot requirements unless those semantic roles are explicitly represented.",
+  "Decision-support systems, decision-tree mining, business-intelligence decision analytics, and predictive decision modeling are not decision extraction from communication.",
+  "Decision-related segment detection does not close gap-2 unless the study distinguishes at least some of decision, proposal, approval, rejection, or agreement and extracts or anchors the proposition involved.",
+  "Meeting or email summarization that reports decisions or action items only through generated summaries should be downgraded unless the underlying evaluation identifies exact source evidence and structured arguments.",
+  "Generic chatbot intent classification is not intention, request, commitment, or decision extraction for this project.",
+  "Response-selection, next-response prediction, response generation, and QA datasets are not request-response act corpora merely because they contain request/response pairs.",
+  "Quoted-text removal or email cleaning is relevant to gap-8 only as a zoning mechanism; it does not demonstrate improved action or speech-act extraction unless evaluated jointly with the downstream semantic task.",
+  "Thread context should not be assumed beneficial. Studies that use more context without an ablation against sentence-local or message-local extraction are insufficient evidence for the context tradeoff in gap-7.",
+  "Literature about later completion, revocation, contradiction, supersession, or current state of an already extracted action belongs primarily to Topic 06 and should not be admitted as Topic 05 evidence unless it also evaluates the utterance-time act or arguments.",
+  "Systems that execute commands, create tasks, send messages, or perform workflow automation belong outside Topic 05 unless the paper separately evaluates semantic extraction before execution.",
+  "A paper should not be considered direct benchmark evidence merely because it uses the words business, enterprise, work, task, owner, or decision; the communication source, annotation target, and evaluation unit must match the capability being claimed."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1990,
+  "rationale": "Discovery should reach at least 1990. The direct email-act, meeting-action-item, and meeting-decision literature becomes prominent in the 2000s, but its computational foundations include 1990s work on dialogue-act annotation/classification, discourse structure, communicative functions, semantic roles, and conversational context. Starting only in a recent transformer-era window would silently remove terminology and annotation schemes on which later workplace-communication papers build. The philosophical foundations of speech-act theory predate 1990, but the bulk discovery here is an NLP and computational extraction review rather than a general philosophy review; pre-1990 theory should be followed through citations when a computational paper relies on it rather than used as the default bulk-search window."
+ }
+}

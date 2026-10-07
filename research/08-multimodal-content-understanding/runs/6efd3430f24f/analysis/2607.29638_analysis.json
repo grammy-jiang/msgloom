@@ -1,0 +1,68 @@
+{
+ "paper_id": "2607.29638",
+ "title": "HierDoc: Hierarchical Page-to-Region Evidence Routing for Long-Document Visual Question Answering",
+ "research_question": "Can long-document visual question answering improve evidence acquisition by learning page selection and fine-grained region selection as successive hierarchical policies rather than retrieving only pages or treating page and region evidence independently?",
+ "methodology": "HierDoc implements a two-stage evidence-routing pipeline in which a page policy first selects relevant physical pages and a region policy then chooses parsed regions only from those pages. MinerU2.5 produces candidate regions represented by a sample-local action alias, physical page index, bounding box, semantic type, and OCR or table content. The selectors are trained stage-wise with Group Relative Policy Optimization and can invoke bounded reflection, while the answer model receives selected full pages together with selected region crops and associated text. The system is evaluated on five long-document and table-oriented visual QA benchmarks with retrieval and QA ablations.",
+ "key_findings": [
+  {
+   "finding": "The Qwen3-VL-based HierDoc configuration reports 53.62 on MMLongBench-Doc and 65.80 on LongDocURL, alongside competitive results on SlideVQA, PaperTab, and FetaTab.",
+   "evidence_type": "supported",
+   "section": "§4 Main Results"
+  },
+  {
+   "finding": "Adding the learned region-routing stage to the page-only configuration improves the reported MMLongBench-Doc result from 50.8 accuracy and 45.6 F1 to 53.6 accuracy and 47.8 F1 when GRPO and reflection are used.",
+   "evidence_type": "supported",
+   "section": "§4 Ablation Study"
+  },
+  {
+   "finding": "Training the page selector with GRPO and adding reflection improves page-routing quality and downstream QA relative to the untrained selector in the reported ablation.",
+   "evidence_type": "supported",
+   "section": "§4 Ablation Study"
+  },
+  {
+   "finding": "Selected visual crops plus selected OCR provide stronger gains than indiscriminately adding all OCR, while removing the full selected pages and retaining only local crops and OCR reduces performance, showing that global page context and local region evidence are complementary.",
+   "evidence_type": "supported",
+   "section": "§4 Evidence Composition Analysis"
+  },
+  {
+   "finding": "HierDoc carries hierarchical within-document evidence metadata from physical page to parsed region and bounding box, but its region aliases are sample-local action identifiers rather than persistent identities designed to survive document revisions.",
+   "evidence_type": "supported",
+   "section": "§3 Method"
+  }
+ ],
+ "limitations": [
+  "The region stage can only inspect pages retained by the first stage, so page-routing mistakes can cause irreversible evidence loss.",
+  "Region quality depends on MinerU parsing, OCR, table parsing, and spatial alignment.",
+  "Page and region selectors are optimized stage-wise rather than jointly from end-to-end answer feedback.",
+  "The evidence representation is designed for a static document instance and contains no version identifier or cross-version lineage mechanism.",
+  "Region aliases are sample-local and bounding boxes are tied to the current page geometry, so neither is a stable identifier after document revision.",
+  "The paper does not address message-to-attachment referring expressions or correspondence between revised attachments."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "main_benchmark_results": 0.99,
+  "region_stage_gain": 1.0,
+  "page_policy_training_gain": 0.99,
+  "global_local_complementarity": 0.99,
+  "hierarchical_region_metadata": 0.99,
+  "no_cross_version_identity": 0.97
+ },
+ "raw_claims": [
+  "HierDoc first selects relevant pages and then selects finer regions only within those pages.",
+  "Candidate regions carry a physical page index, bounding box, semantic type, and extracted textual content.",
+  "The page and region policies are trained using stage-wise reinforcement-learning objectives.",
+  "Bounded reflection allows a selector to reconsider an evidence set under specified conditions.",
+  "The final answer model consumes both complete selected pages and finer selected evidence regions.",
+  "Learned region selection improves the reported QA result over page-only evidence.",
+  "Selected crops and OCR are more useful than simply adding all parsed OCR in the reported evidence-composition study.",
+  "Retaining global selected-page context remains beneficial even when fine-grained region crops are available.",
+  "Errors made by the first-stage page router can prevent the correct region from ever being considered.",
+  "The system does not assign a persistent region identity that follows an element through successive document versions."
+ ],
+ "source_url": "https://arxiv.org/html/2607.29638",
+ "access": "full_text"
+}

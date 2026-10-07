@@ -1,0 +1,386 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2604.01413",
+   "title": "Adaptive Stopping for Multi-Turn LLM Reasoning",
+   "research_question": "Can conformal prediction jointly calibrate retrieval, adaptive early stopping, and final answer sets in multi-turn LLM reasoning while preserving target coverage and reducing unnecessary inference?",
+   "methodology": "The paper proposes MiCP, a conformal-prediction framework that allocates an error budget across retrieval filtering, turn-specific stopping, and final answer-set construction in adaptive RAG and ReAct pipelines. Stopping decisions use calibrated uncertainty derived from clustered stochastic answers, while a final conformal threshold constructs the prediction set and can include a Can't Answer outcome. Experiments use Natural Questions, TriviaQA, HotpotQA, MuSiQue, and 2WikiMultiHopQA with Gemma-2-9B-IT, Qwen3.5-9B, and GPT-4o-mini, sampling 900 examples per dataset into 300 optimization, 300 calibration, and 300 test examples.",
+   "key_findings": [
+    {
+     "finding": "Across the evaluated datasets, models, and error levels, MiCP met or exceeded the intended empirical coverage at the retrieval and final-answer stages, with final prediction sets often slightly over-covering the nominal target.",
+     "evidence_type": "supported",
+     "section": "5.2 RQ1"
+    },
+    {
+     "finding": "Adaptive stopping reduced the average number of reasoning or retrieval turns relative to the fixed three-turn no-early-stopping baseline across the reported benchmark rows.",
+     "evidence_type": "supported",
+     "section": "5.3 RQ2, Table 1"
+    },
+    {
+     "finding": "The paper's statement that MiCP consistently improves prediction-set size is contradicted by several Table 1 rows, including GPT-4o-mini on HotpotQA and HotpotQA-ReAct where the proposed objective gives larger sets than the no-early-stopping baseline.",
+     "evidence_type": "contradicted",
+     "section": "5.3 RQ2, Table 1"
+    },
+    {
+     "finding": "Optimizing explicitly for average turns generally produces the fewest turns and small prediction sets, illustrating a controllable trade-off between stopping aggressively and other objectives.",
+     "evidence_type": "supported",
+     "section": "5.3 RQ2, Table 1"
+    },
+    {
+     "finding": "Grid-search allocation of the turn-specific error budget improves the proposed composite objective for Qwen3.5-9B and GPT-4o-mini, while gains are smaller and less stable for Gemma-2-9B-IT.",
+     "evidence_type": "supported",
+     "section": "5.4 RQ3"
+    },
+    {
+     "finding": "The stated conformal guarantee is marginal under exchangeability rather than a conditional guarantee for arbitrary subgroups or shifted deployment populations.",
+     "evidence_type": "supported",
+     "section": "4 Method and Remark 5"
+    }
+   ],
+   "limitations": [
+    "The formal conformal guarantees depend on exchangeability and the experiments do not evaluate non-stationary or cross-domain distribution shift.",
+    "Coverage is marginal; subgroup-conditional coverage would require separate group-conditional calibration.",
+    "The empirical study is limited to question-answering benchmarks, three LLMs, and a maximum of three turns.",
+    "The procedure uses repeated stochastic generations per turn and grid search over error allocations, adding calibration and inference cost.",
+    "The framework does not model temporal validity, document versions, or version-aware provenance of retrieved evidence.",
+    "Some reported prediction-set results do not support the paper's blanket statement that early stopping consistently makes prediction sets smaller."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "coverage_target": 0.98,
+    "turn_reduction": 0.98,
+    "prediction_set_claim_mixed": 0.99,
+    "grid_search_model_dependence": 0.94,
+    "exchangeability_limitation": 0.97
+   },
+   "raw_claims": [
+    "MiCP jointly calibrates retrieval filtering, turn-specific stopping, and final prediction-set construction.",
+    "The stopping controller allocates a finite conformal error budget across multiple reasoning turns.",
+    "If no early stopping criterion is met, the final prediction set can include a Can't Answer outcome.",
+    "The evaluation covers five single-hop and multi-hop QA benchmarks and a ReAct variant on HotpotQA.",
+    "Each dataset contributes 900 sampled examples divided equally among optimization, calibration, and test splits.",
+    "The tested configurations empirically achieve the intended retrieval and answer coverage levels.",
+    "Early stopping lowers the average number of turns relative to always executing all three turns.",
+    "Several GPT-4o-mini rows have prediction sets that are not smaller than the no-early-stopping baseline.",
+    "The theoretical guarantees rely on exchangeability and are marginal rather than universally conditional."
+   ],
+   "source_url": "https://arxiv.org/html/2604.01413",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2606.05658",
+   "title": "Agent-Orchestrated Adaptive RAG: A Comparative Study on Structured and Multi-Hop Retrieval",
+   "research_question": "How do adaptive query decomposition, reflection, and rule-based strategy orchestration affect retrieval quality, citation quality, and latency in structured versus open-domain multi-hop RAG?",
+   "methodology": "The paper implements an agent-orchestrated RAG stack whose central orchestrator chooses standard retrieval, complex retrieval, or explicit query decomposition and can invoke a bounded answer-evaluation and reflection loop. It uses Llama-3.1-8B-Instruct with 4-bit local inference, BGE-base-en-v1.5 embeddings, and FAISS retrieval. The system is evaluated on an 80-document, approximately 10,000-word synthetic-and-manually-validated DevOps knowledge base and on MuSiQue using retrieval, citation, coverage, aggregate-quality, and latency metrics.",
+   "key_findings": [
+    {
+     "finding": "On the structured DevOps corpus, decomposition raises overall score from 0.814 to 0.855, critical-source recall from 0.750 to 0.806, MRR from 0.556 to 0.722, Success@5 from 0.833 to 1.000, and citation accuracy from 0.750 to 0.917, while latency rises from 21.00 to 47.66 seconds.",
+     "evidence_type": "supported",
+     "section": "V-A Impact of Query Decomposition, Table III"
+    },
+    {
+     "finding": "On MuSiQue, decomposition improves overall score, citation accuracy, and topic coverage but sharply degrades retrieval ranking, with MRR falling from 0.469 to 0.102 and Success@5 from 1.000 to 0.063.",
+     "evidence_type": "supported",
+     "section": "V-A Impact of Query Decomposition, Table III"
+    },
+    {
+     "finding": "The implemented reflection mechanism does not yield reliable quality gains: overall score falls on both DevOps and MuSiQue while MuSiQue latency increases from 17.21 to 103.53 seconds.",
+     "evidence_type": "supported",
+     "section": "V-B Impact of Reflection, Table IV"
+    },
+    {
+     "finding": "Routing behavior is strongly domain-dependent, with 69.2% of DevOps queries handled by standard retrieval and only about 5% decomposed, compared with roughly 16% decomposition on MuSiQue.",
+     "evidence_type": "supported",
+     "section": "V-C Strategy Distribution"
+    },
+    {
+     "finding": "Even on MuSiQue, 49% of queries remain in the complex-RAG route rather than the decomposition route, which the authors interpret as evidence that the current decomposition trigger is conservative.",
+     "evidence_type": "supported",
+     "section": "V-C Strategy Distribution"
+    },
+    {
+     "finding": "The empirical comparison supports selective rather than universal use of expensive agentic components because their benefits depend on corpus structure and can carry substantial latency and ranking costs.",
+     "evidence_type": "supported",
+     "section": "V-D Tradeoff Analysis and V-E Summary of Findings"
+    }
+   ],
+   "limitations": [
+    "The DevOps knowledge base contains only 80 documents and approximately 10,000 words, and it was generated with LLM assistance before manual validation.",
+    "Evaluation query sets are small, so several metric differences have wide uncertainty and the study does not provide large-sample significance evidence for all comparisons.",
+    "Only one generator and one embedding model are evaluated.",
+    "Routing is controlled by static hand-written heuristics rather than a learned or calibrated policy.",
+    "Latency was measured with local quantized inference and should be interpreted comparatively rather than as portable absolute performance.",
+    "The controller has no statistical risk guarantee or calibrated stopping criterion.",
+    "Temporal validity, evidence versions, and version-aware provenance are not modeled.",
+    "The study does not evaluate controller robustness under distribution shift beyond comparing two distinct benchmark domains."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "devops_decomposition_gain": 0.99,
+    "musique_ranking_degradation": 0.99,
+    "reflection_cost_without_gain": 0.99,
+    "domain_dependent_routing": 0.98,
+    "heuristic_controller_limitation": 0.98
+   },
+   "raw_claims": [
+    "The orchestrator dynamically chooses among standard RAG, complex RAG, and decomposed RAG.",
+    "Reflection is implemented as a bounded post-hoc corrective mechanism rather than as a routing strategy.",
+    "The DevOps knowledge base contains 80 documents across six documentation types.",
+    "Decomposition improves most retrieval metrics on the structured DevOps corpus but more than doubles latency.",
+    "On MuSiQue, decomposition increases topic coverage while substantially damaging MRR and Success@5.",
+    "Reflection lowers the reported overall score on both evaluated datasets.",
+    "Reflection on MuSiQue increases average latency to more than 100 seconds in the reported environment.",
+    "Most DevOps queries are routed through standard retrieval.",
+    "The authors identify learned and cost-aware strategy selection as future replacements for the heuristic controller.",
+    "No formal uncertainty calibration or risk-controlled stopping mechanism is evaluated."
+   ],
+   "source_url": "https://arxiv.org/html/2606.05658",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2606.29054",
+   "title": "When Can Conformal Risk Control Certify LLM Outputs? Bounds, Impossibility, and Adaptation for Structured Generation",
+   "research_question": "Under what model, task, calibration, risk-target, and distribution-shift conditions can conformal risk control certify structured LLM outputs, and when is the desired selective-generation risk mathematically infeasible?",
+   "methodology": "The paper develops theoretical feasibility bounds for selective structured generation and compares Hoeffding, empirical-Bernstein, and e-CRC certification rules, then evaluates them across 716 model-task-score configurations involving structured extraction, NER, question answering, and classification. Experiments use six open-weight models, eight datasets, six confidence scores, multiple calibration fractions, five split seeds, and risk functions derived from task-specific errors. It further evaluates static CRC, Adaptive Conformal Inference, and a full-feedback anytime-valid monitor under temporal, severity, and cross-dataset distribution shifts.",
+   "key_findings": [
+    {
+     "finding": "If the base risk μ exceeds target risk α, any distribution-free selective method must abstain by at least (μ-α)/(M-α), establishing a feasibility floor before calibration.",
+     "evidence_type": "supported",
+     "section": "Theory: Feasibility and Impossibility Results"
+    },
+    {
+     "finding": "At strict targets through α=0.20 in the main seed-42 experiment, Hoeffding, Bernstein, and e-CRC certify 51, 72, and 80 of 716 configurations respectively, with zero test violations among those certified configurations.",
+     "evidence_type": "supported",
+     "section": "3.4 Certification Results, Table 2"
+    },
+    {
+     "finding": "Variance-aware certification is especially useful with limited calibration data: at a 10% calibration fraction, certification rates are 1.1% for Hoeffding, 1.9% for Bernstein, and 4.2% for e-CRC.",
+     "evidence_type": "supported",
+     "section": "3.4 Certification Results, Table 2"
+    },
+    {
+     "finding": "Larger model scale reduces average base risk in the reported Qwen2.5 sequence and thereby expands the range of configurations that can be certified.",
+     "evidence_type": "supported",
+     "section": "3.4 Model Scale Determines Controllability"
+    },
+    {
+     "finding": "Under the paper's index-order temporal shift, static CRC violates its target on 15 of 25 configurations whereas ACI reduces violations to 1 of 25; under gradual severity shift, static violations rise as high as 56% while ACI remains below 12%.",
+     "evidence_type": "supported",
+     "section": "3.5 ACI Under Distribution Shift"
+    },
+    {
+     "finding": "Under infeasible cross-dataset transfer at α=0.10, static CRC and every tested ACI step size violate the emitted-risk target on 14 of 16 runs, showing that adaptation cannot overcome a base-risk feasibility failure.",
+     "evidence_type": "supported",
+     "section": "3.5 Cross-Dataset Transfer and Appendix I"
+    },
+    {
+     "finding": "The full-feedback anytime-valid SAVeR-FF monitor records zero violations on the 16 cross-dataset transfers, but in those infeasible transfers it does so with mean abstention of 1.00, exposing the cost of maintaining the guarantee.",
+     "evidence_type": "supported",
+     "section": "3.6 and Appendix Q"
+    }
+   ],
+   "limitations": [
+    "Static conformal guarantees assume i.i.d. calibration data and do not survive arbitrary distribution shift.",
+    "ACI provides an effective-risk adaptation identity rather than the same finite-sample emitted-risk certificate available in the static i.i.d. setting.",
+    "Sampling-based uncertainty scores require multiple forward passes.",
+    "Score fusion consumes a disjoint data split and therefore reduces effective calibration sample size.",
+    "The MMLU subsets contain only 400 examples each, QA is evaluated on only two datasets, and the 72B model is tested with only two greedy-decoding scores.",
+    "The JSON extraction task is template-based, so its near-ceiling behavior may not generalize to less regular structured extraction.",
+    "ACI conclusions cover only seven tested step sizes between 0.001 and 0.1.",
+    "The experiments do not establish results for larger closed models or arbitrary deployment shifts.",
+    "The paper addresses calibrated stopping and abstention but not temporal document-version provenance or evidence-gap retrieval planning."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "feasibility_floor": 0.99,
+    "strict_target_certification": 0.99,
+    "variance_aware_advantage": 0.99,
+    "aci_temporal_shift_improvement": 0.99,
+    "cross_dataset_infeasibility": 0.99,
+    "full_feedback_abstention_tradeoff": 0.99
+   },
+   "raw_claims": [
+    "The paper treats selective structured generation as a risk-certification problem rather than only a confidence-ranking problem.",
+    "A base-risk feasibility calculation can imply a nonzero minimum abstention rate before any conformal threshold is calibrated.",
+    "The main experimental grid contains 716 model, dataset, score, and target configurations.",
+    "At strict targets, e-CRC certifies more configurations than the reported Hoeffding and empirical-Bernstein procedures.",
+    "Certified configurations have near-zero observed test violations across the reported split seeds.",
+    "Lower base risk from larger models makes strict risk targets easier to certify.",
+    "Static CRC degrades substantially under the evaluated temporal and severity shifts.",
+    "ACI substantially reduces violations under the evaluated temporal shift.",
+    "Neither static CRC nor the tested ACI settings restore the emitted-risk target on most infeasible cross-dataset transfers.",
+    "Full-feedback anytime-valid monitoring can preserve risk control by abstaining aggressively when certification is infeasible.",
+    "The paper states that its experiments use public data and open-weight models and that code is to be released on publication."
+   ],
+   "source_url": "https://arxiv.org/html/2606.29054",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-32604-cmc-2026-086343",
+   "title": "Do LLMs Know When Evidence is Insufficient? An Evidence Sufficiency Benchmark for Answer-Abstention Calibration in Retrieval-Augmented Generation",
+   "research_question": "Do contemporary LLMs appropriately switch from answering to abstaining as retrieved evidence moves from sufficient support through partial, irrelevant, absent, and explicitly conflicting evidence?",
+   "methodology": "The paper introduces the Evidence Sufficiency Benchmark with five controlled evidence levels: full support, partial support, irrelevant evidence, no context, and conflicting evidence, with the first two treated as answerable and the latter three as requiring abstention. It samples 100 questions each from SQuAD and HotpotQA, constructs five evidence conditions per question, evaluates three prompting strategies, and tests seven LLMs from five model families, producing approximately 29,400 model calls including conflict-order randomization. Evaluation uses abstention, answer accuracy, over-answering, wrong-answer rate, bootstrap confidence intervals, significance tests, and manual validation of 200 stratified examples.",
+   "key_findings": [
+    {
+     "finding": "Models generally abstain more as evidence degrades from supported to irrelevant or absent, but this pattern reverses under explicit conflict: L5 abstention is only 9.5% to 34.8% compared with 34% to 84% under no-context L4.",
+     "evidence_type": "supported",
+     "section": "6.1 Evidence Sufficiency Curve"
+    },
+    {
+     "finding": "All seven evaluated models over-answer more than 65% of conflicting-evidence cases; Gemini 2.5 Flash abstains most at 34.8%, while Claude Sonnet 4.6 abstains only 9.5%.",
+     "evidence_type": "supported",
+     "section": "6.2 Cross-family Results under Conflicting Evidence"
+    },
+    {
+     "finding": "Evidence picking, in which a model selects one side of contradictory retrieved evidence, is the dominant reported L5 failure pattern.",
+     "evidence_type": "supported",
+     "section": "6.2 Cross-family Results under Conflicting Evidence"
+    },
+    {
+     "finding": "Explicit sufficiency-oriented prompting can substantially increase conflict abstention for some models but has strongly model-dependent effects; for example, P1-to-P3 abstention changes from 5.2% to 55.2% for Gemini and from 7.2% to 11.2% for Claude Sonnet 4.6.",
+     "evidence_type": "supported",
+     "section": "6.3 Prompt Sensitivity"
+    },
+    {
+     "finding": "Six of seven models exhibit significant dependence on whether gold or conflicting evidence appears first, with the largest reported absolute order effect reaching 20.5 percentage points.",
+     "evidence_type": "supported",
+     "section": "6.4 Position Bias under Conflicting Evidence"
+    },
+    {
+     "finding": "Manual review of 200 stratified examples finds 89.0% overall agreement with automatic response classification but only 75.0% agreement for the conflicting-evidence level, indicating that conflict behavior is harder to label automatically.",
+     "evidence_type": "supported",
+     "section": "7.7 Human Validation"
+    }
+   ],
+   "limitations": [
+    "The benchmark is built from only 200 seed questions drawn from SQuAD and HotpotQA, so the evidence-sufficiency findings are not established for specialized domains such as medicine, law, finance, education, or multilingual QA.",
+    "Automatic response classification relies partly on explicit abstention patterns and answer-string matching, which may miss implicit or mixed responses.",
+    "Human validation is an internal review of 200 samples rather than a formal multi-annotator study with reported inter-rater reliability.",
+    "The study evaluates inference-time prompting rather than fine-tuned evidence-sufficiency models or adaptive retrieval controllers.",
+    "The benchmark diagnoses whether evidence should trigger abstention but does not determine which missing evidence should be retrieved next.",
+    "There is no conformal or other formal risk-control guarantee for the abstention behavior.",
+    "Temporal freshness, source versions, and version-aware provenance are outside the benchmark design.",
+    "The full text states that benchmark data and evaluation code are intended for public release upon acceptance, but it does not provide an accessible release link in the article."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": false,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "conflict_trap": 0.99,
+    "conflict_over_answering": 0.99,
+    "prompt_sensitivity": 0.99,
+    "position_bias": 0.99,
+    "human_validation_agreement": 0.98
+   },
+   "raw_claims": [
+    "The benchmark defines five evidence levels spanning full support through explicitly conflicting evidence.",
+    "L1 and L2 are treated as answerable while L3 through L5 are treated as insufficient-evidence cases requiring abstention.",
+    "The evaluation uses 100 SQuAD questions and 100 HotpotQA questions.",
+    "Each of seven models is evaluated with three prompting strategies across the five evidence levels.",
+    "The full experiment involves approximately 29,400 model calls.",
+    "Models abstain much more often when context is absent than when retrieved passages explicitly contradict one another.",
+    "Every evaluated model over-answers most conflicting-evidence examples.",
+    "Prompt instructions about sufficiency substantially change behavior for some model families but barely change others.",
+    "Passage order significantly affects conflict handling for six of seven models.",
+    "Automatic response labels agree with internal human review less reliably for conflicting evidence than for the other evidence levels."
+   ],
+   "source_url": "https://www.techscience.com/cmc/v89n1/68467/html",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2510.13590",
+   "title": "RAG Meets Temporal Graphs: Time-Sensitive Modeling and Retrieval for Evolving Knowledge",
+   "research_question": "Can an explicitly temporal graph representation and incremental indexing strategy improve time-sensitive retrieval and question answering while efficiently incorporating newly arriving knowledge?",
+   "methodology": "The paper proposes Temporal GraphRAG, a bi-level representation combining a temporal knowledge graph of timestamped facts with a hierarchical time graph whose nodes hold multi-granularity summaries. New documents are incrementally processed so newly extracted temporal facts and affected temporal summaries are updated without reconstructing the entire graph, and inference retrieves dynamically scoped temporal and semantic subgraphs. Evaluation uses the newly constructed ECT-QA benchmark from 480 earnings-call transcripts spanning 2020-2024, an incremental 2024 update protocol, specific and abstract temporal queries, multiple RAG baselines, ablations, cross-generator tests, and additional conventional QA datasets.",
+   "key_findings": [
+    {
+     "finding": "On base-corpus ECT-QA specific questions, Temporal GraphRAG obtains a Correct score of 0.599, compared with approximately 0.380 to 0.410 for the reported non-oracle RAG baselines.",
+     "evidence_type": "supported",
+     "section": "VI Results: Specific Query Evaluation"
+    },
+    {
+     "finding": "After adding the 2024 corpus slice, Temporal GraphRAG retains a Correct score of 0.587 on base queries and reaches 0.617 on new queries, indicating that incremental updates can add recent knowledge without a large loss on earlier questions.",
+     "evidence_type": "supported",
+     "section": "VI Incremental Evaluation"
+    },
+    {
+     "finding": "The incremental update consumes about 1.6 million prompt tokens and 2.0 million completion tokens for Temporal GraphRAG versus about 30.0 million prompt and 7.8 million completion tokens for the reported GraphRAG update.",
+     "evidence_type": "supported",
+     "section": "VI Indexing and Update Efficiency"
+    },
+    {
+     "finding": "Pairwise evaluation of abstract questions reports high temporal-coverage win rates for Temporal GraphRAG against GraphRAG, HippoRAG2, and LightRAG, supporting the intended benefit of explicit temporal organization for broad time-sensitive synthesis.",
+     "evidence_type": "supported",
+     "section": "VI Abstract Query Evaluation"
+    },
+    {
+     "finding": "Ablation results show a large accuracy drop when temporal retrieval is removed, with Correct score falling from 0.599 for the full system to about 0.382 in the corresponding ablation, making temporal retrieval the strongest reported component-level contribution.",
+     "evidence_type": "supported",
+     "section": "VI Ablation Study"
+    },
+    {
+     "finding": "The temporal graph is substantially smaller than the compared GraphRAG graph in the reported corpus, including 16,817 entities and 28,157 relations at base time versus 45,540 entities and 59,679 relations for GraphRAG.",
+     "evidence_type": "supported",
+     "section": "VI Graph Statistics and Efficiency"
+    },
+    {
+     "finding": "The dataset-size statement is internally inconsistent: the paper says there are 1,105 specific queries but identifies 656 base and 349 new specific queries, which account for only 1,005 specific queries; the separately reported 100 abstract queries would make the overall query total 1,105.",
+     "evidence_type": "contradicted",
+     "section": "V-A Incremental RAG Evaluation"
+    }
+   ],
+   "limitations": [
+    "ECT-QA is restricted to 480 earnings-call transcripts from 24 companies over 2020-2024, so transfer to other evolving knowledge domains remains uncertain.",
+    "Questions are synthesized with LLM assistance and then automatically and manually quality-controlled, which may not reproduce the distribution of organically asked temporal questions.",
+    "Important evaluation judgments use GPT-4o-mini, while indexing and answering also depend on specific proprietary or hosted models, making some results model-dependent.",
+    "The approach represents timestamps and temporal relations but does not directly evaluate document-version lineage, supersession semantics, or fine-grained version-aware provenance as a distinct capability.",
+    "The incremental protocol tests corpus evolution rather than statistically calibrated robustness under arbitrary non-stationary distribution shift.",
+    "The system reports refusal behavior but does not provide conformal abstention, calibrated risk-controlled stopping, or a formal criterion for deciding when additional retrieval should cease.",
+    "The paper contains an internal numerical inconsistency in the reported count of specific queries."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "temporal_qa_gain": 0.99,
+    "incremental_update_stability": 0.98,
+    "update_token_efficiency": 0.99,
+    "temporal_retrieval_ablation": 0.99,
+    "compact_graph": 0.99,
+    "query_count_inconsistency": 0.99
+   },
+   "raw_claims": [
+    "Temporal GraphRAG combines timestamped knowledge-graph relations with a hierarchy of temporal summary nodes.",
+    "The incremental index updates newly affected temporal structures instead of rebuilding every temporal summary from scratch.",
+    "The ECT-QA corpus contains 480 earnings-call transcripts from 2020 through 2024.",
+    "The incremental experiment uses 384 documents from 2020-2023 as the base corpus and 96 documents from 2024 as new knowledge.",
+    "Temporal GraphRAG achieves a higher Correct score than the reported non-oracle RAG baselines on base specific queries.",
+    "Performance on earlier queries changes only modestly after the 2024 documents are incorporated.",
+    "The reported incremental token cost is much lower than rebuilding the compared GraphRAG index.",
+    "Removing temporal retrieval causes a large drop in specific-query accuracy.",
+    "The benchmark evaluates Correct, Refusal, and Incorrect factual elements with attention to the required temporal scope.",
+    "The paper makes its ECT-QA dataset and implementation code publicly available.",
+    "The stated specific-query total does not equal the sum of the reported base and new specific-query counts."
+   ],
+   "source_url": "https://arxiv.org/html/2510.13590",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

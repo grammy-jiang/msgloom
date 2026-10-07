@@ -1,0 +1,86 @@
+{
+ "paper_id": "doi-10-18653-v1-2024-findings-emnlp-725",
+ "title": "Distance-aware Calibration for Pre-trained Language Models",
+ "research_question": "Can a post-hoc calibration method that reduces confidence as a sample moves farther from the training distribution improve language-model calibration under distribution shift and improve out-of-distribution detection?",
+ "methodology": "The authors propose Distance Aware Calibration (DAC), which uses the distance between a test sample's language-model embedding and the training-set embeddings to mix the model's predictive distribution toward a uniform distribution as distance increases. The default implementation uses deep k-nearest-neighbor distance over hidden representations and selects its calibration parameter through a multi-objective procedure balancing in-domain Expected Calibration Error and in-/out-of-domain discrimination measured by precision-recall area, with a knee-selection algorithm choosing the operating point. BERT-base and RoBERTa-base are evaluated against uncalibrated models, temperature scaling, and SNGP across synthetic character corruption, cross-dataset content shifts, and OOD-detection benchmarks. The paper also ablates the OOD calibration-set source and size and compares KNN distance with Mahalanobis and Gaussian-mixture alternatives.",
+ "key_findings": [
+  {
+   "finding": "DAC consistently improves out-of-distribution calibration over the evaluated baselines under random-character and keyboard-typo perturbations, with the largest gains at higher noise levels.",
+   "evidence_type": "supported",
+   "section": "5.1 DAC improves OOD calibration under different domain-shifts"
+  },
+  {
+   "finding": "Under non-synthetic content shifts, DAC remains strong for OOD calibration but temperature scaling is a substantially stronger competitor and beats DAC in at least the RoBERTa natural-language-inference case.",
+   "evidence_type": "supported",
+   "section": "5.1 DAC improves OOD calibration under different domain-shifts"
+  },
+  {
+   "finding": "For in-domain calibration, DAC improves on the uncalibrated model, but temperature scaling is generally more effective.",
+   "evidence_type": "supported",
+   "section": "5.1 DAC improves OOD calibration under different domain-shifts"
+  },
+  {
+   "finding": "Using DAC confidence for OOD detection improves the underlying language model and achieves the best reported result among the compared methods in all but one evaluated model/task case.",
+   "evidence_type": "supported",
+   "section": "5.2 DAC makes language models better OOD detectors"
+  },
+  {
+   "finding": "The ablation finds KNN distance more effective than Mahalanobis distance or a Gaussian-mixture-model score for DAC in the evaluated noisy-text settings.",
+   "evidence_type": "supported",
+   "section": "5.3 Ablation Study"
+  },
+  {
+   "finding": "DAC is not completely insensitive to its calibration data: its results vary with both the size and source of the OOD calibration set, and IMDB produces the weakest and most variable results in the reported comparison.",
+   "evidence_type": "supported",
+   "section": "5.3 Ablation Study"
+  },
+  {
+   "finding": "The paper provides no evidence about longitudinal conversation identity, enterprise email/chat linking, evolving work-item identity, subevents, or non-transitive continuity relations; its distance notion concerns statistical distance from a training distribution rather than continuity between messages or business events.",
+   "evidence_type": "supported",
+   "section": "3 Methodology; 4 Experimental Setup"
+  }
+ ],
+ "limitations": [
+  "DAC requires access to the original training data, or at least precomputed representations of it, at inference time.",
+  "Training-sample embeddings must be precomputed and stored in an index, which can be expensive for very large training sets.",
+  "Calibration requires a small set of out-of-distribution examples.",
+  "Performance varies with the choice and size of the OOD calibration set despite the authors' robustness findings.",
+  "The experiments are limited to BERT-base and RoBERTa-base rather than a broad range of contemporary model families and scales.",
+  "The main calibration experiments use classification benchmarks and synthetic character corruptions, so they do not establish behavior for longitudinal enterprise communication.",
+  "The work does not study threads, conversations, work items, concrete organizational events, subevents, temporal continuation, or cross-thread linking; it is therefore methodologically peripheral to the stated literature-review topic.",
+  "A companion implementation of DAC itself is not identified in the paper, although the experiments use publicly available libraries and benchmark datasets."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "noisy_ood_calibration_gain": 0.99,
+  "content_shift_nuance": 0.98,
+  "indomain_ts_stronger": 0.97,
+  "ood_detection_gain": 0.99,
+  "knn_best_distance": 0.98,
+  "calibration_source_variance": 0.98,
+  "not_continuity_evidence": 1.0
+ },
+ "raw_claims": [
+  "DAC is a post-hoc method that adjusts each sample's confidence using its distance from the model's training data.",
+  "As distance from the training set increases, DAC moves the predictive distribution toward maximum uncertainty.",
+  "The default distance is computed with nearest neighbors over language-model hidden representations.",
+  "The calibration parameter is selected by jointly considering in-domain calibration error and discrimination between in-domain and OOD samples.",
+  "The experiments use base BERT and base RoBERTa models.",
+  "Synthetic distribution shifts include random character edits and keyboard-typo corruptions applied at several intensities.",
+  "The evaluation also includes content shifts between datasets for paraphrase detection and natural-language inference.",
+  "Calibration is evaluated with Expected Calibration Error, while OOD detection uses AUROC, PRAUC, and FPR95.",
+  "DAC gives especially large calibration improvements when character noise is substantial.",
+  "Temperature scaling is generally stronger than DAC for in-domain calibration, even though DAC is stronger in many OOD settings.",
+  "On the reported OOD-detection experiments, DAC improves the base model and leads the compared methods in all but one case.",
+  "For RoBERTa on the IMDB OOD-detection setting, DAC reports an AUROC of 90.18 compared with 87.85 for SNGP and 81.34 for the uncalibrated model.",
+  "The OOD source used during calibration affects DAC's variance and final calibration quality.",
+  "KNN distance performs better than the tested Mahalanobis and Gaussian-mixture alternatives.",
+  "The method requires retained training representations and some OOD calibration examples."
+ ],
+ "source_url": "https://aclanthology.org/2024.findings-emnlp.725.pdf",
+ "access": "full_text"
+}

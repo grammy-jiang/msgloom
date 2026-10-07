@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-1145-3786625",
+ "title": "HONEYBEE: Efficient Role-based Access Control for Vector Databases via Dynamic Partitioning",
+ "research_question": "Can the structure of role-based access-control policies be exploited to partition and selectively replicate vector indexes so that permission-safe search achieves a better latency-memory-recall trade-off than either post-filtering or dedicated per-role indexes?",
+ "methodology": "HONEYBEE models users, roles, permissions, vector partitions, memory consumption, query cost, and recall, and casts partition design as a constrained optimization problem. Because exact optimization is expensive, the system uses a greedy partitioning procedure and maintains user-to-partition routing so that queries search only partitions authorized for the requester. The authors evaluate the design on Wikipedia and SIFT vector datasets with multiple RBAC workload generators and baselines including PostgreSQL row-level security, role partitioning, and hybrid-search methods, reporting latency, normalized memory footprint, and Recall@k.",
+ "key_findings": [
+  {
+   "finding": "Overlapping RBAC-aware partitions allow HONEYBEE to interpolate between one shared filtered index and highly redundant per-role indexes instead of being restricted to either extreme.",
+   "evidence_type": "supported",
+   "section": "Sections 3-5"
+  },
+  {
+   "finding": "With pgvector HNSW, HONEYBEE achieved up to a 13.5-fold query speedup over PostgreSQL row-level-security post-filtering while using 1.24 times the single-index memory footprint in the reported high-top-k setting.",
+   "evidence_type": "supported",
+   "section": "Sections 7.1 and 7.5"
+  },
+  {
+   "finding": "At comparable query performance to dedicated role partitioning, the reported high-top-k configuration reduced additional memory consumption by 90.4%.",
+   "evidence_type": "supported",
+   "section": "Sections 7.1 and 7.5"
+  },
+  {
+   "finding": "The system explicitly optimizes a three-way trade-off among query latency, memory overhead, and retrieval recall rather than treating permission filtering as an independent post-processing step.",
+   "evidence_type": "supported",
+   "section": "Sections 4-7"
+  },
+  {
+   "finding": "Physical partitioning was experimentally faster than logical partitioning under equal memory budgets because logical traversal incurred additional cache-miss costs, although logical partitioning can be useful when replication is unusually expensive.",
+   "evidence_type": "supported",
+   "section": "Section 7.4"
+  },
+  {
+   "finding": "Incremental maintenance handles several user, role, and document changes without necessarily rebuilding all partitions, and the paper experimentally studies role insertions and deletions.",
+   "evidence_type": "supported",
+   "section": "Sections 5.3 and 7.6"
+  },
+  {
+   "finding": "The authors do not provide a complete online policy for deciding when cumulative workload changes justify repartitioning; adaptive repartitioning is left as future work.",
+   "evidence_type": "supported",
+   "section": "Section 5.3"
+  }
+ ],
+ "limitations": [
+  "The design is specialized around Role-Based Access Control and does not by itself solve arbitrary attribute-based or policy-language access control.",
+  "The experimental vector corpora are real or standard benchmarks, but important permission structures are generated through benchmark workload models rather than being exclusively drawn from production enterprise authorization graphs.",
+  "The partition optimizer is greedy and has a stated worst-case complexity of O(|R|^3|D|), although the authors argue practical workloads are substantially cheaper.",
+  "Replication improves latency at the cost of memory, so extremely high-dimensional vectors or very large role counts can alter the preferred partitioning strategy.",
+  "The paper handles incremental changes but leaves the higher-level decision of when to perform expensive repartitioning under evolving workloads as future research.",
+  "The evaluation demonstrates authorization-aware retrieval efficiency rather than a complete end-to-end RAG security analysis including generation-time leakage or downstream model behavior."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "rbac_overlapping_partition_tradeoff": 0.98,
+  "13_5x_latency_result": 0.99,
+  "90_4_percent_memory_reduction": 0.99,
+  "latency_memory_recall_optimization": 0.99,
+  "physical_vs_logical_partitioning": 0.97,
+  "incremental_permission_updates": 0.96,
+  "adaptive_repartitioning_open_problem": 0.99
+ },
+ "raw_claims": [
+  "HONEYBEE uses RBAC roles as the structural basis for deciding how vector data should be partitioned.",
+  "Its partitions may overlap, allowing selected vectors to be replicated when replication improves query performance.",
+  "Authorized users are routed only to partitions that correspond to data they are allowed to access.",
+  "The partitioning objective balances storage overhead, query cost, and recall.",
+  "Evaluation uses Wikipedia-derived vectors together with SIFT1M and SIFT10M benchmarks.",
+  "The evaluation reports query latency, normalized index memory, and Recall@k.",
+  "Post-filtering through row-level security uses little index redundancy but can incur substantially higher query cost.",
+  "Dedicated role indexes improve search speed but may duplicate large amounts of vector data.",
+  "HONEYBEE occupied an experimentally useful operating region between those two baselines.",
+  "The reported top-k=100 experiment reached approximately 13.5 times the RLS query speed with 1.24 times its memory.",
+  "Incremental updates can adjust routing and affected partitions for several permission changes.",
+  "The source code is publicly linked from the paper.",
+  "A policy for deciding when workload evolution warrants full repartitioning remains an open problem."
+ ],
+ "source_url": "https://arxiv.org/html/2505.01538",
+ "access": "full_text"
+}

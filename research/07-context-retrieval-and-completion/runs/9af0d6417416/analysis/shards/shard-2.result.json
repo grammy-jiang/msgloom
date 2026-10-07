@@ -1,0 +1,372 @@
+{
+ "analyses": [
+  {
+   "paper_id": "2608.13237",
+   "title": "When Should Multi-Round RAG Stop? Structured Stopping Judgments and Retrieval Reduction in Search-R1",
+   "research_question": "Can a structured sufficiency-and-gap judge change only the stopping time of a frozen multi-round Search-R1 trajectory to reduce retrieval while keeping answer-quality loss within a prespecified bound, and what stopping risk remains?",
+   "methodology": "The study freezes Search-R1's reasoner, E5 top-3 retriever, Wiki-2018 corpus, prompt, and four-search budget, then constructs reachable retrieval states and labels whether a correct answer is already recoverable using a frozen answer-only probe. It trains a Qwen3.5-2B structured judge on 3,009 states from 900 disjoint HotpotQA training questions and selects its stopping threshold on grouped validation under a STOP-precision constraint. A held-out 800-question confirmatory evaluation applies the first threshold crossing on each trajectory and measures exact match, search calls, state-ranking quality, calibration, and safe versus unsafe early stops with paired bootstrap confidence intervals.",
+   "key_findings": [
+    {
+     "finding": "The confirmatory stopping policy removed 77 retrieval calls, reducing mean searches from 2.60125 to 2.50500, a 3.70% reduction, with the confidence interval satisfying the prespecified retrieval-reduction criterion.",
+     "evidence_type": "supported",
+     "section": "Confirmatory Results"
+    },
+    {
+     "finding": "Official exact match decreased from 0.44875 to 0.44250, a 0.625 percentage-point loss whose confidence interval remained inside the prespecified two-percentage-point noninferiority margin; this does not establish unchanged or improved accuracy.",
+     "evidence_type": "supported",
+     "section": "Confirmatory Results"
+    },
+    {
+     "finding": "Among 69 confirmatory early stops, 42 were classified as safe and 27 as unsafe, so 39.13% of the executed early stops were unsafe under the paper's probe-based definition.",
+     "evidence_type": "supported",
+     "section": "Risk Diagnostics"
+    },
+    {
+     "finding": "The expanded structured judge improved STOP average precision over the structured-base judge, but validation STOP precision did not transfer to the final test set and calibration remained weak.",
+     "evidence_type": "supported",
+     "section": "Confirmatory Results and Risk Diagnostics"
+    },
+    {
+     "finding": "Exploratory trajectories contained substantial over-retrieval headroom: 143 of 523 native SEARCH actions occurred after the answer probe was already correct, and a native-preserving cost oracle could remove 131 searches while retaining native exact match.",
+     "evidence_type": "supported",
+     "section": "Exploratory Analysis"
+    },
+    {
+     "finding": "Reducing retrieval calls is not equivalent to reducing total system cost because the additional judge introduces compute, memory, and latency that were not included in the retrieval-call metric.",
+     "evidence_type": "supported",
+     "section": "Discussion"
+    }
+   ],
+   "limitations": [
+    "The conclusions are conditional on a frozen Search-R1 configuration and a HotpotQA-based evaluation rather than a broad set of RAG systems and domains.",
+    "The learned stopping policy is not risk-certified: a substantial fraction of executed early stops were unsafe under the paper's own probe-based criterion.",
+    "The high validation STOP precision was based on a small number of positive stop predictions and did not transfer to the confirmatory set.",
+    "The evaluation counts retrieval calls but does not normalize end-to-end latency, token usage, memory, or judge-computation cost.",
+    "The correctness labels rely on a frozen answer-only probe, so they operationalize recoverability rather than proving that the retrieved evidence is complete or sufficient in a stronger semantic sense.",
+    "Per-question trajectories, benchmark-derived labels, and model weights are not redistributed in the reproduction repository, although the underlying benchmark and upstream resources remain available under their original licenses."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_reduction": 0.99,
+    "accuracy_within_prespecified_margin": 0.99,
+    "unsafe_stopping_risk": 0.99,
+    "ranking_policy_mismatch": 0.96,
+    "over_retrieval_headroom": 0.98,
+    "total_cost_not_established": 0.99
+   },
+   "raw_claims": [
+    "The paper treats multi-round RAG stopping as a sequential decision over already reachable reasoning and retrieval states.",
+    "A frozen answer-only probe is used to decide whether an official answer is already recoverable at a state.",
+    "The structured judge predicts sufficiency and evidence gaps without changing the underlying Search-R1 reasoner or retriever.",
+    "The judge was trained on 3,009 clean states derived from 900 HotpotQA training questions.",
+    "The confirmatory evaluation contains 800 held-out HotpotQA questions.",
+    "The learned policy reduced mean search calls by 0.09625 per question.",
+    "Official exact match fell by 0.00625 in absolute proportion.",
+    "Only a minority of available safe early-stop opportunities were actually captured by the learned policy.",
+    "Validation precision substantially overestimated confirmatory STOP precision.",
+    "The paper explicitly cautions that fewer searches do not by themselves demonstrate lower total inference cost."
+   ],
+   "source_url": "https://arxiv.org/html/2608.13237",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "doi-10-18653-v1-2026-findings-acl-2090",
+   "title": "Beyond Single-Shot: Multi-step Tool Retrieval via Query Planning",
+   "research_question": "Can iterative query planning that decomposes complex requests and adapts subsequent queries to retrieval feedback outperform single-shot retrieval for large compositional tool libraries and improve downstream tool execution?",
+   "methodology": "ToolQP first produces a natural-language plan that decomposes an instruction into retrieval-relevant subtasks, then iteratively generates queries while conditioning on previous retrieval feedback and aggregates tools using their best rank across attempts. Because standard tool-retrieval datasets lack query trajectories, the authors synthesize training trajectories with a teacher model, including successful and selected failed-then-corrected query attempts, and use them for supervised fine-tuning. The model is subsequently optimized with GRPO-style reinforcement learning with verifiable retrieval rewards based on final nDCG and recall/completeness, plus formatting and plan-semantic constraints. Evaluation uses ToolRet across Web, Code, and Custom tool collections, transfer to retrievers not used for trajectory generation, ablations, and end-to-end execution on API-Bank and StableToolBench.",
+   "key_findings": [
+    {
+     "finding": "On ToolRet, ToolQP improved the reported macro zero-shot nDCG@10 and Completeness@10 from 29.8 and 27.0 for the base gte-Qwen retriever to 36.9 and 35.8.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "When transferred to retrievers not used to create its training trajectories, ToolQP produced average zero-shot gains of 5.4 points in nDCG@10 and 7.1 points in Completeness@10.",
+     "evidence_type": "supported",
+     "section": "Retriever Transfer"
+    },
+    {
+     "finding": "End-to-end evaluation showed higher execution performance after ToolQP retrieval, including about a three-point accuracy improvement on API-Bank and roughly eight-to-nine-point pass-rate improvements on the reported StableToolBench measures.",
+     "evidence_type": "supported",
+     "section": "End-to-End Evaluation"
+    },
+    {
+     "finding": "Ablations indicate that supervised training supplies most of the in-domain improvement, while the subsequent reinforcement-learning stage provides additional gains and is particularly useful for zero-shot performance.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "Removing the original user instruction from the iterative planner reduced performance, supporting the use of the original request as an anchor when subtask decomposition or intermediate retrieval feedback is incomplete.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "Qualitative examples show that feedback-conditioned retrieval can expose an implicit prerequisite tool that was not explicitly named in the original request, although this evidence is illustrative rather than a quantified dependency-recovery evaluation.",
+     "evidence_type": "supported",
+     "section": "Qualitative Analysis"
+    }
+   ],
+   "limitations": [
+    "Synthetic query trajectories were generated against a single base retriever, which the authors note can bias the planner toward that retriever's embedding and ranking behavior.",
+    "Inter-tool dependencies are handled implicitly through iterative retrieval interaction; the paper notes that explicit tool knowledge graphs could represent such dependencies more efficiently.",
+    "The training supervision is synthetic and therefore inherits errors and assumptions from the teacher-generated plans, subtasks, and candidate queries.",
+    "The experiments focus on tool discovery and execution benchmarks rather than document evidence retrieval with permission, version, or temporal-validity constraints.",
+    "The stopping condition is based on subtask coverage within the query-planning procedure rather than a calibrated guarantee that all decision-relevant evidence has been found.",
+    "The paper does not provide an end-to-end cost model balancing additional planning/model inference against retrieval savings."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "toolret_zero_shot_improvement": 0.99,
+    "cross_retriever_transfer": 0.98,
+    "downstream_execution_improvement": 0.97,
+    "sft_and_rlvr_contributions": 0.96,
+    "original_query_anchoring": 0.97,
+    "implicit_dependency_discovery": 0.86
+   },
+   "raw_claims": [
+    "ToolQP represents retrieval as an iterative query-planning process instead of one embedding lookup for the whole request.",
+    "The planner decomposes a complex instruction into subtasks before interacting repeatedly with a retriever.",
+    "Later queries are conditioned on feedback from earlier retrieval attempts.",
+    "The final tool ranking uses the best rank achieved by each tool across multiple retrieval attempts.",
+    "The training trajectories are synthetically generated because existing tool-retrieval datasets do not provide multi-step query trajectories.",
+    "The training data includes some failed retrieval attempts followed by successful revisions so that the model can learn correction behavior.",
+    "Reinforcement learning optimizes sequence-level retrieval measures over the aggregated final tool list.",
+    "ToolQP was trained with trajectories produced using one retriever but was evaluated with several different retrievers.",
+    "Keeping the original user request in the planner context improves retrieval relative to relying only on its decomposition.",
+    "The authors identify explicit modeling of inter-tool dependencies as an avenue for further improvement."
+   ],
+   "source_url": "https://arxiv.org/html/2601.07782",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2604.25676",
+   "title": "CORAL: Adaptive Retrieval Loop for Culturally-Aligned Multilingual RAG",
+   "research_question": "Can critique-driven iterative revision of both the corpus selection and the retrieval query improve culturally aligned multilingual RAG compared with fixed multilingual retrieval spaces?",
+   "methodology": "CORAL uses a planner to select language-specific corpora and formulate retrieval queries and a critic to score retrieved documents for relevance, usefulness, specificity, and contextual compatibility, then decide whether accumulated evidence is sufficient. Each selected corpus contributes top-ranked documents, validated documents accumulate across iterations, and an insufficient or culturally misaligned evidence set triggers feedback to the planner for corpus reselection and query reformulation; the highest-scoring validated documents are ultimately passed to the answer generator. Experiments use BLEnD and CLIcK cultural question answering, 13 language-specific Wikipedia corpora from October 2025, two large planner/critic backbones, multiple answer generators, fixed-scope and multilingual-RAG baselines, and component ablations.",
+   "key_findings": [
+    {
+     "finding": "CORAL achieved the strongest reported accuracy across the evaluated resource tiers and planner/critic configurations, with the final paper reporting improvements of roughly four percentage points on low-resource BLEnD averages in one configuration and up to 2.82 points on CLIcK.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "For the Qwen-based planner and critic, dynamic corpus selection without query rewriting improved the reported BLEnD mid-resource score by 3.78 points and CLIcK by 6.62 points relative to the multiRAG baseline.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "Adding query reformulation on top of dynamic selection produced further gains; with the GPT-OSS configuration the reported increments included 2.36 points on low-resource BLEnD and 1.41 points on CLIcK.",
+     "evidence_type": "supported",
+     "section": "Ablation Study"
+    },
+    {
+     "finding": "Fixed retrieval from a culture's own language corpus remained below CORAL in the reported ablation, while indiscriminately pooling corpora could introduce culturally mismatched evidence.",
+     "evidence_type": "supported",
+     "section": "Static Corpus Ablation"
+    },
+    {
+     "finding": "In a manual analysis of 158 rewritten queries from 100 CLIcK questions, 53.8% of rewrites narrowed the query and 32.9% were categorized as paraphrases; narrowing frequently supplied contextual details that the critic had identified as missing.",
+     "evidence_type": "supported",
+     "section": "Query Reformulation Analysis"
+    },
+    {
+     "finding": "CORAL contains an explicit evidence-sufficiency feedback loop and can terminate early, but the paper also acknowledges that this additional agentic reasoning incurs inference cost and calls for future cost-aware stopping methods.",
+     "evidence_type": "supported",
+     "section": "Method and Limitations"
+    }
+   ],
+   "limitations": [
+    "The retrieval collection is restricted to language-specific Wikipedia corpora, so culturally relevant knowledge that is absent or sparse in Wikipedia cannot be recovered by the loop.",
+    "Wikipedia coverage varies substantially across languages and can privilege well-documented perspectives while underrepresenting others.",
+    "The main evaluation uses multiple-choice cultural question answering and therefore does not test many open-ended or multi-turn failure modes.",
+    "The language and corpus set was restricted for computational reasons and does not cover arbitrary multilingual or regional information sources.",
+    "Agentic corpus selection, criticism, and query reformulation increase inference cost even though the system uses iteration limits and early termination.",
+    "The paper discusses privacy and access-control requirements for deployment with sensitive or private sources, but these permission-enforcement mechanisms are not part of the evaluated retrieval loop.",
+    "The experimental design does not explicitly model document versions, superseded evidence, or temporal-validity checks."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "adaptive_retrieval_improves_accuracy": 0.97,
+    "dynamic_corpus_selection_contribution": 0.99,
+    "query_rewriting_contribution": 0.98,
+    "fixed_scope_limitation": 0.97,
+    "rewrite_behavior_analysis": 0.99,
+    "agentic_cost_tradeoff": 0.97
+   },
+   "raw_claims": [
+    "CORAL adapts both the retrieval corpus and the retrieval query in response to the quality of currently retrieved evidence.",
+    "A planner chooses retrieval corpora and queries while a separate critic evaluates retrieved evidence.",
+    "The critic scores documents along four dimensions before accepting them as validated evidence.",
+    "Documents that pass the validation thresholds can accumulate across retrieval iterations.",
+    "Insufficient evidence causes the critic's feedback to be sent back to the planner for another retrieval attempt.",
+    "The final generator receives a small set of the highest-scoring validated documents.",
+    "Dynamic corpus selection contributes substantial gains over a fixed multilingual retrieval setup in the reported ablations.",
+    "Query reformulation supplies additional gains beyond dynamic corpus selection alone.",
+    "Manual analysis indicates that many query rewrites narrow retrieval by adding missing contextual cues.",
+    "The authors state that real deployments over sensitive material require privacy and access-control mechanisms beyond the experimental setup."
+   ],
+   "source_url": "https://aclanthology.org/2026.findings-acl.1356.pdf",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2212.10509",
+   "title": "Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions",
+   "research_question": "Does repeatedly alternating chain-of-thought reasoning with retrieval, so that each reasoning step can determine what evidence to retrieve next, improve evidence recall and answer quality on knowledge-intensive multi-step questions?",
+   "methodology": "IRCoT starts with passages retrieved for the original question, generates one chain-of-thought sentence from the question, accumulated evidence, and prior reasoning, then uses that new reasoning sentence as the query for another retrieval step. This reason-retrieve cycle terminates when the generated reasoning contains an answer marker or after a maximum of eight iterations, while limiting the accumulated evidence set to 15 paragraphs. The authors evaluate GPT-3 and multiple Flan-T5 sizes with BM25 retrieval on HotpotQA, 2WikiMultihopQA, MuSiQue, and IIRC, measuring fixed-budget retrieval recall and downstream QA F1 and exact match, with additional out-of-domain, model-scale, and factuality analyses.",
+   "key_findings": [
+    {
+     "finding": "With GPT-3 as the reasoning model, IRCoT increased fixed-budget retrieval recall over one-step retrieval by 11.3, 22.6, 12.5, and 21.2 points on HotpotQA, 2WikiMultihopQA, MuSiQue, and IIRC respectively.",
+     "evidence_type": "supported",
+     "section": "Retrieval Results"
+    },
+    {
+     "finding": "Interleaved retrieval also improved downstream QA F1 on most evaluated settings, including gains of 7.1, 13.2, and 7.1 points with GPT-3 on the first three datasets, although the large IIRC retrieval gain did not yield a corresponding QA improvement.",
+     "evidence_type": "supported",
+     "section": "Question Answering Results"
+    },
+    {
+     "finding": "IRCoT retained retrieval and QA advantages under cross-dataset demonstrations in the reported out-of-domain experiments, except that IIRC was excluded from this comparison because of its different structure.",
+     "evidence_type": "supported",
+     "section": "Out-of-Domain Analysis"
+    },
+    {
+     "finding": "Manual factuality analysis found fewer factual errors in IRCoT reasoning than in the one-retrieval baseline, including reported reductions of 50% on HotpotQA and 40% on 2WikiMultihopQA.",
+     "evidence_type": "supported",
+     "section": "Factuality Analysis"
+    },
+    {
+     "finding": "Retrieval improvements appeared across all tested language-model sizes, including small Flan-T5 models, whereas downstream QA gains were less reliable at the smallest scale.",
+     "evidence_type": "supported",
+     "section": "Model Scale Analysis"
+    },
+    {
+     "finding": "The method's stopping mechanism is a generated answer-marker heuristic plus a hard iteration cap rather than an independently calibrated assessment that the accumulated evidence is sufficient.",
+     "evidence_type": "supported",
+     "section": "Method"
+    }
+   ],
+   "limitations": [
+    "The method relies on a language model being able to generate useful zero-shot or few-shot chain-of-thought reasoning, which the authors report as more difficult for smaller models.",
+    "Interleaving many retrieved paragraphs with demonstrations and prior reasoning requires a relatively long model context window.",
+    "The GPT-3 code-davinci-002 model used in the experiments was deprecated after submission, making exact reproduction of those results difficult.",
+    "Stopping is based on the model producing an answer marker or reaching an eight-step cap rather than on calibrated evidence completeness, uncertainty, or retrieval value.",
+    "The system does not explicitly enforce permissions, source versions, provenance freshness, or temporal validity.",
+    "The evaluation bounds retrieval by paragraph count but does not optimize a comprehensive end-to-end cost function covering reasoning-model inference and retrieval."
+   ],
+   "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_recall_improvement": 0.99,
+    "qa_improvement": 0.98,
+    "out_of_domain_robustness": 0.94,
+    "factual_error_reduction": 0.96,
+    "model_scale_effect": 0.96,
+    "heuristic_stopping": 0.99
+   },
+   "raw_claims": [
+    "IRCoT alternates one reasoning step with one retrieval step instead of retrieving all supporting evidence before reasoning.",
+    "Each newly generated chain-of-thought sentence becomes the basis for the next retrieval query.",
+    "Retrieved paragraphs accumulate so later reasoning has access to evidence obtained in earlier iterations.",
+    "The loop stops when the generated reasoning expresses an answer or when the maximum number of iterations is reached.",
+    "The evaluation covers four knowledge-intensive multi-step question-answering datasets.",
+    "Interleaving reasoning and retrieval substantially improves fixed-budget evidence recall over one-step retrieval.",
+    "Higher retrieval recall usually translates into improved question-answering performance but not in every dataset.",
+    "The authors observe fewer factual errors in reasoning when retrieval is interleaved with the chain of thought.",
+    "Retrieval gains remain visible with smaller language models even when their final QA gains are weaker.",
+    "The authors released code, data-related resources, and prompting materials for the experiments."
+   ],
+   "source_url": "https://arxiv.org/html/2212.10509",
+   "access": "full_text"
+  },
+  {
+   "paper_id": "2112.08558",
+   "title": "CONQRR: Conversational Query Rewriting for Retrieval with Reinforcement Learning",
+   "research_question": "Can conversational query rewriting trained directly against retrieval rewards produce better standalone search queries for fixed off-the-shelf retrievers than supervised rewriting trained only to imitate human rewrites?",
+   "methodology": "CONQRR uses a T5-base sequence-to-sequence model to rewrite the current conversational question and its dialogue context into a standalone retrieval query while leaving the downstream retriever fixed. Weak supervision identifies a likely positive passage from BM25 candidates by overlap with the known answer, and self-critical reinforcement learning rewards sampled rewrites when they rank that positive passage better than the model's greedy rewrite among training candidates; the paper studies both pure RL and a mixed RL-plus-cross-entropy objective. At inference, the model greedily generates one rewritten query, which is issued to either BM25 or a fixed T5-base dual-encoder retriever. Experiments use QReCC for training and in-domain testing, TREC conversational data for out-of-domain analysis, and MRR, Recall@10, and Recall@100 as retrieval metrics.",
+   "key_findings": [
+    {
+     "finding": "On the updated QReCC BM25 evaluation, the pure-RL CONQRR model achieved MRR 0.383 and Recall@10 60.1 versus 0.328 and 52.5 for the supervised T5QR baseline; the mixed objective also outperformed T5QR.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "The mixed CONQRR model outperformed supervised T5QR across the reported combinations of two fixed retrievers and the principal in-domain and out-of-domain evaluations, although individual metric differences on TREC can be small.",
+     "evidence_type": "supported",
+     "section": "Retriever and Domain Results"
+    },
+    {
+     "finding": "With the dual-encoder retriever on the aggregate QReCC evaluation, pure-RL CONQRR reached MRR 0.418, Recall@10 0.651, and Recall@100 0.847, compared with 0.361, 0.562, and 0.759 for supervised T5QR.",
+     "evidence_type": "supported",
+     "section": "Main Results"
+    },
+    {
+     "finding": "Directly submitting the full dialogue context can work very well when a conversation remains centered on one topic but degrades sharply after topic shifts, while learned query rewriting is substantially more robust to those shifts.",
+     "evidence_type": "supported",
+     "section": "Topic Shift Analysis"
+    },
+    {
+     "finding": "In an error analysis of 50 cases where mixed CONQRR underperformed the human rewrite with the dual encoder, the generated queries were fluent, but 56% omitted useful context and 34% introduced extra information associated with misinterpretation.",
+     "evidence_type": "supported",
+     "section": "Error Analysis"
+    },
+    {
+     "finding": "CONQRR performs a single context-conditioned rewrite followed by retrieval; it does not inspect retrieved evidence and iteratively decide what evidence gap to query next or when evidence collection is complete.",
+     "evidence_type": "supported",
+     "section": "Method"
+    }
+   ],
+   "limitations": [
+    "For conversations that remain strongly topic-concentrated, the raw dialogue context itself can already be an effective retrieval query, reducing the benefit of rewriting.",
+    "The paper focuses on alternating question-answer conversational structure and identifies richer discourse phenomena such as clarification as future work.",
+    "Positive training passages are obtained through weak supervision from retrieval candidates and answer overlap, so the reward target can inherit candidate-retrieval and labeling errors.",
+    "The updated evaluation excludes examples for which a valid gold passage label cannot be established, substantially reducing the evaluated test set relative to the original data.",
+    "Only two off-the-shelf retriever types are experimentally demonstrated, so claims of adaptation to arbitrary retrievers extend beyond the directly tested systems.",
+    "The approach generates one retrieval query rather than running an evidence-aware multi-round retrieval loop with an explicit sufficiency or stopping decision.",
+    "Permissions, document versions, source freshness, temporal validity, and cost-aware evidence acquisition are outside the evaluated problem formulation."
+   ],
+   "reproducibility": {
+    "code_available": false,
+    "dataset_available": true,
+    "metrics_reported": true
+   },
+   "confidence_scores": {
+    "retrieval_gain_over_supervised_rewriting": 0.99,
+    "two_retriever_effectiveness": 0.98,
+    "topic_shift_robustness": 0.98,
+    "error_modes": 0.97,
+    "single_step_not_iterative": 0.99,
+    "arbitrary_retriever_generalization": 0.84
+   },
+   "raw_claims": [
+    "CONQRR rewrites a context-dependent conversational question into a standalone query for a fixed retriever.",
+    "Its reinforcement-learning objective rewards rewrites according to retrieval performance rather than only similarity to a human-authored rewrite.",
+    "Training uses weakly identified positive passages derived from answer overlap with retrieved candidates.",
+    "The model uses self-critical training by comparing a sampled rewrite against its greedy rewrite.",
+    "The paper evaluates both BM25 and a fixed neural dual-encoder retriever.",
+    "CONQRR improves retrieval over a supervised T5 query-rewriting baseline on the main QReCC evaluations.",
+    "Query rewriting is especially useful when the conversation changes topic and old dialogue turns become distracting.",
+    "Raw dialogue context can be highly competitive when the conversation remains concentrated on the same topic.",
+    "Error analysis finds both missing-context and added-misinterpretation failures in generated rewrites.",
+    "The method does not use retrieval feedback to generate additional queries after the initial rewrite."
+   ],
+   "source_url": "https://arxiv.org/html/2112.08558",
+   "access": "full_text"
+  }
+ ],
+ "skipped": []
+}

@@ -1,0 +1,80 @@
+{
+ "paper_id": "manual-c2f56a571b",
+ "title": "Summarizing Emails with Conversational Cohesion and Subjectivity",
+ "research_question": "Can the conversational structure of email threads, local lexical cohesion, and subjective language improve extractive summaries of email conversations?",
+ "methodology": "The authors construct a sentence quotation graph that links sentences according to quotation and reply structure, and weight graph relationships using clue-word overlap, cosine similarity, or WordNet-based semantic similarity. They compare a generalized ClueWordSummarizer with PageRank and also augment sentence scores using two lexicons of subjective or opinion-bearing expressions. Evaluation uses 39 Enron conversations containing at least four emails, annotated by 50 human summarizers with five annotators per conversation, and measures sentence-pyramid precision plus ROUGE-2 and ROUGE-L over several summary lengths.",
+ "key_findings": [
+  {
+   "finding": "Simple clue-word overlap was more accurate than cosine similarity and both tested WordNet semantic-similarity variants for weighting conversational links.",
+   "evidence_type": "supported",
+   "section": "6.3 Evaluating the Weight of Edges"
+  },
+  {
+   "finding": "The clue-word method achieved pyramid precision 0.60, compared with 0.39 for cosine similarity and 0.57 for each tested semantic-similarity method, with statistically significant differences.",
+   "evidence_type": "supported",
+   "section": "6.3 Evaluating the Weight of Edges"
+  },
+  {
+   "finding": "The local-neighborhood ClueWordSummarizer outperformed PageRank variants, suggesting that local conversational cohesion was more aligned with human sentence selections than global graph centrality in this corpus.",
+   "evidence_type": "supported",
+   "section": "6.4 Comparing Page-Rank and CWS"
+  },
+  {
+   "finding": "Subjective-word scores alone were not consistently superior to the clue-word baseline, but combining subjective evidence with clue-word cohesion improved pyramid precision from 0.60 to 0.65 or 0.64.",
+   "evidence_type": "supported",
+   "section": "6.5 Evaluating Subjective Opinions"
+  },
+  {
+   "finding": "Clue-word and subjective-word signals overlapped only weakly, supporting the interpretation that they captured complementary forms of sentence importance.",
+   "evidence_type": "supported",
+   "section": "6.5 Evaluating Subjective Opinions"
+  },
+  {
+   "finding": "Human annotators explicitly distinguished essential sentences from optional supporting sentences, providing an empirical distinction between core and lower-priority information within an email conversation.",
+   "evidence_type": "supported",
+   "section": "6.1 Dataset Setup"
+  },
+  {
+   "finding": "The paper does not test whether its importance model adapts to a particular user's changing priorities or whether previously summarized information should be retained, superseded, or omitted in later briefings.",
+   "evidence_type": "unsupported",
+   "section": "Scope of the reported experiments"
+  }
+ ],
+ "limitations": [
+  "The evaluation corpus contains only 39 qualifying conversations selected from the ten largest inbox folders in Enron.",
+  "The task-specific human annotation corpus is constructed by the authors, and the paper states that no public annotated email-summarization corpus was available at the time.",
+  "The summaries are purely extractive and operate at sentence granularity.",
+  "The essential-versus-optional distinction is aggregated across annotators rather than personalized to a specific recipient.",
+  "The method treats a conversation as a static object rather than evaluating incremental updates as new messages arrive.",
+  "There is no representation of resolved versus still-open issues, fact supersession, or explicit prevention of repeating information across successive briefings.",
+  "The Enron corpus and handcrafted lexical resources may limit generalization to contemporary workplace communication."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "clue_words_best_edge_measure": 0.99,
+  "cws_outperforms_pagerank": 0.99,
+  "subjectivity_complements_cohesion": 0.99,
+  "importance_tiers_from_humans": 0.99,
+  "no_personalized_incremental_state": 0.96
+ },
+ "raw_claims": [
+  "The model represents email conversation structure using a sentence quotation graph rather than only a message-level thread.",
+  "Three edge-weighting strategies are evaluated: clue words, TF-IDF cosine similarity, and WordNet-based semantic similarity.",
+  "The evaluation corpus contains 39 Enron conversations with at least four emails each.",
+  "Those conversations contain 1,394 segmented sentences.",
+  "Fifty human summarizers participated, with five reviewers assigned to each conversation.",
+  "Annotators selected about 30 percent of each conversation's sentences for their summaries.",
+  "Selected sentences were separately labeled essential or optional.",
+  "A weighted human-selection score was used to identify sentences on which summarizers most strongly agreed.",
+  "About 12 percent of sentences in the evaluated conversations met the paper's overall-essential threshold.",
+  "Clue-word weighting substantially outperformed cosine similarity in the reported evaluations.",
+  "PageRank was less accurate than the corresponding generalized clue-word methods.",
+  "Combining subjective words with clue-word cohesion improved the reported summary accuracy."
+ ],
+ "source_url": "https://aclanthology.org/P08-1041.pdf",
+ "access": "full_text"
+}

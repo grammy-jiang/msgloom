@@ -1,0 +1,81 @@
+{
+ "paper_id": "2208.02814",
+ "title": "Conformal Risk Control",
+ "research_question": "Can conformal prediction be generalized from binary miscoverage control to finite-sample control of the expected value of arbitrary bounded monotone loss functions?",
+ "methodology": "The authors formulate post-processing of a pretrained model as selecting a conservativeness parameter using calibration data and prove finite-sample expected-risk guarantees under exchangeability and monotonicity conditions. They derive extensions for distribution shift, quantile risk, multiple risks, adversarial risks, and U-statistic risks. The method is evaluated on four computer-vision and NLP tasks using 1,000 random data splits per task, with public datasets and released reproduction code.",
+ "key_findings": [
+  {
+   "finding": "For bounded losses that are non-increasing with a conservativeness parameter, the proposed calibration rule guarantees expected test loss at or below the user-specified risk level under the stated exchangeability assumptions.",
+   "evidence_type": "supported",
+   "section": "Sections 1.1 and 2.1"
+  },
+  {
+   "finding": "The expected-risk guarantee generalizes ordinary conformal miscoverage control rather than merely reproducing prediction-set coverage.",
+   "evidence_type": "supported",
+   "section": "Sections 1 and 2.3"
+  },
+  {
+   "finding": "Under additional i.i.d. continuity conditions, the method is shown to be tight up to an order-1/n term rather than becoming arbitrarily conservative.",
+   "evidence_type": "supported",
+   "section": "Sections 1.1 and 2.2"
+  },
+  {
+   "finding": "Empirical experiments on segmentation, multilabel classification, hierarchical classification, and open-domain QA produced mean risks close to but below their specified targets across repeated random splits.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "On Natural Questions, the F1-loss experiment with a target risk of 0.3 reported mean risk 0.2996 with standard deviation 0.0150 over 1,000 trials.",
+   "evidence_type": "supported",
+   "section": "Section 3.4"
+  },
+  {
+   "finding": "The framework can incorporate covariate shift through importance weighting and thereby extends weighted conformal prediction from miscoverage to general monotone risks.",
+   "evidence_type": "supported",
+   "section": "Section 4.1"
+  },
+  {
+   "finding": "Non-monotone losses cannot in general be passed directly to the basic conformal-risk rule, although the paper gives a monotone-envelope construction and an asymptotic alternative.",
+   "evidence_type": "supported",
+   "section": "Section 2.4 and Appendix A"
+  }
+ ],
+ "limitations": [
+  "The primary finite-sample guarantee requires bounded losses and an appropriate monotonic relationship between the calibration parameter and loss.",
+  "The central guarantee is on expected risk rather than a per-instance, conditional, or high-probability guarantee over every calibration sample.",
+  "The main theorem relies on exchangeability; distribution-shift extensions require additional weighting information or assumptions.",
+  "Monotonizing a genuinely non-monotone loss can introduce conservativeness, while the alternative treatment is only asymptotically guaranteed and is most useful for near-monotone risks.",
+  "The authors leave more general unconditional control of some quantile-based risks, such as broader CVaR-type cases, unresolved.",
+  "The application studies demonstrate calibration behavior but do not establish that every operational loss relevant to deployment has the required mathematical structure."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "finite_sample_expected_risk_control": 0.99,
+  "generalizes_conformal_prediction": 0.99,
+  "near_tightness": 0.98,
+  "four_task_empirical_validation": 0.98,
+  "natural_questions_risk_result": 0.99,
+  "covariate_shift_extension": 0.98,
+  "nonmonotone_loss_constraint": 0.99
+ },
+ "raw_claims": [
+  "Conformal risk control selects a model-output threshold using a calibration sample and a user-specified risk target.",
+  "The principal theorem controls the expected value of a bounded monotone loss on a new observation.",
+  "Ordinary conformal miscoverage is recovered as a special case of the framework.",
+  "The finite-sample correction approaches the requested risk level at order 1/n under additional regularity conditions.",
+  "The segmentation experiment used multiple open-source polyp-segmentation datasets and controlled false-negative rate.",
+  "The multilabel experiment used MS COCO and controlled false-negative rate.",
+  "The hierarchical ImageNet experiment controlled a graph-distance loss.",
+  "The Natural Questions experiment controlled a token-level F1-derived loss.",
+  "All four application examples were evaluated over 1,000 random splits.",
+  "A covariate-shift extension reweights calibration losses using the relationship between training and test distributions.",
+  "Direct application of the basic procedure to an arbitrary non-monotone loss does not provide the same guarantee.",
+  "The authors released code for reproducing the empirical examples."
+ ],
+ "source_url": "https://arxiv.org/html/2208.02814",
+ "access": "full_text"
+}

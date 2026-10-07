@@ -1,0 +1,72 @@
+{
+ "paper_id": "doi-10-18653-v1-2021-naacl-main-329",
+ "title": "Stay Together: A System for Single and Split-antecedent Anaphora Resolution",
+ "research_question": "Can split-antecedent anaphora be resolved jointly with ordinary single-antecedent anaphora, singleton detection, and non-referring mention recognition in an end-to-end system that uses predicted rather than gold mentions?",
+ "methodology": "The authors extend a cluster-ranking anaphora-resolution architecture with a split-antecedent module that scores candidate discourse clusters for membership in the antecedent set of an anaphor. The model shares mention representations and candidate structures with the base resolver, and the split component is trained as a binary classification problem with measures to mitigate the extreme imbalance between positive and negative candidates. They compare joint training with a variant that trains the split component on a pre-trained base resolver and evaluate on the RST portion of ARRAU using ordinary coreference metrics, split-antecedent metrics, and an extension of LEA for joint evaluation.",
+ "key_findings": [
+  {
+   "finding": "Both proposed end-to-end variants substantially outperform prior naive or pipeline-style baselines on split-antecedent recognition and resolution when mentions are predicted.",
+   "evidence_type": "supported",
+   "section": "Experiments: predicted setting"
+  },
+  {
+   "finding": "The pre-trained variant achieves a split-anaphor recognition F1 of 55.1 and a strict split-resolution F1 of 20.4, while the joint variant obtains 50.9 and 15.3 respectively.",
+   "evidence_type": "supported",
+   "section": "Experiments: predicted setting"
+  },
+  {
+   "finding": "Joint optimization does not improve the ordinary single-antecedent and non-referring parts of the system; the pre-trained configuration gives slightly better overall performance on those aspects.",
+   "evidence_type": "supported",
+   "section": "Experiments: predicted setting"
+  },
+  {
+   "finding": "With gold mentions and gold split anaphors, the proposed resolver reaches 68.1 lenient F1 and 45.0 strict accuracy, exceeding the compared earlier system's best reported 66.4 lenient F1 and 35.0 strict accuracy.",
+   "evidence_type": "supported",
+   "section": "Experiments: gold setting"
+  },
+  {
+   "finding": "A major end-to-end bottleneck is candidate and anaphor identification: predicted mentions cover 98.33 percent of gold split anaphors, but only 65 percent survive the discourse-new candidate restriction, and the pre-trained system recognizes 45 percent of the gold split anaphors.",
+   "evidence_type": "supported",
+   "section": "Analysis"
+  },
+  {
+   "finding": "The extended LEA evaluation shows that gains from explicitly modeling split antecedents become more visible when split-anaphoric entities receive greater evaluation weight.",
+   "evidence_type": "supported",
+   "section": "Joint evaluation"
+  }
+ ],
+ "limitations": [
+  "Split-antecedent anaphors are extremely sparse in the corpus, with only 60 such anaphors in the reported test set, limiting statistical robustness.",
+  "The end-to-end architecture restricts split-anaphor candidates through a discourse-new gate, making a substantial fraction of otherwise detected gold anaphors inaccessible to the split resolver.",
+  "Errors in predicted mentions and predicted clusters account for much of the gap between gold-input and end-to-end performance.",
+  "The split-antecedent module constrains an antecedent group to between two and five antecedents, which encodes an architectural assumption about group size.",
+  "The relative importance assigned to split-anaphoric entities in the extended LEA metric is an evaluation design choice and materially affects the apparent size of the joint-system improvement.",
+  "Joint training did not produce benefits for the single-antecedent and non-referring subtasks."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "end_to_end_improvement": 0.99,
+  "pretrained_vs_joint": 0.99,
+  "gold_setting_improvement": 0.99,
+  "candidate_bottleneck": 0.99,
+  "joint_LEA_effect": 0.97
+ },
+ "raw_claims": [
+  "Split-antecedent anaphora differs from ordinary identity coreference because an anaphor can refer collectively to entities introduced by multiple antecedent clusters.",
+  "Earlier split-antecedent systems commonly assumed gold mentions or gold split anaphors.",
+  "The proposed architecture handles ordinary anaphora and split antecedents within one shared representation framework.",
+  "The split component independently scores candidate clusters as members of the antecedent set.",
+  "The authors address severe class imbalance during training because almost all mention-candidate decisions are negative.",
+  "Both proposed variants improve substantially over the compared baselines for predicted split-antecedent resolution.",
+  "The pre-trained configuration is generally preferable to the jointly trained configuration for overall anaphora performance.",
+  "Performance with gold inputs remains much higher than performance with predicted mentions and clusters.",
+  "Restricting split-anaphor processing to discourse-new mentions eliminates some valid gold cases before split resolution begins.",
+  "The paper extends LEA so ordinary and split-antecedent anaphora can be evaluated in one framework."
+ ],
+ "source_url": "https://aclanthology.org/2021.naacl-main.329.pdf",
+ "access": "full_text"
+}

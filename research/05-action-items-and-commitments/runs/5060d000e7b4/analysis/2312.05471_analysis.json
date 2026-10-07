@@ -1,0 +1,81 @@
+{
+ "paper_id": "2312.05471",
+ "title": "Fine-Grained Analysis of Team Collaborative Dialogue",
+ "research_question": "Can fine-grained hierarchical dialogue-act annotation and context-aware sequence classification provide explainable measures of team communication and collaboration in long-running workplace Slack conversations?",
+ "methodology": "The authors construct a hierarchical dialogue-act taxonomy containing 55 labels and use a reduced 18-label set for experiments on 4,035 sentences from six months of Slack communication by one eight-person software-development team. Annotation operates primarily at clause or fragment level, with speaker and timestamp context; the released experimental labels come from a single annotator after an earlier three-annotator agreement pass and guideline revision. They compare FastText with RoBERTa-plus-CRF sequential classifiers using one-, five-, and ten-utterance windows as well as time- and speaker-based segmentation, evaluating sentence-label accuracy. citeturn246367view0turn731643view4turn731643view5",
+ "key_findings": [
+  {
+   "finding": "The taxonomy explicitly distinguishes task assignment, voluntary task ownership, acceptance, requests, proposals, rejection, and counter-assignment, making it directly relevant to extracting action ownership and changes of responsibility from workplace chat. citeturn731643view2",
+   "evidence_type": "supported",
+   "section": "4 Dialogue Act Labeling / Table 2"
+  },
+  {
+   "finding": "Participant role and project responsibility can change the interpretation of an utterance from a request to an assignment, showing that owner assignment cannot always be inferred from surface wording alone. citeturn246367view0turn731643view4",
+   "evidence_type": "supported",
+   "section": "4 Dialogue Act Labeling"
+  },
+  {
+   "finding": "The annotation scheme can separate multiple acts inside one sentence at clause or fragment granularity, but it also permits annotators to label larger multi-sentence blocks that are subsequently split automatically, so it is not a strict token-level evidence-span annotation scheme. citeturn246367view0turn731643view4",
+   "evidence_type": "supported",
+   "section": "4.1 Dataset and Annotation Process"
+  },
+  {
+   "finding": "Longer conversational context improves dialogue-act classification relative to classifying isolated messages, with the best reported configuration using a ten-line window plus a one-hour temporal boundary and reaching 0.61 test accuracy versus 0.58 for the one-line setting. citeturn731643view5",
+   "evidence_type": "supported",
+   "section": "7 Results"
+  },
+  {
+   "finding": "Temporal proximity was a better contextual segmentation cue than restricting context to two speakers for this team, while the authors caution that the optimal segmentation strategy is probably team-dependent. citeturn731643view5turn731643view0",
+   "evidence_type": "supported",
+   "section": "7 Results; 8 Discussion"
+  },
+  {
+   "finding": "The study does not define a structured relation linking a deadline or temporal expression to a particular action, nor does it provide a dedicated representation for conditional obligations; negation is represented only indirectly through dialogue acts such as rejection and counter-assignment. citeturn731643view2",
+   "evidence_type": "supported",
+   "section": "4 Dialogue Act Labeling / Table 2"
+  },
+  {
+   "finding": "The proposed team metrics use sequences and response pairs such as question-answer and assignment-acknowledgment patterns, but the study has no independent endpoint measuring actual team performance. citeturn246367view0",
+   "evidence_type": "supported",
+   "section": "1 Introduction; 5 Team Metrics"
+  }
+ ],
+ "limitations": [
+  "The empirical corpus contains only one eight-person software-development team, one Slack channel, and six months of communication, limiting generalization to other organizations, industries, and communication platforms. citeturn731643view4",
+  "The final dataset labels are from a single annotator after an initial multi-annotator pass, and the paper states that full agreement results remained future work. citeturn246367view0turn731643view4",
+  "Slack threads and message reactions were not extracted, and annotators were not expected to consult project artifacts or transcripts from other days, potentially excluding context needed to resolve actions, owners, and decisions. citeturn731643view2",
+  "The authors lack an endpoint for actual team performance, so proposed collaboration metrics are not validated against project success or productivity outcomes. citeturn246367view0",
+  "The taxonomy does not explicitly encode deadline-to-action links, conditional obligations, normalized decisions, or provenance links from structured outputs back to exact token spans.",
+  "The authors note that tasks, efforts, roles, and capabilities require more sophisticated representations than those implemented in this initial work. citeturn731643view0"
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "action_owner_labels": 0.99,
+  "role_context_for_assignment": 0.97,
+  "clause_level_annotation": 0.97,
+  "long_context_improves_classification": 0.99,
+  "temporal_segmentation_best_on_this_team": 0.99,
+  "no_deadline_or_conditional_obligation_schema": 0.94,
+  "no_external_performance_endpoint": 0.99
+ },
+ "raw_claims": [
+  "The study analyzes 4,035 sentences collected over six months from a single Slack channel used by eight researchers and programmers. citeturn731643view4",
+  "The full taxonomy contains 55 dialogue acts, while experiments use a reduced set of 18 labels. citeturn246367view0turn731643view4",
+  "Task assignment and voluntary task claiming are represented by distinct labels. citeturn731643view2",
+  "The taxonomy also distinguishes rejection with counter-assignment from ordinary rejection. citeturn731643view2",
+  "An utterance that resembles a request lexically can count as an assignment when the speaker's role gives it that function. citeturn731643view4",
+  "Annotators may label separate clauses or fragments within the same sentence with different dialogue acts. citeturn731643view4",
+  "Some longer text blocks receive one annotation before automatic sentence splitting, so annotation boundaries are not consistently exact textual evidence spans. citeturn731643view4",
+  "The paper models response patterns such as query-to-inform and assign-to-acknowledge transitions. citeturn246367view0",
+  "A ten-line time-segmented context window produced the highest reported test accuracy of 0.61. citeturn731643view5",
+  "The one-line classifier achieved 0.58 accuracy, indicating a measurable benefit from broader dialogue context. citeturn731643view5",
+  "The paper reports no independent measure of actual project or team performance against which the proposed communication metrics could be validated. citeturn246367view0",
+  "The implemented representation does not bind temporal deadlines to specific action records or formally encode conditional obligations."
+ ],
+ "source_url": "https://arxiv.org/html/2312.05471",
+ "access": "full_text"
+}

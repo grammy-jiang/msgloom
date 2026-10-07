@@ -1,0 +1,73 @@
+{
+  "schema_version": "topic01-engineering-v1",
+  "case_id": "markerless-copy",
+  "description": "Copied source text without a quotation marker exposes detector recall limits.",
+  "family": "markerless_quote",
+  "messages": [
+    {
+      "message_id": "markerless-source",
+      "expected_text": "Escalate incident INC-42 before 17:00.",
+      "arrival_rank": 1,
+      "internet_message_id": "<markerless-source@synthetic.invalid>",
+      "subject": "Incident",
+      "content_kind": "text/plain",
+      "notes": ""
+    },
+    {
+      "message_id": "markerless-reply",
+      "expected_text": "Escalate incident INC-42 before 17:00.\nI will handle it.",
+      "arrival_rank": 2,
+      "internet_message_id": "<markerless-reply@synthetic.invalid>",
+      "subject": "Re: Incident",
+      "content_kind": "text/plain",
+      "notes": ""
+    }
+  ],
+  "relations": [],
+  "quotes": [
+    {
+      "occurrence_id": "markerless-q1",
+      "message_id": "markerless-reply",
+      "occurrence_span": {
+        "start": 0,
+        "end": 38
+      },
+      "source_candidates": [
+        {
+          "message_id": "markerless-source",
+          "span": {
+            "start": 0,
+            "end": 38
+          }
+        }
+      ],
+      "source_missing": false,
+      "source_semantics": "alternatives",
+      "marker_style": "markerless",
+      "notes": ""
+    }
+  ],
+  "spans": [
+    {
+      "span_id": "markerless-decision",
+      "message_id": "markerless-source",
+      "span": {
+        "start": 25,
+        "end": 37
+      },
+      "kind": "decision_bearing",
+      "text": "before 17:00",
+      "notes": ""
+    }
+  ],
+  "replay_orders": [
+    [
+      "markerless-source",
+      "markerless-reply"
+    ]
+  ],
+  "tags": [
+    "E1",
+    "E2"
+  ]
+}

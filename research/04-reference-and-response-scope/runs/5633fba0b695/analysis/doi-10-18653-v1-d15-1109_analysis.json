@@ -1,0 +1,91 @@
+{
+ "paper_id": "doi-10-18653-v1-d15-1109",
+ "title": "Discourse parsing for multi-party chat dialogues",
+ "research_question": "How can full discourse attachment and relation structure be parsed in multi-party chat when dialogues contain concurrent threads, crossing dependencies, multiple antecedents, and other non-tree structures?",
+ "methodology": "The authors use the STAC Settlers of Catan chat corpus annotated with Segmented Discourse Representation Theory structures and transform its hypergraph-style annotations into EDU-level dependency structures for parsing. They train regularized maximum-entropy models over pairs of elementary discourse units using positional, lexical, syntactic, and dialogue-act features, with separate treatment of intra-turn and inter-turn dependencies under a forward inter-turn constraint. Local probabilities are supplied to several decoders, including Last, local classification, and a Maximum Spanning Tree decoder; the best configuration is selected by ten-fold cross-validation on training data and evaluated on a held-out test portion. The full corpus statistics reported are 1,091 dialogues, 10,677 EDUs, and 11,348 discourse relations, with 123 dialogues, 1,132 EDUs, and 1,190 relations in the test set.",
+ "key_findings": [
+  {
+   "finding": "The corpus contains genuine many-to-many discourse alignment: one question can receive several answer attachments, and a later acknowledgment can itself attach to several preceding answers.",
+   "evidence_type": "supported",
+   "section": "2 What’s so special about multi party dialogue?"
+  },
+  {
+   "finding": "Non-tree discourse structures account for at least 9% of links in the corpus, so a representation forcing exactly one tree parent cannot faithfully represent all observed reply and antecedent relations.",
+   "evidence_type": "supported",
+   "section": "2 What’s so special about multi party dialogue?"
+  },
+  {
+   "finding": "Complex Discourse Units can combine several EDUs into a single discourse antecedent; the paper gives an example where two utterances jointly form the antecedent of a conditional relation and notes that some CDUs encompass an entire question-answering session.",
+   "evidence_type": "supported",
+   "section": "2 What’s so special about multi party dialogue?"
+  },
+  {
+   "finding": "Concurrent conversation threads create crossing dependencies, including replies or comments directed to material from another active thread, which makes simple adjacency-based reply alignment inadequate.",
+   "evidence_type": "supported",
+   "section": "2 What’s so special about multi party dialogue?"
+  },
+  {
+   "finding": "The best global parser achieved directed attachment F1 of 0.671, undirected attachment F1 of 0.680, and fully labeled structure F1 of 0.516 on the held-out test corpus.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "The Last baseline obtained attachment F1 of 0.584 and fully labeled F1 of 0.391, while the undecoded local classifier obtained directed attachment F1 of 0.541 and fully labeled F1 of 0.446.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "Although MST decoding performed best among the tested global configurations, the authors estimate that a tree decoder cannot exceed 91% attachment performance even with a perfect local model because the gold discourse structures contain non-tree links.",
+   "evidence_type": "supported",
+   "section": "5 Experiments and Results"
+  },
+  {
+   "finding": "The paper provides evidence about attachment structure and Question-Answer-Pair relations but does not introduce an explicit label for whether an answer completely versus partially resolves the semantic propositions in a question.",
+   "evidence_type": "unsupported",
+   "section": "2; 5"
+  }
+ ],
+ "limitations": [
+  "The parser converts SDRT hypergraphs to dependency structures by replacing Complex Discourse Units with recursive EDU heads, losing explicit CDU membership information during parsing.",
+  "The local model predicts pairwise EDU relations rather than learning the full discourse graph directly.",
+  "Maximum Spanning Tree decoding cannot represent all gold non-tree structures and has an acknowledged theoretical ceiling on this corpus.",
+  "The study uses task-oriented Settlers of Catan chat, so transfer to email, enterprise dialogue, or other conversational domains is not demonstrated.",
+  "The model does not explicitly score semantic completeness of an answer or identify which propositions within a multi-proposition question remain unanswered.",
+  "Attachment prediction and relation labeling are treated as separate prediction problems.",
+  "The paper notes that a general reliable method for predicting CDU membership edges was not available.",
+  "Cross-corpus comparisons to monologue parsers are explicitly described by the authors as difficult."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "one_question_multiple_answers": 0.99,
+  "one_reply_multiple_antecedents": 0.99,
+  "non_tree_links": 0.99,
+  "complex_multi_edu_antecedents": 0.99,
+  "crossing_thread_dependencies": 0.99,
+  "global_parser_metrics": 0.99,
+  "mst_structural_ceiling": 0.99,
+  "partial_answer_semantics_not_modeled": 0.95
+ },
+ "raw_claims": [
+  "Multi-party chat can contain several simultaneous conversational threads.",
+  "A single question in the corpus can have several distinct responses attached to it.",
+  "One later acknowledgment can attach to the contents of several preceding responses.",
+  "Non-tree structures account for at least nine percent of discourse links in the corpus.",
+  "Crossing dependencies occur because participants may respond across concurrently active threads.",
+  "SDRT Complex Discourse Units allow several elementary units to function together as one discourse constituent.",
+  "Some Complex Discourse Units encompass an entire question-answering sequence.",
+  "The annotated corpus contains 1,091 dialogues, 10,677 elementary discourse units, and 11,348 discourse relations.",
+  "The held-out test set contains 123 dialogues, 1,132 EDUs, and 1,190 relations.",
+  "Inter-annotator agreement previously reported for the annotations was kappa 0.72 for attachment structure and 0.58 for relation labeling.",
+  "The best global model combines Last for intra-turn structure with MST-based global decoding under the turn constraint.",
+  "The best reported global result is 0.680 undirected attachment F1, 0.671 directed attachment F1, and 0.516 fully labeled F1.",
+  "Tree-based MST decoding cannot reproduce every gold graph because some discourse units participate in non-tree attachment configurations.",
+  "The paper does not provide an explicit complete-answer versus partial-answer semantic distinction."
+ ],
+ "source_url": "https://aclanthology.org/D15-1109.pdf",
+ "access": "full_text"
+}

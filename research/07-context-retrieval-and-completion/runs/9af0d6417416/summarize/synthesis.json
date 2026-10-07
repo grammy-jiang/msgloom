@@ -1,0 +1,300 @@
+{
+ "topic": "evidence-gap-driven context retrieval and completion for workplace communication: turning an explicit evidence gap into bounded retrieval, deciding what to fetch next, and knowing when to stop, while preserving permissions, versions, temporal validity, cost and uncertainty",
+ "paper_count": 17,
+ "executive_summary": "Across 17 distinct papers, the strongest recurring evidence is that retrieval benefits from being conditioned on the current information need rather than run once or on a fixed schedule. Conversational rewriting, forward-looking queries, reasoning-conditioned retrieval, and structured gap queries each improve retrieval or QA in their tested domains. Several studies also show that excessive retrieval can add noise, so adaptive triggering and stopping matter. Newer work makes evidence sufficiency explicit: sufficiency judgments can improve abstention, guide another retrieval step, and reduce searches, but calibration errors and unsafe early stops remain material. Permission-aware RAG demonstrates per-document IAM enforcement before generation, yet does not test gap-driven replenishment after filtered evidence. Temporal-search work shows that time intent can affect relevance, but version lineage and temporal validity are not jointly handled. No study validates the full combined workplace loop.",
+ "themes": [
+  "Context-sensitive and feedback-conditioned query formulation",
+  "Iterative retrieval for multi-step evidence acquisition",
+  "Adaptive retrieval timing versus fixed or always-retrieve policies",
+  "Evidence sufficiency, abstention, and stopping decisions",
+  "Structured representations of unresolved evidence gaps",
+  "Retrieval budgeting and the distinction between retrieval cost and total system cost",
+  "Permission enforcement before evidence reaches the generator",
+  "Temporal intent as a retrieval-relevance dimension",
+  "Separation of retrieved-context sufficiency from answer correctness",
+  "Dependence of adaptive retrieval value on reader and retriever capability"
+ ],
+ "findings": [
+  {
+   "statement": "Across conversational search, generation-time RAG, and tool retrieval, methods that formulate queries from conversational context, anticipated information needs, or retrieval feedback outperform specified less-contextual query baselines in their respective evaluated settings; the papers test different mechanisms and do not establish one universally best formulation strategy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2112.08558",
+     "section": "Main Results; Topic Shift Analysis"
+    },
+    {
+     "paper_id": "2305.06983",
+     "section": "Section 6.2"
+    },
+    {
+     "paper_id": "2403.10081",
+     "section": "Sections 5.3-5.4"
+    },
+    {
+     "paper_id": "doi-10-18653-v1-2026-findings-acl-2090",
+     "section": "Main Results; Ablation Study"
+    }
+   ]
+  },
+  {
+   "statement": "Iteratively alternating reasoning or gap identification with retrieval improves evidence recall and, in many but not all evaluated multi-hop QA settings, downstream answer quality relative to one-step retrieval or less adaptive baselines.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2210.03350",
+     "section": "Sections 3.3-3.4"
+    },
+    {
+     "paper_id": "2212.10509",
+     "section": "Retrieval Results; Question Answering Results"
+    },
+    {
+     "paper_id": "2604.23783",
+     "section": "Sections 4.4-4.5"
+    }
+   ]
+  },
+  {
+   "statement": "More frequent retrieval is not monotonically beneficial in the evaluated RAG tasks: FLARE reports plateaus or degradation under excessive retrieval, DRAGIN finds fixed dynamic schedules can fail to outperform single-round RAG, and SeaKR's always-retrieve ablation performs worse than its adaptive policy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2305.06983",
+     "section": "Section 6.2"
+    },
+    {
+     "paper_id": "2403.10081",
+     "section": "Section 5.1"
+    },
+    {
+     "paper_id": "2406.19215",
+     "section": "Section 5.1"
+    }
+   ]
+  },
+  {
+   "statement": "Explicit sufficiency or confidence signals can support answer-versus-retrieve or answer-versus-abstain decisions, but the reported stopping signals remain imperfectly calibrated and can produce unsafe early stops.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2411.06037",
+     "section": "Sections 4.2 and 5.1"
+    },
+    {
+     "paper_id": "2604.23783",
+     "section": "Section 4.5.2"
+    },
+    {
+     "paper_id": "2606.29090",
+     "section": "Sections V-B and V-C"
+    },
+    {
+     "paper_id": "2608.13237",
+     "section": "Confirmatory Results; Risk Diagnostics"
+    }
+   ]
+  },
+  {
+   "statement": "S2G-RAG directly demonstrates a controller in which an insufficiency judgment emits structured unresolved gaps that are converted into subsequent retrieval queries; its ablation shows a large performance loss when this judge is removed, while the authors also report limitations for temporal constraints and complex compositional relations.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2604.23783",
+     "section": "Sections 3.1-3.3, 4.5.1, and 5"
+    }
+   ]
+  },
+  {
+   "statement": "Retrieved-context sufficiency and answer correctness are empirically distinct: models can fail despite sufficient retrieved context and can sometimes answer when the supplied context is insufficient; permission filtering likewise does not by itself force abstention when no authorized evidence is available.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2411.06037",
+     "section": "Section 4.2"
+    },
+    {
+     "paper_id": "doi-10-1109-access-2025-3628960",
+     "section": "Section V.B Quantitative Evaluation: Large-Scale Analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Adaptive retrieval cost cannot be represented adequately by retrieval-call count alone: passage budgets, context tokens, gating or judging inference, and latency can move differently, and a policy that reduces searches can still fail to reduce total computation or latency.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2606.29959",
+     "section": "Sections 5.2 and 5.6"
+    },
+    {
+     "paper_id": "2608.13237",
+     "section": "Discussion"
+    },
+    {
+     "paper_id": "2604.25676",
+     "section": "Method and Limitations"
+    }
+   ]
+  },
+  {
+   "statement": "A native-IAM permission layer can filter semantically retrieved candidates before they enter an LLM context while preserving provider-specific authorization decisions; in the evaluated prototype this enforcement matched the experiment's permission ground truth, but the retrieval procedure used fixed top-k filtering and did not test gap-driven replenishment after necessary evidence was removed.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1109-access-2025-3628960",
+     "section": "Sections III.C, V.B, and IV.D"
+    }
+   ]
+  },
+  {
+   "statement": "Temporal characteristics of an information need can materially affect retrieval relevance: temporal-profile features improve temporal-query classification in news and search-log collections, and year-oriented reranking improves relevance for the strongest implicitly temporal query group, although gains are collection- and confidence-dependent.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1145-1247715-1247720",
+     "section": "Sections 7 and 8.5"
+    },
+    {
+     "paper_id": "doi-10-1145-1571941-1572085",
+     "section": "Section 3. Evaluation"
+    }
+   ]
+  },
+  {
+   "statement": "The benefit of adaptive retrieval depends on both reader and retriever capability: AB-RAG reports no Exact Match improvement for its smallest tested model, while calibrated budget allocation shows that stronger readers can skip more retrieval and that poor retriever quality limits attainable answer accuracy.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "2606.29090",
+     "section": "Section V-B"
+    },
+    {
+     "paper_id": "2606.29959",
+     "section": "Sections 5.3 and 6.2"
+    }
+   ]
+  }
+ ],
+ "contradictions": [],
+ "gaps": [
+  {
+   "id": "G1",
+   "description": "Structured gap representations remain insufficiently validated for temporal constraints, multi-entity joins, and complex compositional evidence requirements; S2G-RAG explicitly identifies these as limitations of its current schema.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"structured evidence gaps\" temporal constraints multi-hop retrieval OR \"iterative retrieval\" compositional gap representation",
+   "evidence": [
+    "2604.23783"
+   ]
+  },
+  {
+   "id": "G2",
+   "description": "No admitted study validates an iterative evidence-gap retrieval loop that jointly preserves document-version lineage, freshness or effective-time validity, and structured sufficiency decisions.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"version-aware retrieval\" provenance temporal RAG iterative retrieval OR \"temporal validity\" document versions retrieval augmented generation",
+   "evidence": [
+    "2604.23783",
+    "2604.25676",
+    "2606.29959",
+    "doi-10-1145-1247715-1247720",
+    "doi-10-1145-1571941-1572085"
+   ]
+  },
+  {
+   "id": "G3",
+   "description": "Stopping reliability under domain shift remains open: sufficiency and confidence signals can guide stopping, but conservative over-retrieval, calibration drift, and unsafe early stops are all observed, and no admitted study provides a general bounded-risk stopping guarantee.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"RAG stopping\" calibrated risk selective prediction domain shift OR \"safe early stopping\" retrieval augmented generation",
+   "evidence": [
+    "2411.06037",
+    "2604.23783",
+    "2606.29959",
+    "2608.13237"
+   ]
+  },
+  {
+   "id": "G4",
+   "description": "The corpus does not test a bounded replenishment loop in which unauthorized candidates are filtered through native IAM, evidence sufficiency is reassessed, and another permission-constrained query is issued when authorized evidence remains incomplete.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "doi-10-1109-access-2025-3628960",
+    "2604.23783"
+   ]
+  },
+  {
+   "id": "G5",
+   "description": "The evaluated systems do not jointly distinguish empty retrieval, authorization denial, unavailable source, unsupported extraction, exhausted budget, and true negative evidence as separate terminal or retry conditions.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "doi-10-1109-access-2025-3628960",
+    "2604.23783",
+    "2608.13237"
+   ]
+  },
+  {
+   "id": "G6",
+   "description": "An end-to-end cost evaluation covering retrieval calls, retrieved passages or tokens, planner or judge inference, reranking, permission-check latency, and total wall-clock latency is still missing from the admitted corpus.",
+   "classification": "ENGINEERING",
+   "priority": "MEDIUM",
+   "evidence": [
+    "2604.25676",
+    "2606.29090",
+    "2606.29959",
+    "2608.13237",
+    "doi-10-1109-access-2025-3628960"
+   ]
+  },
+  {
+   "id": "G7",
+   "description": "The corpus lacks a workplace-communication evaluation combining explicit evidence gaps with heterogeneous messages and documents, multi-hop dependencies, permission restrictions, stale or conflicting evidence, and bounded retrieval.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH",
+   "evidence": [
+    "2105.04166",
+    "2212.10509",
+    "2604.23783",
+    "doi-10-1109-access-2025-3628960"
+   ]
+  },
+  {
+   "id": "G8",
+   "description": "No admitted study validates a single controller that jointly handles structured evidence gaps, permission-aware source access, version lineage, temporal validity, calibrated stopping, abstention, and total-cost budgeting; the component results therefore do not establish correctness of such a combined scheme.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"enterprise RAG\" iterative retrieval permissions provenance temporal version stopping OR \"permission-aware RAG\" adaptive retrieval sufficiency",
+   "evidence": [
+    "2604.23783",
+    "2606.29959",
+    "doi-10-1109-access-2025-3628960"
+   ]
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent an investigation request as an explicit evidence gap with retrieval scope and budget metadata rather than only as a rewritten free-text query.",
+  "Synthesis-derived recommendation: make the decisions 'is more evidence needed?', 'what should be fetched next?', and 'is the accumulated evidence sufficient?' separately observable and separately testable.",
+  "Synthesis-derived recommendation: apply authorization before evidence reaches generation, then reassess sufficiency and perform only bounded additional retrieval when permitted evidence remains incomplete.",
+  "Synthesis-derived recommendation: preserve distinct outcomes for no match, denied access, unavailable source, extraction failure, budget exhaustion, and evidence that genuinely supports a negative conclusion.",
+  "Synthesis-derived recommendation: retain a hard retrieval cap in addition to any learned sufficiency or confidence signal, and do not treat a generated final-answer marker as equivalent to evidence completeness.",
+  "Synthesis-derived recommendation: keep the original question or evidence gap available as an anchor across iterative query reformulation so retrieval feedback cannot silently redefine the task.",
+  "Synthesis-derived recommendation: measure retrieval calls, passages or tokens, model and judge inference, IAM checks, and end-to-end latency separately before optimizing any single cost metric.",
+  "Synthesis-derived recommendation: build adversarial evaluation fixtures for denied reads, empty searches, stale and conflicting versions, partial access, multi-hop dependencies, budget exhaustion, and unsafe early stopping."
+ ],
+ "confidence_summary": "The corpus provides well-supported design principles for context-sensitive query formulation, iterative retrieval, adaptive retrieval timing, explicit sufficiency assessment, bounded stopping, and permission filtering within the domains actually tested. Confidence is high that these mechanisms can improve retrieval or QA metrics in conversational search, Wikipedia-based QA, and related retrieval tasks. Confidence is medium for transfer to workplace communication because most evidence is indirect and heterogeneous. Confidence is low for any claim that the mechanisms already form a reliable integrated enterprise investigation loop: permissions, document versions, temporal validity, provenance, calibrated stopping, and total cost have not been jointly validated.",
+ "limitations": [
+  "Most evidence comes from QA, conversational search, Wikipedia retrieval, or tool retrieval rather than production workplace email and messaging.",
+  "The permission-aware study is closer to enterprise access control than the other papers, but its quantitative corpus is HotpotQA-derived and its fixed-top-k evaluation does not establish workplace retrieval behavior.",
+  "The temporal studies address temporal query intent and timestamp distributions rather than document revision lineage, effective-time semantics, or historical validity of workplace evidence.",
+  "Several adaptive-retrieval methods rely on model internals such as token probabilities, self-attention, or hidden states, so their results do not automatically transfer to closed APIs.",
+  "Some recent studies use restricted datasets, synthetic trajectories, small calibration sets, or system-specific probes, limiting external validity.",
+  "Papers validating different components do not jointly validate a combined permission-, version-, temporal-, cost-, and sufficiency-aware retrieval system.",
+  "No duplicate studies were detected among the 17 supplied titles, so paper_count reflects 17 distinct supplied works.",
+  "Inherited handoffs in the project context were treated only as scoping information and were not used as evidence for findings or gaps.",
+  "No prior-round gap list or prior gap identifiers were supplied with this synthesis input; therefore no prior gap can be truthfully marked resolved or open in gap_status."
+ ],
+ "gap_status": []
+}

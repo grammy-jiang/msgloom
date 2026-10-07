@@ -1,0 +1,1758 @@
+{
+  "paper_id": "T04",
+  "title": "Topic Segmentation of Dialogue",
+  "research_question": "Can lexical cohesion combined with linguistic and role-sensitive cues improve flat dialogue topic segmentation, and do dialogue exchanges provide better segmentation units than individual contributions?",
+  "methodology": "Museli predicts NEW_TOPIC/SAME_TOPIC with role-specific Naive Bayes and chi-square feature ranking. It combines adjacent-region lexical cosine, lexical/POS n-grams, punctuation, time gap, content presence, length, and previous speaker role. It evaluates educational chats against TT, B&L, Foltz, Ortho and degenerate baselines, then tests gold-exchange constraints and separately predicts exchange boundaries. Detailed protocol and locators are in topic02.split_and_leakage and topic02.metrics.",
+  "key_findings": [
+    {
+      "finding_id": "T04-F01",
+      "finding": "The evaluated target is a flat change in shared discourse purpose, accepted by both participants; it excludes boundaries within a contribution and ignores proposed purpose shifts that the other participant does not take up. This is an implemented annotation/segmentation definition, not evidence that each contribution contains only one real work matter.",
+      "evidence_type": "supported",
+      "section": "PDF page 2; 2 Defining Topic",
+      "quote": "We adopt a flat model of topic segmentation based on discourse segment purpose, where a shift in topic corresponds to a shift in purpose that is acknowledged and acted upon by both conversa- tional participants.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 97,
+        "line_end": 101,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "PDF page 2; 2 Defining Topic",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 101,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "T04-F02",
+      "finding": "For contribution-level topic segmentation, Museli reports Pk/F-measure 0.1051/0.8013 on Olney & Cai and 0.4043/0.3693 on Thermo. It uses dialogue-disjoint 10-fold cross-validation; comparison baselines were tuned on the entire test set. The paper reports superiority over all compared approaches at p < .01, without naming the significance test.",
+      "evidence_type": "supported",
+      "section": "PDF page 5; 5.3 Results; Table 3",
+      "quote": "Museli 0.1051 0.8013 0.4043 0.3693",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 395,
+        "line_end": 407,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 235,
+            "line_end": 240,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "5.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 360,
+            "line_end": 363,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "5.3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 388,
+            "line_end": 393,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "PDF page 3; 4 Overview of Museli Approach; training-fold feature selection",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 261,
+            "line_end": 265,
+            "pdf_pages": [
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "T04-F03",
+      "finding": "On Thermo, restricting Museli topic predictions to gold exchange starts changes Pk/F-measure from 0.4043/0.3693 to 0.3737/0.3897. The paper reports significant F-measure improvement (p < .05), but only marginal Pk improvement; gold-exchange Museli is not significantly better than gold-exchange B&L. This is not an end-to-end result with predicted exchanges.",
+      "evidence_type": "supported",
+      "section": "PDF page 7; 9 Evaluation with Exchanges; Table 4",
+      "quote": "Museli 0.4043 0.3693 0.3737 0.3897 Table 4. Results using perfect exchange boundaries",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 659,
+        "line_end": 672,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 617,
+            "line_end": 632,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 701,
+            "line_end": 717,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "T04-F04",
+      "finding": "For the distinct task of automatically detecting exchange boundaries on Thermo, Museli reports precision 0.48, recall 0.62, F-measure 0.53, and Pk 0.14. The exchange experiment has no separately specified split or averaging details. These are not topic-segmentation or reply-scope scores; no downstream topic score using predicted exchanges is reported.",
+      "evidence_type": "supported",
+      "section": "PDF page 8; 9 Evaluation with Exchanges",
+      "quote": "automatically predict exchange boundaries. On the Thermo corpus, Museli was able to predict ex- change boundaries with precision = 0.48, recall = 0.62, f-measure = 0.53, and Pk = 0.14.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 718,
+        "line_end": 723,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    {
+      "finding_id": "T04-F05",
+      "finding": "Three annotators assessed topic-boundary reproducibility on a reported 10% of the corpus after receiving a 10-page manual; every annotator pair had agreement above 0.7. The agreement metric, exact sampled population, per-corpus breakdown, and adjudication are not specified. A separate coder annotated Thermo IRF exchanges without knowing the topic definition or analysis purpose; exchange-boundary IAA is not reported.",
+      "evidence_type": "supported",
+      "section": "PDF page 2; 2 Defining Topic",
+      "quote": "Pair- wise inter-coder agreement was above 0.7 for all pairs of annotators.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 112,
+        "line_end": 120,
+        "pdf_pages": [
+          2
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "6 Dialogue Exchanges",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 491,
+            "line_end": 500,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "T04-F06",
+      "finding": "The authors attribute errors to terse contributions with little lexical content and to references back to earlier segments. They report that a TextTiling heuristic did not significantly improve results. The explanations are qualitative; the paper does not measure loss or broadening of conditions, evidence, approval, action, or reply scope.",
+      "evidence_type": "unsupported",
+      "section": "PDF page 5; 5.4 Error Analysis",
+      "quote": "We also noticed a number of instances in the dialogue corpora where participants referred to information from previous topic segments, which consequently may have blurred the distinction between the lan- guage models assigned to different topics.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 445,
+        "line_end": 450,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 421,
+            "line_end": 432,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ],
+      "classification_note": "The causal explanation lacks an isolated ablation or counted error taxonomy; this does not negate the reported segmentation results."
+    },
+    {
+      "finding_id": "T04-F07",
+      "finding": "The unqualified claim that all approaches perform better on Olney & Cai than on Thermo is contradicted by Table 3: TT Pk is 0.6240 versus 0.5353, TT F is 0.1475 versus 0.1614, and B&L Pk is 0.6351 versus 0.5086. Lower Pk is better, so cross-corpus superiority does not hold for every method/metric.",
+      "evidence_type": "contradicted",
+      "section": "PDF page 5; 5.4 Error Analysis",
+      "quote": "Results for all approaches are better on the Ol- ney and Cai corpus than the Thermo corpus.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 409,
+        "line_end": 410,
+        "pdf_pages": [
+          5
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 395,
+            "line_end": 407,
+            "pdf_pages": [
+              5
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "finding_id": "T04-F08",
+      "finding": "Read as superiority on both reported metrics, the claim that the gold-exchange ALL heuristic beats all contribution-based algorithms is too broad: Thermo ALL-exchange Pk 0.4398 is worse than contribution-Museli Pk 0.4043, although its F-measure 0.3809 exceeds 0.3693. An F-measure-only comparison would hold for the reported algorithm scores; the authors do not specify that narrower intent.",
+      "evidence_type": "contradicted",
+      "section": "PDF page 7; 9 Evaluation with Exchanges",
+      "quote": "This degenerate heuristic alone produces better results than all algorithms classify- ing utterances (Table 4).",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 639,
+        "line_end": 645,
+        "pdf_pages": [
+          7
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "Table 4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 659,
+            "line_end": 672,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ],
+      "classification_note": "Contradicted refers only to the unqualified all-algorithm, both-metric reading of the source claim; it does not establish a table error or the authors’ intended metric scope."
+    },
+    {
+      "finding_id": "T04-F09",
+      "finding": "For the Thermo B&L cluster diagnostic with 16 states selected to match a domain expert’s topic count, the paper reports 70% of contributions in the largest cluster and 10% in the second. Exchanges yield a visibly less skewed cluster-size distribution. This is a size-distribution diagnostic, not a cluster-identity accuracy or non-contiguous work-matter assignment result. Figure 1 has no exact point labels, so its second contribution-cluster point does not establish a material numerical contradiction with a coarse 10% prose description.",
+      "evidence_type": "supported",
+      "section": "PDF page 6; 8 Barzilay and Lee with Exchanges; Figure 1",
+      "quote": "The largest cluster contains 70% of all contribu- tions in the corpus. The second largest cluster only generates 10% of the contributions.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+        "line_start": 578,
+        "line_end": 580,
+        "pdf_pages": [
+          6
+        ]
+      },
+      "supporting_sources": [
+        {
+          "section": "PDF page 6; 8 Barzilay and Lee with Exchanges; Figure 1 and state-count context",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 543,
+            "line_end": 591,
+            "pdf_pages": [
+              6
+            ]
+          }
+        },
+        {
+          "section": "PDF page 6; Figure 1 visual observation, not paper prose",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-visual-checks.md",
+            "line_start": 6,
+            "line_end": 8,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ],
+      "qualification": "Retain 10% as printed. Approximation or rounding may explain the unlabeled point below the gridline; the authors’ intended precision is not reported. Do not infer an exact graph value or treat visual resolution as a proven source contradiction."
+    }
+  ],
+  "limitations": [
+    "Transfer from two-person educational chat to business email is untested; repeated scripted physics problems limit domain breadth.",
+    "Flat contribution boundaries cannot demonstrate within-message, overlapping, or non-contiguous Topic assignment.",
+    "Gold exchanges are required for the reported exchange-conditioned topic scores; automatic downstream results are absent.",
+    "The IAA coefficient, significance test, exact fold assignments/counts, aggregation, code/data access, and some implementation details are not reported. The paper does report 10-fold CV, dialogue-disjoint train/test data, and feature selection within each training fold.",
+    "Baseline test-set tuning and whole-corpus time normalization limit strict held-out interpretation.",
+    "Qualitative error hypotheses are not measured causal or work-text preservation evidence.",
+    "Two broad comparative prose claims have table counterexamples; a repeated table cell differs slightly. Aggregation, graph precision, and typical-length qualifications are separate reporting limits, not established analysis contradictions; see topic02.material_inconsistencies."
+  ],
+  "reproducibility": {
+    "metrics_reported": true,
+    "code_availability_status": "not reported in this frozen paper; current availability not checked",
+    "dataset_availability_status": "corpora described and earlier corpus work cited, but no release/access statement in this paper; current availability not checked",
+    "boolean_omission_reason": "Optional code_available and dataset_available booleans are omitted because neither availability nor unavailability is established.",
+    "reproducibility_signals": "Features, Naive Bayes, role-specific training, feature ranking, corpus statistics, general CV protocol and baseline parameter policy are described. Code, exact splits, seeds, annotation manual artifact, full hyperparameters, statistical test, and per-fold outputs are not supplied.",
+    "sources": [
+      {
+        "section": "4; Table 1",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "line_start": 183,
+          "line_end": 280,
+          "pdf_pages": [
+            3
+          ]
+        }
+      },
+      {
+        "section": "5.1; Table 2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "line_start": 291,
+          "line_end": 318,
+          "pdf_pages": [
+            3,
+            4
+          ]
+        }
+      },
+      {
+        "section": "5.2",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "line_start": 360,
+          "line_end": 387,
+          "pdf_pages": [
+            4
+          ]
+        }
+      }
+    ]
+  },
+  "confidence_scores": {
+    "T04-F01": 0.99,
+    "T04-F02": 0.98,
+    "T04-F03": 0.98,
+    "T04-F04": 0.96,
+    "T04-F05": 0.94,
+    "T04-F06": 0.75,
+    "T04-F07": 0.99,
+    "T04-F08": 0.99,
+    "T04-F09": 0.88
+  },
+  "raw_claims": [
+    "We adopt a flat model of topic segmentation based on discourse segment purpose, where a shift in topic corresponds to a shift in purpose that is acknowledged and acted upon by both conversa- tional participants.",
+    "These experiments used hand coded exchange boundaries."
+  ],
+  "topic02": {
+    "evidence_family": "DIRECT_WORK",
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "setting": "NEW_TOPIC versus SAME_TOPIC at contribution starts; alternative uses gold exchange starts",
+        "sources": [
+          {
+            "section": "4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 174,
+              "line_end": 181,
+              "pdf_pages": [
+                2
+              ]
+            }
+          },
+          {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 617,
+              "line_end": 632,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "setting": "Boundaries induce a flat sequence of segments; evaluated by Pk and F-measure",
+        "sources": [
+          {
+            "section": "2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 97,
+              "line_end": 111,
+              "pdf_pages": [
+                2
+              ]
+            }
+          },
+          {
+            "section": "5.2",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 372,
+              "line_end": 387,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "task": "dialogue-exchange boundary detection",
+        "setting": "Auxiliary IRF exchange task; not clause/EDU segmentation, topic labeling, or reply-scope extraction",
+        "finding_ref": "T04-F04"
+      }
+    ],
+    "annotation_unit": {
+      "topic": "Dialogue contribution; boundaries within it prohibited. A contribution is the corpus conversational turn/message unit, not a compared sentence/clause/arbitrary-span unit.",
+      "exchange": "Separate IRF initiation-response-feedback exchanges spanning contributions.",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 120,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 469,
+            "line_end": 500,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "prediction_unit": {
+      "main": "Binary boundary label for each contribution; role-specific models.",
+      "gold_exchange_setting": "Museli is still trained on contributions and its predictions are filtered to human exchange starts. B&L builds states/HMM from exchanges; Foltz/Ortho train LSA from exchanges and logistic regression from exchange starts.",
+      "sources": [
+        {
+          "section": "4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 174,
+            "line_end": 181,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 673,
+            "line_end": 717,
+            "pdf_pages": [
+              7,
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "contiguity": {
+      "gold": "Flat contiguous topic segments; no shared semantic object ID linking revisits is evaluated.",
+      "prediction": "Contiguous segmentation. B&L has latent topic states/clusters, but no evaluated non-sequential work-matter clustering output.",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "3",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 154,
+            "line_end": 172,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "8",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 543,
+            "line_end": 591,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "label_cardinality": {
+      "gold": "One segment membership per contribution under the flat partition; this is representational exclusivity, not evidence that all underlying content has one topic.",
+      "prediction": "One of two boundary classes per candidate; not two semantic topic memberships. A contribution belongs to one induced segment. B&L assigns units to states; multiple memberships are not modeled in the described hard assignments.",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "3–4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 154,
+            "line_end": 181,
+            "pdf_pages": [
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "Unsupported by the annotation; no within-contribution split.",
+        "thread_level": "Earlier-segment references are observed, but no annotated discontinuous semantic-topic object links them."
+      },
+      "prediction": {
+        "within_one_message": "Not supported/evaluated.",
+        "thread_level": "No predicted discontinuous work-matter object or membership evaluation. B&L recurring states must not be equated with validated identity of a work matter."
+      },
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 445,
+            "line_end": 450,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "8",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 543,
+            "line_end": 591,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "overlap": {
+      "gold": "No overlapping memberships in the flat segmentation target. Coinciding topic and exchange boundaries are two annotation layers, not shared spans assigned to multiple Topics.",
+      "prediction": "No overlapping topic-span assignment; no gold-only overlap capability either.",
+      "scope": "Neither within-contribution overlap nor cross-message multi-Topic evidence membership evaluated.",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 111,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "7",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 507,
+            "line_end": 522,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "dataset_domain": {
+      "transfer_qualification": "Educational two-person student/tutor chat, not business email; transfer only for the msgloom use case.",
+      "Olney & Cai": {
+        "domain": "Newton’s Three Laws; random dialogue selection from the same source corpus used by Olney and Cai; same 10 physics problems in each session",
+        "dialogues": 42,
+        "contributions_per_dialogue": 195.4,
+        "contributions_per_topic": 24.0,
+        "topics_per_dialogue": 8.14,
+        "words_per_contribution": 28.63,
+        "student_contributions": 4113,
+        "tutor_contributions": 4094,
+        "total_contributions_derived": 8207
+      },
+      "Thermo": {
+        "domain": "Locally collected thermodynamics optimization tutoring; more exploratory interaction",
+        "dialogues": 22,
+        "contributions_per_dialogue": 217.9,
+        "contributions_per_topic": 13.31,
+        "topics_per_dialogue": 16.36,
+        "words_per_contribution": 5.12,
+        "student_contributions": 1431,
+        "tutor_contributions": 3363,
+        "total_contributions": 4794
+      },
+      "sources": [
+        {
+          "section": "5.1; Table 2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 291,
+            "line_end": 336,
+            "pdf_pages": [
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "section": "7",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 507,
+            "line_end": 509,
+            "pdf_pages": [
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "annotation_process": {
+      "topic": "Manual definition based on jointly acknowledged discourse purpose; 10-page manual and example dialogues provided to three reliability annotators. Full-corpus annotator allocation, consensus procedure, and adjudication not reported.",
+      "exchanges": "Thermo coded using IRF by a coder blind to topic definition and planned topic analysis. This reduces a specific annotation-bias concern, not proof of universal independence.",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 97,
+            "line_end": 120,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 482,
+            "line_end": 500,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "inter_annotator_agreement": {
+      "topic": {
+        "reported_value": "above 0.7 for every pair",
+        "metric": "not named; do not call it kappa",
+        "annotators": 3,
+        "population": "10% of the corpus; exact count and whether pooled/both corpora not specified"
+      },
+      "exchange": "not reported",
+      "sources": [
+        {
+          "section": "2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 112,
+            "line_end": 120,
+            "pdf_pages": [
+              2
+            ]
+          }
+        },
+        {
+          "section": "6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 491,
+            "line_end": 500,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    },
+    "split_and_leakage": {
+      "main_split": "10-fold CV, dialogue-disjoint train/test, feature selection within training fold; top 1000 features; separate student/tutor models.",
+      "counts": "42 Olney & Cai and 22 Thermo dialogues overall; fold assignment and per-fold train/test counts not reported.",
+      "known_test_access": "Baseline parameters tuned using the entire test set. Time-difference normalization uses whole-corpus minimum and maximum. LSA is trained on the dialogue corpus; fit/split isolation is not detailed.",
+      "duplicate_controls": "No duplicate or near-duplicate controls reported. Repeated physics problems and possible shared participants across dialogues remain transfer/leakage concerns; participant-disjoint evaluation is not established.",
+      "TT_parameter_context": "Thermo Section 9: optimal window 13 contributions with gold exchange filtering, 6 without; optimized over entire corpus, not independent development data.",
+      "sources": [
+        {
+          "section": "Table 1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 204,
+            "line_end": 212,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 235,
+            "line_end": 265,
+            "pdf_pages": [
+              3
+            ]
+          }
+        },
+        {
+          "section": "5.1",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 331,
+            "line_end": 336,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "5.2",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 357,
+            "line_end": 363,
+            "pdf_pages": [
+              4
+            ]
+          }
+        },
+        {
+          "section": "9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 650,
+            "line_end": 658,
+            "pdf_pages": [
+              7
+            ]
+          }
+        },
+        {
+          "section": "9",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 685,
+            "line_end": 696,
+            "pdf_pages": [
+              7
+            ]
+          }
+        }
+      ]
+    },
+    "metrics": {
+      "definitions": [
+        {
+          "name": "Pk",
+          "task": "Contiguous topic segmentation (Tables 3–4); contiguous exchange segmentation only in final Section 9 paragraph",
+          "definition": "Error rate for deciding whether two contributions k contributions apart belong to the same reference versus predicted segment; lower is better.",
+          "denominator": "Eligible contribution pairs/windows at distance k; exact pair counts, dialogue aggregation weights, edge handling, and integer rounding are not reported.",
+          "k": "Section 5.2 gives k as half average reference topic length. Exchange-boundary experiment does not separately specify its k.",
+          "sources": [
+            {
+              "section": "5.2",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+                "line_start": 372,
+                "line_end": 387,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            }
+          ],
+          "paper_reported_error_characterization": "Section 5.2 says Pk equally captures false negatives and false positives and favors predictions closer to reference boundaries.",
+          "paper_reported_error_quote": "It equally captures the effect of false-negatives and false-positives and favors predictions that that are closer to the reference boundaries.",
+          "paper_reported_error_source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 382,
+            "line_end": 385,
+            "pdf_pages": [
+              4
+            ]
+          },
+          "analyst_qualification": "This is the paper’s characterization, not an established guarantee of equal cost for each missed versus extra boundary. From the stated pair-at-distance definition, effects depend on k, reference segment lengths, and boundary locations; equal treatment of pair-classification mistakes does not imply equal penalties per boundary error. Pk also does not measure evidence preservation or overlapping membership. This qualification is a mathematical interpretation of the local definition, not a fetched external result or an empirical finding of T04."
+        },
+        {
+          "name": "F-measure",
+          "task": "Positive boundary detection, not span or multi-label assignment",
+          "definition": "Paper describes a boundary score that does not discount errors near a reference boundary. It does not state the formula, beta, averaging, or per-fold counts.",
+          "denominator": "Predicted/reference positive boundary counts would determine boundary precision/recall; actual TP/FP/FN totals and aggregation are not reported.",
+          "sources": [
+            {
+              "section": "5.2",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+                "line_start": 372,
+                "line_end": 387,
+                "pdf_pages": [
+                  4
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "precision and recall",
+          "task": "Exchange-boundary detection on Thermo only",
+          "definition": "Reported as exchange-boundary precision and recall; formulas and averaging not specified.",
+          "denominator": "Presumed predicted and gold positive exchange boundaries respectively; counts for the evaluated split are absent.",
+          "sources": [
+            {
+              "section": "9",
+              "source_locator": {
+                "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+                "line_start": 718,
+                "line_end": 723,
+                "pdf_pages": [
+                  8
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "table_3": {
+        "dataset_order": [
+          "Olney & Cai",
+          "Thermo"
+        ],
+        "task": "Contribution-boundary topic segmentation",
+        "split": "Museli: dialogue-disjoint 10-fold cross-validation; baseline parameter tuning uses entire test set. Exact folds and test counts not reported.",
+        "metric_order": [
+          "Pk",
+          "F-measure"
+        ],
+        "values": {
+          "NONE": [
+            [
+              0.4897,
+              null
+            ],
+            [
+              0.49,
+              null
+            ]
+          ],
+          "ALL": [
+            [
+              0.518,
+              null
+            ],
+            [
+              0.51,
+              null
+            ]
+          ],
+          "EVEN": [
+            [
+              0.5117,
+              null
+            ],
+            [
+              0.5131,
+              null
+            ]
+          ],
+          "TT": [
+            [
+              0.624,
+              0.1475
+            ],
+            [
+              0.5353,
+              0.1614
+            ]
+          ],
+          "B&L": [
+            [
+              0.6351,
+              0.1747
+            ],
+            [
+              0.5086,
+              0.1512
+            ]
+          ],
+          "Foltz": [
+            [
+              0.327,
+              0.3492
+            ],
+            [
+              0.5058,
+              0.118
+            ]
+          ],
+          "Ortho": [
+            [
+              0.2754,
+              0.6012
+            ],
+            [
+              0.4898,
+              0.2111
+            ]
+          ],
+          "Museli": [
+            [
+              0.1051,
+              0.8013
+            ],
+            [
+              0.4043,
+              0.3693
+            ]
+          ]
+        },
+        "missing_value_semantics": "null means printed -- (not reported), not zero",
+        "sources": [
+          {
+            "section": "Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 395,
+              "line_end": 407,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ]
+      },
+      "table_4": {
+        "dataset": "Thermo",
+        "task": "Topic segmentation with contribution candidates versus oracle/gold-exchange-start candidates",
+        "setting_order": [
+          "Contributions",
+          "Gold exchanges"
+        ],
+        "metric_order": [
+          "Pk",
+          "F-measure"
+        ],
+        "split": "Museli retains Section 5 contribution-trained models; gold exchange starts filter predictions. Baseline tuning uses entire corpus; no independent nested validation described.",
+        "values": {
+          "NONE": [
+            [
+              0.49,
+              null
+            ],
+            [
+              "N/A",
+              null
+            ]
+          ],
+          "ALL": [
+            [
+              0.51,
+              null
+            ],
+            [
+              0.4398,
+              0.3809
+            ]
+          ],
+          "EVEN": [
+            [
+              0.5132,
+              null
+            ],
+            [
+              "N/A",
+              null
+            ]
+          ],
+          "TT": [
+            [
+              0.5353,
+              0.1614
+            ],
+            [
+              0.4328,
+              0.3031
+            ]
+          ],
+          "B&L": [
+            [
+              0.5086,
+              0.1512
+            ],
+            [
+              0.3817,
+              0.384
+            ]
+          ],
+          "Foltz": [
+            [
+              0.5058,
+              0.118
+            ],
+            [
+              0.4242,
+              0.3296
+            ]
+          ],
+          "Ortho": [
+            [
+              0.4898,
+              0.2111
+            ],
+            [
+              0.4398,
+              0.3813
+            ]
+          ],
+          "Museli": [
+            [
+              0.4043,
+              0.3693
+            ],
+            [
+              0.3737,
+              0.3897
+            ]
+          ]
+        },
+        "missing_value_semantics": "null F means printed --; N/A Pk means inapplicable setting",
+        "sources": [
+          {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 659,
+              "line_end": 672,
+              "pdf_pages": [
+                7
+              ]
+            }
+          },
+          {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 701,
+              "line_end": 717,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ]
+      },
+      "exchange_detection": {
+        "dataset": "Thermo",
+        "task": "Exchange-boundary detection only",
+        "split": "Not separately specified; general Museli methodology states 10-fold dialogue-disjoint CV, but no explicit separate exchange folds/counts.",
+        "precision": 0.48,
+        "recall": 0.62,
+        "F-measure": 0.53,
+        "Pk": 0.14,
+        "averaging": "not reported",
+        "sources": [
+          {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 718,
+              "line_end": 723,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ]
+      },
+      "gold_boundary_association": {
+        "dataset": "Whole experimental Thermo corpus",
+        "task": "Descriptive association between manually annotated topic and exchange starts, not model predictions",
+        "contributions": 4794,
+        "topic_shifts": 360,
+        "exchange_shifts": 1074,
+        "P(topic_shift)": 0.075,
+        "P(topic_shift_given_exchange_shift)": 0.25,
+        "P(no_topic_shift_given_no_exchange_shift)": 0.98,
+        "denominators": "4794 contributions; 1074 exchange-shift contributions; 3720 non-exchange-shift contributions (last value derived as 4794−1074). Conditional numerator counts are not provided. Probabilities are rounded; do not reconstruct an exact contingency table.",
+        "sources": [
+          {
+            "section": "7",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 507,
+              "line_end": 522,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        ]
+      },
+      "significance": [
+        {
+          "comparison": "Contribution-Museli versus each compared approach, both corpora",
+          "metrics": "Pk and F-measure (paper makes a general result statement)",
+          "reported_p": "< .01",
+          "source": {
+            "section": "5.3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 388,
+              "line_end": 393,
+              "pdf_pages": [
+                4
+              ]
+            }
+          }
+        },
+        {
+          "comparison": "Gold-exchange versus contribution versions: TT, B&L, Foltz, Ortho, Thermo",
+          "metrics": "segmentation quality (Section 9 general statement)",
+          "reported_p": "< .05",
+          "source": {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 617,
+              "line_end": 632,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        },
+        {
+          "comparison": "Gold-exchange versus contribution Museli, Thermo",
+          "metrics": "F-measure: p < .05; Pk: marginal only, exact p absent",
+          "source": {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 629,
+              "line_end": 632,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        },
+        {
+          "comparison": "Gold-exchange B&L versus contribution B&L, Thermo",
+          "metrics": "Pk and F-measure",
+          "reported_p": "< .005",
+          "source": {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 673,
+              "line_end": 684,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        },
+        {
+          "comparison": "Gold-exchange B&L versus gold-exchange ALL, Thermo",
+          "metrics": "Pk",
+          "reported_p": "< .0005",
+          "source": {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 673,
+              "line_end": 684,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        },
+        {
+          "comparison": "Gold-exchange Museli versus TT, B&L, Foltz, Ortho, Thermo",
+          "metrics": "Better than TT on both scores; not significantly better than B&L; better than Foltz on F and Ortho on Pk (p < .05 reported at paragraph end).",
+          "source": {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 711,
+              "line_end": 717,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        }
+      ],
+      "significance_limit": "Test type, confidence intervals, variance, and correction for multiple comparisons not reported."
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "detail": "No direct measures of retained/lost/broadened conditions, evidence, approval scope, action scope, or reply scope. Qualitative lexical boundary errors and earlier-topic references are related segmentation observations, not preservation scores. IRF exchanges are not evaluated semantic answer links.",
+      "sources": [
+        {
+          "section": "5.4",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 408,
+            "line_end": 450,
+            "pdf_pages": [
+              5
+            ]
+          }
+        },
+        {
+          "section": "6",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 469,
+            "line_end": 500,
+            "pdf_pages": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "section": "9–10",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+            "line_start": 718,
+            "line_end": 743,
+            "pdf_pages": [
+              8
+            ]
+          }
+        }
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "Segment topic labeling accuracy",
+      "Whole-message multi-label classification",
+      "Exact within-message span assignment",
+      "Overlapping span assignment",
+      "Non-contiguous evidence assignment to one Topic",
+      "Sentence/clause/EDU/arbitrary-span comparison",
+      "Action/question/reply-scope extraction",
+      "Preservation of decision-bearing conditions/evidence/scope",
+      "Asynchronous email branches and cross-thread Topic identity",
+      "Business-email transfer, abstention/calibration, online latency or incremental-update cost",
+      "End-to-end topic segmentation using predicted exchange boundaries"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T04-I01",
+        "kind": "table/prose contradiction",
+        "finding_ref": "T04-F07",
+        "status": "unresolved in source",
+        "sources": [
+          {
+            "section": "5.4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 409,
+              "line_end": 420,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 395,
+              "line_end": 407,
+              "pdf_pages": [
+                5
+              ]
+            }
+          }
+        ],
+        "disposition": "Retain the source contradiction for its unqualified universal reading. TT is worse on both metrics on Olney & Cai, and B&L is worse on Pk. Do not infer a corrected table or a universal cross-domain performance conclusion."
+      },
+      {
+        "id": "T04-I02",
+        "kind": "table counterexample to an unqualified prose comparison",
+        "finding_ref": "T04-F08",
+        "status": "counterexample retained; intended metric scope not specified",
+        "sources": [
+          {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 639,
+              "line_end": 645,
+              "pdf_pages": [
+                7
+              ]
+            }
+          },
+          {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 659,
+              "line_end": 672,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        ],
+        "disposition": "Retain the Museli Pk exception. An F-measure-only reading is compatible with the table, so do not claim to know the authors’ intent."
+      },
+      {
+        "id": "T04-I03",
+        "kind": "repeated table cell mismatch",
+        "description": "Thermo contribution-based EVEN Pk is 0.5131 in Table 3 and 0.5132 in Table 4; both printed values are retained. Cause not stated.",
+        "sources": [
+          {
+            "section": "Table 3",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 401,
+              "line_end": 401,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "Table 4",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 666,
+              "line_end": 666,
+              "pdf_pages": [
+                7
+              ]
+            }
+          }
+        ],
+        "status": "minor printed mismatch retained; cause not reported; no material conclusion changes"
+      },
+      {
+        "id": "T04-I04",
+        "kind": "metric aggregation ambiguity",
+        "description": "For the printed exchange precision 0.48 and recall 0.62, the analyst-computed harmonic mean 2PR/(P+R) is 0.5411; the printed F-measure remains 0.53. The harmonic mean of averaged P/R need not equal the average of individual F1 values. Different averaging can explain this gap, and the paper does not report its aggregation or F-measure formula. Under the additional assumption of one pooled conventional F1 and ordinary nearest-hundredth rounding, P/R rounding alone would not give 0.53. That assumption is not established. This is an aggregation ambiguity, not a demonstrated contradiction or permission to replace the score.",
+        "sources": [
+          {
+            "section": "9",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 718,
+              "line_end": 723,
+              "pdf_pages": [
+                8
+              ]
+            }
+          }
+        ],
+        "status": "qualified; no established contradiction; no max escalation"
+      },
+      {
+        "id": "T04-I05",
+        "kind": "graph/prose precision ambiguity; no established material contradiction",
+        "description": "Section 8 prints 10% for the second-largest contribution cluster. Figure 1 shows an unlabeled point below the 10% gridline. A coarse or rounded prose value could account for this; the source does not specify exact precision. Retain the printed 10%, preserve the approximate visual observation, and do not recover an exact percentage or assert a material resolution conflict.",
+        "sources": [
+          {
+            "section": "8",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 578,
+              "line_end": 580,
+              "pdf_pages": [
+                6
+              ]
+            }
+          },
+          {
+            "section": "PDF page 6; Figure 1",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-visual-checks.md",
+              "line_start": 6,
+              "line_end": 8,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        ],
+        "status": "downgraded from resolution discrepancy to qualified precision ambiguity"
+      },
+      {
+        "id": "T04-I06",
+        "kind": "typical length versus count ratio; no established contradiction",
+        "description": "The source describes exchanges as typically 2–3 contributions. The analyst ratio 4794 contributions / 1074 exchange shifts is about 4.46 contributions per reported exchange shift. Typical length is not a mean, and the source does not specify whether dialogue-initial exchanges are included in the shift count. Neither 2–3 nor the ratio is established as the empirical mean exchange length. No contradiction follows.",
+        "sources": [
+          {
+            "section": "6",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 466,
+              "line_end": 468,
+              "pdf_pages": [
+                5
+              ]
+            }
+          },
+          {
+            "section": "7",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 507,
+              "line_end": 509,
+              "pdf_pages": [
+                6
+              ]
+            }
+          }
+        ],
+        "status": "qualified; different quantities; no max escalation"
+      },
+      {
+        "id": "T04-I07",
+        "kind": "frozen metadata/source mismatch",
+        "description": "Shortlist venue says SIGdial 2006 and has January 1 as publication timestamp. The PDF footer states ACTS Workshop at HLT-NAACL 2006, New York, June 2006, printed pages 42–49. Use the paper-reported venue/date; do not modify the shortlist.",
+        "sources": [
+          {
+            "section": "Proceedings footer",
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+              "line_start": 1,
+              "line_end": 2,
+              "pdf_pages": [
+                1
+              ]
+            }
+          }
+        ],
+        "metadata_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+        "status": "authoritative PDF metadata override recorded in analysis only"
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": "Direct unit comparison for dialogue contribution versus oracle exchange context/candidates only; does not select an email span unit. F01/F03.",
+      "RQ2": "No email or asynchronous clustering evidence. Earlier-segment references motivate a gap. F06.",
+      "RQ3": "Flat exclusive annotation excludes the required richer assignment; no multi-label result. F01.",
+      "RQ4": "No overlapping/discontinuous span evidence.",
+      "RQ5": "Definition can ignore an unacknowledged work request; this is an analyst-identified risk, not a measured miss. F01/F06.",
+      "RQ6": "Pk and boundary F are distinct; full tables and inconsistencies retained. F02–F04/F07–F08.",
+      "RQ7": "Two chat corpora, incompletely specified IAA and protocol; baseline test tuning and whole-corpus preprocessing qualify evidence. F05.",
+      "RQ8": "Motivates context and oracle-versus-predicted candidate experiments, without approving architecture. F03/F04."
+    },
+    "interpretation": [
+      {
+        "basis": [
+          "T04-F01"
+        ],
+        "statement": "Joint uptake is narrower than a concrete work matter: an unanswered request can still need attention in msgloom. Reusing the annotation rule could hide that matter; the paper does not measure this risk."
+      },
+      {
+        "basis": [
+          "T04-F03",
+          "T04-F04"
+        ],
+        "statement": "Context aggregation and boundary candidate restriction are separate interventions. Gold-exchange gains do not establish an automatically deployable multi-stage gain."
+      },
+      {
+        "basis": [
+          "T04-F06",
+          "T04-F09"
+        ],
+        "statement": "Brief replies may need surrounding context; neither lexical sparsity nor a balanced cluster-size distribution establishes exact evidence scope or Topic identity."
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "status": "untested msgloom proposal",
+        "name": "Separate evidence unit from context",
+        "design": "On synthetic or authorized user-reviewed business messages, compare sentence, clause, arbitrary-span, and hybrid candidates with and without exchange-like surrounding context. Keep original source offsets and allow several Topic memberships; do not force exchange boundaries to be evidence boundaries.",
+        "evaluation": "Separate boundary Pk/F from exact-span/overlap scores and condition/evidence/scope retention. No expected numerical gain claimed."
+      },
+      {
+        "status": "untested msgloom proposal",
+        "name": "Measure oracle versus predicted context/candidates",
+        "design": "Compare no exchange restriction, gold exchange starts, and predicted exchange starts on the same held-out messages. Also test context aggregation without hard restriction, including short acknowledgments and later-topic revisits.",
+        "evaluation": "Report exchange detection separately from downstream topic and preservation results; quantify errors introduced by filtering."
+      },
+      {
+        "status": "untested msgloom proposal",
+        "name": "Audit unacknowledged matters and asynchronous replies",
+        "design": "Include an unanswered approval request, partial answers, competing branches, multiple matters in one contribution, and non-contiguous/overlapping evidence. Compare a jointly accepted-purpose target with work-matter annotations that preserve uncertainty.",
+        "evaluation": "Count lost and broadened conditions, approval/action/reply scope, and missed response-needed matters; separate gold representational capacity from model performance. Use matter/participant-aware held-out groups and fit preprocessing on training data only."
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2006_arguello_rose_topic_segmentation_dialogue.pdf",
+      "pdf_sha256": "e68c556e28b116a2f8ab9f4f42d01fe3accc60fd290ee35b341875a9cb87b3ef",
+      "expected_pdf_sha256": "e68c556e28b116a2f8ab9f4f42d01fe3accc60fd290ee35b341875a9cb87b3ef",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T04.md",
+      "converted_text_sha256": "4ec7b6b4e66b79bcde73eea9ced6b05a28673c5db2cfc78a15cd14abc5c18ef7",
+      "fine_conversion": "No T04 fine conversion available in supplied run",
+      "quote_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+      "quote_text_sha256": "b090d8702840b5e066e2e7c0c485eab9e2f50596923d9263b7c08bd37600bcd6",
+      "line_convention": "1-based inclusive LF split; form feed does not add a line; normalize whitespace only and preserve line-break hyphens",
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2006_arguello_rose_topic_segmentation_dialogue.pdf",
+          "sha256": "e68c556e28b116a2f8ab9f4f42d01fe3accc60fd290ee35b341875a9cb87b3ef",
+          "read_scope": "SHA-256 verified; original PDF pages 4–8 and Figure 1 visually inspected"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T04.md",
+          "sha256": "4ec7b6b4e66b79bcde73eea9ced6b05a28673c5db2cfc78a15cd14abc5c18ef7",
+          "read_scope": "Full paper read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "sha256": "b090d8702840b5e066e2e7c0c485eab9e2f50596923d9263b7c08bd37600bcd6",
+          "read_scope": "Full paper read; canonical quote locators"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.pages.md",
+          "sha256": "e3a3ceaa75e630f2878d6f3c0b22742c992ae2f1ebbd589bde063b69417c6aa0",
+          "read_scope": "Auxiliary page-indexed conversion inspected in part; two-column mixing makes raw text preferable"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "T04 record read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "Fully read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "Fully read as shared context; outdated batch scope overridden by explicit T04 delegation; no Topic01 conclusions read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "Fully read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "Fully read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "Fully read"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "Fully read; worker scope takes precedence over launch instruction"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "Fully read"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "Fully read"
+        }
+      ],
+      "visual_checks": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-visual-checks.md",
+      "network_used": false,
+      "authoritative_pdf_metadata": {
+        "title": "Topic Segmentation of Dialogue",
+        "authors": [
+          "Jaime Arguello",
+          "Carolyn Rosé"
+        ],
+        "venue": "Proceedings of the Analyzing Conversations in Text and Speech (ACTS) Workshop at HLT-NAACL 2006",
+        "location": "New York City, New York",
+        "date": "June 2006",
+        "printed_pages": "42–49",
+        "source_locator": {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "line_start": 1,
+          "line_end": 8,
+          "pdf_pages": [
+            1
+          ]
+        },
+        "override_scope": "Analysis only; frozen shortlist/manifest unchanged; no exact day inferred."
+      },
+      "prior_read_sources_provenance": "The inherited read_sources records describe attempt-01-high. Their hashes were rechecked; they are not a claim that all context documents were reread at xhigh. Fresh review reads are listed in xhigh_read_sources.",
+      "xhigh_read_sources": [
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/direct-work/2006_arguello_rose_topic_segmentation_dialogue.pdf",
+          "sha256": "e68c556e28b116a2f8ab9f4f42d01fe3accc60fd290ee35b341875a9cb87b3ef",
+          "read_scope": "All eight original PDF pages visually inspected from fresh local renders; original text re-extracted and compared byte-for-byte."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T04.md",
+          "sha256": "4ec7b6b4e66b79bcde73eea9ced6b05a28673c5db2cfc78a15cd14abc5c18ef7",
+          "read_scope": "Full converted paper read, including the relevant full-text context."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+          "sha256": "b090d8702840b5e066e2e7c0c485eab9e2f50596923d9263b7c08bd37600bcd6",
+          "read_scope": "Full LF-separated text read with nl -ba locators; all quoted passages checked."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "T04 metadata and source record inspected only."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "Full document read."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "Full installed paper_analyzer contract read; no installed-file edits."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "Full installed schema read and used for local validation."
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "Read; explicit focused-worker instructions govern; no workflow launch."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/attempt-01-high/T04.analysis.json",
+          "sha256": "764bf6ce754bb7302eb81d56672de8196a59d9d9f32379fa0095d42dade87018",
+          "read_scope": "Full archived analysis read; bounded repairs derived from this attempt."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/attempt-01-high/T04.analysis.md",
+          "sha256": "9c7c36cbbc66f1a7737e247c467f82ff25e746f632eae7fb777e5e41d4d7355b",
+          "read_scope": "Full archived Markdown read."
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/attempt-01-high/T04.worker-result.json",
+          "sha256": "0e0c3c6b491dca7c1690f4e4d47a56dad35d81018c786ff7897d706355348200",
+          "read_scope": "Archived receipt read; fresh provenance and checks recorded separately."
+        }
+      ],
+      "xhigh_visual_checks": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-visual-checks.md",
+      "prior_visual_checks": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/visual-checks.md",
+      "xhigh_review_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-review.json",
+      "fresh_raw_extraction_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T04/xhigh-source.raw.txt",
+      "fresh_raw_extraction_sha256": "b090d8702840b5e066e2e7c0c485eab9e2f50596923d9263b7c08bd37600bcd6",
+      "fresh_raw_matches_frozen_quote_text": true
+    }
+  },
+  "runtime_provenance": {
+    "source": "User-specified actual runtime for this fresh focused escalation; parent independently verifies invocation and runner receipts.",
+    "role": "paper-T04-xhigh-review",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "runtime_identifier": "not supplied; not inferred"
+  },
+  "raw_claim_locators": [
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+      "line_start": 97,
+      "line_end": 101,
+      "pdf_pages": [
+        2
+      ]
+    },
+    {
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T04.raw.txt",
+      "line_start": 718,
+      "line_end": 719,
+      "pdf_pages": [
+        8
+      ]
+    }
+  ]
+}

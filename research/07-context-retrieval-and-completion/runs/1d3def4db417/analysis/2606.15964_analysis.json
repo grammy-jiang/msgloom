@@ -1,0 +1,75 @@
+{
+ "paper_id": "2606.15964",
+ "title": "PromptShift-CRC: Drift-Aware Conformal Risk Control for Foundation Models Under Prompt and Domain Shift",
+ "research_question": "Can conformal risk control for foundation-model outputs remain approximately calibrated under changing prompt and domain distributions by explicitly detecting representation drift and adapting how historical calibration examples are weighted?",
+ "methodology": "PromptShift-CRC embeds prompt-response interactions into a representation containing model, verifier, retrieval, uncertainty, or metadata features and initially weights past calibration examples by similarity to the current window. It measures drift between the current window and the similarity-weighted calibration distribution using a transport-based discrepancy, then uses an exponential drift gate to interpolate between representation-matched historical examples and a recent calibration window. A weighted empirical risk distribution yields a conformal threshold, while an optional online update adjusts the target risk after delayed labels, verifier outcomes, or human feedback. The paper develops an approximate conditional risk bound and evaluates the method on synthetic shifts, LLM-style task prototypes, and transformed public datasets including TruthfulQA, RealToxicityPrompts, SummEval, and LongHalQA.",
+ "key_findings": [
+  {
+   "finding": "The theoretical result bounds deployment-time exceedance risk by the nominal target plus terms for representation drift, representation mismatch, and finite effective calibration size, making the cost of distribution shift explicit rather than assuming exchangeability is unchanged.",
+   "evidence_type": "supported",
+   "section": "Theory / Approximate Risk Control"
+  },
+  {
+   "finding": "In three prototype shifts for QA topic, summarization domain, and safety intent, PromptShift-CRC achieves reported coverages of 0.895, 0.893, and 0.897 respectively for a 0.90 target, while static calibration collapses to roughly 0.31 to 0.32.",
+   "evidence_type": "supported",
+   "section": "LLM-Style Prototype Experiments"
+  },
+  {
+   "finding": "On LongHalQA, static calibration reaches coverage 0.585, rolling calibration 0.784, adaptive CRC 0.875, representation weighting 0.854, and PromptShift-CRC 0.901 against a target of 0.90.",
+   "evidence_type": "supported",
+   "section": "Public Benchmark Stress Tests"
+  },
+  {
+   "finding": "PromptShift-CRC is not uniformly the closest method to the target on every public benchmark; for example, adaptive CRC is closer on the TruthfulQA-derived experiment, where PromptShift-CRC obtains 0.907 and adaptive CRC obtains 0.904 for a 0.90 target.",
+   "evidence_type": "supported",
+   "section": "TruthfulQA Stress Test"
+  },
+  {
+   "finding": "The ablation study indicates that the online risk-target update and the recent-data fallback are particularly important under sustained drift, with their removal degrading target coverage more than several other component removals.",
+   "evidence_type": "supported",
+   "section": "Ablation Study"
+  },
+  {
+   "finding": "The empirical study is primarily a calibration-layer stress test rather than an end-to-end evaluation of one deployed foundation model's factual correctness, safety, or task utility.",
+   "evidence_type": "supported",
+   "section": "Limitations and Experimental Scope"
+  }
+ ],
+ "limitations": [
+  "The experiments evaluate the calibration layer and controlled risk streams rather than a complete production foundation-model system.",
+  "Several evaluations are synthetic or prototype stress tests designed to isolate distribution shift.",
+  "The TruthfulQA experiment constructs a proxy risk signal from dataset and question characteristics rather than directly measuring one model's truthfulness errors.",
+  "The LongHalQA experiment does not involve running a new multimodal model and instead uses the benchmark to construct a shift-sensitive risk stream.",
+  "Deployment requires a pre-specified risk definition and feedback such as correctness labels, verifier outcomes, or human review.",
+  "The theoretical guarantee relies on a representation-stability condition; unobserved shifts that are not captured by the representation can remain in the residual mismatch term.",
+  "Heavy drift adaptation can reduce the effective calibration sample size, increasing the finite-sample uncertainty term.",
+  "The paper does not establish a universal distribution-free guarantee under arbitrary non-stationary shift."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "risk_bound_under_drift": 0.99,
+  "prototype_coverage": 0.99,
+  "longhalqa_recovery": 0.99,
+  "not_uniformly_best": 0.99,
+  "ablation_recent_fallback_and_online_update": 0.98,
+  "calibration_layer_scope": 0.98
+ },
+ "raw_claims": [
+  "PromptShift-CRC reweights historical calibration examples according to their similarity to the current prompt-response regime.",
+  "A transport-based drift statistic controls how strongly the method trusts similarity-matched historical calibration data.",
+  "Under larger estimated drift, the calibration distribution places more emphasis on recent observations.",
+  "The method computes an effective calibration size from the final nonuniform weights.",
+  "The conformal threshold is obtained from a weighted empirical distribution of risk scores.",
+  "The theoretical risk bound contains additive penalties for measured drift, residual representation mismatch, and finite effective sample size.",
+  "The method can use a threshold to choose among actions such as answering, abstaining, retrieving additional evidence, escalating, or flagging uncertainty.",
+  "PromptShift-CRC reaches coverage close to 0.90 in the reported QA, summarization, and safety prototype shifts.",
+  "Adaptive CRC is slightly closer than PromptShift-CRC to the nominal target in the TruthfulQA-derived experiment.",
+  "The paper provides scripts and experiment artifacts intended to reproduce its prototype tables and figures."
+ ],
+ "source_url": "https://arxiv.org/html/2606.15964",
+ "access": "full_text"
+}

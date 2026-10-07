@@ -1,0 +1,73 @@
+{
+ "paper_id": "doi-10-5210-dad-2023-201",
+ "title": "Scoring Coreference Chains with Split-Antecedent Anaphors",
+ "research_question": "How can standard coreference evaluation metrics be generalized so that systems receive appropriate partial credit when resolving split-antecedent anaphors and related multi-antecedent discourse deixis?",
+ "methodology": "The paper represents accommodated entities created from multiple antecedents and defines a similarity term that gives partial credit when predicted and gold antecedent sets overlap only partially. It systematically extends commonly used coreference metrics, including MUC, B3, CEAF variants, BLANC, and LEA, and illustrates their behavior on worked examples. The implementation is incorporated into the Universal Anaphora scorer and evaluated using the Yu et al. split-antecedent system, several baselines, and oracle predictions on ARRAU and a transformed version of FRIENDS. The authors also compare their scoring behavior with the earlier Zhou and Choi approach and discuss extension to discourse deixis and other accommodation phenomena.",
+ "key_findings": [
+  {
+   "finding": "Partial-credit evaluation is empirically important because only 16% of split antecedents in the ARRAU evaluation were fully resolved by the tested Yu et al. model, while many others were only partially recovered.",
+   "evidence_type": "supported",
+   "section": "7.2 Evaluation on ARRAU"
+  },
+  {
+   "finding": "Split-antecedent phenomena can be almost invisible in aggregate coreference scores when they are rare: only 0.8% of ARRAU clusters contained split antecedents, whereas split-only evaluation exposed differences of up to 20 CoNLL-score percentage points.",
+   "evidence_type": "supported",
+   "section": "7.2 Evaluation on ARRAU"
+  },
+  {
+   "finding": "After normalizing the FRIENDS annotation so later references to an already accommodated group became ordinary coreference, 4.1% of mentions remained genuine split-antecedent anaphors, providing a larger test bed than ARRAU.",
+   "evidence_type": "supported",
+   "section": "7.3 Evaluation on FRIENDS"
+  },
+  {
+   "finding": "The Zhou and Choi scoring method substantially overweights missing split-antecedent links in the authors' diagnostic experiment: a system otherwise perfect on singular clusters loses 10 to 18 percentage points, whereas the proposed extensions give scores between 95% and 97%, close to the roughly 96% expected from the proportion of split mentions.",
+   "evidence_type": "supported",
+   "section": "7.3 Evaluation on FRIENDS"
+  },
+  {
+   "finding": "The same machinery can score split-antecedent discourse deixis, where the antecedents are utterances or clauses rather than noun phrases, and the authors report that this approach was used in CODI/CRAC shared tasks.",
+   "evidence_type": "supported",
+   "section": "8 Scoring other types of split-antecedent anaphora and of anaphora involving accommodation"
+  },
+  {
+   "finding": "The proposed representation does not yet directly solve every kind of multi-antecedent accommodation because context-change cases can combine antecedents through relations more complex than simple set membership.",
+   "evidence_type": "supported",
+   "section": "8 Scoring other types of split-antecedent anaphora and of anaphora involving accommodation"
+  }
+ ],
+ "limitations": [
+  "The paper evaluates anaphoric reference rather than answerhood, approval, rejection, or response scope, so its relevance to proposition-level replies is structural rather than a direct study of reply semantics.",
+  "Split antecedents are very rare in ARRAU, causing their effect to be diluted in overall coreference scores.",
+  "The FRIENDS annotations are transformed before evaluation, so the evaluated representation is not identical to the corpus's original labeling convention.",
+  "The authors could not obtain Zhou and Choi's original system outputs and therefore could not perform a direct system-output replication of that work.",
+  "The formal treatment is most natural when accommodated entities are formed by set membership; context-change accommodation needs additional semantic machinery.",
+  "The experiments do not involve workplace email or explicit multi-question response annotation."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "partial-credit necessity": 0.99,
+  "rarity masks aggregate scores": 0.99,
+  "FRIENDS split-antecedent prevalence": 0.98,
+  "prior-scorer overweighting": 0.98,
+  "multi-utterance discourse deixis": 0.97,
+  "context-change limitation": 0.95
+ },
+ "raw_claims": [
+  "A split-antecedent expression can refer jointly to entities introduced by separate earlier mentions.",
+  "A system may recover only part of the antecedent set, so all-or-nothing scoring loses useful information.",
+  "The proposed framework extends standard coreference metrics instead of introducing a completely separate metric family.",
+  "Split antecedents are sufficiently rare in ARRAU that overall coreference results obscure much of their effect.",
+  "Most split antecedents resolved by the tested model were not recovered completely.",
+  "FRIENDS contains a substantially larger concentration of split-antecedent phenomena than ARRAU.",
+  "Duplicating plural mentions into several singular chains can give split-antecedent cases disproportionate weight.",
+  "Discourse deixis can have several antecedent utterances that jointly evoke one abstract discourse entity.",
+  "The generalized scorer can evaluate discourse-deictic references with multiple utterance antecedents.",
+  "More complex accommodation relations may require extensions beyond the set-based treatment developed here."
+ ],
+ "source_url": "https://aclanthology.org/2023.dnd-14.3.pdf",
+ "access": "full_text"
+}

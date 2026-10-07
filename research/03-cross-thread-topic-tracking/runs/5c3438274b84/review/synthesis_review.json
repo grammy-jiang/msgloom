@@ -1,0 +1,31 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/03-cross-thread-topic-tracking/runs/5c3438274b84/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding 7 overstates the evidence when it says systems can deteriorate sharply both when trigger wording is altered and when superficially similar event instances are deliberately introduced. 2407.11988 directly supports sharp degradation under lexical/paraphrase alteration, while 1906.01753 and manual-f56d02b8f9 establish the existence and importance of distinct same-type event instances but do not, in the supplied analyses, report a corresponding sharp before/after performance degradation caused by introducing those instances.",
+  "The executive summary says the literature supports 'bounded Phase 2 evidence retrieval', but finding 10, gap-6, and gap_status gap-6 correctly state that retrieval bounds, stopping criteria, latency, and application-specific decision benefit remain unresolved. The corpus supports additional-evidence retrieval, not the bounded retrieval policy itself.",
+  "Actionable insight 2 cites literature as support for treating conversation ancestry, subject, customer/project names, participant overlap, lexical similarity, and generated Topic titles only as evidence features. The supplied analyses support caution about names, topical/lexical cues, participants, and separately subject metadata in an enterprise task-classification setting, but they do not evaluate conversation ancestry, generated Topic titles, or customer/project names as work-matter identity signals. This also conflicts with gap-1's correct statement that several of these target-domain signals remain unvalidated.",
+  "Actionable insight 3 includes referenced artifacts and workflow/state consistency among literature-supported identity dimensions, but its cited papers support arguments/entities, time, location, and discourse information; they do not support referenced artifacts, and the cited set does not establish workflow/state consistency. Process-correlation papers provide adjacent support for structural/process constraints, but referenced-artifact evidence remains an application hypothesis.",
+  "Actionable insight 5 recommends stable Topic IDs and append-only/versioned identity assessments. The cited incremental entity-resolution papers support local repair, merging, and reclustering of prior assignments, but do not establish stable Topic-ID design, append-only histories, supersession semantics, or immutable lineage. Gap-3 correctly identifies those items as unresolved project-level design questions.",
+  "Actionable insight 8 recommends bounded historical retrieval only when local evidence is insufficient. The cited papers support retrieval or accumulation of additional evidence, but do not establish the gating condition 'only when local evidence is insufficient' or any appropriate retrieval bound. Those are engineering choices and should be labeled as such rather than citation-backed findings.",
+  "Actionable insight 9 states that recalibration and drift monitoring are 'required'. The supplied analyses support cross-corpus degradation and calibration deterioration under shift, and support recalibration strategies in transfer domains, but they do not directly establish a mandatory drift-monitoring design for workplace coreference. This should be framed as a prudent engineering requirement motivated by transfer evidence, not a directly validated corpus conclusion."
+ ],
+ "unsupported_claims": [
+  "Systems 'deteriorate sharply' when similar event instances are deliberately introduced; the supplied analyses establish harder same-type distinct-event structure but do not provide the claimed sharp degradation comparison for that intervention.",
+  "The literature supports bounded Phase 2 evidence retrieval for msgloom; the corpus supports retrieval of additional evidence but explicitly leaves bounds and stopping rules open.",
+  "Conversation ancestry, customer/project names, and generated Topic titles are validated literature-derived identity evidence features; these signals are not validated by the supplied analyses for the target problem.",
+  "Referenced artifacts are an evidence dimension supported by the cited event-coreference papers; no supplied analysis establishes this.",
+  "Stable Topic IDs, append-only/versioned identity assessments, supersession semantics, and immutable evidence lineage are supported by the incremental entity-resolution papers; those papers support repairability but not these application-specific state semantics.",
+  "The literature establishes that historical retrieval should occur only when local evidence is insufficient; that gating policy is not evaluated in the supplied analyses."
+ ],
+ "required_fixes": [],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.89,
+  "coherence": 0.95,
+  "gap_completeness": 0.98,
+  "citation_integrity": true
+ },
+ "notes": "The central synthesis is well supported and appropriately conservative about transfer versus direct enterprise evidence. All cited paper_id values observed in the synthesis belong to the permitted identifier set. The major gaps are explicitly preserved as open, including the absence of direct longitudinal Outlook/Teams evidence, target-domain evidence weighting, decision thresholds, correction semantics, partial-identity mapping, retrieval bounds, and calibration under workplace drift. The listed contradictions are substantively represented rather than averaged away. The remaining problems are localized mainly to actionable engineering recommendations being phrased or cited as though directly established by the corpus, plus one overstatement in finding 7. These issues should be corrected before those recommendations are presented as evidence-backed conclusions, but they do not invalidate the core cross-paper synthesis."
+}

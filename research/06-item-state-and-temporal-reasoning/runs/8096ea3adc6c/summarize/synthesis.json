@@ -1,0 +1,283 @@
+{
+ "topic": "work-item state, event factuality, temporal reasoning, and conflicting revisions in workplace communication: tracking whether an event is planned, confirmed, revoked, completed, or contradicted",
+ "paper_count": 13,
+ "executive_summary": "Across 13 papers, the literature covers several components of longitudinal work-item state reasoning, but not the complete workplace problem. Event-factuality work demonstrates source-relative polarity and certainty prediction, including sentence-level and document-level formulations. Temporal-relation research demonstrates useful pairwise, graph-based, and relative-timeline representations, although the value of global transitivity varies substantially by architecture and benchmark. Formal commitment monitoring supplies explicit lifecycle semantics such as active, satisfied, canceled, violated, and expired, while belief-revision research supplies principled conflict handling under ranked propositional assumptions. Cross-document ordering exposes event-identity and upstream-coreference dependencies. None of the admitted papers directly evaluates a provenance-preserving, cross-message workplace state history combining factuality, time, lifecycle transition, supersession, contradiction, and unresolved conflict. The individual mechanisms are supported; their integration and workplace-domain effectiveness remain untested.",
+ "themes": [
+  "Source-relative event factuality and uncertainty",
+  "Temporal relation extraction and event ordering",
+  "Global temporal consistency and transitivity",
+  "Relative timelines versus pairwise temporal relations",
+  "Explicit commitment lifecycle monitoring",
+  "Conflict resolution and belief revision",
+  "Cross-document event identity and timeline construction",
+  "Upstream event-detection and coreference error propagation",
+  "Rare-state and VAGUE-class imbalance",
+  "Separation between component-level evidence and longitudinal workplace-state tracking"
+ ],
+ "findings": [
+  {
+   "statement": "FactBank demonstrates that event factuality can be annotated as source-relative combinations of polarity and epistemic certainty with high inter-annotator agreement on news text, while its released annotation deliberately excludes factuality changes that require information across multiple sentences.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s10579-009-9089-9",
+     "section": "Sections 2.2, 5.1, 6.1, and 7.1-7.3"
+    }
+   ]
+  },
+  {
+   "statement": "On FactBank, Meantime, UW, and UDS-IH2 sentence-level benchmarks, DLGRN jointly predicts event anchors and scalar factuality and reports better factuality-induction results than its compared baselines; its UW ablation identifies labeled syntactic information as the largest tested graph-information contribution.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-j-ipm-2021-102836",
+     "section": "Sections 6.2-6.3, Tables 3-4"
+    }
+   ]
+  },
+  {
+   "statement": "On the English and Chinese ExDLEF datasets, RSLN improves document-level factuality prediction over the reported comparison systems, and its ablations show substantial contributions from event encoding, topic context, and sentence selection; the task nevertheless assigns one document-level factuality value even when sentence-level factualities differ.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s11390-024-2655-1",
+     "section": "Research background and problem definition; Results, Tables 4 and 6"
+    }
+   ]
+  },
+  {
+   "statement": "On news-derived temporal-relation benchmarks, corpus-derived temporal priors and contextual neural representations improve temporal-relation classification, including gains from TemProb features and from a TemProb-trained Common Sense Encoder.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1804.06020",
+     "section": "Sections 4.1-4.2"
+    },
+    {
+     "paper_id": "1909.00429",
+     "section": "Section 4.2 and Appendix B"
+    }
+   ]
+  },
+  {
+   "statement": "Jointly modeling event detection and temporal relations improves end-to-end temporal-relation and event-extraction F1 on TB-Dense and MATRES relative to the reported baselines, but missed event decisions still force associated relations to NONE and rare temporal labels remain difficult.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "1909.05360",
+     "section": "Sections 6.1-6.4"
+    }
+   ]
+  },
+  {
+   "statement": "The measured benefit of global temporal transitivity is not consistent across evaluated systems: CAEVO reports a large contribution from transitive inference on TimeBank-Dense, whereas the structured joint model reports no additional F1 on TB-Dense and only 0.1 F1 on MATRES from its added transitivity constraint.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1162-tacl-a-00182",
+     "section": "Sections 5-6"
+    },
+    {
+     "paper_id": "1909.05360",
+     "section": "Section 6.4, Global Constraints"
+    }
+   ]
+  },
+  {
+   "statement": "Direct relative-timeline prediction produces internally consistent temporal outputs with linear prediction complexity, but its empirical advantage over indirect pairwise-relation conversion is dataset-dependent: C-TLM outperforms TL2RTL on the TE3 evaluation while TL2RTL performs better on the smaller TimeBank-Dense-derived split.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-d18-1155",
+     "section": "Sections 3, 5, and 8"
+    }
+   ]
+  },
+  {
+   "statement": "Relative-event-time supervision can improve pairwise temporal-relation extraction on MATRES, but direct timestamp comparison has difficulty representing VAGUE relations and the learned timestamps are relative rather than calibrated calendar times.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-18653-v1-2021-emnlp-main-815",
+     "section": "Sections 3.3-3.5, Tables 2-3"
+    }
+   ]
+  },
+  {
+   "statement": "The Event Calculus commitment framework provides executable lifecycle semantics for incremental monitoring, explicitly distinguishing states and operations including active, satisfied, canceled, violated, detached, expired, released, and replaced commitments; its implementation leaves simultaneous conflicting operations unresolved rather than defining a universal precedence rule.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1007-s10458-012-9202-0",
+     "section": "Sections 2.2-2.4, 3, 4, and discussion of limitations"
+    }
+   ]
+  },
+  {
+   "statement": "Disjunctive Maxi-Adjustment demonstrates that, for explicitly prioritized propositional knowledge bases, conflicts can be resolved by weakening conflicting formulas rather than deleting them, retaining consequences that Maxi-Adjustment can lose; the approach does not itself derive propositions, priorities, time, or provenance from natural-language communication.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-j-artint-2003-08-003",
+     "section": "Sections 4, 6-8"
+    }
+   ]
+  },
+  {
+   "statement": "Cross-document event-ordering experiments on news show that combining temporal, lexical-semantic, and distributional-semantic information improves timeline construction, while manual entity-coreference annotations increase recall and expose entity coreference as an important upstream source of event-timeline error.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "doi-10-1016-j-knosys-2016-07-032",
+     "section": "Evaluation, Table 4, and error analysis"
+    }
+   ]
+  },
+  {
+   "statement": "Representing temporal relations through logical constraints over event endpoints improves temporal-relation F1 over a matched direct-classification baseline on TB-Dense and MATRES, reduces many VAGUE-associated errors, and improves low-resource and cross-definition transfer in the reported experiments.",
+   "confidence": "HIGH",
+   "evidence": [
+    {
+     "paper_id": "manual-eef7a0219f",
+     "section": "Sections 5.1 and 6.1-6.3"
+    }
+   ]
+  }
+ ],
+ "contradictions": [
+  {
+   "topic": "Incremental value of global temporal transitivity",
+   "papers": [
+    "doi-10-1162-tacl-a-00182",
+    "1909.05360"
+   ],
+   "note": "CAEVO reports transitive inference as a major contributor on TimeBank-Dense, including an ablation increase from 32.1 to 39.8 F1, whereas the structured joint model reports zero additional F1 from its transitivity constraint on TB-Dense and only 0.1 on MATRES. The systems differ in architecture, candidate-edge behavior, and constraint application, so the corpus supports an architecture-dependent effect rather than a uniform benefit."
+  },
+  {
+   "topic": "Sentence/source-relative versus single document-level factuality target",
+   "papers": [
+    "doi-10-1007-s10579-009-9089-9",
+    "doi-10-1007-s11390-024-2655-1"
+   ],
+   "note": "FactBank treats factuality as relative to relevant discourse sources and explicitly notes that factuality can change later in discourse, while RSLN's task assigns one document-level factuality value despite differing local sentence-level factualities. This is a representational tension rather than a head-to-head empirical comparison, and the papers do not determine which target is preferable for longitudinal workplace revision tracking."
+  },
+  {
+   "topic": "Conflict-resolution assumptions",
+   "papers": [
+    "doi-10-1007-s10458-012-9202-0",
+    "doi-10-1016-j-artint-2003-08-003"
+   ],
+   "note": "The commitment-monitoring framework declines to impose a universal ordering over simultaneous conflicting commitment operations, whereas DMA resolves inconsistent information when an explicit stratified priority ordering is available. These are different formal assumptions rather than directly contradictory benchmark results; the corpus does not establish how priorities should be inferred for natural workplace communication."
+  },
+  {
+   "topic": "DLGRN parameter-count claim",
+   "papers": [
+    "doi-10-1016-j-ipm-2021-102836"
+   ],
+   "note": "The DLGRN paper's prose states that the model has fewer parameters than all baselines, but its own tables list BERT at 109.5M parameters and DLGRN at 119.7M. The numerical tables contradict the narrative claim."
+  }
+ ],
+ "gaps": [
+  {
+   "id": "G06-01",
+   "description": "No admitted paper directly evaluates longitudinal state tracking across workplace messages in which one work item moves among requested, proposed, planned, approved, completed, revoked, superseded, disputed, conditional, and unresolved states while retaining historical assessments.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"event status tracking\" longitudinal email dialogue planned completed canceled revision"
+  },
+  {
+   "id": "G06-02",
+   "description": "The corpus does not establish natural-language semantics or evaluated methods for distinguishing supersession, correction, supplementation, contradiction, reopening, and unresolved conflict across successive communications.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "supersession correction contradiction revision tracking natural language event state"
+  },
+  {
+   "id": "G06-03",
+   "description": "No admitted paper jointly evaluates source-relative factuality, temporal ordering, lifecycle state, contradiction, and provenance as one longitudinal model; the papers validate separate components and their combination remains untested.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "\"event factuality\" temporal relation state tracking provenance contradiction"
+  },
+  {
+   "id": "G06-04",
+   "description": "Direct evidence for workplace email, Teams-like dialogue, or comparable operational communication is absent; the empirical NLP evidence is predominantly news-derived, while the commitment and belief-revision papers use formal or modeled settings.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "workplace email event factuality temporal revision commitment status tracking dialogue"
+  },
+  {
+   "id": "G06-05",
+   "description": "The admitted factuality literature models textual source commitment but does not establish how to distinguish an author's assertion that work is complete from independent confirmation or stronger evidential verification of completion.",
+   "classification": "ACADEMIC",
+   "priority": "HIGH",
+   "suggested_query": "event factuality evidentiality source reliability confirmation reported completed verification"
+  },
+  {
+   "id": "G06-06",
+   "description": "Evaluation is needed on adversarial longitudinal sequences such as plan-to-cancel, approve-to-revoke, deadline changes, contradictory same-time updates, out-of-order ingestion, stale messages arriving late, and completion claims later corrected.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G06-07",
+   "description": "The combined representation of message time, event/effective time, deadline or constraint time, and observed collection/version time has not been benchmarked for this product's state-resolution tasks.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G06-08",
+   "description": "The corpus does not evaluate a provenance-preserving implementation that stores immutable source observations and successive assessments while exposing a separately derived current-state view.",
+   "classification": "ENGINEERING",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G06-09",
+   "description": "Topic 05's inherited uncertainty about owner or assignee extraction, deadline binding, and attachment of conditions, negation, and modality remains unresolved by this Topic 06 corpus; these uncertainties concern the utterance-time event supplied to state tracking rather than the later state-transition problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G06-10",
+   "description": "Reliable cross-thread and cross-source identity of the event or work item being revised remains an upstream dependency; this synthesis does not establish the product's Topic-identity mechanism.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "HIGH"
+  },
+  {
+   "id": "G06-11",
+   "description": "Resolving an uncertain state by retrieving missing historical evidence is not answered by the admitted state/factuality papers and remains a separate evidence-retrieval problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  },
+  {
+   "id": "G06-12",
+   "description": "State-changing evidence contained in attachment versions, tables, images, or screenshots is not covered by this corpus's longitudinal state models and remains a separate multimodal/document-evidence problem.",
+   "classification": "OUT_OF_SCOPE",
+   "priority": "MEDIUM"
+  }
+ ],
+ "actionable_insights": [
+  "Synthesis-derived recommendation: represent each new message or document observation as new evidence and a new assessment rather than overwriting prior evidence or historical assessments.",
+  "Synthesis-derived recommendation: store message or utterance time, event or effective time, deadline or constraint time, and collection/version time as distinct fields rather than collapsing them into one timestamp.",
+  "Synthesis-derived recommendation: keep lifecycle state, factuality or modality, temporal relations, and source provenance as distinct but linkable dimensions so that a temporal ordering decision does not imply factual occurrence or completion.",
+  "Synthesis-derived recommendation: model contradiction, supplementation, correction, and supersession as separate relations; do not use a latest-message-wins rule as a generic conflict-resolution mechanism.",
+  "Synthesis-derived recommendation: preserve unresolved conflicts explicitly when the available evidence does not justify selecting one assessment, and derive any current accepted assessment separately from the historical record.",
+  "Synthesis-derived recommendation: build an engineering benchmark of longitudinal adversarial sequences before choosing a state-resolution strategy, including revocations, changed deadlines, late-arriving old messages, contradictory updates, partial confirmations, and corrected completion claims.",
+  "Synthesis-derived recommendation: propagate uncertainty from upstream event identity, owner, deadline, condition, negation, and modality extraction instead of silently converting uncertain inputs into firm state transitions.",
+  "Synthesis-derived recommendation: keep missing-evidence retrieval, upstream Topic identity, and multimodal attachment interpretation at their existing project ownership boundaries, while exposing explicit interfaces for Topic 06 to request or consume that evidence."
+ ],
+ "confidence_summary": "Confidence is high that the corpus establishes well-supported design principles at the component level: factuality is source- and uncertainty-sensitive; temporal ordering benefits from structured representations and sometimes from global constraints; explicit commitment lifecycles can be incrementally monitored; and formal belief revision can preserve information under explicit conflict priorities. Confidence is only medium for transfer of those mechanisms to longitudinal workplace communication because almost all NLP evaluations use news-derived corpora and the formal reasoning papers assume structured inputs. Confidence is low that any particular combined architecture has been validated for msgloom: no admitted paper jointly evaluates event identity, source-relative factuality, multiple time axes, lifecycle transitions, supersession, contradiction, provenance, and current-state derivation. The combination remains an open research and engineering question rather than an established literature result.",
+ "limitations": [
+  "The synthesis is based only on the 13 supplied per-paper analyses and does not add evidence from papers outside the admitted corpus.",
+  "Most empirical NLP results come from news-derived datasets such as TimeBank, TB-Dense, MATRES, AQUAINT, MEANTIME, FactBank, and related benchmarks rather than workplace email or chat.",
+  "The component literatures use different targets: factuality scores, temporal relations, timelines, commitment fluents, and propositional belief revision are not interchangeable state representations.",
+  "No paper in the corpus evaluates the complete combination required for longitudinal workplace-state reasoning, so cross-component integration claims would exceed the evidence.",
+  "Several temporal systems assume supplied or correctly detected event mentions, and multiple analyses identify upstream event detection, entity coreference, or relation-candidate errors as important sources of downstream error.",
+  "Rare factuality and temporal categories are heavily imbalanced in several datasets, limiting evidence for unusual but operationally important states.",
+  "The formal commitment and belief-revision papers provide semantics and computational behavior under structured assumptions but do not demonstrate natural-language extraction of the required operations, priorities, or conflict relations.",
+  "The observed disagreement over the value of transitivity means global constraint benefits cannot be generalized independently of architecture and benchmark.",
+  "The supplied DLGRN analysis contains an explicit internal inconsistency between a prose parameter-count claim and the paper's numerical tables; this synthesis retains rather than resolves that contradiction.",
+  "The literature reviewed here does not establish production representativeness, production accuracy, or architecture approval for msgloom."
+ ],
+ "gap_status": []
+}

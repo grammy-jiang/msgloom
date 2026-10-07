@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-18653-v1-2023-findings-acl-710",
+ "title": "Discourse Analysis via Questions and Answers: Parsing Dependency Structures of Questions Under Discussion",
+ "research_question": "Can document-level discourse structure be parsed as dependency links labeled by free-form Questions Under Discussion, using crowdsourced question-answer annotations instead of a fixed discourse-relation taxonomy?",
+ "methodology": "The authors train a two-stage QUD parser on DCQA, a crowdsourced dataset containing more than 22,000 questions across 606 news articles in which each answer sentence is associated with a prior anchor sentence and a question. A Longformer model predicts one prior anchor for each answer sentence, and a GPT-2 question generator produces the QUD, followed by BERT reranking and named-entity masking intended to reduce questions that improperly reveal answer information. They evaluate 380 generated questions from 20 test articles with three human judges, compare QUD structures with RST structures, and conduct a smaller document-simplification case study. The authors release their QUD parsing models.",
+ "key_findings": [
+  {
+   "finding": "The parser represents each non-root sentence as answering a generated question anchored in exactly one earlier sentence, thereby providing explicit response-to-antecedent dependency links over long document context.",
+   "evidence_type": "supported",
+   "section": "§4 Deriving QUD dependency structures"
+  },
+  {
+   "finding": "Human judges rated 71.5% of full-system generated questions as fully plausible at the predicted anchor, and among the high-quality-question subset they rated the targeted sentence as a clear answer 78.8% of the time.",
+   "evidence_type": "supported",
+   "section": "§5.2 Results; Tables 1 and 2"
+  },
+  {
+   "finding": "The answer-scope evaluation distinguishes a clear at-issue answer from a response whose answer content is not the sentence's main point and from a borderline response that is relevant but may not actually address the question.",
+   "evidence_type": "supported",
+   "section": "§5.1 Human Evaluation Setup"
+  },
+  {
+   "finding": "For the full model's evaluated high-quality questions, 3.1% of judgments were in the not-main-point category and 10.5% were in the sort-of category, demonstrating measurable ambiguity in whether a sentence fully addresses a QUD.",
+   "evidence_type": "supported",
+   "section": "§5.2 Results; Table 2"
+  },
+  {
+   "finding": "Reranking and named-entity masking improved question quality; removing reranking reduced fully acceptable Q1 judgments, and removing entity masking produced a much larger decline.",
+   "evidence_type": "supported",
+   "section": "§5.2 Q1 results"
+  },
+  {
+   "finding": "QUD questions were generally more fine-grained than RST relation labels, and showing the QUD increased RST-relation inter-annotator agreement from Krippendorff's alpha 0.158 to 0.216 in the authors' small comparison study.",
+   "evidence_type": "supported",
+   "section": "§3 Questions vs. coherence relations"
+  },
+  {
+   "finding": "The model does not represent relationships among simultaneous or hierarchical questions and does not explicitly model multi-sentence answers, leaving important multi-question and extended-response scope phenomena outside its representation.",
+   "evidence_type": "supported",
+   "section": "§8 Limitations"
+  }
+ ],
+ "limitations": [
+  "Question relationships and QUD stacks are not modeled, so the representation cannot directly track which subquestions of a larger question remain open.",
+  "Each non-root sentence receives one predicted anchor, which excludes multi-antecedent response structures in the parser formulation.",
+  "DCQA's setup does not explicitly model multi-sentence answers.",
+  "Open-ended QUDs are inherently subjective and the authors state that there is no single uniquely correct QUD structure.",
+  "Evaluation relies heavily on human judgments because a satisfactory automatic metric for generated QUD structures is unavailable.",
+  "The main training and evaluation domain is news text rather than workplace email or interactive workplace dialogue.",
+  "The human evaluation covers 380 questions from 20 DCQA test articles, so it samples only part of the test domain."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "single_anchor_qud_dependencies": 0.99,
+  "human_question_quality": 0.99,
+  "graded_answer_scope": 0.99,
+  "borderline_answer_rates": 0.99,
+  "reranking_and_ner_help": 0.99,
+  "qud_more_fine_grained_than_rst": 0.97,
+  "question_stacks_and_multisentence_answers_unmodeled": 0.99
+ },
+ "raw_claims": [
+  "DCQA contains more than 22,000 crowdsourced questions across 606 news articles.",
+  "For every non-root sentence, the parser predicts a prior sentence as its anchor.",
+  "A generated natural-language question labels the dependency between the anchor and answer sentence.",
+  "The full parser uses Longformer anchor prediction, GPT-2 question generation, BERT reranking, and named-entity masking.",
+  "Human evaluation separately asks whether a question is plausible in context and whether the targeted sentence answers it.",
+  "The answer judgment distinguishes clear answers from non-main-point answers and borderline relevant responses.",
+  "The best system receives a 71.5% fully acceptable rating on question plausibility.",
+  "Among questions passing the quality filter, 78.8% of answer judgments are clear yes judgments.",
+  "QUD information can align some otherwise divergent RST-relation judgments.",
+  "The parser does not model relations among questions or question stacks.",
+  "The parser does not explicitly model answers spanning multiple sentences.",
+  "The authors release their QUD parsing models."
+ ],
+ "source_url": "https://arxiv.org/html/2210.05905",
+ "access": "full_text"
+}

@@ -1,0 +1,75 @@
+{
+ "paper_id": "manual-90280d2776",
+ "title": "Decision Detection Using Hierarchical Graphical Models",
+ "research_question": "Can hierarchical graphical models improve automatic detection of decision-discussion regions in multi-party meetings by jointly modeling observable utterance features, decision dialogue acts, and higher-level decision regions?",
+ "methodology": "The study uses 17 scenario-driven meetings from the AMI Meeting Corpus and manually annotated transcripts containing decision dialogue acts for issues, resolution proposals, resolution restatements, and agreements. The proposed three-level hierarchical graphical model represents observable utterance, dialogue-act, and prosodic features at the bottom level, decision dialogue acts at the middle level, and decision-region membership at the top level. Decision regions are evaluated in 30-second windows, with model structure and thresholds selected experimentally. The HGM is compared with a hierarchical SVM approach and a rule-based classifier using directed graphical-model outputs under 17-fold cross-validation on the same data.",
+ "key_findings": [
+  {
+   "finding": "The hierarchical graphical model reports precision 0.69, recall 0.96, and F1 0.80 for decision-region detection, compared with F1 0.55 for the DGM method and 0.50 for the hierarchical SVM in the paper's controlled comparison.",
+   "evidence_type": "supported",
+   "section": "Section 6"
+  },
+  {
+   "finding": "The improvement is attributed to jointly modeling dependencies between high-level decision regions, mid-level decision dialogue acts, and observable utterance features rather than detecting decision-related utterances independently.",
+   "evidence_type": "supported",
+   "section": "Sections 5-7"
+  },
+  {
+   "finding": "The annotation scheme distinguishes issue, resolution proposal, resolution restatement, and agreement utterances, thereby representing stages of collective decision formation rather than only a binary decision/non-decision label.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "An utterance can belong to more than one decision-dialogue-act class, and multiple utterances of the same class can contribute to one decision discussion.",
+   "evidence_type": "supported",
+   "section": "Section 3"
+  },
+  {
+   "finding": "The experiment relies on manual transcripts and manually annotated dialogue-act information; it therefore does not establish equivalent performance on raw enterprise chat or automatically transcribed meetings.",
+   "evidence_type": "supported",
+   "section": "Sections 3, 4, and 6"
+  },
+  {
+   "finding": "The model detects temporal regions of decision discussion but does not extract structured decision arguments such as the chosen proposition, responsible assignee, deadline, condition, negation, modality, or exact supporting evidence spans.",
+   "evidence_type": "supported",
+   "section": "Task definition and Sections 3-6"
+  }
+ ],
+ "limitations": [
+  "Only 17 scenario-driven AMI meetings are used, with four participants playing predefined design-team roles.",
+  "Experiments use manual transcripts rather than noisy ASR output or authentic enterprise text chat.",
+  "Dialogue-act annotations used as features are manually supplied in the reported experiments.",
+  "Evaluation is performed on 30-second decision-region windows rather than exact token or phrase evidence spans.",
+  "The output schema identifies decision regions and DDA types but not structured decision propositions, action owners, group assignees, deadlines, conditions, negation, or modality.",
+  "The model structure and decision threshold are hand selected or hand tuned.",
+  "No released implementation of the authors' HGM system is identified in the paper."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "HGM_F1_improvement": 0.99,
+  "hierarchical_dependency_benefit": 0.96,
+  "decision_dialogue_act_structure": 0.99,
+  "multi_label_DDAs": 0.98,
+  "manual_annotation_dependency": 0.99,
+  "structured_argument_gap": 0.98
+ },
+ "raw_claims": [
+  "The experiments use 17 meetings from the AMI Meeting Corpus.",
+  "The meetings are scenario-driven design-team discussions involving four participant roles.",
+  "The decision annotation distinguishes issues, resolution proposals, resolution restatements, and agreements.",
+  "The manual transcripts contain 15,680 utterances.",
+  "Decision dialogue acts constitute a sparse minority of all utterances.",
+  "A three-level HGM connects observable features, decision dialogue acts, and decision-region variables.",
+  "Decision-region accuracy is evaluated using 30-second windows.",
+  "The reported HGM F1 for decision-region detection is 0.80.",
+  "The corresponding DGM and SVM F1 scores are 0.55 and 0.50.",
+  "The paper does not produce a structured record of the arguments of each detected decision."
+ ],
+ "source_url": "https://aclanthology.org/P10-2057.pdf",
+ "access": "full_text",
+ "source_citation": "citeturn192635view1turn890695view2turn890695view3turn110040view5"
+}

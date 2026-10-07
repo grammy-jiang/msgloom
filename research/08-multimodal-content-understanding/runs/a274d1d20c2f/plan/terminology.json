@@ -1,0 +1,659 @@
+{
+ "topic": "Version-aware multimodal evidence provenance and reference grounding across revised workplace attachments, including cross-version region lineage, email-to-attachment referring expressions, workbook-level spreadsheet structure, and hierarchical provenance from attachment version through page, element, region or cell to answer span",
+ "seed_audit": [
+  {
+   "seed": "document AI",
+   "academic_meaning": "Broad umbrella for machine learning and multimodal methods that classify, parse, extract from, reason over, or answer questions about documents.",
+   "fit": "MODERATE",
+   "main_risk": "Too broad to isolate version lineage, reference grounding, workbook semantics, or fine-grained provenance.",
+   "false_positive_literature": "Vendor-oriented document processing, generic OCR, document classification, invoice extraction, workflow automation, and parser benchmarks."
+  },
+  {
+   "seed": "document intelligence",
+   "academic_meaning": "Broad term covering automated interpretation of document content, structure, layout, entities, and sometimes reasoning.",
+   "fit": "MODERATE",
+   "main_risk": "The term is used heavily in industrial products and may not correspond to a stable academic task.",
+   "false_positive_literature": "Commercial intelligent document processing, OCR pipelines, invoice automation, and generic enterprise-document analytics."
+  },
+  {
+   "seed": "visually rich document understanding",
+   "academic_meaning": "Understanding documents by jointly modelling text, two-dimensional layout, and visual appearance rather than treating documents as plain text.",
+   "fit": "STRONG",
+   "main_risk": "Much of the literature is single-page and benchmarked on forms, receipts, or key-value extraction rather than revised workplace attachments.",
+   "false_positive_literature": "Single-page classification or extraction that never evaluates evidence localization, revisions, cross-document references, or workbook structure."
+  },
+  {
+   "seed": "VRDU",
+   "academic_meaning": "Acronym for visually rich document understanding, usually referring to document tasks that use textual, spatial, and visual cues.",
+   "fit": "STRONG",
+   "main_risk": "Acronym-only searches can be noisy or miss papers that use document understanding or document intelligence instead.",
+   "false_positive_literature": "Benchmark or model papers using VRDU as an umbrella without evaluating the required provenance or cross-version capabilities."
+  },
+  {
+   "seed": "document layout analysis",
+   "academic_meaning": "Segmentation and structural analysis of document pages into text blocks, figures, tables, columns, lines, and other layout regions, often including logical structure.",
+   "fit": "STRONG",
+   "main_risk": "Layout segmentation by itself does not establish semantic interpretation, source provenance, or cross-version correspondence.",
+   "false_positive_literature": "Page segmentation evaluated only by region detection metrics with no reading order, semantics, or downstream evidence preservation."
+  },
+  {
+   "seed": "layout-aware language models",
+   "academic_meaning": "Language or multimodal models that incorporate token coordinates, page layout, visual features, or spatial relations while processing documents.",
+   "fit": "STRONG",
+   "main_risk": "Many models operate on one page and assume already-correct OCR and bounding boxes.",
+   "false_positive_literature": "Form or receipt extraction where layout is merely an input feature and neither evidence localization nor parsing failure is evaluated."
+  },
+  {
+   "seed": "document information extraction",
+   "academic_meaning": "Extraction of entities, key-value pairs, fields, relations, or structured records from documents.",
+   "fit": "MODERATE",
+   "main_risk": "The task often assumes a predefined schema and does not require answering arbitrary questions or preserving full source relationships.",
+   "false_positive_literature": "Named-entity recognition, invoice fields, receipt fields, and form key-value extraction without evidence lineage."
+  },
+  {
+   "seed": "document visual question answering",
+   "academic_meaning": "Question answering over document images using textual, spatial, and visual evidence.",
+   "fit": "STRONG",
+   "main_risk": "Conventional evaluation often scores only the final answer and may not require precise supporting regions.",
+   "false_positive_literature": "Answer-only DocVQA systems with no page, element, bounding-box, cell, or answer-evidence attribution."
+  },
+  {
+   "seed": "DocVQA",
+   "academic_meaning": "Established benchmark/task family for visual question answering over document images.",
+   "fit": "STRONG",
+   "main_risk": "The name includes multiple benchmark variants with very different assumptions about page count, OCR, evidence annotations, and answer grounding.",
+   "false_positive_literature": "Single-page answer extraction where a correct string is sufficient and source localization is not evaluated."
+  },
+  {
+   "seed": "multi-page document understanding",
+   "academic_meaning": "Document understanding or question answering where evidence may occur across multiple pages and models must select, aggregate, or reason across pages.",
+   "fit": "STRONG",
+   "main_risk": "Page retrieval alone can be mistaken for fine-grained grounding.",
+   "false_positive_literature": "Methods that identify a relevant page but provide no evidence element, region, cell, or answer-span localization."
+  },
+  {
+   "seed": "long-document multimodal understanding",
+   "academic_meaning": "Understanding long documents containing text, layout, tables, figures, charts, or images under extended context and model-capacity constraints.",
+   "fit": "STRONG",
+   "main_risk": "The phrase can include generic long-context model evaluation without document-structure preservation.",
+   "false_positive_literature": "Long-text summarization or PDF QA based entirely on extracted plain text."
+  },
+  {
+   "seed": "OCR layout understanding",
+   "academic_meaning": "Informal combination of OCR output with geometric or structural analysis of text placement and page organization.",
+   "fit": "MODERATE",
+   "main_risk": "It is not a sharply standardized task name and often collapses OCR, layout analysis, and document understanding into one phrase.",
+   "false_positive_literature": "OCR recognition accuracy, text-line detection, or bounding-box extraction without semantic structure."
+  },
+  {
+   "seed": "reading order detection",
+   "academic_meaning": "Prediction of the logical sequence in which document regions, lines, blocks, or elements should be read.",
+   "fit": "STRONG",
+   "main_risk": "Correct reading order is necessary for preservation but does not by itself imply semantic understanding.",
+   "false_positive_literature": "Layout segmentation that reports geometric regions but never evaluates their ordering."
+  },
+  {
+   "seed": "table detection",
+   "academic_meaning": "Localization or classification of table regions in document images or pages.",
+   "fit": "MODERATE",
+   "main_risk": "Detection stops at finding the table boundary and says little about cells, headers, formulas, units, or workbook structure.",
+   "false_positive_literature": "Bounding-box table detectors without table structure reconstruction."
+  },
+  {
+   "seed": "table structure recognition",
+   "academic_meaning": "Recovery of table topology such as rows, columns, cell boundaries, spanning or merged cells, and structural relations.",
+   "fit": "STRONG",
+   "main_risk": "Image-table benchmarks often reconstruct HTML correctly but do not recover higher-level semantics or spreadsheet formulas.",
+   "false_positive_literature": "Pure table-region detection, OCR-only extraction, or HTML reconstruction with no semantic headers or workbook context."
+  },
+  {
+   "seed": "table understanding",
+   "academic_meaning": "Broad family covering table structure, semantic roles, headers, relations, reasoning, representation learning, and downstream question answering.",
+   "fit": "STRONG",
+   "main_risk": "A large fraction of the literature assumes already-structured relational tables rather than visually or structurally complex workplace tables.",
+   "false_positive_literature": "Database or Wikipedia-table reasoning on clean normalized tables with no document layout or structural extraction problem."
+  },
+  {
+   "seed": "table question answering",
+   "academic_meaning": "Answering natural-language questions from tabular data, sometimes requiring aggregation, numerical reasoning, or hierarchical-header reasoning.",
+   "fit": "MODERATE",
+   "main_risk": "Most benchmarks supply normalized tables and therefore bypass extraction, visual structure, formulas, hidden content, and workbook relations.",
+   "false_positive_literature": "Text-to-SQL or QA over clean CSV/Wikipedia tables where cell structure is already known."
+  },
+  {
+   "seed": "spreadsheet understanding",
+   "academic_meaning": "Interpretation of spreadsheet grids, semantic table regions, formulas, formatting, dependencies, layouts, and increasingly workbook-level reasoning.",
+   "fit": "STRONG",
+   "main_risk": "Some work labelled spreadsheet understanding handles only one rectangular table or one sheet.",
+   "false_positive_literature": "CSV question answering, isolated table classification, or formula generation with no multi-sheet or workbook structure."
+  },
+  {
+   "seed": "chart understanding",
+   "academic_meaning": "Interpretation of graphical charts, including axes, legends, data values, relationships, and visual encodings.",
+   "fit": "MODERATE",
+   "main_risk": "Chart understanding is relevant only for attachments where charts carry decision-relevant evidence.",
+   "false_positive_literature": "Chart classification, chart generation, aesthetic evaluation, or captioning with no grounded evidence extraction."
+  },
+  {
+   "seed": "chart question answering",
+   "academic_meaning": "Answering questions whose evidence is encoded in a chart or plot.",
+   "fit": "MODERATE",
+   "main_risk": "Correct chart answers do not necessarily identify the exact graphical evidence or source region.",
+   "false_positive_literature": "Synthetic chart QA where only final answer accuracy is evaluated."
+  },
+  {
+   "seed": "multimodal information extraction",
+   "academic_meaning": "Information extraction that combines text with images, layout, visual appearance, audio, or other modalities.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase spans social media, video, forms, web pages, and many tasks unrelated to attachments.",
+   "false_positive_literature": "Multimodal NER, social-media IE, and image-caption extraction with no document structure or provenance."
+  },
+  {
+   "seed": "multimodal coreference resolution",
+   "academic_meaning": "Resolving mentions or referring expressions to entities represented across textual and visual modalities, often in dialogue, image narratives, or situated interaction.",
+   "fit": "MODERATE",
+   "main_risk": "Most existing benchmarks involve natural images, dialogue scenes, people, or gestures rather than workplace document regions.",
+   "false_positive_literature": "Image-narrative person coreference or situated-dialogue object reference with no document, table, screenshot, or attachment structure."
+  },
+  {
+   "seed": "cross-modal reference resolution",
+   "academic_meaning": "Linking an expression in one modality to a referent represented in another modality, such as language to an image object or region.",
+   "fit": "STRONG",
+   "main_risk": "Terminology is less standardized than referring expression comprehension, phrase grounding, or multimodal coreference, so exact-phrase search alone will miss literature.",
+   "false_positive_literature": "Generic image-text alignment or retrieval that does not resolve an individual referring expression."
+  },
+  {
+   "seed": "visual grounding",
+   "academic_meaning": "Localizing or linking linguistic content to image regions, objects, pixels, or visual entities.",
+   "fit": "MODERATE",
+   "main_risk": "The overwhelming majority of the literature concerns natural images rather than documents.",
+   "false_positive_literature": "Object grounding in photographs, open-vocabulary detection, phrase grounding, and image caption alignment with no textual document structure."
+  },
+  {
+   "seed": "referring expression comprehension",
+   "academic_meaning": "Given an image and a natural-language expression, identify the visual object or region that the expression denotes.",
+   "fit": "MODERATE",
+   "main_risk": "It is a strong methodological analogue but usually assumes natural-scene objects rather than rows, cells, document elements, or attachment versions.",
+   "false_positive_literature": "RefCOCO, ReferIt, and similar natural-image object localization without OCR or document layout."
+  },
+  {
+   "seed": "document region grounding",
+   "academic_meaning": "Grounding an answer, phrase, query, or semantic claim to a spatially localized region of a document.",
+   "fit": "STRONG",
+   "main_risk": "The exact phrase is still emerging and may be expressed instead as answer grounding, evidence localization, spatial attribution, or grounded DocVQA.",
+   "false_positive_literature": "Page-level retrieval that calls the whole page a grounded region."
+  },
+  {
+   "seed": "citation localization",
+   "academic_meaning": "Ambiguous term that may mean locating citation contexts in scholarly text, localizing evidence for generated citations, or mapping a citation to a source span.",
+   "fit": "WEAK",
+   "main_risk": "Without document-region constraints it strongly attracts bibliometrics, citation-context analysis, and RAG citation generation.",
+   "false_positive_literature": "Citation intent classification, citation-context extraction, bibliographic linking, and chunk-level RAG citations."
+  },
+  {
+   "seed": "scanned document understanding",
+   "academic_meaning": "Recognition and interpretation of documents available as raster scans, typically requiring OCR plus layout and visual analysis.",
+   "fit": "MODERATE",
+   "main_risk": "Many papers stop at OCR or page segmentation.",
+   "false_positive_literature": "Character recognition, binarization, deskewing, denoising, or OCR accuracy studies with no semantic understanding."
+  },
+  {
+   "seed": "document version comparison",
+   "academic_meaning": "Comparison of two or more revisions of a document to determine changed, inserted, deleted, moved, or corresponding content.",
+   "fit": "STRONG",
+   "main_risk": "Much of the literature is text-only, XML/DOM-only, or tool-oriented and does not handle heterogeneous visual elements.",
+   "false_positive_literature": "Word-level diff, source-code diff, XML tree differencing, file-version-control metadata, and plagiarism comparison with no document-region correspondence."
+  },
+  {
+   "seed": "visual document differencing",
+   "academic_meaning": "Comparison of rendered document versions using visual, layout, structural, or multimodal cues to localize changes.",
+   "fit": "MODERATE",
+   "main_risk": "The expression is not yet a uniformly standardized field label and can collapse into pixel differencing.",
+   "false_positive_literature": "Pixel-image change detection that treats rendering noise, antialiasing, or page shifts as semantic changes."
+  },
+  {
+   "seed": "attachment content extraction",
+   "academic_meaning": "Engineering phrase for parsing or extracting content from attached files rather than a stable academic task.",
+   "fit": "WEAK",
+   "main_risk": "Academic search quality is poor because attachment is an application/container concept rather than a document-understanding task.",
+   "false_positive_literature": "Email forensics, MIME parsing, malware detection, e-discovery ingestion, and generic file extraction."
+  },
+  {
+   "seed": "email attachment understanding",
+   "academic_meaning": "Product-level description of interpreting an attachment in the context of an email; it is not an established academic task name.",
+   "fit": "REJECT",
+   "main_risk": "Exact searches are likely to be sparse or dominated by security, attachment classification, and enterprise-product literature.",
+   "false_positive_literature": "Malicious-attachment detection, email classification, e-discovery, MIME analysis, phishing detection, and attachment recommendation."
+  },
+  {
+   "seed": "screenshot understanding",
+   "academic_meaning": "Understanding rasterized interfaces or visual captures containing text, controls, images, layout, and other screen elements.",
+   "fit": "MODERATE",
+   "main_risk": "Most work concerns GUI agents, web interfaces, mobile screens, or general screenshots rather than document evidence.",
+   "false_positive_literature": "GUI navigation, UI element detection, website screenshot classification, and agent action prediction."
+  },
+  {
+   "seed": "figure caption grounding",
+   "academic_meaning": "Linking captions or textual phrases to figures, subfigures, graphical regions, or visual content.",
+   "fit": "MODERATE",
+   "main_risk": "Caption-to-figure matching is often document-structure reconstruction rather than arbitrary referring-expression resolution.",
+   "false_positive_literature": "Figure-caption pairing, caption generation, scientific-figure classification, and subfigure segmentation without external-language grounding."
+  },
+  {
+   "seed": "multimodal document retrieval",
+   "academic_meaning": "Retrieval or ranking of documents, pages, or multimodal document representations using textual or multimodal queries.",
+   "fit": "WEAK",
+   "main_risk": "Retrieval is primarily owned by Topic 07 and can distract from Topic 08's interpretation and grounding responsibilities.",
+   "false_positive_literature": "Document search and page retrieval where the result is relevant but no precise evidence element is identified."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "TF1",
+   "name": "Cross-version document alignment, differencing, and element lineage",
+   "description": "Align pages and heterogeneous document elements across successive revisions, establish correspondence between old and new regions, and classify inserted, deleted, moved, modified, or semantically changed content.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest academic formulation of gap-1. A useful result must go beyond filename/version metadata and retain version-relative locations plus cross-version correspondence for text, tables, figures, formulas, or other elements.",
+   "seed_papers": [
+    "Heterogeneous Element-Aware Cross-Version Differencing of Scientific Documents via Layout-Aware Alignment and Structure-Aware Reasoning",
+    "Hybrid Multi-Phase Page Matching and Multi-Layer Diff Detection for Japanese Building Permit Document Review"
+   ]
+  },
+  {
+   "id": "TF2",
+   "name": "Version-aware question answering and retrieval over evolving documents",
+   "description": "Answer questions while respecting document revision identity, temporal validity, supersession, and changes between versions.",
+   "role": "DIRECT",
+   "why_it_matters": "This family can provide methods for stable version identity and version-sensitive evidence selection, but page or region lineage must still be checked separately.",
+   "seed_papers": [
+    "VersionRAG: Version-Aware Retrieval-Augmented Generation for Evolving Documents"
+   ]
+  },
+  {
+   "id": "TF3",
+   "name": "Document-centric cross-modal reference grounding",
+   "description": "Resolve textual referring expressions such as a row, screenshot, highlighted region, figure, cell, page, or nearby visual content to a concrete object or region inside a document or attachment.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the target formulation for gap-2. Discovery should actively seek document-specific language-to-region, language-to-cell, and message-to-document grounding rather than assuming generic visual grounding is sufficient.",
+   "seed_papers": []
+  },
+  {
+   "id": "TF4",
+   "name": "Multimodal coreference, situated reference resolution, and referring expression comprehension",
+   "description": "Resolve linguistic expressions to visual objects or entities in natural images, dialogue scenes, image narratives, or situated interaction.",
+   "role": "TRANSFER",
+   "why_it_matters": "This literature supplies alignment objectives, ambiguity handling, candidate selection, relational language modelling, deictic reference methods, and evaluation protocols transferable to document regions.",
+   "seed_papers": [
+    "ReferItGame: Referring to Objects in Photographs of Natural Scenes",
+    "Multimodal Coreference Resolution for Exploratory Data Visualization Dialogue: Context-Based Annotation and Gesture Identification",
+    "UNITER-Based Situated Coreference Resolution with Rich Multimodal Input",
+    "Semi-supervised multimodal coreference resolution in image narrations"
+   ]
+  },
+  {
+   "id": "TF5",
+   "name": "Evidence-grounded DocVQA, answer localization, and spatial attribution",
+   "description": "Generate or extract an answer while explicitly localizing its supporting evidence as page identifiers, document elements, bounding boxes, masks, cells, or answer-linked evidence spans.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the strongest family for gap-4. Admission should distinguish answer correctness from evidence correctness and examine whether answer spans are explicitly linked to supporting regions.",
+   "seed_papers": [
+    "DocVQA: A Dataset for VQA on Document Images",
+    "BoundingDocs: a Unified Dataset for Document Question Answering with Spatial Annotations",
+    "BBox DocVQA: A Large Scale Bounding Box Grounded Dataset for Enhancing Reasoning in Document Visual Question Answer",
+    "M3Grounder: Mask-Based Multi-Span and Multi-Granular Grounding for Document QA"
+   ]
+  },
+  {
+   "id": "TF6",
+   "name": "Multi-page and long-context multimodal document understanding",
+   "description": "Locate and combine evidence across long or multi-page documents containing text, tables, charts, images, and complex layouts.",
+   "role": "DIRECT",
+   "why_it_matters": "This family addresses page-level provenance, cross-page evidence, compression loss, truncation, page selection, memory pressure, and other scaling issues in gaps 4 and 7.",
+   "seed_papers": [
+    "Hierarchical multimodal transformers for Multi-Page DocVQA",
+    "Document Understanding Dataset and Evaluation (DUDE)",
+    "MMLongBench-Doc: Benchmarking Long-context Document Understanding with Visualizations"
+   ]
+  },
+  {
+   "id": "TF7",
+   "name": "Workbook-level spreadsheet understanding and formula-aware reasoning",
+   "description": "Understand semi-structured spreadsheet workbooks using cell values, formulas, references, formatting, spatial organization, semantic regions, dependencies, multiple sheets, and workbook-level relationships.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the primary family for gap-3. Discovery must prefer work that operates on actual spreadsheet structure over table QA performed on flattened cell values.",
+   "seed_papers": [
+    "Semantic Table Structure Identification in Spreadsheets",
+    "TUTA: Tree-based Transformers for Generally Structured Table Pre-training",
+    "FORTAP: Using Formulae for Numerical-Reasoning-Aware Table Pretraining",
+    "SpreadsheetLLM: Encoding Spreadsheets for Large Language Models",
+    "SpreadsheetBench: Towards Challenging Real World Spreadsheet Manipulation"
+   ]
+  },
+  {
+   "id": "TF8",
+   "name": "Table structure recognition, semantic table understanding, and table QA",
+   "description": "Detect and reconstruct tables, identify cell topology and hierarchical headers, recover semantic roles, and reason over structured table content.",
+   "role": "DIRECT",
+   "why_it_matters": "This family supplies methods for preserving merged cells, spanning headers, row-column associations, and table semantics, although isolated-table results do not by themselves close the workbook-level gap.",
+   "seed_papers": [
+    "TableBank: Table Benchmark for Image-based Table Detection and Recognition",
+    "Image-based table recognition: data, model, and evaluation",
+    "TUTA: Tree-based Transformers for Generally Structured Table Pre-training",
+    "HiTab: A Hierarchical Table Dataset for Question Answering and Natural Language Generation"
+   ]
+  },
+  {
+   "id": "TF9",
+   "name": "Document layout analysis, reading order, and structure-preserving extraction",
+   "description": "Recover physical and logical document structure, including blocks, columns, reading order, tables, figures, and spatial relationships from born-digital or scanned pages.",
+   "role": "DIRECT",
+   "why_it_matters": "These tasks provide the structural substrate needed before provenance can reliably identify pages, elements, regions, or answer spans and are directly relevant to gap-6.",
+   "seed_papers": [
+    "The Document Spectrum for Page Layout Analysis",
+    "LayoutLM: Pre-training of Text and Layout for Document Image Understanding"
+   ]
+  },
+  {
+   "id": "TF10",
+   "name": "Unanswerable document QA, abstention, and extraction-grounding robustness",
+   "description": "Evaluate whether systems recognize absent evidence, corrupted or incomplete inputs, OCR/layout failures, unsupported questions, or uncertainty instead of returning an apparently successful but wrong answer.",
+   "role": "DIRECT",
+   "why_it_matters": "This directly informs gap-5 and the robustness portions of gaps 6 and 8, while the complete production failure contract remains an engineering responsibility.",
+   "seed_papers": [
+    "MMLongBench-Doc: Benchmarking Long-context Document Understanding with Visualizations"
+   ]
+  },
+  {
+   "id": "TF11",
+   "name": "Fine-grained provenance and lineage representations",
+   "description": "Represent derivation and source lineage across versions, records, fields, cells, spans, or transformations so that outputs can be traced back through multiple provenance levels.",
+   "role": "TRANSFER",
+   "why_it_matters": "Database, data-lineage, and provenance research can inform the representation required by gap-4, especially version-to-element-to-cell/span lineage, but it is not evidence that multimodal document grounding itself works.",
+   "seed_papers": []
+  },
+  {
+   "id": "TF12",
+   "name": "Scene-text, screenshot, figure, and text-rich-image grounding",
+   "description": "Ground language to objects or regions in images where visible text, labels, captions, interface elements, or diagrams are crucial identifiers.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is a closer transfer domain for expressions such as 'the highlighted row' or 'this screenshot' than ordinary natural-image referring-expression datasets because OCR-visible text can identify the referent.",
+   "seed_papers": [
+    "Bridging the Gap between Expression and Scene Text for Referring Expression Comprehension"
+   ]
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "TF1",
+   "role": "DIRECT",
+   "queries": [
+    "\"cross-version\" document alignment element matching revision PDF",
+    "\"document differencing\" layout-aware tables figures formulas",
+    "\"document image change detection\" revision region localization",
+    "\"PDF\" revision comparison page matching element alignment",
+    "\"document version comparison\" semantic change region correspondence",
+    "\"scientific document differencing\" cross-version alignment"
+   ]
+  },
+  {
+   "family_id": "TF2",
+   "role": "DIRECT",
+   "queries": [
+    "\"version-aware\" document question answering",
+    "\"evolving documents\" question answering version",
+    "\"version-aware retrieval\" document change tracking",
+    "\"versioned document\" QA temporal validity revision"
+   ]
+  },
+  {
+   "family_id": "TF3",
+   "role": "DIRECT",
+   "queries": [
+    "\"document referring expression\" grounding",
+    "\"cross-modal reference resolution\" document region",
+    "\"multimodal reference resolution\" document table screenshot",
+    "\"text-to-region\" document grounding referring expression",
+    "\"referring expression\" document image table region",
+    "\"highlighted row\" grounding table document"
+   ]
+  },
+  {
+   "family_id": "TF4",
+   "role": "TRANSFER",
+   "queries": [
+    "\"multimodal coreference resolution\" image dialogue",
+    "\"situated coreference resolution\" multimodal dialogue",
+    "\"referring expression comprehension\" visual grounding",
+    "\"cross-modal reference resolution\" image dialogue",
+    "\"multimodal referring expression\" dialogue visual object"
+   ]
+  },
+  {
+   "family_id": "TF5",
+   "role": "DIRECT",
+   "queries": [
+    "\"evidence-grounded\" document question answering",
+    "\"answer grounding\" DocVQA bounding box",
+    "\"answer localization\" document visual question answering",
+    "\"spatial evidence\" document question answering",
+    "\"evidence attribution\" document visual question answering",
+    "\"multi-span\" grounding document QA",
+    "\"element-level\" evidence document VQA"
+   ]
+  },
+  {
+   "family_id": "TF6",
+   "role": "DIRECT",
+   "queries": [
+    "\"multi-page\" DocVQA evidence localization",
+    "\"multi-page document\" question answering page grounding",
+    "\"long-context document understanding\" multimodal evidence",
+    "\"long document\" multimodal QA evidence localization",
+    "\"cross-page\" document question answering evidence"
+   ]
+  },
+  {
+   "family_id": "TF7",
+   "role": "DIRECT",
+   "queries": [
+    "\"spreadsheet understanding\" formulas multi-sheet workbook",
+    "\"spreadsheet semantic structure\" formulas formatting",
+    "\"cross-sheet\" spreadsheet reasoning references",
+    "\"workbook understanding\" formulas named ranges",
+    "\"spreadsheet question answering\" multi-sheet workbook",
+    "\"spreadsheet\" hidden sheets merged cells semantic",
+    "\"spreadsheet formula\" dependency reasoning",
+    "\"spreadsheet benchmark\" multi-sheet workbook reasoning"
+   ]
+  },
+  {
+   "family_id": "TF8",
+   "role": "DIRECT",
+   "queries": [
+    "\"table structure recognition\" merged cells spanning cells",
+    "\"semantic table structure\" spreadsheet headers",
+    "\"table understanding\" hierarchical headers units",
+    "\"table question answering\" hierarchical table",
+    "\"table recognition\" cell structure bounding box",
+    "\"table extraction\" header hierarchy merged cells"
+   ]
+  },
+  {
+   "family_id": "TF9",
+   "role": "DIRECT",
+   "queries": [
+    "\"document layout analysis\" reading order",
+    "\"reading order detection\" document image",
+    "\"scanned document\" layout understanding reading order",
+    "\"visually rich document understanding\" layout information extraction",
+    "\"layout-aware\" document language model bounding box",
+    "\"document parsing\" tables figures reading order"
+   ]
+  },
+  {
+   "family_id": "TF10",
+   "role": "DIRECT",
+   "queries": [
+    "\"unanswerable\" document visual question answering",
+    "\"unanswerable\" DocVQA",
+    "\"abstention\" document question answering",
+    "\"selective prediction\" document question answering",
+    "\"OCR corruption\" document question answering robustness",
+    "\"layout perturbation\" document understanding robustness",
+    "\"document VQA\" hallucination unanswerable evidence"
+   ]
+  },
+  {
+   "family_id": "TF11",
+   "role": "TRANSFER",
+   "queries": [
+    "\"fine-grained provenance\" document version",
+    "\"data lineage\" versioned document region",
+    "\"provenance graph\" document version lineage",
+    "\"fine-grained data provenance\" spreadsheet cell",
+    "\"cell-level lineage\" spreadsheet provenance",
+    "\"source attribution\" answer span provenance"
+   ]
+  },
+  {
+   "family_id": "TF12",
+   "role": "TRANSFER",
+   "queries": [
+    "\"scene-text\" referring expression comprehension",
+    "\"visual grounding\" scene text OCR",
+    "\"screenshot\" referring expression grounding",
+    "\"figure grounding\" referring expression document",
+    "\"text-rich image\" referring expression grounding"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "cross-version document alignment",
+  "cross-version element matching",
+  "layout-aware document differencing",
+  "heterogeneous document differencing",
+  "document image change detection",
+  "version-aware document QA",
+  "evolving-document QA",
+  "document-centric cross-modal reference grounding",
+  "document referring expression grounding",
+  "language-to-document-region grounding",
+  "scene-text referring expression comprehension",
+  "evidence-grounded DocVQA",
+  "answer grounding",
+  "answer localization",
+  "spatial evidence attribution",
+  "semantic evidence grounding",
+  "multi-span document grounding",
+  "multi-granular document grounding",
+  "multi-page DocVQA",
+  "long-context document understanding",
+  "spreadsheet semantic structure identification",
+  "workbook-level spreadsheet understanding",
+  "formula-aware spreadsheet reasoning",
+  "cross-sheet reasoning",
+  "spreadsheet formula dependencies",
+  "semantic table structure",
+  "fine-grained provenance",
+  "cell-level lineage",
+  "unanswerable DocVQA",
+  "document QA abstention"
+ ],
+ "demoted_terms": [
+  "document AI",
+  "document intelligence",
+  "OCR layout understanding",
+  "citation localization",
+  "attachment content extraction",
+  "email attachment understanding",
+  "multimodal document retrieval",
+  "generic visual grounding",
+  "generic screenshot understanding"
+ ],
+ "downgrade_rules": [
+  "Downgrade OCR-only papers that report character, word, or text-line accuracy without layout, semantic structure, reading order, or evidence preservation.",
+  "Downgrade generic image captioning and generic VQA when no document structure or source-location grounding is evaluated.",
+  "Treat natural-image referring-expression comprehension, visual grounding, and multimodal coreference as TRANSFER unless the referent is a document, table, text-rich screenshot, cell, figure, or document region.",
+  "Reject email-attachment papers whose primary task is malware detection, phishing detection, e-discovery ingestion, MIME handling, or attachment recommendation.",
+  "Downgrade document versioning that tracks only filenames, timestamps, hashes, check-in history, or version-control metadata without content correspondence.",
+  "Downgrade text-only diff methods when they cannot align moved or reformatted pages, tables, figures, formulas, or spatial regions.",
+  "Treat XML or DOM tree differencing as TRANSFER unless the method establishes correspondence useful for rendered or semantically structured workplace documents.",
+  "Do not treat pixel-level image differencing as semantic document differencing unless it separates rendering noise and geometric movement from meaningful content change.",
+  "A version-aware QA system that merely filters by version number is partial evidence for gap-1; it does not close cross-version region lineage unless old and new evidence locations are explicitly connected.",
+  "Downgrade single-table or CSV work labelled spreadsheet understanding when it has no formulas, sheet identity, workbook relationships, formatting semantics, or cross-sheet structure.",
+  "Do not infer workbook understanding from formula prediction alone; formulas are one structural signal among sheet topology, hidden content, names, formats, merged regions, and references.",
+  "Downgrade table detection that only finds table bounding boxes.",
+  "Downgrade table recognition that reconstructs rows and columns but loses spanning headers, merged regions, units, semantic header relations, or cell provenance when those properties are relevant.",
+  "Do not treat table QA over clean normalized relational tables as evidence for robust extraction from heterogeneous workplace attachments.",
+  "Downgrade chart QA or chart understanding that produces correct values but cannot identify the chart, series, label, or graphical evidence supporting them.",
+  "Reject citation-localization results concerned only with citation contexts, citation intent, bibliography linking, or scholarly citation recommendation.",
+  "Downgrade RAG citation methods when citations identify only a retrieved chunk or whole document and cannot identify page, element, region, cell, or supporting answer span.",
+  "Downgrade page retrieval and multimodal document retrieval when retrieval is the final task; a relevant page is not equivalent to a grounded evidence region.",
+  "Downgrade multi-page document QA that reports only answer accuracy when the project question concerns exact provenance.",
+  "Page-level evidence is partial evidence for the provenance hierarchy and must not be described as region-level or cell-level grounding.",
+  "Bounding-box grounding is partial evidence for the hierarchy if the work does not preserve document version identity, element type, page identity, and answer-span linkage.",
+  "Do not treat a successful answer with an attention heatmap as validated provenance unless the localization itself has gold annotations and an explicit metric.",
+  "Downgrade long-context multimodal papers that flatten documents to plain OCR text and therefore cannot evaluate loss of tables, images, visual emphasis, or reading order.",
+  "Downgrade parser-throughput and latency benchmarks that do not measure extraction completeness or meaning preservation.",
+  "For robustness, separate true absence or unanswerability from parser failure, OCR failure, layout failure, table-structure failure, unsupported embedded objects, retrieval failure, and grounding failure; papers that collapse all of these into 'no answer' do not close gap-5.",
+  "Do not use evaluation gold produced by the same extractor or grounding component under test as independent evidence of extraction completeness.",
+  "Synthetic or transfer-domain robustness evidence may justify an engineering experiment but must not be described as production-mailbox representativeness.",
+  "Database provenance and data-lineage work is TRANSFER evidence unless it explicitly operates on multimodal documents; it can inform representation design but not document-grounding accuracy.",
+  "GUI or screenshot grounding is TRANSFER unless the benchmark's difficulty depends materially on text-rich layout, labels, tables, or document-like visual structure.",
+  "A paper that evaluates only the latest document version cannot establish historical-state preservation or cross-version evidence lineage."
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1980,
+  "rationale": "Use 1980 as a conservative global floor. Physical and logical document-structure analysis predates neural Document AI by decades: document-image analysis systems and hierarchical representations were already being studied in the early 1980s, and major page-layout methods were established by the 1990s. A cutoff such as 2018 or 2020 would silently remove foundational layout, reading-order, document-structure, and provenance concepts that remain relevant to source-location preservation. Discovery should nevertheless prioritize 2020-2026 for the four open academic gaps because evidence-grounded DocVQA, modern workbook reasoning, long-context multimodal document understanding, version-aware QA, and heterogeneous cross-version alignment are substantially newer research areas."
+ },
+ "gap_mapping": {
+  "gap-1": [
+   "TF1",
+   "TF2",
+   "TF11"
+  ],
+  "gap-2": [
+   "TF3",
+   "TF4",
+   "TF12"
+  ],
+  "gap-3": [
+   "TF7",
+   "TF8"
+  ],
+  "gap-4": [
+   "TF5",
+   "TF6",
+   "TF11"
+  ],
+  "gap-5": [
+   "TF10"
+  ],
+  "gap-6": [
+   "TF8",
+   "TF9",
+   "TF10"
+  ],
+  "gap-7": [
+   "TF6",
+   "TF7",
+   "TF8"
+  ],
+  "gap-8": [
+   "TF5",
+   "TF6",
+   "TF7",
+   "TF8",
+   "TF9",
+   "TF10"
+  ]
+ },
+ "search_strategy_notes": [
+  "Do not use the umbrella terms document AI or document intelligence as primary gap-closing queries; use them only to find surveys, terminology, or citation trails.",
+  "For gap-1, require version or revision plus an alignment, correspondence, change, lineage, page-matching, or element-matching term.",
+  "For gap-2, run document-specific queries before transfer-domain visual-grounding queries.",
+  "For gap-3, require at least one workbook-specific concept such as formula, multi-sheet, cross-sheet, merged cell, formatting, named range, dependency, hidden sheet, or workbook.",
+  "For gap-4, require explicit evidence annotation or localization whenever possible; final-answer accuracy alone is insufficient.",
+  "For gaps 5-8, papers can inform engineering benchmark construction even when they cannot directly close an academic capability gap, but their role must remain explicit."
+ ]
+}

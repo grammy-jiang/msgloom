@@ -1,0 +1,83 @@
+{
+ "paper_id": "2606.29090",
+ "title": "AB-RAG: Adaptive Budgeted Retrieval-Augmented Generation for Reliable Question Answering",
+ "research_question": "Can a training-free RAG system use answer confidence to decide when to stop, when to retrieve more evidence, and how to bound retrieval cost while remaining usable with both open-weight models and closed APIs?",
+ "methodology": "AB-RAG begins with a fixed initial retrieval depth, generates an answer, and estimates confidence from model certainty, answer-evidence embedding similarity, and variance in reranker scores. If confidence exceeds a threshold the system stops; otherwise it increases retrieval depth and repeats until confidence is sufficient or a maximum iteration budget is exhausted. Open models use token probabilities for model certainty, while models without log-probabilities use self-consistency over repeated samples. The framework is evaluated with Qwen2.5-1.5B-Instruct, Llama-3.2-3B, and Claude Haiku on pooled-corpus HotpotQA and TriviaQA experiments using EM, F1, retrieval metrics, iteration counts, and AUROC of confidence against correctness.",
+ "key_findings": [
+  {
+   "finding": "AB-RAG implements an explicit retrieve-or-stop loop: answers above the confidence threshold return immediately, while low-confidence answers trigger deeper retrieval until either the threshold or the retrieval budget is reached.",
+   "evidence_type": "supported",
+   "section": "III-E The Adaptive Budgeted Loop"
+  },
+  {
+   "finding": "The combined confidence estimator separated correct from incorrect answers on every evaluated backbone, with reported AUROC values from 0.600 to 0.733 in the static-versus-adaptive comparison.",
+   "evidence_type": "supported",
+   "section": "V-B and V-C"
+  },
+  {
+   "finding": "Adaptive retrieval improved Exact Match for Llama-3.2-3B on HotpotQA from 39.5 to 45.0 and for Claude Haiku on TriviaQA from 35.5 to 40.0, but produced no EM gain for the small Qwen model.",
+   "evidence_type": "supported",
+   "section": "V-B Static RAG versus AB-RAG Across Backbones"
+  },
+  {
+   "finding": "Model certainty was the strongest individual confidence signal, while answer-evidence cosine similarity was weak or worse than chance for short-answer QA.",
+   "evidence_type": "supported",
+   "section": "V-E Signal Ablation and Diagnostics"
+  },
+  {
+   "finding": "The original interpretation of reranker-score variance was empirically reversed: treating high variance as a penalty produced AUROC 0.427, while treating it as a reward raised AUROC to 0.573.",
+   "evidence_type": "supported",
+   "section": "V-E Signal Ablation and Diagnostics"
+  },
+  {
+   "finding": "On Claude Haiku with TriviaQA, high-confidence answers had 57.6% Exact Match while the low-confidence group had 0%, providing the strongest reported selective-prediction separation.",
+   "evidence_type": "supported",
+   "section": "V-C Confidence Predicts Correctness"
+  },
+  {
+   "finding": "The value of adaptive retrieval depends on the backbone's ability to improve when given additional evidence; the smallest tested model largely stopped after one round and did not benefit in Exact Match.",
+   "evidence_type": "supported",
+   "section": "V-B Static RAG versus AB-RAG Across Backbones"
+  }
+ ],
+ "limitations": [
+  "The open-retrieval corpora contain only a few thousand pooled passages rather than a full Wikipedia- or web-scale collection.",
+  "The main evaluation uses moderate samples of 500 HotpotQA questions and 200 TriviaQA questions.",
+  "Exact Match penalizes substantively correct but verbose answers, particularly for the closed model.",
+  "The closed-model self-consistency proxy uses only three samples, and increasing this number could improve confidence estimation at additional cost.",
+  "The three confidence-signal weights are manually specified rather than learned.",
+  "The proposed answer-evidence cosine-similarity grounding signal fails on short-answer QA.",
+  "Latency of extra adaptive retrieval rounds is not comprehensively characterized.",
+  "Evaluation is limited to QA and does not include long-form generation, enterprise permissions, evidence versions, or temporal-validity constraints.",
+  "No externally linked source-code repository is identified in the paper text that was read."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "confidence_can_drive_bounded_retrieve_or_stop_decisions": 0.99,
+  "confidence_predicts_correctness_across_tested_backbones": 0.97,
+  "adaptive_accuracy_gain_depends_on_backbone": 0.99,
+  "answer_evidence_cosine_signal_fails_for_short_answers": 0.99,
+  "reranker_variance_should_be_rewarded_not_penalized": 0.99,
+  "evaluation_scale_limits_external_validity": 0.98
+ },
+ "raw_claims": [
+  "AB-RAG retrieves more evidence only when its current answer confidence is below a threshold.",
+  "The adaptive loop stops when confidence is sufficient or when the maximum iteration budget is exhausted.",
+  "The final estimator combines model certainty, answer-evidence similarity, and reranker-score variance.",
+  "Closed models can substitute self-consistency for unavailable token probabilities.",
+  "The reported adaptive policy uses a confidence threshold of 0.6 and a maximum of three iterations.",
+  "Confidence separates correct from incorrect answers on all evaluated model backbones.",
+  "Adaptive retrieval does not improve Exact Match on the smallest evaluated model.",
+  "The largest reported adaptive gains occur on the mid-sized open model and on the closed model's TriviaQA evaluation.",
+  "Model certainty is the strongest of the three individual confidence signals.",
+  "Answer-evidence embedding similarity is not a useful correctness predictor for these short-answer tasks.",
+  "The reranker-variance signal initially had the wrong sign and improved after its interpretation was reversed.",
+  "The authors identify pooled corpora, moderate question counts, Exact Match behavior, and limited self-consistency sampling as threats to validity."
+ ],
+ "source_url": "https://arxiv.org/html/2606.29090",
+ "access": "full_text"
+}

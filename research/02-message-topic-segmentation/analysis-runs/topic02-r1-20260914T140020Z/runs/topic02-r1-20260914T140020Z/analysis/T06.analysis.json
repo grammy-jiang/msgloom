@@ -1,0 +1,1943 @@
+{
+  "paper_id": "T06",
+  "title": "Bayesian Unsupervised Topic Segmentation",
+  "bibliography": {
+    "authors": [
+      "Jacob Eisenstein",
+      "Regina Barzilay"
+    ],
+    "year": 2008,
+    "venue": "EMNLP 2008",
+    "printed_pages": "334–343",
+    "pdf_pages": 10,
+    "metadata_source": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+    "metadata_scope": "frozen local selection, without enrichment"
+  },
+  "research_question": "Can a Bayesian lexical-cohesion model support unsupervised linear topic segmentation and incorporate cue words to improve segmentation of meeting transcripts and textbook chapters?",
+  "methodology": "Model a sentence as a bag of words from its segment multinomial, constrain segment indices to a linear sequence, and optimize a uniform-valid-segmentation prior with either posterior-mean language models or marginalized Dirichlet compound multinomials (S01–S05). The cohesion-only BAYESSEG uses dynamic programming. Cue variants emit the first word of each segment-initial sentence from a corpus-shared cue multinomial, requiring Metropolis-Hastings inference; BAYESSEG-CUE-PROP biases proposals toward a prior linguistic cue list (S06–S07). Priors are re-estimated from unlabeled corpus text. Compare three Bayesian variants with U&I, MCS, and LCSEG on ICSI transcripts and author-sectioned medical textbook chapters, with provided segment counts and Pk/WD evaluation (S08–S13). Printed equation issues are retained in T06-I05–I06.",
+  "methodology_details": {
+    "analytic_results": {
+      "posterior_mean": "θ̂_{j,i}=(n_{j,i}+θ_0)/(N_j+Wθ_0); θ_0=1 recovers the stated U&I likelihood model; θ_0=0 gives the segment-word-count-weighted negative-entropy objective.",
+      "status": "paper analytic derivations, not comparative evidence for clauses versus sentences or work-matter preservation",
+      "source_refs": [
+        "S02",
+        "S03"
+      ]
+    },
+    "prior_estimation": {
+      "cohesion_only": "Viterbi EM with gradient maximization until convergence or at most 20 iterations",
+      "cue_variants": "gradient updates after epochs of 1000 Metropolis-Hastings steps",
+      "source_refs": [
+        "S05",
+        "S07"
+      ]
+    },
+    "cue_setting": {
+      "initial_words_per_sentence_considered": 1,
+      "max_move_sentences": 5,
+      "lambda_as_printed": "-1/max-move",
+      "linguistic_list": "Hirschberg and Litman (1993), used in proposals; this is external linguistic knowledge, not target-label training",
+      "source_refs": [
+        "S06",
+        "S07",
+        "V04"
+      ]
+    },
+    "preprocessing": {
+      "reported": "Porter stemming and stop-word removal for comparisons",
+      "not_reported": "sentence-splitting implementation and whether stop-word filtering has a special exception for cue words; Table 2 includes words such as the and and",
+      "source_refs": [
+        "S12",
+        "S15"
+      ]
+    },
+    "runtime": {
+      "paper_reported": "on the order of three minutes per document",
+      "hardware": "not reported",
+      "dataset_or_variant_breakdown": "not reported",
+      "measured_on_msgloom_host": false,
+      "source_refs": [
+        "S10"
+      ]
+    }
+  },
+  "key_findings": [
+    {
+      "finding_id": "T06-F01",
+      "finding": "The target is a linear partition at sentence boundaries. Each sentence has one segment index, and the index can stay fixed or increase to the next segment; it cannot return to an earlier segment. This is not a representation of overlapping or recurring work-matter identity.",
+      "evidence_type": "supported",
+      "section": "PDF p. 3, Section 3",
+      "quote": "We will assume that topic breaks occur at sen- tence boundaries, and write zt to indicate the topic assignment for sentence t.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 215,
+        "line_end": 217,
+        "pdf_pages": [
+          3
+        ]
+      },
+      "evidence_refs": [
+        "S01",
+        "S21"
+      ],
+      "evidence_basis": "explicit_model_definition; capability implication is analyst interpretation",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F02",
+      "finding": "All experiments receive the desired segment count. Cohesion-only inference uses dynamic programming; cue-based inference pools boundary-word counts across documents and uses Metropolis-Hastings moves that preserve segment count.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, Section 5: Parameter settings",
+      "quote": "In all exper- iments, we assume that the number of desired seg- ments is provided.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 764,
+        "line_end": 766,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S02",
+        "S05",
+        "S06",
+        "S07",
+        "S11"
+      ],
+      "evidence_basis": "reported_experimental_configuration",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F03",
+      "finding": "On the medical-textbook chapter-to-section task with provided segment counts, BAYESSEG and BAYESSEG-CUE tie at Pk 0.339 and WD 0.353. The best respective non-Bayesian baselines are MCS Pk 0.368 and U&I WD 0.376. These are observed error reductions of 0.029 and 0.023; significance of system differences is not reported.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, Table 1: Textbook",
+      "quote": "BAYESSEG .339 .353 BAYESSEG-CUE .339 .353",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 777,
+        "line_end": 778,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S13",
+        "V01"
+      ],
+      "evidence_basis": "paper_reported_experiment",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F04",
+      "finding": "On ICSI meeting segmentation with provided segment counts, Table 1 gives BAYESSEG Pk/WD 0.264/0.319, BAYESSEG-CUE 0.261/0.316, and BAYESSEG-CUE-PROP 0.258/0.312. Cues reduce both reported meeting errors. On textbooks, ordinary cues tie cohesion-only results; the linguistic proposal raises both errors to 0.343/0.355.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, Table 1: Meetings",
+      "quote": "BAYESSEG .264 .319 BAYESSEG-CUE .261 .316 BAYESSEG-CUE-PROP .258 .312",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 784,
+        "line_end": 786,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S08",
+        "S10",
+        "S11",
+        "S13",
+        "V01"
+      ],
+      "evidence_basis": "paper_reported_experiment",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F05",
+      "finding": "The Section 6 suggestion that loss of exact inference may explain a decline for meetings conflicts with Table 1 and the preceding statement that cues improve meetings. The intended dataset name cannot be established from this paper.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 9, Section 6 continuation",
+      "quote": "the addition of cue phrases prevents the use of exact inference techniques, which may ex- plain the decline in results for the meetings dataset.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 834,
+        "line_end": 836,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "S13",
+        "S14",
+        "S16",
+        "V01"
+      ],
+      "evidence_basis": "paper_claim_contradicted_by_own_results",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F06",
+      "finding": "For meeting cue discovery, the paper reports four of its top ten cue words also identified by Galley et al.’s supervised procedure. The PDF visibly marks okay, so, and, and but with asterisks, confirming four rather than the three suspected in the parent pre-read. This is cue-list overlap, not gold or predicted Topic-span overlap.",
+      "evidence_type": "supported",
+      "section": "PDF p. 9, Section 6 and Table 2",
+      "quote": "Four of the ten cue phrases identified by our system overlap with their analysis; these are indicated with asterisks.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 854,
+        "line_end": 856,
+        "pdf_pages": [
+          9
+        ]
+      },
+      "evidence_refs": [
+        "S15",
+        "S17",
+        "V02"
+      ],
+      "evidence_basis": "paper_reported_experiment",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F07",
+      "finding": "The textbook corpus is divided into ten parts for separate inference because of memory constraints. This is unsupervised corpus pooling within memory partitions, not supervised ten-fold evaluation. Partition membership, sizes, duplicate controls, and held-out testing are not reported.",
+      "evidence_type": "supported",
+      "section": "PDF p. 8, Section 5: System configuration",
+      "quote": "Due to mem- ory constraints, we divide the textbook dataset into ten parts, and perform inference in each part sepa- rately.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 741,
+        "line_end": 744,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S05",
+        "S06",
+        "S08",
+        "S10",
+        "S11"
+      ],
+      "evidence_basis": "reported_experimental_configuration; split interpretation explicitly distinguished",
+      "confidence": 0.99
+    },
+    {
+      "finding_id": "T06-F08",
+      "finding": "The prose states that Bayesian systems perform 4–5% better than the best baseline on meeting Pk. Table 1’s best non-Bayesian Pk is U&I 0.297, giving reductions of 3.3, 3.6, and 3.9 percentage points, or 11.11%, 12.12%, and 13.13% relative, across the three Bayesian variants. The prose range does not match these displayed values under either convention.",
+      "evidence_type": "contradicted",
+      "section": "PDF p. 8, Section 6",
+      "quote": "On the ICSI meeting corpus, the Bayesian systems perform 4-5% better than the best baseline on the Pk metric, and achieve smaller improvement on the WindowDiff metric.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 804,
+        "line_end": 807,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S13",
+        "S14",
+        "V01"
+      ],
+      "evidence_basis": "paper_claim_compared_with_arithmetic_from_displayed_results",
+      "confidence": 0.98
+    },
+    {
+      "finding_id": "T06-F09",
+      "finding": "The authors suggest that pooling cue counts over the entire textbook corpus might improve results compared with the ten-part configuration. The paper reports no full-corpus comparison, so this remains an untested explanation rather than a measured gain.",
+      "evidence_type": "unsupported",
+      "section": "PDF p. 8, Section 5: System configuration",
+      "quote": "We may achieve better results by performing inference over the entire dataset simultaneously, due to pooling counts for cue phrases across all docu- ments.",
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 744,
+        "line_end": 747,
+        "pdf_pages": [
+          8
+        ]
+      },
+      "evidence_refs": [
+        "S10"
+      ],
+      "evidence_basis": "explicit_author_hypothesis_without_comparison",
+      "confidence": 0.99
+    }
+  ],
+  "limitations": [
+    "Sentence-only, exclusive, contiguous segment membership cannot directly express one span assigned to multiple Topics or a Topic recurring across separated spans (T06-F01; S01).",
+    "Every experiment assumes provided segment count; no unknown-count evaluation is reported (T06-F02; S11).",
+    "No email or asynchronous work-message experiment is reported. The two domains are meeting transcripts and textbook chapters (S08).",
+    "No evaluation measures retained conditions, evidence, exceptions, action scope, approval scope, or reply scope. This is absent evaluation, not a measured failure (S09, S13, S17).",
+    "IAA, annotator population/instructions, exact meeting scoring IDs, window size, scored-window counts, document aggregation, and duplicate controls are not reported (S08–S11).",
+    "The ten textbook parts are memory partitions. No held-out test or inductive transfer claim is established by this corpus-level unsupervised setting (T06-F07).",
+    "Sampling results average five runs without variance or significance tests of segmentation differences. Table 2 chi-squared significance concerns cue occurrences, not system superiority (S10, S17).",
+    "The loss-of-exact-inference explanation, reported gain ranges, and printed likelihood/proposal issues require the qualifications in T06-I01–I06.",
+    "The approximately three-minute runtime lacks hardware and detailed dataset/variant timing; it provides no Raspberry Pi, incremental, or production latency evidence (S10)."
+  ],
+  "reproducibility": {
+    "code_available": true,
+    "dataset_available": true,
+    "metrics_reported": true,
+    "availability_scope": "These booleans encode frozen paper-reported availability only. No URL was visited and no current availability is asserted.",
+    "code_evidence": {
+      "paper_reported_url": "http://groups.csail.mit.edu/rbg/code/bayesseg/",
+      "description": "footnote 1 states code and materials are available",
+      "source_refs": [
+        "S19"
+      ]
+    },
+    "dataset_evidence": {
+      "paper_reported_url": "http://onlinebooks.library.upenn.edu",
+      "description": "footnote 7 states that the textbook full text is freely downloadable; the paper identifies ICSI and supplies corpus counts. Exact processed benchmark inventories, local code, and current corpus availability were not inspected. dataset_available=true does not assert an independently verified release of every evaluated annotation.",
+      "source_refs": [
+        "S08",
+        "S20"
+      ]
+    },
+    "baseline_and_scorer": "Authors report using public baseline executables and Malioutov–Barzilay evaluation source code (S09, S11).",
+    "missing_details": [
+      "random seeds",
+      "software versions",
+      "hardware",
+      "target corpus scoring IDs",
+      "inference partition assignments",
+      "metric window size and corpus aggregation",
+      "IAA and annotation instructions",
+      "system-difference uncertainty"
+    ],
+    "formula_caveats": [
+      "T06-I05",
+      "T06-I06"
+    ]
+  },
+  "confidence_scores": {
+    "T06-F01": 0.99,
+    "T06-F02": 0.99,
+    "T06-F03": 0.99,
+    "T06-F04": 0.99,
+    "T06-F05": 0.99,
+    "T06-F06": 0.99,
+    "T06-F07": 0.99,
+    "T06-F08": 0.98,
+    "T06-F09": 0.99
+  },
+  "confidence_score_scope": "Confidence in the evidence classification and source reading; not a probability of transfer to msgloom.",
+  "raw_claims": [
+    "Our experiments will assume that the number of topics K is known.",
+    "This procedure is iterated until convergence or a maximum of twenty iterations.",
+    "The task is to divide each chapter into the sections indicated by the au- thor.",
+    "For the sampling-based systems, results are av- eraged over five runs.",
+    "In the future, we hope to explore the use of similar Bayesian techniques for hierarchical segmentation, and to incorporate additional features such as prosody and speaker change information."
+  ],
+  "raw_claim_locators": [
+    {
+      "claim_id": "T06-C01",
+      "raw_claim_index": 0,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 273,
+        "line_end": 274,
+        "pdf_pages": [
+          3
+        ]
+      }
+    },
+    {
+      "claim_id": "T06-C02",
+      "raw_claim_index": 1,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 492,
+        "line_end": 493,
+        "pdf_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "claim_id": "T06-C03",
+      "raw_claim_index": 2,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 694,
+        "line_end": 698,
+        "pdf_pages": [
+          7
+        ]
+      }
+    },
+    {
+      "claim_id": "T06-C04",
+      "raw_claim_index": 3,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 731,
+        "line_end": 732,
+        "pdf_pages": [
+          8
+        ]
+      }
+    },
+    {
+      "claim_id": "T06-C05",
+      "raw_claim_index": 4,
+      "source_locator": {
+        "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+        "line_start": 875,
+        "line_end": 878,
+        "pdf_pages": [
+          9
+        ]
+      }
+    }
+  ],
+  "evidence_sources": {
+    "S01": {
+      "section": "PDF p. 3, Section 3: model units and linear constraint",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 201,
+      "line_end": 245,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "S02": {
+      "section": "PDF p. 3, Section 3.1 and footnote 2",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 248,
+      "line_end": 276,
+      "pdf_pages": [
+        3
+      ]
+    },
+    "S03": {
+      "section": "PDF p. 4, Sections 3.1.1–3.1.2: analytic special cases",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 304,
+      "line_end": 387,
+      "pdf_pages": [
+        4
+      ]
+    },
+    "S04": {
+      "section": "PDF p. 5, Section 3.2: DCM likelihood",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 396,
+      "line_end": 445,
+      "pdf_pages": [
+        5
+      ]
+    },
+    "S05": {
+      "section": "PDF p. 5, Sections 3.3–3.4: exact inference and prior estimation",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 446,
+      "line_end": 493,
+      "pdf_pages": [
+        5
+      ]
+    },
+    "S06": {
+      "section": "PDF p. 6, Sections 4–4.1: cue emissions and sampling",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 512,
+      "line_end": 617,
+      "pdf_pages": [
+        6
+      ]
+    },
+    "S07": {
+      "section": "PDF p. 7, Sections 4.2–4.3 and footnotes 5–6",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 627,
+      "line_end": 682,
+      "pdf_pages": [
+        7
+      ]
+    },
+    "S08": {
+      "section": "PDF p. 7, Section 5: corpora",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 683,
+      "line_end": 701,
+      "pdf_pages": [
+        7
+      ]
+    },
+    "S09": {
+      "section": "PDF p. 7, Section 5: metrics",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 702,
+      "line_end": 716,
+      "pdf_pages": [
+        7
+      ]
+    },
+    "S10": {
+      "section": "PDF p. 8, Section 5: runs, inference partitions and runtime",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 726,
+      "line_end": 747,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "S11": {
+      "section": "PDF p. 8, Section 5: baselines, parameter settings, provided K",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 748,
+      "line_end": 766,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "S12": {
+      "section": "PDF p. 8, Section 5: preprocessing",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 767,
+      "line_end": 772,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "S13": {
+      "section": "PDF p. 8, Table 1 and caption",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 773,
+      "line_end": 793,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "S14": {
+      "section": "PDF p. 8, Section 6: gains and cue effects",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 796,
+      "line_end": 816,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "S15": {
+      "section": "PDF p. 9, Table 2 and caption",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 818,
+      "line_end": 833,
+      "pdf_pages": [
+        9
+      ]
+    },
+    "S16": {
+      "section": "PDF p. 9, Section 6 continuation: meeting-decline claim",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 834,
+      "line_end": 836,
+      "pdf_pages": [
+        9
+      ]
+    },
+    "S17": {
+      "section": "PDF p. 9, Section 6: cue analysis and overlap count",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 837,
+      "line_end": 861,
+      "pdf_pages": [
+        9
+      ]
+    },
+    "S18": {
+      "section": "PDF p. 9, Section 7: conclusions and future work",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 862,
+      "line_end": 878,
+      "pdf_pages": [
+        9
+      ]
+    },
+    "S19": {
+      "section": "PDF p. 1, footnote 1: paper-reported code/materials",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 42,
+      "line_end": 45,
+      "pdf_pages": [
+        1
+      ]
+    },
+    "S20": {
+      "section": "PDF p. 7, footnote 7: paper-reported textbook source",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 722,
+      "line_end": 724,
+      "pdf_pages": [
+        7
+      ]
+    },
+    "S21": {
+      "section": "PDF p. 2, Section 2: no shared document topics assumed",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "line_start": 161,
+      "line_end": 176,
+      "pdf_pages": [
+        2
+      ]
+    },
+    "V01": {
+      "section": "PDF p. 8, Table 1, visually verified transcription",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/pdf-page-08.png",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/visual-transcription.md",
+      "line_start": 5,
+      "line_end": 19,
+      "pdf_pages": [
+        8
+      ]
+    },
+    "V02": {
+      "section": "PDF p. 9, Table 2, visually verified stars and boldface",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/pdf-page-09.png",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/visual-transcription.md",
+      "line_start": 21,
+      "line_end": 35,
+      "pdf_pages": [
+        9
+      ]
+    },
+    "V03": {
+      "section": "PDF p. 5, Section 3.2, displayed formula issues",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/pdf-page-05.png",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/visual-transcription.md",
+      "line_start": 37,
+      "line_end": 43,
+      "pdf_pages": [
+        5
+      ]
+    },
+    "V04": {
+      "section": "PDF p. 7, Section 4.2, displayed proposal issues",
+      "image_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/pdf-page-07.png",
+      "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/visual-transcription.md",
+      "line_start": 45,
+      "line_end": 51,
+      "pdf_pages": [
+        7
+      ]
+    }
+  },
+  "topic02": {
+    "evidence_family": "TRANSFER_SEGMENTATION",
+    "evaluated_tasks": [
+      {
+        "task": "topic-boundary detection",
+        "status": "evaluated indirectly through sentence-window segmentation penalties; no boundary precision/recall/F1 reported"
+      },
+      {
+        "task": "contiguous topic segmentation",
+        "status": "evaluated; exact main task, provided segment counts"
+      },
+      {
+        "task": "segment topic labeling",
+        "status": "not evaluated"
+      },
+      {
+        "task": "whole-message multi-label classification",
+        "status": "not evaluated"
+      },
+      {
+        "task": "exact span assignment",
+        "status": "not evaluated"
+      },
+      {
+        "task": "overlapping span assignment",
+        "status": "not evaluated"
+      },
+      {
+        "task": "non-contiguous assignment to one Topic",
+        "status": "not evaluated"
+      },
+      {
+        "task": "discourse/EDU segmentation",
+        "status": "not evaluated"
+      },
+      {
+        "task": "action/question/reply-scope extraction",
+        "status": "not evaluated"
+      },
+      {
+        "task": "preservation of decision-bearing conditions/evidence/scope",
+        "status": "not evaluated"
+      }
+    ],
+    "annotation_unit": {
+      "textbook": "author-indicated section boundaries inside chapters; converted evaluation operates on sentences",
+      "meetings": "existing annotated segment boundaries; annotator-level unit details are not reported",
+      "comparison": "No comparative evidence selects sentence, clause, arbitrary span, EDU, or hybrid units.",
+      "source_refs": [
+        "S01",
+        "S08",
+        "S09"
+      ]
+    },
+    "prediction_unit": {
+      "description": "one segment index for a whole sentence; boundaries between sentences; cue emission for the first word does not create a separately evaluated topic span",
+      "source_refs": [
+        "S01",
+        "S06"
+      ]
+    },
+    "contiguity": {
+      "gold": "Reference segmentation is evaluated as contiguous sections/segments; no identity links among separated reference segments are described.",
+      "prediction": "strictly contiguous linear partition; z_t is z_(t-1) or z_(t-1)+1",
+      "cross_document": "Topics need not be shared across documents; pooling a cue distribution does not produce cross-document topic clusters.",
+      "source_refs": [
+        "S01",
+        "S08",
+        "S09",
+        "S21"
+      ]
+    },
+    "label_cardinality": {
+      "gold": {
+        "evaluated_reference": "one contiguous reference segment per sentence in the segmentation task",
+        "semantic_work_matter_memberships": "not annotated or reported; reference partition is not evidence that content has only one work matter"
+      },
+      "prediction": {
+        "segment_memberships_per_sentence": 1,
+        "document": "multiple sequential segment indices with provided K",
+        "semantic_topic_labels": "not output or evaluated; segment identity is not a persistent work-matter label"
+      },
+      "source_refs": [
+        "S01",
+        "S02",
+        "S08",
+        "S09",
+        "S11"
+      ]
+    },
+    "discontinuity": {
+      "gold": {
+        "within_one_message": "not reported; no email/message-level span annotation",
+        "thread_level": "not reported; no asynchronous thread cluster evaluation",
+        "within_document": "no representation links separated segments as one semantic object"
+      },
+      "prediction": {
+        "within_one_message": "cannot assign separated spans to the same segment index after an intervening segment",
+        "thread_level": "not modeled",
+        "within_document": "segment indices never return to an earlier value"
+      },
+      "source_refs": [
+        "S01",
+        "S08",
+        "S21"
+      ]
+    },
+    "overlap": {
+      "gold": {
+        "status": "unsupported for topic memberships",
+        "scope": "evaluated reference is a partition; semantic multiple membership per sentence/span is not annotated"
+      },
+      "prediction": {
+        "status": "unsupported by model",
+        "scope": "exclusive segment index per sentence; no overlapping spans"
+      },
+      "cue_list_overlap": "T06-F06 is overlap between two lists of cue words; it is neither gold-only nor predicted Topic-span overlap.",
+      "source_refs": [
+        "S01",
+        "S09",
+        "S17"
+      ]
+    },
+    "dataset_domain": {
+      "textbook": {
+        "domain": "medical textbook expository chapters, not clinical conversations or email",
+        "reference": "author-indicated sections",
+        "chapters": 227,
+        "sections": 1136,
+        "mean_sections_per_chapter_reported": 5.0,
+        "mean_sentences_per_chapter_reported": 140,
+        "mean_sentences_per_segment_reported": 28,
+        "inference_memory_parts": 10,
+        "exact_scored_windows": "not reported",
+        "evaluation_document_ids": "not reported",
+        "source_refs": [
+          "S08",
+          "S10"
+        ]
+      },
+      "meetings": {
+        "domain": "ICSI multiparty meeting transcripts",
+        "total_corpus_meetings": 75,
+        "boundary_annotated_meetings": 25,
+        "evaluation_population_note": "25 annotated meetings are the reported labeled pool; scorer document IDs/count and use of the other 50 transcripts for unsupervised pooling are not specified.",
+        "exact_scored_windows": "not reported",
+        "segment_and_sentence_counts": "not reported",
+        "source_refs": [
+          "S08"
+        ]
+      },
+      "transfer_limit": "Meeting discourse and textbook author sections provide transfer evidence for linear segmentation only; neither establishes within-email work-matter identity."
+    },
+    "annotation_process": {
+      "textbook": "Use the sections indicated by the textbook author as the target within each chapter. Independent annotator recruitment, boundary conversion rules, header handling, and adjudication are not reported.",
+      "meetings": "Reuse the boundary-annotated ICSI subset. T06 gives corpus counts but no annotation instructions, annotator counts, adjudication, or meeting IDs.",
+      "source_refs": [
+        "S08"
+      ]
+    },
+    "inter_annotator_agreement": {
+      "status": "not reported",
+      "metric": null,
+      "population": null,
+      "note": "No IAA value may be imported from another paper. Author sections are not an IAA measurement.",
+      "source_refs": [
+        "S08"
+      ]
+    },
+    "split_and_leakage": {
+      "split_unit": "No supervised target-corpus train/dev/test split reported. Textbook inference partitions contain documents; exact construction and sizes are not given.",
+      "counts": {
+        "textbook_chapters": 227,
+        "textbook_sections": 1136,
+        "textbook_inference_parts": 10,
+        "ICSI_total_meetings": 75,
+        "ICSI_boundary_annotated_meetings": 25
+      },
+      "pooling": "Priors are estimated from observed corpus text; the cue model pools across documents in each inference batch. This is unsupervised corpus adaptation, not ten-fold supervised testing.",
+      "baseline_tuning": "MCS is tuned using a separate lecture-transcript corpus because the target corpora lack development sets; its tuning split sizes are not given. LCSEG uses paper settings; U&I is used out of the box.",
+      "provided_information": "The desired segment count is supplied for every experiment; this must remain explicit in any comparison with unknown-count methods.",
+      "duplicate_or_near_duplicate_controls": "not reported",
+      "leakage_assessment": "No target-label training is reported. Evaluated text participates in unsupervised fitting; document-independent or future-document generalization is not established. Inclusion of unannotated ICSI transcripts in pooling is unspecified.",
+      "source_refs": [
+        "S05",
+        "S06",
+        "S08",
+        "S10",
+        "S11"
+      ]
+    },
+    "metrics": {
+      "definitions": {
+        "Pk": {
+          "definition": "Sliding-window penalty for disagreement about whether the two endpoint sentences are in the same segment.",
+          "denominator": "evaluated sentence-window endpoint pairs; exact k/window size, per-document counts, and corpus aggregation are not specified in T06",
+          "direction": "lower is better",
+          "source_refs": [
+            "S09"
+          ]
+        },
+        "WindowDiff": {
+          "definition": "Sliding-window penalty when the hypothesis and reference disagree on the number of intervening segments/boundaries, even if both place the endpoints in different segments.",
+          "denominator": "evaluated sentence windows; exact window size, window counts, and corpus aggregation are not specified in T06",
+          "direction": "lower is better",
+          "source_refs": [
+            "S09"
+          ]
+        }
+      },
+      "settings": {
+        "common": {
+          "task": "contiguous sentence-boundary topic segmentation",
+          "segment_count": "provided in every experiment",
+          "split": "unsupervised corpus evaluation; no target-corpus development sets; no supervised train/test split reported",
+          "metric_refs": [
+            "S09"
+          ],
+          "configuration_refs": [
+            "S08",
+            "S10",
+            "S11",
+            "S12"
+          ]
+        },
+        "textbook": {
+          "domain": "medical textbook expository chapters, not clinical conversations or email",
+          "reference": "author-indicated sections",
+          "chapters": 227,
+          "sections": 1136,
+          "mean_sections_per_chapter_reported": 5.0,
+          "mean_sentences_per_chapter_reported": 140,
+          "mean_sentences_per_segment_reported": 28,
+          "inference_memory_parts": 10,
+          "exact_scored_windows": "not reported",
+          "evaluation_document_ids": "not reported",
+          "source_refs": [
+            "S08",
+            "S10"
+          ]
+        },
+        "meetings": {
+          "domain": "ICSI multiparty meeting transcripts",
+          "total_corpus_meetings": 75,
+          "boundary_annotated_meetings": 25,
+          "evaluation_population_note": "25 annotated meetings are the reported labeled pool; scorer document IDs/count and use of the other 50 transcripts for unsupervised pooling are not specified.",
+          "exact_scored_windows": "not reported",
+          "segment_and_sentence_counts": "not reported",
+          "source_refs": [
+            "S08"
+          ]
+        },
+        "sampling": {
+          "systems": [
+            "BAYESSEG-CUE",
+            "BAYESSEG-CUE-PROP"
+          ],
+          "runs_averaged": 5,
+          "sampling_iterations_per_run": 100000,
+          "final_annealing_iterations": 25000,
+          "final_temperature": 0,
+          "initialization": "dynamic-programming segmentation",
+          "variance_or_confidence_intervals": "not reported",
+          "source_refs": [
+            "S10"
+          ]
+        }
+      },
+      "table_1": [
+        {
+          "dataset_setting": "textbook",
+          "system": "U&I",
+          "Pk": 0.37,
+          "WindowDiff": 0.376,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 774,
+            "line_end": 774,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "textbook",
+          "system": "MCS",
+          "Pk": 0.368,
+          "WindowDiff": 0.382,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 775,
+            "line_end": 775,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "textbook",
+          "system": "LCSEG",
+          "Pk": 0.37,
+          "WindowDiff": 0.385,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 776,
+            "line_end": 776,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "textbook",
+          "system": "BAYESSEG",
+          "Pk": 0.339,
+          "WindowDiff": 0.353,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 777,
+            "line_end": 777,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "textbook",
+          "system": "BAYESSEG-CUE",
+          "Pk": 0.339,
+          "WindowDiff": 0.353,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "mean of five runs",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 778,
+            "line_end": 778,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "textbook",
+          "system": "BAYESSEG-CUE-PROP",
+          "Pk": 0.343,
+          "WindowDiff": 0.355,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "mean of five runs",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 779,
+            "line_end": 779,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "U&I",
+          "Pk": 0.297,
+          "WindowDiff": 0.347,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 781,
+            "line_end": 781,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "MCS",
+          "Pk": 0.37,
+          "WindowDiff": 0.411,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 782,
+            "line_end": 782,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "LCSEG",
+          "Pk": 0.309,
+          "WindowDiff": 0.322,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 783,
+            "line_end": 783,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "BAYESSEG",
+          "Pk": 0.264,
+          "WindowDiff": 0.319,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "run averaging not reported for this system",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 784,
+            "line_end": 784,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "BAYESSEG-CUE",
+          "Pk": 0.261,
+          "WindowDiff": 0.316,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "mean of five runs",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 785,
+            "line_end": 785,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        },
+        {
+          "dataset_setting": "meetings",
+          "system": "BAYESSEG-CUE-PROP",
+          "Pk": 0.258,
+          "WindowDiff": 0.312,
+          "task_and_split_ref": "topic02.metrics.settings.common",
+          "run_aggregation": "mean of five runs",
+          "source_locator": {
+            "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+            "line_start": 786,
+            "line_end": 786,
+            "pdf_pages": [
+              8
+            ]
+          },
+          "visual_evidence_ref": "V01"
+        }
+      ],
+      "derived_comparisons": {
+        "status": "analyst arithmetic from rounded Table 1 values, not additional experiments",
+        "formula": "absolute=baseline-model; percentage points=100*(baseline-model); relative percent=100*(baseline-model)/baseline",
+        "reference_baseline_rule": "best of U&I, MCS, LCSEG separately for each dataset and metric",
+        "comparisons": [
+          {
+            "dataset_setting": "textbook",
+            "metric": "Pk",
+            "baseline": "MCS",
+            "baseline_value": 0.368,
+            "system": "BAYESSEG",
+            "system_value": 0.339,
+            "absolute_error_reduction": 0.029,
+            "percentage_point_reduction": 2.9,
+            "relative_error_reduction_percent": 7.8804
+          },
+          {
+            "dataset_setting": "textbook",
+            "metric": "Pk",
+            "baseline": "MCS",
+            "baseline_value": 0.368,
+            "system": "BAYESSEG-CUE",
+            "system_value": 0.339,
+            "absolute_error_reduction": 0.029,
+            "percentage_point_reduction": 2.9,
+            "relative_error_reduction_percent": 7.8804
+          },
+          {
+            "dataset_setting": "textbook",
+            "metric": "Pk",
+            "baseline": "MCS",
+            "baseline_value": 0.368,
+            "system": "BAYESSEG-CUE-PROP",
+            "system_value": 0.343,
+            "absolute_error_reduction": 0.025,
+            "percentage_point_reduction": 2.5,
+            "relative_error_reduction_percent": 6.7935
+          },
+          {
+            "dataset_setting": "textbook",
+            "metric": "WindowDiff",
+            "baseline": "U&I",
+            "baseline_value": 0.376,
+            "system": "BAYESSEG",
+            "system_value": 0.353,
+            "absolute_error_reduction": 0.023,
+            "percentage_point_reduction": 2.3,
+            "relative_error_reduction_percent": 6.117
+          },
+          {
+            "dataset_setting": "textbook",
+            "metric": "WindowDiff",
+            "baseline": "U&I",
+            "baseline_value": 0.376,
+            "system": "BAYESSEG-CUE",
+            "system_value": 0.353,
+            "absolute_error_reduction": 0.023,
+            "percentage_point_reduction": 2.3,
+            "relative_error_reduction_percent": 6.117
+          },
+          {
+            "dataset_setting": "textbook",
+            "metric": "WindowDiff",
+            "baseline": "U&I",
+            "baseline_value": 0.376,
+            "system": "BAYESSEG-CUE-PROP",
+            "system_value": 0.355,
+            "absolute_error_reduction": 0.021,
+            "percentage_point_reduction": 2.1,
+            "relative_error_reduction_percent": 5.5851
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "Pk",
+            "baseline": "U&I",
+            "baseline_value": 0.297,
+            "system": "BAYESSEG",
+            "system_value": 0.264,
+            "absolute_error_reduction": 0.033,
+            "percentage_point_reduction": 3.3,
+            "relative_error_reduction_percent": 11.1111
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "Pk",
+            "baseline": "U&I",
+            "baseline_value": 0.297,
+            "system": "BAYESSEG-CUE",
+            "system_value": 0.261,
+            "absolute_error_reduction": 0.036,
+            "percentage_point_reduction": 3.6,
+            "relative_error_reduction_percent": 12.1212
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "Pk",
+            "baseline": "U&I",
+            "baseline_value": 0.297,
+            "system": "BAYESSEG-CUE-PROP",
+            "system_value": 0.258,
+            "absolute_error_reduction": 0.039,
+            "percentage_point_reduction": 3.9,
+            "relative_error_reduction_percent": 13.1313
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "WindowDiff",
+            "baseline": "LCSEG",
+            "baseline_value": 0.322,
+            "system": "BAYESSEG",
+            "system_value": 0.319,
+            "absolute_error_reduction": 0.003,
+            "percentage_point_reduction": 0.3,
+            "relative_error_reduction_percent": 0.9317
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "WindowDiff",
+            "baseline": "LCSEG",
+            "baseline_value": 0.322,
+            "system": "BAYESSEG-CUE",
+            "system_value": 0.316,
+            "absolute_error_reduction": 0.006,
+            "percentage_point_reduction": 0.6,
+            "relative_error_reduction_percent": 1.8634
+          },
+          {
+            "dataset_setting": "meetings",
+            "metric": "WindowDiff",
+            "baseline": "LCSEG",
+            "baseline_value": 0.322,
+            "system": "BAYESSEG-CUE-PROP",
+            "system_value": 0.312,
+            "absolute_error_reduction": 0.01,
+            "percentage_point_reduction": 1.0,
+            "relative_error_reduction_percent": 3.1056
+          }
+        ],
+        "cue_ablation_relative_to_BAYESSEG": [
+          {
+            "dataset_setting": "textbook",
+            "baseline": "BAYESSEG",
+            "system": "BAYESSEG-CUE",
+            "Pk": {
+              "absolute_error_reduction": 0.0,
+              "percentage_point_reduction": 0.0,
+              "relative_error_reduction_percent": 0.0
+            },
+            "WindowDiff": {
+              "absolute_error_reduction": 0.0,
+              "percentage_point_reduction": 0.0,
+              "relative_error_reduction_percent": 0.0
+            }
+          },
+          {
+            "dataset_setting": "textbook",
+            "baseline": "BAYESSEG",
+            "system": "BAYESSEG-CUE-PROP",
+            "Pk": {
+              "absolute_error_reduction": -0.004,
+              "percentage_point_reduction": -0.4,
+              "relative_error_reduction_percent": -1.1799
+            },
+            "WindowDiff": {
+              "absolute_error_reduction": -0.002,
+              "percentage_point_reduction": -0.2,
+              "relative_error_reduction_percent": -0.5666
+            }
+          },
+          {
+            "dataset_setting": "meetings",
+            "baseline": "BAYESSEG",
+            "system": "BAYESSEG-CUE",
+            "Pk": {
+              "absolute_error_reduction": 0.003,
+              "percentage_point_reduction": 0.3,
+              "relative_error_reduction_percent": 1.1364
+            },
+            "WindowDiff": {
+              "absolute_error_reduction": 0.003,
+              "percentage_point_reduction": 0.3,
+              "relative_error_reduction_percent": 0.9404
+            }
+          },
+          {
+            "dataset_setting": "meetings",
+            "baseline": "BAYESSEG",
+            "system": "BAYESSEG-CUE-PROP",
+            "Pk": {
+              "absolute_error_reduction": 0.006,
+              "percentage_point_reduction": 0.6,
+              "relative_error_reduction_percent": 2.2727
+            },
+            "WindowDiff": {
+              "absolute_error_reduction": 0.007,
+              "percentage_point_reduction": 0.7,
+              "relative_error_reduction_percent": 2.1944
+            }
+          }
+        ],
+        "source_refs": [
+          "S13",
+          "V01"
+        ]
+      },
+      "secondary_literature_value": {
+        "as_reported_by_T06_only": true,
+        "system": "Purver et al. (2006)",
+        "task": "ICSI meeting topic segmentation",
+        "Pk": 0.289,
+        "WindowDiff": 0.329,
+        "split_and_protocol": "not specified in T06; not rerun here; no assertion of controlled comparability",
+        "source_refs": [
+          "S14"
+        ]
+      },
+      "cue_analysis": {
+        "task": "diagnostic cue-word discovery at hypothesized segment starts",
+        "statistics": "chi-squared against expected occurrences; caption marks p < .01 in bold",
+        "dataset_settings": [
+          "meetings",
+          "textbook"
+        ],
+        "denominators": "top ten displayed words per dataset; full occurrence/contingency counts, vocabulary size, and expected-count construction are not reported; raw chi-squared numbers are not word counts",
+        "system_variant": "caption says unsupervised model without identifying which cue variant or run aggregation supplied Table 2",
+        "top_ten": [
+          {
+            "rank_within_each_displayed_column": 1,
+            "meeting": {
+              "word": "okay",
+              "chi_squared": 234.4,
+              "overlap_with_Galley_supervised_list": true,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "the",
+              "chi_squared": 1345.9,
+              "bold_p_below_0_01": true
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 819,
+              "line_end": 819,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 2,
+            "meeting": {
+              "word": "I",
+              "chi_squared": 212.6,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "this",
+              "chi_squared": 14.3,
+              "bold_p_below_0_01": true
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 820,
+              "line_end": 820,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 3,
+            "meeting": {
+              "word": "so",
+              "chi_squared": 113.4,
+              "overlap_with_Galley_supervised_list": true,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "it",
+              "chi_squared": 4.1,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 821,
+              "line_end": 821,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 4,
+            "meeting": {
+              "word": "um",
+              "chi_squared": 91.7,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "these",
+              "chi_squared": 4.1,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 822,
+              "line_end": 822,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 5,
+            "meeting": {
+              "word": "and",
+              "chi_squared": 67.3,
+              "overlap_with_Galley_supervised_list": true,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "a",
+              "chi_squared": 2.9,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 823,
+              "line_end": 823,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 6,
+            "meeting": {
+              "word": "yeah",
+              "chi_squared": 10.5,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "on",
+              "chi_squared": 2.1,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 824,
+              "line_end": 824,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 7,
+            "meeting": {
+              "word": "but",
+              "chi_squared": 9.4,
+              "overlap_with_Galley_supervised_list": true,
+              "bold_p_below_0_01": true
+            },
+            "textbook": {
+              "word": "most",
+              "chi_squared": 2.0,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 825,
+              "line_end": 825,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 8,
+            "meeting": {
+              "word": "uh",
+              "chi_squared": 4.8,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": false
+            },
+            "textbook": {
+              "word": "heart",
+              "chi_squared": 1.8,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 826,
+              "line_end": 826,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 9,
+            "meeting": {
+              "word": "right",
+              "chi_squared": 2.4,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": false
+            },
+            "textbook": {
+              "word": "creating",
+              "chi_squared": 1.8,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 827,
+              "line_end": 827,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          },
+          {
+            "rank_within_each_displayed_column": 10,
+            "meeting": {
+              "word": "agenda",
+              "chi_squared": 1.3,
+              "overlap_with_Galley_supervised_list": false,
+              "bold_p_below_0_01": false
+            },
+            "textbook": {
+              "word": "hundred",
+              "chi_squared": 1.8,
+              "bold_p_below_0_01": false
+            },
+            "source_locator": {
+              "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+              "line_start": 828,
+              "line_end": 828,
+              "pdf_pages": [
+                9
+              ]
+            },
+            "formatting_evidence_ref": "V02"
+          }
+        ],
+        "meeting_overlap_count": 4,
+        "overlap_denominator": 10,
+        "comparison_list_size": "not reported; this is not recall against the supervised list",
+        "source_refs": [
+          "S15",
+          "S17",
+          "V02"
+        ]
+      },
+      "not_interchangeable_with": [
+        "boundary F1",
+        "pair/cluster quality",
+        "span F1/IoU",
+        "multi-label metrics",
+        "work-text preservation metrics"
+      ],
+      "statistical_uncertainty": "No segmentation significance tests, standard deviations, confidence intervals, or per-document scores are reported. Cue-word chi-squared tests do not establish significance of Table 1 gains."
+    },
+    "measured_work_text_preservation": {
+      "status": "no such evaluation",
+      "direct_measured_evidence": null,
+      "related_measured_errors": "Pk and WindowDiff segmentation penalties only; diagnostic cue statistics do not measure lost work scope.",
+      "not_negative_result": "No preservation score or failure rate was measured, so absence must not be restated as poor preservation.",
+      "source_refs": [
+        "S09",
+        "S13",
+        "S17"
+      ]
+    },
+    "not_evaluated_for_msgloom": [
+      "business email or asynchronous message threads",
+      "sentence versus clause/EDU/arbitrary-span unit comparison",
+      "multiple semantic Topics within one sentence",
+      "multiple memberships for one span",
+      "one Topic with non-contiguous evidence within a message",
+      "persistent Topics across messages or Sources",
+      "uncertain/abstained assignments",
+      "conditions, evidence, exceptions, action scope, approval scope, or reply scope preservation",
+      "unknown segment counts",
+      "online updates, out-of-order messages, near-duplicate quotations, and Raspberry Pi latency"
+    ],
+    "material_inconsistencies": [
+      {
+        "id": "T06-I01",
+        "status": "unresolved_source_contradiction",
+        "finding_refs": [
+          "T06-F04",
+          "T06-F05"
+        ],
+        "source_statement": "Section 6 says loss of exact inference may explain a decline for meetings.",
+        "conflicting_evidence": "Table 1 meeting errors decrease with cues; preceding prose also says meetings improve. Textbook cues tie, and cue-prop worsens, but replacing the dataset name would be a guess.",
+        "source_refs": [
+          "S13",
+          "S14",
+          "S16",
+          "V01"
+        ]
+      },
+      {
+        "id": "T06-I02",
+        "status": "unresolved_numeric_summary_mismatch",
+        "finding_refs": [
+          "T06-F08"
+        ],
+        "source_statement": "Meeting Pk improvement over best baseline is stated as 4-5%.",
+        "conflicting_evidence": "Displayed U&I 0.297 versus 0.264/0.261/0.258 gives 3.3/3.6/3.9 percentage points and 11.11/12.12/13.13 percent relative. Even the comparison with best baseline from the separately quoted Purver Pk 0.289 would not reproduce 4-5%.",
+        "source_refs": [
+          "S13",
+          "S14",
+          "V01"
+        ]
+      },
+      {
+        "id": "T06-I03",
+        "status": "approximate_prose_range_retained",
+        "source_statement": "Textbook raw performance gain is stated as 2-3% against all baselines on both metrics.",
+        "conflicting_evidence": "Across every Table 1 textbook Bayesian/non-Bayesian pair and metric, absolute improvements range from 0.021 to 0.032 (2.1–3.2 percentage points). This roughly matches rounded prose but is not an exact interval; relative reductions range from 5.5851% to 8.3784%.",
+        "source_refs": [
+          "S13",
+          "S14",
+          "V01"
+        ]
+      },
+      {
+        "id": "T06-I04",
+        "status": "resolved_by_original_pdf",
+        "finding_refs": [
+          "T06-F06"
+        ],
+        "source_statement": "Prose: four of the top ten meeting cues overlap the supervised list. Parent pre-read suspected only three displayed stars.",
+        "verified_evidence": "Original Table 2 has four: okay*, so*, and*, but*. Raw, rough, layout, and page-indexed conversions also retain all four. There is no surviving paper count inconsistency.",
+        "source_refs": [
+          "S15",
+          "S17",
+          "V02"
+        ]
+      },
+      {
+        "id": "T06-I05",
+        "status": "unresolved_printed_mathematical_inconsistency",
+        "source_statement": "Section 3.2 prints Γ(n_{j,i}+Wθ_0)/Γ(θ_0) inside the DCM product, while equation (2) treats θ_0 as a per-word prior.",
+        "analyst_interpretation": "The per-word prior implies Γ(n_{j,i}+θ_0)/Γ(θ_0), derived analytically. Also, equation (7) first multiplies sentence marginals although the model shares a multinomial within each segment. The PDF confirms the source formulas; implementation behavior is unknown.",
+        "source_refs": [
+          "S02",
+          "S04",
+          "V03"
+        ]
+      },
+      {
+        "id": "T06-I06",
+        "status": "unresolved_printed_proposal_notation",
+        "source_statement": "Section 4.2 says exponential decay but prints d^λ; its linguistic proposal prints q_ling(z′|z′) although the right side is q(z′|z).",
+        "analyst_interpretation": "The displayed distance weighting is a power law. The proposal-conditioning notation also conflicts with the description of a move from z to z′. Do not silently repair either when reproducing the method.",
+        "source_refs": [
+          "S07",
+          "V04"
+        ]
+      }
+    ],
+    "rq_relevance": {
+      "RQ1": {
+        "strength": "limited transfer",
+        "answer": "Sentence granularity is an assumption, not a comparison of scope-preserving units.",
+        "refs": [
+          "T06-F01",
+          "S08"
+        ]
+      },
+      "RQ2": {
+        "strength": "no direct evidence",
+        "answer": "No email/asynchronous clustering or interleaving representation.",
+        "refs": [
+          "S08",
+          "S21"
+        ]
+      },
+      "RQ3": {
+        "strength": "representation limitation",
+        "answer": "Documents can contain multiple sequential segments; gold semantic multi-membership is not annotated, and the model predicts one segment per sentence.",
+        "refs": [
+          "T06-F01",
+          "T06-F02"
+        ]
+      },
+      "RQ4": {
+        "strength": "negative capability inference, not negative experiment",
+        "answer": "Monotone segment indices exclude recurring segment identity and overlap; Table 2 list overlap is unrelated.",
+        "refs": [
+          "T06-F01",
+          "T06-F06"
+        ]
+      },
+      "RQ5": {
+        "strength": "evidence gap",
+        "answer": "No direct work-text preservation evaluation. Potential scope loss needs separate tests.",
+        "refs": [
+          "S09",
+          "S13"
+        ]
+      },
+      "RQ6": {
+        "strength": "useful metric/protocol evidence",
+        "answer": "Keep Pk and WD separate; report known K, missing window denominators, relative versus absolute gains, and retained source inconsistencies.",
+        "refs": [
+          "T06-F02",
+          "T06-F03",
+          "T06-F04",
+          "T06-F08"
+        ]
+      },
+      "RQ7": {
+        "strength": "partial protocol evidence",
+        "answer": "Corpus counts and memory partitions are reported; IAA, exact IDs, duplicate controls, and several scoring details are missing.",
+        "refs": [
+          "T06-F07",
+          "S08",
+          "S10",
+          "S11"
+        ]
+      },
+      "RQ8": {
+        "strength": "proposal input only",
+        "answer": "Use as a controlled contiguous-sentence baseline and test separate representation/preservation extensions. No architecture is approved.",
+        "refs": [
+          "T06-F01",
+          "T06-F02",
+          "T06-F04"
+        ]
+      }
+    },
+    "interpretation": [
+      {
+        "status": "analyst interpretation",
+        "text": "The method is a candidate baseline for boundary placement where a contiguous partition is appropriate. Lexical distributions and document membership do not establish the user’s concrete work-matter identity.",
+        "finding_refs": [
+          "T06-F01",
+          "T06-F02"
+        ]
+      },
+      {
+        "status": "analyst interpretation",
+        "text": "Sharing a cue multinomial across documents shares a discourse feature, not semantic Topic identity. Drawing a cue token from a different language model does not implement span multi-membership.",
+        "source_refs": [
+          "S06",
+          "S21"
+        ]
+      },
+      {
+        "status": "plausible risk, unmeasured",
+        "text": "A sentence containing an action plus a condition or evidence relevant to another Topic could require finer or overlapping assignments. The partition may force a choice, but this paper does not measure scope loss or establish a preferred replacement unit.",
+        "finding_refs": [
+          "T06-F01"
+        ],
+        "source_refs": [
+          "S09"
+        ]
+      },
+      {
+        "status": "analyst interpretation",
+        "text": "Corpus-dependent cue gains justify testing cue features on reviewed email examples; the meeting gain cannot be assumed to transfer. Textbook results already show that adding the feature is not uniformly beneficial.",
+        "finding_refs": [
+          "T06-F03",
+          "T06-F04"
+        ]
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "id": "T06-E01",
+        "status": "untested msgloom proposal; no architecture approval",
+        "design": "Compare a sentence-partition baseline with clause, EDU, arbitrary-span, and hybrid annotation on the same reviewed work messages. Allow multiple Topics per span and non-contiguous spans per Topic in gold.",
+        "evaluation": "Measure representable gold evidence and exact/overlap span scores separately from boundary Pk/WD; retain source offsets and uncertainty.",
+        "motivation_refs": [
+          "T06-F01"
+        ]
+      },
+      {
+        "id": "T06-E02",
+        "status": "untested msgloom proposal",
+        "design": "Evaluate the contiguous baseline under provided segment counts and separately estimated counts. Compare cohesion-only and cue variants with fixed preprocessing and repeated seeds.",
+        "evaluation": "Report Pk and WD with explicit window, corpus aggregation, per-message counts, and variance. Keep thread/source/time holdouts separate from unsupervised inference partitions; audit quoted duplicates.",
+        "motivation_refs": [
+          "T06-F02",
+          "T06-F04",
+          "T06-F07",
+          "T06-F08"
+        ]
+      },
+      {
+        "id": "T06-E03",
+        "status": "untested msgloom proposal",
+        "design": "Use public or synthetic examples with conditions, exceptions, evidence, approvals, actions, and selective replies. Mark which text must remain linked to each concrete work matter.",
+        "evaluation": "Measure omitted and broadened decision-bearing scope separately, including shared spans and recurring evidence. Report these results separately from segmentation penalties.",
+        "motivation_refs": [
+          "T06-F01"
+        ],
+        "source_refs": [
+          "S09"
+        ]
+      },
+      {
+        "id": "T06-E04",
+        "status": "untested reproduction proposal",
+        "design": "Before implementation comparison, resolve the printed DCM/proposal equations against any authorized frozen code and document the implemented formulas; test corpus-wide versus partitioned cue fitting if resources permit.",
+        "evaluation": "Use controlled segmentation scores and measured memory/runtime; keep the author’s full-pooling hypothesis unconfirmed until tested.",
+        "motivation_refs": [
+          "T06-F09"
+        ],
+        "issue_refs": [
+          "T06-I05",
+          "T06-I06"
+        ]
+      }
+    ],
+    "source_provenance": {
+      "pdf_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-segmentation/2008_eisenstein_barzilay_bayesian_unsupervised_topic_segmentation.pdf",
+      "pdf_sha256": "66a8ab86c59acdc3ad00a85df49c85bd5f51883809e3a8712c627a16b43262a7",
+      "expected_pdf_sha256": "66a8ab86c59acdc3ad00a85df49c85bd5f51883809e3a8712c627a16b43262a7",
+      "converted_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T06.md",
+      "converted_text_sha256": "5eb5de68df8d2c8a1f24dafd14caec2041717982ab4b1ee80fc50843e7370cf0",
+      "fine_conversion": "absent at the supplied run path",
+      "primary_quote_text_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+      "primary_quote_text_sha256": "5762dd10e71d357c86397892be11cfb28da62e65b33724ad58203759936c12ba",
+      "conversion_quality": "Rough text was read fully but scrambles equations; page-indexed auxiliary text merges columns. Independent raw text is used for stable quotes, checked against local PDF images for mathematical displays and results.",
+      "line_convention": "1-based LF split, inclusive ends; form feed does not create an additional line; quotes normalize whitespace only and retain line-break hyphens",
+      "original_pdf_visual_pages": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "visual_transcription_path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/analysis/T06/visual-transcription.md",
+      "visual_transcription_sha256": "03c89e917c73709bf8f48dd05c1d4194b707ae6416c559d7c51a1cd255ffbab1",
+      "read_sources": [
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/SKILL.md",
+          "sha256": "a80313c957d5154e1c6f67581111679f0044073534759010c0cd95a2bcf40209",
+          "read_scope": "full skill"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/runners/subagent_contracts/paper_analyzer.yaml",
+          "sha256": "9cf6741fc72e32e207e5d325e6274ef7eefd94ccfef6b944ffd27d6bf6b14bbf",
+          "read_scope": "full contract"
+        },
+        {
+          "path": "/home/grammy-jiang/.agents/skills/research-pipeline/schemas/paper_analysis.schema.json",
+          "sha256": "7cb1ae348d76bb16cbd9e30996a5d960526eb2bbe5dc907c5cfd6d43adaa4bbb",
+          "read_scope": "full schema"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/WORKER_REQUIREMENTS.md",
+          "sha256": "fe26a31de5b97a9098cd78083a0abd4e0eb700951c6932d5fdaf928d474c93a0",
+          "read_scope": "full mandatory requirements"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/BRIEF.md",
+          "sha256": "a2395f9c5eae1ec0d85dd53be6eb32bb26b56c9b6e81364b01453ae3e2881d30",
+          "read_scope": "full user context"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/CONTEXT.md",
+          "sha256": "f79c174e65e3a6b69a2adca4c7fa4c148203238ecbf3331aa521b6fc73308e7f",
+          "read_scope": "full shared context; earlier Topic01-only authorization superseded by current explicit T06 task; no Topic01 conclusions read"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-brief.md",
+          "sha256": "48a3601ef0ebb160f81ecf8d3dd08b53f476a48648a229914017544862e1ef7e",
+          "read_scope": "full design brief"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/docs/design-principles.md",
+          "sha256": "0356900edbbfb41d8f2066ffdc4e78ad727575c187b6b99c8eb0e547290119d0",
+          "read_scope": "full design principles"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/screen/shortlist.json",
+          "sha256": "3efb42a0c23fd5ddd9c97684a57c91a64db110e1af93beeb8a99935e125d482a",
+          "read_scope": "T06 metadata only extracted from parsed file; no other paper analyzed"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/papers/transfer-segmentation/2008_eisenstein_barzilay_bayesian_unsupervised_topic_segmentation.pdf",
+          "sha256": "66a8ab86c59acdc3ad00a85df49c85bd5f51883809e3a8712c627a16b43262a7",
+          "read_scope": "hash verified; local visual inspection of PDF pages 4–9"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/runs/topic02-r1-20260914T140020Z/convert_rough/T06.md",
+          "sha256": "5eb5de68df8d2c8a1f24dafd14caec2041717982ab4b1ee80fc50843e7370cf0",
+          "read_scope": "full converted text including references, LF lines 1–1380"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.raw.txt",
+          "sha256": "5762dd10e71d357c86397892be11cfb28da62e65b33724ad58203759936c12ba",
+          "read_scope": "full independent text including references, LF lines 1–994"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.pages.md",
+          "sha256": "75547966ca885dd69e810664e679d46edbe9c22c1b323f6710fb973c568a793f",
+          "read_scope": "auxiliary page/column checks, LF lines 1–190 and 400–520"
+        },
+        {
+          "path": "/home/grammy-jiang/Projects/msgloom/research/02-message-topic-segmentation/analysis-runs/topic02-r1-20260914T140020Z/local-text/T06.layout.txt",
+          "sha256": "c5a154b1d7e43d8d9e057a202174b2cf7fbb27dfc7e4851e5be87ea5f1829cab",
+          "read_scope": "independent results/protocol checks, LF lines 340–495"
+        }
+      ],
+      "runtime_provenance": {
+        "type": "launcher-reported environment values",
+        "MSGLOOM_WORKER_ROLE": "paper-T06",
+        "MSGLOOM_WORKER_MODEL": "gpt-6-astra",
+        "MSGLOOM_WORKER_EFFORT": "xhigh",
+        "parent_verification": "Parent independently verifies actual turn_context and CLI exit receipts; no runtime identifier is inferred here."
+      },
+      "escalation": {
+        "requested": false,
+        "selected_effort": "xhigh",
+        "reason": "Parent selected xhigh before launch. Local PDF inspection resolved conversion ambiguity and the star-count suspicion; source prose/formula contradictions remain documented, not unreadable."
+      },
+      "scope": "T06 only; local immutable corpus; no network, pipeline stage, installed-code change, workflow-state change, or runner submission."
+    }
+  }
+}

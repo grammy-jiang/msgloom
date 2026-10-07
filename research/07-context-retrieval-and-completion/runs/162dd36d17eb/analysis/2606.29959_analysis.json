@@ -1,0 +1,91 @@
+{
+ "paper_id": "2606.29959",
+ "title": "Know Before You Fetch: Calibrated Retrieval-Budget Allocation for Retrieval-Augmented Generation",
+ "research_question": "Can calibrated estimates of closed-book correctness be used before retrieval to allocate zero, compact, or full retrieval budgets per query, while also supporting abstention and explicitly accounting for retrieval calls, passage tokens, and latency?",
+ "methodology": "The paper constructs per-query outcome tables containing closed-book, top-1-retrieval, and top-5-retrieval answers and correctness labels, then calibrates uncertainty signals such as sequence log-probability and TARG prefix statistics into probabilities of closed-book correctness. A binary gate selects between no retrieval and top-5 retrieval, while a graded policy uses two thresholds to select zero, one, or five passages. Diagnostic experiments use out-of-fold calibration, while deployment experiments fit calibration on train data, choose thresholds on validation data, and evaluate once on test data. Experiments cover TriviaQA, Natural Questions, and MS MARCO across multiple Qwen and Llama model sizes and report accuracy, multiple budget-frontier AUCs, AUROC, ECE, Brier score, NLL, risk-coverage behavior, retrieval harm, and measured latency.",
+ "key_findings": [
+  {
+   "finding": "Logistic calibration substantially improved probability quality without materially changing the underlying ranking signal; for example, sequence-log-probability ECE on Natural Questions fell from 0.643 before calibration to 0.009 after calibration.",
+   "evidence_type": "supported",
+   "section": "5.1 Calibration Quality"
+  },
+  {
+   "finding": "Graded zero/one/five-passage allocation improved full-context and passage-budget frontiers but produced essentially no improvement in retrieval-call frontier AUC because a one-passage retrieval still incurs a retrieval call.",
+   "evidence_type": "supported",
+   "section": "5.2 Graded Budget Allocation"
+  },
+  {
+   "finding": "The amount of retrieval that can safely be skipped grows with reader capability: on TriviaQA, the retrieval rate needed to match always-RAG fell from 99.5% for Qwen3-1.7B to 46.0% for Qwen3-32B.",
+   "evidence_type": "supported",
+   "section": "5.3 Scaling, Family Transfer, and Difficulty Regimes"
+  },
+  {
+   "finding": "Validation-selected thresholds on TriviaQA approached always-RAG accuracy while retrieving for roughly two-thirds of queries, whereas Natural Questions and MS MARCO selected retrieval for about 97-99% of queries because their closed-book headroom was low.",
+   "evidence_type": "supported",
+   "section": "5.4 Held-out Deployment Thresholds"
+  },
+  {
+   "finding": "Using confidence for the answer actually returned improved selective-prediction accuracy on TriviaQA and Natural Questions, but did not outperform naive closed-book confidence on MS MARCO.",
+   "evidence_type": "supported",
+   "section": "5.5 Selective RAG and Abstention"
+  },
+  {
+   "finding": "A closed-book gating probe is itself a generation cost, so adaptive retrieval is not automatically faster: at a matched-accuracy operating point Qwen3-8B gating was slower than always-RAG, while Qwen3-32B gating was faster.",
+   "evidence_type": "supported",
+   "section": "5.6 Measured Cost Regimes"
+  },
+  {
+   "finding": "Retriever quality strongly constrains the attainable answer accuracy; confidence-based gating cannot compensate for a sufficiently noisy retriever when maximum correctness is the objective.",
+   "evidence_type": "supported",
+   "section": "6.2 Retriever Quality and Corpus Scale"
+  },
+  {
+   "finding": "The method explicitly supports abstention as a fourth action when confidence in the selected answer remains too low.",
+   "evidence_type": "supported",
+   "section": "3.4 Selective RAG"
+  }
+ ],
+ "limitations": [
+  "Most experiments use short-answer QA, where alias-based correctness is much easier to evaluate than evidence-grounded long-form generation.",
+  "Long-form answers would require explicit evidence attribution and human evaluation, which are not tested.",
+  "Measured latency is hardware-specific and based on batch size one; production batching, asynchronous retrieval, and KV-cache reuse can change the break-even point.",
+  "The work does not reproduce complete Self-RAG or Adaptive-RAG systems, so those comparisons isolate decision signals rather than full pipelines.",
+  "Calibration can drift under domain shift and therefore requires monitoring and likely recalibration.",
+  "The method does not model enterprise authorization, document-version constraints, or explicit freshness requirements.",
+  "High-confidence closed-book answers can still require mandatory retrieval in safety-, compliance-, or transparency-sensitive settings.",
+  "The approach relies on a calibration dataset with correctness labels before deployable thresholds can be selected."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "calibration_improves_probability_quality": 0.99,
+  "graded_allocation_saves_passage_budget_not_retrieval_calls": 0.99,
+  "retrieval_skip_rate_depends_on_reader_headroom": 0.99,
+  "held_out_thresholds_adapt_to_dataset_difficulty": 0.99,
+  "chosen_answer_confidence_enables_selective_abstention": 0.97,
+  "gating_has_a_real_latency_break_even_point": 0.99,
+  "retriever_quality_bounds_gating_benefit": 0.98,
+  "domain_shift_requires_recalibration_monitoring": 0.99
+ },
+ "raw_claims": [
+  "The system first estimates the probability that the closed-book answer is correct.",
+  "A binary policy chooses between skipping retrieval and retrieving five passages.",
+  "A graded policy chooses among zero, one, and five retrieved passages using two calibrated thresholds.",
+  "Retrieval-call cost, full-context usage, and passage budget are reported as distinct cost axes.",
+  "Retrieving one passage saves context tokens but does not eliminate the retrieval call.",
+  "Calibration greatly reduces probability-calibration error for the tested uncertainty signals.",
+  "Larger readers can skip substantially more retrieval on TriviaQA while preserving always-RAG accuracy.",
+  "When closed-book accuracy is low, validation-selected policies correctly converge toward near-always retrieval.",
+  "Selective RAG can abstain when confidence in the answer actually returned is too low.",
+  "A separate closed-book probe can make gating slower unless enough queries skip retrieval.",
+  "The benefit of adaptive retrieval depends strongly on retriever quality and corpus difficulty.",
+  "The study includes a full-Wikipedia stress-test index containing millions of passages.",
+  "Code, scripts, prompts, decision tables, label corrections, and archived artifacts are publicly released.",
+  "Calibration can become unreliable after domain shift and should be monitored in deployment."
+ ],
+ "source_url": "https://arxiv.org/html/2606.29959",
+ "access": "full_text"
+}

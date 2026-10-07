@@ -1,0 +1,744 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "TerminologyAnalysis",
+ "description": "Academic terminology refinement performed before bulk discovery: each seed keyword is audited, the product problem is translated into academic task families, and query families are built with an explicit DIRECT or TRANSFER role.",
+ "topic": "Joint evaluation and selective prediction for temporally evolving multi-source generation: evidence completeness for compound and partially supported claims, longitudinal omission of superseded or due work-item state, and online calibration under non-stationary streams",
+ "seed_audit": [
+  {
+   "seed": "factual consistency evaluation",
+   "academic_meaning": "Evaluation of whether generated statements are entailed by, or at least do not contradict, a supplied source document or evidence context. In summarization this normally concerns source-conditioned consistency rather than truth in the external world.",
+   "fit": "STRONG",
+   "main_risk": "A system can be factually consistent with stale or incomplete evidence while still being wrong about the current state, and the metric normally says nothing about omitted information.",
+   "false_positive_literature": "Single-document summarization metrics that measure only source-summary consistency and do not evaluate attribution, completeness, temporal validity, or abstention."
+  },
+  {
+   "seed": "factuality evaluation",
+   "academic_meaning": "Evaluation of factual correctness or support of generated claims, using references, retrieved evidence, knowledge bases, human judgments, or claim-level verification.",
+   "fit": "STRONG",
+   "main_risk": "The term is broader than source-grounded correctness and frequently mixes world-knowledge truth, source faithfulness, hallucination, and attribution.",
+   "false_positive_literature": "Closed-book factual knowledge benchmarks, trivia QA, or aggregate hallucination scores with no traceable source evidence."
+  },
+  {
+   "seed": "summarization faithfulness",
+   "academic_meaning": "Degree to which a summary preserves facts supported by its source without introducing unsupported or contradictory content.",
+   "fit": "MODERATE",
+   "main_risk": "Faithfulness is primarily a precision-like notion and often excludes whether important source content was omitted.",
+   "false_positive_literature": "Single-document news summarization studies that do not evaluate multi-source evidence, temporal revisions, citation completeness, or selective prediction."
+  },
+  {
+   "seed": "hallucination evaluation",
+   "academic_meaning": "Detection or measurement of generated information that is unsupported, inconsistent, fabricated, or otherwise ungrounded.",
+   "fit": "MODERATE",
+   "main_risk": "Hallucination is an overloaded umbrella term and can collapse several dimensions that this project must score separately.",
+   "false_positive_literature": "Taxonomies, intrinsic-versus-extrinsic hallucination surveys, model self-consistency checks, or one-number hallucination detectors without attribution and omission denominators."
+  },
+  {
+   "seed": "claim decomposition",
+   "academic_meaning": "Splitting a complex sentence or claim into smaller propositions that can be independently checked against evidence.",
+   "fit": "STRONG",
+   "main_risk": "Decomposition quality itself may be unevaluated, and decomposed units can lose qualification, scope, temporal modifiers, or relationships between subclaims.",
+   "false_positive_literature": "Decomposition for question answering, planning, theorem proving, or prompting that does not use the decomposition for evidence-based evaluation."
+  },
+  {
+   "seed": "atomic claim extraction",
+   "academic_meaning": "Extraction of minimally scoped, independently verifiable factual units from generated or reference text.",
+   "fit": "STRONG",
+   "main_risk": "There is no universal definition of atomicity; excessive splitting can destroy conditions and dependencies while insufficient splitting hides partially supported compound claims.",
+   "false_positive_literature": "Information extraction papers using atomic facts only as intermediate representations without evaluation of claim support or coverage."
+  },
+  {
+   "seed": "claim verification",
+   "academic_meaning": "Evidence-conditioned determination that a claim is supported, refuted, contradicted, unverifiable, or has insufficient evidence.",
+   "fit": "STRONG",
+   "main_risk": "Most benchmarks assume a static claim and static evidence corpus rather than versioned and temporally changing evidence.",
+   "false_positive_literature": "Binary entailment classifiers without retrieval, provenance, partial support, multi-source composition, or temporal validity."
+  },
+  {
+   "seed": "fact verification",
+   "academic_meaning": "Retrieval and verification of factual claims against external evidence, commonly with support/refute/not-enough-information labels.",
+   "fit": "MODERATE",
+   "main_risk": "The dominant fact-verification literature is claim-centric and often static; it does not measure generated-report completeness or omission.",
+   "false_positive_literature": "FEVER-style work concerned solely with fact-checking isolated claims or misinformation classification."
+  },
+  {
+   "seed": "attribution evaluation",
+   "academic_meaning": "Evaluation of whether generated information can be traced to and is supported by identified evidence sources.",
+   "fit": "STRONG",
+   "main_risk": "Attribution may be evaluated only for claims for which the generator already supplied a citation, leaving uncited claims outside the denominator.",
+   "false_positive_literature": "Authorship attribution, causal attribution, feature attribution, or interpretability research."
+  },
+  {
+   "seed": "source attribution",
+   "academic_meaning": "Assignment of a statement, claim, quotation, or generated proposition to the source or sources that support or originate it.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is heavily overloaded outside grounded generation.",
+   "false_positive_literature": "Authorship identification, journalism source attribution, quotation-speaker attribution, plagiarism detection, and source-separation research."
+  },
+  {
+   "seed": "citation correctness",
+   "academic_meaning": "Whether the cited evidence actually supports the proposition associated with that citation.",
+   "fit": "STRONG",
+   "main_risk": "High correctness can coexist with severe incompleteness because unsupported uncited claims may not enter the denominator.",
+   "false_positive_literature": "Bibliographic citation matching, scholarly citation recommendation, citation formatting, and citation intent classification."
+  },
+  {
+   "seed": "citation precision",
+   "academic_meaning": "Precision-like evaluation over supplied citations: the proportion of citations that are valid, useful, entailing, relevant, or necessary under the benchmark definition.",
+   "fit": "STRONG",
+   "main_risk": "Citation precision says little about claims that should have been cited but were not.",
+   "false_positive_literature": "Bibliometrics, citation recommendation, reference parsing, and retrieval precision where citations are merely documents."
+  },
+  {
+   "seed": "citation completeness",
+   "academic_meaning": "Extent to which claims requiring evidential support are covered by appropriate citations.",
+   "fit": "STRONG",
+   "main_risk": "Benchmarks differ over the claim denominator and may treat a compound sentence as one supported unit even when only one proposition is supported.",
+   "false_positive_literature": "Citation-list completeness in scholarly writing, bibliographic database coverage, and citation-presence checks."
+  },
+  {
+   "seed": "citation recall",
+   "academic_meaning": "Recall-like measure of how many answer claims or support-requiring units have at least one adequate citation.",
+   "fit": "STRONG",
+   "main_risk": "A binary per-claim recall definition can over-credit partial evidence, especially for compound claims requiring complementary sources.",
+   "false_positive_literature": "Information-retrieval recall over documents or scholarly citation-recommendation recall."
+  },
+  {
+   "seed": "groundedness evaluation",
+   "academic_meaning": "Evaluation of whether generated content is supported by a supplied context, retrieved corpus, document, database, or other external evidence.",
+   "fit": "STRONG",
+   "main_risk": "Groundedness is used inconsistently and may reduce to an opaque LLM-judge score.",
+   "false_positive_literature": "Visual or embodied grounding, conversational grounding in psycholinguistics, and framework-specific scores with no validated evidence semantics."
+  },
+  {
+   "seed": "evidence grounding",
+   "academic_meaning": "Linking individual generated claims or spans to the evidence that supports them, often at passage, sentence, document, or region level.",
+   "fit": "STRONG",
+   "main_risk": "Grounding can evaluate localization without establishing that the evidence actually entails the entire claim.",
+   "false_positive_literature": "Visual grounding, phrase grounding, entity linking, and evidence extraction evaluated independently of generated-claim correctness."
+  },
+  {
+   "seed": "context faithfulness",
+   "academic_meaning": "In RAG evaluation, usually the extent to which the generated answer is supported by or consistent with retrieved context.",
+   "fit": "MODERATE",
+   "main_risk": "The term is not uniformly standardized and is often specific to an evaluation framework or LLM-judge implementation.",
+   "false_positive_literature": "Tool documentation, proprietary RAG scorecards, or context-relevance metrics that do not evaluate claim-level support."
+  },
+  {
+   "seed": "completeness evaluation",
+   "academic_meaning": "Evaluation of how much required, relevant, salient, or gold-standard information is present in an output.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is extremely broad and the denominator is often implicit.",
+   "false_positive_literature": "Database completeness, ontology completeness, software testing, missing-data analysis, and generic task-completion metrics."
+  },
+  {
+   "seed": "coverage evaluation",
+   "academic_meaning": "Measurement of the fraction of expected information units, topics, claims, requirements, or references represented in an output.",
+   "fit": "MODERATE",
+   "main_risk": "Coverage has many unrelated meanings and can refer to retrieval or test coverage rather than information omission.",
+   "false_positive_literature": "Software test coverage, wireless coverage, code coverage, dataset coverage, retrieval collection coverage, and linguistic grammar coverage."
+  },
+  {
+   "seed": "omission detection",
+   "academic_meaning": "Identification of information that should be present in an output but is absent, relative to a source, reference, salience annotation, information need, or evolving state.",
+   "fit": "STRONG",
+   "main_risk": "Generic searches attract linguistic ellipsis and error-detection work rather than decision-relevant content omission.",
+   "false_positive_literature": "Grammatical omission or ellipsis detection, missing-word correction, clinical coding omission, and token-level deletion-error detection."
+  },
+  {
+   "seed": "atomic content units",
+   "academic_meaning": "Fine-grained semantic content units used in summarization evaluation to represent salient information and enable unit-level coverage or quality judgments.",
+   "fit": "STRONG",
+   "main_risk": "ACU methods normally evaluate static summary content and do not by themselves represent temporal supersession, due-state transitions, or source-version validity.",
+   "false_positive_literature": "Unrelated uses of the ACU acronym and content-unit schemes that lack evidence-support judgments."
+  },
+  {
+   "seed": "proposition-level evaluation",
+   "academic_meaning": "Evaluation after decomposing text into semantic propositions or predicate-like content units rather than judging a whole answer or sentence as one object.",
+   "fit": "STRONG",
+   "main_risk": "The literature uses several incompatible proposition definitions, and proposition segmentation can lose cross-proposition dependencies.",
+   "false_positive_literature": "Semantic parsing or proposition extraction papers that never evaluate factual support, evidence attribution, or coverage."
+  },
+  {
+   "seed": "selective prediction",
+   "academic_meaning": "Prediction with the option to abstain on some inputs, trading coverage against conditional error or risk on accepted predictions.",
+   "fit": "STRONG",
+   "main_risk": "Most foundational results concern fixed-label prediction rather than free-form generation with multiple error dimensions.",
+   "false_positive_literature": "Pure classification work on IID benchmarks with no plausible mapping from its confidence or loss definition to generated claims."
+  },
+  {
+   "seed": "selective classification",
+   "academic_meaning": "Classification with a reject option, usually evaluated through coverage and risk among non-rejected examples.",
+   "fit": "MODERATE",
+   "main_risk": "It is foundational transfer evidence, not direct validation for free-form communication generation.",
+   "false_positive_literature": "Image and tabular classification studies whose scalar class error cannot represent omission, attribution, or partial evidence."
+  },
+  {
+   "seed": "reject option",
+   "academic_meaning": "A decision rule that permits a predictor to decline classification or prediction when uncertainty or expected loss exceeds a threshold.",
+   "fit": "MODERATE",
+   "main_risk": "The terminology is older and broad, and many results assume calibrated class probabilities and simple symmetric costs.",
+   "false_positive_literature": "Pattern-recognition rejection methods with no language-generation, evidence, or non-stationary-stream connection."
+  },
+  {
+   "seed": "uncertainty calibration",
+   "academic_meaning": "Alignment between stated predictive confidence and observed empirical correctness frequency, possibly conditional on groups or prediction types.",
+   "fit": "STRONG",
+   "main_risk": "Calibration is meaningless until the event being calibrated is explicitly defined; a single confidence cannot faithfully stand for claim correctness, completeness, attribution, and temporal validity simultaneously.",
+   "false_positive_literature": "Papers calibrating token probabilities, next-token likelihoods, or model self-reported confidence without task-level correctness labels."
+  },
+  {
+   "seed": "expected calibration error",
+   "academic_meaning": "A binned summary of discrepancies between confidence and empirical accuracy across confidence bins.",
+   "fit": "MODERATE",
+   "main_risk": "ECE is estimator- and binning-sensitive and can conceal severe localized miscalibration; it is a metric, not a complete calibration method.",
+   "false_positive_literature": "Studies reporting ECE alone without selective risk, coverage, proper scoring rules, subgroup behavior, or distribution shift."
+  },
+  {
+   "seed": "Brier score",
+   "academic_meaning": "A proper scoring rule based on squared error between probabilistic forecasts and observed outcomes, with binary and multiclass forms.",
+   "fit": "MODERATE",
+   "main_risk": "The score combines aspects of calibration and discrimination/refinement and requires a well-defined probabilistic event.",
+   "false_positive_literature": "Weather forecasting or generic classification studies with no connection to generation reliability, except as foundational methodology."
+  },
+  {
+   "seed": "risk-coverage curve",
+   "academic_meaning": "Curve showing predictive risk on the retained subset as the fraction of predictions accepted by a selective predictor changes.",
+   "fit": "STRONG",
+   "main_risk": "Its usefulness depends completely on defining a project-appropriate risk function; ordinary classification error is insufficient for msgloom.",
+   "false_positive_literature": "Image-classification selective prediction with a scalar 0/1 error and no handling of asymmetric generation failures."
+  },
+  {
+   "seed": "selective risk",
+   "academic_meaning": "Expected loss conditional on a prediction being accepted rather than rejected.",
+   "fit": "STRONG",
+   "main_risk": "A scalar selective risk can hide different failure types unless the underlying loss and denominators remain decomposed.",
+   "false_positive_literature": "Classification studies whose accepted-set risk is not transferable to evidence completeness or omission."
+  },
+  {
+   "seed": "abstention",
+   "academic_meaning": "Withholding an answer, label, claim, or decision when evidence or confidence is insufficient.",
+   "fit": "STRONG",
+   "main_risk": "Papers may measure abstention rate without evaluating whether abstention occurs on the right cases or the recall cost from excessive abstention.",
+   "false_positive_literature": "Prompting demonstrations where a model says 'I don't know' but no calibrated risk, coverage, utility, or correctness evaluation is performed."
+  },
+  {
+   "seed": "conformal prediction",
+   "academic_meaning": "Distribution-free predictive-set methodology providing finite-sample marginal coverage under assumptions such as exchangeability, with later extensions to distribution shift and risk control.",
+   "fit": "MODERATE",
+   "main_risk": "Classical guarantees do not automatically apply to non-exchangeable communication streams or to free-form semantic correctness events.",
+   "false_positive_literature": "Static IID conformal classification or regression with no defensible mapping to generation, abstention, or streaming shift."
+  },
+  {
+   "seed": "inter-annotator agreement",
+   "academic_meaning": "Quantification of consistency among multiple human annotators, using agreement coefficients or task-specific adjudication analyses.",
+   "fit": "MODERATE",
+   "main_risk": "High agreement does not establish annotation validity, representative sampling, sufficient review volume, or independence from the evaluated system.",
+   "false_positive_literature": "Annotation studies reporting one agreement coefficient without adjudication procedures or construct-validity analysis."
+  },
+  {
+   "seed": "human evaluation reliability",
+   "academic_meaning": "Study of reproducibility, consistency, scale, protocol design, annotator variance, validity, and adjudication in human evaluation.",
+   "fit": "STRONG",
+   "main_risk": "General recommendations cannot determine msgloom's project-specific sampling rate, minimum review volume, asymmetric costs, or acceptance thresholds.",
+   "false_positive_literature": "User-preference studies focused on fluency or pleasantness rather than factual support, completeness, and high-risk omissions."
+  },
+  {
+   "seed": "retrieval-augmented generation evaluation",
+   "academic_meaning": "Evaluation of RAG systems across retrieval relevance, answer correctness, groundedness, evidence use, citation quality, answerability, and related dimensions.",
+   "fit": "STRONG",
+   "main_risk": "Many frameworks collapse retrieval and generation quality into opaque scores or use LLM judges without independent validation.",
+   "false_positive_literature": "Retrieval-only benchmarks, framework documentation, answer relevance scores, or RAG leaderboards without claim-level evidence and completeness denominators."
+  },
+  {
+   "seed": "decision-focused evaluation",
+   "academic_meaning": "Evaluation based on downstream decision quality, utility, cost, regret, or task impact rather than only predictive accuracy.",
+   "fit": "MODERATE",
+   "main_risk": "The phrase is closely associated with decision-focused learning and optimization and may not address language-generation evidence quality.",
+   "false_positive_literature": "Combinatorial optimization, operations research, policy evaluation, and decision-focused learning where no generation or evidence-evaluation component exists."
+  }
+ ],
+ "task_families": [
+  {
+   "id": "tf_atomic_factuality",
+   "name": "Atomic claim decomposition and evidence-conditioned factuality",
+   "description": "Decompose generated text into independently checkable propositions and score support, contradiction, insufficiency, or partial support against evidence.",
+   "role": "DIRECT",
+   "why_it_matters": "This provides the unit of analysis required to avoid treating a compound sentence as uniformly correct when only some propositions are supported.",
+   "gap_targets": [
+    "gap-1",
+    "gap-4"
+   ],
+   "seed_papers": [
+    "Evaluating the Factual Consistency of Abstractive Text Summarization (FactCC, 2020)",
+    "Asking and Answering Questions to Evaluate the Factual Consistency of Summaries (QAGS, 2020)",
+    "SummaC: Re-visiting NLI-based Models for Inconsistency Detection in Summarization (2022)",
+    "FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation (2023)",
+    "ACUEval: Fine-grained Hallucination Evaluation and Correction for Abstractive Summarization (2024)"
+   ],
+   "source_basis": "FActScore explicitly evaluates generated long-form text by decomposing it into atomic facts and checking support; ACUEval similarly decomposes summaries into atomic content units before source validation. citeturn936516search5turn663158search1"
+  },
+  {
+   "id": "tf_citation_attribution",
+   "name": "Claim-to-source attribution and citation quality",
+   "description": "Evaluate whether the correct evidence source is attached to each generated claim, separating citation correctness or precision from citation completeness or recall.",
+   "role": "DIRECT",
+   "why_it_matters": "msgloom requires citation correctness and citation completeness to remain distinct denominators.",
+   "gap_targets": [
+    "gap-1",
+    "gap-4"
+   ],
+   "seed_papers": [
+    "Enabling Large Language Models to Generate Text with Citations (ALCE, 2023)"
+   ],
+   "source_basis": "ALCE explicitly evaluates citation-grounded generation and separates citation-quality measurements including support-oriented precision and completeness-oriented recall. citeturn844243search0turn844243search3"
+  },
+  {
+   "id": "tf_evidence_completeness",
+   "name": "Evidence sufficiency and completeness for compound and multi-source claims",
+   "description": "Determine whether all propositions in a generated claim have sufficient supporting evidence, including cases where support is partial, distributed across complementary sources, or requires multiple pieces of evidence.",
+   "role": "DIRECT",
+   "why_it_matters": "This is the closest academic family to gap-4, but admission must require explicit handling of the claim denominator and evidence sufficiency rather than mere citation presence.",
+   "gap_targets": [
+    "gap-4"
+   ],
+   "seed_papers": [
+    "Enabling Large Language Models to Generate Text with Citations (ALCE, 2023)",
+    "FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation (2023)",
+    "Revisiting the Gold Standard: Grounding Summarization Evaluation with Robust Human Evaluation (2023)",
+    "ACUEval: Fine-grained Hallucination Evaluation and Correction for Abstractive Summarization (2024)"
+   ],
+   "source_basis": "ALCE exposes citation completeness as distinct from correctness, while FActScore and ACU-based work provide finer claim/content denominators; none of those facts alone should be treated as proof that the full gap-4 combination is solved. citeturn844243search0turn936516search5turn663158search2turn663158search1"
+  },
+  {
+   "id": "tf_joint_multidimensional_eval",
+   "name": "Multi-dimensional and end-to-end generation evaluation",
+   "description": "Evaluation frameworks that retain distinct dimensions for factual correctness, evidence attribution, support completeness, temporal correctness, omission, uncertainty, abstention, and human validation rather than collapsing them into one score.",
+   "role": "DIRECT",
+   "why_it_matters": "This directly targets gap-1. A paper closes the gap only if the dimensions are evaluated jointly in one scheme while preserving interpretable denominators.",
+   "gap_targets": [
+    "gap-1"
+   ],
+   "seed_papers": [
+    "SummEval: Re-evaluating Summarization Evaluation (2021)",
+    "Revisiting the Gold Standard: Grounding Summarization Evaluation with Robust Human Evaluation (2023)",
+    "Enabling Large Language Models to Generate Text with Citations (ALCE, 2023)"
+   ]
+  },
+  {
+   "id": "tf_temporal_currentness",
+   "name": "Temporal validity, current-state correctness, and version-aware evidence",
+   "description": "Methods that evaluate whether evidence and generated claims are valid at the observation time, particularly when facts change, later evidence supersedes earlier evidence, or versions conflict.",
+   "role": "TRANSFER",
+   "why_it_matters": "Temporal fact verification, time-sensitive QA, update summarization, and provenance research can supply mechanisms, but they do not automatically validate workplace work-item semantics.",
+   "gap_targets": [
+    "gap-1",
+    "gap-4",
+    "gap-5"
+   ],
+   "seed_papers": [
+    "TREC 2013 Temporal Summarization (2013)"
+   ],
+   "source_basis": "The TREC Temporal Summarization track explicitly studied online evolving information, reliability of dynamic corpora, sequential updates, and tracking changing event attributes, making it a strong transfer source for current-state evaluation. citeturn266799search0"
+  },
+  {
+   "id": "tf_longitudinal_omission",
+   "name": "Update, temporal, and longitudinal summarization with omission and redundancy control",
+   "description": "Evaluation of whether an evolving summary captures newly important information over time while avoiding redundant or obsolete material and retaining required event or state updates.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is the strongest established terminology for gap-5. It is still transfer evidence because news-event updates are not equivalent to due workplace obligations or superseded work-item state.",
+   "gap_targets": [
+    "gap-5"
+   ],
+   "seed_papers": [
+    "Overview of the TAC 2008 Update Summarization Task (2008)",
+    "TREC 2013 Temporal Summarization (2013)"
+   ],
+   "source_basis": "TAC 2008 explicitly contained an Update Summarization task, and TREC 2013 evaluated sequential updates, comprehensiveness, latency, redundancy-sensitive evolving-event reporting, and value tracking. citeturn266799search3turn266799search0"
+  },
+  {
+   "id": "tf_selective_generation",
+   "name": "Selective prediction and abstention for NLP and free-form generation",
+   "description": "Language systems that answer or generate only when estimated risk is acceptable, otherwise abstaining, requesting more evidence, or deferring to a human.",
+   "role": "DIRECT",
+   "why_it_matters": "The target system must expose uncertainty operationally through abstention or review rather than merely emit a confidence score.",
+   "gap_targets": [
+    "gap-1",
+    "gap-8"
+   ],
+   "seed_papers": []
+  },
+  {
+   "id": "tf_selective_foundations",
+   "name": "Selective classification, reject option, and risk-coverage foundations",
+   "description": "Foundational theory and metrics for trading predictive coverage against conditional risk using an explicit reject option.",
+   "role": "TRANSFER",
+   "why_it_matters": "Risk-coverage terminology and decision structure are foundational for msgloom's selective policy, but the project must replace ordinary classification loss with decomposed generation-specific risk.",
+   "gap_targets": [
+    "gap-1",
+    "gap-8"
+   ],
+   "seed_papers": [
+    "On Optimum Recognition Error and Reject Tradeoff (1970)",
+    "On the Foundations of Noise-free Selective Classification (2010)",
+    "Selective Classification for Deep Neural Networks (2017)"
+   ],
+   "source_basis": "Chow established the error-reject tradeoff; El-Yaniv and Wiener explicitly formulate selective classification as the risk-coverage tradeoff; Geifman and El-Yaniv extend selective classification to deep networks. citeturn663158search0turn663158search8turn703828search14"
+  },
+  {
+   "id": "tf_calibration_generation",
+   "name": "Task-level probability calibration for NLP and generated-answer correctness",
+   "description": "Calibration of confidence against empirically observed correctness, preferably at claim, answer, or decision level rather than token-likelihood level.",
+   "role": "DIRECT",
+   "why_it_matters": "The project needs calibrated probabilities for explicitly defined error events and cannot equate model confidence with correctness.",
+   "gap_targets": [
+    "gap-1",
+    "gap-8"
+   ],
+   "seed_papers": [
+    "On Calibration of Modern Neural Networks (2017)"
+   ],
+   "source_basis": "Guo et al. provide a standard modern calibration formulation and temperature-scaling baseline, but its classification setting remains only methodological support for the free-form generation problem. citeturn703828search0"
+  },
+  {
+   "id": "tf_online_nonstationary_calibration",
+   "name": "Online calibration under concept drift and distribution shift",
+   "description": "Sequential recalibration or uncertainty-control methods designed for data whose distribution changes over time rather than remaining IID or exchangeable.",
+   "role": "TRANSFER",
+   "why_it_matters": "This is the central transfer family for gap-8: workplace communication is a continuing stream with changing senders, topics, behavior, evidence sources, and model inputs.",
+   "gap_targets": [
+    "gap-8"
+   ],
+   "seed_papers": [
+    "Adaptive Conformal Inference Under Distribution Shift (2021)"
+   ],
+   "source_basis": "Adaptive Conformal Inference explicitly studies online prediction when the data-generating distribution varies over time and continuously adapts its control parameter. citeturn266799search1"
+  },
+  {
+   "id": "tf_conformal_risk_control",
+   "name": "Adaptive conformal inference and conformal risk control",
+   "description": "Conformal methods that move beyond static exchangeable prediction sets toward online adaptation or explicit control of application-defined loss.",
+   "role": "TRANSFER",
+   "why_it_matters": "These methods are plausible machinery for coverage or risk guarantees, but a valid semantic loss and a defensible non-stationary deployment protocol must still be constructed for generation.",
+   "gap_targets": [
+    "gap-8"
+   ],
+   "seed_papers": [
+    "Adaptive Conformal Inference Under Distribution Shift (2021)",
+    "Conformal Risk Control (2024)"
+   ],
+   "source_basis": "Conformal Risk Control extends conformal methodology to expected monotone losses, while Adaptive Conformal Inference addresses temporally varying distributions. citeturn703828search9turn266799search1"
+  },
+  {
+   "id": "tf_human_metaevaluation",
+   "name": "Human evaluation reliability, metric meta-evaluation, and evaluator validation",
+   "description": "Research on annotation reliability, disagreement, adjudication, metric-human correlation, evaluator bias, and validation of automatic or LLM-based judges.",
+   "role": "DIRECT",
+   "why_it_matters": "It informs gap-6 and gap-7 methodology but cannot by itself determine msgloom-specific review volumes, risk strata, acceptance criteria, or evaluator separation.",
+   "gap_targets": [
+    "gap-6",
+    "gap-7"
+   ],
+   "seed_papers": [
+    "SummEval: Re-evaluating Summarization Evaluation (2021)",
+    "Revisiting the Gold Standard: Grounding Summarization Evaluation with Robust Human Evaluation (2023)"
+   ],
+   "source_basis": "RoSE explicitly addresses human-evaluation scale and inter-annotator reliability using fine-grained ACUs. citeturn663158search2"
+  },
+  {
+   "id": "tf_utility_sensitive_eval",
+   "name": "Cost-sensitive, utility-sensitive, and decision-focused reliability evaluation",
+   "description": "Evaluation where different errors carry different downstream costs and acceptance or abstention is assessed by expected loss, utility, regret, or decision consequences.",
+   "role": "TRANSFER",
+   "why_it_matters": "This supplies terminology for asymmetric false-positive, false-negative, missed-obligation, and unnecessary-abstention costs without replacing Topic-specific definitions of those harms.",
+   "gap_targets": [
+    "gap-1",
+    "gap-6",
+    "gap-8"
+   ],
+   "seed_papers": []
+  }
+ ],
+ "query_families": [
+  {
+   "family_id": "tf_atomic_factuality",
+   "role": "DIRECT",
+   "queries": [
+    "\"atomic claims\" factuality evaluation generated text evidence support",
+    "\"claim decomposition\" factuality verification evidence generation",
+    "\"atomic fact\" evaluation partial support generated text",
+    "\"proposition-level\" factual consistency evidence evaluation generation",
+    "\"compound claims\" decomposition verification partial entailment"
+   ]
+  },
+  {
+   "family_id": "tf_citation_attribution",
+   "role": "DIRECT",
+   "queries": [
+    "\"citation correctness\" \"citation completeness\" generation",
+    "\"citation precision\" \"citation recall\" language model generation",
+    "\"citation quality\" claim-level support long-form generation",
+    "\"source attribution\" generated claims evidence evaluation",
+    "\"attribution evaluation\" grounded generation citations"
+   ]
+  },
+  {
+   "family_id": "tf_evidence_completeness",
+   "role": "DIRECT",
+   "queries": [
+    "\"evidence completeness\" compound claims partial support multi-source",
+    "\"evidence sufficiency\" \"compound claim\" verification",
+    "\"partial support\" claim verification multiple evidence sources",
+    "\"compositional claims\" evidence verification multi-hop",
+    "\"claim decomposition\" \"multi-source evidence\" verification",
+    "\"citation recall\" compound claims multi-source evidence",
+    "\"complementary evidence\" claim verification multiple sources",
+    "\"evidence sufficiency\" generated claims attribution completeness",
+    "\"partial entailment\" compound claims evidence evaluation",
+    "\"multi-hop evidence\" factuality evaluation generated claims"
+   ]
+  },
+  {
+   "family_id": "tf_joint_multidimensional_eval",
+   "role": "DIRECT",
+   "queries": [
+    "\"multidimensional evaluation\" generation factuality attribution completeness uncertainty",
+    "\"holistic evaluation\" RAG factuality citation completeness calibration",
+    "\"joint evaluation framework\" factuality attribution completeness abstention generation",
+    "\"end-to-end evaluation\" generation evidence attribution completeness uncertainty",
+    "\"claim-level evaluation\" citation completeness abstention calibration",
+    "\"generation evaluation framework\" factual correctness attribution coverage uncertainty",
+    "\"RAG evaluation\" citation completeness factuality abstention uncertainty"
+   ]
+  },
+  {
+   "family_id": "tf_temporal_currentness",
+   "role": "TRANSFER",
+   "queries": [
+    "\"temporal fact verification\" evidence currentness",
+    "\"time-sensitive fact verification\" evidence",
+    "\"fact verification\" outdated evidence temporal validity",
+    "\"temporal validity\" evidence claim verification",
+    "\"stale evidence\" factuality evaluation generation",
+    "\"current information\" fact verification temporal",
+    "\"versioned evidence\" provenance fact verification",
+    "\"temporal provenance\" claim verification",
+    "\"knowledge updates\" fact verification stale claims",
+    "\"current-state\" evaluation temporal summarization evidence"
+   ]
+  },
+  {
+   "family_id": "tf_longitudinal_omission",
+   "role": "TRANSFER",
+   "queries": [
+    "\"update summarization\" completeness omission redundancy",
+    "\"sequential update summarization\" comprehensiveness redundancy",
+    "\"temporal summarization\" \"value tracking\" updates",
+    "\"temporal summarization\" omission completeness evolving events",
+    "\"incremental summarization\" evolving events novelty redundancy",
+    "\"timeline summarization\" state changes omission",
+    "\"longitudinal summarization\" stale information superseded facts",
+    "\"update summarization\" obsolete information superseded",
+    "\"novelty detection\" temporal summarization important updates",
+    "\"action item\" tracking email deadline update summarization",
+    "\"work item\" state tracking communication summarization",
+    "\"deadline changes\" longitudinal summarization communication"
+   ]
+  },
+  {
+   "family_id": "tf_selective_generation",
+   "role": "DIRECT",
+   "queries": [
+    "\"selective prediction\" natural language generation abstention",
+    "\"selective generation\" language model risk coverage",
+    "\"selective generation\" LLM abstention",
+    "\"answer abstention\" question answering calibration coverage",
+    "\"selective question answering\" risk coverage",
+    "\"risk-coverage\" language model generation",
+    "\"abstention\" RAG factuality uncertainty",
+    "\"abstention\" generated answers calibrated confidence"
+   ]
+  },
+  {
+   "family_id": "tf_selective_foundations",
+   "role": "TRANSFER",
+   "queries": [
+    "\"selective classification\" risk coverage",
+    "\"classification with a reject option\" risk coverage",
+    "\"reject option\" calibrated confidence classification",
+    "\"selective risk\" coverage prediction",
+    "\"risk-coverage curve\" selective prediction",
+    "\"error reject tradeoff\" prediction"
+   ]
+  },
+  {
+   "family_id": "tf_calibration_generation",
+   "role": "DIRECT",
+   "queries": [
+    "\"uncertainty calibration\" natural language generation factuality",
+    "\"calibrated confidence\" factuality language model",
+    "\"calibration\" generated answer correctness language model",
+    "\"calibration\" question answering abstention ECE Brier",
+    "\"claim-level confidence\" calibration factuality",
+    "\"probability calibration\" LLM answer correctness",
+    "\"confidence calibration\" RAG answer correctness"
+   ]
+  },
+  {
+   "family_id": "tf_online_nonstationary_calibration",
+   "role": "TRANSFER",
+   "queries": [
+    "\"online calibration\" concept drift probabilistic prediction",
+    "\"calibration under distribution shift\" sequential prediction",
+    "\"adaptive calibration\" concept drift prediction",
+    "\"prequential calibration\" nonstationary",
+    "\"online recalibration\" distribution shift machine learning",
+    "\"calibration\" non-stationary stream concept drift",
+    "\"selective prediction\" distribution shift calibration",
+    "\"risk coverage\" distribution shift selective prediction"
+   ]
+  },
+  {
+   "family_id": "tf_conformal_risk_control",
+   "role": "TRANSFER",
+   "queries": [
+    "\"adaptive conformal inference\" distribution shift",
+    "\"online conformal prediction\" nonstationary",
+    "\"conformal prediction\" concept drift online",
+    "\"conformal risk control\" NLP",
+    "\"conformal risk control\" language generation",
+    "\"conformal prediction\" abstention language model",
+    "\"adaptive conformal\" selective prediction risk coverage"
+   ]
+  },
+  {
+   "family_id": "tf_human_metaevaluation",
+   "role": "DIRECT",
+   "queries": [
+    "\"human evaluation reliability\" NLP generation",
+    "\"inter-annotator agreement\" factuality summarization evaluation",
+    "\"meta-evaluation\" summarization factuality metrics human",
+    "\"LLM as a judge\" human validation evaluator bias",
+    "\"LLM judge\" agreement human evaluation factuality",
+    "\"evaluator bias\" language model judge evaluation",
+    "\"metric overfitting\" automatic evaluation generation",
+    "\"evaluation leakage\" language generation metric",
+    "\"adjudication\" factuality annotation summarization"
+   ]
+  },
+  {
+   "family_id": "tf_utility_sensitive_eval",
+   "role": "TRANSFER",
+   "queries": [
+    "\"cost-sensitive\" selective prediction abstention",
+    "\"utility-sensitive\" abstention prediction",
+    "\"decision-theoretic\" reject option prediction",
+    "\"asymmetric error costs\" selective prediction",
+    "\"decision-focused evaluation\" language generation",
+    "\"risk-sensitive\" evaluation abstention NLP",
+    "\"expected utility\" abstention language model"
+   ]
+  }
+ ],
+ "promoted_terms": [
+  "atomic claim evaluation",
+  "claim-level factuality",
+  "claim-to-evidence alignment",
+  "citation recall",
+  "citation coverage",
+  "support coverage",
+  "evidence sufficiency",
+  "compositional claim verification",
+  "compound claim verification",
+  "partial entailment",
+  "partial evidence support",
+  "complementary evidence",
+  "multi-source evidence aggregation",
+  "temporal validity",
+  "evidence currentness",
+  "stale evidence",
+  "temporal provenance",
+  "version-aware evidence",
+  "update summarization",
+  "sequential update summarization",
+  "temporal summarization",
+  "value tracking",
+  "timeline summarization",
+  "novelty and redundancy",
+  "selective generation",
+  "risk-coverage tradeoff",
+  "selective risk",
+  "calibrated abstention",
+  "online calibration",
+  "adaptive calibration",
+  "prequential calibration",
+  "concept drift",
+  "distribution shift",
+  "adaptive conformal inference",
+  "conformal risk control",
+  "proper scoring rule",
+  "metric meta-evaluation",
+  "evaluator bias",
+  "judge validation",
+  "cost-sensitive selective prediction"
+ ],
+ "demoted_terms": [
+  "hallucination evaluation used alone",
+  "completeness evaluation used alone",
+  "coverage evaluation used alone",
+  "context faithfulness used alone",
+  "groundedness used without an evidence denominator",
+  "RAG evaluation used without naming the dimension",
+  "expected calibration error used as a complete calibration criterion",
+  "model confidence used as a synonym for calibrated probability",
+  "decision-focused evaluation used without language-generation or selective-decision context"
+ ],
+ "downgrade_rules": [
+  "Downgrade literature that reports one aggregate hallucination, faithfulness, groundedness, or quality score when claim correctness, attribution correctness, evidence completeness, temporal correctness, omission, and abstention are not separately recoverable.",
+  "Downgrade citation work that counts citation presence or syntactic citation validity without testing whether the cited source actually supports the associated claim.",
+  "Downgrade citation-precision studies as evidence for completeness unless uncited support-requiring claims are explicitly included in a recall or coverage denominator.",
+  "Downgrade evidence-completeness studies that score whole sentences as supported when compound propositions can be only partially supported.",
+  "Downgrade multi-source work that merely retrieves several documents but never tests whether complementary evidence is jointly necessary to support a claim.",
+  "Downgrade fact-verification work that assumes one immutable claim and one static corpus when used as evidence for temporal or version-aware correctness.",
+  "Downgrade temporal papers where 'temporal' only means adding timestamps or temporal embeddings and no changing truth, revision, supersession, staleness, or observation cutoff is evaluated.",
+  "Downgrade update or timeline summarization to TRANSFER unless it explicitly evaluates information omission, novelty, redundancy, state/value changes, or obsolete information across observation times.",
+  "Do not treat news-event temporal summarization as direct evidence for workplace obligations, deadlines, approvals, cancellations, or due work-item state.",
+  "Downgrade omission papers about linguistic ellipsis, missing tokens, grammar correction, or coding omissions unless the missing object is decision-relevant semantic content in a generated report.",
+  "Downgrade selective-classification results to TRANSFER when risk is ordinary label error on a fixed IID benchmark.",
+  "Downgrade calibration studies that calibrate next-token probability or model self-confidence without a clearly defined task-level correctness event.",
+  "Downgrade studies reporting ECE alone when there is no proper scoring rule, subgroup analysis, risk-coverage behavior, or other evidence sufficient to detect localized calibration failure.",
+  "Downgrade abstention demonstrations that measure how often a model refuses but not the error rate among accepted predictions and the recall or utility lost through refusals.",
+  "Downgrade classical conformal prediction to TRANSFER when validity depends on exchangeability and the paper does not address drift, online adaptation, or a deployment assumption plausibly matching a communication stream.",
+  "Downgrade concept-drift detection papers that only detect a shift and do not recalibrate uncertainty, control risk, or change the selective decision policy.",
+  "Downgrade RAG evaluation papers that measure retrieval relevance only; retrieval quality is not generated-claim correctness or evidence completeness.",
+  "Downgrade LLM-as-judge findings when the judge has not been validated against independent human judgments or suitable gold labels for the same construct.",
+  "Downgrade human-evaluation work that reports inter-annotator agreement as if agreement alone established validity, representativeness, or an adequate sample size.",
+  "Do not claim gap-2 closed from public, synthetic, news, QA, or generic enterprise data. The missing private-workplace fixture suite with revisions, quoted history, permissions, versions, and out-of-order arrival is an ENGINEERING validation gap.",
+  "Do not claim gap-6 closed from generic annotation guidance. Representative or risk-stratified sampling, minimum review volume, adjudication, confusion matrices, abstention accounting, and judge validation remain project-specific ENGINEERING choices.",
+  "Do not claim gap-7 closed merely because a paper documents evaluator bias. Independent holdouts, evaluator separation, anti-overfitting procedures, and regression checks must be implemented and validated for this project.",
+  "A paper may inform gap-1 without closing it. Gap-1 closes only if one admitted study validates the required dimensions jointly while preserving distinct denominators rather than deriving them from one composite score.",
+  "A paper may inform gap-4 without closing it. Gap-4 closes only if compound claims, partial support, complementary multi-source evidence, and temporal or versioned evidence are handled jointly in the evaluated method.",
+  "A paper may inform gap-5 without closing it. Gap-5 closes only if omission is evaluated longitudinally for evolving state, including obsolete or superseded facts or functionally equivalent due-state information.",
+  "A paper may inform gap-8 without closing it. Gap-8 closes only if selective prediction or risk control is validated under continuing non-stationarity in a sufficiently analogous free-form communication or generation setting."
+ ],
+ "engineering_gap_policy": [
+  {
+   "gap": "gap-2",
+   "policy": "DO_NOT_CLAIM_ACADEMIC_CLOSURE",
+   "reason": "The missing realistic permission-constrained workplace fixture and gold-data evaluation is an implementation and validation requirement."
+  },
+  {
+   "gap": "gap-6",
+   "policy": "DO_NOT_CLAIM_ACADEMIC_CLOSURE",
+   "reason": "Literature can inform annotation methodology, but the review sampling, volume, adjudication, confusion-matrix, abstention, and judge-validation contract is project-specific."
+  },
+  {
+   "gap": "gap-7",
+   "policy": "DO_NOT_CLAIM_ACADEMIC_CLOSURE",
+   "reason": "Literature can establish evaluator bias and metric gaming as risks, but evaluator separation, holdouts, and regression protection must be engineered and independently validated."
+  }
+ ],
+ "date_policy": {
+  "earliest_year_to_include": 1950,
+  "rationale": "The global discovery floor should be 1950 because the supplied terminology explicitly includes the Brier score, whose foundational probability-forecast verification paper is Brier's 1950 'Verification of Forecasts Expressed in Terms of Probability'. Selective rejection also has foundational work by Chow in 1970, while modern selective-classification, calibration, update-summarization, RAG, and LLM-evaluation work is much newer. A modern-only window would therefore silently remove foundational calibration and reject-option literature. Discovery should use 1950 as the global floor but apply family-specific queries: only the calibration, proper-scoring, reject-option, and selective-prediction foundation searches need to range that far back; direct generation-evaluation searches will naturally concentrate in the 2000s–2020s. citeturn703828search1turn663158search0"
+ }
+}

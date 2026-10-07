@@ -1,0 +1,49 @@
+{
+  "status": "accepted_with_issues",
+  "review2_repairs": {
+    "R2-B1": "fixed",
+    "R2-B2": "fixed",
+    "R2-N1": "not_fixed"
+  },
+  "blocking_issues": [],
+  "nonblocking_issues": [
+    {
+      "id": "R3-N1",
+      "location": "engineering-validation/src/topic02_validation/replay.py:105; tests/test_replay.py; audit/run_mutation_checks.py",
+      "finding": "The tests protect the prediction classes and conversion functions, but do not protect the actual replay call-site boundary.",
+      "evidence": "A temporary-copy mutant replacing `pcase = prediction_case(case)` with `pcase = case` passed all 53 tests. The 12-mutant gate also remained PASS against that modified source. This mutant exposes full BenchmarkCase gold and future contexts to predict_step. Independent runtime interception confirmed that the unmodified target passes sanitized PredictionCase and ContextInput objects at all five steps. Reproduction: /tmp/topic02-review03-hpzn234i/additional_mutants.py and bypass-gate.json.",
+      "impact": "This is a regression-coverage gap. No such exposure exists in the current execution path, and it does not invalidate the current EV5 results."
+    },
+    {
+      "id": "R3-N2",
+      "location": "engineering-validation/STATUS.md:26; src/topic02_validation/replay.py:140; results/metrics.json:EV5.prediction_input_contract; research/02-message-topic-segmentation/CURRENT_STATUS.md",
+      "finding": "Documentation repair remains incomplete, although the catalog counts and original mutation-coverage statement are corrected.",
+      "evidence": "STATUS.md incorrectly includes context_texts in PredictionCase and describes ContextInput as containing context IDs only. The actual contracts contain four PredictionCase fields and materialized available_contexts. EV5 result metadata repeats the obsolete IDs-only contract. The parent CURRENT_STATUS.md still says Academic Round 2 has not started and engineering validation is unauthorized. All 18 catalog Topic/span counts match current gold.",
+      "impact": "These statements obscure the current boundary and project state. They do not change predictions, denominators, or the separate pending review status."
+    }
+  ],
+  "recommended_fixes": [
+    "Add an integration test that intercepts predict_step during replay and verifies every actual argument and nested span. Add the surviving call-site-bypass mutant to the gate.",
+    "Correct STATUS.md, the EV5 contract metadata and module description, and the parent current-status document. Regenerate affected result metadata while preserving historical reviews and Academic Round 2 artifacts."
+  ],
+  "verified_points": [
+    "Ran all 53 tests in an isolated copy: all passed. Reran the 12-mutant gate: all mutants were killed by test failures, without import or runtime-error false kills.",
+    "Built /tmp/topic02-review03-hpzn234i from source, tests, and static supporting-audit inputs. Fresh metrics.json, RESULTS.md, fixtures/MANIFEST.json, and all 18 gold JSON files matched repository bytes exactly.",
+    "Reproduced metrics SHA-256 5a7ab0429214b08e224b5da903c336ab563020264d94973f2cc9b4ae259baddd, RESULTS.md SHA-256 ccb9aa836493bc5940fc7ba0094d380a473ba3a48a0225ca4a0cc13413e7c77e, and fixture-manifest SHA-256 4a52e1ed60d570336ac37802ef421594a0fb864427b3c19dcbed14db7667f221.",
+    "Verified all four Academic Round 2 artifact hashes and both preserved review-verdict hashes against pre-review-03-audit.json. Current source/test hashes also match experiment-manifest.json.",
+    "PredictionCase contains exactly case_id/text/topics/spans. PredictionSpan contains exactly span_id/span/text. ContextInput contains step_id and only currently materialized contexts. Runtime inspection found no memberships, Topic-object gold, expected labels, semantic kind/origin, tags, or future context collection in actual EV5 prediction arguments.",
+    "Predictions remained identical across 36 hidden-gold case variants, 42 prediction comparisons, and 15 unavailable-context variants. Gold was removed or falsified, including memberships, objects, expected assignments/abstentions, descriptions, tags, and span kind/origin.",
+    "Additional mutants restoring case.context_steps exposure with gold-dependent targeting, exposing and consuming future contexts, dropping abstention serialization, and dropping abstention decoding were killed. The current alternative-loss and component-collapse mutants were also killed.",
+    "Direct comparisons against static fixture JSON verified assignment IDs, span IDs, offsets/text, Topic definitions, origin/kind, joint memberships, alternatives, abstention permission, and Topic components across all 18 cases and 52 spans.",
+    "Two otherwise identical valid ambiguous contracts differing only in abstention permission produced different canonical representations. Both decoded and round-tripped values preserved the distinction.",
+    "Fixture generation remained byte-identical with tested unit, assignment, representation, and preservation functions replaced by functions that raise exceptions.",
+    "Independent EV4 recount found 21 annotations, 20 scored required spans, and 24 memberships. Required populations are four conditions, one exception, seven deadlines, two approval constraints, two decisions, and four supporting-evidence spans carrying eight memberships. One ambiguous deadline is excluded; no unassigned annotations are excluded.",
+    "EV4 aggregate and by-kind arithmetic agree: span-only TP/FP/FN is 13/0/11; local-window is 24/12/0; sentence oracle is 24/5/0; clause oracle is 24/0/0. Selected-stress-annotation and non-source-complete boundaries are explicit. Predicted decision membership is labeled gold-span-conditioned, not detection.",
+    "End-to-end denominators include extra predictions and missed gold. Clause set-valued scoring has 39 gold memberships, 39 predictions, 35 matches, four FP and four FN. Injecting a prediction into irrelevant-chatter increases FP from four to five and the precision denominator from 39 to 40. Independently checked one-to-one assignments and recomputed all 239 recorded IoU matches.",
+    "Recomputed 156 unit-projection rows. Oracle representational ceilings remain separate from predicted-unit results. EV5 retains five exact steps, three correct expected abstentions, and one successful correction; the reference follows abstain to ATLAS to BETA while the neighbor remains NORTH.",
+    "EV6 uses 200 calibration and 200 holdout examples with disjoint texts and declared templates. Selection uses calibration only. The coverage floor prevents all-abstain success. Holdout coverage is 120/200 and accepted error is 40/120; target failure remains explicit.",
+    "EV7 remains synthetic-only. Supplied Topic identities/counts remain controlled oracle inputs. G10 goes to Topic 03, semantic response scope to Topic 04, and general calibration to Topic 10. Supporting external-artifact unknowns remain unresolved rather than guessed.",
+    "Execution completion remains separate from PENDING_INDEPENDENT_REVIEW. No material production-accuracy, representativeness, architecture-approval, or literature-exhaustion claim was found. This review used local reads and /tmp writes only, with no network, mailbox, repository edits, commits, or git-state changes."
+  ],
+  "confidence": 0.97
+}

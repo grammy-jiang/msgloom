@@ -1,0 +1,77 @@
+{
+ "paper_id": "doi-10-18653-v1-2021-emnlp-main-815",
+ "title": "Utilizing Relative Event Time to Enhance Event-Event Temporal Relation Extraction",
+ "research_question": "Can latent relative event times learned from temporal-relation supervision improve event-event temporal relation extraction when explicit event-time expressions are sparse?",
+ "methodology": "The model starts with RoBERTa-based contextual representations for a pair of supplied event mentions and jointly learns temporal-relation classification and an auxiliary relative-event-time prediction task. Each event receives a learned real-valued relative timestamp, and relation-specific objectives encourage BEFORE events to be ordered in one direction, AFTER events in the reverse direction, and EQUAL events to receive similar times. Stack-Propagation feeds the predicted relative times back into the relation classifier while retaining differentiability so relation-classification gradients also update the timing component. Evaluation uses MATRES with TimeBank and AQUAINT for training, a 21-document development split, Platinum for testing, five random seeds, and F1 as the primary relation-extraction metric.",
+ "key_findings": [
+  {
+   "finding": "The Stack-Propagation model reaches precision 78.4, recall 85.2, and F1 81.7 on MATRES, compared with F1 80.2 for the vanilla RoBERTa classifier; the paper reports p<0.05 for the comparison.",
+   "evidence_type": "supported",
+   "section": "Sections 3.3-3.4, Tables 2-3"
+  },
+  {
+   "finding": "The proposed model slightly exceeds the reported 81.6 F1 of the self-training baseline while not using that baseline's additional annotated and raw training resources.",
+   "evidence_type": "supported",
+   "section": "Section 3.3, Table 2"
+  },
+  {
+   "finding": "Relative-time prediction alone in the multi-task configuration improves F1 from 80.2 to 80.6, while explicitly propagating predicted times into classification raises F1 further to 81.7.",
+   "evidence_type": "supported",
+   "section": "Section 3.4, Table 3"
+  },
+  {
+   "finding": "Deriving relations by directly comparing predicted timestamps yields the highest recall, 86.8, but only F1 80.7 because this strategy cannot adequately handle VAGUE relations.",
+   "evidence_type": "supported",
+   "section": "Section 3.4, Table 3"
+  },
+  {
+   "finding": "Predicted relative-time differences correlate with BEFORE and AFTER decisions, while VAGUE and EQUAL pairs tend to have relative-time differences near zero.",
+   "evidence_type": "supported",
+   "section": "Section 3.5 Qualitative Analysis"
+  },
+  {
+   "finding": "The paper releases a public implementation and resources repository for the method.",
+   "evidence_type": "supported",
+   "section": "Introduction footnote / accompanying resource"
+  }
+ ],
+ "limitations": [
+  "The experiments use MATRES, whose documents are news-derived, and do not test workplace email or dialogue.",
+  "The model extracts temporal relations rather than factuality or operational states, so it cannot by itself distinguish planned, confirmed, revoked, completed, or contradicted events.",
+  "Event mentions are supplied to the relation model rather than detected as part of a fully end-to-end event-tracking pipeline.",
+  "The relative timestamps are latent bounded values rather than calibrated calendar times.",
+  "VAGUE is treated as no relation in evaluation and receives no direct relative-time ordering constraint comparable to BEFORE, AFTER, or EQUAL.",
+  "Cross-document temporal reasoning is explicitly left for future work.",
+  "Pairwise temporal ordering does not itself resolve conflicting factual revisions about whether an event will or did occur."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "stack_propagation_gain": 0.99,
+  "comparison_with_self_training": 0.98,
+  "auxiliary_vs_stack_propagation": 0.99,
+  "time_comparison_vague_limit": 0.99,
+  "relative_time_relation_correlation": 0.98,
+  "public_code": 1.0
+ },
+ "raw_claims": [
+  "Explicit event-time links are sparse in temporal corpora.",
+  "The paper learns a real-valued relative time for each event.",
+  "Relative-event-time prediction is trained jointly with event-event temporal relation classification.",
+  "Stack-Propagation supplies predicted event times directly to the temporal-relation classifier.",
+  "MATRES is used for the main evaluation.",
+  "The reported MATRES split contains 260 training documents, 21 development documents, and 20 test documents.",
+  "The proposed model obtains 81.7 F1 averaged over five random seeds.",
+  "The vanilla classifier obtains 80.2 F1 in the ablation comparison.",
+  "Direct timestamp comparison has high recall but has difficulty representing VAGUE relations.",
+  "BEFORE and AFTER predictions correlate with the sign and magnitude of predicted relative-time differences.",
+  "VAGUE and EQUAL predictions tend to lie near zero relative-time difference.",
+  "The authors propose cross-document relative-time prediction and temporal-relation extraction as future work.",
+  "A public GitHub repository contains code and data resources for the paper."
+ ],
+ "source_url": "https://aclanthology.org/anthology-files/pdf/emnlp/2021.emnlp-main.815.pdf",
+ "access": "full_text"
+}

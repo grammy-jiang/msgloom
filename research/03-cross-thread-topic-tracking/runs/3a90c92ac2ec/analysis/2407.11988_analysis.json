@@ -1,0 +1,86 @@
+{
+ "paper_id": "2407.11988",
+ "title": "Generating Harder Cross-document Event Coreference Resolution Datasets using Metaphoric Paraphrasing",
+ "research_question": "Can constrained metaphoric paraphrasing create a lexically more diverse cross-document event-coreference benchmark that exposes models' dependence on surface trigger similarity while preserving the underlying event identities?",
+ "methodology": "The authors transform ECB+ into ECB+META by asking GPT-4 to replace event triggers with coherent metaphoric paraphrases while preserving the surrounding event context and inherited coreference annotations. They create single-word and multi-word metaphor variants, automatically transfer trigger annotations, and manually correct ambiguous cases. Existing filtering and cross-encoder CDEC systems, along with GPT-4 pairwise classification, are trained or configured from ECB+ and evaluated on the transformed validation and test sets. Human checks, clustering metrics, lexical-diversity measures, and qualitative error analysis are used to assess the resulting datasets and model behavior.",
+ "key_findings": [
+  {
+   "finding": "Human quality checking estimated that approximately 99% of single-word ECB+META transformations and 95% of multi-word transformations could reasonably refer to the same original events.",
+   "evidence_type": "supported",
+   "section": "4.1 Metaphor Quality Control"
+  },
+  {
+   "finding": "A lemma-based filtering heuristic suffered a large recall decline under lexical transformation, while KNN retrieval was substantially more robust, especially for single-word metaphors.",
+   "evidence_type": "supported",
+   "section": "4.2 Filtering Scores"
+  },
+  {
+   "finding": "The strongest tested cross-encoder dropped from about 78 CoNLL F1 on ECB+ to 71.4 on the single-word metaphor set and 54.8 on the multi-word metaphor set.",
+   "evidence_type": "supported",
+   "section": "4.2 CDEC Scores"
+  },
+  {
+   "finding": "Trigger lexical diversity increased strongly from ECB+ to the metaphoric variants, with reported MLTD values of 7.33, 11.92, and 26.48 for ECB+, ECB+META1, and ECB+METAm respectively.",
+   "evidence_type": "supported",
+   "section": "4.2 Lexical Diversity"
+  },
+  {
+   "finding": "Increasing lexical diversity and metaphor complexity were associated with lower CDEC performance.",
+   "evidence_type": "supported",
+   "section": "4.2 Lexical Diversity"
+  },
+  {
+   "finding": "A human annotator reached the same coreference verdict across literal and transformed versions approximately 98% of the time on the examined small development sets.",
+   "evidence_type": "supported",
+   "section": "5.1 Coreference Resolution Difficulty"
+  },
+  {
+   "finding": "Qualitative error analysis showed that the cross-encoder often succeeded when coreferent mentions shared surface triggers and failed when equivalent event triggers were transformed into different expressions, supporting the conclusion that the model relied heavily on lexical trigger cues.",
+   "evidence_type": "supported",
+   "section": "5.2 Qualitative Error Analysis"
+  },
+  {
+   "finding": "The study does not test enterprise email/chat or cross-thread workplace work matters, so transfer from news-event coreference to workplace continuity remains unestablished.",
+   "evidence_type": "unsupported",
+   "section": "Limitations and corpus scope"
+  }
+ ],
+ "limitations": [
+  "The experiments focus only on English.",
+  "Some human-evaluation experiments use the small Dev_small subset, which the authors note may introduce sampling bias.",
+  "All transformed data are derived from a single underlying corpus, ECB+, limiting generalizability.",
+  "The authors state that the coreference experiments are reproducible but regeneration of ECB+META is not, because GPT-4 may produce different transformations.",
+  "GPT-4 may have been exposed to ECB+ during pretraining or instruction tuning, creating a contamination concern.",
+  "The benchmark uses synthetic metaphorical transformations rather than naturally occurring changes in terminology across long-running workplace conversations."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "metaphor_identity_preservation": 0.98,
+  "lexical_diversity_increase": 0.99,
+  "model_performance_drop": 0.99,
+  "surface_trigger_dependence": 0.97,
+  "human_stability": 0.96,
+  "generation_nonreproducibility": 0.99
+ },
+ "raw_claims": [
+  "ECB+ contains substantial lexical overlap between mentions that refer to the same event.",
+  "ECB+META is constructed by paraphrasing event triggers while retaining inherited coreference relations.",
+  "GPT-4 generates candidate metaphors and selects a coherent replacement.",
+  "The authors construct both single-word and multi-word metaphor versions of the corpus.",
+  "Ambiguous transferred trigger annotations are manually corrected.",
+  "The transformed datasets are evaluated with existing cross-document event-coreference systems.",
+  "Lemma-based retrieval degrades strongly when surface trigger vocabulary changes.",
+  "KNN-based retrieval is more tolerant of the transformed vocabulary than the lemma heuristic.",
+  "Coreference F1 decreases as the metaphoric expressions become more complex.",
+  "Lexical-diversity measurements rise substantially across the transformed datasets.",
+  "Human judgments remain comparatively stable despite the metaphorical transformations.",
+  "Error analysis indicates that tested models depend heavily on trigger-word similarity.",
+  "The authors release generated data and experimental code but warn that regenerating the synthetic dataset is not deterministic."
+ ],
+ "source_url": "https://arxiv.org/html/2407.11988",
+ "access": "full_text"
+}

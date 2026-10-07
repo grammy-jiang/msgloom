@@ -1,0 +1,85 @@
+{
+ "paper_id": "2608.08512",
+ "title": "Time Present and Time Past: Benchmarking Large Language Models on Temporally Evolving Document Understanding",
+ "research_question": "How well can modern language models identify and reason from the version of an evolving authoritative document that was actually in force at a queried date under parametric, gold-context, and retrieval-based access?",
+ "methodology": "The authors construct TIDE, an expert-verified benchmark containing 3,050 QA instances over 644 official Bangladesh customs instruments from 1969 through 2025, organized into temporal threads and eight task types with per-instance provenance metadata. Nine LLMs are evaluated under parametric-only, gold-context ICL, and RAG access, with free-form outputs judged by a three-model council and a hard date gate that assigns no credit when required dates are wrong. The RAG corpus contains 6,939 indexed vectors and the main configuration uses gemini-embedding-2 with Top-10 semantic retrieval without temporal reranking. The paper separately examines version-sensitive tasks, misleading-context robustness, retrieval-depth ablations, source provenance, and dataset-release permissions.",
+ "key_findings": [
+  {
+   "finding": "Providing document access substantially improves performance for every evaluated model, but the best reported macro strict accuracy is still only 68.49% for GPT-5 in the gold-context ICL setting.",
+   "evidence_type": "supported",
+   "section": "4 Results"
+  },
+  {
+   "finding": "For GPT-5, macro strict accuracy rises from 35.39% with parametric knowledge to 57.06% with RAG and 68.49% with gold-context ICL, illustrating both the value of authoritative context and the remaining version-resolution gap.",
+   "evidence_type": "supported",
+   "section": "4 Results"
+  },
+  {
+   "finding": "Event Sorting drops from 66.23% for GPT-5 with gold context to 31.42% under RAG because a standard semantic retriever without temporal reranking often fails to retrieve all provisions required to reconstruct the amendment timeline.",
+   "evidence_type": "supported",
+   "section": "4 Results"
+  },
+  {
+   "finding": "Context Misalignment is extremely difficult: strict accuracy never exceeds 27.62% under ICL or 25.09% under RAG even when authoritative clauses are supplied alongside a misleading premise.",
+   "evidence_type": "supported",
+   "section": "4 Results"
+  },
+  {
+   "finding": "The benchmark's hard date gate exposes cases in which a model captures the semantic rule but associates it with the wrong effective date, which ordinary semantic-answer scoring would over-credit.",
+   "evidence_type": "supported",
+   "section": "3.2 Evaluation"
+  },
+  {
+   "finding": "Every TIDE instance retains source clause identifiers, thread identifiers, and originating files, giving the benchmark explicit version-oriented provenance rather than treating time as only an annotation.",
+   "evidence_type": "supported",
+   "section": "2 The TIDE Benchmark"
+  },
+  {
+   "finding": "The source documents were collected from the official public NBR portal, and because the portal did not grant bulk redistribution rights, the authors obtained written authority permission for academic use and dataset release; every released record carries its source file and retrieval link.",
+   "evidence_type": "supported",
+   "section": "A.2.1 Licensing and Terms of Use"
+  }
+ ],
+ "limitations": [
+  "TIDE is an evaluation benchmark rather than an iterative RAG controller, so it does not decide dynamically whether evidence is sufficient or whether another retrieval round is warranted.",
+  "The benchmark focuses on Bangladesh customs documents in a particular multilingual and dual-calendar setting, leaving cross-domain temporal generalization untested.",
+  "The main RAG baseline is a standard semantic retriever without temporal reranking and therefore represents a lower-bound retrieval architecture for timeline-sensitive tasks.",
+  "The evaluated models are frozen and prompt-based; the study does not establish whether fine-tuning or continued pretraining would resolve the identified failures.",
+  "The parametric-knowledge setting relies on unverifiable assumptions about proprietary models' training corpora.",
+  "The corpus ends in 2025 and will require updates as governing documents continue to change.",
+  "The paper has strong source and release provenance, but its permission treatment concerns corpus acquisition and redistribution rather than runtime user-specific document authorization or ACL enforcement.",
+  "There is no calibrated or conformal risk-controlled stopping rule, no selective abstention guarantee, and no adaptive global retrieval budget.",
+  "The fixed Top-10 RAG configuration does not jointly reason about temporal validity, structured sufficiency, uncertainty, and retrieval cost."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "gold_context_outperforms_rag": 0.99,
+  "version_resolution_remains_unsolved": 0.99,
+  "semantic_retrieval_misses_timeline_evidence": 0.99,
+  "context_misalignment_is_hard": 0.99,
+  "instance_level_provenance_is_explicit": 0.99,
+  "source_permission_is_documented": 0.99,
+  "no_runtime_permission_controller": 0.97,
+  "no_calibrated_stopping_controller": 0.98
+ },
+ "raw_claims": [
+  "TIDE contains 3,050 QA instances derived from 644 official customs instruments spanning 1969 through 2025.",
+  "Each benchmark instance retains source-clause, temporal-thread, and originating-file provenance.",
+  "Nine recent language models are evaluated with parametric knowledge, retrieved context, and gold document context.",
+  "A hard date gate prevents temporally incorrect answers from receiving full semantic credit.",
+  "All evaluated models improve when source documents are supplied, but even gold context does not solve version resolution.",
+  "The strongest macro strict result reported is 68.49%.",
+  "Standard semantic retrieval often misses one or more provisions needed to reconstruct an amendment sequence.",
+  "Context Misalignment remains difficult even when authoritative evidence is positioned with the misleading premise.",
+  "The main retrieval configuration uses Top-10 semantic retrieval without temporal reranking.",
+  "The authors obtained written permission from the source authority for academic use and release because the portal terms did not grant bulk redistribution rights.",
+  "Every released record includes a source file and retrieval link for verification against the authoritative document.",
+  "The benchmark evaluates temporal provenance failures but does not implement a calibrated iterative retrieval-stopping controller."
+ ],
+ "source_url": "https://arxiv.org/html/2608.08512",
+ "access": "full_text"
+}

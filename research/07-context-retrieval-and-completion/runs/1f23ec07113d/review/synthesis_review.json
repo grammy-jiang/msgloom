@@ -1,0 +1,32 @@
+{
+ "reviewer_task_id": "review-synthesis-web",
+ "target_artifact": "/home/grammy-jiang/Projects/msgloom/research/07-context-retrieval-and-completion/runs/1f23ec07113d/analysis/synthesis.json",
+ "status": "accepted_with_issues",
+ "issues": [
+  "Finding on conflicting evidence (2609.16301): the statement that CLEAR 'reports benefits from keeping evidence sources separate' is stronger than the reduced analysis supports. The analysis establishes that CLEAR preserves parametric, local, and dynamic source identity through adjudication and that the full configurations obtain aggregate gains, but it does not report an ablation demonstrating that source separation itself caused those gains.",
+  "Permission-aware finding (2508.01084, doi-10-1038-s41598-026-71936-x, doi-10-1109-access-2025-3628960, doi-10-1145-3786625): HONEYBEE is an RBAC-aware vector-database retrieval system rather than a RAG architecture. Grouping all four citations under 'Permission-aware and secure RAG architectures' slightly overstates the direct RAG evidence.",
+  "Permission-aware finding: the phrase 'in synthetic or constructed enterprise evaluations' is directly supported for PPPARITL and the IAM-based Permission-Aware RAG study, but the supplied analysis for Provably Secure RAG does not characterize its four-dataset evaluation as synthetic or constructed enterprise data. The wording can be read as applying that characterization to every cited system.",
+  "Temporal/version-aware finding (2510.08109): the reduced VersionRAG analysis directly reports downstream VersionQA accuracy, version-sensitive task accuracy, transition/change-detection accuracy, routing accuracy, and indexing efficiency, but it does not provide a direct retrieval metric. Therefore the broad wording that temporal or version-aware representations improve 'retrieval and downstream answering' should be qualified as improvement in retrieval and/or downstream answering across the cited studies.",
+  "The contradictions section contains two genuine claim-versus-result inconsistencies from 2510.14337 and 2604.01413 and does not suppress them. No clear like-for-like cross-paper contradiction is established by the supplied reduced analyses; apparent differences in retrieval benefit, decomposition behavior, calibration transfer, and stopping performance occur under materially different methods, datasets, models, or metrics and are appropriately treated as scope qualifications rather than averaged into a universal claim."
+ ],
+ "unsupported_claims": [
+  "The causal wording in the conflicting-evidence finding that CLEAR demonstrates 'benefits from keeping evidence sources separate' is not established by the supplied analysis; source separation is an architectural property of CLEAR, while the reported performance gains are for the overall system/configurations.",
+  "Characterizing HONEYBEE itself as a RAG architecture is not supported by its supplied research question or findings; it is an access-controlled vector-database retrieval system.",
+  "If read as applying to all four cited permission/security papers, the claim that their evaluations are 'synthetic or constructed enterprise evaluations' is unsupported for 2508.01084 by the supplied reduced analysis.",
+  "A direct retrieval-performance improvement specifically attributable to VersionRAG's version-transition modeling is not shown in the supplied reduced findings for 2510.08109; those findings report downstream task accuracy rather than a retrieval metric."
+ ],
+ "required_fixes": [
+  "Change the CLEAR clause to a non-causal formulation such as: 'CLEAR preserves source identity and explicitly adjudicates disagreements in medical QA, while its full configurations report aggregate performance gains.'",
+  "Change the permission-aware finding to refer to 'permission-aware RAG and access-controlled vector-retrieval systems' rather than treating HONEYBEE as a RAG architecture.",
+  "Qualify the enterprise-evaluation wording, for example: 'including synthetic or constructed enterprise evaluations,' so it does not imply that every cited permission/security paper used that evaluation setting.",
+  "Change the temporal/version finding to 'improve retrieval and/or downstream answering' and avoid attributing a direct retrieval gain to VersionRAG unless evidence beyond the supplied reduced analysis is available."
+ ],
+ "confidence": 0.97,
+ "scores": {
+  "faithfulness": 0.94,
+  "coherence": 0.97,
+  "gap_completeness": 0.99,
+  "citation_integrity": true
+ },
+ "notes": "The synthesis is substantially faithful to the 45 supplied reduced analyses. All cited paper_ids in findings and gap-status evidence belong to the permitted identifier set. The major conclusions about adaptive retrieval heterogeneity, explicit sufficiency/gap judging, temporal and version sensitivity, permission filtering, calibration failure under shift, budget-dependent stopping, and the absence of a fully integrated workplace controller are supported. All eight major integration gaps are explicitly left open rather than falsely closed, including the central gaps around joint provenance/temporal validity, permissions, distribution-shift-aware stopping, workplace communication, and complete end-to-end cost accounting. Transfer-domain evidence is generally labeled appropriately, and the synthesis explicitly states that QA, medical, synthetic-enterprise, and structured-search results do not establish production behavior in workplace communication. The identified issues are localized wording overreaches and category imprecision rather than failures that invalidate the synthesis as a whole."
+}

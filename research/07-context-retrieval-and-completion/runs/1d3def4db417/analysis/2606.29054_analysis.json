@@ -1,0 +1,82 @@
+{
+ "paper_id": "2606.29054",
+ "title": "When Can Conformal Risk Control Certify LLM Outputs? Bounds, Impossibility, and Adaptation for Structured Generation",
+ "research_question": "Under what model, task, calibration, risk-target, and distribution-shift conditions can conformal risk control certify structured LLM outputs, and when is the desired selective-generation risk mathematically infeasible?",
+ "methodology": "The paper develops theoretical feasibility bounds for selective structured generation and compares Hoeffding, empirical-Bernstein, and e-CRC certification rules, then evaluates them across 716 model-task-score configurations involving structured extraction, NER, question answering, and classification. Experiments use six open-weight models, eight datasets, six confidence scores, multiple calibration fractions, five split seeds, and risk functions derived from task-specific errors. It further evaluates static CRC, Adaptive Conformal Inference, and a full-feedback anytime-valid monitor under temporal, severity, and cross-dataset distribution shifts.",
+ "key_findings": [
+  {
+   "finding": "If the base risk μ exceeds target risk α, any distribution-free selective method must abstain by at least (μ-α)/(M-α), establishing a feasibility floor before calibration.",
+   "evidence_type": "supported",
+   "section": "Theory: Feasibility and Impossibility Results"
+  },
+  {
+   "finding": "At strict targets through α=0.20 in the main seed-42 experiment, Hoeffding, Bernstein, and e-CRC certify 51, 72, and 80 of 716 configurations respectively, with zero test violations among those certified configurations.",
+   "evidence_type": "supported",
+   "section": "3.4 Certification Results, Table 2"
+  },
+  {
+   "finding": "Variance-aware certification is especially useful with limited calibration data: at a 10% calibration fraction, certification rates are 1.1% for Hoeffding, 1.9% for Bernstein, and 4.2% for e-CRC.",
+   "evidence_type": "supported",
+   "section": "3.4 Certification Results, Table 2"
+  },
+  {
+   "finding": "Larger model scale reduces average base risk in the reported Qwen2.5 sequence and thereby expands the range of configurations that can be certified.",
+   "evidence_type": "supported",
+   "section": "3.4 Model Scale Determines Controllability"
+  },
+  {
+   "finding": "Under the paper's index-order temporal shift, static CRC violates its target on 15 of 25 configurations whereas ACI reduces violations to 1 of 25; under gradual severity shift, static violations rise as high as 56% while ACI remains below 12%.",
+   "evidence_type": "supported",
+   "section": "3.5 ACI Under Distribution Shift"
+  },
+  {
+   "finding": "Under infeasible cross-dataset transfer at α=0.10, static CRC and every tested ACI step size violate the emitted-risk target on 14 of 16 runs, showing that adaptation cannot overcome a base-risk feasibility failure.",
+   "evidence_type": "supported",
+   "section": "3.5 Cross-Dataset Transfer and Appendix I"
+  },
+  {
+   "finding": "The full-feedback anytime-valid SAVeR-FF monitor records zero violations on the 16 cross-dataset transfers, but in those infeasible transfers it does so with mean abstention of 1.00, exposing the cost of maintaining the guarantee.",
+   "evidence_type": "supported",
+   "section": "3.6 and Appendix Q"
+  }
+ ],
+ "limitations": [
+  "Static conformal guarantees assume i.i.d. calibration data and do not survive arbitrary distribution shift.",
+  "ACI provides an effective-risk adaptation identity rather than the same finite-sample emitted-risk certificate available in the static i.i.d. setting.",
+  "Sampling-based uncertainty scores require multiple forward passes.",
+  "Score fusion consumes a disjoint data split and therefore reduces effective calibration sample size.",
+  "The MMLU subsets contain only 400 examples each, QA is evaluated on only two datasets, and the 72B model is tested with only two greedy-decoding scores.",
+  "The JSON extraction task is template-based, so its near-ceiling behavior may not generalize to less regular structured extraction.",
+  "ACI conclusions cover only seven tested step sizes between 0.001 and 0.1.",
+  "The experiments do not establish results for larger closed models or arbitrary deployment shifts.",
+  "The paper addresses calibrated stopping and abstention but not temporal document-version provenance or evidence-gap retrieval planning."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "feasibility_floor": 0.99,
+  "strict_target_certification": 0.99,
+  "variance_aware_advantage": 0.99,
+  "aci_temporal_shift_improvement": 0.99,
+  "cross_dataset_infeasibility": 0.99,
+  "full_feedback_abstention_tradeoff": 0.99
+ },
+ "raw_claims": [
+  "The paper treats selective structured generation as a risk-certification problem rather than only a confidence-ranking problem.",
+  "A base-risk feasibility calculation can imply a nonzero minimum abstention rate before any conformal threshold is calibrated.",
+  "The main experimental grid contains 716 model, dataset, score, and target configurations.",
+  "At strict targets, e-CRC certifies more configurations than the reported Hoeffding and empirical-Bernstein procedures.",
+  "Certified configurations have near-zero observed test violations across the reported split seeds.",
+  "Lower base risk from larger models makes strict risk targets easier to certify.",
+  "Static CRC degrades substantially under the evaluated temporal and severity shifts.",
+  "ACI substantially reduces violations under the evaluated temporal shift.",
+  "Neither static CRC nor the tested ACI settings restore the emitted-risk target on most infeasible cross-dataset transfers.",
+  "Full-feedback anytime-valid monitoring can preserve risk control by abstaining aggressively when certification is infeasible.",
+  "The paper states that its experiments use public data and open-weight models and that code is to be released on publication."
+ ],
+ "source_url": "https://arxiv.org/html/2606.29054",
+ "access": "full_text"
+}

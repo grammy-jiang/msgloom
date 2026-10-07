@@ -1,0 +1,82 @@
+{
+ "paper_id": "doi-10-18653-v1-2022-emnlp-main-58",
+ "title": "Cross-document Event Coreference Search: Task, Dataset and Modeling",
+ "research_question": "Can cross-document event coreference be reformulated as large-scale semantic search from a single query event mention, and can retrieval-plus-reading models effectively find and extract its coreferring mentions across a large document collection?",
+ "methodology": "The authors define Cross-document Event Coreference Search and construct CoreSearch from manually validated WEC-Eng clusters augmented with roughly one million Wikipedia-based distractor passages per split. They adapt the Dense Passage Retriever architecture using SpanBERT encoders, explicit event-mention boundary markers, hard BM25 negatives, and a retriever-reader pipeline. A DPR-style reader is compared with an integrated reader whose passage score explicitly models pairwise event coreference. Retriever and end-to-end performance are evaluated using MRR, mean average precision, recall, exact match, and F1, followed by ablations and qualitative error analysis.",
+ "key_findings": [
+  {
+   "finding": "CoreSearch establishes a query-oriented alternative to exhaustive cross-document event clustering, in which a marked event mention is used to retrieve and extract all coreferring mentions from a large passage collection.",
+   "evidence_type": "supported",
+   "section": "3 The CoreSearch Dataset"
+  },
+  {
+   "finding": "The dense SpanBERT-based retriever outperformed the BM25 baseline across the reported retrieval metrics.",
+   "evidence_type": "supported",
+   "section": "5.3 Results - Retriever"
+  },
+  {
+   "finding": "On the test set, the integrated end-to-end model achieved MRR@10 of 90.06, mAP@10 of 63.26, mAP@50 of 72.91, exact match of 71.44, and span F1 of 84.16.",
+   "evidence_type": "supported",
+   "section": "5.3 Results / Table 5"
+  },
+  {
+   "finding": "Explicit mention-boundary markers provide a strong signal, improving retriever performance and particularly helping mention-span detection in the reader.",
+   "evidence_type": "supported",
+   "section": "5.4 Ablation Study - Mention Span Boundaries"
+  },
+  {
+   "finding": "Replacing the generic DPR passage-selection score with an explicit coreference-scoring component improved both passage reranking and mention detection.",
+   "evidence_type": "supported",
+   "section": "5.4 Ablation Study - Modeling Coreference with QA"
+  },
+  {
+   "finding": "Manual analysis of 18 genuinely erroneous top-ranked results found 10 argument-inconsistency errors and 8 cases where the local query and candidate contexts were insufficient to decide coreference.",
+   "evidence_type": "supported",
+   "section": "5.5 Qualitative Error Analysis"
+  },
+  {
+   "finding": "The authors publicly released both the CoreSearch dataset and their implementation.",
+   "evidence_type": "supported",
+   "section": "1 Introduction"
+  }
+ ],
+ "limitations": [
+  "CoreSearch inherits annotation noise from WEC-Eng, especially because the original WEC-Eng training portion was automatically annotated.",
+  "The Wikipedia-derived corpus may contain duplicated or otherwise imperfect documents that were not comprehensively audited.",
+  "Negative passages can occasionally contain unannotated true coreferences, producing false negatives.",
+  "The benchmark is biased toward events sufficiently notable to have Wikipedia coverage and therefore excludes many anecdotal or routine real-world events.",
+  "The benchmark is English and Wikipedia-centric, so robustness in workplace communication, news streams, private records, or other domains remains untested.",
+  "Error analysis indicates that local passages may be insufficient when event identity depends on global cluster information or external knowledge."
+ ],
+ "reproducibility": {
+  "code_available": true,
+  "dataset_available": true,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "search_task_formulation": 0.99,
+  "dense_retrieval_gain": 0.99,
+  "integrated_reader_gain": 0.99,
+  "mention_boundary_effect": 0.98,
+  "argument_matching_errors": 0.99,
+  "dataset_and_code_release": 1.0
+ },
+ "raw_claims": [
+  "The paper recasts cross-document event coreference from exhaustive clustering into query-based retrieval.",
+  "A query consists of an event mention marked inside its surrounding passage.",
+  "Positive results are passages containing mentions of the same underlying event.",
+  "CoreSearch is derived from manually validated WEC-Eng clusters and large collections of distractor passages.",
+  "Each CoreSearch split contains roughly one million candidate passages.",
+  "The retriever uses a DPR-style dual-encoder architecture with SpanBERT representations.",
+  "Explicit tokens around the target event mention help the model focus on the queried event.",
+  "Training includes hard negatives retrieved by BM25 as well as in-batch negatives.",
+  "The reader both reranks retrieved passages and extracts the candidate coreferential mention span.",
+  "An explicit coreference score improves the DPR-style reader.",
+  "Argument mismatches are a prominent source of false coreference decisions.",
+  "Some event-identity decisions require evidence outside the local pair of passages.",
+  "The authors released CoreSearch and the associated code."
+ ],
+ "source_url": "https://arxiv.org/html/2210.12654",
+ "access": "full_text",
+ "source_citation": "citeturn536484view0turn322071view7turn614845view6turn915401view4"
+}

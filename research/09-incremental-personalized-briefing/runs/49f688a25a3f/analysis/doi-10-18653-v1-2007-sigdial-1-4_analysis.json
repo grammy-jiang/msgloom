@@ -1,0 +1,85 @@
+{
+ "paper_id": "doi-10-18653-v1-2007-sigdial-1-4",
+ "title": "Detecting and Summarizing Action Items in Multi-Party Dialogue",
+ "research_question": "Can action items in multi-party meetings be detected more accurately by modeling their dialogue structure and then summarized by extracting task and timeframe phrases using syntactic and semantic information?",
+ "methodology": "The study separates the problem into detecting action-item subdialogues and extracting phrases that summarize task descriptions and timeframes. Eighteen ICSI Meeting Corpus meetings are annotated for four action-item dialogue-act classes—description, timeframe, owner, and agreement—and four SVM sub-classifiers feed a higher-level classifier operating over dialogue windows, evaluated with 18-fold leave-one-meeting-out cross-validation. For summarization, a robust semantic parser generates candidate fragments from manual or ASR-derived speech, and an SVM regression model ranks fragments using acoustic, syntactic, semantic, lexical, and temporal features.",
+ "key_findings": [
+  {
+   "finding": "The structured subdialogue detector outperformed a flat action-item classifier on manual transcripts, with overlap F1 of 0.45 versus 0.35.",
+   "evidence_type": "supported",
+   "section": "3.5 Results"
+  },
+  {
+   "finding": "Action-item utterances were extremely sparse, with only about 1.4 percent of utterances receiving any action-item dialogue-act label.",
+   "evidence_type": "supported",
+   "section": "3.2 Data"
+  },
+  {
+   "finding": "ASR errors caused a substantial degradation in action-item detection, reducing overlap F1 by roughly 8 to 9 absolute percentage points, although structured detection remained above the flat baseline in absolute performance.",
+   "evidence_type": "supported",
+   "section": "3.5 Results"
+  },
+  {
+   "finding": "For timeframe summarization, semantic and lexical-head features plus temporal-expression information improved fragment ranking to F1 0.51, above the 1-best utterance baseline of 0.39 and TIMEX-only baseline of 0.31.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "For task-description phrases, none of the tested feature sets outperformed the full 1-best utterance baseline in F1, despite some gains in precision.",
+   "evidence_type": "supported",
+   "section": "4.3 Results"
+  },
+  {
+   "finding": "Restricting a summary to one acoustically segmented utterance is a major limitation because ideal action-item descriptions often combine information distributed across multiple utterances.",
+   "evidence_type": "supported",
+   "section": "5 Conclusions & Future Work"
+  },
+  {
+   "finding": "The authors propose using user confirmations, deletions, and edits of detected action items as feedback for incremental learning, but this longitudinal feedback mechanism is future work rather than an evaluated result in this paper.",
+   "evidence_type": "unsupported",
+   "section": "5 Conclusions & Future Work"
+  }
+ ],
+ "limitations": [
+  "Only 18 meetings are used, and positive action-item examples comprise about 1.4 percent of utterances.",
+  "The dataset consists of naturally occurring research-group meetings and may not represent other workplace domains.",
+  "Detection accuracy is modest and drops materially on ASR output.",
+  "The exact ASR word-error rate for the paper's meeting subset is not known.",
+  "Task-description extraction fails to beat the simple 1-best utterance baseline in F1.",
+  "The summarizer only considers phrases within one acoustically segmented utterance even when the information required for an action item spans several utterances.",
+  "Owner/addressee resolution is not fully addressed in the summarization experiments.",
+  "Priority among action items, personalization to a recipient, supersession, resolution tracking, and repeated longitudinal briefings are outside the evaluated system."
+ ],
+ "reproducibility": {
+  "code_available": false,
+  "dataset_available": false,
+  "metrics_reported": true
+ },
+ "confidence_scores": {
+  "structured_detection_beats_flat": 0.99,
+  "action_items_are_sparse": 0.99,
+  "asr_degrades_detection": 0.98,
+  "timeframe_extraction_improves": 0.99,
+  "description_extraction_remains_weak": 0.99,
+  "multi_utterance_summary_needed": 0.99,
+  "incremental_feedback_only_proposed": 0.98
+ },
+ "raw_claims": [
+  "The system separates action-item processing into subdialogue detection and phrase-level summarization.",
+  "Four action-item dialogue-act types are modeled: task description, timeframe, owner, and agreement or commitment.",
+  "The study annotates 18 meetings from the ICSI Meeting Corpus.",
+  "Pairwise agreement for individual action-item dialogue-act classes ranges from kappa 0.64 to 0.78.",
+  "Only about 1.4 percent of utterances have any action-item label.",
+  "Four independent dialogue-act classifiers feed a higher-level classifier over a dialogue window.",
+  "Evaluation uses 18-fold cross-validation with one meeting held out per fold.",
+  "The structured detector reaches overlap F1 0.45 on manual transcripts, compared with 0.35 for the flat baseline.",
+  "Recognition errors reduce the structured detector's overlap F1 to about 0.36 to 0.37.",
+  "Semantic parsing is used to generate short candidate phrases for task and timeframe summaries.",
+  "The best timeframe fragment model reaches F1 0.51.",
+  "No tested task-description fragment model beats the 1-best utterance baseline in F1.",
+  "The authors identify multi-utterance information integration as a necessary direction for better action-item summaries.",
+  "User editing of hypothesized action items is proposed as feedback for future incremental learning."
+ ],
+ "source_url": "https://aclanthology.org/2007.sigdial-1.4.pdf",
+ "access": "full_text"
+}
