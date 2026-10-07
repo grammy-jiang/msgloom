@@ -135,6 +135,13 @@ jobs:
         env:
           TOX_ENVIRONMENT: ${{ matrix.tox-env }}
         run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+      # Evaluate coverage after both tox phases. The first pytest invocation
+      # cannot be gated independently because its coverage is incomplete.
+      - name: Enforce line and branch coverage budgets
+        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        run: >-
+          uv run --no-sync python scripts/quality/coverage_gate.py
+          .tox/${{ matrix.tox-env }}/coverage.xml
       - name: Qualify the rebuilt wheel outside the checkout
         if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
         run: |
