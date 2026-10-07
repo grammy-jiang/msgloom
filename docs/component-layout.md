@@ -143,6 +143,36 @@ Mail and Calendar provider spiders default to `IdType="ImmutableId"`.
 still suppresses the header. The user provider supplies only `User.Read` and
 `user_path()` (`/me`); msgloom retains profile evidence and command output.
 
+## Teams provider and application ownership
+
+Teams provider spiders expose encoded paths, caller-selected queries, provider
+page-size bounds, and representation headers. They do not select permissions,
+projection fields, or page sizes for a msgloom acquisition profile. Omitting a
+page size leaves the query parameter absent. The application passes its selected
+values explicitly.
+
+| Component | Responsibility |
+| --- | --- |
+| `microsoft_graph/spiders/teams/` | Construct Teams paths and validate caller-selected queries; preserve provider representation requirements. |
+| `microsoft_graph/items/teams/` | Preserve provider fields, representation provenance, and topology without acquisition completeness. |
+| `microsoft_graph/protocol/teams_notifications.py` | Validate trusted provider subscription facts and notification resources; return provider lifecycle facts. |
+| `message_ingest/spiders/microsoft/teams/_chat_profile.py` | Select the T1 `Chat.Read` scope and chat page size 50. |
+| `message_ingest/spiders/microsoft/teams/_channel_profile.py` | Select the complete T2 five-scope bundle, channel fields, message page size 50, and member page sizes 999. |
+| `message_ingest/items/microsoft/teams/topology.py` | Add source and evidence context; define `detail_complete` and `detail_limitation` for team and channel hydration. |
+| `message_ingest/spiders/microsoft/teams/_notification_intake.py` | Validate each subscription's application source binding and map lifecycle facts to durable coverage gaps. |
+
+The channel profile selects `Team.ReadBasic.All`, `Channel.ReadBasic.All`,
+`ChannelMessage.Read.All`, `TeamMember.Read.All`, and `ChannelMember.Read.All`.
+The two profile modules contain simple constants consumed by application
+spiders. Provider helpers remain usable without either selected scope bundle.
+
+Teams callbacks retain evidence-before-semantics ordering and native Scrapy
+request scheduling. Application pipelines await catalog writes; application
+coverage and lifecycle components decide completeness. Provider representation
+labels such as `associated`, `joined`, and `detail` do not establish acquisition
+completeness by themselves. Notification protocol models carry no application
+source identity or coverage-gap policy.
+
 ## Component ownership
 
 | Package | Responsibility |

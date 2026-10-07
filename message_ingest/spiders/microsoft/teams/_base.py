@@ -14,8 +14,9 @@ class MicrosoftTeamsBaseSpider(MicrosoftGraphSpider):
     Bind Teams discovery to existing Graph integrity and evidence persistence.
 
     Concrete spiders put their provider composition class first in the MRO
-    and this application base second. Provider helpers supply paths/scopes;
-    named application callbacks emit raw evidence before parsing or semantics.
+    and this application base second. Provider helpers supply paths; concrete
+    application spiders select scopes. Named application callbacks emit raw
+    evidence before parsing or semantics.
     Initial discovery has no absence promotion, cursor, or JOBDIR resume.
     """
 
