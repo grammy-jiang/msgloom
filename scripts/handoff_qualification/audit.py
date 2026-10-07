@@ -58,7 +58,7 @@ def runtime(expected: str, fastmcp: bool) -> dict:
     for name, required in (
         ("pytest-cov", "7.1.0"),
         ("pytest-xdist", "3.8.0"),
-        ("ruff", "0.16.9"),
+        ("ruff", "0.16.10"),
     ):
         if versions[name] != required:
             raise ValueError(f"{name} must remain {required}")
