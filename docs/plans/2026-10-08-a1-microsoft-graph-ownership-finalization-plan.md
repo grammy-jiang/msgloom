@@ -2,7 +2,12 @@
 
 **Status:** design/implementation plan only; no production refactor has started
 **Prepared:** 2026-10-08
-**Working branch:** `program/a1-teams-spider`
+**Coordination-plan branch:** `program/a1-teams-spider`
+**Implementation branches:** `master` + `program/a1-teams-spider`
+**Branch invariant:** Teams-only code changes go to the Teams branch; every other
+code change goes to `master`
+**Final integration:** rebase `program/a1-teams-spider` onto the final accepted
+`master` SHA before final convergence
 **Rebased candidate at plan entry:** `4ba461a41ee6068a9de4c56f0ffcd42db2351517`
 **Current master base:** `4502efa117e753e47e1fbbeb6ed61881a85c9c18`
 **Runtime authority:** Scrapy 2.19.0 from the project virtual environment
@@ -115,7 +120,87 @@ A second test is:
 If yes, it belongs in `message_ingest/`, even when it contains Graph field or
 permission names.
 
-### 3.3 Important distinction: provider constraint vs selected policy
+### 3.3 Branch ownership contract
+
+This cleanup has two implementation branches, and branch ownership is stricter
+than checkpoint/lane ownership.
+
+#### `master` owns every non-Teams change
+
+A change belongs on `master` unless its reason for existence is directly and
+exclusively Microsoft Teams behavior.
+
+`master` therefore owns:
+
+- reusable Graph/Scrapy mechanics that are provider-generic rather than
+  Teams-specific;
+- Outlook Mail and Calendar changes;
+- Contacts changes;
+- OneDrive changes;
+- To Do and user/profile changes if any are required;
+- generic Graph delta/tombstone/continuation/request helpers;
+- generic architecture/package-boundary tests and guardrails;
+- non-Teams documentation corrections;
+- any bug discovered during this work whose behavior is not Teams-specific.
+
+Concretely, F3 Mail/Contacts, F6, F7, F8, and F9 are `master` work.
+
+The existing `master` development worktree contains unrelated untracked
+research/output artifacts. They are outside this task and must remain untouched:
+
+- never use `git clean` on the master worktree for this cleanup;
+- never use broad `git add .` / `git add -A` when preparing these commits;
+- stage only explicit task-owned paths;
+- do not reset or delete unrelated untracked files to obtain a clean status;
+- use the dedicated clean synchronized test worktrees for broad/distributed
+  validation rather than treating the master development worktree as a clean
+  test checkout.
+
+#### `program/a1-teams-spider` owns Teams-only changes
+
+The Teams branch owns only changes whose reason for existence is Teams support,
+including:
+
+- `microsoft_graph` Teams provider items/protocol/path/query helpers;
+- Teams notification protocol and intake behavior;
+- Teams T1/T2 application scope/profile selection;
+- Teams-specific projection/page-size policy;
+- Teams acquisition completeness/limitation state;
+- `message_ingest` Teams spiders/items/pipelines/readers;
+- Teams-specific tests and documentation;
+- a shared package export or registration change only when its sole purpose is
+  to expose/register a Teams-specific symbol.
+
+Concretely, F1, F2, the Teams portion of F3, F4, and F5 are Teams-branch work.
+
+#### No mixed commits
+
+A commit must not contain both Teams-only implementation and unrelated
+non-Teams/shared implementation. If one conceptual fix spans both categories,
+split it:
+
+1. implement the reusable/non-Teams foundation on `master`;
+2. finish and validate that `master` change;
+3. rebase the Teams branch onto the resulting master when the master lane is
+   frozen;
+4. implement or adapt only the Teams-specific consumer delta on the Teams
+   branch.
+
+Do not cherry-pick non-Teams implementation commits into the Teams branch as a
+substitute for the final rebase. Do not make an opportunistic Mail, Contacts,
+OneDrive, Calendar, or generic Graph fix in the Teams worktree just because that
+is where a failing test was observed.
+
+For shared files, classify the *reason for the edit*, not the path. A generic
+framework change belongs on `master`; a Teams-only export/registration delta may
+belong on the Teams branch. If both branches need to touch the same shared file,
+make the generic master edit first and preserve both changes during the final
+rebase.
+
+This coordination plan may remain on the Teams branch as documentation. That is
+not an exception allowing non-Teams production code to be developed there.
+
+### 3.4 Important distinction: provider constraint vs selected policy
 
 Do not move every Graph-looking constant into the framework.
 
@@ -171,7 +256,7 @@ No behavior should be removed merely to make the boundary look smaller.
 The implementation phase starts from these confirmed findings rather than doing
 another broad rediscovery pass.
 
-### F1 — Teams notification protocol carries msgloom source state
+### F1 — Teams notification protocol carries msgloom source state `[TEAMS]`
 
 Current location:
 
@@ -196,7 +281,7 @@ facts; interpreting them as a durable history/coverage gap is application
 semantics. Prefer returning normalized lifecycle facts from the framework and
 mapping them to `gap_kind` in `message_ingest`.
 
-### F2 — Teams provider items contain acquisition completeness semantics
+### F2 — Teams provider items contain acquisition completeness semantics `[TEAMS]`
 
 Current location:
 
@@ -219,7 +304,7 @@ Target:
   coverage items;
 - preserve existing durable output and public reader behavior.
 
-### F3 — acquisition field/profile policy exists in the framework
+### F3 — acquisition field/profile policy exists in the framework `[SPLIT]`
 
 Confirmed examples:
 
@@ -248,7 +333,7 @@ Target:
 - existing wire queries stay byte-for-byte equivalent unless a current test
   proves the old query was invalid.
 
-### F4 — Teams T1/T2 scope bundles are product profiles
+### F4 — Teams T1/T2 scope bundles are product profiles `[TEAMS]`
 
 Current examples:
 
@@ -277,7 +362,7 @@ Target:
   permission profile;
 - application tests prove msgloom still requests the exact selected scopes.
 
-### F5 — selected Teams query defaults are mixed with provider constraints
+### F5 — selected Teams query defaults are mixed with provider constraints `[TEAMS]`
 
 Current examples include fixed/frozen page sizes and selected channel
 projection fields in the framework.
@@ -288,7 +373,7 @@ Target:
 - move profile-selected defaults/projections into `message_ingest`;
 - avoid replacing simple arguments with a new configuration framework.
 
-### F6 — OneDrive 410 reset-location validation remains application-local
+### F6 — OneDrive 410 reset-location validation remains application-local `[MASTER]`
 
 Current location:
 
@@ -307,7 +392,7 @@ Target:
 - application keeps reset-attempt policy, checkpoint policy, evidence redaction,
   and whether/when to resync.
 
-### F7 — Mail/folder delta still inspects opaque token text
+### F7 — Mail/folder delta still inspects opaque token text `[MASTER]`
 
 Current application code checks `$deltatoken=` / `$skiptoken=` to decide whether
 an URL is provider-owned/opaque.
@@ -320,7 +405,7 @@ Target:
 - use `continuation_request()` / `verbatim_url=True` based on provenance, never
   substring inspection.
 
-### F8 — repeated Graph tombstone parsing remains in application callbacks
+### F8 — repeated Graph tombstone parsing remains in application callbacks `[MASTER]`
 
 Mail message delta, Mail folder delta, and Calendar delta independently parse
 and validate `@removed`.
@@ -333,7 +418,7 @@ Target:
   membership removal vs event removal vs other domain meaning);
 - do not create a generic delta workflow abstraction.
 
-### F9 — duplicated `Prefer` composition remains in application code
+### F9 — duplicated `Prefer` composition remains in application code `[MASTER]`
 
 Mail delta currently reconstructs immutable-ID + page-size preferences even
 though the provider base already owns immutable-ID representation and exposes
@@ -359,22 +444,30 @@ technical decisions.
 ### Goal
 
 Convert the ownership contract above into tests that fail on the known leaks
-before production relocation begins.
+before production relocation begins. G0 itself is split by branch: generic and
+non-Teams characterization tests are committed on `master`; Teams-specific
+characterization tests are committed on `program/a1-teams-spider`.
 
 ### Add or extend tests
 
+On `master`:
+
 1. `microsoft_graph` standalone import test remains independent of
    `message_ingest`, `msgloom`, and SQLAlchemy.
-2. Add a semantic-boundary test that rejects product-only field names/types in
-   framework dataclasses where practical, including `source_id`, `run_id`, and
-   `evidence_id`.
-3. Add direct tests proving Teams provider helpers can be instantiated/used
+2. Add generic semantic-boundary guardrails that reject application-only state
+   in reusable framework code where practical.
+3. Add tests pinning Outlook/Contacts application projections after relocation.
+4. Add a focused test proving non-Teams application delta requests do not
+   inspect/rebuild opaque Graph cursors.
+
+On `program/a1-teams-spider`:
+
+1. Add direct tests proving Teams provider helpers can be instantiated/used
    without the msgloom T1/T2 scope bundle.
-4. Add tests proving application Teams spiders still select exact T1/T2 scopes.
-5. Add tests pinning exact Outlook/Contacts/Teams application projections after
-   relocation.
-6. Add a focused test proving no application delta request inspects/rebuilds an
-   opaque Graph cursor.
+2. Add tests proving application Teams spiders still select exact T1/T2 scopes.
+3. Add tests pinning the Teams application projection/profile contract.
+4. Add Teams-specific semantic checks for `source_id`, completeness/limitation,
+   and other application state currently leaked into Teams provider models.
 
 ### Checkpoint
 
@@ -383,6 +476,8 @@ before production relocation begins.
 - each test has one clear ownership failure message.
 
 ## Checkpoint G1 — remove application state from Teams notification protocol/items
+
+**Branch: `program/a1-teams-spider` only.**
 
 This checkpoint has two disjoint lanes that may run in parallel after G0.
 
@@ -440,7 +535,7 @@ Work:
 
 Run three lanes in parallel; they own disjoint provider/application files.
 
-### Lane G2-MAIL
+### Lane G2-MAIL — `master`
 
 Move from framework to application:
 
@@ -464,7 +559,7 @@ current module split makes a smaller adjacent profile module clearer.
 Update any handoff validation that currently imports the framework field tuple
 to import the application profile contract instead.
 
-### Lane G2-CONTACTS
+### Lane G2-CONTACTS — `master`
 
 Move from framework to application:
 
@@ -484,7 +579,7 @@ Framework retains:
 - caller-supplied `$select` and `$top` construction;
 - pure Contact/Folder provider items.
 
-### Lane G2-TEAMS
+### Lane G2-TEAMS — `program/a1-teams-spider`
 
 Move to application:
 
@@ -519,8 +614,11 @@ Framework retains:
 
 ## Checkpoint G3 — finish remaining provider mechanics extraction
 
-Run disjoint provider lanes in parallel after G2 unless a shared helper is
-needed.
+**Branch: `master` only.**
+
+Run disjoint provider lanes in parallel after the relevant master-side G2 work
+unless a shared helper is needed. No G3 implementation is committed to the
+Teams branch.
 
 ### Lane G3-ONEDRIVE
 
@@ -553,35 +651,81 @@ needed.
 - OneDrive provider response mechanics are reusable;
 - application callbacks still own traversal and semantic decisions.
 
-## Checkpoint G4 — architecture guardrails and cleanup
+## Checkpoint G4 — branch convergence and architecture audit
 
-After G1-G3 converge, perform one fresh static ownership audit.
+G4 freezes `master` first, then rebases the Teams branch onto that exact SHA.
+There is no merge commit and no manual copying of non-Teams changes into the
+Teams branch.
 
-Required checks:
+### G4-M — finalize `master`
+
+Complete all `master` lanes (G0-master, G2-MAIL, G2-CONTACTS, and G3), then run
+a fresh master-side ownership audit.
+
+Required checks on `master`:
 
 1. zero imports from `microsoft_graph` to `message_ingest`, `msgloom`, or
    SQLAlchemy;
 2. standalone framework imports with consumer modules blocked;
-3. search `microsoft_graph` for application-only identifiers:
-   - `source_id`;
-   - `run_id`;
-   - `evidence_id`;
-   - handoff/release/promotion/catalog terms;
-   - A1/A2/T1/T2 product-profile terminology;
-   - completeness/limitation fields not present in provider payloads;
-4. search `message_ingest` for duplicated Graph mechanics:
-   - hard-coded Graph service URLs;
-   - path/query construction that has a framework helper;
-   - manual auth/retry handling;
-   - opaque continuation parsing;
-   - repeated Graph envelope/tombstone parsing;
-5. verify every remaining Graph-looking constant in `message_ingest` is a
-   deliberate application policy, not missing provider infrastructure.
+3. non-Teams selected acquisition profiles live in `message_ingest`;
+4. non-Teams application code does not duplicate Graph mechanics now provided
+   by the framework;
+5. focused tests/static checks for the changed master files are green;
+6. no Teams implementation has been added to `master` as part of this cleanup.
 
-Update old documentation that currently says the framework owns selected
-"fields" or T1/T2 profiles so the written architecture matches the final code.
-Do not rewrite historical implementation reports except where a current
-architecture statement would otherwise mislead future work.
+Once these checks pass:
+
+- create the final master candidate commit(s);
+- push `master` to origin;
+- record the exact master SHA;
+- treat that SHA as frozen for the rebase unless a later test proves a genuine
+  non-Teams defect.
+
+### G4-R — mandatory final rebase
+
+Rebase `program/a1-teams-spider` onto the recorded final `master` SHA:
+
+```text
+git fetch origin
+git rebase <final-master-sha>
+```
+
+Conflict handling is semantic:
+
+- preserve the generic/non-Teams implementation from `master`;
+- preserve only the Teams-specific delta from the Teams branch;
+- never resolve a conflict by discarding a newer generic master contract merely
+  to keep old Teams code unchanged;
+- do not introduce a merge commit;
+- if a Teams implementation now has a reusable dependency already supplied by
+  master, adapt Teams to consume it rather than duplicating it.
+
+After the rebase, verify:
+
+```text
+merge-base(master, program/a1-teams-spider) == final master SHA
+```
+
+and verify the Teams branch contains no new non-Teams implementation delta when
+compared with master.
+
+### G4-T — post-rebase Teams audit
+
+On the rebased Teams branch, run the Teams-side ownership audit:
+
+1. `microsoft_graph` Teams modules contain provider mechanics only;
+2. Teams source/completeness/profile policy lives in `message_ingest`;
+3. Teams T1/T2 selected bundles are application-owned;
+4. Teams uses the new generic master contracts where applicable rather than
+   duplicating them;
+5. generic architecture guardrails inherited from master also pass with Teams
+   modules present;
+6. only focused tests affected by rebase/conflict resolution are rerun here.
+
+If G4-T exposes a **Teams-specific** defect, fix it directly on the Teams
+branch. If it exposes a **generic/non-Teams** defect, return to `master`, fix it
+there, push the new master SHA, and repeat G4-R. A late master fix always
+invalidates the previous Teams rebase baseline.
 
 ## Checkpoint G5 — final A1 ownership acceptance
 
@@ -612,12 +756,17 @@ During G0-G4:
 Use both Raspberry Pis for the final tracked suite. This is the same execution
 policy used for multi-file focused tests during G0-G4, not a special one-off.
 
-Split tests into stable, non-overlapping shards by file. One recommended split:
+The final full tracked-suite run targets the **rebased Teams candidate**, which
+contains the frozen master baseline plus the Teams-only delta. Split tests into
+stable, non-overlapping shards by file. One recommended split:
 
-- Pi A: framework/provider/Outlook/Contacts/To Do/OneDrive tests;
+- Pi A: framework/provider/Outlook/Contacts/To Do/OneDrive and generic
+  architecture tests inherited from master;
 - Pi B: Teams + source-reader/handoff + remaining application tests.
 
-Both Pis must test the same committed SHA and frozen dependency lock. If one Pi
+Both Pis must test the same rebased Teams candidate SHA and frozen dependency
+lock. The master lanes have already been focused-tested before the rebase; this
+single final run proves the integrated tree. If one Pi
 needs environment bootstrap, use the lock rather than an ad-hoc dependency
 install.
 
@@ -651,148 +800,135 @@ autonomously until it passes:
 4. **Validation/rollback** — focused and final checks cover the moved boundaries
    and every checkpoint is independently revertible.
 
-After the four cells pass, mark A1 Graph ownership finalization complete and use
-that exact SHA as the A2 entry baseline. No intermediate checkpoint requires
-user confirmation.
+After the four cells pass, record both the frozen master SHA and the final
+rebased Teams SHA. The Teams SHA must have the frozen master SHA as its
+merge-base/ancestor. Use the final rebased Teams SHA as the integrated A1 entry
+baseline for subsequent work. No intermediate checkpoint requires user
+confirmation.
 
 ## 8. Parallel execution model
 
-After G0 freezes the target contract, maximize parallelism without overlapping
-writers.
+Branch separation is the outer execution boundary. Parallel work is allowed only
+when both file ownership and branch ownership are unambiguous.
 
 ```text
-G0 ownership tests
-       |
-       +------------------+
-       |                  |
-       v                  v
- G1-A notifications   G1-B Teams items
-       |                  |
-       +--------+---------+
-                |
-                v
-      +---------+---------+
-      |         |         |
-      v         v         v
- G2-MAIL   G2-CONTACTS  G2-TEAMS
-      |         |         |
-      +---------+---------+
-                |
-      +---------+---------+
-      |         |         |
-      v         v         v
- G3-OD     G3-MAIL    G3-DELTA
-      \         |         /
-       +--------+--------+
-                |
-                v
-          G4 boundary audit
-                |
-                v
-          G5 final acceptance
+                 +---------------- MASTER ----------------+
+                 |                                         |
+G0-master --> G2-MAIL ----+                                |
+                 |         +--> G3-MAIL-DELTA --+          |
+                 +--> G2-CONTACTS               |          |
+                 |         +--> G3-ONEDRIVE -----+--> G4-M |
+                 |         +--> G3-GRAPH-DELTA --+          |
+                 +-----------------------------------------+
+                                                           |
+                                                           v
+                                                   freeze/push master
+                                                           |
+                                                           v
+                 +---------------- TEAMS ------------------+
+G0-teams --> G1-A notifications ----+                      |
+            G1-B Teams items -------+--> G2-TEAMS ---------+
+                 +-----------------------------------------+
+                                                           |
+                                                           v
+                                              G4-R final rebase
+                                                           |
+                                                           v
+                                              G4-T Teams audit
+                                                           |
+                                                           v
+                                               G5 full converge
 ```
 
+The master and Teams lanes may progress concurrently while they touch disjoint
+contracts. Any Teams task that requires a not-yet-frozen generic master change
+waits for G4-R rather than copying that master implementation into the Teams
+branch.
+
 Shared `__init__.py`, settings, common protocol exports, and architecture tests
-are coordinator-owned. A worker must not edit a shared file unless ownership is
-explicitly transferred for that round.
+remain coordinator-owned. A worker must not edit a shared file unless ownership
+is explicitly transferred for that round. For every shared-file edit, the
+coordinator also records whether the semantic owner is `master` or Teams before
+committing it.
 
 ## 8.1 Automatic two-Pi candidate synchronization
 
-Distributed testing uses a commit as the atomic source snapshot. Do not mirror
-an actively edited/uncommitted working tree to Pi 2: doing so could expose a
-partially written tree and would make test results impossible to bind to an
-exact SHA. Narrow tests may still run directly on uncommitted code on the
-primary development Pi; create a coherent candidate commit before a two-Pi run.
+Distributed testing uses commits as atomic source snapshots. Do not mirror an
+actively edited/uncommitted working tree between Pis.
 
-The synchronization path is host-local development infrastructure, not msgloom
-production code:
+Because this round has two development branches, the synchronization
+infrastructure must expose **two independent channels** before implementation
+starts:
 
 ```text
-Pi 1 branch ref changes
-        |
-        v
-systemd user Path unit
-        |
-        v
-LAN git push over existing SSH
-        |
-        v
-Pi 2 refs/heads/__pi_sync/a1-teams-spider
-        |
-        v
-systemd user Path unit
-        |
-        v
-flock-protected reset of dedicated test clone
+master
+  -> refs/heads/__pi_sync/master
+  -> dedicated clean master test worktree/clone on Pi 2
+  -> independent master test lock
+
+program/a1-teams-spider
+  -> refs/heads/__pi_sync/a1-teams-spider
+  -> ~/Projects/msgloom-a1-teams-test on Pi 2
+  -> independent Teams test lock
 ```
 
-Installed behavior:
+Do not point both branch watchers at the same checked-out Pi 2 worktree: an
+update from one branch must never reset files underneath tests for the other
+branch.
 
-- Pi 1 watches
-  `refs/heads/program/a1-teams-spider` and asynchronously pushes the latest SHA
-  directly over the LAN to Pi 2; this avoids a GitHub round trip for test
-  synchronization;
-- rapid local ref changes are coalesced and the sender loops until the published
-  sync ref equals the newest local branch SHA;
-- Pi 2 watches only the dedicated `__pi_sync` ref, not the product branch on
-  GitHub;
-- Pi 2 applies the newest sync ref to `~/Projects/msgloom-a1-teams-test` under a
-  shared `flock`;
-- Pi 2 tests use the same lock, so an arriving candidate can update the sync ref
-  while tests run but cannot change checked-out files underneath a running
-  pytest process;
-- after the test lock is released, any pending candidate is applied
-  automatically;
-- when `pyproject.toml` or `uv.lock` changes between candidates, Pi 2 performs
-  `uv sync --frozen` automatically while holding the same lock; normal source
-  changes therefore incur no dependency-sync work;
-- ordinary GitHub/origin pushes remain useful for branch durability and review,
-  but they are not on the critical path for Pi-to-Pi test synchronization.
+The existing Teams synchronization channel remains valid. Add the equivalent
+master channel before the first distributed master test. Each channel follows
+the same rules:
 
-The normal readiness check on Pi 1 is:
+- a local branch-ref watcher asynchronously publishes the latest candidate SHA
+  over LAN SSH, avoiding GitHub fetch latency on the test critical path;
+- rapid ref changes are coalesced until the sync ref equals the newest branch
+  SHA;
+- Pi 2 applies the candidate under a branch-specific `flock`;
+- tests acquire that same branch-specific lock, preventing worktree mutation
+  while pytest is running;
+- dependency synchronization occurs only when `pyproject.toml` or `uv.lock`
+  changes;
+- test readiness is a lightweight SHA/clean-tree check, not a normal fetch/reset
+  operation.
 
-```text
-msgloom-a1-sync-status
-```
+Use branch-specific status/test wrappers (or a single wrapper with an explicit
+`master|teams` selector). `SYNCED <sha>` must mean local branch SHA, Pi 2 sync
+ref, and Pi 2 test HEAD all match for the requested branch.
 
-`SYNCED <sha>` means the local branch, Pi 2 sync ref, and Pi 2 test worktree all
-match and the tracked Pi 2 worktree is clean. `TESTING ... pending=...` means Pi
-2 is intentionally holding the test lock on an older coherent snapshot while a
-newer candidate waits. `STALE ...` is an infrastructure fault to repair
-autonomously before launching a new distributed shard.
-
-The Pi 2 test wrapper is:
-
-```text
-msgloom-a1-test <test command and arguments>
-```
-
-It acquires the shared lock, converges to the latest sync ref if necessary,
-prints the exact test SHA, and then executes the requested test command. This is
-preferred for distributed shards because it closes the check-to-test race. All
-future distributed-test entry points must preserve this same lock protocol.
-
-This mechanism changes the test-start operation from "synchronize then test" to
-"verify synchronization then test". The synchronization work normally happens
-while development continues on Pi 1.
+After G4-R, final distributed testing switches exclusively to the rebased Teams
+candidate, because that candidate contains both the accepted master baseline and
+the Teams-only delta.
 
 ## 9. Commit/rollback strategy
 
 Use small ownership commits rather than one large refactor.
 
-Recommended commit boundaries:
+Recommended commit boundaries are branch-specific.
 
-1. ownership characterization tests;
+On `master`:
+
+1. generic/non-Teams ownership characterization tests;
+2. Mail profile relocation;
+3. Contacts profile relocation;
+4. OneDrive provider helper extraction;
+5. Mail delta opaque-request cleanup / existing `Prefer` reuse;
+6. Graph tombstone primitive + non-Teams consumers;
+7. generic architecture guardrails/docs;
+8. focused repair commits if master-side checks expose a real regression.
+
+On `program/a1-teams-spider`:
+
+1. Teams ownership characterization tests;
 2. Teams notification boundary;
 3. Teams item completeness boundary;
-4. Mail profile relocation;
-5. Contacts profile relocation;
-6. Teams scope/query profile relocation;
-7. OneDrive provider helper extraction;
-8. Mail delta opaque-request cleanup;
-9. Graph tombstone primitive + consumers;
-10. architecture guardrails/docs;
-11. final repair commit only if G5 finds a real regression.
+4. Teams scope/query/profile relocation;
+5. Teams-specific architecture guardrails/docs;
+6. post-rebase conflict/adaptation repair commits if required.
+
+After the master list is complete and pushed, perform the mandatory final rebase
+before G5. Do not merge the branches as part of this plan unless separately
+requested.
 
 Each commit must preserve a buildable/testable state. Avoid compatibility
 aliases unless an external/public import actually requires one; do not keep
@@ -829,12 +965,17 @@ This cleanup is complete only when all statements below are true:
 - application traversal/evidence/checkpoint/handoff semantics remain in
   `message_ingest`;
 - current A1 behavior remains compatible;
+- all non-Teams implementation deltas from this round are on `master`;
+- the Teams branch contains only Teams-specific deltas on top of master;
+- the final Teams branch is rebased onto the final accepted master SHA with no
+  merge commit;
 - no new write permission or transport exists;
 - exactly one normal final two-Pi full tracked-suite convergence run is green
   (plus only targeted reruns if that final run exposes defects);
 - final static/framework checks are green;
 - fresh independent ownership review is PASS after any autonomous repair loop;
-- the final accepted SHA is recorded as the A2 entry baseline.
+- the final accepted master SHA and final rebased Teams SHA are both recorded;
+  the rebased Teams SHA is the integrated A2 entry baseline.
 
 ## 11. Autonomous recovery rules
 
@@ -861,8 +1002,12 @@ Use these recovery rules:
   smallest explicit seam or argument rather than inventing a new framework;
 - if a security/privacy contract regresses, restore the stricter current
   behavior first, then continue the refactor;
-- if tests fail, diagnose and fix the defect, rerun only affected shards, and
-  continue automatically;
+- if tests fail, first classify the defect by branch ownership: a non-Teams or
+  generic defect is fixed on `master`; a Teams-only defect is fixed on the Teams
+  branch; rerun only affected shards and continue automatically;
+- any fix committed to `master` after a Teams rebase invalidates that rebase;
+  push the new master SHA and rebase the Teams branch again before final
+  convergence;
 - if a final independent review returns REVISE, implement its concrete findings
   and repeat the affected checks/review without waiting for user confirmation.
 
@@ -872,24 +1017,33 @@ cleanup is not expected to contain such a decision.
 
 ## 12. Expected end state
 
-The desired architecture after G5 is deliberately simple:
+The desired architecture and history after G5 are deliberately simple:
 
 ```text
-microsoft_graph/
-    pure Graph/Scrapy mechanics
-    provider paths + validation + representations
-    auth/retry/privacy/fingerprint components
+master
+    generic Graph/Scrapy + non-Teams A1 ownership cleanup
+        \
+         \  rebase
+          v
+program/a1-teams-spider
+    master baseline + Teams-only implementation delta
 
-message_ingest/
-    selected A1 profiles
-    source/evidence/run semantics
-    response callbacks + traversal
-    persistence/checkpoint/completeness/coverage
-    A1 release/handoff
+integrated tree:
+    microsoft_graph/
+        pure Graph/Scrapy mechanics
+        provider paths + validation + representations
+        auth/retry/privacy/fingerprint components
 
-A2/
-    consumes the accepted A1 output contract
-    does not repair A1 provider/application ownership
+    message_ingest/
+        selected A1 profiles
+        source/evidence/run semantics
+        response callbacks + traversal
+        persistence/checkpoint/completeness/coverage
+        A1 release/handoff
+
+    A2/
+        consumes the accepted A1 output contract
+        does not repair A1 provider/application ownership
 ```
 
 The success condition is not fewer lines in `message_ingest` or more lines in
