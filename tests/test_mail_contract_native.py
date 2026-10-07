@@ -180,31 +180,11 @@ def test_native_full_bindings_across_orders_and_cache(tmp_path):
         graph = f"http://127.0.0.1:{server.server_port}/v1.0"
         run_command = """
     import sys
-    import asyncio
-    import json
-    import sqlite3
-    import time
     from scrapy.cmdline import execute
-    from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
-    from message_ingest.items.microsoft.outlook.email import OutlookMailDetailItem
-    original = OutlookMailPipeline.process_item
-    async def delayed_detail(self, item):
-        if isinstance(item, OutlookMailDetailItem) and item.message_id == "slow":
-            deadline = time.monotonic() + 8
-            while time.monotonic() < deadline:
-                with self.catalog.Session() as session:
-                    from sqlalchemy import text
-                    rows = session.execute(text("SELECT component FROM mail_component_captures WHERE selection_id=:selection"), {"selection":item.selection_id}).scalars()
-                    seen = set(rows)
-                if {"mime", "attachments"} <= seen:
-                    print("MAIL_CONTRACT_DETAIL_PIPELINE_LAST_CONFIRMED", flush=True)
-                    break
-                await asyncio.sleep(0.03)
-            else:
-                raise RuntimeError("Pipeline-last ordering was not established")
-        return await original(self, item)
-    OutlookMailPipeline.process_item = delayed_detail
-
+    from pathlib import Path
+    sys.path.insert(0, str(Path.cwd() / "tests"))
+    from test_mail_contract_native_sync import install_pipeline_order
+    install_pipeline_order()
     from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
     OutlookFullSpider.graph_root = sys.argv[1]
     OutlookFullSpider.allowed_domains = ["127.0.0.1"]
