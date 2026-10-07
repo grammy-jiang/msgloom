@@ -113,7 +113,10 @@ worker cleanup, and reader closure. The external scheduler owns timing and
 repeated invocation. Manual `prepare` and explicit preparation replay remain
 available. See [operator configuration](../notes/operator-configuration.md#scheduled-preparation)
 for exact command syntax, stable consumer identity, limits, and recovery.
-Final handoff gates and independent acceptance remain pending.
+The handoff runtime is implemented and qualified. Final documentation review
+and independent acceptance remain pending; see the
+[qualification record](../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+This does not qualify an external scheduler deployment.
 
 ## 4. Preparation and AI execution
 

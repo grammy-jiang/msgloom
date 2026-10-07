@@ -8,9 +8,10 @@ configuration data for later CLI composition. It does not construct
 Application, stage handlers, source adapters, parsers, AI runners, Graph
 clients, or report transports.
 
-Recurring schedules and external triggers are intentionally absent. A4, A6,
-and A7 are rejected by the configuration/admission boundary before a factory
-can be selected.
+Recurring schedules and external triggers remain deployment configuration.
+The implemented `prepare-scheduled` command accepts finite A2 intake settings;
+it does not install or run an external scheduler. A4, A6, and A7 are rejected
+by the configuration/admission boundary before a factory can be selected.
 
 ## Settings sources and precedence
 
@@ -257,7 +258,9 @@ Future-only intake does not admit unchanged pre-ledger historical records.
 Manual `prepare` and explicit preparation replay keep their existing
 exact-selection contracts. See the
 [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff).
-Final handoff qualification and independent acceptance remain pending.
+The handoff runtime is implemented and qualified. Final documentation review
+and independent acceptance remain pending; see the
+[qualification record](a1-closeout.md#handoff-qualification-record--2026-10-07).
 
 ### Explicit historical baseline
 
@@ -294,7 +297,8 @@ workset or cursor progress. A new attempt captures the then-current cutoff;
 it does not preserve a failed attempt's cutoff. After successful admission,
 retry preparation from the saved pending workset through scheduled preparation.
 Do not rerun baseline admission or change its immutable input. Baseline support
-is integrated; final handoff gates and independent acceptance remain pending.
+is implemented and included in the qualified runtime. Final documentation
+review and independent acceptance remain pending.
 
 ## Secrets
 

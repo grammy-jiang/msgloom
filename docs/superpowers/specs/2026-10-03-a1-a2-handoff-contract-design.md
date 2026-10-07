@@ -2,16 +2,20 @@
 
 ## Status
 
-**Status:** Implementation-ready after internal readiness audit; production implementation not started.
+**Status:** Runtime implemented and qualified; Tasks 1–14 accepted by PRIMARY.
+Task 15 documentation review and final independent acceptance remain pending.
+See the [qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 
 **Design date:** 2026-10-03.
 
 **A1 baseline:** 9e072eed17672f8380c709a9932ea56dbcbaff85.
 
 This document defines the durable work-selection boundary between the completed
-A1 Microsoft acquisition subsystem and the future A2/Kedro preparation
-workflow. It is a design contract only. It does not authorize production code,
-schema migration, A2 implementation, or scheduler changes.
+A1 Microsoft acquisition subsystem and A2 preparation. Kedro orchestration
+remains downstream. This governing contract was originally design-only; later
+user authorization approved its implementation. The requirements and readiness
+amendments below remain in force. Runtime qualification does not claim final
+Task 15 acceptance or installation of an external scheduler.
 
 This design supersedes earlier conversational proposals that treated either one
 CLI command or one Spider run_id as the universal A1-to-A2 batch. Neither

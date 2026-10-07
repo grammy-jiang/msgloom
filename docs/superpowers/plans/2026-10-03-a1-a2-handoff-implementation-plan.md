@@ -1,6 +1,8 @@
 # A1 to A2 Durable Handoff Implementation Plan
 
-> Status: readiness-reviewed implementation plan; production implementation not yet executed.
+> Status: runtime implemented and qualified; Tasks 1–14 accepted by PRIMARY.
+> Task 15 documentation review and final independent acceptance remain pending.
+> See the [qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 >
 > Design authority: docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md
 >
@@ -46,7 +48,15 @@ Kedro orchestration is intentionally downstream of this plan. This plan makes th
 - The A1 acquisition catalog continues to use additive schema creation; ledger metadata initializes a stable catalog identity on first ledger-aware open.
 - No automatic ledger pruning in this implementation.
 - No production implementation step starts Kedro nodes.
-- Development may be parallelized after the shared ledger contracts are frozen. Do not use local Codex subagents; if parallel agents are used, use actual ChatGPT chat sessions.
+- Historical delegation policy (superseded): Development may be parallelized after the shared ledger contracts are frozen. Do not use local Codex subagents; if parallel agents are used, use actual ChatGPT chat sessions.
+
+The task-scoped user override requires native Codex agents only and one PRIMARY;
+it supersedes the historical delegation direction above. The 2026-10-06 14:32
+and 2026-10-07 16:42 Sydney instructions retain the original acceptance gates
+and exact-candidate reviews. They require focused repair checks and explicit
+scope rationale when retaining valid earlier evidence. A changed SHA alone
+does not require blanket reruns. The qualification record links this status
+to the retained original runs; it does not amend the product requirements.
 
 ## Dependency DAG
 

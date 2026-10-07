@@ -19,7 +19,9 @@ remains `msgloom`.
 The integrated handoff keeps Scrapy component ownership unchanged. Spiders
 still own traversal, pipelines await persistence, and extensions or workflows
 own completion gates. A1 does not import A2 source-reader or preparation code.
-Final handoff qualification remains pending.
+The runtime is implemented and qualified. Final documentation review and
+independent acceptance remain pending; see the
+[qualification record](notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 
 | Component | Responsibility |
 | --- | --- |

@@ -100,9 +100,10 @@ contract without requiring A1 to be redesigned.
 
 The A1 source-capability closeout above remains closed. The integrated
 handoff extension adds a release ledger to the existing catalog. It does not
-add a Microsoft product or change the read-only acquisition boundary. Final
-handoff qualification and independent acceptance remain pending; the closeout
-counts above are historical A1 evidence, not handoff gate results.
+add a Microsoft product or change the read-only acquisition boundary. The
+runtime is implemented and qualified; Tasks 1–14 have PRIMARY acceptance.
+Task 15 documentation review and final independent acceptance remain pending.
+The closeout counts above are historical A1 evidence, not handoff gate results.
 
 A1 records immutable acquisition facts with the state they describe. Eligible
 completion publishes release groups and ordered release entries. Authority
@@ -123,4 +124,60 @@ admitted by future-only intake. The integrated
 [historical baseline service](operator-configuration.md#explicit-historical-baseline)
 admits caller-approved exact versions for a new consumer scope without
 creating release entries. Its immutable starting workset uses the normal
-pending preparation path. Final handoff qualification remains pending.
+pending preparation path. See the handoff qualification record below.
+
+### Handoff qualification record — 2026-10-07
+
+The runtime candidate is `d0c764f37c3ad511fadd671e603bdb7c86def63b`.
+The original runtime and static gates retain their qualified scopes below.
+The focused production repair has independent approval and closes finding R1.
+PRIMARY acceptance of Tasks 1–14 is recorded in `wave245-task-readiness.json`.
+This documentation update does not claim a new full-suite run or final Task 15
+acceptance.
+
+The durable evidence directory is the sibling `a1-a2-execution/` worktree
+under `msgloom-worktrees/`. `wave244-gate-evidence.json` records the qualified
+gates and supporting result hashes. The original candidate and invocation
+identities remain attached to each result:
+
+| Gate | Original candidate | Original invocation | Qualified result |
+| --- | --- | --- | --- |
+| Normal Python 3.13 | `4d92349ab13e3c552479c20dd983e246a5ec9c63` | `86e5cfbe341c4c1b937fcb8d622d499b` | 4033 passed |
+| Private pre-commit | `4d92349ab13e3c552479c20dd983e246a5ec9c63` | `1f20628b2cf1448c81a2a07348835239` | 13 hooks passed |
+| Python 3.13 serial / FastMCP | `4d92349ab13e3c552479c20dd983e246a5ec9c63` | `1951101a4e0644f7b5d5f599c08e3148` | 1 / 1 passed |
+| Static gates | `35fb4ee5a8a1a926ff6fc0dcad9614ec58c5a2b2` | `5f44ec9bf6b34c0fb709a138ec7c2faa` | 7 gates; 4 Scrapy contracts; 328 LSP paths |
+| A1 / 13 end-to-end scenarios | `359f8abc4f765092449e733f54262f81a1b2aa56` | `d8e52194f1e643cdaeb72cf10c026ab7` | 2627 / 48 passed |
+| Python 3.12 normal / serial / FastMCP | `359f8abc4f765092449e733f54262f81a1b2aa56` | `e7c6171d3c624003a7ef6d13d3576f2e` | 4034 / 1 / 1 passed |
+| Python 3.14 normal / serial / FastMCP | `359f8abc4f765092449e733f54262f81a1b2aa56` | `e04e5e6332104536aec749791cd3ad2d` | 4034 / 1 / 1 passed |
+
+`wave241-evidence-scope.json` and `wave244-closeout-preparation.json` record
+the earlier test-only repair through candidate `359f8ab`: the exceptional
+large-fixture To Do test deadline and a stalled-request negative control.
+That repair retained the default deadline and authority checks and did not
+change production code. Its focused regressions and scoped Ruff, Pyright, and
+live LSP checks supplement the original static evidence.
+
+The subsequent `d0c764f` repair changes production intake. It maps Mail
+`inventory_present` to presence in the exact folder and Calendar
+`rebaseline_absence` to absence in the exact calendar window. The focused
+evidence in `native-transition_repair244-result.json` records four expected
+failures before repair and 34 passing tests after repair, plus scoped static
+and live LSP checks. `native-transition_review245-result.json` independently
+approves that repair and its evidence scope. `wave245-evidence-scope.json`
+retains the unaffected broad gates with their original candidate and invocation
+identities. Producer traversal, persistence transactions, dependencies,
+transport, and execution machinery are unchanged by this production repair.
+The retained gates are not newly executed full-suite, matrix, hook, contract,
+or broad LSP passes on `d0c764f`.
+
+Historical failures remain preserved, including B0/145, normal138, and
+A1/scenarios238. The failed A1 invocation
+`af5897ab11ac4fb9a6a76522f73ec510` on `4d92349` had 2625 passes and one
+failure; its 13-scenario gate did not run. Later passes do not erase or relabel
+these records.
+
+Final approval still requires the changed-document review, the independent
+Astra/MAX review of the full diff from the original plan base to the exact final
+candidate, and PRIMARY acceptance of all 15 tasks. The historical Task 15
+preparation checklist remains a preparation record. It does not replace the
+current gate evidence or claim those remaining approvals.
