@@ -1,14 +1,52 @@
 # Teams A1 implementation result and acceptance status
 
-**Updated: 2026-10-05.** The selected T1/T2 scope has completed local
+**Updated: 2026-10-08.** The selected T1/T2 scope has completed local
 implementation, validation, independent review, feature-branch publication,
-and GitHub Actions qualification. Company-account acceptance remains
-**BLOCKED / NOT EXERCISED**. T3/T4/T5 are outside this delivery. No merge into
-`master` occurred.
+GitHub Actions qualification, and final ownership cleanup. The rebased Teams
+candidate 3e4ee1f1285947edc4345660e88d48a06e1411eb was fast-forwarded into
+master on 2026-10-08 and pushed to origin. Company-account acceptance remains
+**BLOCKED / NOT EXERCISED**. T3/T4/T5 are outside this delivery.
 
-In this report, "complete" applies to the selected local T1/T2 work and its
-CI delivery. It does not claim complete Teams/Microsoft 365 coverage or
-successful acquisition from a real company tenant.
+In this report, "complete" applies to the selected local T1/T2 work, CI
+delivery, ownership closeout, and repository integration. It does not claim
+complete Teams/Microsoft 365 coverage or successful acquisition from a real
+company tenant.
+
+## Post-merge Microsoft Graph live qualification
+
+A read-only live qualification was run against the currently configured
+personal Microsoft account after the merge. The normal production
+Scrapy/MSAL/middleware/pipeline path was used with isolated local catalogs and
+HTTP cache disabled.
+
+The following real Microsoft Graph operations passed:
+
+- signed-in profile acquisition;
+- Outlook Mail discovery and one real Full-v1 enrichment, including the final
+  Full-v1 completeness check;
+- Outlook Calendar discovery and a bounded calendar-window request;
+- Microsoft To Do discovery;
+- OneDrive discovery;
+- personal Contacts discovery.
+
+The selected Calendar window contained no event, so Calendar Full-v1 was not
+exercised in that run. The Contacts collections were empty; successful
+collection completion still exercised real authentication, Graph transport,
+evidence capture, parsing, and persistence. The OneDrive and To Do probes
+returned real provider data.
+
+Teams chat and channel probes were also attempted with interactive
+authentication explicitly disabled. They failed closed during delegated
+authentication because the current cached account is a personal Microsoft
+account and has no usable Teams delegated token. Microsoft Graph's current
+v1.0 permission tables mark delegated personal Microsoft accounts as unsupported
+for chat listing, joined-team listing, and channel listing. This result is
+therefore an account/tenant capability boundary, not a production-code failure.
+A work or school account with the selected T1/T2 consent is still required for
+real Teams acceptance.
+
+No Microsoft-side object was created, modified, moved, or deleted during these
+live checks.
 
 ## Exact candidate and scope
 

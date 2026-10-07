@@ -64,6 +64,9 @@ not a substitute for the hosted run. Hosted success requires all seven jobs
 to finish successfully at the pushed candidate. Failed runs remain visible;
 any repair must be validated and pushed before a new success claim.
 
-The branch remains separate from ``master``. Live T1/T2 acquisition, repeat
-acquisition, and applicable real notification acceptance still require the
-approved company tenant and consent described in the final report.
+The accepted Teams branch was later rebased onto the final ownership-cleanup
+master baseline and fast-forwarded into master on 2026-10-08. Live
+personal-account qualification of the other selected Microsoft A1 sources
+passed after the merge. Live T1/T2 acquisition, repeat acquisition, and
+applicable real notification acceptance still require the approved work or
+school tenant and consent described in the final report.
