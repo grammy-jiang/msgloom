@@ -14,6 +14,7 @@ import pytest
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Request, TextResponse
 from scrapy.utils.misc import build_from_crawler
+from scrapy.utils.request import request_from_dict
 from scrapy.utils.test import get_crawler
 from twisted.python.failure import Failure
 
@@ -37,6 +38,85 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
+
+
+@pytest.mark.parametrize("reset_count", [0, 1])
+def test_initial_and_reset_requests_keep_application_query_provenance(
+    tmp_path: Path, reset_count: int
+) -> None:
+    spider = _spider(tmp_path, page_size="17")
+    request = spider._initial_message_delta_request("folder-1", reset_count=reset_count)
+    if request.meta.get("verbatim_url", False):
+        pytest.fail("Application-built initial/reset queries must not be opaque")
+    if request.cb_kwargs["reset_count"] != reset_count:
+        pytest.fail("Reset provenance must survive callback serialization")
+    if request.headers.get("Prefer") != b'IdType="ImmutableId", odata.maxpagesize=17':
+        pytest.fail("Provider representation and page size must retain exact order")
+
+
+@pytest.mark.parametrize("from_checkpoint", [False, True])
+def test_provider_cursor_without_named_tokens_survives_jobdir(
+    tmp_path: Path, from_checkpoint: bool
+) -> None:
+    spider = _spider(tmp_path, page_size="17")
+    url = "https://graph.microsoft.com/v1.0/me/opaque?state=A%2fb+Z&x=2&x=1"
+    if from_checkpoint:
+        spider._delta_links["folder-1"] = url
+        request = spider._message_delta_start_request("folder-1")
+    else:
+        request = spider._message_delta_request(
+            url, folder_id="folder-1", page_number=1
+        )
+    restored = request_from_dict(request.to_dict(spider=spider), spider=spider)
+    if restored.url != url or restored.meta.get("verbatim_url") is not True:
+        pytest.fail("Provider cursor ownership must not depend on token spelling")
+    if restored.cb_kwargs != {
+        "purpose": "message-delta",
+        "folder_id": "folder-1",
+        "page_number": 1,
+        "from_checkpoint": from_checkpoint,
+        "reset_count": 0,
+    }:
+        pytest.fail("JOBDIR must retain the existing named callback contract")
+    if (
+        restored.callback != spider.parse_message_delta
+        or restored.errback != spider.errback
+    ):
+        pytest.fail("JOBDIR must restore named delta callback and errback")
+    if restored.meta.get("dont_cache") is not True:
+        pytest.fail("Provider delta cursors must bypass HTTP cache")
+
+
+def test_opaque_continuation_retains_checkpoint_and_reset_context(
+    tmp_path: Path,
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._message_delta_request(
+        "https://graph.microsoft.com/v1.0/me/opaque?state=first",
+        folder_id="folder-1",
+        page_number=1,
+        from_checkpoint=True,
+        reset_count=1,
+    )
+    next_link = "https://graph.microsoft.com/v1.0/me/opaque?state=next%2fpage"
+    response = TextResponse(
+        request.url,
+        request=request,
+        body=json.dumps({"value": [], "@odata.nextLink": next_link}).encode(),
+        encoding="utf-8",
+    )
+    output = list(spider.parse_message_delta(response, **request.cb_kwargs))
+    continuation = next(value for value in output if isinstance(value, Request))
+    if (
+        continuation.url != next_link
+        or continuation.meta.get("verbatim_url") is not True
+    ):
+        pytest.fail("Graph nextLink must remain opaque without token inspection")
+    if continuation.cb_kwargs != {
+        **request.cb_kwargs,
+        "page_number": 2,
+    }:
+        pytest.fail("Continuation must preserve checkpoint and reset callback context")
 
 
 def _db_url(tmp_path: Path) -> str:

@@ -434,6 +434,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,
+            verbatim_url=False,
         )
 
     def _message_delta_request(
@@ -444,13 +445,16 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         page_number: int,
         from_checkpoint: bool = False,
         reset_count: int = 0,
+        verbatim_url: bool = True,
     ) -> scrapy.Request:
         """
         Keep opaque delta URLs and bypass HTTP cache for every cursor request.
 
         Cache replay must never make an old delta round look current. Page size
         belongs in ``Prefer`` because Graph owns query parameters in
-        continuation and delta links.
+        continuation and delta links. Provider links are opaque by default;
+        only the application-built initial/reset request opts out. This
+        decision never depends on cursor text or the callback page number.
         """
         return self._request(
             url,
@@ -463,11 +467,6 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 "reset_count": reset_count,
             },
             dont_cache=True,
-            verbatim_url=(
-                page_number > 1
-                or from_checkpoint
-                or "$deltatoken=" in url
-                or "$skiptoken=" in url
-            ),
-            prefer=f'IdType="ImmutableId", odata.maxpagesize={self.page_size}',
+            verbatim_url=verbatim_url,
+            prefer=self.compose_prefer(f"odata.maxpagesize={self.page_size}"),
         )
