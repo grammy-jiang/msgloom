@@ -595,8 +595,11 @@ During G0-G4:
 - a single narrow test may run on one Pi;
 - as soon as verification spans multiple independent test files or logical test
   groups, split those tests across both Raspberry Pis in parallel;
-- both Pis must test the same committed SHA; push/sync the lane candidate before
-  a distributed run so results are reproducible;
+- both Pis must test the same committed SHA; the dedicated LAN synchronization
+  mechanism keeps Pi 2 pre-warmed on the latest candidate, so distributed tests
+  must not pay a normal fetch/reset synchronization cost at test start;
+- before a distributed run, use the lightweight sync-status check and start the
+  tests immediately when it reports the same candidate SHA on both Pis;
 - on a failure, fix the current lane autonomously and rerun only the failing or
   directly affected shard;
 - do not restart already-green independent shards after an unrelated fix;
@@ -693,6 +696,86 @@ Shared `__init__.py`, settings, common protocol exports, and architecture tests
 are coordinator-owned. A worker must not edit a shared file unless ownership is
 explicitly transferred for that round.
 
+## 8.1 Automatic two-Pi candidate synchronization
+
+Distributed testing uses a commit as the atomic source snapshot. Do not mirror
+an actively edited/uncommitted working tree to Pi 2: doing so could expose a
+partially written tree and would make test results impossible to bind to an
+exact SHA. Narrow tests may still run directly on uncommitted code on the
+primary development Pi; create a coherent candidate commit before a two-Pi run.
+
+The synchronization path is host-local development infrastructure, not msgloom
+production code:
+
+```text
+Pi 1 branch ref changes
+        |
+        v
+systemd user Path unit
+        |
+        v
+LAN git push over existing SSH
+        |
+        v
+Pi 2 refs/heads/__pi_sync/a1-teams-spider
+        |
+        v
+systemd user Path unit
+        |
+        v
+flock-protected reset of dedicated test clone
+```
+
+Installed behavior:
+
+- Pi 1 watches
+  `refs/heads/program/a1-teams-spider` and asynchronously pushes the latest SHA
+  directly over the LAN to Pi 2; this avoids a GitHub round trip for test
+  synchronization;
+- rapid local ref changes are coalesced and the sender loops until the published
+  sync ref equals the newest local branch SHA;
+- Pi 2 watches only the dedicated `__pi_sync` ref, not the product branch on
+  GitHub;
+- Pi 2 applies the newest sync ref to `~/Projects/msgloom-a1-teams-test` under a
+  shared `flock`;
+- Pi 2 tests use the same lock, so an arriving candidate can update the sync ref
+  while tests run but cannot change checked-out files underneath a running
+  pytest process;
+- after the test lock is released, any pending candidate is applied
+  automatically;
+- when `pyproject.toml` or `uv.lock` changes between candidates, Pi 2 performs
+  `uv sync --frozen` automatically while holding the same lock; normal source
+  changes therefore incur no dependency-sync work;
+- ordinary GitHub/origin pushes remain useful for branch durability and review,
+  but they are not on the critical path for Pi-to-Pi test synchronization.
+
+The normal readiness check on Pi 1 is:
+
+```text
+msgloom-a1-sync-status
+```
+
+`SYNCED <sha>` means the local branch, Pi 2 sync ref, and Pi 2 test worktree all
+match and the tracked Pi 2 worktree is clean. `TESTING ... pending=...` means Pi
+2 is intentionally holding the test lock on an older coherent snapshot while a
+newer candidate waits. `STALE ...` is an infrastructure fault to repair
+autonomously before launching a new distributed shard.
+
+The Pi 2 test wrapper is:
+
+```text
+msgloom-a1-test <test command and arguments>
+```
+
+It acquires the shared lock, converges to the latest sync ref if necessary,
+prints the exact test SHA, and then executes the requested test command. This is
+preferred for distributed shards because it closes the check-to-test race. All
+future distributed-test entry points must preserve this same lock protocol.
+
+This mechanism changes the test-start operation from "synchronize then test" to
+"verify synchronization then test". The synchronization work normally happens
+while development continues on Pi 1.
+
 ## 9. Commit/rollback strategy
 
 Use small ownership commits rather than one large refactor.
@@ -715,10 +798,11 @@ Each commit must preserve a buildable/testable state. Avoid compatibility
 aliases unless an external/public import actually requires one; do not keep
 aliases merely to hide an unfinished move.
 
-After each lane reaches a coherent candidate commit, push that SHA so both
-Raspberry Pis can test the exact same bytes. If a distributed shard fails, fix
-the defect, create the next small candidate commit, and rerun only the affected
-shard(s).
+After each lane reaches a coherent candidate commit, the local branch-ref watcher
+automatically publishes that SHA over the LAN to Pi 2's dedicated sync ref and
+Pi 2 applies it to its dedicated test clone. No explicit synchronization step is
+part of the normal test path. If a distributed shard fails, fix the defect,
+create the next small candidate commit, and rerun only the affected shard(s).
 
 Rollback is reverse commit order. This is a development-stage system with no
 database migration compatibility burden and no production data migration to
